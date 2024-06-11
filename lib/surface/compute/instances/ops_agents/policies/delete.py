@@ -113,7 +113,7 @@ class Delete(base.Command):
   applicable instances. Deleting a policy does not delete any existing agents
   managed by that policy, but the agents become unmanaged by any policies. To
   remove the agents from the instances, first update the policy to set the
-  agent ``packageState`` to ``removed``, wait for the policy to take effect,
+  agent ``packageState'' to ``removed'', wait for the policy to take effect,
   then delete the policy.
 
   The command returns the content of the deleted policy. For instance:
@@ -148,7 +148,7 @@ class Delete(base.Command):
         '--zone',
         required=True,
         help="""\
-          Zone of the OS Policy Assignment you want to delete.""",
+          Zone of the Ops Agents Policy you want to delete.""",
     )
 
   def Run(self, args):
@@ -187,7 +187,7 @@ class Delete(base.Command):
         encoding.MessageToPyValue(delete_response.response),
     )
     ops_agents_policy = (
-        to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+        to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentsPolicy(
             delete_os_policy_assignment
         )
     )

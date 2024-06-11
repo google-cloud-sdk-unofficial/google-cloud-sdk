@@ -24,11 +24,13 @@ from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
+from googlecloudsdk.command_lib.scc.notifications import flags as notifications_flags
 
 
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Security Command Center notification configs."""
 
@@ -73,7 +75,9 @@ class List(base.ListCommand):
     scc_flags.AppendParentArg()[0].AddToParser(parser)
 
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
-    scc_flags.LOCATION_FLAG.AddToParser(parser)
+    notifications_flags.LIST_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
+        parser
+    )
 
   def Run(self, args):
     # Determine what version to call from --api-version.

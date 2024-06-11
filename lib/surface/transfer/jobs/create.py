@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.transfer import jobs_flag_util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Transfer Service transfer job."""
 
@@ -68,9 +69,9 @@ class Create(base.Command):
   }
   # pylint:enable=line-too-long
 
-  @staticmethod
-  def Args(parser):
-    jobs_flag_util.setup_parser(parser)
+  @classmethod
+  def Args(cls, parser):
+    jobs_flag_util.setup_parser(parser, release_track=cls.ReleaseTrack())
 
   def Run(self, args):
     is_hdfs_source = args.source.startswith(

@@ -58,28 +58,23 @@
                 recurrence rule for how the cluster maintenance window recurs. They go
                 on for the span of time between the start and the end time. E.g. FREQ=WEEKLY;BYDAY=SU.
         - arg_name: remove-maintenance-exclusion-window
-          release_tracks: [ALPHA]
           help_text: |
             Name of the maintenance exclusion to remove.
         - group:
-            release_tracks: [ALPHA]
             help_text: Add a maintenance exclusion window (all flags must be specified to add a valid maintenance exclusion window). There can be a maximum of 3 exclusion windows set at a given time. A maintenance exclusion window cannot be added in the absence of a maintenance window.
             mutex: false
             params:
             - arg_name: add-maintenance-exclusion-name
-              release_tracks: [ALPHA]
               repeated: false
               help_text: |
                 Unique name (per cluster) of the maintenance exclusion window that can be used to remove it.
             - arg_name: add-maintenance-exclusion-start
-              release_tracks: [ALPHA]
               repeated: false
               help_text: |
                 Start time of the maintenance exclusion window (can occur in the past) in the RFC 3339
                 (https://www.ietf.org/rfc/rfc3339.txt) format. E.g.
                 "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00".
             - arg_name: add-maintenance-exclusion-end
-              release_tracks: [ALPHA]
               repeated: false
               help_text: |
                 End time of the maintenance exclusion window in the RFC 3339

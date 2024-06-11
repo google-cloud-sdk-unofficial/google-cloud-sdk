@@ -24,11 +24,12 @@ from googlecloudsdk.api_lib.bigtable import clusters
 from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateCluster(base.CreateCommand):
   """Create a bigtable cluster."""
 
@@ -86,6 +87,59 @@ class CreateCluster(base.CreateCommand):
         msgs.Cluster.DefaultStorageTypeValueValuesEnum.STORAGE_TYPE_UNSPECIFIED)
     cluster = msgs.Cluster(
         serveNodes=args.num_nodes,
+        location=util.LocationUrl(args.zone),
+        defaultStorageType=storage_type,
+    )
+
+    kms_key = arguments.GetAndValidateKmsKeyName(args)
+    if kms_key:
+      cluster.encryptionConfig = msgs.EncryptionConfig(kmsKeyName=kms_key)
+
+    if (
+        args.autoscaling_min_nodes is not None
+        or args.autoscaling_max_nodes is not None
+        or args.autoscaling_cpu_target is not None
+        or args.autoscaling_storage_target is not None
+    ):
+      cluster.clusterConfig = clusters.BuildClusterConfig(
+          autoscaling_min=args.autoscaling_min_nodes,
+          autoscaling_max=args.autoscaling_max_nodes,
+          autoscaling_cpu_target=args.autoscaling_cpu_target,
+          autoscaling_storage_target=args.autoscaling_storage_target,
+      )
+      # serveNodes must be set to None or 0 to enable Autoscaling.
+      # go/cbt-autoscaler-api
+      cluster.serveNodes = None
+
+    return cluster
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateClusterAlpha(CreateCluster):
+  """Create a bigtable cluster."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    arguments.AddClusterResourceArg(parser, 'to describe')
+    arguments.ArgAdder(
+        parser
+    ).AddClusterZone().AddAsync().AddScalingArgsForClusterCreate().AddClusterNodeScalingFactor()
+    arguments.AddKmsKeyResourceArg(parser, 'cluster')
+
+
+  def _Cluster(self, args):
+    msgs = util.GetAdminMessages()
+    storage_type = (
+        msgs.Cluster.DefaultStorageTypeValueValuesEnum.STORAGE_TYPE_UNSPECIFIED
+    )
+    node_scaling_factor = arg_utils.ChoiceToEnum(
+        args.node_scaling_factor,
+        msgs.Cluster.NodeScalingFactorValueValuesEnum,
+    )
+    cluster = msgs.Cluster(
+        serveNodes=args.num_nodes,
+        nodeScalingFactor=node_scaling_factor,
         location=util.LocationUrl(args.zone),
         defaultStorageType=storage_type)
 

@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
     brief: Delete PolicyBinding instance.
     description: |
@@ -39,6 +38,21 @@
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location_policy_binding
       required: true
+    - arg_name: etag
+      api_field: etag
+      required: false
+      repeated: false
+      help_text: |-
+        The etag of the policy binding.
+        If this is provided, it must match the server's etag.
+    - arg_name: validate-only
+      api_field: validateOnly
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set, validate the request and preview the deletion, but do not actually
+        post it.
   request:
     api_version: v3beta
     collection:

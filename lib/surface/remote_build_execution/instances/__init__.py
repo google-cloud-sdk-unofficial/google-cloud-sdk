@@ -22,9 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class Instances(base.Group):
   """Manage Remote Build Execution Instances.
 
      Create, delete, list, and view instances for remote build execution. Also
-     manage per-instance feature policies.
+     manage per-instance feature policies and backend IAM bindings.
   """

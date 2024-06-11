@@ -78,6 +78,7 @@ class UpdateHelper(object):
       support_unspecified_protocol,
       support_advanced_load_balancing,
       support_ip_address_selection_policy,
+      support_external_managed_migration,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -160,12 +161,16 @@ class UpdateHelper(object):
     if support_ip_address_selection_policy:
       flags.AddIpAddressSelectionPolicy(parser)
 
+    if support_external_managed_migration:
+      flags.AddExternalMigration(parser)
+
   def __init__(
       self,
       support_failover,
       support_subsetting,
       support_subsetting_subset_size,
       support_ip_address_selection_policy,
+      support_external_managed_migration=False,
       support_advanced_load_balancing=False,
       release_track=None,
   ):
@@ -174,6 +179,9 @@ class UpdateHelper(object):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_address_selection_policy = (
         support_ip_address_selection_policy
+    )
+    self._support_external_managed_migration = (
+        support_external_managed_migration
     )
     self._support_advanced_load_balancing = support_advanced_load_balancing
     self._release_track = release_track
@@ -313,7 +321,26 @@ class UpdateHelper(object):
       backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
           client, args, replacement
       )
-
+    if self._support_external_managed_migration:
+      if args.external_managed_migration_state is not None:
+        replacement.externalManagedMigrationState = client.messages.BackendService.ExternalManagedMigrationStateValueValuesEnum(
+            args.external_managed_migration_state
+        )
+      if args.external_managed_migration_testing_percentage is not None:
+        replacement.externalManagedMigrationTestingPercentage = (
+            args.external_managed_migration_testing_percentage
+        )
+      if args.clear_external_managed_migration_state is not None:
+        replacement.externalManagedMigrationState = None
+        replacement.externalManagedMigrationTestingPercentage = None
+        cleared_fields.append('externalManagedMigrationState')
+        cleared_fields.append('externalManagedMigrationTestingPercentage')
+      if args.load_balancing_scheme is not None:
+        replacement.loadBalancingScheme = (
+            client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+                args.load_balancing_scheme
+            )
+        )
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -394,6 +421,18 @@ class UpdateHelper(object):
         args.IsSpecified('locality_lb_policy'),
         args.IsSpecified('ip_address_selection_policy')
         if self._support_ip_address_selection_policy
+        else False,
+        args.IsSpecified('external_managed_migration_state')
+        if self._support_external_managed_migration
+        else False,
+        args.IsSpecified('external_managed_migration_testing_percentage')
+        if self._support_external_managed_migration
+        else False,
+        args.IsSpecified('clear_external_managed_migration_state')
+        if self._support_external_managed_migration
+        else False,
+        args.IsSpecified('load_balancing_scheme')
+        if self._support_external_managed_migration
         else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
@@ -549,6 +588,7 @@ class UpdateHelper(object):
             edge_security_policy_result)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   """Update a backend service.
@@ -563,6 +603,7 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = False
   _support_ip_address_selection_policy = False
+  _support_external_managed_migration = False
 
   @classmethod
   def Args(cls, parser):
@@ -577,6 +618,9 @@ class UpdateGA(base.UpdateCommand):
         support_ip_address_selection_policy=(
             cls._support_ip_address_selection_policy
         ),
+        support_external_managed_migration=(
+            cls._support_external_managed_migration
+        ),
     )
 
   def Run(self, args):
@@ -587,6 +631,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting,
         self._support_subsetting_subset_size,
         self._support_ip_address_selection_policy,
+        self._support_external_managed_migration,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
@@ -605,6 +650,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
+  _support_external_managed_migration = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -620,3 +666,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
+  _support_external_managed_migration = True

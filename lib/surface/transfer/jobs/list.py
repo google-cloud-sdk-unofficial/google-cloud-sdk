@@ -18,10 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import enum
 import json
 
 from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -31,6 +31,14 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
+class JobType(enum.Enum):
+  """The type of the job."""
+  TRANSFER = 'transfer'
+  REPLICATION = 'replication'
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.Command):
   """List Transfer Service transfer jobs."""
 
@@ -97,13 +105,13 @@ class List(base.Command):
       # Removes unwanted "transferJobs/" and "transferOperations/" prefixes.
       format_string = """table(
           name.slice(13:).join(sep=''),
-          transferSpec.firstof(
-              gcsDataSource, awsS3DataSource, httpDataSource,
-              azureBlobStorageDataSource, posixDataSource
-            ).firstof(
-              bucketName, listUrl, container, rootDirectory
-            ).trailoff(45):label=SOURCE,
-          transferSpec.firstof(
+          firstof(transferSpec, replicationSpec).firstof(
+            gcsDataSource, awsS3DataSource, httpDataSource,
+            azureBlobStorageDataSource, posixDataSource, hdfsDataSource
+          ).firstof(
+            bucketName, listUrl, container, rootDirectory, path
+          ).trailoff(45):label=SOURCE,
+          firstof(transferSpec, replicationSpec).firstof(
               gcsDataSink, posixDataSink
           ).firstof(
               bucketName, rootDirectory
@@ -134,6 +142,12 @@ class List(base.Command):
         'jobStatuses': job_statuses,
         'projectId': properties.VALUES.core.project.Get(),
     }
+    if (
+        self.ReleaseTrack() is base.ReleaseTrack.ALPHA
+        and args.job_type == JobType.REPLICATION.value
+    ):
+      # Filter to list replication jobs.
+      filter_dictionary['dataBackend'] = 'QUERY_REPLICATION_CONFIGS'
     filter_string = json.dumps(filter_dictionary)
 
     resources_iterator = list_pager.YieldFromList(
@@ -146,3 +160,19 @@ class List(base.Command):
     )
     list_util.print_transfer_resources_iterator(resources_iterator,
                                                 self.Display, args)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Transfer Service transfer jobs."""
+
+  @staticmethod
+  def Args(parser):
+    List.Args(parser)
+    parser.add_argument(
+        '--job-type',
+        choices=[JobType.TRANSFER.value, JobType.REPLICATION.value],
+        default=JobType.TRANSFER.value,
+        help='The type of the job you want to list.',
+    )

@@ -40,6 +40,8 @@
 
   request:
     collection: iam.locations.workforcePools.providers
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:AddCreateExtraAttributesConfigToRequest
 
   arguments:
     resource:
@@ -61,7 +63,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_client_secret_value
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_group
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_jwks_json_path
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.create_extra_attributes_group
+    additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddExtraAttributesOAuth2Client
 
   async:
     collection: iam.locations.workforcePools.providers.operations

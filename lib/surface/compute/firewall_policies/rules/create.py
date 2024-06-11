@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine firewall policy rule.
 
@@ -63,6 +64,11 @@ class Create(base.CreateCommand):
     flags.AddTlsInspect(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcNetworkScope(parser)
+      flags.AddSrcNetworks(parser)
+      flags.AddDestNetworkScope(parser)
+
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -99,6 +105,10 @@ class Create(base.CreateCommand):
     tls_inspect = None
     enable_logging = False
     disabled = False
+    src_network_scope = None
+    src_networks = []
+    dest_network_scope = None
+
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -152,22 +162,63 @@ class Create(base.CreateCommand):
     if args.IsSpecified('disabled'):
       disabled = args.disabled
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_network_scope'):
+        if not args.src_network_scope:
+          src_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
+              args.src_network_scope
+          )
+      if args.IsSpecified('src_networks'):
+        src_networks = args.src_networks
+      if args.IsSpecified('dest_network_scope'):
+        if not args.dest_network_scope:
+          dest_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
+              args.dest_network_scope
+          )
+
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
     )
-    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-        srcIpRanges=src_ip_ranges,
-        destIpRanges=dest_ip_ranges,
-        layer4Configs=layer4_config_list,
-        srcAddressGroups=src_address_groups,
-        destAddressGroups=dest_address_groups,
-        srcFqdns=src_fqdns,
-        destFqdns=dest_fqdns,
-        srcRegionCodes=src_region_codes,
-        destRegionCodes=dest_region_codes,
-        srcThreatIntelligences=src_threat_intelligence,
-        destThreatIntelligences=dest_threat_intelligence,
-    )
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
+          srcRegionCodes=src_region_codes,
+          destRegionCodes=dest_region_codes,
+          srcThreatIntelligences=src_threat_intelligence,
+          destThreatIntelligences=dest_threat_intelligence,
+          srcNetworkScope=src_network_scope,
+          srcNetworks=src_networks,
+          destNetworkScope=dest_network_scope,
+      )
+    else:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcAddressGroups=src_address_groups,
+          destAddressGroups=dest_address_groups,
+          srcFqdns=src_fqdns,
+          destFqdns=dest_fqdns,
+          srcRegionCodes=src_region_codes,
+          destRegionCodes=dest_region_codes,
+          srcThreatIntelligences=src_threat_intelligence,
+          destThreatIntelligences=dest_threat_intelligence,
+      )
     traffic_direct = (
         holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.INGRESS
     )

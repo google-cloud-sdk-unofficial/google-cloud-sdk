@@ -94,8 +94,8 @@
                 URI of the Web3Signer service the validator client connects to, to
                 request signing of attestations, blocks, etc.
     - help_text: |-
-        Blockchain Validator Config ID
-        Identifier of the blockchainValidatorConfig or fully qualified identifier for the blockchainValidatorConfig.
+        Blockchain Validator Config Name
+        Identifier of the blockchainValidatorConfig or fully qualified name for the blockchainValidatorConfig.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1alpha_resources:project_location_blockchain_validator_config
       required: true

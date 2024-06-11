@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.composer import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ListUpgrades(base.ListCommand):
   """List the Cloud Composer image version upgrades for a specific environment.
 

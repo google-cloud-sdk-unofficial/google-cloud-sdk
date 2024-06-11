@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network firewall policy rule.
@@ -35,6 +36,7 @@ class Create(base.CreateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
+  support_network_scopes = False
 
   @classmethod
   def Args(cls, parser):
@@ -64,6 +66,11 @@ class Create(base.CreateCommand):
     flags.AddDestThreatIntelligence(parser)
     flags.AddSecurityProfileGroup(parser)
     flags.AddTlsInspect(parser)
+    if cls.support_network_scopes:
+      flags.AddSrcNetworkScope(parser)
+      flags.AddSrcNetworks(parser)
+      flags.AddDestNetworkScope(parser)
+
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -91,6 +98,10 @@ class Create(base.CreateCommand):
     disabled = False
     src_secure_tags = []
     target_secure_tags = []
+    src_network_scope = None
+    src_networks = []
+    dest_network_scope = None
+
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -117,15 +128,50 @@ class Create(base.CreateCommand):
       security_profile_group = args.security_profile_group
     if args.IsSpecified('tls_inspect'):
       tls_inspect = args.tls_inspect
+
+    if self.support_network_scopes:
+      if args.IsSpecified('src_network_scope'):
+        if not args.src_network_scope:
+          src_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
+              args.src_network_scope
+          )
+      if args.IsSpecified('src_networks'):
+        src_networks = args.src_networks
+      if args.IsSpecified('dest_network_scope'):
+        if not args.dest_network_scope:
+          dest_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
+              args.dest_network_scope
+          )
+
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
     )
-    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-        srcIpRanges=src_ip_ranges,
-        destIpRanges=dest_ip_ranges,
-        layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags,
-    )
+    if self.support_network_scopes:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+          srcNetworkScope=src_network_scope,
+          srcNetworks=src_networks,
+          destNetworkScope=dest_network_scope,
+      )
+    else:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+      )
+
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
     if args.IsSpecified('dest_address_groups'):
@@ -181,6 +227,7 @@ class CreateBeta(Create):
 
   *{command}* is used to create network firewall policy rules.
   """
+  support_network_scopes = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -189,6 +236,8 @@ class CreateAlpha(Create):
 
   *{command}* is used to create network firewall policy rules.
   """
+
+  support_network_scopes = True
 
 
 Create.detailed_help = {

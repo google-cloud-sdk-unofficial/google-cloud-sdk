@@ -26,7 +26,6 @@ class PrincipalAccessBoundaryPoliciesALPHA(base.Group):
   """Manage PrincipalAccessBoundaryPolicy instances."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PrincipalAccessBoundaryPoliciesBETA(base.Group):
   """Manage PrincipalAccessBoundaryPolicy instances."""

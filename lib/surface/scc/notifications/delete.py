@@ -32,6 +32,7 @@ from googlecloudsdk.core.console import console_io
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Security Command Center notification config."""
 
@@ -82,7 +83,9 @@ class Delete(base.DeleteCommand):
     notifications_flags.AddNotificationConfigPositionalArgument(parser)
 
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
-    scc_flags.LOCATION_FLAG.AddToParser(parser)
+    notifications_flags.DELETE_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
+        parser
+    )
 
   def Run(self, args):
 

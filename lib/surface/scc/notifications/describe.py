@@ -23,12 +23,14 @@ from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc import flags as scc_flags
 from googlecloudsdk.command_lib.scc import util as scc_util
+from googlecloudsdk.command_lib.scc.notifications import flags as notifications_flags
 from googlecloudsdk.command_lib.scc.notifications import notification_util
 
 
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Security Command Center notification config."""
 
@@ -107,7 +109,9 @@ class Describe(base.DescribeCommand):
         """,
     )
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
-    scc_flags.LOCATION_FLAG.AddToParser(parser)
+    notifications_flags.DESCRIBE_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
+        parser
+    )
 
   def Run(self, args):
 

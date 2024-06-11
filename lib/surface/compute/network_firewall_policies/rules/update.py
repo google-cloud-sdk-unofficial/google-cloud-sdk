@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine network firewall policy rule.
@@ -35,6 +36,7 @@ class Update(base.UpdateCommand):
   """
 
   NETWORK_FIREWALL_POLICY_ARG = None
+  support_network_scopes = False
 
   @classmethod
   def Args(cls, parser):
@@ -65,6 +67,10 @@ class Update(base.UpdateCommand):
     flags.AddDestThreatIntelligence(parser)
     flags.AddSecurityProfileGroup(parser)
     flags.AddTlsInspect(parser)
+    if cls.support_network_scopes:
+      flags.AddSrcNetworkScope(parser)
+      flags.AddSrcNetworks(parser)
+      flags.AddDestNetworkScope(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -79,9 +85,10 @@ class Update(base.UpdateCommand):
         'dest_address_groups': 'match.destAddressGroups',
         'src_threat_intelligence': 'match.srcThreatIntelligences',
         'dest_threat_intelligence': 'match.destThreatIntelligences',
+        'src_networks': 'match.srcNetworks',
         'security_profile_group': 'securityProfileGroup',
         'target_secure_tags': 'targetSecureTags',
-        'target_service_accounts': 'targetServiceAccounts'
+        'target_service_accounts': 'targetServiceAccounts',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -110,6 +117,9 @@ class Update(base.UpdateCommand):
     traffic_direct = None
     src_secure_tags = []
     target_secure_tags = []
+    src_network_scope = None
+    src_networks = []
+    dest_network_scope = None
     cleared_fields = []
     for arg in clearable_arg_name_to_field_name:
       if args.IsKnownAndSpecified(arg) and not args.GetValue(arg):
@@ -146,12 +156,55 @@ class Update(base.UpdateCommand):
               holder.client, args.target_secure_tags
           )
       )
-    matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-        srcIpRanges=src_ip_ranges,
-        destIpRanges=dest_ip_ranges,
-        layer4Configs=layer4_config_list,
-        srcSecureTags=src_secure_tags,
-    )
+    if self.support_network_scopes:
+      if args.IsSpecified('src_network_scope'):
+        if not args.src_network_scope:
+          src_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
+              args.src_network_scope
+          )
+        should_setup_match = True
+      if args.IsSpecified('src_networks'):
+        src_networks = args.src_networks
+        should_setup_match = True
+      if args.IsSpecified('dest_network_scope'):
+        if not args.dest_network_scope:
+          dest_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
+              args.dest_network_scope
+          )
+        should_setup_match = True
+
+      if (
+          src_network_scope is not None
+          and src_network_scope
+          != holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.VPC_NETWORKS
+      ):
+        cleared_fields.append('match.srcNetworks')
+
+    if self.support_network_scopes:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+          srcNetworkScope=src_network_scope,
+          srcNetworks=src_networks,
+          destNetworkScope=dest_network_scope,
+      )
+    else:
+      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+          srcIpRanges=src_ip_ranges,
+          destIpRanges=dest_ip_ranges,
+          layer4Configs=layer4_config_list,
+          srcSecureTags=src_secure_tags,
+      )
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
       should_setup_match = True
@@ -229,6 +282,8 @@ class UpdateBeta(Update):
   *{command}* is used to update network firewall policy rules.
   """
 
+  support_network_scopes = False
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
@@ -236,6 +291,8 @@ class UpdateAlpha(Update):
 
   *{command}* is used to update network firewall policy rules.
   """
+
+  support_network_scopes = True
 
 
 Update.detailed_help = {

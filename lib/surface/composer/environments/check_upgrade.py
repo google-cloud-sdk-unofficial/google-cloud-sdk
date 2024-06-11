@@ -42,7 +42,9 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class CheckUpgrade(base.Command):
   """Check that upgrading a Cloud Composer environment does not result in PyPI module conflicts."""
 

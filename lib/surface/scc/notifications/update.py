@@ -32,6 +32,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Security Command Center notification config."""
 
@@ -105,7 +106,9 @@ class Update(base.UpdateCommand):
     notifications_flags.AddParentGroup(parser)
 
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
-    scc_flags.LOCATION_FLAG.AddToParser(parser)
+    notifications_flags.UPDATE_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
+        parser
+    )
 
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
 

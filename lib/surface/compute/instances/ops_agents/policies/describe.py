@@ -164,7 +164,7 @@ class Describe(base.DescribeCommand):
         '--zone',
         required=True,
         help="""\
-          Zone of the policy.""",
+          Zone of the Ops Agents Policy.""",
     )
 
   def Run(self, args):

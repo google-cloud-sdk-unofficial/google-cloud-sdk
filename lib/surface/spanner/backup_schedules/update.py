@@ -50,7 +50,8 @@ class Create(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddBackupScheduleResourceArg(parser, 'to create')
-    parser.add_argument(
+    group_parser = parser.add_argument_group(required=True)
+    group_parser.add_argument(
         '--cron',
         required=False,
         help=(
@@ -67,7 +68,7 @@ class Create(base.UpdateCommand):
             ' * * ` : once a month on 8th day at 2 past midnight in UTC.'
         ),
     )
-    parser.add_argument(
+    group_parser.add_argument(
         '--retention-duration',
         required=False,
         help=(
@@ -77,12 +78,11 @@ class Create(base.UpdateCommand):
         ),
     )
 
-    encryption_group_parser = parser.add_argument_group()
     resource_args.AddCreateBackupEncryptionConfigTypeArg(
-        encryption_group_parser
+        group_parser
     )
     resource_args.AddKmsKeyResourceArg(
-        encryption_group_parser, 'to create the Cloud Spanner backup'
+        group_parser, 'to create the Cloud Spanner backup'
     )
 
   def Run(self, args):

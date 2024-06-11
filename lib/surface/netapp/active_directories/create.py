@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Active Directory."""
 
@@ -66,6 +67,7 @@ class Create(base.CreateCommand):
         password=args.password,
         backup_operators=args.backup_operators,
         security_operators=args.security_operators,
+        administrators=args.administrators,
         kdc_hostname=args.kdc_hostname,
         kdc_ip=args.kdc_ip,
         nfs_users_with_ldap=args.nfs_users_with_ldap,

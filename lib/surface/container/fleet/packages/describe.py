@@ -15,8 +15,10 @@
 """Command to list all Fleet Packages in project."""
 
 from googlecloudsdk.api_lib.container.fleet.packages import fleet_packages as apis
+from googlecloudsdk.api_lib.container.fleet.packages import rollouts as rollouts_apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
+from googlecloudsdk.command_lib.container.fleet.packages import utils
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 _DETAILED_HELP = {
@@ -27,6 +29,8 @@ _DETAILED_HELP = {
           $ {command} cert-manager-app --location=us-central1
         """,
 }
+
+_ROLLOUT_BASENAME_INDEX = 7
 
 
 @base.Hidden
@@ -42,16 +46,42 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser.ForResource(
         'fleet_package',
         flags.GetFleetPackageResourceSpec(),
-        'The Fleet Package to create.',
+        'The Fleet Package to describe.',
         required=True,
         prefixes=False,
     ).AddToParser(parser)
+    parser.display_info.AddTransforms(
+        {'trim_message': utils.TransformTrimMessage}
+    )
+    parser.add_argument(
+        '--show-cluster-status',
+        required=False,
+        action='store_true',
+        help='Show more information about the Fleet Package.',
+    )
 
   def Run(self, args):
     """Run the describe command."""
     client = apis.FleetPackagesClient()
-    return client.Describe(
+    rollouts_client = rollouts_apis.RolloutsClient()
+    result = client.Describe(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
         name=args.fleet_package,
     )
+    if args.show_cluster_status:
+      info = result.info
+      target_rollout = getattr(info, 'activeRollout', None)
+      if target_rollout is None:
+        target_rollout = getattr(info, 'lastCompletedRollout', None)
+      if target_rollout is not None:
+        described_rollout = rollouts_client.Describe(
+            project=flags.GetProject(args),
+            location=flags.GetLocation(args),
+            fleet_package=args.fleet_package,
+            rollout=target_rollout.split('/')[_ROLLOUT_BASENAME_INDEX],
+        )
+        utils.FormatForRolloutsDescribe(described_rollout, args)
+        return described_rollout
+
+    return result

@@ -27,9 +27,10 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(base.CreateCommand):
-  """Create a Cloud Spanner instance partition with ALPHA features."""
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaAndAlphaCreate(base.CreateCommand):
+  """Create a Cloud Spanner instance partition."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\

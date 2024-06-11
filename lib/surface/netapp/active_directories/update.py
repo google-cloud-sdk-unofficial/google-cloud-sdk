@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Cloud NetApp Active Directory."""
 
@@ -39,7 +40,7 @@ class Update(base.UpdateCommand):
       'EXAMPLES': """\
           The following command updates an AD config in the given project and location with specified arguments:
 
-              $ {command} AD_NAME --location=us-central1 --domain=new-domain.com --dns=1.1.1.1 --site=new_site --net-bios-prefix=new_prefix --organizational-unit=ou2 --enable-aes=true --username=user2 --password="secure2" --backup-operators=backup_op3 --security-operators=secure_op3 --enable-ldap-signing=true --encrypt-dc-connections=yes --kdc-hostname=kdc-host1
+              $ {command} AD_NAME --location=us-central1 --domain=new-domain.com --dns=1.1.1.1 --site=new_site --net-bios-prefix=new_prefix --organizational-unit=ou2 --enable-aes=true --username=user2 --password="secure2" --backup-operators=backup_op1,backup_op2 --security-operators=secure_op1,secure_op2 --administrators=admin_op1,admin_op2 --enable-ldap-signing=true --encrypt-dc-connections=yes --kdc-hostname=kdc-host1
           """,
   }
 
@@ -72,6 +73,7 @@ class Update(base.UpdateCommand):
         password=args.password,
         backup_operators=args.backup_operators,
         security_operators=args.security_operators,
+        administrators=args.administrators,
         kdc_hostname=args.kdc_hostname,
         kdc_ip=args.kdc_ip,
         nfs_users_with_ldap=args.nfs_users_with_ldap,
@@ -102,6 +104,8 @@ class Update(base.UpdateCommand):
       updated_fields.append('backupOperators')
     if args.IsSpecified('security_operators'):
       updated_fields.append('securityOperators')
+    if args.IsSpecified('administrators'):
+      updated_fields.append('administrators')
     if args.IsSpecified('kdc_hostname'):
       updated_fields.append('kdcHostname')
     if args.IsSpecified('kdc_ip'):

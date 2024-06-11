@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deletes a Backup and DR Backup Vault."""
+"""Creates a Backup and DR Backup Vault."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,6 +32,7 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class CreateAlpha(base.DeleteCommand):
   """Create a Backup and DR backup vault."""
 
@@ -39,23 +40,31 @@ class CreateAlpha(base.DeleteCommand):
       'BRIEF': 'Creates a Backup and DR backup vault.',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with enforced-retention
-        of 1 month and 1 day, run:
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --enforced-retention="p1m1d"
-
-        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with enforced-retention
-        of 1 day and description ``DESCRIPTION'', run:
-
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --enforced-retention="1d" --description=DESCRIPTION
-
-        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with enforced-retention
-        of 1 day and label key1 with value value1, run:
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --enforced-retention="1d" --labels=key1=value1
+        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
+        minimum enforced-retention for backups of 1 month and 1 day, run:
+        $ {command} BACKUP_VAULT --location=MY_LOCATION \
+            --backup-min-enforced-retention="p1m1d"
 
         To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
-        enforced-retention of 1 day and effective-time "2024-03-22", run:
+        minimum enforced-retention for backups of 1 day and description ``DESCRIPTION'',
+        run:
 
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --enforced-retention="1d" --effective-time="2024-03-22"
+        $ {command} BACKUP_VAULT --location=MY_LOCATION \
+            --backup-min-enforced-retention="1d" --description=DESCRIPTION
+
+        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
+        minimum enforced-retention for backups of 1 day and label key1 with value value1,
+        run:
+
+        $ {command} BACKUP_VAULT --location=MY_LOCATION \
+            --backup-min-enforced-retention="1d" --labels=key1=value1
+
+        To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
+        minimum enforced-retention for backups of 1 day and effective-time "2024-03-22",
+        run:
+
+        $ {command} BACKUP_VAULT --location=MY_LOCATION \
+            --backup-min-enforced-retention="1d" --effective-time="2024-03-22"
         """,
   }
 
@@ -90,7 +99,9 @@ class CreateAlpha(base.DeleteCommand):
     """
     client = BackupVaultsClient()
     backup_vault = args.CONCEPTS.backup_vault.Parse()
-    enforced_retention = command_util.ConvertIntToStr(args.enforced_retention)
+    backup_min_enforced_retention = command_util.ConvertIntToStr(
+        args.backup_min_enforced_retention
+    )
     description = args.description
     effective_time = command_util.TransformTo12AmUtcTime(args.effective_time)
     labels = labels_util.ParseCreateArgs(
@@ -101,7 +112,7 @@ class CreateAlpha(base.DeleteCommand):
     try:
       operation = client.Create(
           backup_vault,
-          enforced_retention,
+          backup_min_enforced_retention,
           description,
           labels,
           effective_time,

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine firewall policy rule.
 
@@ -64,6 +65,10 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcNetworkScope(parser)
+      flags.AddSrcNetworks(parser)
+      flags.AddDestNetworkScope(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -77,6 +82,7 @@ class Update(base.UpdateCommand):
         'dest_address_groups': 'match.destAddressGroups',
         'src_threat_intelligence': 'match.srcThreatIntelligences',
         'dest_threat_intelligence': 'match.destThreatIntelligences',
+        'src_networks': 'match.srcNetworks',
         'security_profile_group': 'securityProfileGroup',
         'target_resources': 'targetResources',
         'target_service_accounts': 'targetServiceAccounts',
@@ -119,6 +125,9 @@ class Update(base.UpdateCommand):
     matcher = None
     security_profile_group = None
     tls_inspect = None
+    src_network_scope = None
+    src_networks = []
+    dest_network_scope = None
 
     for arg in clearable_arg_name_to_field_name:
       if args.IsKnownAndSpecified(arg) and not args.GetValue(arg):
@@ -198,21 +207,71 @@ class Update(base.UpdateCommand):
     else:
       new_priority = priority
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_network_scope'):
+        if not args.src_network_scope:
+          src_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
+              args.src_network_scope
+          )
+        should_setup_match = True
+      if args.IsSpecified('src_networks'):
+        src_networks = args.src_networks
+        should_setup_match = True
+      if args.IsSpecified('dest_network_scope'):
+        if not args.dest_network_scope:
+          dest_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
+              args.dest_network_scope
+          )
+        should_setup_match = True
+
+      if (
+          src_network_scope is not None
+          and src_network_scope
+          != holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.VPC_NETWORKS
+      ):
+        cleared_fields.append('match.srcNetworks')
+
     # If need to construct a new matcher.
     if should_setup_match:
-      matcher = holder.client.messages.FirewallPolicyRuleMatcher(
-          srcIpRanges=src_ip_ranges,
-          destIpRanges=dest_ip_ranges,
-          layer4Configs=layer4_config_list,
-          srcAddressGroups=src_address_groups,
-          destAddressGroups=dest_address_groups,
-          srcFqdns=src_fqdns,
-          destFqdns=dest_fqdns,
-          srcRegionCodes=src_region_codes,
-          destRegionCodes=dest_region_codes,
-          srcThreatIntelligences=src_threat_intelligence,
-          destThreatIntelligences=dest_threat_intelligence,
-      )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+            srcIpRanges=src_ip_ranges,
+            destIpRanges=dest_ip_ranges,
+            layer4Configs=layer4_config_list,
+            srcAddressGroups=src_address_groups,
+            destAddressGroups=dest_address_groups,
+            srcFqdns=src_fqdns,
+            destFqdns=dest_fqdns,
+            srcRegionCodes=src_region_codes,
+            destRegionCodes=dest_region_codes,
+            srcThreatIntelligences=src_threat_intelligence,
+            destThreatIntelligences=dest_threat_intelligence,
+            srcNetworkScope=src_network_scope,
+            srcNetworks=src_networks,
+            destNetworkScope=dest_network_scope,
+        )
+      else:
+        matcher = holder.client.messages.FirewallPolicyRuleMatcher(
+            srcIpRanges=src_ip_ranges,
+            destIpRanges=dest_ip_ranges,
+            layer4Configs=layer4_config_list,
+            srcAddressGroups=src_address_groups,
+            destAddressGroups=dest_address_groups,
+            srcFqdns=src_fqdns,
+            destFqdns=dest_fqdns,
+            srcRegionCodes=src_region_codes,
+            destRegionCodes=dest_region_codes,
+            srcThreatIntelligences=src_threat_intelligence,
+            destThreatIntelligences=dest_threat_intelligence,
+        )
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (

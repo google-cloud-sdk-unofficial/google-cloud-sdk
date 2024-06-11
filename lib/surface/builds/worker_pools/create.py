@@ -201,6 +201,15 @@ def _CreateWorkerPoolSecondGen(args):
       wpsg = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages.WorkerPoolSecondGen
       )
+      # Public IP in primary network interface of VM has to be disabled when
+      # routing all the traffic to network attachment.
+      if (
+          wpsg.network is not None
+          and wpsg.network.privateServiceConnect is not None
+          and wpsg.network.privateServiceConnect.routeAllTraffic
+          and wpsg.network.publicIpAddressDisabled is None
+      ):
+        wpsg.network.publicIpAddressDisabled = True
     except cloudbuild_exceptions.ParseProtoException as err:
       log.err.Print(
           '\nFailed to parse configuration from file. If you'
@@ -214,6 +223,21 @@ def _CreateWorkerPoolSecondGen(args):
     if args.worker_disk_size is not None:
       wpsg.worker.diskStorage = compute_utils.BytesToGb(
           args.worker_disk_size)
+
+    wpsg.network = messages.NetworkConfig()
+    if args.disable_public_ip_address:
+      wpsg.network.publicIpAddressDisabled = True
+
+    private_service_connect = messages.PrivateServiceConnect()
+    if args.network_attachment:
+      private_service_connect.networkAttachment = args.network_attachment
+    if args.route_all_traffic:
+      # Public IP in primary network interface of VM has to be disabled when
+      # routing all the traffic to network attachment.
+      wpsg.network.publicIpAddressDisabled = True
+      private_service_connect.routeAllTraffic = True
+    if args.network_attachment or args.route_all_traffic:
+      wpsg.network.privateServiceConnect = private_service_connect
 
   parent = properties.VALUES.core.project.Get(required=True)
 

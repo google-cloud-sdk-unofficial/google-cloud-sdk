@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.protorpclite import messages as message_proto
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import base
@@ -32,35 +33,31 @@ def _Args(
     cls,
     parser,
     support_network_tier,
-    support_global_access,
-    support_labels,
-    support_source_ip_range,
+    support_external_migration,
 ):
   """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
-  if support_labels:
-    labels_util.AddUpdateLabelsFlags(parser)
+  labels_util.AddUpdateLabelsFlags(parser)
   if support_network_tier:
     flags.AddNetworkTier(
         parser, supports_network_tier_flag=True, for_update=True)
-  if support_source_ip_range:
-    flags.AddSourceIpRanges(parser)
-  if support_global_access:
-    flags.AddAllowGlobalAccess(parser)
+  flags.AddSourceIpRanges(parser)
+  flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
+  if support_external_migration:
+    flags.AddExternalMigration(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   """Update a Compute Engine forwarding rule."""
 
   FORWARDING_RULE_ARG = None
 
-  _support_global_access = True
   _support_network_tier = False
-  _support_source_ip_range = True
-  _support_labels = True
+  _support_external_migration = False
 
   @classmethod
   def Args(cls, parser):
@@ -68,9 +65,8 @@ class UpdateGA(base.UpdateCommand):
         cls,
         parser,
         support_network_tier=cls._support_network_tier,
-        support_global_access=cls._support_global_access,
-        support_labels=cls._support_labels,
-        support_source_ip_range=cls._support_source_ip_range)
+        support_external_migration=cls._support_external_migration,
+    )
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
                                     forwarding_rule, replacement):
@@ -107,17 +103,31 @@ class UpdateGA(base.UpdateCommand):
     return self._support_network_tier and args.network_tier is not None
 
   def _HasSourceIpRangeChange(self, args):
-    return self._support_source_ip_range and args.IsSpecified(
-        'source_ip_ranges')
+    return args.IsSpecified('source_ip_ranges')
 
   def _HasGlobalAccessChange(self, args):
-    return self._support_global_access and args.IsSpecified(
-        'allow_global_access')
+    return args.IsSpecified('allow_global_access')
 
   def _HasPscGlobalAccessChange(self, args):
     return args.IsSpecified('allow_psc_global_access')
 
-  def Modify(self, messages, args, existing):
+  def _HasExternalMigrationChange(self, args):
+    if not self._support_external_migration:
+      return False
+    return (
+        args.IsSpecified(
+            'external_managed_backend_bucket_migration_testing_percentage'
+        )
+        or args.IsSpecified('external_managed_backend_bucket_migration_state')
+        or args.IsSpecified(
+            'clear_external_managed_backend_bucket_migration_state'
+        )
+        or args.IsSpecified('load_balancing_scheme')
+    )
+
+  def Modify(
+      self, messages: message_proto, args, existing, cleared_fields
+  ) -> message_proto.Message:
     """Returns a modified forwarding rule message and included fields."""
     has_change = False
     forwarding_rule = messages.ForwardingRule(name=existing.name)
@@ -140,6 +150,38 @@ class UpdateGA(base.UpdateCommand):
       forwarding_rule.fingerprint = existing.fingerprint
       has_change = True
 
+    if self._support_external_migration:
+      if args.IsSpecified('external_managed_backend_bucket_migration_state'):
+        forwarding_rule.externalManagedBackendBucketMigrationState = messages.ForwardingRule.ExternalManagedBackendBucketMigrationStateValueValuesEnum(
+            args.external_managed_backend_bucket_migration_state
+        )
+        has_change = True
+
+      if args.IsSpecified(
+          'external_managed_backend_bucket_migration_testing_percentage'
+      ):
+        forwarding_rule.externalManagedBackendBucketMigrationTestingPercentage = (
+            args.external_managed_backend_bucket_migration_testing_percentage
+        )
+        has_change = True
+
+      if args.IsSpecified('load_balancing_scheme'):
+        forwarding_rule.loadBalancingScheme = (
+            messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum(
+                args.load_balancing_scheme
+            )
+        )
+        has_change = True
+
+      if args.IsSpecified(
+          'clear_external_managed_backend_bucket_migration_state'
+      ):
+        cleared_fields.append('externalManagedBackendBucketMigrationState')
+        cleared_fields.append(
+            'externalManagedBackendBucketMigrationTestingPercentage'
+        )
+        has_change = True
+
     if not has_change:
       return None
 
@@ -156,17 +198,16 @@ class UpdateGA(base.UpdateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
 
-    has_labels_updates = False
-    if self._support_labels:
-      labels_diff = labels_util.Diff.FromUpdateArgs(args)
-      has_labels_updates = labels_diff.MayHaveUpdates()
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    has_labels_updates = labels_diff.MayHaveUpdates()
 
     has_change = any([
         has_labels_updates,
         self._HasNextTierChange(args),
         self._HasGlobalAccessChange(args),
         self._HasPscGlobalAccessChange(args),
-        self._HasSourceIpRangeChange(args)
+        self._HasSourceIpRangeChange(args),
+        self._HasExternalMigrationChange(args),
     ])
 
     if not has_change:
@@ -191,9 +232,11 @@ class UpdateGA(base.UpdateCommand):
     objects = holder.client.MakeRequests([get_request])
     forwarding_rule = objects[0]
 
-    forwarding_rule_replacement = self.Modify(messages, args, forwarding_rule)
-    if self._support_labels:
-      label_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
+    cleared_fields = []
+    forwarding_rule_replacement = self.Modify(
+        messages, args, forwarding_rule, cleared_fields
+    )
+    label_update = labels_diff.Apply(labels_value, forwarding_rule.labels)
 
     # Create requests.
     requests = []
@@ -205,7 +248,7 @@ class UpdateGA(base.UpdateCommand):
             forwardingRuleResource=forwarding_rule_replacement,
             project=forwarding_rule_ref.project)
         requests.append((client.globalForwardingRules, 'Patch', request))
-      if self._support_labels and label_update.needs_update:
+      if label_update.needs_update:
         request = self._CreateGlobalSetLabelsRequest(messages,
                                                      forwarding_rule_ref,
                                                      forwarding_rule,
@@ -219,34 +262,31 @@ class UpdateGA(base.UpdateCommand):
             project=forwarding_rule_ref.project,
             region=forwarding_rule_ref.region)
         requests.append((client.forwardingRules, 'Patch', request))
-      if self._support_labels and label_update.needs_update:
+      if label_update.needs_update:
         request = self._CreateRegionalSetLabelsRequest(messages,
                                                        forwarding_rule_ref,
                                                        forwarding_rule,
                                                        label_update.labels)
         requests.append((client.forwardingRules, 'SetLabels', request))
 
-    return holder.client.MakeRequests(requests)
+    with client.IncludeFields(cleared_fields):
+      return holder.client.MakeRequests(requests)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(UpdateGA):
   """Update a Compute Engine forwarding rule."""
 
-  _support_global_access = True
   _support_network_tier = False
-  _support_labels = True
-  _support_source_ip_range = True
+  _support_external_migration = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine forwarding rule."""
 
-  _support_global_access = True
   _support_network_tier = True
-  _support_labels = True
-  _support_source_ip_range = True
+  _support_external_migration = True
 
 
 UpdateGA.detailed_help = {

@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class UpdateAlpha(base.UpdateCommand):
   """Update a Backup and DR backup vault."""
 
@@ -38,13 +39,16 @@ class UpdateAlpha(base.UpdateCommand):
       'BRIEF': 'Updates a Backup and DR backup vault.',
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-        To update a backup vault BACKUP_VAULT in location MY_LOCATION with one update field, run:
+        To update a backup vault BACKUP_VAULT in location MY_LOCATION with one update
+        field, run:
 
         $ {command} BACKUP_VAULT --location=MY_LOCATION --effective-time="2024-03-22"
 
-        To update a backup vault BACKUP_VAULT in location MY_LOCATION with multiple update fields, run:
+        To update a backup vault BACKUP_VAULT in location MY_LOCATION with multiple
+        update fields, run:
 
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --enforced-retention="400000s" --description="Updated backup vault"
+        $ {command} BACKUP_VAULT --location=MY_LOCATION \
+            --backup-min-enforced-retention="400000s" --description="Updated backup vault"
         """,
   }
 
@@ -69,8 +73,8 @@ class UpdateAlpha(base.UpdateCommand):
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if args.IsSpecified('enforced_retention'):
-      updated_fields.append('enforcedRetentionDuration')
+    if args.IsSpecified('backup_min_enforced_retention'):
+      updated_fields.append('backupMinimumEnforcedRetentionDuration')
     if args.IsSpecified('unlock_enforced_retention') or args.IsSpecified(
         'effective_time'
     ):
@@ -90,7 +94,9 @@ class UpdateAlpha(base.UpdateCommand):
     client = BackupVaultsClient()
     backup_vault = args.CONCEPTS.backup_vault.Parse()
 
-    enforced_retention = command_util.ConvertIntToStr(args.enforced_retention)
+    backup_min_enforced_retention = command_util.ConvertIntToStr(
+        args.backup_min_enforced_retention
+    )
     description = args.description
     if args.unlock_enforced_retention:
       effective_time = command_util.ResetEnforcedRetention()
@@ -101,7 +107,7 @@ class UpdateAlpha(base.UpdateCommand):
     try:
       parsed_bv = client.ParseUpdate(
           description=description,
-          enforced_retention=enforced_retention,
+          backup_min_enforced_retention=backup_min_enforced_retention,
           effective_time=effective_time,
       )
 

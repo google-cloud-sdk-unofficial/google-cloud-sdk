@@ -36,7 +36,7 @@
             help_text: |-
               Configuration for connections to github.com.
             params:
-            - arg_name: github-config-github-app
+            - arg_name: github-config-app
               api_field: connection.githubConfig.githubApp
               required: true
               help_text: |-

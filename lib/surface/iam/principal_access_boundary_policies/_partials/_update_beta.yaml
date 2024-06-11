@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
     brief: Update PrincipalAccessBoundaryPolicy instance.
     description: |
@@ -71,7 +70,8 @@
           required: false
           repeated: true
           help_text: |-
-            A list of principal access boundary policy rules.
+            A list of principal access boundary policy rules. The number of rules in a
+            policy is limited to 500.
           clearable: true
           spec:
           - api_field: description
@@ -81,7 +81,8 @@
           - api_field: resources
             help_text: |-
               A list of Cloud Resource Manager resources. The resource and all the
-              descendants are included.
+              descendants are included. The number of resources in a policy is limited
+              to 500 across all rules.
 
               The following resource names are supported:
               * Organization, such as

@@ -49,6 +49,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Bare Metal Solution instance."""
@@ -59,7 +60,7 @@ class Update(base.UpdateCommand):
     flags.AddInstanceArgToParser(parser, positional=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddInstanceOsImageToParser(parser, hidden=False)
+    flags.AddInstanceOsImageToParser(parser, hidden=False, required=False)
     flags.AddInstanceEnableHyperthreadingToParser(parser, hidden=False)
 
   def GetRequestFields(self, args, client, instance):

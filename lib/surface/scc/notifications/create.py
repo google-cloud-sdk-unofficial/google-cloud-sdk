@@ -32,6 +32,7 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Security Command Center notification config."""
 
@@ -94,7 +95,9 @@ class Create(base.CreateCommand):
     notifications_flags.AddParentGroup(parser)
 
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
-    scc_flags.LOCATION_FLAG.AddToParser(parser)
+    notifications_flags.CREATE_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
+        parser
+    )
 
   def Run(self, args):
     parent = scc_util.GetParentFromNamedArguments(args)

@@ -42,7 +42,7 @@ EXTENDED_LIST_FORMAT = """\
     table(
       package:label=IMAGE,
       version:label=DIGEST,
-      tags,
+      tags.list(),
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
       metadata.imageSizeBytes:label=SIZE,
@@ -52,6 +52,7 @@ EXTENDED_LIST_FORMAT = """\
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Artifact Registry container images.
 

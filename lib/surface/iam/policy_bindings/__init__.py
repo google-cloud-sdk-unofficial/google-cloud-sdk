@@ -26,7 +26,6 @@ class PolicyBindingsALPHA(base.Group):
   """Manage PolicyBinding instances."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PolicyBindingsBETA(base.Group):
   """Manage PolicyBinding instances."""

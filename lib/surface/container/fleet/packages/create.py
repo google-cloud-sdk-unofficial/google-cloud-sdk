@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.container.fleet.packages import fleet_packages as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
-from googlecloudsdk.command_lib.container.fleet.packages import utils as command_utils
 from googlecloudsdk.command_lib.export import util as export_util
 from googlecloudsdk.core.console import console_io
 
@@ -59,11 +58,12 @@ class Create(base.CreateCommand):
           variantNameTemplate='default'
       )
 
-    fleet_package = command_utils.UpsertDefaultVariants(fleet_package)
-
     parent = (
         f'projects/{flags.GetProject(args)}/locations/{flags.GetLocation(args)}'
     )
+    fully_qualified_name = f'{parent}/fleetPackages/{args.name}'
+    if not fleet_package.name:
+      fleet_package.name = fully_qualified_name
 
     return client.Create(
         fleet_package=fleet_package, fleet_package_id=args.name, parent=parent

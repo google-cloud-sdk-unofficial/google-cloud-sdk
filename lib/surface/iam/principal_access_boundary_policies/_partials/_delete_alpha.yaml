@@ -36,6 +36,29 @@
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:organization_location_principal_access_boundary_policy
       required: true
+    - arg_name: etag
+      api_field: etag
+      required: false
+      repeated: false
+      help_text: |-
+        The etag of the principal access boundary policy.
+        If this is provided, it must match the server's etag.
+    - arg_name: validate-only
+      api_field: validateOnly
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set, validate the request and preview the deletion, but do not actually
+        post it.
+    - arg_name: force
+      api_field: force
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, the request will force the deletion of the Policy even if
+        the Policy references PolicyBindings.
   request:
     api_version: v3alpha
     collection:

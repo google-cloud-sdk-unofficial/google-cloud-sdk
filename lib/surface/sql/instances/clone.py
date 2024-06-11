@@ -153,8 +153,11 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
   if args.point_in_time and args.restore_database_name:
     clone_context.databaseNames[:] = [args.restore_database_name]
 
-  if args.point_in_time and args.preferred_zone:
+  if args.preferred_zone:
     clone_context.preferredZone = args.preferred_zone
+
+  if args.preferred_secondary_zone:
+    clone_context.preferredSecondaryZone = args.preferred_secondary_zone
 
   if release_track == base.ReleaseTrack.ALPHA:
     # ALLOCATED IP RANGE options
@@ -289,15 +292,26 @@ def AddBaseArgs(parser):
     The name of the database to be restored for a point-in-time restore. If
     set, the destination instance will only restore the specified database.
     """)
-  point_in_time_group.add_argument(
+  parser.add_argument(
       '--preferred-zone',
       required=False,
       help="""\
-    The preferred zone for the cloned instance. If set, the destination instance
-    will be created in this zone.
+    The preferred zone for the cloned instance. If you specify a value for
+    this flag, then the destination instance uses the value as the primary
+    zone.
+    """)
+  parser.add_argument(
+      '--preferred-secondary-zone',
+      required=False,
+      help="""\
+    The preferred secondary zone for the cloned regional instance. If you
+    specify a value for this flag, then the destination instance uses the
+    value as the secondary zone. The secondary zone can't be the same as the
+    primary zone.
     """)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Clone(base.CreateCommand):
   """Clones a Cloud SQL instance."""
@@ -314,6 +328,7 @@ class Clone(base.CreateCommand):
     return RunBaseCloneCommand(args, self.ReleaseTrack())
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CloneAlpha(base.CreateCommand):
   """Clones a Cloud SQL instance."""

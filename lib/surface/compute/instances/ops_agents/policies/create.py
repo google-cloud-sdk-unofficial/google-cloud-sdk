@@ -183,7 +183,8 @@ class Create(base.Command):
     config = yaml.load_path(args.file)
 
     # Convert to domain object from users input.
-    ops_agents_policy = cloud_ops_agents_policy.CreateOpsAgentsPolicy(config)
+    ops_agents_policy = cloud_ops_agents_policy.CreateOpsAgentsPolicy(
+        args.POLICY_ID, config)
 
     cloud_ops_agents_policy_validator.ValidateOpsAgentsPolicy(ops_agents_policy)
 
@@ -225,7 +226,8 @@ class Create(base.Command):
     complete_os_policy_assignment = encoding.PyValueToMessage(
         osconfig.OSPolicyAssignment, complete_os_policy_assignment_obj
     )
-    policy = to_cloud_ops_agents.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+    # The returned policy should now include the update_date and the rollout_state.
+    policy = to_cloud_ops_agents.ConvertOsPolicyAssignmentToCloudOpsAgentsPolicy(
         complete_os_policy_assignment
     )
 

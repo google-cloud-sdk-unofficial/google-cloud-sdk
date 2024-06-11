@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
     brief: Create PolicyBinding instance.
     description: |

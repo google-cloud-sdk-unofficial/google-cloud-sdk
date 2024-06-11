@@ -39,6 +39,7 @@ from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 class Login(base.Command):
   r"""Acquire new user credentials to use for Application Default Credentials.
 
@@ -94,7 +95,11 @@ class Login(base.Command):
         help='The names of the scopes to authorize for. By default '
         '{0} scopes are used. '
         'The list of possible scopes can be found at: '
-        '[](https://developers.google.com/identity/protocols/googlescopes).'
+        '[](https://developers.google.com/identity/protocols/googlescopes). '
+        'To add scopes for applications outside of Google Cloud Platform, '
+        'such as Google Drive, [create an OAuth Client ID]'
+        '(https://support.google.com/cloud/answer/6158849) and provide it by '
+        'using the --client-id-file flag. '
         .format(', '.join(auth_util.DEFAULT_SCOPES)))
     parser.add_argument(
         '--login-config',

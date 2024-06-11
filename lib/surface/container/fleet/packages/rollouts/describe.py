@@ -29,30 +29,6 @@ _DETAILED_HELP = {
         """,
 }
 
-_FULL_MESSAGES_FORMAT = """table(release.segment(5):label=RESOURCE_BUNDLE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.membership.basename():label=CLUSTER,
-                    info.state:label=ROLLOUT_STATE,
-                    release.basename():label=RELEASE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.current.version:label=CURRENT_VERSION,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.current.syncState:label=CURRENT_STATE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.desired.version:label=DESIRED_VERSION,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.desired.syncState:label=DESIRED_STATE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.startTime:label=START_TIME,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.endTime:label=END_TIME,
-                    all_messages():label=MESSAGES)"""
-
-_FORMAT_TRUNCATED_MESSAGES = """table(release.segment(5):label=RESOURCE_BUNDLE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.membership.basename():label=CLUSTER,
-                    info.state:label=ROLLOUT_STATE,
-                    release.basename():label=RELEASE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.current.version:label=CURRENT_VERSION,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.current.syncState:label=CURRENT_STATE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.desired.version:label=DESIRED_VERSION,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.desired.syncState:label=DESIRED_STATE,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.startTime:label=START_TIME,
-                    info.rolloutStrategyInfo.rollingStrategyInfo.clusters.endTime:label=END_TIME,
-                    trim_message():label=MESSAGE)"""
-
 
 @base.Hidden
 @base.DefaultUniverseOnly
@@ -69,7 +45,6 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(_FULL_MESSAGES_FORMAT)
     parser.display_info.AddTransforms(
         {'all_messages': utils.TransformAllMessages}
     )
@@ -84,8 +59,6 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.RolloutsClient()
-    if args.less:
-      args.format = _FORMAT_TRUNCATED_MESSAGES
 
     output = client.Describe(
         fleet_package=args.fleet_package,
@@ -93,15 +66,7 @@ class Describe(base.DescribeCommand):
         location=flags.GetLocation(args),
         rollout=args.name,
     )
-    if output.info and output.info.rolloutStrategyInfo:
-      if output.info.rolloutStrategyInfo.rollingStrategyInfo:
-        args.flatten = [
-            'info.rolloutStrategyInfo.rollingStrategyInfo.clusters[]'
-        ]
-      if output.info.rolloutStrategyInfo.allAtOnceStrategyInfo:
-        args.flatten = [
-            'info.rolloutStrategyInfo.allAtOnceStrategyInfo.clusters[]'
-        ]
+    utils.FormatForRolloutsDescribe(output, args, args.less)
     if output.info and output.info.message:
       if not args.less:
         self.show_less = True

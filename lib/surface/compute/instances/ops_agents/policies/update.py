@@ -229,9 +229,6 @@ class Update(base.Command):
     )
     cloud_ops_agents_policy_validator.ValidateOpsAgentsPolicy(updated_policy)
 
-    if args.dry_run:
-      return updated_policy
-
     parent_path = osconfig_command_utils.GetProjectLocationUriPath(
         project, args.zone
     )
@@ -242,13 +239,20 @@ class Update(base.Command):
 
     # TODO: b/339694475 - Include updateMask to better indicate what fields
     # were updated.
-    update_request = messages.OsconfigProjectsLocationsOsPolicyAssignmentsPatchRequest(
-        oSPolicyAssignment=to_os_policy_assignment.ConvertOpsAgentsPolicyToOSPolicyAssignment(
+    os_policy_assignment = (
+        to_os_policy_assignment.ConvertOpsAgentsPolicyToOSPolicyAssignment(
             name=assignment_id, ops_agents_policy=updated_policy
-        ),
-        name=assignment_id,
+        )
     )
+    if args.dry_run:
+      return os_policy_assignment
 
+    update_request = (
+        messages.OsconfigProjectsLocationsOsPolicyAssignmentsPatchRequest(
+            oSPolicyAssignment=os_policy_assignment,
+            name=assignment_id,
+        )
+    )
     client = osconfig_api_utils.GetClientInstance(release_track)
     service = client.projects_locations_osPolicyAssignments
     update_reponse = service.Patch(update_request)
@@ -260,11 +264,10 @@ class Update(base.Command):
     )
 
     updated_ops_agents_policy = (
-        to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentPolicy(
+        to_ops_agents_policy.ConvertOsPolicyAssignmentToCloudOpsAgentsPolicy(
             updated_os_policy_assignment
         )
     )
-
-    assert updated_ops_agents_policy == updated_policy
-
-    return updated_policy.ToPyValue()
+    # Picking up the update time and rollout state from the underlying API
+    # object.
+    return updated_ops_agents_policy.ToPyValue()

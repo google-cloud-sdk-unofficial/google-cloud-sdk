@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.container.fleet.packages import fleet_packages as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
+from googlecloudsdk.command_lib.container.fleet.packages import utils
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
@@ -29,7 +30,10 @@ _DETAILED_HELP = {
 
 # For more formatting options see:
 # http://cloud/sdk/gcloud/reference/topic/formats
-_FORMAT = 'table(name, createTime)'
+_FORMAT = """table(name.basename():label=NAME,
+                   info.State:label=STATE,
+                   createTime.date(tz=LOCAL):label=CREATE_TIME,
+                   fleet_package_errors():label=MESSAGES)"""
 
 
 @base.Hidden
@@ -44,6 +48,9 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(apis.GetFleetPackageURI)
+    parser.display_info.AddTransforms(
+        {'fleet_package_errors': utils.TransformListFleetPackageErrors}
+    )
     flags.AddLocationFlag(parser)
 
   def Run(self, args):

@@ -105,6 +105,7 @@ RESET_PASSWORD_WARNING = textwrap.dedent("""
     https://cloud.google.com/compute/docs/operating-systems/windows#reset""")
 
 
+@base.DefaultUniverseOnly
 class ResetWindowsPassword(base.UpdateCommand):
   """Reset and return a password for a Windows machine instance.
 

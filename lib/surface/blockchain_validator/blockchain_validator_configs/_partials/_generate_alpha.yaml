@@ -61,7 +61,7 @@
                 help_text: |-
                   Arguments for the  graffiti.
                 params:
-                - arg_name: blockchain-validator-config-template-ethereum-protocol-details-graffiti
+                - arg_name: ethereum-protocol-details-graffiti
                   api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.ethereumProtocolDetails.graffiti
                   required: false
                   repeated: false
@@ -79,7 +79,7 @@
                 help_text: |-
                   Arguments for the  use block builder proposals.
                 params:
-                - arg_name: blockchain-validator-config-template-ethereum-protocol-details-use-block-builder-proposals
+                - arg_name: ethereum-protocol-details-use-block-builder-proposals
                   api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.ethereumProtocolDetails.useBlockBuilderProposals
                   action: store_true
                   required: false
@@ -91,7 +91,7 @@
                 help_text: |-
                   Arguments for the  gas limit.
                 params:
-                - arg_name: blockchain-validator-config-template-ethereum-protocol-details-gas-limit
+                - arg_name: ethereum-protocol-details-gas-limit
                   api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.ethereumProtocolDetails.gasLimit
                   required: false
                   repeated: false
@@ -102,7 +102,7 @@
                      the service. This field is only read if the field
                      use_block_builder_proposals is set to true. If not specified, the
                      validator client will use a default value.
-            - arg_name: blockchain-validator-config-template-ethereum-protocol-details-suggested-fee-recipient
+            - arg_name: ethereum-protocol-details-suggested-fee-recipient
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.ethereumProtocolDetails.suggestedFeeRecipient
               required: false
               repeated: false
@@ -134,7 +134,7 @@
                 help_text: |-
                   Arguments for the  root certificate.
                 params:
-                - arg_name: blockchain-validator-config-template-remote-web3-signer-root-certificate
+                - arg_name: remote-web3-signer-root-certificate
                   api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.remoteWeb3Signer.rootCertificate
                   required: false
                   repeated: false
@@ -145,14 +145,14 @@
                     When not set, the validator client will only accept TLS certificates
                     signed by well known certificate authorities (as in, the set configured
                     by default in the OS Docker image).
-            - arg_name: blockchain-validator-config-template-remote-web3-signer-web3signer-uri
+            - arg_name: remote-web3-signer-web3signer-uri
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.remoteWeb3Signer.web3signerUri
               required: true
               repeated: false
               help_text: |-
                 URI of the Web3Signer service the validator client connects to, to
                 request signing of attestations, blocks, etc.
-            - arg_name: blockchain-validator-config-template-remote-web3-signer-timeout-duration
+            - arg_name: remote-web3-signer-timeout-duration
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.remoteWeb3Signer.timeoutDuration
               required: false
               repeated: false
@@ -160,7 +160,7 @@
               processor: googlecloudsdk.core.util.times:FormatDurationForJson
               help_text: |-
                 Timeout for requests to the Web3Signer service.
-            - arg_name: blockchain-validator-config-template-remote-web3-signer-voting-public-keys
+            - arg_name: remote-web3-signer-voting-public-keys
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.remoteWeb3Signer.votingPublicKeys
               required: true
               repeated: true
@@ -174,7 +174,7 @@
               Configuration for creating voting keys from a new seed phrase, and
               optionally location to back it up to, in Secret Manager.
             params:
-            - arg_name: blockchain-validator-config-template-seed-phrase-reference-seed-phrase-secret
+            - arg_name: seed-phrase-reference-secret
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
@@ -182,14 +182,14 @@
               resource_method_params:
                 generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.seedPhraseReference.seedPhraseSecret: '{__relative_name__}'
               required: true
-            - arg_name: blockchain-validator-config-template-seed-phrase-reference-export-seed-phrase
+            - arg_name: seed-phrase-reference-export
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.seedPhraseReference.exportSeedPhrase
               action: store_true
               required: false
               type: bool
               help_text: |-
                 True to export the seed phrase to Secret Manager.
-            - arg_name: blockchain-validator-config-template-seed-phrase-reference-key-count
+            - arg_name: seed-phrase-reference-key-count
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.seedPhraseReference.keyCount
               required: true
               repeated: false
@@ -208,7 +208,7 @@
                 help_text: |-
                   Arguments for the  derivation base.
                 params:
-                - arg_name: blockchain-validator-config-template-existing-seed-phrase-reference-derivation-base
+                - arg_name: existing-seed-phrase-reference-derivation-base
                   api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.existingSeedPhraseReference.derivationBase
                   required: false
                   repeated: false
@@ -216,7 +216,7 @@
                   help_text: |-
                     The first derivation index to use when deriving keys. Must be 0
                     or greater.
-            - arg_name: blockchain-validator-config-template-existing-seed-phrase-reference-seed-phrase-secret
+            - arg_name: existing-seed-phrase-reference-secret
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
@@ -224,7 +224,7 @@
               resource_method_params:
                 generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.existingSeedPhraseReference.seedPhraseSecret: '{__relative_name__}'
               required: true
-            - arg_name: blockchain-validator-config-template-existing-seed-phrase-reference-key-count
+            - arg_name: existing-seed-phrase-reference-key-count
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.existingSeedPhraseReference.keyCount
               required: true
               repeated: false
@@ -258,7 +258,7 @@
                         help_text: |-
                           Arguments for the  network.
                         params:
-                        - arg_name: blockchain-validator-config-template-new-blockchain-node-source-ethereum-node-details-network
+                        - arg_name: new-blockchain-node-source-ethereum-details-network
                           api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.network
                           required: false
                           help_text: |-
@@ -288,7 +288,7 @@
                         help_text: |-
                           Arguments for the  execution client.
                         params:
-                        - arg_name: blockchain-validator-config-template-new-blockchain-node-source-ethereum-node-details-execution-client
+                        - arg_name: new-blockchain-node-source-ethereum-details-execution-client
                           api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.executionClient
                           required: true
                           help_text: |-
@@ -304,7 +304,7 @@
                         help_text: |-
                           Arguments for the  consensus client.
                         params:
-                        - arg_name: blockchain-validator-config-template-new-blockchain-node-source-ethereum-node-details-consensus-client
+                        - arg_name: new-blockchain-node-source-ethereum-details-consensus-client
                           api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.consensusClient
                           required: true
                           help_text: |-
@@ -316,7 +316,7 @@
                               Consensus client implementation written in Rust, maintained by Sigma
                               Prime. See [Lighthouse - Sigma
                               Prime](https://lighthouse.sigmaprime.io/) for details.
-                    - arg_name: blockchain-validator-config-template-new-blockchain-node-source-ethereum-node-details-mev-relay-urls
+                    - arg_name: new-blockchain-node-source-ethereum-details-mev-relay-urls
                       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.newBlockchainNodeSource.ethereumNodeDetails.mevRelayUrls
                       required: false
                       repeated: true
@@ -330,7 +330,7 @@
               Configuration for deploying blockchain validators to an existing blockchain
               node.
             params:
-            - arg_name: blockchain-validator-config-template-existing-blockchain-node-source-blockchain-node-id
+            - arg_name: existing-blockchain-node-source-id
               api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.existingBlockchainNodeSource.blockchainNodeId
               required: false
               repeated: false
@@ -347,7 +347,7 @@
         behalf of this validator, false if not. This does NOT define whether the
         blockchain expects work to occur, only whether the blockchain node
         specified above is carrying out validation tasks.
-    - arg_name: blockchain-validator-config-template-blockchain-type
+    - arg_name: blockchain-validator-config-template-type
       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.blockchainType
       required: false
       help_text: |-
@@ -376,7 +376,7 @@
         enum_value: EXISTING_SEED_PHRASE_REFERENCE
         help_text: |-
           Derive voting keys from existing seed material.
-    - arg_name: blockchain-validator-config-template-blockchain-node-source
+    - arg_name: blockchain-validator-config-template-node-source
       api_field: generateBlockchainValidatorConfigsRequest.blockchainValidatorConfigTemplate.blockchainNodeSource
       required: false
       help_text: |-

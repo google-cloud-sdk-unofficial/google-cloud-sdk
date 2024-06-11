@@ -27,7 +27,9 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core.console import console_io
 
 
-class Delete(base.DeleteCommand):
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class BetaAndAlphaDelete(base.DeleteCommand):
   """Delete a Cloud Spanner instance partition."""
 
   detailed_help = {

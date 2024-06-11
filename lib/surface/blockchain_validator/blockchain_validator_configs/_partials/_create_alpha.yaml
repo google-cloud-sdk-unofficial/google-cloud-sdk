@@ -169,7 +169,7 @@
               Derivation path used to generate the voting key, and optionally Secret
               Manager secret to backup the seed phrase to.
             params:
-            - arg_name: seed-phrase-reference-seed-phrase-secret
+            - arg_name: seed-phrase-reference-secret
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
@@ -177,7 +177,7 @@
               resource_method_params:
                 blockchainValidatorConfig.seedPhraseReference.seedPhraseSecret: '{__relative_name__}'
               required: true
-            - arg_name: seed-phrase-reference-export-seed-phrase
+            - arg_name: seed-phrase-reference-export
               api_field: blockchainValidatorConfig.seedPhraseReference.exportSeedPhrase
               action: store_true
               default: null
@@ -191,7 +191,7 @@
               Location of existing seed material, and derivation path used to generate
               the voting key.
             params:
-            - arg_name: existing-seed-phrase-reference-seed-phrase-secret
+            - arg_name: existing-seed-phrase-reference-secret
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
@@ -210,8 +210,8 @@
                 "m/12381/3600/<derivation_index>/0/0"
                 See also https://eips.ethereum.org/EIPS/eip-2334#eth2-specific-parameters
     - help_text: |-
-        Blockchain Validator Config ID
-        Identifier of the blockchainValidatorConfig or fully qualified identifier for the blockchainValidatorConfig.
+        Blockchain Validator Config Name
+        Identifier of the blockchainValidatorConfig or fully qualified name for the blockchainValidatorConfig.
       is_positional: true
       request_id_field: blockchainValidatorConfigId
       resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1alpha_resources:project_location_blockchain_validator_config
