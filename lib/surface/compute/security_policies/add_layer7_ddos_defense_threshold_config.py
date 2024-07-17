@@ -184,42 +184,11 @@ class AddLayer7DdosDefenseThresholdConfigHelper(object):
     return security_policy.Patch(security_policy=updated_security_policy)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddLayer7DdosDefenseThresholdConfigGA(base.UpdateCommand):
-  r"""Add a layer7 ddos defense threshold config to a Compute Engine security policy.
-
-  *{command}* is used to add layer7 ddos defense threshold configs to security policies.
-
-  ## EXAMPLES
-
-  To add a layer7 ddos defense threshold config, run the following command:
-
-    $ {command} NAME \
-       --threshold-config-name=my-threshold-config-name \
-       --auto-deploy-load-threshold=0.7 \
-       --auto-deploy-confidence-threshold=0.8 \
-       --auto-deploy-impacted-baseline-threshold=0.1 \
-       --auto-deploy-expiration-sec=4800
-  """
-
-  _support_granularity_config = False
-
-  @classmethod
-  def Args(cls, parser):
-    AddLayer7DdosDefenseThresholdConfigHelper.Args(
-        parser, support_granularity_config=cls._support_granularity_config
-    )
-
-  def Run(self, args):
-    return AddLayer7DdosDefenseThresholdConfigHelper.Run(
-        self.ReleaseTrack(),
-        args,
-        support_granularity_config=self._support_granularity_config,
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class AddLayer7DdosDefenseThresholdConfigBeta(base.UpdateCommand):
   r"""Add a layer7 ddos defense threshold config to a Compute Engine security policy.
 
   *{command}* is used to add layer7 ddos defense threshold configs to security policies.

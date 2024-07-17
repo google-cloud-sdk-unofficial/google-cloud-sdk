@@ -16,19 +16,22 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-import os
+
 from googlecloudsdk.api_lib.ml.speech import client
-from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.ml.speech import flag_validations
 from googlecloudsdk.command_lib.ml.speech import flags_v2
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RunShort(base.Command):
   """Get transcripts of short (less than 60 seconds) audio from an audio file."""
+
+  def ValidateRunShortFlags(self, args):
+    """Validates run short flags."""
+    flag_validations.ValidateDecodingConfig(args)
+    flag_validations.ValidateAudioSource(args)
 
   @staticmethod
   def Args(parser):
@@ -38,48 +41,22 @@ class RunShort(base.Command):
   def Run(self, args):
     resource = args.CONCEPTS.recognizer.Parse()
     speech_client = client.SpeechV2Client()
-    if (
-        args.encoding is not None
-        and args.encoding not in client.ENCODING_OPTIONS
-    ):
-      raise exceptions.InvalidArgumentException(
-          '--encoding',
-          '[--encoding] must be set to LINEAR16, MULAW, ALAW, or AUTO.',
-      )
 
-    if args.encoding is not None and args.encoding != 'AUTO':
-      if args.sample_rate is None:
-        raise exceptions.InvalidArgumentException(
-            '--sample-rate',
-            (
-                '[--sample-rate] must be specified when configuring explicit'
-                ' encoding option options LINEAR16, MULAW, or ALAW.'
-            ),
+    self.ValidateRunShortFlags(args)
+
+    recognition_config, features, _ = (
+        speech_client.SeparateArgsForRecognizeCommand(
+            args, default_to_auto_decoding_config=True
         )
-      if args.audio_channel_count is None:
-        raise exceptions.InvalidArgumentException(
-            '--audio-channel-count',
-            (
-                '[--audio-channel-count] must be specified when configuring'
-                ' explicit encoding options LINEAR16, MULAW, or ALAW.'
-            ),
-        )
-      if not os.path.isfile(
-          args.audio
-      ) and not storage_util.ObjectReference.IsStorageUrl(args.audio):
-        raise exceptions.InvalidArgumentException(
-            '--audio',
-            'Invalid audio source [{}]. The source must either be a local '
-            'path or a Google Cloud Storage URL '
-            '(such as gs://bucket/object).'.format(args.audio),
-        )
+    )
+
+    recognition_config.model = args.model
+    recognition_config.languageCodes = args.language_codes
 
     return speech_client.RunShort(
         resource,
         args.audio,
-        args.model,
-        args.language_codes,
-        args.encoding,
-        args.sample_rate,
-        args.audio_channel_count,
+        args.hints,
+        recognition_config,
+        features,
     )

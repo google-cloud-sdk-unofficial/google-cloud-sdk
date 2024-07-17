@@ -287,6 +287,7 @@ class AlphaUpdate(BetaUpdate):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
+    flags.AddIapFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)

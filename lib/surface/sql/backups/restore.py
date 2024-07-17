@@ -109,7 +109,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddAllowedPscProjects(psc_setup_group, hidden=True)
   flags.AddSslMode(parser, hidden=True)
   flags.AddEnableGoogleMLIntegration(parser, hidden=True)
-  flags.AddEnableDataplexIntegration(parser)
+  flags.AddEnableDataplexIntegration(parser, hidden=True)
   flags.AddLocationGroup(parser, hidden=True, specify_default_region=False)
   flags.AddDatabaseVersion(
       parser, restrict_choices=False, hidden=True, support_default_version=False

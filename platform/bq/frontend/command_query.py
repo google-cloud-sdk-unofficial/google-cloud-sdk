@@ -631,7 +631,7 @@ class Query(bigquery_command.BigqueryCmd):
         kwds['job_timeout_ms'] = self.job_timeout_ms
 
       logging.debug('Calling client.Query(%s, %s)', query, kwds)
-      job = client.Query(query, **kwds)
+      job = client_job.Query(client, query, **kwds)
 
       if self.dry_run:
         frontend_utils.PrintDryRunInfo(job)

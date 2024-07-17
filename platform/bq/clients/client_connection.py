@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import re
 from typing import Any, Dict, List, Mapping, Optional
 
 
@@ -26,6 +27,18 @@ VERSION_INFO = 'version_info'
 
 # IAM role name that represents being a grantee on a row access policy.
 _FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
+
+# Valid proto field name regex.
+_VALID_FIELD_NAME_REGEXP = r'[0-9A-Za-z_]+'
+
+# Connection field mask paths pointing to map keys.
+_MAP_KEY_PATHS = [
+    'configuration.parameters',
+    'configuration.authentication.parameters',
+]
+
+_AUTH_PROFILE_ID_PATH = 'configuration.authentication.profile_id'
+_AUTH_PATH = 'configuration.authentication'
 
 
 def GetConnection(
@@ -129,8 +142,10 @@ def CreateConnection(
 def UpdateConnection(
     client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.ConnectionReference,
-    connection_type: str,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
-    properties: str,
+    connection_type: Optional[
+        str
+    ] = None,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
+    properties: Optional[str] = None,
     connection_credential: Optional[str] = None,
     display_name: Optional[str] = None,
     description: Optional[str] = None,
@@ -166,38 +181,6 @@ def UpdateConnection(
   connection = {}
   update_mask = []
 
-  def GetUpdateMask(
-      base_path: str, json_properties: Dict[str, Any]
-  ) -> List[str]:
-    """Creates an update mask from json_properties.
-
-    Arguments:
-      base_path: 'cloud_sql'
-      json_properties: { 'host': ... , 'instanceId': ... }
-
-    Returns:
-        list of  paths in snake case:
-        mask = ['cloud_sql.host', 'cloud_sql.instance_id']
-    """
-    return [
-        base_path + '.' + inflection.underscore(json_property)
-        for json_property in json_properties
-    ]
-
-  def GetUpdateMaskRecursively(
-      prefix: str, json_value: Dict[str, Any]
-  ) -> List[str]:
-    if not isinstance(json_value, dict) or not json_value:
-      return [inflection.underscore(prefix)]
-
-    result = []
-    for name in json_value:
-      new_prefix = prefix + '.' + name
-      new_json_value = json_value.get(name)
-      result.extend(GetUpdateMaskRecursively(new_prefix, new_json_value))
-
-    return result
-
   if display_name:
     connection['friendlyName'] = display_name
     update_mask.append('friendlyName')
@@ -217,7 +200,7 @@ def UpdateConnection(
       connection['cloudSql'] = cloudsql_properties
 
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), cloudsql_properties)
+          _GetUpdateMask(connection_type.lower(), cloudsql_properties)
       )
 
     else:
@@ -266,7 +249,7 @@ def UpdateConnection(
       connection['sqlDataSource'] = sql_data_source_properties
 
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), sql_data_source_properties)
+          _GetUpdateMask(connection_type.lower(), sql_data_source_properties)
       )
 
     else:
@@ -283,7 +266,7 @@ def UpdateConnection(
       cloudspanner_properties = bq_processor_utils.ParseJson(properties)
       connection['cloudSpanner'] = cloudspanner_properties
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), cloudspanner_properties)
+          _GetUpdateMask(connection_type.lower(), cloudspanner_properties)
       )
     else:
       connection['cloudSpanner'] = {}
@@ -303,8 +286,10 @@ def UpdateConnection(
         connector_configuration
     )
     update_mask.extend(
-        GetUpdateMaskRecursively('configuration', connection['configuration'])
+        _GetUpdateMaskRecursively('configuration', connection['configuration'])
     )
+    if _AUTH_PROFILE_ID_PATH in update_mask and _AUTH_PATH not in update_mask:
+      update_mask.append(_AUTH_PATH)
 
   return (
       client.projects()
@@ -317,6 +302,74 @@ def UpdateConnection(
       )
       .execute()
   )
+
+
+def _GetUpdateMask(
+    base_path: str, json_properties: Dict[str, Any]
+) -> List[str]:
+  """Creates an update mask from json_properties.
+
+  Arguments:
+    base_path: 'cloud_sql'
+    json_properties: { 'host': ... , 'instanceId': ... }
+
+  Returns:
+      list of  paths in snake case:
+      mask = ['cloud_sql.host', 'cloud_sql.instance_id']
+  """
+  return [
+      base_path + '.' + inflection.underscore(json_property)
+      for json_property in json_properties
+  ]
+
+
+def _EscapeIfRequired(prefix: str, name: str) -> str:
+  """Escapes name if it points to a map key or converts it to snake case.
+
+  If name points to a map key:
+  1. Do not change the name.
+  2. Escape name with backticks if it is not a valid proto field name.
+
+  Args:
+    prefix: field mask prefix to check if name points to a map key.
+    name: name of the field.
+
+  Returns:
+    escaped name
+  """
+  if prefix in _MAP_KEY_PATHS:
+    return (
+        name
+        if re.fullmatch(_VALID_FIELD_NAME_REGEXP, name)
+        else ('`' + name + '`')
+    )
+
+  # Otherwise, convert name to snake case
+  return inflection.underscore(name)
+
+
+def _GetUpdateMaskRecursively(
+    prefix: str, json_value: Dict[str, Any]
+) -> List[str]:
+  """Recursively traverses json_value and returns a list of update mask paths.
+
+  Args:
+    prefix: current prefix of the json value.
+    json_value: value to traverse.
+
+  Returns:
+    a field mask containing all the set paths in the json value.
+  """
+  if not isinstance(json_value, dict) or not json_value:
+    return [prefix]
+
+  result = []
+  for name in json_value:
+    new_prefix = prefix + '.' + _EscapeIfRequired(prefix, name)
+    new_json_value = json_value.get(name)
+    result.extend(_GetUpdateMaskRecursively(new_prefix, new_json_value))
+
+  return result
 
 
 def DeleteConnection(

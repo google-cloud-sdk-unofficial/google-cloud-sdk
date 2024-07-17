@@ -37,14 +37,27 @@ repeated_composite_types = (containers.RepeatedCompositeFieldContainer,)
 repeated_scalar_types = (containers.RepeatedScalarFieldContainer,)
 map_composite_types = (containers.MessageMap,)
 
+# In `proto/marshal.py`, for compatibility with protobuf 5.x,
+# we'll use `map_composite_type_names` to check whether
+# the name of the class of a protobuf type is
+# `MessageMapContainer`, and, if `True`, return a MapComposite.
+# See https://github.com/protocolbuffers/protobuf/issues/16596
+map_composite_type_names = ("MessageMapContainer",)
+
 if _message:
     repeated_composite_types += (_message.RepeatedCompositeContainer,)
     repeated_scalar_types += (_message.RepeatedScalarContainer,)
-    map_composite_types += (_message.MessageMapContainer,)
+
+    try:
+        map_composite_types += (_message.MessageMapContainer,)
+    except AttributeError:
+        # The `MessageMapContainer` attribute is not available in Protobuf 5.x+
+        pass
 
 
 __all__ = (
     "repeated_composite_types",
     "repeated_scalar_types",
     "map_composite_types",
+    "map_composite_type_names",
 )

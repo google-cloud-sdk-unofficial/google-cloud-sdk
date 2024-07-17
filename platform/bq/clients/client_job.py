@@ -759,7 +759,7 @@ def WaitJob(
     except bq_error.BigqueryBackendError as e:
       # Temporary server errors while waiting on a job are okay.
       logging.warning('Transient error during job status check: %s', e)
-    except BigqueryServiceError as e:
+    except bq_error.BigqueryServiceError as e:
       # Among this catch-all class, some kinds are permanent
       # errors, so we don't want to retry indefinitely, but if
       # the error is transient we'd like "wait" to get past it.

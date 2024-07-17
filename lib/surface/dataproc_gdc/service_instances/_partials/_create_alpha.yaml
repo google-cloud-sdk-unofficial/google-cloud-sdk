@@ -84,7 +84,7 @@
       required: false
       repeated: false
       help_text: |-
-        Requested GCP service account to associate with ServiceInstance.
+        Requested service account to associate with ServiceInstance.
   request:
     api_version: v1alpha1
     collection:

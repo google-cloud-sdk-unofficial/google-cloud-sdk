@@ -175,10 +175,23 @@ def _CheckForExistingImage(
     raise exceptions.InvalidArgumentException(arg_name, message)
 
 
-# TODO(b/289223643): Reevaluate universe compatiblity
-# when this bug is addressed.
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is being deprecated. Instead, use the `gcloud migration'
+        ' vms image-imports` command. For more information, see https://'
+        'cloud.google.com/migrate/virtual-machines/docs/5.0/migrate/'
+        'image_import.'
+    ),
+    error=(
+        'This command hash been deprecated. Instead, use the `gcloud migration'
+        ' vms image-imports` command. For more information, see https://'
+        'cloud.google.com/migrate/virtual-machines/docs/5.0/migrate/'
+        'image_import.'
+    ),
+)
+@base.DefaultUniverseOnly
 class Import(base.CreateCommand):
   """Import an image into Compute Engine."""
 
@@ -722,9 +735,6 @@ Import.detailed_help = {
     'DESCRIPTION': """
         *{command}* imports Virtual Disk images, such as VMWare VMDK files
         and VHD files, into Compute Engine.
-
-        NOTE: It is recommended to use the new Image Import.
-        Run "gcloud alpha migration vms image-imports --help" for details.
 
         Importing images involves four steps:
         *  Upload the virtual disk file to Cloud Storage.

@@ -26,15 +26,15 @@ from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        Updates term to an existing route policy of a Comute Engine router.
+        Updates a term of an existing route policy of a Comute Engine router.
 
-        *{command}* updates a term on a route policy.
+        *{command}* updates a term of a route policy.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
     # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To update a term on a route policy, run:
+        To update a term of a route policy, run:
 
           $ {command} example-router --region=router-region --policy-name=example-policy-name --priority=128 --match="destination == '192.168.0.0/24'" --actions="med.set(12345);asPath.prependSequence([1, 2])"
 
@@ -43,11 +43,10 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateRoutePolicyTerm(base.UpdateCommand):
-  """Updates term to an existing route policy of a Comute Engine router."""
+  """Updates a term of an existing route policy of a Comute Engine router."""
 
   ROUTER_ARG = None
 

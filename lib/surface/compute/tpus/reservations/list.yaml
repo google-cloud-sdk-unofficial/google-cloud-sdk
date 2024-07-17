@@ -20,7 +20,7 @@
         Zone of the Reservation.
 
         To find a list of zones available for Cloud TPUs in your
-        project, run `{parent_command} locations list`.
+        project, run `{grandparent_command} locations list`.
 
       spec: !REF googlecloudsdk.command_lib.compute.tpus.resources:location
 

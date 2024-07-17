@@ -28,9 +28,11 @@ EXAMPLES = r"""
               --project=projectId
               --membership=membershipId
               --location=us-central1
+              --ouput=yaml
 """
 
 
+@base.DefaultUniverseOnly
 class ProxyConfig(base.BinaryBackedCommand):
   """Retrieve a configuration summary for a given Envoy instance.
   """
@@ -83,6 +85,14 @@ class ProxyConfig(base.BinaryBackedCommand):
         ),
     )
     proxy_config_type.AddToParser(parser)
+    parser.add_argument(
+        '--output',
+        choices=['json', 'yaml'],
+        required=False,
+        help=(
+            'Output format.'
+        ),
+    )
 
   def Run(self, args):
     command_executor = istioctl_backend.IstioctlWrapper()
@@ -100,6 +110,7 @@ class ProxyConfig(base.BinaryBackedCommand):
         ),
         proxy_config_type=args.type,
         pod_name_namespace=args.pod_name_namespace,
+        output_format=args.output,
         stdin=auth_cred,
     )
     return response

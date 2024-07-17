@@ -93,6 +93,26 @@ class Compute(base.Command):
     compute_flags.AddCanIpForwardArg(parser, False)
     compute_flags.AddPrivateIpv6GoogleAccessArg(parser, False)
     compute_flags.AddNetworkPerformanceConfigsArg(parser, False)
+    compute_flags.AddConfidentialComputeArg(parser, False)
+    compute_flags.AddDeletionProtectionArg(parser, False)
+    compute_flags.AddResourceManagerTagsArg(parser, False)
+    compute_flags.AddResourcePoliciesArg(parser, False)
+    compute_flags.AddKeyRevocationActionTypeArg(parser, False)
+    compute_flags.AddInstanceKmsKeyArg(parser, False)
+
+  def _ParseResourcePolicies(self, resource_policies, project, zone):
+    """Parses the resource policies flag."""
+    resource_policy_uris = []
+    for policy in resource_policies:
+      if not policy.startswith('projects/'):
+        region = zone.rsplit('-', 1)[0]
+        policy = (
+            'projects/{}/regions/{}/resourcePolicies/{}'.format(
+                project, region, policy
+            )
+        )
+      resource_policy_uris.append(policy)
+    return resource_policy_uris
 
   def Run(self, args):
     """Constructs and sends request.
@@ -189,7 +209,22 @@ class Compute(base.Command):
       restore_config['NetworkPerformanceConfigs'] = (
           args.network_performance_configs
       )
-
+    if args.confidential_compute:
+      restore_config['ConfidentialCompute'] = args.confidential_compute
+    if args.deletion_protection:
+      restore_config['DeletionProtection'] = args.deletion_protection
+    if args.resource_manager_tags:
+      restore_config['ResourceManagerTags'] = args.resource_manager_tags
+    if args.resource_policies:
+      restore_config['ResourcePolicies'] = self._ParseResourcePolicies(
+          args.resource_policies, args.target_project, args.target_zone
+      )
+    if args.key_revocation_action_type:
+      restore_config['KeyRevocationActionType'] = (
+          args.key_revocation_action_type
+      )
+    if args.instance_kms_key:
+      restore_config['InstanceKmsKey'] = args.instance_kms_key
     try:
       operation = client.RestoreCompute(backup, restore_config)
     except apitools_exceptions.HttpError as e:

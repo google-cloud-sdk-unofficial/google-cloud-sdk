@@ -282,6 +282,7 @@ def AddBetaArgs(parser):
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
   flags.AddSwitchTransactionLogsToCloudStorage(parser)
+  flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
 
 
 def AddAlphaArgs(unused_parser):

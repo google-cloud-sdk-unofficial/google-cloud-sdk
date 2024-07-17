@@ -20,15 +20,20 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ml.speech import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.ml.speech import flag_validations
 from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
+class Update(base.Command):
   """Update a Speech-to-text recognizer."""
+
+  def ValidateUpdateRecognizerFlags(self, args):
+    """Validates update flags."""
+    flag_validations.ValidateLocation(args)
+    flag_validations.ValidateDecodingConfig(args)
 
   @staticmethod
   def Args(parser):
@@ -38,45 +43,34 @@ class Create(base.Command):
   def Run(self, args):
     recognizer = args.CONCEPTS.recognizer.Parse()
 
-    # TODO(b/272527653) Change errors to Actionable Error response type.
-    if args.location not in client.PUBLIC_ALLOWED_LOCATIONS:
-      raise exceptions.InvalidArgumentException(
-          '--location',
-          '[--location] must be set to one of '
-          + ', '.join(client.PUBLIC_ALLOWED_LOCATIONS)
-          + '.',
-      )
-
     speech_client = client.SpeechV2Client()
     is_async = args.async_
 
-    if (
-        args.encoding is not None
-        and args.encoding not in client.ENCODING_OPTIONS
-    ):
-      raise exceptions.InvalidArgumentException(
-          '--encoding',
-          '[--encoding] must be set to LINEAR16, MULAW, ALAW, or AUTO.',
-      )
+    self.ValidateUpdateRecognizerFlags(args)
+
+    update_mask = []
+
+    recognition_config, features, update_mask = (
+        speech_client.SeparateArgsForRecognizeCommand(
+            args, record_updates=True, update_mask=update_mask
+        )
+    )
+
+    if args.model is not None:
+      recognition_config.model = args.model
+      update_mask.append('default_recognition_config.model')
+    if args.language_codes is not None:
+      recognition_config.languageCodes = args.language_codes
+      update_mask.append('default_recognition_config.language_codes')
 
     operation = speech_client.UpdateRecognizer(
         recognizer,
         args.display_name,
         args.model,
         args.language_codes,
-        args.profanity_filter,
-        args.enable_word_time_offsets,
-        args.enable_word_confidence,
-        args.enable_automatic_punctuation,
-        args.enable_spoken_punctuation,
-        args.enable_spoken_emojis,
-        args.min_speaker_count,
-        args.max_speaker_count,
-        args.separate_channel_recognition,
-        args.max_alternatives,
-        args.encoding,
-        args.sample_rate,
-        args.audio_channel_count,
+        recognition_config,
+        features,
+        update_mask,
     )
 
     if is_async:

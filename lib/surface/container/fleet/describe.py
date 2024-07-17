@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Show fleet info.
 
@@ -45,5 +46,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(self.ReleaseTrack())
     return fleetclient.GetFleet(project)

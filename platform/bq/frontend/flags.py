@@ -32,12 +32,14 @@ def define_parquet_map_target_type(
   )
 
 
-def define_workload_id(
+def define_reservation_for_a_job(
     flag_values: flags.FlagValues,
 ) -> flags.FlagHolder[Optional[str]]:
   return flags.DEFINE_string(
-      'workload_id',
+      'reservation',
       None,
-      'Whether to execute the job using the provided workload_id.',
+      'Whether to execute the job using the provided reservation. Reservation'
+      ' should be in the format of'
+      ' projects/{project}/locations/{location}/reservations/{reservation}',
       flag_values=flag_values,
   )

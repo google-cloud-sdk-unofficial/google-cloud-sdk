@@ -32,6 +32,7 @@ output:
       bootstrapAddress:label=BOOTSTRAP,
       capacityConfig.vcpuCount:label=VCPU,
       capacityConfig.memoryBytes:label=MEMORY_BYTES,
+      state:label=STATE,
       gcpConfig.accessConfig.networkConfigs.subnet.list(separator="
     "):label=NETWORK
     )

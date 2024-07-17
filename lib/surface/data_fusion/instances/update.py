@@ -24,12 +24,14 @@ from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.data_fusion import maintenance_utils
 from googlecloudsdk.command_lib.data_fusion import operation_poller
 from googlecloudsdk.command_lib.data_fusion import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   # pylint:disable=line-too-long
   r"""Updates a Cloud Data Fusion instance."""
@@ -60,6 +62,7 @@ class Update(base.UpdateCommand):
   FIELD_PATH_ENABLE_RBAC = 'enableRbac'
   FIELD_PATH_ENABLE_STACKDRIVER_LOGGING = 'enableStackdriverLogging'
   FIELD_PATH_ENABLE_STACKDRIVER_MONITORING = 'enableStackdriverMonitoring'
+  FIELD_PATH_MAINTENANCE_POLICY = 'maintenancePolicy'
 
   @staticmethod
   def Args(parser):
@@ -87,6 +90,7 @@ class Update(base.UpdateCommand):
         'specified as KEY1=VALUE1,KEY2=VALUE2.')
     parser.add_argument('--version', help='Version of Datafusion to update to.')
     parser.add_argument('--patch_revision', help='Patch revision version of Cloud Data Fusion to update to.')
+    maintenance_utils.UpdateArgumentsGroup(parser)
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -124,6 +128,14 @@ class Update(base.UpdateCommand):
             options, datafusion.messages.Instance.OptionsValue, True),
         labels=encoding.DictToAdditionalPropertyMessage(
             labels, datafusion.messages.Instance.LabelsValue, True))
+
+    if (args.IsSpecified('clear_maintenance_window')
+        or args.IsSpecified('maintenance_window_start')
+        or args.IsSpecified('maintenance_window_end')
+        or args.IsSpecified('maintenance_window_recurrence')):
+      maintenance_utils.UpdateMaintenanceWindow(args, instance)
+      fields_to_update.append(self.FIELD_PATH_MAINTENANCE_POLICY)
+
     request = datafusion.messages.DatafusionProjectsLocationsInstancesPatchRequest(
         instance=instance,
         updateMask=','.join(fields_to_update),

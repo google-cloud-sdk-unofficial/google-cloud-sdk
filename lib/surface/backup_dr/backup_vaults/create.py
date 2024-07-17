@@ -108,7 +108,7 @@ class CreateAlpha(base.DeleteCommand):
         args.backup_min_enforced_retention
     )
     description = args.description
-    effective_time = command_util.TransformTo12AmUtcTime(args.effective_time)
+    effective_time = command_util.VerifyDateInFuture(args.effective_time)
     labels = labels_util.ParseCreateArgs(
         args, client.messages.BackupVault.LabelsValue
     )

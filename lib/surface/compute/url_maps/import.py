@@ -269,6 +269,40 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   return cleared_fields
 
 
+def _GetClearedFieldsForCustomErrorResponseRule(
+    custom_error_response_rule, field_prefix
+):
+  """Gets a list of fields cleared by the user for CustomErrorResponseRule."""
+  cleared_fields = []
+  if not custom_error_response_rule.matchResponseCode:
+    cleared_fields.append(field_prefix + 'matchResponseCode')
+  if not custom_error_response_rule.path:
+    cleared_fields.append(field_prefix + 'path')
+  if not custom_error_response_rule.overrideResponseCode:
+    cleared_fields.append(field_prefix + 'overrideResponseCode')
+  return cleared_fields
+
+
+def _GetClearedFieldsForCustomErrorResponsePolicy(
+    custom_error_response_policy, field_prefix
+):
+  """Gets a list of fields cleared by the user for CustomErrorResponsePolicy."""
+  cleared_fields = []
+  if not custom_error_response_policy.error_response_rule:
+    cleared_fields.append(field_prefix + 'errorResponseRule')
+  else:
+    cleared_fields = (
+        cleared_fields
+        + _GetClearedFieldsForCustomErrorResponseRule(
+            custom_error_response_policy.errorResponseRule,
+            field_prefix + 'errorResponseRule.',
+        )
+    )
+  if not custom_error_response_policy.error_service:
+    cleared_fields.append(field_prefix + 'errorService')
+  return cleared_fields
+
+
 def _GetClearedFieldsForUrlRedirect(url_redirect, field_prefix):
   """Gets a list of fields cleared by the user for UrlRedirect."""
   cleared_fields = []
@@ -366,6 +400,16 @@ def _Run(args, holder, url_map_arg, release_track):
     cleared_fields.append('tests')
   if not url_map.defaultService:
     cleared_fields.append('defaultService')
+  if not url_map.defaultCustomErrorResponsePolicy:
+    cleared_fields.append('defaultCustomErrorResponsePolicy')
+  else:
+    cleared_fields = (
+        cleared_fields
+        + _GetClearedFieldsForCustomErrorResponsePolicy(
+            url_map.defaultCustomErrorResponsePolicy,
+            'defaultCustomErrorResponsePolicy.',
+        )
+    )
   if not url_map.defaultRouteAction:
     cleared_fields.append('defaultRouteAction')
   else:
@@ -386,8 +430,10 @@ def _Run(args, holder, url_map_arg, release_track):
     return _SendPatchRequest(client, resources, url_map_ref, url_map)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class Import(base.UpdateCommand):
   """Import a URL map."""
 

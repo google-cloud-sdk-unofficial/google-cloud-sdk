@@ -36,6 +36,7 @@
     GA:
       api_version: v1
       modify_request_hooks:
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
       - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
       - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
@@ -121,7 +122,6 @@
             help_text:  |
               Extra large instance size, maps to a scaling factor of 6.0.
         - group:
-            release_tracks: [ALPHA, BETA]
             help_text: |
               The autoscaling configuration of the Dataproc Metastore instance.
             params:
@@ -140,7 +140,6 @@
                 The default value is 6.0.
               processor: googlecloudsdk.command_lib.metastore.validators:ValidateMaxScalingFactor
     - arg_name: autoscaling-enabled
-      release_tracks: [ALPHA, BETA]
       api_field: service.scalingConfig.autoscalingConfig.autoscalingEnabled
       help_text: |
         A boolean flag to determine whether Dataproc Metastore autoscaling should be enabled,

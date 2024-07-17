@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
@@ -69,20 +68,18 @@ class GetCredentials(gateway.GetCredentialsCommand):
         positional=True,
     )
 
-    group = parser.add_group(
-        required=False, hidden=True, help='Server-side generation options.'
-    )
-    group.add_argument(
-        '--use-server-side-generation',
+    parser.add_argument(
+        '--use-client-side-generation',
         action='store_true',
-        required=True,
+        required=False,
+        hidden=True,
         help=textwrap.dedent("""\
-          Generate the kubeconfig using an API call rather than generating
-          it locally.
+          Generate the kubeconfig locally rather than generating
+          it using an API call.
         """),
     )
 
-    group.add_argument(
+    parser.add_argument(
         '--force-use-agent',
         action='store_true',
         required=False,
@@ -97,21 +94,13 @@ class GetCredentials(gateway.GetCredentialsCommand):
     location = fleet_util.MembershipLocation(membership_name)
     membership_id = fleet_util.MembershipShortname(membership_name)
 
-    if args.use_server_side_generation:
-      # Don't fall back for explicit requests to use server-side generation.
-      try:
-        self.RunServerSide(membership_id, location, args.force_use_agent)
-      except Exception as e:  # pylint: disable=broad-exception-caught
-        gateway.RecordServerSideFailure(e)
-        # Re-raise the exception so it's visible to the user.
-        raise
-    elif self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      # Use server-side generation by default for ALPHA track, and fall back to
-      # client-side if needed.
+    if args.use_client_side_generation:
+      self.RunGetCredentials(membership_id, location)
+    else:
+      # Use server-side generation by default, and fall back to client-side if
+      # needed.
       try:
         self.RunServerSide(membership_id, location, args.force_use_agent)
       except Exception as e:  # pylint: disable=broad-exception-caught
         gateway.RecordClientSideFallback(e)
         self.RunGetCredentials(membership_id, location)
-    else:
-      self.RunGetCredentials(membership_id, location)

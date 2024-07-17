@@ -15,9 +15,12 @@
 """Deploy a container to Cloud Run."""
 
 import enum
+import json
 import os.path
+
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -37,6 +40,7 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.run.sourcedeploys import builders
+from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
@@ -78,6 +82,8 @@ Container Flags
     group.AddArgument(flags.BaseImageArg())
     group.AddArgument(flags.GpuFlag())
     group.AddArgument(flags.BuildServiceAccountFlag())
+    group.AddArgument(flags.BuildWorkerPoolMutexGroup())
+    group.AddArgument(flags.MutexBuildEnvVarsFlags())
   else:
     group.AddArgument(flags.CommandFlag())
 
@@ -261,6 +267,42 @@ class Deploy(base.Command):
           )
     return build_from_source
 
+  def _GetBaseImage(
+      self, container, service, args, build_from_source_container_name
+  ):
+    """Returns the base image for the container.
+
+    Args:
+      container: command line arguments for container that is build from source
+      service: existing Cloud run service which could be None.
+      args: argparse.Namespace, Command line arguments
+      build_from_source_container_name: name of container that is build from
+        source
+
+    Returns:
+      base_image: string. Base image of the container.
+    """
+
+    base_image = getattr(container, 'base_image', None)
+    # If service exists, check existing base_image annotation and populate
+    # the value if --clear-base-image is not set
+    if (
+        base_image is None
+        and service is not None
+        and revision.BASE_IMAGES_ANNOTATION in service.template.annotations
+    ):
+      existing_base_images_map = json.loads(
+          service.template.annotations[revision.BASE_IMAGES_ANNOTATION]
+      )
+      if (
+          build_from_source_container_name in existing_base_images_map
+          and not self._ShouldClearBaseImageForBuildFromSourceContainer(
+              args, build_from_source_container_name
+          )
+      ):
+        base_image = existing_base_images_map[build_from_source_container_name]
+    return base_image
+
   def _BuildFromSource(
       self,
       args,
@@ -269,9 +311,10 @@ class Deploy(base.Command):
       conn_context,
       platform,
       already_activated_services,
+      service,
   ):
     # Only one container can deployed from source
-    container = next(iter(build_from_source.values()))
+    name, container = next(iter(build_from_source.items()))
     pack = None
     changes = []
     repo_to_create = None
@@ -305,14 +348,18 @@ class Deploy(base.Command):
     )
     # Use GCP Buildpacks if Dockerfile doesn't exist
     docker_file = source + '/Dockerfile'
+    base_image = self._GetBaseImage(container, service, args, name)
+
     if os.path.exists(docker_file):
       build_type = BuildType.DOCKERFILE
       # TODO(b/310727875): check --function is not provided
     else:
-      pack, changes = _CreateBuildPack(container, self.ReleaseTrack())
+      pack, changes = _CreateBuildPack(
+          container, base_image, self.ReleaseTrack()
+      )
       build_type = BuildType.BUILDPACKS
     image = None if pack else container.image
-    base_image = getattr(container, 'base_image', None)
+
     if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
       image = pack[0].get('image') if pack else image
     build_service_account = getattr(container, 'build_service_account', None)
@@ -325,6 +372,16 @@ class Deploy(base.Command):
             service_ref.servicesId, pack, source
         )
     )
+    build_worker_pool = None
+    if flags.FlagIsExplicitlySet(args, 'build_worker_pool'):
+      build_worker_pool = args.build_worker_pool
+
+    # TODO(b/349628618): Replace with retrieved previous build env vars
+    old_build_env_vars = None
+    build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
+    build_env_vars = map_util.ApplyMapFlags(
+        old_build_env_vars, **build_env_var_flags
+    )
     return (
         is_function,
         image,
@@ -335,6 +392,9 @@ class Deploy(base.Command):
         base_image,
         build_service_account,
         changes,
+        name,
+        build_worker_pool,
+        build_env_vars,
     )
 
   def _GetBaseChanges(self, args):
@@ -394,6 +454,27 @@ class Deploy(base.Command):
         suppress_output=args.async_,
     )
 
+  def _ShouldClearBaseImageForBuildFromSourceContainer(
+      self, args, build_from_source_container_name
+  ):
+    """Checks if --clear-base-image is set and if the container is build from source.
+
+    Args:
+      args: argparse.Namespace, Command line arguments
+      build_from_source_container_name: string. The name of the ingress
+        containers that is build from source.
+
+    Returns:
+      shouldClearBaseImage: bool.
+    """
+    if flags.FlagIsExplicitlySet(args, 'clear_base_image'):
+      return True
+    if flags.FlagIsExplicitlySet(args, 'containers'):
+      for name, args in args.containers.items():
+        if name == build_from_source_container_name and args.clear_base_image:
+          return True
+    return False
+
   def _GetRequiredApis(self, args):
     return [api_enabler.get_run_api()]
 
@@ -430,34 +511,41 @@ class Deploy(base.Command):
     is_function = False
     base_image = None
     build_service_account = None
+    build_env_vars = None
+    build_worker_pool = None
     build_changes = []
-    # Build an image from source if source specified
-    if build_from_source:
-      (
-          is_function,
-          image,
-          pack,
-          source,
-          operation_message,
-          repo_to_create,
-          base_image,
-          build_service_account,
-          build_changes,
-      ) = self._BuildFromSource(
-          args,
-          build_from_source,
-          service_ref,
-          conn_context,
-          platform,
-          already_activated_services,
-      )
-    # Deploy a container with an image
-    changes = self._GetBaseChanges(args)
-    changes.extend(build_changes)
+    build_from_source_container_name = ''
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
       service = operations.GetService(service_ref)
+      # Build an image from source if source specified
+      if build_from_source:
+        (
+            is_function,
+            image,
+            pack,
+            source,
+            operation_message,
+            repo_to_create,
+            base_image,
+            build_service_account,
+            build_changes,
+            build_from_source_container_name,
+            build_worker_pool,
+            build_env_vars,
+        ) = self._BuildFromSource(
+            args,
+            build_from_source,
+            service_ref,
+            conn_context,
+            platform,
+            already_activated_services,
+            service,
+        )
+      # Deploy a container with an image
+      changes = self._GetBaseChanges(args)
+      changes.extend(build_changes)
       allow_unauth = self.GetAllowUnauth(args, operations, service_ref, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       if service:  # Service has been deployed before
@@ -507,7 +595,10 @@ class Deploy(base.Command):
             ),
             delegate_builds=flags.FlagIsExplicitlySet(args, 'delegate_builds'),
             base_image=base_image,
+            build_from_source_container_name=build_from_source_container_name,
             build_service_account=build_service_account,
+            build_worker_pool=build_worker_pool,
+            build_env_vars=build_env_vars,
         )
 
       if args.async_:
@@ -524,7 +615,9 @@ class Deploy(base.Command):
       return service
 
 
-def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
+def _CreateBuildPack(
+    container, base_image_arg, release_track=base.ReleaseTrack.GA
+):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
   changes = []
@@ -548,7 +641,6 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
               'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
           ]
       })
-      base_image_arg = getattr(container, 'base_image', None)
       if base_image_arg:
         pack[0].update({
             'builder': '{builder}'.format(
@@ -588,6 +680,7 @@ class AlphaDeploy(BetaDeploy):
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
+    flags.AddIapFlag(managed_group)
     flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)

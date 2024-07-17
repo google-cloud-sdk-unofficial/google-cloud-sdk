@@ -95,12 +95,11 @@
       api_field: cluster.survivabilityConfig.offlineRebootTtl
       required: false
       help_text: |
-        Limits how long machines in this cluster can reboot offline (without connection to
-        google), specified as a duration relative to the machine's most-recent
-        connection to google. The parameter should be a ISO 8601 duration
-        string, for example, "1dT1h2m3s".
-      release_tracks: [ALPHA]
-      hidden: true
+        Specifies the maximum duration a node can reboot offline (without connection to Google) and
+        then rejoin its cluster to resume its designated workloads. This duration is relative to the
+        machine's most recent connection to Google. The maximum allowed duration is 7 days. If left
+        unspecified, the default 0 means not allowed. The parameter should be an ISO 8601 duration
+        string, for example, "P1DT1H2M3S".
     - group:
         release_tracks: [ALPHA]
         mutex: true

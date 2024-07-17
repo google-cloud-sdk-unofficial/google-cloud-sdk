@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.data_fusion import maintenance_utils
 from googlecloudsdk.command_lib.data_fusion import operation_poller
 from googlecloudsdk.command_lib.data_fusion import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -32,6 +33,7 @@ from googlecloudsdk.core import log
 _EDITIONS = ['basic', 'enterprise', 'developer']
 
 
+@base.DefaultUniverseOnly
 class Create(base.Command):
   # pylint:disable=line-too-long
   r"""Create and initialize a Cloud Data Fusion instance.
@@ -90,6 +92,7 @@ class Create(base.Command):
         '--enable_rbac',
         action='store_true',
         help='Enable granular role-based access control for this Data Fusion instance.')
+    maintenance_utils.CreateArgumentsGroup(parser)
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -132,6 +135,7 @@ class Create(base.Command):
             options, datafusion.messages.Instance.OptionsValue, True),
         labels=encoding.DictToAdditionalPropertyMessage(
             labels, datafusion.messages.Instance.LabelsValue, True))
+    maintenance_utils.SetMaintenanceWindow(args, instance)
 
     req = datafusion.messages.DatafusionProjectsLocationsInstancesCreateRequest(
         instance=instance,

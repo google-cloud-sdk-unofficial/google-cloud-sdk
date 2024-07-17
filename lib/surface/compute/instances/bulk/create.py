@@ -143,6 +143,7 @@ class Create(base.Command):
   _support_specific_then_x_affinity = False
   _support_watchdog_timer = False
   _support_per_interface_stack_type = False
+  _support_turbo_mode = False
 
   _log_async = False
 
@@ -172,6 +173,7 @@ class Create(base.Command):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -221,6 +223,7 @@ class Create(base.Command):
         self._support_custom_hostnames,
         self._support_specific_then_x_affinity,
         self._support_watchdog_timer,
+        self._support_turbo_mode,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -426,6 +429,7 @@ class CreateAlpha(Create):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -444,8 +448,7 @@ class CreateAlpha(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
@@ -455,6 +458,7 @@ class CreateAlpha(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_turbo_mode=cls._support_turbo_mode,
     )
 
     cls.AddSourceInstanceTemplate(parser)
