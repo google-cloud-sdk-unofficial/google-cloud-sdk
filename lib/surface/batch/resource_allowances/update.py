@@ -24,7 +24,7 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update a Batch resource allowance.
 

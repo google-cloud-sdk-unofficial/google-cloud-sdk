@@ -1114,7 +1114,7 @@ class Create(base.CreateCommand):
   _support_mesh = False
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_max_run_duration = False
+  _support_max_run_duration = True
   _support_region_instance_template = True
   _support_subnet_region = False
   _support_confidential_compute_type = True

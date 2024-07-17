@@ -16,10 +16,14 @@
 """Diagnose Google Cloud Storage common issues."""
 
 import enum
+
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.storage.diagnose import download_throughput_diagnostic
-from googlecloudsdk.command_lib.storage.diagnose import upload_throughput_diagnostic
+from googlecloudsdk.command_lib.storage import errors_util
+from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.diagnose import download_throughput_diagnostic as download_throughput_diagnostic_lib
+from googlecloudsdk.command_lib.storage.diagnose import latency_diagnostic as latency_diagnostic_lib
+from googlecloudsdk.command_lib.storage.diagnose import upload_throughput_diagnostic as upload_throughput_diagnostic_lib
 
 
 class PerformanceTestType(enum.Enum):
@@ -93,7 +97,6 @@ class Diagnose(base.Command):
     parser.add_argument(
         'url',
         type=str,
-        nargs=1,
         help='Bucket URL to use for the diagnostic tests.',
     )
     parser.add_argument(
@@ -120,7 +123,7 @@ class Diagnose(base.Command):
         '--download-type',
         choices=sorted([
             option.value
-            for option in download_throughput_diagnostic.DownloadType
+            for option in download_throughput_diagnostic_lib.DownloadType
         ]),
         help="""
         Download strategy to use for the DOWNLOAD_THROUGHPUT diagnostic test.
@@ -140,9 +143,10 @@ class Diagnose(base.Command):
     )
     parser.add_argument(
         '--upload-type',
-        choices=sorted(
-            [option.value for option in upload_throughput_diagnostic.UploadType]
-        ),
+        choices=sorted([
+            option.value
+            for option in upload_throughput_diagnostic_lib.UploadType
+        ]),
         help="""
         Upload strategy to use for the _UPLOAD_THROUGHPUT_ diagnostic test.
 
@@ -159,11 +163,7 @@ class Diagnose(base.Command):
         provided.
         """,
     )
-    parser.add_argument(
-        '--object-count',
-        type=int,
-        help='Number of objects to use for each diagnostic test.',
-    )
+
     parser.add_argument(
         '--process-count',
         type=int,
@@ -176,20 +176,34 @@ class Diagnose(base.Command):
     )
 
     object_properties_group = parser.add_group(
-        mutex=True, sort_args=False, help='Object properties:'
+        sort_args=False, help='Object properties:'
     )
+
     object_properties_group.add_argument(
+        '--object-count',
+        required=True,
+        type=int,
+        help='Number of objects to use for each diagnostic test.',
+    )
+
+    object_size_properties_group = object_properties_group.add_group(
+        mutex=True,
+        sort_args=False,
+        help='Object size properties:',
+        required=True,
+    )
+    object_size_properties_group.add_argument(
         '--object-size',
         type=arg_parsers.BinarySize(),
         help='Object size to use for the diagnostic tests.',
     )
-    object_properties_group.add_argument(
+    object_size_properties_group.add_argument(
         '--object-sizes',
         metavar='OBJECT_SIZES',
         type=arg_parsers.ArgList(element_type=arg_parsers.BinarySize()),
         help="""
         List of object sizes to use for the tests. Sizes should be
-        provided for each object specified using `--no-of-objects` flag.
+        provided for each object specified using `--object-count` flag.
         """,
     )
 
@@ -222,7 +236,83 @@ class Diagnose(base.Command):
             ' exported.'
         ),
     )
+    parser.display_info.AddFormat("""
+                                  table(
+                                    name,
+                                    operation_results[]:format='table(name,payload_description,result)'
+                                  )
+                                  """)
 
   def Run(self, args):
-    # TODO(b/330131442) : Implement the commnd.
-    raise NotImplementedError
+    default_tests = [
+        PerformanceTestType.DOWNLOAD_THROUGHPUT.value,
+        PerformanceTestType.LATENCY.value,
+        PerformanceTestType.UPLOAD_THROUGHPUT.value,
+    ]
+
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+
+    object_sizes = None
+
+    if args.object_count:
+      if args.object_sizes:
+        if len(args.object_sizes) != args.object_count:
+          raise ValueError(
+              'Number of object sizes provided should match the number of'
+              ' objects.'
+          )
+        else:
+          object_sizes = args.object_sizes
+      elif args.object_size:
+        object_sizes = [args.object_size] * args.object_count
+
+    tests_to_run = args.test_type or default_tests
+
+    test_results = []
+
+    if PerformanceTestType.LATENCY.value in tests_to_run:
+      latency_diagnostic = latency_diagnostic_lib.LatencyDiagnostic(
+          url_object,
+          object_sizes,
+      )
+      latency_diagnostic.execute()
+      test_results.append(latency_diagnostic.result)
+
+    if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
+      download_type = None
+      if args.download_type:
+        download_type = download_throughput_diagnostic_lib.DownloadType(
+            args.download_type
+        )
+      download_throughput_diagnostic = (
+          download_throughput_diagnostic_lib.DownloadThroughputDiagnostic(
+              url_object,
+              download_type,
+              object_sizes,
+              args.process_count,
+              args.thread_count,
+          )
+      )
+      download_throughput_diagnostic.execute()
+      test_results.append(download_throughput_diagnostic.result)
+
+    if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
+      upload_type = None
+      if args.upload_type:
+        upload_type = upload_throughput_diagnostic_lib.UploadType(
+            args.upload_type
+        )
+      upload_throughput_diagnostic = (
+          upload_throughput_diagnostic_lib.UploadThroughputDiagnostic(
+              url_object,
+              upload_type,
+              object_sizes,
+              args.process_count,
+              args.thread_count,
+          )
+      )
+      upload_throughput_diagnostic.execute()
+      test_results.append(upload_throughput_diagnostic.result)
+
+    return test_results

@@ -42,10 +42,7 @@ class ListReferences(base.ListCommand):
   @classmethod
   def Args(cls, parser):
     flags.AddProjectAddressGroupToParser(cls._release_track, parser)
-    if cls._release_track == base.ReleaseTrack.GA:
-      flags.AddListReferencesFormat(parser)
-    else:
-      flags.AddListReferencesBetaFormat(parser)
+    flags.AddListReferencesFormat(parser)
 
   def Run(self, args):
     return util.ListProjectAddressGroupReferences(self._release_track, args)

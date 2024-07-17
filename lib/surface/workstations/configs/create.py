@@ -87,6 +87,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddReplicaZones(parser)
     workstations_flags.AddEphemeralDirectory(parser)
     workstations_flags.AddAcceleratorFields(parser)
+    workstations_flags.AddVmTags(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddAllowedPortsFlag(parser)

@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   r"""Delete a secret.
@@ -51,7 +52,9 @@ class Delete(base.DeleteCommand):
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
-        parser, purpose='to delete', positional=True, required=True)
+        parser, purpose='to delete', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to delete secret', hidden=False)
     secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):
@@ -61,7 +64,7 @@ class Delete(base.DeleteCommand):
 
     # List all secret versions and parse their refs
     versions = secrets_api.Versions(api_version=api_version).ListWithPager(
-        secret_ref=secret_ref, limit=9999
+        secret_ref=secret_ref, limit=9999, secret_location=args.location
     )
     active_version_count = 0
     for version in versions:
@@ -74,12 +77,13 @@ class Delete(base.DeleteCommand):
     console_io.PromptContinue(msg, throw_if_unattended=True, cancel_on_no=True)
 
     result = secrets_api.Secrets(api_version=api_version).Delete(
-        secret_ref, etag=args.etag
+        secret_ref, etag=args.etag, secret_location=args.location
     )
     secrets_log.Secrets().Deleted(secret_ref)
     return result
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DeleteBeta(Delete):
   r"""Delete a secret.
@@ -104,7 +108,7 @@ class DeleteBeta(Delete):
     secrets_args.AddSecret(
         parser, purpose='to delete', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to delete secret', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to delete secret', hidden=False)
     secrets_args.AddSecretEtag(parser)
 
   def Run(self, args):

@@ -42,7 +42,7 @@ class Describe(base.DescribeCommand):
     secrets_args.AddSecret(
         parser, purpose='to describe', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to describe', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to describe', hidden=False)
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
@@ -72,7 +72,7 @@ class DescribeBeta(Describe):
     secrets_args.AddSecret(
         parser, purpose='to describe', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to describe', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to describe', hidden=False)
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())

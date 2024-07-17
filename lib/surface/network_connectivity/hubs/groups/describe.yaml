@@ -1,4 +1,4 @@
-- release_tracks: [GA]
+- release_tracks: [BETA, GA]
 
   help_text:
     brief: Describe a group.
@@ -16,5 +16,8 @@
         Name of the group to describe.
 
   request: &request
-    api_version: v1
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs.groups

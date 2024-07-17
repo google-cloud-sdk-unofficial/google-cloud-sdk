@@ -69,10 +69,15 @@ class Update(base.Command):
       if labels_update.needs_update:
         labels = labels_update.labels
         update_mask.append('labels')
+    # TODO(b/349140768): Add e2e test for this command.
+    def _get_current_auto_accept_projects():
+      if original_group.autoAccept is None:
+        return []
+      return original_group.autoAccept.autoAcceptProjects
 
     auto_accept_projects = repeated.ParsePrimitiveArgs(
-        args, 'auto_accept_projects',
-        lambda: original_group.autoAccept.autoAcceptProjects)
+        args, 'auto_accept_projects', _get_current_auto_accept_projects
+    )
     auto_accept = None
     if auto_accept_projects is not None:
       auto_accept = client.messages.AutoAccept(

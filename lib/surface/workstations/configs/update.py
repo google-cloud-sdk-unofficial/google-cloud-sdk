@@ -76,6 +76,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddContainerRunAsUserField(parser)
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddAcceleratorFields(parser)
+    workstations_flags.AddVmTags(parser)
     if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddAllowedPortsFlag(parser)

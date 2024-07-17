@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.spanner import backup_schedules
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
@@ -50,6 +51,26 @@ class Create(base.CreateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddBackupScheduleResourceArg(parser, 'to create')
+    backup_type_choices = ['full-backup']
+    backup_type_visible_choices = ['full-backup']
+    parser.add_argument(
+        '--backup-type',
+        metavar='BACKUP_TYPE',
+        required=True,
+        help=("""\
+Type of backups created by this schedule.
+
+Supported backup types:
+
+`full-backup`
+  A full backup stores the entire contents of the database at a given version time.
+"""),
+        type=arg_parsers.ArgList(
+            choices=backup_type_choices,
+            visible_choices=backup_type_visible_choices,
+            max_length=1,
+        ),
+    )
     parser.add_argument(
         '--cron',
         required=True,
@@ -76,7 +97,6 @@ class Create(base.CreateCommand):
             ' deleted once the retention period has elapsed.'
         ),
     )
-
     encryption_group_parser = parser.add_argument_group()
     resource_args.AddCreateBackupEncryptionConfigTypeArg(
         encryption_group_parser

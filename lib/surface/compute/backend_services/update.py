@@ -601,7 +601,7 @@ class UpdateGA(base.UpdateCommand):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_advanced_load_balancing = False
+  _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
   _support_external_managed_migration = False
 

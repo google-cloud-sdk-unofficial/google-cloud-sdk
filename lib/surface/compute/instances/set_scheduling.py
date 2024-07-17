@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.sole_tenancy import util as sole_tenancy
 from googlecloudsdk.core.util import times
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetSchedulingInstances(base.SilentCommand):
   """Set scheduling options for Compute Engine virtual machines.
@@ -48,7 +49,7 @@ class SetSchedulingInstances(base.SilentCommand):
 
   _support_host_error_timeout_seconds = False
   _support_local_ssd_recovery_timeout = True
-  _support_max_run_duration = False
+  _support_max_run_duration = True
   _support_graceful_shutdown = False
 
   @classmethod
@@ -70,6 +71,8 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.INSTANCE_ARG.AddArgument(parser)
     flags.AddMinNodeCpuArg(parser, is_update=True)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+    flags.AddMaxRunDurationVmArgs(parser, is_update=True)
+    flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""

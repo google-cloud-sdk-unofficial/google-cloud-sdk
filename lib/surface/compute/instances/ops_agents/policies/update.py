@@ -159,19 +159,33 @@ class UpdateAlphaBeta(base.Command):
     return complete_ops_agent_policy
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
-  """Update a Google Cloud operations suite agent (Ops Agent) policy.
+  """Update a Google Cloud Observability agents policy for the Ops Agent.
 
-  TBD
+  *{command}* modifies a policy that facilitates agent management across
+  Compute Engine instances based on user specified instance filters. This policy
+  installs, specifies versioning, and removes Ops Agents.
+
+  The command returns the content of the modified policy or an error indicating
+  why the modification fails. The modified policy takes effect asynchronously.
+  It can take 10-15 minutes for the VMs to enforce the newly modified policy.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          TBD
+          cat > config.yaml << EOF
+          agentsRule:
+            packageState: installed
+            version: latest
+          instanceFilter:
+            inclusionLabels:
+            - labels:
+                env: prod
+          EOF
+          $ {command} agent-policy --project=PROJECT --zone=ZONE --file=config.yaml
           """,
   }
 
@@ -193,14 +207,14 @@ class Update(base.Command):
         '--file',
         required=True,
         help="""\
-          YAML file with a subset of Cloud Ops Policy fields you wish to update. For
-          information about the Cloud Ops Agents Policy Assignment format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
+          YAML file with a subset of agents policy fields you wish to update. For
+          information about the agents policy format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
     )
     parser.add_argument(
         '--zone',
         required=True,
         help="""\
-          Zone where the OS Policy Assignment is located.""",
+          Zone where the agents policy is located.""",
     )
     parser.add_argument(
         '--debug-dry-run',
@@ -256,12 +270,12 @@ class Update(base.Command):
     )
     client = osconfig_api_utils.GetClientInstance(release_track)
     service = client.projects_locations_osPolicyAssignments
-    update_reponse = service.Patch(update_request)
+    update_response = service.Patch(update_request)
 
     # Converting osconfig.Operation.ReponseValue to osconfig.OSPolicyAssignment.
     updated_os_policy_assignment = encoding.PyValueToMessage(
         osconfig.OSPolicyAssignment,
-        encoding.MessageToPyValue(update_reponse.response),
+        encoding.MessageToPyValue(update_response.response),
     )
 
     updated_ops_agents_policy = (

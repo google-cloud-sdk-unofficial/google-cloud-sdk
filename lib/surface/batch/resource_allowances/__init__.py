@@ -39,7 +39,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.DefaultUniverseOnly
 class ResourceAllowances(base.Group):
   """Manage Batch resource allowance resources."""
 

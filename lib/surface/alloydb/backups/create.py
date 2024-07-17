@@ -36,18 +36,24 @@ def _ParseBackupType(alloydb_messages, backup_type):
   return None
 
 
+# TODO: b/312466999 - Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/312466999 is fixed.
+# See go/gcloud-cli-running-tpc-tests.
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Creates a new AlloyDB backup within a given project."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
         To create a new backup, run:
 
           $ {command} my-backup --cluster=my-cluster --region=us-central1
+
+        To create a new cross-region backup, run:
+
+          $ {command} projects/my-project/locations/us-west1/backups/my-backup --cluster=my-cluster --region=us-central1
         """,
   }
 
@@ -63,12 +69,20 @@ class Create(base.CreateCommand):
         '--region',
         required=True,
         type=str,
+        help='The region of the cluster to backup.',
+    )
+    parser.add_argument(
+        'backup',
+        type=str,
         help=(
-            'The region of the cluster to backup. Note: both the cluster '
-            'and the backup have to be in the same region.'
+            'The AlloyDB backup to create. This must either be the backup ID'
+            ' (myBackup) or the full backup path'
+            ' (projects/myProject/locations/us-central1/backups/myBackup). In'
+            ' the first case, the project and location are assumed to be the'
+            ' same as the cluster being backed up. The second form can be'
+            ' used to create cross-region and cross-project backups.'
         ),
     )
-    flags.AddBackup(parser)
     flags.AddCluster(parser, False)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
@@ -115,11 +129,14 @@ class Create(base.CreateCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster)
-    backup_ref = client.resource_parser.Create(
-        'alloydb.projects.locations.backups',
-        projectsId=properties.VALUES.core.project.GetOrFail,
-        locationsId=args.region,
-        backupsId=args.backup)
+    backup_ref = client.resource_parser.Parse(
+        collection='alloydb.projects.locations.backups',
+        line=args.backup,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': args.region,
+        },
+    )
 
     backup_resource = self.ConstructResourceFromArgs(
         alloydb_messages, cluster_ref, backup_ref, args
@@ -127,8 +144,9 @@ class Create(base.CreateCommand):
 
     req = alloydb_messages.AlloydbProjectsLocationsBackupsCreateRequest(
         backup=backup_resource,
-        backupId=args.backup,
-        parent=location_ref.RelativeName())
+        backupId=backup_ref.Name(),
+        parent=location_ref.RelativeName(),
+    )
     op = alloydb_client.projects_locations_backups.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='alloydb.projects.locations.operations')

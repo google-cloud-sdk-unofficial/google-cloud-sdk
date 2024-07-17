@@ -1,4 +1,4 @@
-- release_tracks: [GA]
+- release_tracks: [BETA, GA]
 
   help_text:
     brief: Get the IAM policy for a group resource.
@@ -12,7 +12,10 @@
 
   request: &request
     collection: networkconnectivity.projects.locations.global.hubs.groups
-    api_version: v1
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
 
   arguments:
     resource:

@@ -115,6 +115,25 @@ class Create(base.CreateCommand):
     flags.AddResourceType(parser)
     flags.AddBackupRule(parser)
 
+    description_help = """\
+        Provide a description of the backup plan, such as specific use cases and
+        relevant details, in 2048 characters or less.
+
+        E.g., This is a backup plan that performs a daily backup at 6 p.m. and
+        retains data for 3 months.
+        """
+    flags.AddDescription(parser, description_help)
+
+    labels_help = """\
+        If you have assigned labels to your resources for grouping, you can
+        provide the label using this flag.A label is a key-value pair.
+
+        Keys must start with a lowercase character and contain only hyphens (-),
+        underscores (_), lowercase characters, and numbers. Values must contain
+        only hyphens (-), underscores (_), lowercase characters, and numbers.
+        """
+    flags.AddLabels(parser, labels_help)
+
   def Run(self, args):
     """Constructs and sends request.
 
@@ -132,10 +151,17 @@ class Create(base.CreateCommand):
     backup_vault = args.CONCEPTS.backup_vault.Parse()
     resource_type = args.resource_type
     backup_rules = args.backup_rule
+    description = args.description
+    labels = args.labels
 
     try:
       operation = client.Create(
-          backup_plan, backup_vault.RelativeName(), resource_type, backup_rules
+          backup_plan,
+          backup_vault.RelativeName(),
+          resource_type,
+          backup_rules,
+          description,
+          labels,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

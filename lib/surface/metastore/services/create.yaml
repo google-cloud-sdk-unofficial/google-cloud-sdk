@@ -391,6 +391,23 @@
       default: thrift
       api_field: service.hiveMetastoreConfig.endpointProtocol
     - group:
+        release_tracks: [ALPHA, BETA]
+        help_text: |
+          Custom region configuration for the metastore service.
+        params:
+        - arg_name: read-write-regions
+          api_field: service.multiRegionConfig.customRegionConfig.readWriteRegions
+          help_text: |
+            The list of read-write regions where the metastore service runs in. These regions
+            should be part (or subset) of the multi-region.
+          type: "arg_list"
+        - arg_name: read-only-regions
+          api_field: service.multiRegionConfig.customRegionConfig.readOnlyRegions
+          help_text: |
+            The list of read-only regions where the metastore service runs in. These regions
+            should be part (or subset) of the multi-region.
+          type: "arg_list"
+    - group:
         mutex: true
         help_text: |
           Scheduled backup configurations to enable a scheduled backup of the metastore service.

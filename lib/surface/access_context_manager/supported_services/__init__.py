@@ -21,20 +21,23 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class SupportedServices(base.Group):
-  """Retrieve VPC-SC Supported Services.
+  """Retrieve VPC Service Controls Supported Services.
 
   The {command} command group lets you list VPC Service Controls supported
   services and its properties.
 
   ## EXAMPLES
 
-  To see all VPC-SC supportedservices:
+  To see all VPC Service Controls supported services:
 
     $ {command} list
 
-  To see support information about VPC-SC supported service:
+  To see support information about VPC Service Controls supported services:
 
     $ {command} describe SERVICE_NAME
   """

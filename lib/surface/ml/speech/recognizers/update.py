@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Update a Speech-to-text recognizer."""
@@ -71,6 +72,8 @@ class Create(base.Command):
         args.enable_spoken_emojis,
         args.min_speaker_count,
         args.max_speaker_count,
+        args.separate_channel_recognition,
+        args.max_alternatives,
         args.encoding,
         args.sample_rate,
         args.audio_channel_count,
@@ -78,14 +81,17 @@ class Create(base.Command):
 
     if is_async:
       log.UpdatedResource(
-          operation.name, kind='speech recognizer', is_async=True)
+          operation.name, kind='speech recognizer', is_async=True
+      )
       return operation
 
     resource = speech_client.WaitForRecognizerOperation(
         location=recognizer.Parent().Name(),
         operation_ref=speech_client.GetOperationRef(operation),
         message='waiting for recognizer [{}] to be updated'.format(
-            recognizer.RelativeName()))
+            recognizer.RelativeName()
+        ),
+    )
     log.UpdatedResource(resource.name, kind='speech recognizer')
 
     return resource

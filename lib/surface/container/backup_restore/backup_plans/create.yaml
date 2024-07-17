@@ -9,7 +9,7 @@
 
       To create a backup plan ``my-backup-plan'' in project ``my-project'' in location ``us-central1'', run:
 
-        $ {command} my-backup-plan --project=my-project --location=us-central1 --cluster=project/my-project/location/us-central1/clusters/my-cluster --all-namespaces
+        $ {command} my-backup-plan --project=my-project --location=us-central1 --cluster=projects/my-project/locations/us-central1/clusters/my-cluster --all-namespaces
 
   request:
     collection: gkebackup.projects.locations.backupPlans

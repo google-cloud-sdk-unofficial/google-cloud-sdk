@@ -123,6 +123,9 @@ class Rm(base.Command):
         help=(
             'Excludes managed folders from command operations. By default'
             ' gcloud storage includes managed folders in recursive removals.'
+            ' Please note that this flag would not be applicable for'
+            ' hierarchical namespace buckets as we always list managed folders'
+            ' for these buckets.'
         ),
     )
 
@@ -146,13 +149,24 @@ class Rm(base.Command):
     )
 
     url_found_match_tracker = collections.OrderedDict()
+    # We need to ensure that if we are going to do additional lookups for
+    # Folders or Managed Folders, then we do not throw an error for unmatched
+    # URLs at this stage.
+    # If the command is run with recursive option, then for sure we will do
+    # a Folders look up at a minimum and hence we will let that lookup throw
+    # an error if we are not going to include managed folders or fallback to the
+    # managed folders lookup stage.
+    # If the command is run without a recursive option, then for sure we will
+    # not do a Folders lookup and we will also not do a Managed Folders lookup
+    # hence, this becomes the right place to throw an error.
     name_expansion_iterator = name_expansion.NameExpansionIterator(
         stdin_iterator.get_urls_iterable(args.urls, args.read_paths_from_stdin),
         fields_scope=cloud_api.FieldsScope.SHORT,
         include_buckets=bucket_setting,
         managed_folder_setting=folder_util.ManagedFolderSetting.DO_NOT_LIST,
+        folder_setting=folder_util.FolderSetting.LIST_AS_PREFIXES,
         object_state=object_state,
-        raise_error_for_unmatched_urls=not should_perform_managed_folder_operations,
+        raise_error_for_unmatched_urls=not args.recursive,
         recursion_requested=recursion_setting,
         url_found_match_tracker=url_found_match_tracker,
     )
@@ -176,6 +190,29 @@ class Rm(base.Command):
         ),
         continue_on_error=args.continue_on_error,
     )
+
+    if args.recursive:
+      folder_expansion_iterator = name_expansion.NameExpansionIterator(
+          args.urls,
+          folder_setting=folder_util.FolderSetting.LIST_AS_FOLDERS,
+          raise_error_for_unmatched_urls=not should_perform_managed_folder_operations,
+          recursion_requested=recursion_setting,
+          url_found_match_tracker=url_found_match_tracker,
+      )
+      try:
+        folder_exit_code = rm_command_util.remove_folders(
+            folder_expansion_iterator,
+            task_status_queue,
+            verbose=True,
+        )
+      except api_errors.GcsApiError as error:
+        if error.payload.status_code != 403:
+          # Avoids unexpectedly escalating permissions.
+          raise
+        log.warning('Unable to delete folders due to missing permissions.')
+        folder_exit_code = 0
+    else:
+      folder_exit_code = 0
 
     if should_perform_managed_folder_operations:
       managed_folder_expansion_iterator = name_expansion.NameExpansionIterator(
@@ -228,5 +265,8 @@ class Rm(base.Command):
       bucket_exit_code = 0
 
     self.exit_code = max(
-        object_exit_code, managed_folder_exit_code, bucket_exit_code
+        object_exit_code,
+        managed_folder_exit_code,
+        folder_exit_code,
+        bucket_exit_code,
     )

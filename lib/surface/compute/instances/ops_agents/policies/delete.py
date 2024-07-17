@@ -99,11 +99,10 @@ class DeleteAlphaBeta(base.DeleteCommand):
     return delete_response
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.Command):
-  """Delete a Google Cloud's operations suite agents (Ops Agents) policy.
+  """Delete a Google Cloud Observability agents policy for the Ops Agent.
 
   *{command}* deletes a policy that facilitates agent management across
   Compute Engine instances based on user specified instance filters.
@@ -126,9 +125,19 @@ class Delete(base.Command):
       - labels:
           env: prod
 
-  If no policies are found, or the policy is not an Ops Agents policy it returns
-  a ``NOT_FOUND'' error.
+  If no policies are found, or the policy is not an agents policy, then the
+  command returns a ``NOT_FOUND'' error.
   """
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          To delete an agents policy named ``ops-agents-test-policy'' in the
+          current project, run:
+
+          $ {command} ops-agents-test-policy --zone=ZONE
+          """,
+  }
 
   @staticmethod
   def Args(parser):
@@ -148,7 +157,7 @@ class Delete(base.Command):
         '--zone',
         required=True,
         help="""\
-          Zone of the Ops Agents Policy you want to delete.""",
+          Zone of the agents policy you want to delete.""",
     )
 
   def Run(self, args):

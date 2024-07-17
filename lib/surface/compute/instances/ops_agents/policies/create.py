@@ -124,19 +124,33 @@ class CreateAlphaBeta(base.Command):
     return ops_agents_policy
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Create a Google Cloud's operations suite agents (Ops Agents) policy.
+  """Create a Google Cloud Observability agents policy for the Ops Agent.
 
-  TBD
+  *{command}* creates a policy that facilitates agent management across
+  Compute Engine instances based on user specified instance filters. This policy
+  installs, specifies versioning, and removes Ops Agents.
+
+  The command returns the content of the created policy or an error indicating
+  why the creation fails. The created policy takes effect asynchronously. It
+  can take 10-15 minutes for the VMs to enforce the newly created policy.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          TBD
+          cat > config.yaml << EOF
+          agentsRule:
+            packageState: installed
+            version: latest
+          instanceFilter:
+            inclusionLabels:
+            - labels:
+                env: prod
+          EOF
+          $ {command} agent-policy --project=PROJECT --zone=ZONE --file=config.yaml
           """,
   }
 
@@ -158,14 +172,14 @@ class Create(base.Command):
         '--file',
         required=True,
         help="""\
-          YAML file with the Cloud Ops Agents Policy to create. For
-          information about the Cloud Ops Agents Policy format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
+          YAML file with agents policy to create. For
+          information about the agents policy format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
     )
     parser.add_argument(
         '--zone',
         required=True,
         help="""\
-          Zone in which to create the OS Policy Assignment.""",
+          Zone in which to create the agents policy.""",
     )
     parser.add_argument(
         '--debug-dry-run',

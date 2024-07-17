@@ -26,9 +26,14 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddIamPolicyBinding(base.Command):
-  """Add IAM policy binding to a secret resource."""
+  """Add IAM policy binding to a secret.
+
+  Add an IAM policy binding to the IAM policy of a secret. One binding
+  consists of a member and a role.
+  """
 
   detailed_help = {
       'EXAMPLES': """\
@@ -45,9 +50,13 @@ class AddIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
-        parser, purpose='to add iam policy', positional=True, required=True
+        parser,
+        purpose='',
+        positional=True,
+        required=True,
+        help_text='Name of the secret for which to add the IAM policy binding.',
     )
-    secrets_args.AddLocation(parser, purpose='to add iam policy', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to add iam policy', hidden=False)
 
     iam_util.AddArgsForAddIamPolicyBinding(parser, add_condition=True)
 
@@ -67,3 +76,21 @@ class AddIamPolicyBinding(base.Command):
     )
     iam_util.LogSetIamPolicy(multi_ref.Name(), 'secret')
     return result
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Add IAM policy binding to a secret resource."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To add an IAM policy binding for the role of 'roles/secretmanager.secretAccessor'
+          for the user 'test-user@gmail.com' on my-secret, run:
+
+            $ {command} my-secret --member='user:test-user@gmail.com' --role='roles/secretmanager.secretAccessor'
+
+          See https://cloud.google.com/iam/docs/managing-policies for details of
+          policy role and member types.
+          """,
+  }

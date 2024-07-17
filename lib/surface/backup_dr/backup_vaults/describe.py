@@ -58,7 +58,8 @@ class DescribeAlpha(base.DescribeCommand):
         uid,
         backupCount,
         labels,
-        backupMinimumEnforcedRetentionDuration
+        backupMinimumEnforcedRetentionDuration,
+        effectiveTime
         )
         """
 

@@ -45,6 +45,12 @@
       - arg_value: full
         enum_value: FULL
         help_text: Output includes operating system details and package information.
+    - arg_name: unmodified-api-response
+      hidden: true
+      default: false
+      help_text: |
+        Do not transform the response from API. Warning: the amount of data returned can be very
+        large.
   output:
     format: |
       multi(

@@ -128,6 +128,9 @@ def _CommonArgs(parser, track):
   # Add flag for user-provided Cloud Build Service Account
   flags.AddBuildServiceAccountFlag(parser)
 
+  # Add flag for Binary Authorization Policy (2nd Gen only)
+  flags.AddBinaryAuthorizationMutexGroup(parser, track)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(util.FunctionResourceCommand, base.Command):

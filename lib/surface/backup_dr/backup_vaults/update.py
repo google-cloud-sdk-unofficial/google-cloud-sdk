@@ -72,7 +72,7 @@ class UpdateAlpha(base.UpdateCommand):
     flags.AddEnforcedRetention(parser, False)
     flags.AddDescription(parser)
     flags.AddEffectiveTime(parser)
-    flags.AddUnlockEnforcedRetention(parser)
+    flags.AddUnlockBackupMinEnforcedRetention(parser)
 
   def GetUpdateMask(self, args):
     updated_fields = []
@@ -80,9 +80,9 @@ class UpdateAlpha(base.UpdateCommand):
       updated_fields.append('description')
     if args.IsSpecified('backup_min_enforced_retention'):
       updated_fields.append('backupMinimumEnforcedRetentionDuration')
-    if args.IsSpecified('unlock_enforced_retention') or args.IsSpecified(
-        'effective_time'
-    ):
+    if args.IsSpecified(
+        'unlock_backup_min_enforced_retention'
+    ) or args.IsSpecified('effective_time'):
       updated_fields.append('effectiveTime')
     return ','.join(updated_fields)
 
@@ -103,7 +103,7 @@ class UpdateAlpha(base.UpdateCommand):
         args.backup_min_enforced_retention
     )
     description = args.description
-    if args.unlock_enforced_retention:
+    if args.unlock_backup_min_enforced_retention:
       effective_time = command_util.ResetEnforcedRetention()
     else:
       effective_time = command_util.TransformTo12AmUtcTime(args.effective_time)

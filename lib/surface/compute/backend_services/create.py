@@ -438,6 +438,7 @@ class CreateHelper(object):
     return client.MakeRequests(requests)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create a backend service.
@@ -462,7 +463,7 @@ class CreateGA(base.CreateCommand):
   _support_unspecified_protocol = True
   _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_advanced_load_balancing = False
+  _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
 
   @classmethod

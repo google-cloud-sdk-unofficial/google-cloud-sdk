@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute.backend_services import backend_services
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AddBackend(base.UpdateCommand):
   """Add a backend to a backend service.
@@ -54,7 +55,7 @@ class AddBackend(base.UpdateCommand):
   support_failover = True
   # This fields decides whether --preference flag can be set when updating the
   # backend.
-  support_preference = False
+  support_preference = True
 
   @classmethod
   def Args(cls, parser):

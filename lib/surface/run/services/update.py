@@ -291,6 +291,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddServiceMaxInstancesFlag(managed_group)
     flags.AddScalingModeFlag(managed_group)
     flags.AddMaxSurgeFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())

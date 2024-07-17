@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Submit(base.Command):
   """Create a Batch resource allowance.

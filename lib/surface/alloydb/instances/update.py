@@ -130,6 +130,23 @@ class UpdateBeta(Update):
   def Args(parser):
     super(UpdateBeta, UpdateBeta).Args(parser)
     flags.AddUpdateMode(parser)
+    flags.AddObservabilityConfigEnabled(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigPreserveComments(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigTrackWaitEvents(
+        parser, show_negated_in_help=False
+    )
+    flags.AddObservabilityConfigMaxQueryStringLength(parser)
+    flags.AddObservabilityConfigRecordApplicationTags(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
+    flags.AddObservabilityConfigTrackActiveQueries(
+        parser, show_negated_in_help=True
+    )
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

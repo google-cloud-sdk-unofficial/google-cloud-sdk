@@ -185,7 +185,7 @@ class Create(base.CreateCommand):
     secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to create secret', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to create secret', hidden=False)
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
@@ -525,7 +525,7 @@ class CreateBeta(base.CreateCommand):
     secrets_args.AddSecret(
         parser, purpose='to create', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to create secret', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to create secret', hidden=False)
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)

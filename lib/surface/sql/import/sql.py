@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.sql import import_util
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Sql(base.Command):
   """Imports data into a Cloud SQL instance from a SQL dump file."""
 
@@ -70,6 +71,8 @@ class Sql(base.Command):
     flags.AddDatabase(parser, flags.DEFAULT_DATABASE_IMPORT_HELP_TEXT)
     flags.AddParallelArgument(parser, operation='import')
     flags.AddThreadsArgument(parser, operation='import')
+    flags.AddCleanImportArgument(parser)
+    flags.AddIfExistsImportsArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

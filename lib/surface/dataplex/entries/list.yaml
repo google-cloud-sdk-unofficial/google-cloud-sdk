@@ -22,6 +22,7 @@
     format: |
       table(
         name.basename():label=ENTRY_ID,
+        entrySource.location:label=SOURCE_LOCATION,
         entrySource.display_name:label=DISPLAY_NAME,
         entrySource.description:label=DESCRIPTION,
         entrySource.resource:label=RESOURCE,

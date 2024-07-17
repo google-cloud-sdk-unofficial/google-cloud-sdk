@@ -24,9 +24,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.health_checks import exceptions
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class List(base_classes.MultiScopeLister):
+class List(base.ListCommand):
   """List health checks in GA."""
+
+  messages = None
 
   @staticmethod
   def Args(parser):
@@ -112,9 +115,40 @@ class List(base_classes.MultiScopeLister):
     return None
 
   def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    self.messages = client.messages
+    if args.protocol is not None:
+      self._validateProtocol(args)
     if not args.IsSpecified('format') and not args.uri:
       args.format = self._Format(args)
-    return super(List, self).Run(args)
+
+    request_data = lister.ParseMultiScopeFlags(args, holder.resources)
+
+    list_implementation = lister.MultiScopeLister(
+        client,
+        regional_service=client.apitools_client.regionHealthChecks,
+        global_service=client.apitools_client.healthChecks,
+        aggregation_service=client.apitools_client.healthChecks,
+    )
+
+    items = lister.Invoke(request_data, list_implementation)
+    if args.protocol is None:
+      return items
+
+    # Filter the resources that do not match the specified protocol.
+    health_checks = []
+    for health_check in items:
+      if health_check['type'] == args.protocol.upper():
+        health_checks.append(health_check)
+    return health_checks
+
+  def _validateProtocol(self, args):
+    protocol_value = self._ConvertProtocolArgToValue(args)
+    if protocol_value not in self._ProtocolAllowlist():
+      raise exceptions.ArgumentError(
+          'Invalid health check protocol ' + args.protocol + '.'
+      )
 
   def _Format(self, args):
     columns = self._GetValidColumns(args)

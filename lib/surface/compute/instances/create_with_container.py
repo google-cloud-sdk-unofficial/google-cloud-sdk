@@ -92,6 +92,8 @@ def _Args(
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddInternalIPv6AddressArgs(parser)
   instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
+  instances_flags.AddMaxRunDurationVmArgs(parser)
+  instances_flags.AddDiscardLocalSsdVmArgs(parser)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -133,6 +135,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_disk_labels = False
+  _support_max_run_duration = True
 
   @staticmethod
   def Args(parser):
@@ -163,7 +166,9 @@ class CreateWithContainer(base.CreateCommand):
     instances_flags.ValidateServiceAccountAndScopeArgs(args)
     instances_flags.ValidatePublicPtrFlags(args)
     instances_flags.ValidateNetworkPerformanceConfigsArgs(args)
-    instances_flags.ValidateInstanceScheduling(args)
+    instances_flags.ValidateInstanceScheduling(
+        args, self._support_max_run_duration
+    )
     instances_flags.ValidateNetworkTierArgs(args)
     instances_flags.ValidateReservationAffinityGroup(args)
 
@@ -244,9 +249,10 @@ class CreateWithContainer(base.CreateCommand):
         compute_client,
         skip_defaults,
         support_min_node_cpu=False,
-        support_host_error_timeout_seconds=self
-        ._support_host_error_timeout_seconds,
-        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout)
+        support_host_error_timeout_seconds=self._support_host_error_timeout_seconds,
+        support_max_run_duration=self._support_max_run_duration,
+        support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+    )
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)

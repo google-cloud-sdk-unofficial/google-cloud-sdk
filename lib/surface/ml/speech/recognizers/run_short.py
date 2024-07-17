@@ -33,7 +33,7 @@ class RunShort(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags_v2.AddRunShortFlagsToParser(parser)
+    flags_v2.AddRecognizeRequestFlagsToParser(parser)
 
   def Run(self, args):
     resource = args.CONCEPTS.recognizer.Parse()

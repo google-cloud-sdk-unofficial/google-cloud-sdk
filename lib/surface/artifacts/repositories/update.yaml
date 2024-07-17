@@ -72,6 +72,21 @@
       default: null
       help_text: |
         Do not make an HTTP request to validate the remote upstream. Not recommended when setting a custom remote upstream unless you are absolutely sure your upstream URI and any auth is valid.
+    - arg_name: alternative-hostname
+      api_field: repository.networkConfig.alternativeHostname
+      hidden: true
+      help_text: |
+        An alternative hostname that a repository can be accessed through.
+    - arg_name: alternative-hostname-path-prefix
+      api_field: repository.networkConfig.prefix
+      hidden: true
+      help_text: |
+        An alternative hostname path prefix that a repository can be accessed through.
+    - arg_name: alternative-hostname-default
+      api_field: repository.networkConfig.isDefault
+      hidden: true
+      help_text: |
+        Whether this is the default repository for the alternative hostname if no repository matches the path prefix.
     - group:
         mutex: true
         hidden: true

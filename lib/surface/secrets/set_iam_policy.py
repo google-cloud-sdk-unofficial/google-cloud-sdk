@@ -24,28 +24,36 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicy(base.ListCommand):
-  """Set the IAM policy for a secret.
+  """Set the IAM policy binding for a secret.
 
-  Sets the IAM policy for the given secret.
+  Sets the IAM policy for the given secret as defined in a JSON or YAML file.
 
-  Returns an empty policy if the resource does not have a policy
-  set.
-
-  ## EXAMPLES
-
-  To print the IAM policy for secret named 'my-secret', run:
-
-    $ {command} my-secret [--location=]
+  See https://cloud.google.com/iam/docs/managing-policies for details of the
+  policy file format and contents.
   """
+
+  detailed_help = {
+      'EXAMPLES': """\
+          The following command will read an IAM policy defined in a JSON file
+    'policy.json' and set it for the secret 'my-secret':
+
+        $ {command} my-secret policy.json
+          """,
+  }
 
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
-        parser, purpose='to set iam policy', positional=True, required=True
+        parser,
+        purpose='',
+        positional=True,
+        required=True,
+        help_text='Name of the secret for which to set the IAM policy.',
     )
-    secrets_args.AddLocation(parser, purpose='to set iam policy', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to set iam policy', hidden=False)
     iam_util.AddArgForPolicyFile(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
@@ -65,3 +73,23 @@ class SetIamPolicy(base.ListCommand):
     )
     iam_util.LogSetIamPolicy(secret_ref.Name(), 'secret')
     return result
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetIamPolicyBeta(SetIamPolicy):
+  """Set the IAM policy for a secret.
+
+  Sets the IAM policy for the given secret.
+
+  Returns an empty policy if the resource does not have a policy
+  set.
+  """
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To print the IAM policy for secret named 'my-secret', run:
+
+        $ {command} my-secret [--location=]
+          """,
+  }

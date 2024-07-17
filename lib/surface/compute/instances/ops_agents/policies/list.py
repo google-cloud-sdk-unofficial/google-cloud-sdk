@@ -139,7 +139,7 @@ def _ArgsGA(parser):
       '--zone',
       required=True,
       help="""\
-          Zone of the Ops Agents Policy you want to list.""",
+          Zone for which you want to list agent policies.""",
   )
   parser.display_info.AddFormat("""
         table(
@@ -150,30 +150,28 @@ def _ArgsGA(parser):
       """)
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Google Cloud's operations suite agents (Ops Agents) policies.
+  """List a Google Cloud Observability agents policy for the Ops Agent.
 
   {command} lists policies that facilitate agent management across Compute
   Engine instances based on user specified instance filters. These policies
-  install, specify versioning, and remove Ops Agents.
+  install, specify versioning, and remove agents.
 
   The command returns a list of policies, including the ``POLICY_ID'',
   ``ROLLOUT_STATE'', and ``UPDATE_TIME'' for each policy. If no policies are
-  found, it returns an empty list. If policies were found but they don't match
-  as Cloud Ops Agent Policy, they won't be shown in the list.
+  found, then the command returns an empty list. If policies were found but they
+  don't match as agents policies, then those policies won't be shown in the
+  list.
   """
 
   detailed_help = {
-      'DESCRIPTION':
-      '{description}',
-      'EXAMPLES':
-      """\
-      To list Cloud Ops Agents policies (curated OS Policy Assignments) in the current project, run:
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+      To list agents policies in the current project, run:
 
-      $ {command}
+      $ {command} --zone=ZONE
       """,
   }
 

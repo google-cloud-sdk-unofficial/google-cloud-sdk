@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: Promote a Filestore standby replication instance.
     description: |
@@ -21,16 +21,18 @@
       command_level_fallthroughs:
         zone:
         - arg_name: location
-          release_tracks: [BETA]
+          release_tracks: [BETA, GA]
     params:
     - arg_name: location
-      release_tracks: [BETA]
+      release_tracks: [BETA, GA]
       help_text: |
         Location of the Filestore instance to promote.
 
   request:
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     collection: file.projects.locations.instances
     method: promoteReplica
 

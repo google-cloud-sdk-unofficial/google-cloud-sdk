@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, GA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: List hubs.
@@ -12,6 +12,8 @@
   request: &request
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta
     GA:
       api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs

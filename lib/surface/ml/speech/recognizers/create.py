@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.ml.speech import flags_v2
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a speech-to-text recognizer."""
@@ -46,19 +47,25 @@ class Create(base.Command):
           + '.',
       )
 
-    if (args.min_speaker_count is not None and
-        args.max_speaker_count is None) or (args.min_speaker_count is None and
-                                            args.max_speaker_count is not None):
+    if (
+        args.min_speaker_count is not None and args.max_speaker_count is None
+    ) or (
+        args.min_speaker_count is None and args.max_speaker_count is not None
+    ):
       raise exceptions.InvalidArgumentException(
           '--min-speaker-count',
-          '[----min-speaker-count] and --max-speaker-count must both be set to enable speaker diarization.'
+          '[----min-speaker-count] and --max-speaker-count must both be set to'
+          ' enable speaker diarization.',
       )
 
-    if (args.min_speaker_count is not None and args.max_speaker_count
-        is not None) and (args.min_speaker_count > args.max_speaker_count):
+    if (
+        args.min_speaker_count is not None
+        and args.max_speaker_count is not None
+    ) and (args.min_speaker_count > args.max_speaker_count):
       raise exceptions.InvalidArgumentException(
           '--max-speaker-count',
-          '[--max-speaker-count] must be equal to or larger than min-speaker-count.'
+          '[--max-speaker-count] must be equal to or larger than'
+          ' min-speaker-count.',
       )
 
     if (
@@ -107,6 +114,8 @@ class Create(base.Command):
         args.enable_spoken_emojis,
         args.min_speaker_count,
         args.max_speaker_count,
+        args.separate_channel_recognition,
+        args.max_alternatives,
         args.encoding,
         args.sample_rate,
         args.audio_channel_count,
@@ -114,13 +123,16 @@ class Create(base.Command):
 
     if is_async:
       log.CreatedResource(
-          operation.name, kind='speech recognizer', is_async=True)
+          operation.name, kind='speech recognizer', is_async=True
+      )
       return operation
 
     resource = speech_client.WaitForRecognizerOperation(
         location=recognizer.Parent().Name(),
         operation_ref=speech_client.GetOperationRef(operation),
         message='waiting for recognizer [{}] to be created'.format(
-            recognizer.RelativeName()))
+            recognizer.RelativeName()
+        ),
+    )
     log.CreatedResource(resource.name, kind='speech recognizer')
     return resource

@@ -22,6 +22,8 @@ from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 from googlecloudsdk.command_lib.secrets import util as secrets_util
@@ -36,6 +38,7 @@ CHECKSUM_VERIFICATION_FAILURE_MESSAGE = (
 )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Access(base.DescribeCommand):
   # pylint: disable=line-too-long
@@ -67,17 +70,38 @@ class Access(base.DescribeCommand):
   # pylint: enable=line-too-long
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Args is called by calliope to gather arguments for secrets versions access command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that will be
+        available to this command.
+    """
     secrets_args.AddVersionOrAlias(
-        parser, purpose='to access', positional=True, required=True)
+        parser, purpose='to access', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to access secret', hidden=False)
     secrets_args.AddOutFile(parser)
     secrets_fmt.UseSecretData(parser)
 
-  def Run(self, args):
+  def Run(self, args: parser_extensions.Namespace) -> secrets_api.Versions:
+    """Run is called by calliope to implement the secret versions access command.
+
+    Args:
+      args: an argparse namespace, all the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      API call to invoke secret version access.
+    """
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     version_ref = args.CONCEPTS.version.Parse()
-    version = secrets_api.Versions().Access(version_ref)
+    version = secrets_api.Versions(api_version=api_version).Access(
+        version_ref, secret_location=args.location
+    )
     if version.payload.dataCrc32c is None or crc32c.does_data_match_checksum(
-        version.payload.data, version.payload.dataCrc32c):
+        version.payload.data, version.payload.dataCrc32c
+    ):
       if args.IsSpecified('out_file'):
         if not args.out_file:
           raise calliope_exceptions.BadFileException(
@@ -90,6 +114,7 @@ class Access(base.DescribeCommand):
     raise exceptions.HttpException(CHECKSUM_VERIFICATION_FAILURE_MESSAGE)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AccessBeta(Access):
   # pylint: disable=line-too-long
@@ -121,7 +146,7 @@ class AccessBeta(Access):
     secrets_args.AddVersionOrAlias(
         parser, purpose='to access', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to access secret', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to access secret', hidden=False)
     secrets_args.AddOutFile(parser)
     secrets_fmt.UseSecretData(parser)
 

@@ -26,9 +26,17 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class RemoveIamPolicyBinding(base.Command):
-  """Remove IAM policy binding of a secret resource."""
+  """Remove IAM policy binding for a secret.
+
+  Removes a policy binding from the IAM policy of a secret. One binding
+  consists of a member and a role.
+
+  See https://cloud.google.com/iam/docs/managing-policies for details of
+  policy role and member types.
+  """
 
   detailed_help = {
       'EXAMPLES': """\
@@ -42,10 +50,14 @@ class RemoveIamPolicyBinding(base.Command):
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
-        parser, purpose='to remove iam policy', positional=True, required=True
+        parser,
+        purpose='',
+        positional=True,
+        required=True,
+        help_text='Name of the secret from which to remove IAM policy binding.',
     )
     secrets_args.AddLocation(
-        parser, purpose='to remove iam policy', hidden=True
+        parser, purpose='to remove iam policy', hidden=False
     )
 
     iam_util.AddArgsForRemoveIamPolicyBinding(parser, add_condition=True)
@@ -68,3 +80,18 @@ class RemoveIamPolicyBinding(base.Command):
     )
     iam_util.LogSetIamPolicy(secret_ref.Name(), 'secret')
     return result
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RemoveIamPolicyBindingBeta(RemoveIamPolicyBinding):
+  """Remove IAM policy binding of a secret resource."""
+
+  detailed_help = {
+      'EXAMPLES': """\
+          To remove an IAM policy binding for the role of 'roles/viewer' for the user
+          'test-user@gmail.com' on the my-secret, run:
+
+          $ {command} my-secret --member='user:test-user@gmail.com' --role='roles/viewer'
+        """,
+  }

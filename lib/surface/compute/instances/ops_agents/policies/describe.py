@@ -113,15 +113,14 @@ class DescribeAlphaBeta(base.DescribeCommand):
     return ops_agents_policy
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Google Cloud's operations suite agents (Ops Agents) policy.
+  """Describe a Google Cloud Observability agents policy for the Ops Agent.
 
   *{command}* describes a policy that facilitates agent management across
   Compute Engine instances based on user specified instance filters. This policy
-  installs, specifies versioning, and .
+  installs, specifies versioning, and removes Ops Agents.
 
   The command returns the content of one policy. For instance:
 
@@ -133,16 +132,16 @@ class Describe(base.DescribeCommand):
       - labels:
           env: prod
 
-  If no policies are found, it returns a ``NOT_FOUND`` error.
+  If no policies are found, then the command returns a `NOT_FOUND` error.
   """
 
   detailed_help = {
       'DESCRIPTION': '{description}',
       'EXAMPLES': """\
-          To describe an Ops Agents policy named ``ops-agents-test-policy'' in
+          To describe an agents policy named `ops-agents-test-policy` in
           the current project, run:
 
-            $ {command} ops-agents-test-policy
+            $ {command} ops-agents-test-policy --zone=ZONE
           """,
   }
 
@@ -164,7 +163,7 @@ class Describe(base.DescribeCommand):
         '--zone',
         required=True,
         help="""\
-          Zone of the Ops Agents Policy.""",
+          Zone of the agents policy.""",
     )
 
   def Run(self, args):

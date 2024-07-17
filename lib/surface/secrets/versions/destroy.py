@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.core.console import console_io
@@ -49,22 +51,42 @@ class Destroy(base.DeleteCommand):
       'This action cannot be reversed.')
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Args is called by calliope to gather arguments for secrets versions destroy command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that will be
+        available to this command.
+    """
     secrets_args.AddVersion(
-        parser, purpose='to destroy', positional=True, required=True)
+        parser, purpose='to destroy', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to destroy ', hidden=False)
     secrets_args.AddVersionEtag(parser)
 
-  def Run(self, args):
-    version_ref = args.CONCEPTS.version.Parse()
+  def Run(self, args: parser_extensions.Namespace) -> secrets_api.Versions:
+    """Run is called by calliope to implement the secret versions destroy command.
 
+    Args:
+      args: an argparse namespace, all the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      API call to invoke secret version destroy.
+    """
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
+    version_ref = args.CONCEPTS.version.Parse()
     # Destructive action, prompt to continue
     console_io.PromptContinue(
         self.CONFIRM_DESTROY_MESSAGE.format(
-            version=version_ref.Name(), secret=version_ref.Parent().Name()),
+            version=version_ref.Name(), secret=version_ref.Parent().Name()
+        ),
         throw_if_unattended=True,
-        cancel_on_no=True)
-
-    result = secrets_api.Versions().Destroy(version_ref, etag=args.etag)
+        cancel_on_no=True,
+    )
+    result = secrets_api.Versions(api_version=api_version).Destroy(
+        version_ref, etag=args.etag, secret_location=args.location
+    )
     if result.scheduledDestroyTime is None:
       secrets_log.Versions().Destroyed(version_ref)
     else:
@@ -98,7 +120,7 @@ class DestroyBeta(Destroy):
     secrets_args.AddVersion(
         parser, purpose='to destroy', positional=True, required=True
     )
-    secrets_args.AddLocation(parser, purpose='to destroy ', hidden=True)
+    secrets_args.AddLocation(parser, purpose='to destroy ', hidden=False)
     secrets_args.AddVersionEtag(parser)
 
   def Run(self, args):

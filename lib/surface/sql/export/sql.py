@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.sql import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Sql(base.Command):
   # pylint: disable=line-too-long
   """Exports data from a Cloud SQL instance to a SQL file.
@@ -56,6 +57,8 @@ class Sql(base.Command):
     flags.AddOffloadArgument(parser)
     flags.AddParallelArgument(parser, operation='export')
     flags.AddThreadsArgument(parser, operation='export')
+    flags.AddCleanExportArgument(parser)
+    flags.AddIfExistsExportsArgument(parser)
     parser.add_argument(
         '--table',
         '-t',

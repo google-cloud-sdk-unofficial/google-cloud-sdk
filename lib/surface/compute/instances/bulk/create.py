@@ -130,7 +130,7 @@ class Create(base.Command):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_max_run_duration = False
+  _support_max_run_duration = True
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = False

@@ -21,12 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import fmt as secrets_fmt
 from googlecloudsdk.core.resource import resource_expr_rewrite
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   r"""List all secret names.
@@ -43,14 +46,38 @@ class List(base.ListCommand):
   """
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Args is called by calliope to gather arguments for list secret command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that will be
+        available to this command.
+    """
     secrets_args.AddProject(parser)
-    secrets_fmt.UseSecretTable(parser)
+    secrets_args.AddLocation(
+        parser, purpose='to list regional secrets', hidden=False
+    )
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
-  def Run(self, args):
+  def Run(self, args: parser_extensions.Namespace) -> secrets_api.Secrets:
+    """Run is called by calliope to implement the list secrets command.
+
+    Args:
+      args: an argparse namespace, all the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      API call to invoke list secrets.
+    """
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
-    project_ref = args.CONCEPTS.project.Parse()
+    if args.location:
+      project_ref = args.CONCEPTS.location.Parse()
+      secrets_fmt.RegionalSecretTableUsingArgument(
+          args, api_version=api_version
+      )
+    else:
+      project_ref = args.CONCEPTS.project.Parse()
+      secrets_fmt.SecretTableUsingArgument(args, api_version=api_version)
     if not project_ref:
       raise exceptions.RequiredArgumentException(
           'project',
@@ -71,6 +98,7 @@ class List(base.ListCommand):
     )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListBeta(List):
   r"""List all secret names.
@@ -90,7 +118,7 @@ class ListBeta(List):
   def Args(parser):
     secrets_args.AddProject(parser)
     secrets_args.AddLocation(
-        parser, purpose='[EXPERIMRNTAL] to list regional secrets', hidden=True
+        parser, purpose='to list regional secrets', hidden=False
     )
     base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 

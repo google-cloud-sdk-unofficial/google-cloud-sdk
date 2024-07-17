@@ -130,6 +130,23 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, CreateBeta).Args(parser)
+    flags.AddObservabilityConfigEnabled(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigPreserveComments(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigTrackWaitEvents(
+        parser, show_negated_in_help=False
+    )
+    flags.AddObservabilityConfigMaxQueryStringLength(parser)
+    flags.AddObservabilityConfigRecordApplicationTags(
+        parser, show_negated_in_help=True
+    )
+    flags.AddObservabilityConfigQueryPlansPerMinute(parser)
+    flags.AddObservabilityConfigTrackActiveQueries(
+        parser, show_negated_in_help=True
+    )
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

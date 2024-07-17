@@ -78,6 +78,21 @@ class Compute(base.Command):
     compute_flags.AddVisibleCoreCountArg(parser, False)
     compute_flags.AddAcceleratorArg(parser, False)
     compute_flags.AddMinCpuPlatform(parser, False)
+    # Scheduling Flags
+    compute_flags.AddMaintenancePolicyArg(parser, False)
+    compute_flags.AddPreemptibleArg(parser, False)
+    compute_flags.AddRestartOnFailureArg(parser, False)
+    compute_flags.AddMinNodeCpuArg(parser, False)
+    compute_flags.AddProvisioningModelArg(parser, False)
+    compute_flags.AddInstanceTerminationActionArg(parser, False)
+    compute_flags.AddLocalSsdRecoveryTimeoutArg(parser, False)
+    compute_flags.AddNodeAffinityFileArg(parser, False)
+
+    compute_flags.AddReservationArgs(parser, False)
+    compute_flags.AddEnableDisplayDeviceArg(parser, False)
+    compute_flags.AddCanIpForwardArg(parser, False)
+    compute_flags.AddPrivateIpv6GoogleAccessArg(parser, False)
+    compute_flags.AddNetworkPerformanceConfigsArg(parser, False)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -138,6 +153,42 @@ class Compute(base.Command):
       restore_config['Accelerator'] = args.accelerator
     if args.min_cpu_platform:
       restore_config['MinCpuPlatform'] = args.min_cpu_platform
+    if args.maintenance_policy:
+      restore_config['MaintenancePolicy'] = args.maintenance_policy
+    if args.preemptible:
+      restore_config['Preemptible'] = args.preemptible
+    if args.restart_on_failure:
+      restore_config['RestartOnFailure'] = args.restart_on_failure
+    if args.min_node_cpu:
+      restore_config['MinNodeCpus'] = args.min_node_cpu
+    if args.provisioning_model:
+      restore_config['ProvisioningModel'] = args.provisioning_model
+    if args.instance_termination_action:
+      restore_config['InstanceTerminationAction'] = (
+          args.instance_termination_action
+      )
+    if args.local_ssd_recovery_timeout:
+      restore_config['LocalSsdRecoveryTimeout'] = (
+          args.local_ssd_recovery_timeout
+      )
+    if args.node_affinity_file:
+      restore_config['NodeAffinityFile'] = args.node_affinity_file
+    if args.reservation_affinity:
+      restore_config['ReservationAffinity'] = args.reservation_affinity
+    if args.reservation:
+      restore_config['Reservation'] = args.reservation
+    if args.enable_display_device:
+      restore_config['EnableDisplayDevice'] = args.enable_display_device
+    if args.can_ip_forward:
+      restore_config['CanIpForward'] = args.can_ip_forward
+    if args.private_ipv6_google_access_type:
+      restore_config['PrivateIpv6GoogleAccessType'] = (
+          args.private_ipv6_google_access_type
+      )
+    if args.network_performance_configs:
+      restore_config['NetworkPerformanceConfigs'] = (
+          args.network_performance_configs
+      )
 
     try:
       operation = client.RestoreCompute(backup, restore_config)

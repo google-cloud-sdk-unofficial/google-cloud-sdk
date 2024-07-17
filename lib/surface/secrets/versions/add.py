@@ -21,12 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util import crc32c
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new version of an existing secret.
@@ -59,13 +62,34 @@ class Create(base.CreateCommand):
       'the --data-file flag is not the empty string.')
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: parser_arguments.ArgumentInterceptor):
+    """Args is called by calliope to gather arguments for secrets versions add command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that will be
+        available to this command.
+    """
     secrets_args.AddSecret(
-        parser, purpose='to create', positional=True, required=True)
+        parser, purpose='to create', positional=True, required=True
+    )
+    secrets_args.AddLocation(
+        parser, purpose='to create secret version', hidden=False
+    )
     secrets_args.AddDataFile(parser, required=True)
 
-  def Run(self, args):
+  def Run(self, args: parser_extensions.Namespace) -> secrets_api.Versions:
+    """Run is called by calliope to implement the secret versions add command.
+
+    Args:
+      args: an argparse namespace, all the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      API call to invoke secret version add.
+    """
+    api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
+    is_regional = args.location is not None
     data = secrets_util.ReadFileOrStdin(args.data_file)
 
     # Differentiate between the flag being provided with an empty value and the
@@ -74,13 +98,27 @@ class Create(base.CreateCommand):
       raise exceptions.BadFileException(self.EMPTY_DATA_FILE_MESSAGE)
 
     data_crc32c = crc32c.get_crc32c(data)
-    version = secrets_api.Secrets().AddVersion(secret_ref, data,
-                                               crc32c.get_checksum(data_crc32c))
-    version_ref = secrets_args.ParseVersionRef(version.name)
+    version = secrets_api.Secrets(api_version=api_version).AddVersion(
+        secret_ref,
+        data,
+        crc32c.get_checksum(data_crc32c),
+        secret_location=args.location,
+    )
+    if is_regional:
+      version_ref = secrets_args.ParseRegionalVersionRef(version.name)
+    else:
+      version_ref = secrets_args.ParseVersionRef(version.name)
     secrets_log.Versions().Created(version_ref)
+    if not version.clientSpecifiedPayloadChecksum:
+      raise exceptions.HttpException(
+          'Version created but payload data corruption may have occurred, '
+          'please destroy the created version, and retry. See also '
+          'https://cloud.google.com/secret-manager/docs/data-integrity.'
+      )
     return version
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   r"""Create a new version of an existing secret.
@@ -113,7 +151,7 @@ class CreateBeta(Create):
         parser, purpose='to create', positional=True, required=True
     )
     secrets_args.AddLocation(
-        parser, purpose='to create secret version', hidden=True
+        parser, purpose='to create secret version', hidden=False
     )
     secrets_args.AddDataFile(parser, required=True)
 

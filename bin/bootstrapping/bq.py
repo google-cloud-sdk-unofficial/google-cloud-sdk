@@ -80,6 +80,9 @@ def main():
       if print_logging:
         print('Using an ADC path')
       args = [
+          # TODO: b/293132460 - Only set --nouse_google_auth when user sets it,
+          # after the release of cl/643127296.
+          '--nouse_google_auth',
           '--application_default_credential_file',
           adc_path,
           '--credential_file',
@@ -111,6 +114,7 @@ def main():
               ' your use case.'
           )
           args = [
+              '--nouse_google_auth',
               '--service_account',
               account,
               '--service_account_credential_file',

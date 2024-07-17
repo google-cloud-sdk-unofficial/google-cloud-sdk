@@ -1,4 +1,4 @@
-- release_tracks: [GA]
+- release_tracks: [BETA, GA]
 
   help_text:
     brief: List routes.
@@ -11,7 +11,7 @@
 
       To list all routes in route table `my-route-table`, run:
 
-        ${command} --hub=my-hub --route_table=my-route-table
+        $ {command} --hub=my-hub --route_table=my-route-table
 
   arguments:
     resource:
@@ -19,7 +19,10 @@
       help_text: Parent route table of the routes to display.
 
   request: &request
-    api_version: v1
+    BETA:
+      api_version: v1beta
+    GA:
+      api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs.routeTables.routes
 
   output:

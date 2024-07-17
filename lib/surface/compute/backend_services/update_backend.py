@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.compute.backend_services import backend_services
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateBackend(base.UpdateCommand):
   """Update an existing backend of a load balancer or Traffic Director.
@@ -47,7 +48,7 @@ class UpdateBackend(base.UpdateCommand):
   """
   # This fields decides whether --preference flag can be set when updating the
   # backend.
-  support_preference = False
+  support_preference = True
 
   @staticmethod
   def Args(parser):
@@ -58,6 +59,7 @@ class UpdateBackend(base.UpdateCommand):
     backend_flags.AddCapacityLimits(parser)
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
+    backend_flags.AddPreference(parser)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -180,6 +182,7 @@ class UpdateBackend(base.UpdateCommand):
         args.max_connections_per_endpoint is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
+        args.preference is not None,
     ]):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')

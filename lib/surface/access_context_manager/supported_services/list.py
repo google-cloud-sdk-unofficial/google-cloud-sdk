@@ -23,8 +23,9 @@ from googlecloudsdk.api_lib.accesscontextmanager import supported_services
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListBeta(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class ListGA(base.ListCommand):
   """Lists all [VPC Service Controls supported services].
 
   Lists the services that VPC Service Controls supports. The services that are
@@ -41,10 +42,13 @@ class ListBeta(base.ListCommand):
       'brief': 'Lists all VPC Service Controls supported services',
       'DESCRIPTION': (
           'Lists the services that VPC Service Controls supports. The services'
-          ' that are in this list either fully support VPC Service Controls or'
+          ' that are in this list fully support VPC Service Controls or'
           ' the integration of this service with VPC Service Controls is in'
           ' [Preview'
-          ' stage](https://cloud.google.com/products#product-launch-stages).'
+          ' stage](https://cloud.google.com/products#product-launch-stages),'
+          ' or the service integration is scheduled to be shut down and removed'
+          ' which is in [Deprecation stage]'
+          ' (https://cloud.google.com/products#product-launch-stages).'
           " Services that aren't in this list don't support VPC Service"
           " Controls and aren't guaranteed to function properly in a VPC"
           ' Service Controls environment.'
@@ -56,8 +60,8 @@ class ListBeta(base.ListCommand):
 
   This command prints out a list of all supported services in a tabular form:
 
-    NAME                    TITLE                SUPPORT_STAGE  AVAILABLE_ON_RESTRICTED_VIP KNOWN_LIMITATIONS
-    vpcsc_supported_service VPC-SC Supported API GA             True                        False
+    NAME                    TITLE                SERVICE_SUPPORT_STAGE  AVAILABLE_ON_RESTRICTED_VIP KNOWN_LIMITATIONS
+    vpcsc_supported_service VPC-SC Supported API GA                     True                        False
   """,
   }
 
@@ -77,7 +81,7 @@ class ListBeta(base.ListCommand):
           table(
             name:label=NAME:sort=1,
             title:label=TITLE,
-            supportStage:label=SUPPORT_STAGE,
+            serviceSupportStage:label=SERVICE_SUPPORT_STAGE,
             availableOnRestrictedVip.yesno(no=False):label=AVAILABLE_ON_RESTRICTED_VIP,
             known_limitations.yesno(no=False):label=KNOWN_LIMITATIONS
           )
@@ -97,6 +101,11 @@ class ListBeta(base.ListCommand):
     client = supported_services.Client(version=self._API_VERSION)
 
     return client.List(args.page_size, args.limit)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(ListGA):
+  _API_VERSION = 'v1'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

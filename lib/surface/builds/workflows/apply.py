@@ -24,12 +24,12 @@ from googlecloudsdk.api_lib.cloudbuild.v2 import workflow_input_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudbuild import run_flags
-from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Workflow."""
 
@@ -76,5 +76,4 @@ class Create(base.CreateCommand):
         update_operation_ref,
         'Applying {file} as workflow {name}'.format(file=args.file, name=name))
 
-    log.status.Print('Applied workflow {}.'.format(updated_workflow.name))
     return updated_workflow
