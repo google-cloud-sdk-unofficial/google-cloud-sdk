@@ -38,6 +38,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class DescribeEntities(base.Command):
   """Describe database entities in a Database Migration conversion workspace."""
 
@@ -57,7 +58,8 @@ class DescribeEntities(base.Command):
             parentEntity:label=PARENT,
             shortName:label=NAME,
             tree:label=TREE_TYPE,
-            entityType:label=ENTITY_TYPE
+            entityType:label=ENTITY_TYPE,
+            status:label=STATUS
           )
         """
     )

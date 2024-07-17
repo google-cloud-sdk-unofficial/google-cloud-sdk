@@ -61,3 +61,4 @@
         - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:secure_boot
         - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:enable_vtpm
         - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:enable_integrity_monitoring
+    - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:network_interface

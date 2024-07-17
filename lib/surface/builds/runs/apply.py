@@ -51,8 +51,12 @@ class Create(base.CreateCommand):
     messages = client_util.GetMessagesModule()
 
     yaml_data = input_util.LoadYamlFromPath(args.file)
-    run_type = yaml_data['kind']
-    run_id = yaml_data['metadata']['name']
+    run_type = yaml_data.get('kind', '')
+    if not run_type:
+      raise cloudbuild_exceptions.InvalidYamlError('kind is required')
+    run_id = yaml_data.get('metadata', {}).get('name', '')
+    if not run_id:
+      raise cloudbuild_exceptions.InvalidYamlError('metadata.name is required')
 
     parent = args.CONCEPTS.region.Parse().RelativeName()
 
@@ -113,4 +117,3 @@ class Create(base.CreateCommand):
     else:
       raise cloudbuild_exceptions.InvalidYamlError(
           'Requested resource type {r} not supported'.format(r=run_type))
-

@@ -85,9 +85,9 @@ def AddAutoFlags(parser, release_track):
   flags.AddAdditiveVPCScopeFlags(parser, release_track=release_track)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
-  flags.AddEnableRayOperatorFlag(parser, hidden=True)
-  flags.AddEnableRayClusterMonitoring(parser, hidden=True)
-  flags.AddEnableRayClusterLogging(parser, hidden=True)
+  flags.AddEnableRayOperatorFlag(parser, hidden=False)
+  flags.AddEnableRayClusterMonitoring(parser, hidden=False)
+  flags.AddEnableRayClusterLogging(parser, hidden=False)
   flags.AddInsecureRBACBindingFlags(parser, hidden=True)
 
 

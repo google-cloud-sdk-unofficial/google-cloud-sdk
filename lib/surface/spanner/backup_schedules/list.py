@@ -25,6 +25,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+def _TransformBackupTypeSpec(schedule):
+  """Transforms the backup type spec field to a human readable string."""
+  if 'fullBackupSpec' in schedule:
+    return 'FULL'
+  elif 'incrementalBackupSpec' in schedule:
+    return 'INCREMENTAL'
+  # This should never happen.
+  return 'UNSPECIFIED'
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -54,6 +64,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
           table(
             name.basename(),
+            backup_type_spec():label=BACKUP_TYPE,
             spec.cronSpec.text:label=CRON,
             retentionDuration,
             encryptionConfig.encryptionType,
@@ -61,6 +72,9 @@ class List(base.ListCommand):
             encryptionConfig.kmsKeyNames
           )
         """)
+    parser.display_info.AddTransforms({
+        'backup_type_spec': _TransformBackupTypeSpec,
+    })
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

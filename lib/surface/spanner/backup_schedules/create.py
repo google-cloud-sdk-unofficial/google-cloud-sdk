@@ -51,7 +51,9 @@ class Create(base.CreateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddBackupScheduleResourceArg(parser, 'to create')
-    backup_type_choices = ['full-backup']
+    backup_type_choices = ['full-backup', 'incremental-backup']
+    # TODO(b/351119519): Move 'incremental-backup' to visible choices before the
+    # launch of Cloud Incrementals.
     backup_type_visible_choices = ['full-backup']
     parser.add_argument(
         '--backup-type',

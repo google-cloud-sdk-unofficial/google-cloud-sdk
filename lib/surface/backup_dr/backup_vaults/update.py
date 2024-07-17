@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.backupdr.backup_vaults import BackupVaultsClient
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.command_lib.backupdr import util as command_util
 from googlecloudsdk.core import log
@@ -103,10 +104,17 @@ class UpdateAlpha(base.UpdateCommand):
         args.backup_min_enforced_retention
     )
     description = args.description
+
+    if args.unlock_backup_min_enforced_retention and args.effective_time:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          'Only one of --unlock-backup-min-enforced-retention or '
+          '--effective-time can be specified.'
+      )
+
     if args.unlock_backup_min_enforced_retention:
       effective_time = command_util.ResetEnforcedRetention()
     else:
-      effective_time = command_util.TransformTo12AmUtcTime(args.effective_time)
+      effective_time = command_util.VerifyDateInFuture(args.effective_time)
     no_async = args.no_async
 
     try:

@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.compute.queued_resources import flags as queued_
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Compute Engine queued resource."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
@@ -80,6 +81,7 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -99,10 +101,8 @@ class Create(base.CreateCommand):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         add_zone_region_flags=False,
-        support_confidential_compute_type=cls
-        ._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
+        support_confidential_compute_type=cls._support_confidential_compute_type,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
@@ -112,6 +112,7 @@ class Create(base.CreateCommand):
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -196,6 +197,7 @@ class Create(base.CreateCommand):
         self._support_custom_hostnames,
         self._support_specific_then_x,
         self._support_watchdog_timer,
+        self._support_turbo_mode,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,

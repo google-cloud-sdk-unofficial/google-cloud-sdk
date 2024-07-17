@@ -99,16 +99,19 @@
     - arg_name: alternative-hostname
       api_field: repository.networkConfig.alternativeHostname
       hidden: true
+      default: null
       help_text: |
         An alternative hostname that a repository can be accessed through.
     - arg_name: alternative-hostname-path-prefix
       api_field: repository.networkConfig.prefix
       hidden: true
+      default: null
       help_text: |
         An alternative hostname path prefix that a repository can be accessed through.
     - arg_name: alternative-hostname-default
       api_field: repository.networkConfig.isDefault
       hidden: true
+      default: null
       help_text: |
         Whether this is the default repository for the alternative hostname if no repository matches the path prefix.
     - group:

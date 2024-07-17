@@ -95,8 +95,12 @@ class List(base.ListCommand):
       return instance_config_operations.List(args.instance_config, type_filter)
 
     is_database_type = (
-        args.type == 'DATABASE_RESTORE' or args.type == 'DATABASE' or
-        args.type == 'DATABASE_CREATE' or args.type == 'DATABASE_UPDATE_DDL')
+        args.type == 'DATABASE_RESTORE'
+        or args.type == 'DATABASE'
+        or args.type == 'DATABASE_CREATE'
+        or args.type == 'DATABASE_UPDATE_DDL'
+        or args.type == 'DATABASE_CHANGE_QUORUM'
+    )
 
     if args.backup or args.type == 'BACKUP':
       # Update output table for backup operations.
@@ -296,11 +300,6 @@ class AlphaList(BetaList):
         the command line after this command. Positional arguments are allowed.
     """
     additional_choices = {
-        'DATABASE_CHANGE_QUORUM': (
-            'Database change quorum operations are returned for all databases '
-            'in the given instance (--instance only) or only those associated '
-            'with the given database (--database).'
-        ),
         'INSTANCE_PARTITION': (
             'If only the instance is specified (--instance), returns all '
             'instance partition operations associated with instance partitions '

@@ -202,6 +202,8 @@ def _CreateWorkerPoolSecondGen(args):
   """
   wp_name = args.WORKER_POOL
   wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
 
   client = cloudbuild_v2_util.GetClientInstance()
   messages = client.MESSAGES_MODULE
@@ -311,6 +313,8 @@ def _CreateWorkerPoolFirstGen(args, release_track):
   """
   wp_name = args.WORKER_POOL
   wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
 
   client = cloudbuild_util.GetClientInstance(release_track)
   messages = cloudbuild_util.GetMessagesModule(release_track)

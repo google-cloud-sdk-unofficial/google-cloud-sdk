@@ -52,7 +52,6 @@ class Describe(base.DescribeCommand):
     """
     parser.add_argument(
         '--region',
-        required=True,
         help='The Cloud region where the worker pool is.')
     parser.add_argument(
         'WORKER_POOL', help='The ID of the worker pool to describe.')
@@ -90,7 +89,6 @@ class DescribeAlpha(Describe):
     """
     parser.add_argument(
         '--region',
-        required=True,
         help='The Cloud region where the worker pool is.')
     parser.add_argument(
         '--generation',
@@ -135,6 +133,10 @@ def _DescribeWorkerPoolSecondGen(args):
   client = cloudbuild_v2_util.GetClientInstance()
   messages = client.MESSAGES_MODULE
 
+  wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
+
   # Get the workerpool second gen ref
   wp_resource = resources.REGISTRY.Parse(
       None,
@@ -142,7 +144,7 @@ def _DescribeWorkerPoolSecondGen(args):
       api_version=cloudbuild_v2_util.GA_API_VERSION,
       params={
           'projectsId': properties.VALUES.core.project.Get(required=True),
-          'locationsId': args.region,
+          'locationsId': wp_region,
           'workerPoolSecondGenId': args.WORKER_POOL,
       })
 
@@ -173,6 +175,8 @@ def _DescribeWorkerPoolFirstGen(args, release_track):
     A Worker Pool First Generation resource.
   """
   wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
 
   client = cloudbuild_util.GetClientInstance(release_track)
   messages = cloudbuild_util.GetMessagesModule(release_track)

@@ -45,7 +45,14 @@
       help_text: |
         Type of the backup; whether the backup is a standard backup or a hot backup.
       release_tracks: ALPHA
-      hidden: true  # TODO: b/34076606 - Unhide for GA.
+      hidden: true  # TODO: b/337328220 - Unhide for GA.
+    - arg_name: hot-to-standard-time
+      api_field: backup.hotToStandardTime
+      help_text: |
+        Absolute time at which a hot backup will be converted to a standard backup. Only applies for
+        hot backups.
+      release_tracks: ALPHA
+      hidden: true  # TODO: b/337328220 - Unhide for GA.
     resource:
       help_text: The Cloud Bigtable backup to create.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:backup

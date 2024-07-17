@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2003 Google, Inc.
 # All Rights Reserved.
 

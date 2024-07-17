@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import uuid
-
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
@@ -85,6 +83,7 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
     messages = apis.GetMessagesModule('dataprocgdc', 'v1alpha1')
     application_ref = args.CONCEPTS.application.Parse()
     application_environment_ref = args.CONCEPTS.application_environment.Parse()
+    service_instance_ref = args.CONCEPTS.instance.Parse()
 
     if args.annotations:
       annotations = encoding.DictToAdditionalPropertyMessage(
@@ -95,7 +94,6 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
     else:
       annotations = None
 
-    request_id = args.request_id or uuid.uuid4().hex
     application_environment = None
     if application_environment_ref:
       application_environment = application_environment_ref.Name()
@@ -122,9 +120,7 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
       )
 
     create_req = messages.DataprocgdcProjectsLocationsServiceInstancesSparkApplicationsCreateRequest(
-        parent=application_ref.Parent().RelativeName(),
-        requestId=request_id,
-        sparkApplicationId=application_ref.Name(),
+        parent=service_instance_ref.RelativeName(),
         sparkApplication=messages.SparkApplication(
             applicationEnvironment=application_environment,
             displayName=args.display_name,
@@ -132,7 +128,6 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
                 args, messages.SparkApplication.LabelsValue
             ),
             annotations=annotations,
-            name=application_ref.RelativeName(),
             namespace=args.namespace,
             properties=spark_app_properties,
             version=args.version,

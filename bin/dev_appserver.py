@@ -29,9 +29,6 @@ def main():
     java.RequireJavaInstalled(datastore_util.DATASTORE_TITLE, min_version=8)
   components = wrapper_util.GetComponents(runtimes)
   components.append('cloud-datastore-emulator')
-  if (platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX
-      and 'app-engine-php' in components):
-    components.remove('app-engine-php')
   update_manager.UpdateManager.EnsureInstalledAndRestart(
       components,
       command=__file__)

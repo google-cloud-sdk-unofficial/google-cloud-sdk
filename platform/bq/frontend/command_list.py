@@ -19,6 +19,7 @@ from clients import client_dataset
 from clients import client_job
 from clients import client_reservation
 from clients import client_routine
+from clients import client_row_access_policy
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -580,10 +581,11 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         frontend_utils.PrintPageToken(list_connections_results)
     elif self.row_access_policies:
       object_type = bq_id_utils.ApiClientHelper.RowAccessPolicyReference
-      response = client.ListRowAccessPoliciesWithGrantees(
-          reference,
-          self.max_results,
-          self.page_token,
+      response = client_row_access_policy.list_row_access_policies_with_grantees(
+          bqclient=client,
+          table_reference=reference,
+          page_size=self.max_results,
+          page_token=self.page_token,
       )
       if 'rowAccessPolicies' in response:
         results = response['rowAccessPolicies']

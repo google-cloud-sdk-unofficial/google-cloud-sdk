@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.network_connectivity import flags
 from googlecloudsdk.command_lib.network_connectivity import util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListSpokes(base.ListCommand):
   """List hub spokes.
@@ -72,7 +73,7 @@ ListSpokes.detailed_help = {
     'EXAMPLES': """ \
   To list all spokes in the ``us-central1'' region and the global location, run:
 
-        $ {command} --spoke-locations=us-central1,global
+        $ {command} HUB --spoke-locations=us-central1,global
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation

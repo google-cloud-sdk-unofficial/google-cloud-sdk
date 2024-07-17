@@ -72,6 +72,20 @@
           spec:
           - api_field: key
           - api_field: value
+    - arg_name: tags
+      release_tracks: [GA]
+      # TODO(b/338531743): Remove hidden as part of GA launch.
+      hidden: true
+      api_field: domain.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     - arg_name: reserved-ip-range
       api_field: domain.reservedIpRange
       help_text: |

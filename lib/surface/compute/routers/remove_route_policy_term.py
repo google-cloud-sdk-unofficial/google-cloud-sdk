@@ -25,13 +25,12 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveRoutePolicyTerm(base.DeleteCommand):
   """Remove a route policy term of a Compute Engine router.
 
-  *{command}* removes a term on a route policy.
+  *{command}* removes a term of a route policy.
   """
 
   ROUTER_ARG = None
@@ -40,7 +39,7 @@ class RemoveRoutePolicyTerm(base.DeleteCommand):
   def Args(cls, parser):
     RemoveRoutePolicyTerm.ROUTER_ARG = flags.RouterArgument()
     RemoveRoutePolicyTerm.ROUTER_ARG.AddArgument(
-        parser, operation_type='remove route policy term'
+        parser, operation_type='remove a route policy term from'
     )
     parser.add_argument(
         '--policy-name',

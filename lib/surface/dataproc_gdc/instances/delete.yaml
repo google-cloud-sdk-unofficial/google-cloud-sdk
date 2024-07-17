@@ -27,12 +27,6 @@
       help_text: |
         Optional. The etag of the service instance. If this is provided, it must
         match the server etag.
-    - api_field: force
-      arg_name: force
-      help_text: |
-        If set to true, any applications and application environments associated with this service
-        instance will also be deleted. If false (default) the service instance can only be
-        deleted if there are no job environments or jobs associated with the service instance.
     - api_field: requestId
       arg_name: request-id
       help_text: |

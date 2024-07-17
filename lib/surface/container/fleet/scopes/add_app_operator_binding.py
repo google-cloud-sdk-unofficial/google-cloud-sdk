@@ -26,7 +26,7 @@ from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet import util
+from googlecloudsdk.command_lib.container.fleet.scopes import util as scopes_util
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -134,9 +134,9 @@ class AddAppOperatorBinding(base.CreateCommand):
     scope_arg = args.CONCEPTS.scope.Parse()
     scope_id = scope_arg.Name()
     scope_path = scope_arg.RelativeName()
-    iam_member = util.IamMemberFromRbacArgs(args.user, args.group)
-    iam_scope_level_role = util.IamScopeLevelScopeRoleFromRbacArgs(args.role)
-    iam_project_level_role = util.IamProjectLevelScopeRoleFromRbacArgs(
+    iam_member = scopes_util.IamMemberFromRbac(args.user, args.group)
+    iam_scope_level_role = scopes_util.IamScopeLevelScopeRoleFromRbac(args.role)
+    iam_project_level_role = scopes_util.IamProjectLevelScopeRoleFromRbac(
         args.role
     )
 
@@ -185,7 +185,7 @@ class AddAppOperatorBinding(base.CreateCommand):
         iam_member,
         iam_project_level_role,
     )
-    condition = util.ScopeLogViewCondition(project, scope_id)
+    condition = scopes_util.ScopeLogViewCondition(project, scope_id)
     iam_util.ValidateConditionArgument(
         condition, iam_util.CONDITION_FORMAT_EXCEPTION
     )

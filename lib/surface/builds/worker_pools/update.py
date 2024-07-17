@@ -186,6 +186,10 @@ def _UpdateWorkerPoolSecondGen(args):
       wpsg.worker.diskStorage = compute_utils.BytesToGb(
           args.worker_disk_size)
 
+  wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
+
   # Get the workerpool second gen ref
   wp_resource = resources.REGISTRY.Parse(
       None,
@@ -193,7 +197,7 @@ def _UpdateWorkerPoolSecondGen(args):
       api_version=cloudbuild_v2_util.GA_API_VERSION,
       params={
           'projectsId': properties.VALUES.core.project.Get(required=True),
-          'locationsId': args.region,
+          'locationsId': wp_region,
           'workerPoolSecondGenId': args.WORKER_POOL,
       },
   )
@@ -238,6 +242,8 @@ def _UpdateWorkerPoolFirstGen(args, release_track):
   """
   wp_name = args.WORKER_POOL
   wp_region = args.region
+  if not wp_region:
+    wp_region = properties.VALUES.builds.region.GetOrFail()
 
   client = cloudbuild_util.GetClientInstance(release_track)
   messages = cloudbuild_util.GetMessagesModule(release_track)

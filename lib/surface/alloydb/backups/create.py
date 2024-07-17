@@ -120,10 +120,6 @@ class Create(base.CreateCommand):
     client = api_util.AlloyDBClient(self.ReleaseTrack())
     alloydb_client = client.alloydb_client
     alloydb_messages = client.alloydb_messages
-    location_ref = client.resource_parser.Create(
-        'alloydb.projects.locations',
-        projectsId=properties.VALUES.core.project.GetOrFail,
-        locationsId=args.region)
     cluster_ref = client.resource_parser.Create(
         'alloydb.projects.locations.clusters',
         projectsId=properties.VALUES.core.project.GetOrFail,
@@ -145,7 +141,7 @@ class Create(base.CreateCommand):
     req = alloydb_messages.AlloydbProjectsLocationsBackupsCreateRequest(
         backup=backup_resource,
         backupId=backup_ref.Name(),
-        parent=location_ref.RelativeName(),
+        parent=backup_ref.Parent().RelativeName(),
     )
     op = alloydb_client.projects_locations_backups.Create(req)
     op_ref = resources.REGISTRY.ParseRelativeName(

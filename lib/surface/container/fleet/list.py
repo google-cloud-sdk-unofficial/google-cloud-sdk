@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List fleets visible to the user in an organization.
 
@@ -57,7 +58,7 @@ If neither --organization nor --project are provided, defaults to the organizati
 
   def Run(self, args):
     base.EnableUserProjectQuota()
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(self.ReleaseTrack())
     project = args.project
     if project is None:
       project = properties.VALUES.core.project.Get()

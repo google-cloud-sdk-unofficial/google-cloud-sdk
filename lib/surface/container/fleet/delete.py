@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
@@ -27,7 +28,6 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
 @base.DefaultUniverseOnly
@@ -47,11 +47,11 @@ class Delete(base.DeleteCommand):
   """
 
   @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor) -> messages.Operation:
+  def Args(parser: parser_arguments.ArgumentInterceptor):
     flags = fleet_flags.FleetFlags(parser)
     flags.AddAsync()
 
-  def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
+  def Run(self, args: parser_extensions.Namespace) -> types.Operation:
     """Runs the fleet delete command.
 
     A completed fleet delete operation response body is empty, gcloud client
@@ -64,10 +64,7 @@ class Delete(base.DeleteCommand):
       A completed create operation; if `--async` is specified, return a
       long-running operation to be polled manually.
     """
-    flag_parser = fleet_flags.FleetFlagParser(
-        # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
-        args, release_track=base.ReleaseTrack.ALPHA
-    )
+    flag_parser = fleet_flags.FleetFlagParser(args, self.ReleaseTrack())
 
     if '--format' not in args.GetSpecifiedArgNames():
       if flag_parser.Async():
@@ -76,8 +73,7 @@ class Delete(base.DeleteCommand):
     req = flag_parser.messages.GkehubProjectsLocationsFleetsDeleteRequest(
         name=util.FleetResourceName(flag_parser.Project())
     )
-    # TODO(b/343764482) Fleet is GA, release track should not be hardcoded.
-    fleetclient = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
+    fleetclient = client.FleetClient(self.ReleaseTrack())
     operation = fleetclient.DeleteFleet(req)
     fleet_ref = util.FleetRef(flag_parser.Project())
 
@@ -87,9 +83,7 @@ class Delete(base.DeleteCommand):
       )
       return operation
 
-    operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
-    )
+    operation_client = client.OperationClient(release_track=self.ReleaseTrack())
     operation_ref = util.OperationRef(operation)
     completed_operation = operation_client.Wait(operation_ref)
     log.DeletedResource(

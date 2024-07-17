@@ -72,6 +72,7 @@ def _CommonArgs(
     support_vlan_nic=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_turbo_mode=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -203,6 +204,9 @@ The type of reservation for instances created from this template.
 
   if support_graceful_shutdown:
     instances_flags.AddGracefulShutdownArgs(parser, is_create=True)
+
+  if support_turbo_mode:
+    instances_flags.AddTurboModeArgs(parser)
 
 
 def _ValidateInstancesFlags(
@@ -562,6 +566,7 @@ def _RunCreate(
     support_graceful_shutdown=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_turbo_mode=False,
 ):
   """Common routine for creating instance template.
 
@@ -611,6 +616,7 @@ def _RunCreate(
         supported.
       support_watchdog_timer: Indicate whether the watchdog timer is supported.
       support_disk_labels: Indicate whether disk labels are supported.
+      support_turbo_mode: Indicate whether turbo mode is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -996,6 +1002,7 @@ def _RunCreate(
           and args.performance_monitoring_unit
       )
       or (support_watchdog_timer and (args.enable_watchdog_timer is not None))
+      or (support_turbo_mode and (args.turbo_mode is not None))
   ):
     visible_core_count = (
         args.visible_core_count if has_visible_core_count else None
@@ -1015,6 +1022,7 @@ def _RunCreate(
             enable_watchdog_timer=args.enable_watchdog_timer
             if support_watchdog_timer
             else None,
+            turbo_mode=args.turbo_mode if support_turbo_mode else None,
         )
     )
 
@@ -1132,6 +1140,7 @@ class Create(base.CreateCommand):
   _support_vlan_nic = False
   _support_watchdog_timer = False
   _support_disk_labels = False
+  _support_turbo_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -1157,6 +1166,7 @@ class Create(base.CreateCommand):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1205,6 +1215,7 @@ class Create(base.CreateCommand):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
+        support_turbo_mode=self._support_turbo_mode,
     )
 
 
@@ -1374,6 +1385,7 @@ class CreateAlpha(Create):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_disk_labels = True
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -1402,6 +1414,7 @@ class CreateAlpha(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1457,6 +1470,7 @@ class CreateAlpha(Create):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
+        support_turbo_mode=self._support_turbo_mode,
     )
 
 

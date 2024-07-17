@@ -24,6 +24,7 @@ import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.spanner import database_operations
+from googlecloudsdk.api_lib.spanner import database_sessions
 from googlecloudsdk.api_lib.spanner import databases
 from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.api_lib.storage import storage_api
@@ -35,7 +36,9 @@ from googlecloudsdk.command_lib.spanner import samples
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import files
+from googlecloudsdk.core.util import retry
 
 
 def check_instance(instance_id):
@@ -71,9 +74,27 @@ def download_sample_files(appname):
       bucket_ref, prefix=samples.get_gcs_bin_prefix(appname))
   bin_path = samples.get_local_bin_path(appname)
   for gcs_ref in gcs_bin_msgs:
+    # Skip folder or dir result in ListBucket result.
+    if not gcs_ref.name.split('/')[-1]:
+      continue
     gcs_ref = storage_util.ObjectReference.FromMessage(gcs_ref)
     local_path = os.path.join(bin_path, gcs_ref.name.split('/')[-1])
     gcs_to_local.append((gcs_ref, local_path))
+
+  if appname == samples.FINANCE_GRAPH_APP_NAME:
+    insert_path = samples.get_gcs_data_insert_statements_prefix(appname)
+    gcs_insert_files = storage_client.ListBucket(bucket_ref, prefix=insert_path)
+    for insert_file in gcs_insert_files:
+      insert_file_ref = storage_util.ObjectReference.FromMessage(insert_file)
+      # Skip folder or dir in ListBucket result. Cannot use `os.path.isdir` to
+      # check due to GCS file naming convention.
+      if insert_file_ref.name.endswith('/'):
+        continue
+      data_local_path = samples.get_local_data_insert_statements_path(appname)
+      local_path = os.path.join(
+          data_local_path, insert_file_ref.name.split('/')[-1]
+      )
+      gcs_to_local.append((insert_file_ref, local_path))
 
   # Download all files again if any file is missing
   if any(not os.path.exists(file_path) for _, file_path in gcs_to_local):
@@ -106,6 +127,48 @@ def _create_db_op(instance_ref, database_id, statements, database_dialect):
     raise ValueError(json.loads(ex.content)['error']['message'])
   except Exception:  # pylint: disable=broad-except
     raise ValueError("Failed to create database '{}'.".format(database_id))
+
+
+def insert_graph_data_in_one_file(appname, file_name, session_ref):
+  """Read and execute all insert statements in one file."""
+  if appname != samples.FINANCE_GRAPH_APP_NAME:
+    raise ValueError('Only graph app is supposed to pre-populate data.')
+
+  insert_statements = files.ReadFileContents(file_name)
+  for insert_statement in insert_statements.split('\n'):
+    if not insert_statement:
+      continue
+    if not insert_statement.startswith('INSERT INTO'):
+      continue
+    # Use a retryer to handle 409 txn abort errors that tend to happen
+    # when db is just created and group assignment contends with insert and
+    # commit dual-trip txns.
+    retry.Retryer(max_retrials=5).RetryOnException(
+        database_sessions.ExecuteSql,
+        args=[insert_statement, 'NORMAL', session_ref],
+        should_retry_if=lambda exc_type, *args: True,
+        sleep_ms=2000,
+    )
+
+
+def insert_graph_data(appname, database_id, session_ref):
+  """Insert graph data."""
+  if appname != samples.FINANCE_GRAPH_APP_NAME:
+    raise ValueError('Only graph app is supposed to pre-populate data.')
+
+  with progress_tracker.ProgressTracker(
+      'Populating graph data into `{}`'.format(database_id),
+      aborted_message='Aborting wait for data population.\n',
+  ):
+    data_files = files.GetDirectoryTreeListing(
+        samples.get_local_data_insert_statements_path(appname)
+    )
+    for data_file in data_files:
+      insert_graph_data_in_one_file(
+          appname,
+          data_file,
+          session_ref,
+      )
 
 
 def check_create_db(appname, instance_ref, database_id):
@@ -148,6 +211,7 @@ def check_create_db(appname, instance_ref, database_id):
                               "Updating database '{}'".format(database_id))
 
 
+@base.DefaultUniverseOnly
 class Init(base.Command):
   """Initialize a Cloud Spanner sample app.
 
@@ -234,12 +298,41 @@ class Init(base.Command):
     except ValueError as ex:
       raise calliope_exceptions.BadArgumentException('--database-id', ex)
 
-    backend_args = '{appname} --instance-id={instance_id}'.format(
-        appname=appname, instance_id=instance_id)
-    if args.database_id is not None:
-      backend_args += ' --database-id {}'.format(database_id)
-    return textwrap.dedent("""\
-        Initialization done. Next, start the backend gRPC service with:
+    if appname == samples.FINANCE_GRAPH_APP_NAME:
+      database_ref = resources.REGISTRY.Parse(
+          database_id,
+          params={
+              'instancesId': instance_ref.instancesId,
+              'projectsId': instance_ref.projectsId,
+          },
+          collection='spanner.projects.instances.databases',
+      )
+      session = database_sessions.Create(database_ref)
+      session_ref = resources.REGISTRY.ParseRelativeName(
+          relative_name=session.name,
+          collection='spanner.projects.instances.databases.sessions',
+      )
+      try:
+        insert_graph_data(appname, database_id, session_ref)
+      except Exception:
+        raise SystemError(
+            'Failed to insert data for the graph database. Please fallback to '
+            'manually insert.'
+        )
+      else:
+        return textwrap.dedent("""\
+            Initialization done for your Spanner Graph database.
+            """)
+      finally:
+        database_sessions.Delete(session_ref)
+    else:
+      backend_args = '{appname} --instance-id={instance_id}'.format(
+          appname=appname, instance_id=instance_id
+      )
+      if args.database_id is not None:
+        backend_args += ' --database-id {}'.format(database_id)
+      return textwrap.dedent("""\
+          Initialization done. Next, start the backend gRPC service with:
 
-        $ gcloud spanner samples backend {}
-        """.format(backend_args))
+          $ gcloud spanner samples backend {}
+          """.format(backend_args))

@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.container.fleet import util as api_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util
+from googlecloudsdk.command_lib.container.fleet.scopes import util as scopes_util
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
@@ -134,7 +135,7 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
     scope_arg = args.CONCEPTS.scope.Parse()
     scope_id = scope_arg.Name()
     scope_path = scope_arg.RelativeName()
-    iam_member = util.IamMemberFromRbacArgs(args.user, args.group)
+    iam_member = scopes_util.IamMemberFromRbac(args.user, args.group)
 
     matching_scope_rrbs = []
     role = ''
@@ -142,13 +143,16 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
     for scope_rrb in scope_rrbs:
       if scope_rrb.user == args.user and scope_rrb.group == args.group:
         if not role:
-          role = role_string(scope_rrb.role)
-        elif role != role_string(scope_rrb.role):
+          role = scopes_util.ScopeRbacRoleString(scope_rrb.role)
+        elif role != scopes_util.ScopeRbacRoleString(scope_rrb.role):
           log.error(
               '`{}` has more than one role (`{}` and `{}`) for scope `{}` via'
               ' existing RBAC role bindings. Please remove unexpected bindings'
               ' invdividually and retry.'.format(
-                  iam_member, role, role_string(scope_rrb.role), scope_id
+                  iam_member,
+                  role,
+                  scopes_util.ScopeRbacRoleString(scope_rrb.role),
+                  scope_id,
               )
           )
           return
@@ -160,8 +164,8 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
       )
       return
 
-    iam_scope_level_role = util.IamScopeLevelScopeRoleFromRbacArgs(role)
-    iam_project_level_role = util.IamProjectLevelScopeRoleFromRbacArgs(role)
+    iam_scope_level_role = scopes_util.IamScopeLevelScopeRoleFromRbac(role)
+    iam_project_level_role = scopes_util.IamProjectLevelScopeRoleFromRbac(role)
 
     # We don't want to remove the binding for the project-level scope role if
     # app operator still needs the same access for other scopes.
@@ -227,7 +231,7 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
           )
       )
 
-    condition = util.ScopeLogViewCondition(project, scope_id)
+    condition = scopes_util.ScopeLogViewCondition(project, scope_id)
     iam_util.ValidateConditionArgument(
         condition, iam_util.CONDITION_FORMAT_EXCEPTION
     )
@@ -273,15 +277,3 @@ def bindings_match(scope_rrb, role, user, group):
       and scope_rrb.user == user
       and scope_rrb.group == group
   )
-
-
-def role_string(scope_rrb_role):
-  if re.search(
-      'ADMIN', encoding.MessageToPyValue(scope_rrb_role)['predefinedRole']
-  ):
-    return 'admin'
-  if re.search(
-      'EDIT', encoding.MessageToPyValue(scope_rrb_role)['predefinedRole']
-  ):
-    return 'edit'
-  return 'view'

@@ -122,6 +122,7 @@ def _CommonArgs(
     support_igmp_query=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_turbo_mode=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -266,6 +267,9 @@ def _CommonArgs(
   if support_watchdog_timer:
     instances_flags.AddWatchdogTimerArg(parser)
 
+  if support_turbo_mode:
+    instances_flags.AddTurboModeArgs(parser)
+
 
 # TODO(b/305707759):Change @base.DefaultUniverseOnly to
 # @base.UniverseCompatible once b/305707759 is fixed.
@@ -317,6 +321,7 @@ class Create(base.CreateCommand):
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = False
+  _support_turbo_mode = False
 
   @classmethod
   def Args(cls, parser):
@@ -343,6 +348,7 @@ class Create(base.CreateCommand):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -592,27 +598,44 @@ class Create(base.CreateCommand):
       has_visible_core_count = (
           self._support_visible_core_count and
           args.visible_core_count is not None)
-      if (args.enable_nested_virtualization is not None or
-          args.threads_per_core is not None or
-          (self._support_numa_node_count and args.numa_node_count is not None)
-          or has_visible_core_count or args.enable_uefi_networking is not None
-          or (self._support_performance_monitoring_unit
-              and args.performance_monitoring_unit)
-          or (self._support_watchdog_timer
-              and args.enable_watchdog_timer is not None)):
+      if (
+          args.enable_nested_virtualization is not None
+          or args.threads_per_core is not None
+          or (
+              self._support_numa_node_count and args.numa_node_count is not None
+          )
+          or has_visible_core_count
+          or args.enable_uefi_networking is not None
+          or (
+              self._support_performance_monitoring_unit
+              and args.performance_monitoring_unit
+          )
+          or (
+              self._support_watchdog_timer
+              and args.enable_watchdog_timer is not None
+          )
+          or (self._support_turbo_mode and args.turbo_mode is not None)
+      ):
         visible_core_count = (
             args.visible_core_count if has_visible_core_count else None
         )
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
-                compute_client.messages, args.enable_nested_virtualization,
+                compute_client.messages,
+                args.enable_nested_virtualization,
                 args.threads_per_core,
                 args.numa_node_count if self._support_numa_node_count else None,
-                visible_core_count, args.enable_uefi_networking,
+                visible_core_count,
+                args.enable_uefi_networking,
                 args.performance_monitoring_unit
-                if self._support_performance_monitoring_unit else None,
+                if self._support_performance_monitoring_unit
+                else None,
                 args.enable_watchdog_timer
-                if self._support_watchdog_timer else None))
+                if self._support_watchdog_timer
+                else None,
+                args.turbo_mode if self._support_turbo_mode else None,
+            )
+        )
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -812,6 +835,7 @@ class CreateBeta(Create):
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = True
+  _support_turbo_mode = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -854,6 +878,7 @@ class CreateBeta(Create):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -924,6 +949,7 @@ class CreateAlpha(CreateBeta):
   _support_igmp_query = True
   _support_watchdog_timer = True
   _support_disk_labels = True
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -955,6 +981,7 @@ class CreateAlpha(CreateBeta):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

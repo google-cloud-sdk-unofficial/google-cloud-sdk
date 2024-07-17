@@ -185,7 +185,7 @@ class SetSchedulingInstances(base.SilentCommand):
         args, 'clear_discard_local_ssds_at_termination_timestamp'
     ) and args.IsSpecified('clear_discard_local_ssds_at_termination_timestamp'):
       scheduling_options.onInstanceStopAction = None
-      cleared_fields.append('discardLocalSsdsAtTerminationTimestamp')
+      cleared_fields.append('onInstanceStopAction')
 
     if instance_utils.IsAnySpecified(args, 'node', 'node_affinity_file',
                                      'node_group'):

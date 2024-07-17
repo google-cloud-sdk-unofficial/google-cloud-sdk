@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Non-API-specific IAM policy definitions
 
 For allowed roles / permissions, see:

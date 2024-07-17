@@ -12,6 +12,7 @@ import bq_auth_flags
 import bq_flags
 import bq_utils
 from utils import bq_error
+from pyglib import resources
 
 
 def LoadCredential() -> google_oauth2.Credentials:
@@ -30,9 +31,15 @@ def LoadCredential() -> google_oauth2.Credentials:
 
 
 def _GetGcloudPath() -> str:
+  """Returns the string to use to call gcloud."""
   if 'nt' == os.name:
-    return 'gcloud.cmd'
-  return 'gcloud'
+    binary = 'gcloud.cmd'
+  else:
+    binary = 'gcloud'
+  if bq_utils.IS_TPC_BINARY:
+    binary = resources.GetResourceFilename('google3/cloud/sdk/gcloud/' + binary)
+  logging.info('Found gcloud path: %s', binary)
+  return binary
 
 
 def _GetAccessTokenAndPrintOutput(gcloud_path: str) -> Optional[str]:

@@ -140,17 +140,10 @@ class Create(base.Command):
 
   detailed_help = {
       'DESCRIPTION': '{description}',
-      'EXAMPLES': """\
-          cat > config.yaml << EOF
-          agentsRule:
-            packageState: installed
-            version: latest
-          instanceFilter:
-            inclusionLabels:
-            - labels:
-                env: prod
-          EOF
-          $ {command} agent-policy --project=PROJECT --zone=ZONE --file=config.yaml
+      'EXAMPLES':
+          """
+          To create a Google Cloud Observability agents policy, run:
+            $ {command} agent-policy --project=PROJECT --zone=ZONE --file=config.yaml
           """,
   }
 

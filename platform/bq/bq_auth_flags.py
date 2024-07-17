@@ -59,8 +59,8 @@ OAUTH_ACCESS_TOKEN = flags.DEFINE_string(
 )
 USE_GOOGLE_AUTH = flags.DEFINE_boolean(
     'use_google_auth',
-    False,
-    'Use new google auth libraries',
+    True,
+    'Use new google auth libraries.',
 )
 QUOTA_PROJECT_ID: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'quota_project_id',

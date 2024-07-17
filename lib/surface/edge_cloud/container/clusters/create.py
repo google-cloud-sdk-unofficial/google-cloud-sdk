@@ -45,6 +45,7 @@ _RCP_LRO_MAXIMUM_TIMEOUT_ = 1800000  # 30 min
 _LCP_LRO_MAXIMUM_TIMEOUT_ = 36000000  # 10 hours
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Edge Container cluster."""
@@ -76,6 +77,7 @@ class Create(base.CreateCommand):
     container_flags.AddControlPlaneNodeCount(parser)
     container_flags.AddControlPlaneMachineFilter(parser)
     container_flags.AddControlPlaneSharedDeploymentPolicy(parser)
+    container_flags.AddOfflineRebootTtL(parser)
     container_flags.AddReleaseChannel(parser)
     container_flags.AddVersion(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -147,5 +149,4 @@ class CreateAlpha(Create):
     container_flags.AddServicesIPV6CIDR(parser)
     container_flags.AddExternalLbIpv6AddressPools(parser)
     container_flags.AddExternalLoadBalancerAddressPools(parser)
-    container_flags.AddOfflineRebootTtL(parser)
     container_flags.AddControlPlaneNodeStorageSchema(parser)

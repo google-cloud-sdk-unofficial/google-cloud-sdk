@@ -17,13 +17,45 @@
 
 import enum
 
+from googlecloudsdk.api_lib.storage import errors as api_errors
+from googlecloudsdk.api_lib.storage.gcs_json import client as gcs_json_client
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.diagnose import download_throughput_diagnostic as download_throughput_diagnostic_lib
+from googlecloudsdk.command_lib.storage.diagnose import export_util
 from googlecloudsdk.command_lib.storage.diagnose import latency_diagnostic as latency_diagnostic_lib
+from googlecloudsdk.command_lib.storage.diagnose import system_info
 from googlecloudsdk.command_lib.storage.diagnose import upload_throughput_diagnostic as upload_throughput_diagnostic_lib
+from googlecloudsdk.command_lib.storage.resources import gcs_resource_reference
+from googlecloudsdk.core import log
+
+_OBJECT_SIZE_UPPER_BOUND = '1GB'
+
+
+def get_bucket_resource(
+    bucket_url: storage_url.StorageUrl,
+) -> gcs_resource_reference.GcsBucketResource:
+  """Fetches the bucket resource for the given bucket storage URL.
+
+  Args:
+    bucket_url: The URL object to get the bucket resource for.
+
+  Returns:
+    The bucket resource for the given URL.
+
+  Raises:
+    FatalError: If the bucket resource could not be fetched.
+  """
+  gcs_client = gcs_json_client.JsonClient()
+  try:
+    return gcs_client.get_bucket(bucket_url.bucket_name)
+  except api_errors.CloudApiError as e:
+    raise command_errors.FatalError(
+        f'Bucket metadata could not be fetched for {bucket_url.bucket_name}'
+    ) from e
 
 
 class PerformanceTestType(enum.Enum):
@@ -194,13 +226,17 @@ class Diagnose(base.Command):
     )
     object_size_properties_group.add_argument(
         '--object-size',
-        type=arg_parsers.BinarySize(),
+        type=arg_parsers.BinarySize(upper_bound=_OBJECT_SIZE_UPPER_BOUND),
         help='Object size to use for the diagnostic tests.',
     )
     object_size_properties_group.add_argument(
         '--object-sizes',
         metavar='OBJECT_SIZES',
-        type=arg_parsers.ArgList(element_type=arg_parsers.BinarySize()),
+        type=arg_parsers.ArgList(
+            element_type=arg_parsers.BinarySize(
+                upper_bound=_OBJECT_SIZE_UPPER_BOUND
+            )
+        ),
         help="""
         List of object sizes to use for the tests. Sizes should be
         provided for each object specified using `--object-count` flag.
@@ -212,7 +248,7 @@ class Diagnose(base.Command):
     )
     export_group.add_argument(
         '--export',
-        type=arg_parsers.ArgBoolean(),
+        action='store_true',
         required=True,
         help="""
         Generate and export a diagnostic bundle. The following
@@ -239,7 +275,7 @@ class Diagnose(base.Command):
     parser.display_info.AddFormat("""
                                   table(
                                     name,
-                                    operation_results[]:format='table(name,payload_description,result)'
+                                    operation_results[]:format='table[box](name,payload_description,result)'
                                   )
                                   """)
 
@@ -249,6 +285,8 @@ class Diagnose(base.Command):
         PerformanceTestType.LATENCY.value,
         PerformanceTestType.UPLOAD_THROUGHPUT.value,
     ]
+    default_download_type = download_throughput_diagnostic_lib.DownloadType.FILE
+    default_upload_type = upload_throughput_diagnostic_lib.UploadType.FILE
 
     url_object = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
@@ -267,9 +305,19 @@ class Diagnose(base.Command):
       elif args.object_size:
         object_sizes = [args.object_size] * args.object_count
 
+    bucket_resource = get_bucket_resource(url_object)
+
+    log.status.Print(
+        f'Using {bucket_resource.name} bucket for the diagnostic tests.'
+    )
+    log.status.Print(f'Bucket location : {bucket_resource.location}')
+    log.status.Print(
+        f'Bucket storage class : {bucket_resource.default_storage_class}'
+    )
+
     tests_to_run = args.test_type or default_tests
 
-    test_results = []
+    test_results = [system_info.get_system_info_diagnostic_result()]
 
     if PerformanceTestType.LATENCY.value in tests_to_run:
       latency_diagnostic = latency_diagnostic_lib.LatencyDiagnostic(
@@ -280,7 +328,7 @@ class Diagnose(base.Command):
       test_results.append(latency_diagnostic.result)
 
     if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
-      download_type = None
+      download_type = default_download_type
       if args.download_type:
         download_type = download_throughput_diagnostic_lib.DownloadType(
             args.download_type
@@ -298,7 +346,7 @@ class Diagnose(base.Command):
       test_results.append(download_throughput_diagnostic.result)
 
     if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
-      upload_type = None
+      upload_type = default_upload_type
       if args.upload_type:
         upload_type = upload_throughput_diagnostic_lib.UploadType(
             args.upload_type
@@ -314,5 +362,17 @@ class Diagnose(base.Command):
       )
       upload_throughput_diagnostic.execute()
       test_results.append(upload_throughput_diagnostic.result)
+
+    if args.export:
+      log.status.Print('Exporting diagnostic bundle...')
+      export_path = export_util.export_diagnostic_bundle(
+          test_results, args.destination
+      )
+      log.status.Print(
+          'Successfully exported diagnostic bundle to {}.'.format(export_path)
+      )
+      return None
+
+    log.status.Print('Generating diagnostic report...')
 
     return test_results

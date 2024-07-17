@@ -13,6 +13,7 @@ from absl import app
 from absl import flags
 import googleapiclient
 
+import bq_auth_flags
 import bq_flags
 import bq_utils
 from utils import bq_error
@@ -247,6 +248,8 @@ class BigqueryCmd(NewCmd):
 
     Subclasses will override for any exceptional cases.
     """
+    if bq_auth_flags.USE_GOOGLE_AUTH.value:
+      return False
     return not _UseServiceAccount() and not (
         os.path.exists(bq_utils.GetBigqueryRcFilename())
         or os.path.exists(FLAGS.credential_file)

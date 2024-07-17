@@ -73,7 +73,6 @@ class List(base.ListCommand):
 
     parser.add_argument(
         '--region',
-        required=True,
         help='The Cloud region to list worker pools in.')
     parser.display_info.AddFormat("""
           table(
@@ -96,6 +95,8 @@ class List(base.ListCommand):
     """
 
     wp_region = args.region
+    if not wp_region:
+      wp_region = properties.VALUES.builds.region.GetOrFail()
     parent = properties.VALUES.core.project.Get(required=True)
 
     # Get the parent project ref
@@ -127,7 +128,6 @@ class ListAlpha(List):
 
     parser.add_argument(
         '--region',
-        required=True,
         help='The Cloud region to list worker pools in.')
     parser.add_argument(
         '--generation',
@@ -154,6 +154,9 @@ class ListAlpha(List):
     """
 
     wp_region = args.region
+    if not wp_region:
+      wp_region = properties.VALUES.builds.region.GetOrFail()
+
     parent = properties.VALUES.core.project.Get(required=True)
 
     # Get the parent project ref

@@ -90,6 +90,48 @@
         arg_value: always
         help_text: |
           Redis explicitly calls fsync for every write command.
+    - group:
+        hidden: true
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - arg_name: maintenance-window-any
+          release_tracks: [ALPHA]
+          hidden: true
+          action: store_true
+          help_text: |
+            Removes the user-specified maintenance window.
+        - group:
+            hidden: true
+            params:
+            - arg_name: maintenance-window-day
+              api_field: cluster.maintenancePolicy.weeklyMaintenanceWindow.day
+              release_tracks: [ALPHA]
+              hidden: true
+              choices:
+              - arg_value: monday
+                enum_value: MONDAY
+              - arg_value: tuesday
+                enum_value: TUESDAY
+              - arg_value: wednesday
+                enum_value: WEDNESDAY
+              - arg_value: thursday
+                enum_value: THURSDAY
+              - arg_value: friday
+                enum_value: FRIDAY
+              - arg_value: saturday
+                enum_value: SATURDAY
+              - arg_value: sunday
+                enum_value: SUNDAY
+              help_text: |
+               The day of week when the window starts, e.g. `sunday`.
+            - arg_name: maintenance-window-hour
+              api_field: cluster.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
+              release_tracks: [ALPHA]
+              hidden: true
+              help_text: |
+               Hour of day (`0` to `23`) for the start of maintenance window, in UTC time zone..
+              processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
 
   async:
@@ -105,6 +147,8 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdatePersistenceConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:RemoveRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
     BETA:
       api_version: v1beta1
       modify_request_hooks:

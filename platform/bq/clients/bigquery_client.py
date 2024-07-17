@@ -9,7 +9,6 @@ import enum
 from http import client as http_client_lib
 import json
 import logging
-import re
 import tempfile
 import time
 import traceback
@@ -78,6 +77,8 @@ class BigqueryClient:
       max_rows_per_request: Optional[int] = None,
       quota_project_id: Optional[str] = None,
       use_google_auth: bool = False,
+      credentials=None,
+      enable_resumable_uploads: bool = True,
       **kwds,
   ):
     """Initializes BigqueryClient.
@@ -122,6 +123,8 @@ class BigqueryClient:
     self.max_rows_per_request = max_rows_per_request
     self.quota_project_id = quota_project_id
     self.use_google_auth = use_google_auth
+    self.credentials = credentials
+    self.enable_resumable_uploads = enable_resumable_uploads
     # TODO(b/324243535): Delete this block to make attributes explicit.
     for key, value in kwds.items():
       setattr(self, key, value)

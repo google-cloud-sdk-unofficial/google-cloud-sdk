@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
+from googlecloudsdk.api_lib.container.fleet import types
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
@@ -28,7 +29,6 @@ from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as messages
 
 
 @base.DefaultUniverseOnly
@@ -56,7 +56,7 @@ class Create(base.CreateCommand):
     flags.AddDefaultClusterConfig()
     labels_util.AddCreateLabelsFlags(parser)
 
-  def Run(self, args: parser_extensions.Namespace) -> messages.Operation:
+  def Run(self, args: parser_extensions.Namespace) -> types.Operation:
     """Runs the fleet create command.
 
     User specified --format takes the highest priority. If not specified, it
@@ -103,7 +103,6 @@ class Create(base.CreateCommand):
         fleet=fleet,
         parent=util.FleetParentName(flag_parser.Project()),
     )
-
     operation = fleetclient.CreateFleet(req)
     fleet_ref = util.FleetRef(flag_parser.Project())
 
@@ -113,9 +112,7 @@ class Create(base.CreateCommand):
       )
       return operation
 
-    operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
-    )
+    operation_client = client.OperationClient(self.ReleaseTrack())
     completed_operation = operation_client.Wait(util.OperationRef(operation))
     log.CreatedResource(
         fleet_ref, kind='Anthos fleet', is_async=flag_parser.Async()

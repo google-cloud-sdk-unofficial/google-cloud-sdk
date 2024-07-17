@@ -6,7 +6,7 @@
     description: |
       Retrieve and display a list of all regional endpoints in the specified project.
     examples: |
-      To list all regional endpoints in us-centeral1, run:
+      To list all regional endpoints in us-central1, run:
 
         $ {command}
           --region=us-central1

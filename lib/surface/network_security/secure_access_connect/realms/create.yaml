@@ -1,0 +1,35 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Create a SAC realm.
+  description: |
+    Create a new realm supported by the specified security service.
+  examples: |
+    To create a realm named `my-realm` using Prisma Access, run:
+
+      $ {command} my-realm --security-service=prisma-access
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:sacRealm
+    help_text: |
+      Realm to be created.
+  params:
+  - arg_name: security-service
+    required: true
+    api_field: sACRealm.securityService
+    help_text: |
+      Security service supporting this realm.
+    choices:
+    - arg_value: prisma-access
+      enum_value: PALO_ALTO_PRISMA_ACCESS
+
+async:
+  collection: networksecurity.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.sacRealms
+  method: create

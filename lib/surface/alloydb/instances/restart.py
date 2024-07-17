@@ -14,31 +14,31 @@
 # limitations under the License.
 """Restarts an AlloyDB instance."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-
 
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import instance_operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.alloydb import flags
+from googlecloudsdk.command_lib.alloydb import instance_helper
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+# TODO(b/312466999): Change @base.DefaultUniverseOnly to
+# @base.UniverseCompatible once b/312466999 is fixed.
+# See go/gcloud-cli-running-tpc-tests
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Restart(base.SilentCommand):
   """Restarts an AlloyDB instance within a given cluster."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
         To restart an instance, run:
 
           $ {command} my-instance --cluster=my-cluster --region=us-central1
@@ -57,12 +57,17 @@ class Restart(base.SilentCommand):
     flags.AddInstance(parser)
     flags.AddRegion(parser)
 
+  def ConstructRestartRequest(self, **kwargs):
+    return instance_helper.ConstructRestartRequestFromArgs(
+        kwargs.get('alloydb_messages'), kwargs.get('project_ref')
+    )
+
   def Run(self, args):
     """Constructs and sends request.
 
     Args:
       args: argparse.Namespace, An object that contains the values for the
-          arguments specified in the .Args() method.
+        arguments specified in the .Args() method.
 
     Returns:
       ProcessHttpResponse of the request made.
@@ -75,13 +80,38 @@ class Restart(base.SilentCommand):
         projectsId=properties.VALUES.core.project.GetOrFail,
         locationsId=args.region,
         clustersId=args.cluster,
-        instancesId=args.instance)
-    req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesRestartRequest(
-        name=project_ref.RelativeName())
+        instancesId=args.instance,
+    )
+    req = self.ConstructRestartRequest(
+        alloydb_messages=alloydb_messages,
+        project_ref=project_ref,
+        args=args
+    )
+
     op = alloydb_client.projects_locations_clusters_instances.Restart(req)
     op_ref = resources.REGISTRY.ParseRelativeName(
-        op.name, collection='alloydb.projects.locations.operations')
+        op.name, collection='alloydb.projects.locations.operations'
+    )
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     if not args.async_:
-      instance_operations.Await(op_ref, 'Restarting instance', self.ReleaseTrack(), False)
+      instance_operations.Await(
+          op_ref, 'Restarting instance', self.ReleaseTrack(), False
+      )
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class RestartAlphaBeta(Restart):
+  """Restarts an AlloyDB instance within a given cluster."""
+
+  @staticmethod
+  def Args(parser):
+    super(RestartAlphaBeta, RestartAlphaBeta).Args(parser)
+    flags.AddNodeIds(parser)
+
+  def ConstructRestartRequest(self, **kwargs):
+    return instance_helper.ConstructRestartRequestFromArgsAlphaBeta(
+        kwargs.get('alloydb_messages'),
+        kwargs.get('project_ref'),
+        kwargs.get('args'),
+    )

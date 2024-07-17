@@ -56,12 +56,30 @@ _VERSION_FILENAME = 'VERSION'
 
 def _GetVersion() -> str:
   """Returns content of VERSION file found in same dir as the cli binary."""
-  root = 'bq_utils'
-  # pragma pylint: disable=line-too-long
-  return stringutil.ensure_str(pkgutil.get_data(root, _VERSION_FILENAME)).strip()
+  root = __name__
+  try:
+    # pylint: disable-next=unused-variable
+    version_str = pkgutil.get_data(root, _VERSION_FILENAME)
+  except FileNotFoundError:
+    pass
+  if not version_str:
+    version_str = 'unknown-version'
+  version_str = stringutil.ensure_str(version_str).strip()
+  assert (
+      '\n' not in version_str
+  ), 'New lines are not allowed in the version string.'
+  return version_str
 
 
 VERSION_NUMBER = _GetVersion()
+
+
+def _IsTpcBinary() -> bool:
+  """Returns true if the current binary is targeting TPC."""
+  return VERSION_NUMBER.startswith('tpc-')
+
+
+IS_TPC_BINARY = _IsTpcBinary()
 
 
 def GetBigqueryRcFilename() -> Optional[str]:

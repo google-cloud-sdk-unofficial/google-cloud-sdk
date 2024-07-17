@@ -1,0 +1,41 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Update a Managed Flink job.
+  description: |
+    Update a Managed Flink job.
+
+  examples: |
+    To update a Managed Flink whose ID is myjob, run the following:
+
+      $ {command} myjob \
+          --location=us-central1 \
+          --managed-kafka-clusters=projects/123456789/locations/us-central1/managedKafkaClusters/my-cluster \
+          --throughput-based-min-parallelism=5 \
+          --throughput-based-max-parallelism=30
+
+request:
+  collection: managedflink.projects.locations.jobs
+
+async:
+  collection: managedflink.projects.locations.operations
+
+arguments:
+  resource:
+    help_text: Identifies the Flink job whose details are to be displayed.
+    spec: !REF googlecloudsdk.command_lib.managed_flink.resources:job
+
+  params:
+  - group:
+      mutex: true
+      params:
+      # TODO(b/352779967): Add support for clear-managed-kafka-clusters flag.
+      - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:managed-kafka-clusters
+      - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:fixed-parallelism
+      - group:
+          params:
+          - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:throughput-based-min-parallelism
+          - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:throughput-based-max-parallelism
+            required: true

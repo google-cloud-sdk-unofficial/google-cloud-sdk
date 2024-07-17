@@ -289,9 +289,9 @@ def ListTransferLogs(
 def StartManualTransferRuns(
     transfer_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.TransferConfigReference,
-    start_time: str,
-    end_time: str,
-    run_time: str,
+    start_time: Optional[str],
+    end_time: Optional[str],
+    run_time: Optional[str],
 ):
   """Starts manual transfer runs.
 
