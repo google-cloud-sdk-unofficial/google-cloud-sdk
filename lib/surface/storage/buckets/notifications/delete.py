@@ -38,6 +38,7 @@ def _delete_notification_configuration_task_iterator(urls):
                .notification_configuration.id))
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete notification configurations from a bucket."""
 

@@ -43,6 +43,7 @@ AnywhereCacheDisplayTitlesAndDefaults = collections.namedtuple(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Returns details of Anywhere Cache instance of a bucket."""
 

@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Get configuration and latest storage operation details."""
 

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.Command):
   """Describe an insights operation."""

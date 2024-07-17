@@ -150,6 +150,7 @@ class PySpark(baseSparkApplication.BaseGDCSparkApplicationCommand):
             namespace=args.namespace,
             properties=spark_app_properties,
             version=args.version,
+            dependencyImages=args.dependency_images or [],
             pysparkApplicationConfig=messages.PySparkApplicationConfig(
                 args=args.job_args or [],
                 mainPythonFileUri=args.py_file,

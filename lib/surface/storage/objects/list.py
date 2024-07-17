@@ -54,6 +54,7 @@ def _object_iterator(
       yield resource
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """Lists Cloud Storage objects."""
 

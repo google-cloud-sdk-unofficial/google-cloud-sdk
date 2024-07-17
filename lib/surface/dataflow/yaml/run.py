@@ -88,6 +88,12 @@ class Run(base.Command):
         help='Pipeline options to pass to the job.',
     )
 
+    parser.add_argument(
+        '--jinja-variables',
+        metavar='JSON_OBJECT',
+        help='Jinja2 variables to be used in reifying the yaml.',
+    )
+
   def Run(self, args):
     """Runs the command.
 
@@ -112,7 +118,10 @@ class Run(base.Command):
     else:
       parameters['yaml_pipeline'] = args.yaml_pipeline
 
-    if 'yaml_pipeline' in parameters:
+    if args.jinja_variables:
+      parameters['jinja_variables'] = args.jinja_variables
+
+    if 'yaml_pipeline' in parameters and 'jinja-variables' not in parameters:
       _validate_yaml(parameters['yaml_pipeline'])
 
     region_id = dataflow_util.GetRegion(args)

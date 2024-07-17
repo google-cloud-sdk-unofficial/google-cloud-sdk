@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describes Cloud Storage buckets."""
 

@@ -28,6 +28,10 @@ from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   r"""Update a key.
 
@@ -51,6 +55,19 @@ class Update(base.UpdateCommand):
   `remove-labels` flags.
 
   4. Update the primary version for the given key with `primary-version` flag.
+
+  5. Update the Key Access Justifications policy for the given key with
+  `allowed-access-reasons` flag to allow specified reasons. The key must be
+  enrolled in Key Access Justifications to use this flag.
+
+  6. Remove the Key Access Justifications policy for the given key with
+  `remove-key-access-justifications-policy` flag. The key must be enrolled in
+  Key Access Justifications to use this flag.
+
+  7. Update the Key Access Justifications policy for the given key with
+  `allowed_access_reasons` flag to allow zero access reasons. This effectively
+  disables the key, because a policy is configured to reject all access reasons.
+  The key must be enrolled in Key Access Justifications to use this flag.
 
   ## EXAMPLES
 
@@ -106,6 +123,34 @@ class Update(base.UpdateCommand):
         --location=global \
         --keyring=fellowship \
         --default-algorithm=rsa-decrypt-oaep-4096-sha256
+
+  The following command updates the Key Access Justifications policy for the key
+  named `frodo` within the keyring ``fellowship'' and location ``global'' to
+  allow only ``customer-initiated-access'' and
+  ``google-initiated-system-operation'':
+
+    $ {command} frodo \
+        --location=global \
+        --keyring=fellowship \
+        --allowed-access-reasons=customer-initiated-access,google-initiated-system-operation
+
+  The following command removes the Key Access Justifications policy for the key
+  named `frodo` within the keyring ``fellowship'' and location ``global'', which
+  results in all access reasons being allowed:
+
+    $ {command} frodo \
+        --location=global \
+        --keyring=fellowship \
+        --remove-key-access-justifications-policy
+
+  The following command updates the Key Access Justifications policy for the key
+  named `frodo` within the keyring ``fellowship'' and location ``global'' to
+  allow only zero access reasons, effectively disabling the key:
+
+    $ {command} frodo \
+        --location=global \
+        --keyring=fellowship \
+        --allowed-access-reasons=
   """
 
   @staticmethod
@@ -117,6 +162,8 @@ class Update(base.UpdateCommand):
     flags.AddCryptoKeyPrimaryVersionFlag(parser, 'to make primary')
     labels_util.AddUpdateLabelsFlags(parser)
     flags.AddDefaultAlgorithmFlag(parser)
+    flags.AddAllowedAccessReasonsFlag(parser)
+    flags.AddRemoveKeyAccessJustificationsPolicyFlag(parser)
 
   def ProcessFlags(self, args):
     fields_to_update = []
@@ -136,6 +183,19 @@ class Update(base.UpdateCommand):
       fields_to_update.append('nextRotationTime')
     if args.default_algorithm:
       fields_to_update.append('versionTemplate.algorithm')
+    if (
+        args.allowed_access_reasons is not None
+        and args.remove_key_access_justifications_policy
+    ):
+      raise kms_exceptions.ArgumentError(
+          'You cannot set and remove a Key Access Justifications policy at the '
+          'same time.'
+      )
+    if (
+        args.allowed_access_reasons is not None
+        or args.remove_key_access_justifications_policy
+    ):
+      fields_to_update.append('keyAccessJustificationsPolicy')
 
     # Raise an exception when no update field is specified.
     if not args.primary_version and not fields_to_update:
@@ -143,7 +203,9 @@ class Update(base.UpdateCommand):
           'At least one of --primary-version or --update-labels or '
           '--remove-labels or --clear-labels or --rotation-period or '
           '--next-rotation-time or --remove-rotation-schedule or '
-          '--default-algorithm must be specified.')
+          '--default-algorithm or --allowed-access-reasons or '
+          '--remove-key-access-justifications-policy must be specified.'
+      )
 
     return fields_to_update
 
@@ -197,6 +259,8 @@ class Update(base.UpdateCommand):
       req.cryptoKey.versionTemplate = messages.CryptoKeyVersionTemplate(
           algorithm=maps.ALGORITHM_MAPPER.GetEnumForChoice(
               args.default_algorithm))
+    if not args.remove_key_access_justifications_policy:
+      flags.SetKeyAccessJustificationsPolicy(args, req.cryptoKey)
 
     try:
       response = client.projects_locations_keyRings_cryptoKeys.Patch(req)

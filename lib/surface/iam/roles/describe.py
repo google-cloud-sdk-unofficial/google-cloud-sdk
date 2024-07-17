@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Show metadata for a role.
 

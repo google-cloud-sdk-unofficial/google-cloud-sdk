@@ -346,7 +346,7 @@ class _Collector(object):
 _LOG_FUNCS = {
     'info': logging.info,
     'error': logging.error,
-    'warn': logging.warn,
+    'warn': logging.warning,
     'debug': logging.debug
 }
 

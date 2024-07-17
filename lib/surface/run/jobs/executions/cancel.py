@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import datetime
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import cancellation
 from googlecloudsdk.command_lib.run import connection_context
@@ -27,9 +29,11 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel an execution."""
 
@@ -63,6 +67,16 @@ class Cancel(base.Command):
 
   def Run(self, args):
     """Cancel an execution."""
+    if datetime.datetime.now() < datetime.datetime(2024, 9, 16):
+      # TODO(b/344016219): Remove this warning.
+      log.warning(
+          'Beginning on September 16, 2024, the permission for '
+          'canceling job executions will change from `run.jobs.run` '
+          'to `run.executions.cancel`. Review and update your IAM '
+          'roles used for canceling job executions to include the new '
+          'permission.'
+      )
+
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack())
     ex_ref = args.CONCEPTS.execution.Parse()

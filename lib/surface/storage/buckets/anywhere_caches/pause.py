@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pau
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Pause(base.Command):
   """Pause Anywhere Cache instances."""
 

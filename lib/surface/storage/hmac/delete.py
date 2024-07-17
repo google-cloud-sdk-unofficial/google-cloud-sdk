@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Remove a service account HMAC."""
 

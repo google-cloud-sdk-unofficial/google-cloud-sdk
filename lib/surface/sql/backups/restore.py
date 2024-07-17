@@ -109,6 +109,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddAllowedPscProjects(psc_setup_group, hidden=True)
   flags.AddSslMode(parser, hidden=True)
   flags.AddEnableGoogleMLIntegration(parser, hidden=True)
+  flags.AddEnableDataplexIntegration(parser)
   flags.AddLocationGroup(parser, hidden=True, specify_default_region=False)
   flags.AddDatabaseVersion(
       parser, restrict_choices=False, hidden=True, support_default_version=False
@@ -119,6 +120,7 @@ def AddInstanceSettingsArgs(parser):
   # --)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class RestoreBackup(base.RestoreCommand):

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List inventory report details."""
 

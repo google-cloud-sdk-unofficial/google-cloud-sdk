@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
 @base.Hidden
+@base.UniverseCompatible
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from an object."""
 

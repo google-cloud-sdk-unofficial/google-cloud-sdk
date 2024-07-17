@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import res
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Resume(base.Command):
   """Resume Anywhere Cache instances."""
 

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class Create(base.Command):
   """Add a service account HMAC."""
 

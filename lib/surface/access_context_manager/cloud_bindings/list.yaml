@@ -56,4 +56,4 @@
             dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
         )
     ALPHA:
-      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, restrictedClientApplications)
+      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, reauthSettings, restrictedClientApplications)

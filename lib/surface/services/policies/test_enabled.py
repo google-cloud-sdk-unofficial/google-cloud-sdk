@@ -26,8 +26,9 @@ _SERVICE = 'services/%s'
 
 
 # TODO(b/321801975) make command public after suv2 launch.
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class TestEnabled(base.Command):
   """Test a value against the result of merging consumer policies in the resource hierarchy.
 

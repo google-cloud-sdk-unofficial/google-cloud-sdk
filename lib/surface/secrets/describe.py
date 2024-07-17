@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   r"""Describe a secret's metadata.
@@ -39,15 +40,20 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     secrets_args.AddSecret(
-        parser, purpose='to describe', positional=True, required=True)
+        parser, purpose='to describe', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to describe', hidden=True)
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     secret_ref = args.CONCEPTS.secret.Parse()
-    secret = secrets_api.Secrets(api_version=api_version).Get(secret_ref)
+    secret = secrets_api.Secrets(api_version=api_version).Get(
+        secret_ref, secret_location=args.location
+    )
     return secret
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DescribeBeta(Describe):
   r"""Describe a secret's metadata.

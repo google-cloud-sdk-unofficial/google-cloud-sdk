@@ -30,6 +30,7 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update a VPC spoke.
 
@@ -38,7 +39,8 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddSpokeResourceArg(parser, 'to update', global_spoke_command=True)
+    flags.AddSpokeResourceArg(parser, 'to update',
+                              flags.ResourceLocationType.GLOBAL_ONLY)
     flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
     flags.AddDescriptionFlag(parser, 'New description of the spoke.')
     flags.AddAsyncFlag(parser)

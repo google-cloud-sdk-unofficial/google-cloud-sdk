@@ -29,6 +29,7 @@ from googlecloudsdk.core import yaml
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Submit(base.Command):
   """Create a Batch resource allowance.
 
@@ -82,6 +83,11 @@ class Submit(base.Command):
     resource_allowance_ref = args.CONCEPTS.resource_allowance.Parse()
     location_ref = resource_allowance_ref.Parent()
     resource_allowance_id = resource_allowance_ref.RelativeName().split('/')[-1]
+
+    # Remove the invalid resource_allowance_id if no resource_allowance_id
+    # being specified, batch_client would create a valid job_id.
+    if resource_allowance_id == resource_args.INVALIDID:
+      resource_allowance_id = None
 
     release_track = self.ReleaseTrack()
 

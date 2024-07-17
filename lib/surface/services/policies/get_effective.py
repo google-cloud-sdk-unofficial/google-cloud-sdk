@@ -34,8 +34,9 @@ _ORGANIZATION_RESOURCE = 'organizations/{}'
 
 
 # TODO: b/321801975 - Make command public after suv2 launch.
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectivePolicy(base.Command):
   """Get effective policy for a project, folder or organization.
 

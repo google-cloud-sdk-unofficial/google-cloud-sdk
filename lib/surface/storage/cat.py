@@ -53,6 +53,7 @@ def _range_parser(string_value):
   return arg_parsers.Range.Parse(string_value)
 
 
+@base.UniverseCompatible
 class Cat(base.Command):
   """Outputs the contents of one or more URLs to stdout."""
 

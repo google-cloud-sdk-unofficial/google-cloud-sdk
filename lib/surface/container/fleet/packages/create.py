@@ -48,7 +48,9 @@ class Create(base.CreateCommand):
   def Run(self, args):
     """Run the create command."""
     client = apis.FleetPackagesClient()
-    data = console_io.ReadFromFileOrStdin(args.source, binary=False)
+    data = console_io.ReadFromFileOrStdin(
+        utils.ExpandPathForUser(args.source), binary=False
+    )
     fleet_package = export_util.Import(
         message_type=client.messages.FleetPackage,
         stream=data,

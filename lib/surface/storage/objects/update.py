@@ -156,6 +156,7 @@ def _add_alpha_args(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.Command):
   """Update Cloud Storage objects."""
 

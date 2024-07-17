@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Create(base.Command):
   r"""Create a custom role for a project or an organization.
 

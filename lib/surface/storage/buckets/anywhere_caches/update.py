@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import pat
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update Anywhere Cache instances."""
 

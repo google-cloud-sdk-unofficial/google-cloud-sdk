@@ -33,6 +33,8 @@ _DETAILED_HELP = {
 _FORMAT = """table(name.basename():label=NAME,
                    info.State:label=STATE,
                    createTime.date(tz=LOCAL):label=CREATE_TIME,
+                   info.activeRollout.basename():label=ACTIVE_ROLLOUT,
+                   info.lastCompletedRollout.basename():label=LAST_COMPLETED_ROLLOUT,
                    fleet_package_errors():label=MESSAGES)"""
 
 

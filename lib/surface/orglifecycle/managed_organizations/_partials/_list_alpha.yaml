@@ -33,6 +33,14 @@
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.orglifecycle.v1_resources:organization_location
       required: true
+    - arg_name: show-deleted
+      api_field: showDeleted
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Whether to return soft-deleted managed organizations.
+        Default value will be false.
   request:
     api_version: v1
     collection:

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List managed folders."""
 

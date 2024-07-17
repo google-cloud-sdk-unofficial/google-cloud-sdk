@@ -138,7 +138,7 @@ class Create(base.Command):
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_custom_hostnames = False
   _support_specific_then_x_affinity = False
   _support_watchdog_timer = False
@@ -360,7 +360,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
   _support_local_ssd_size = True
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
   _support_watchdog_timer = False

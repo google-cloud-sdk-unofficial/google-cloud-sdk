@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 
 
 @base.Hidden
+@base.UniverseCompatible
 class GetIamPolicy(base.Command):
   """Get the access policy for an object."""
 

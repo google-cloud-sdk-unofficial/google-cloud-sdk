@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.rm import delete_task_iterator_factory
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Deletes Cloud Storage buckets."""
 

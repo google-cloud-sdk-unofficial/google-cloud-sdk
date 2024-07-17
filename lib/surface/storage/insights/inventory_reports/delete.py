@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.storage.insights.inventory_reports import resour
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 class Delete(base.Command):
   """Delete an inventory report config."""
 

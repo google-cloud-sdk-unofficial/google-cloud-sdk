@@ -136,6 +136,7 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
             namespace=args.namespace,
             properties=spark_app_properties,
             version=args.version,
+            dependencyImages=args.dependency_images or [],
             sparkSqlApplicationConfig=spark_sql_application_config,
         ),
     )

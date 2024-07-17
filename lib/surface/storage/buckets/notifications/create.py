@@ -95,6 +95,7 @@ def _maybe_create_or_modify_topic(topic_name, service_account_email):
   return created_new_topic
 
 
+@base.UniverseCompatible
 class Create(base.Command):
   """Create a notification configuration on a bucket."""
 

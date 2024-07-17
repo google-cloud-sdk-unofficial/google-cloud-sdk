@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import iam_command_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class GetIamPolicy(base.Command):
   """Get the IAM policy for a bucket."""
 

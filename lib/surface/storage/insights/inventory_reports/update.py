@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.insights.inventory_reports import resource_args
 
 
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update an inventory report config."""
 

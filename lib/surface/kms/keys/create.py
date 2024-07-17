@@ -27,8 +27,10 @@ from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   r"""Create a new key.
 
@@ -71,6 +73,12 @@ class Create(base.CreateCommand):
 
   The flag `--crypto-key-backend` defines the resource name for the
   backend where the key resides. Required for ``external-vpc'' keys.
+
+  The optional flag `--allowed-access-reasons` defines the Key Access
+  Justifications Policy for the key, and is specified as a comma separated list
+  of zero or more justification codes defined in
+  https://cloud.google.com/assured-workloads/key-access-justifications/docs/justification-codes.
+  The key must be enrolled in Key Access Justifications to use this flag.
 
   ## EXAMPLES
 
@@ -149,6 +157,17 @@ class Create(base.CreateCommand):
         --skip-initial-version-creation
         --crypto-key-backend="projects/$(gcloud config get project)/
         locations/us-central1/ekmConnections/eagles"
+
+  The following command creates a key named ``arwen'' with protection level
+  ``software'' within the keyring ``fellowship'' and location ``us-east1'' with
+  a Key Access Justifications policy that allows access reasons
+  ``customer-initiated-access'' and ``google-initiated-system-operation'':
+
+    $ {command} arwen \
+        --location=us-east1 \
+        --keyring=fellowship \
+        --purpose=encryption \
+        --allowed-access-reasons=customer-initiated-access,google-initiated-system-operation
   """
 
   @staticmethod
@@ -169,6 +188,7 @@ class Create(base.CreateCommand):
     flags.AddImportOnlyFlag(parser)
     flags.AddDestroyScheduledDurationFlag(parser)
     flags.AddCryptoKeyBackendFlag(parser)
+    flags.AddAllowedAccessReasonsFlag(parser)
 
   def _CreateRequest(self, args):
     messages = cloudkms_base.GetMessagesModule()
@@ -214,6 +234,7 @@ class Create(base.CreateCommand):
     flags.SetNextRotationTime(args, req.cryptoKey)
     flags.SetRotationPeriod(args, req.cryptoKey)
     flags.SetDestroyScheduledDuration(args, req.cryptoKey)
+    flags.SetKeyAccessJustificationsPolicy(args, req.cryptoKey)
 
     return req
 

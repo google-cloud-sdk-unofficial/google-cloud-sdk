@@ -102,7 +102,7 @@ class Deploy(base.Command):
     flags.AddMinInstancesFlag(parser, resource_kind='worker')
     flags.AddMaxInstancesFlag(parser, resource_kind='worker')
     flags.AddMaxSurgeFlag(parser, resource_kind='worker')
-    flags.AddScalingModeFlag(parser)
+    flags.AddScalingModeFlag(parser, resource_kind='worker')
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')

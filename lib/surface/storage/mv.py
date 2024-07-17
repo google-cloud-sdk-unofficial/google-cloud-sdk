@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class Mv(base.Command):
   """Moves or renames objects."""
 

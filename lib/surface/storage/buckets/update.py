@@ -333,6 +333,7 @@ def _is_initial_bucket_metadata_needed(user_request_args):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.Command):
   """Update bucket settings."""
 

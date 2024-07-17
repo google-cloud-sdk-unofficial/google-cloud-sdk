@@ -20,6 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe dataset config for Insights."""

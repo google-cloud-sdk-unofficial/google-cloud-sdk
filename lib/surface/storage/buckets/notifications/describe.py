@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core.resource import resource_projector
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Show metadata for a notification configuration."""
 

@@ -37,6 +37,7 @@ from googlecloudsdk.command_lib.storage.tasks.rm import delete_task_iterator_fac
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Rm(base.Command):
   """Delete objects and buckets."""
 

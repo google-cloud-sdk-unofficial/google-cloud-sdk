@@ -307,7 +307,7 @@ class Create(base.CreateCommand):
   _support_internal_ipv6_reservation = True
   _support_local_ssd_size = True
   _support_vlan_nic = False
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = False
@@ -362,6 +362,7 @@ class Create(base.CreateCommand):
         ._support_confidential_compute_type_tdx)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -801,7 +802,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = False
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False
   _support_partner_metadata = True
@@ -873,6 +874,7 @@ class CreateBeta(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 
@@ -980,8 +982,8 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
-    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 

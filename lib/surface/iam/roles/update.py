@@ -45,6 +45,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Update(base.Command):
   """Update an IAM custom role.
 

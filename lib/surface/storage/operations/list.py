@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List storage operations."""
 

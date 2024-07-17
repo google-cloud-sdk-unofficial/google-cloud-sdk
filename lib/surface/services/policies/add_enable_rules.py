@@ -68,8 +68,9 @@ _DETAILED_HELP = {
 
 
 # TODO(b/321801975) make command public after preview.
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddEnableRules(base.SilentCommand):
   """Add service(s) to a consumer policy for a project, folder or organization."""
 

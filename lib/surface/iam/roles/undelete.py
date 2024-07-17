@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.UniverseCompatible
 class Undelete(base.DescribeCommand):
   """Undelete a custom role from an organization or a project.
 

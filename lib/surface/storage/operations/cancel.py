@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel a storage operation."""
 

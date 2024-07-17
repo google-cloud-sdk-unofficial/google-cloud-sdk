@@ -83,6 +83,7 @@ def _get_resource_iterator(url_strings):
     raise errors.InvalidUrlError('No URLS matched.')
 
 
+@base.UniverseCompatible
 class Hash(base.Command):
   """Calculates hashes on local or cloud files."""
 

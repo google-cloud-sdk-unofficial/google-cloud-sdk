@@ -20,9 +20,21 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ManagedOrganizationsALPHA(base.Group):
+  """Manage ManagedOrganization resources.
+
+  This allows resellers to manage Cloud Resource Manager organizations
+  on behalf of their customers.
+  """
+
+
+@base.DefaultUniverseOnly
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class ManagedOrganizationsGA(base.Group):
   """Manage ManagedOrganization resources.
 
   This allows resellers to manage Cloud Resource Manager organizations

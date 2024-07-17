@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import dis
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Disable(base.Command):
   """Disable Anywhere Cache instances."""
 

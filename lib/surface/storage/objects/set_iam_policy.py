@@ -49,6 +49,7 @@ def _set_iam_policy_task_iterator(url_strings, recurse, object_state, policy):
 
 
 @base.Hidden
+@base.UniverseCompatible
 class SetIamPolicy(base.Command):
   """Set access policy for an object."""
 

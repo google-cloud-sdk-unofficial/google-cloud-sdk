@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.batch import resource_args
 from googlecloudsdk.core import properties
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List jobs for a specified Batch project/location.
 
@@ -51,7 +53,8 @@ class List(base.ListCommand):
     resource_args.AddLocationResourceArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(
-        'table(name, name.segment(3):label=LOCATION, status.state)')
+        'table(name, name.segment(3):label=LOCATION, status.state)'
+    )
 
   def Run(self, args):
     release_track = self.ReleaseTrack()
@@ -69,8 +72,55 @@ class List(base.ListCommand):
         client.messages.BatchProjectsLocationsJobsListRequest(
             parent=parent,
             pageSize=args.page_size,
-            filter=args.filter),
+            filter=args.filter,
+        ),
         batch_size=args.page_size,
         field='jobs',
         limit=args.limit,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List jobs for a specified Batch project/location.
+
+  This command can fail for the following reasons:
+  * The project/location specified do not exist.
+  * The active account does not have permission to access the given
+  project/location.
+
+  ## EXAMPLES
+  To print all the jobs under all available locations for the default project,
+  run:
+
+    $ {command}
+
+  To print all the jobs under projects/location
+  `projects/foo/locations/us-central1`, run:
+
+    $ {command} --project=foo --location=us-central1
+  """
+
+  def Run(self, args):
+    release_track = self.ReleaseTrack()
+
+    client = jobs.JobsClient(release_track)
+    location = args.location or properties.VALUES.batch.location.Get()
+    project = args.project or properties.VALUES.core.project.GetOrFail()
+    if location:
+      parent = 'projects/{}/locations/{}'.format(project, location)
+    else:
+      parent = 'projects/{}/locations/{}'.format(project, '-')
+
+    return list_pager.YieldFromList(
+        client.service,
+        client.messages.BatchProjectsLocationsJobsListRequest(
+            parent=parent,
+            pageSize=args.page_size,
+        ),
+        batch_size=args.page_size,
+        field='jobs',
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+    )

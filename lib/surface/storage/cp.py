@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import flags
 
 
+@base.UniverseCompatible
 class Cp(base.Command):
   """Upload, download, and copy Cloud Storage objects."""
 

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for creating PSA spokes."""
+"""Command for creating Gateway spokes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_api
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_util
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_connectivity import flags
@@ -29,29 +30,31 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Create(base.Command):
-  """Create a new PSA spoke.
+  """Create a new Gateway spoke.
 
-  Create a new PSA spoke.
+  Create a new Gateway spoke.
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddSpokeResourceArg(parser, 'to create', global_spoke_command=True)
-    flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
+    messages = apis.GetMessagesModule('networkconnectivity', 'v1')
+
+    flags.AddSpokeResourceArg(
+        parser, 'to create', flags.ResourceLocationType.REGION_ONLY
+    )
+    flags.AddRegionFlag(
+        parser, supports_region_wildcard=False, hidden=False, required=True
+    )
     flags.AddHubFlag(parser)
-    flags.AddGroupFlag(parser)
-    flags.AddNetworkFlag(parser)
+    flags.AddGroupFlag(parser, required=True)
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
-    flags.AddExcludeExportRangesFlag(
-        parser, hide_exclude_export_ranges_flag=False
-    )
-    flags.AddIncludeExportRangesFlag(
-        parser, hide_include_export_ranges_flag=True
-    )
+    flags.AddLandingNetworkFlag(parser)
+    flags.AddCapacityFlag(messages, parser)
+    flags.AddIpRangeReservationsFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -63,13 +66,23 @@ class Create(base.Command):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Spoke.LabelsValue
     )
+
+    range_reservations = [
+        client.messages.IpRangeReservation(ipRange=ip_range)
+        for ip_range in args.ip_range_reservations
+    ]
+
     spoke = client.messages.Spoke(
         hub=args.hub,
         group=args.group,
-        linkedPrivateServicesAccess=client.messages.LinkedPrivateServicesAccess(
-            network=args.network,
-            excludeExportRanges=args.exclude_export_ranges,
-            includeExportRanges=args.include_export_ranges,
+        gateway=client.messages.Gateway(
+            capacity=flags.GetCapacityArg(
+                client.messages
+            ).GetEnumForChoice(args.capacity),
+            landingNetwork=client.messages.LandingNetwork(
+                network=args.landing_network
+            ),
+            ipRangeReservations=range_reservations,
         ),
         description=args.description,
         labels=labels,
@@ -106,9 +119,9 @@ class Create(base.Command):
 
 Create.detailed_help = {
     'EXAMPLES': """ \
-  To create a PSA spoke named ``myspoke'', run:
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10Gbps, IP range reservations of 10.1.1.0/24 and 10.1.2.0/24, and a landing network of my-vpc, run:
 
-    $ {command} myspoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --global --network="https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-vpc"
+    $ {command} myspoke --hub=my-hub --region us-central1 --group untrusted --capacity 10g --ip-range-reservations 10.1.1.0/24,10.1.2.0/24  --landing-network my-vpc
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation

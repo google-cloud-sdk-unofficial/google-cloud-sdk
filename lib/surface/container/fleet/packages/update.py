@@ -53,7 +53,9 @@ class Update(base.UpdateCommand):
   def Run(self, args):
     """Run the update command."""
     client = apis.FleetPackagesClient()
-    data = console_io.ReadFromFileOrStdin(args.source, binary=False)
+    data = console_io.ReadFromFileOrStdin(
+        utils.ExpandPathForUser(args.source), binary=False
+    )
     fleet_package = export_util.Import(
         message_type=client.messages.FleetPackage,
         stream=data,

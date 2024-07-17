@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class ServiceAgent(base.Command):
   """Manage a project's Cloud Storage service agent, which is used to perform Cloud KMS operations."""
 

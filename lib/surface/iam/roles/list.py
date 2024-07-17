@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List predefined roles, or the custom roles for an organization or project.
 

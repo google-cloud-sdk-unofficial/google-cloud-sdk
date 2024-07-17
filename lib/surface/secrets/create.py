@@ -162,24 +162,55 @@ class Create(base.CreateCommand):
       'This secret and all of its versions will be automatically deleted '
       'after the requested ttl of [{ttl}] has elapsed.')
 
+  REGIONAL_KMS_FLAG_MESSAGE = (
+      'The --regional-kms-key-name flag can only be used when creating a'
+      ' regional secret with "--location" and should not be used with'
+      ' "--replication-policy-file" or "--kms-key-name"'
+  )
+
+  REGIONAL_SECRET_MESSAGE = (
+      'Regional secret created using "--location" should not have flags like '
+      '"--replication-policy-file" or "--kms-key-name" or "--locations" or '
+      '--replication-policy'
+  )
+
   @staticmethod
   def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that will be
+        available to the command.
+    """
     secrets_args.AddSecret(
-        parser, purpose='to create', positional=True, required=True)
+        parser, purpose='to create', positional=True, required=True
+    )
+    secrets_args.AddLocation(parser, purpose='to create secret', hidden=True)
     secrets_args.AddDataFile(parser)
     secrets_args.AddCreateReplicationPolicyGroup(parser)
     labels_util.AddCreateLabelsFlags(parser)
     secrets_args.AddCreateExpirationGroup(parser)
     secrets_args.AddTopics(parser)
     secrets_args.AddCreateRotationGroup(parser)
+    secrets_args.AddRegionalKmsKeyName(parser)
     secrets_args.AddCreateVersionDestroyTTL(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
   def Run(self, args):
+    """Run is called by calliope to create the secret.
+
+    Args:
+      args: an argparse namespace, all the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      The response from the create secret API call.
+    """
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
     messages = secrets_api.GetMessages(version=api_version)
     secret_ref = args.CONCEPTS.secret.Parse()
+    is_regional = args.location is not None
     data = secrets_util.ReadFileOrStdin(args.data_file)
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
@@ -197,15 +228,35 @@ class Create(base.CreateCommand):
     if args.replication_policy_file and args.kms_key_name:
       raise exceptions.ConflictingArgumentsException(
           self.KMS_KEY_AND_POLICY_FILE_MESSAGE)
+    if not is_regional and args.regional_kms_key_name:
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_KMS_FLAG_MESSAGE
+      )
+    if args.regional_kms_key_name and (
+        args.replication_policy_file or args.kms_key_name
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_KMS_FLAG_MESSAGE
+      )
+    if is_regional and (
+        replication_policy
+        or args.kms_key_name
+        or args.replication_policy_file
+        or args.locations
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          self.REGIONAL_SECRET_MESSAGE
+      )
     if args.kms_key_name:
       kms_keys.append(args.kms_key_name)
-
     if args.replication_policy_file:
       if not replication_policy_contents:
         raise exceptions.InvalidArgumentException(
-            'replication-policy', self.REPLICATION_POLICY_FILE_EMPTY_MESSAGE)
-      replication_policy, locations, kms_keys = secrets_util.ParseReplicationFileContents(
-          replication_policy_contents)
+            'replication-policy', self.REPLICATION_POLICY_FILE_EMPTY_MESSAGE
+        )
+      replication_policy, locations, kms_keys = (
+          secrets_util.ParseReplicationFileContents(replication_policy_contents)
+      )
     else:
       if not replication_policy:
         replication_policy = properties.VALUES.secrets.replication_policy.Get()
@@ -272,6 +323,9 @@ class Create(base.CreateCommand):
               key=annotation, value=metadata)
           for (annotation, metadata) in args.set_annotations.items()
       ]
+
+    if is_regional:
+      replication_policy = None
     if args.version_destroy_ttl:
       version_destroy_ttl = f'{args.version_destroy_ttl}s'
     else:
@@ -289,15 +343,23 @@ class Create(base.CreateCommand):
         annotations=annotations,
         next_rotation_time=args.next_rotation_time,
         rotation_period=args.rotation_period,
+        regional_kms_key_name=args.regional_kms_key_name,
         version_destroy_ttl=version_destroy_ttl,
+        secret_location=args.location,
     )
 
     if data:
       data_crc32c = crc32c.get_crc32c(data)
       version = secrets_api.Secrets(api_version=api_version).AddVersion(
-          secret_ref, data, crc32c.get_checksum(data_crc32c)
+          secret_ref,
+          data,
+          crc32c.get_checksum(data_crc32c),
+          secret_location=args.location,
       )
-      version_ref = secrets_args.ParseVersionRef(version.name)
+      if is_regional:
+        version_ref = secrets_args.ParseRegionalVersionRef(version.name)
+      else:
+        version_ref = secrets_args.ParseVersionRef(version.name)
       secrets_log.Versions().Created(version_ref)
     else:
       secrets_log.Secrets().Created(secret_ref)

@@ -64,6 +64,7 @@ def _get_source_projects_list(source_projects_file):
   return source_projects_list
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a new dataset config for Insights."""

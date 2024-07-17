@@ -24,6 +24,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Cancel(base.Command):
   """Cancel an insights operation."""
 

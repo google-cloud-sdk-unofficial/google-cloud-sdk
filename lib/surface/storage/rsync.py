@@ -152,6 +152,7 @@ def _perform_rsync(
   )
 
 
+@base.UniverseCompatible
 class Rsync(base.Command):
   """Synchronize content of two buckets/directories."""
 

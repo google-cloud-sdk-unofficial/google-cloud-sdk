@@ -136,6 +136,7 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
             namespace=args.namespace,
             properties=spark_app_properties,
             version=args.version,
+            dependencyImages=args.dependency_images or [],
             sparkApplicationConfig=messages.SparkApplicationConfig(
                 args=args.job_args or [],
                 mainJarFileUri=args.jar,

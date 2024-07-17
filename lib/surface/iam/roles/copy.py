@@ -44,6 +44,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Copy(base.Command):
   r"""Create a role from an existing role.
 

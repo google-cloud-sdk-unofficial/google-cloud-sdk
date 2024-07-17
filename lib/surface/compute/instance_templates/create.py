@@ -1123,7 +1123,7 @@ class Create(base.CreateCommand):
   _support_replica_zones = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_internal_ipv6_reservation = True
   _support_partner_metadata = False
   _support_local_ssd_recovery_timeout = True
@@ -1169,6 +1169,7 @@ class Create(base.CreateCommand):
         support_confidential_compute_type_tdx=cls
         ._support_confidential_compute_type_tdx)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
 
   def Run(self, args):
     """Creates and runs an InstanceTemplates.Insert request.
@@ -1240,7 +1241,7 @@ class CreateBeta(Create):
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
-  _support_performance_monitoring_unit = False
+  _support_performance_monitoring_unit = True
   _support_internal_ipv6_reservation = True
   _support_partner_metadata = True
   _support_maintenance_interval = True
@@ -1288,6 +1289,7 @@ class CreateBeta(Create):
         ._support_confidential_compute_type_tdx)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instance_templates_flags.AddKeyRevocationActionTypeArgs(parser)
+    instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
   def Run(self, args):

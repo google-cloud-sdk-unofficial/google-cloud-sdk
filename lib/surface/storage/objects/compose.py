@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import compose_objects_task
 
 
+@base.UniverseCompatible
 class Compose(base.Command):
   """Concatenate a sequence of objects into a new composite object."""
 

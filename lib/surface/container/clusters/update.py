@@ -398,7 +398,11 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
+    flags.AddSecretManagerEnableFlag(group, hidden=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -472,6 +476,8 @@ class Update(base.UpdateCommand):
     opts.removed_additional_pod_ipv4_ranges = (
         args.remove_additional_pod_ipv4_ranges
     )
+    opts.additional_ip_ranges = args.additional_ip_ranges
+    opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.gateway_api = args.gateway_api
@@ -505,6 +511,7 @@ class Update(base.UpdateCommand):
     )
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
+    opts.enable_secret_manager = args.enable_secret_manager
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )
@@ -1016,6 +1023,9 @@ class UpdateBeta(Update):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1146,6 +1156,8 @@ class UpdateBeta(Update):
     opts.removed_additional_pod_ipv4_ranges = (
         args.remove_additional_pod_ipv4_ranges
     )
+    opts.additional_ip_ranges = args.additional_ip_ranges
+    opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
     opts.gateway_api = args.gateway_api
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
@@ -1307,6 +1319,9 @@ class UpdateAlpha(Update):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1433,6 +1448,8 @@ class UpdateAlpha(Update):
     opts.removed_additional_pod_ipv4_ranges = (
         args.remove_additional_pod_ipv4_ranges
     )
+    opts.additional_ip_ranges = args.additional_ip_ranges
+    opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project

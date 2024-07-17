@@ -162,6 +162,7 @@ def _restore_task_iterator(args):
   return _sync_restore_task_iterator(args, fields_scope, user_request_args)
 
 
+@base.UniverseCompatible
 class Restore(base.Command):
   """Restore one or more soft-deleted objects."""
 

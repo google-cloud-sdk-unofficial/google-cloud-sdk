@@ -22,6 +22,7 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete dataset config for Insights."""

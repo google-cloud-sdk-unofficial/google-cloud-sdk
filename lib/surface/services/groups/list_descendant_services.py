@@ -30,8 +30,9 @@ _GROUP_RESOURCE = 'groups/%s'
 
 
 # TODO(b/321801975) make command public after suv2alpha launch.
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListDescendantServices(base.ListCommand):
   """List descendant services of a specific service and group.
 

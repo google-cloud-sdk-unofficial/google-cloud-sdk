@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.buckets import create_bucket_task
 
 
+@base.UniverseCompatible
 class Create(base.Command):
   """Create buckets for storing objects."""
 

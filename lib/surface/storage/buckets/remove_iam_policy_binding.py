@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
+@base.UniverseCompatible
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a bucket."""
 

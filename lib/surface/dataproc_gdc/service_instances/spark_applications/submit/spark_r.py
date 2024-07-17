@@ -131,6 +131,7 @@ class SparkR(baseSparkApplication.BaseGDCSparkApplicationCommand):
             namespace=args.namespace,
             properties=spark_app_properties,
             version=args.version,
+            dependencyImages=args.dependency_images or [],
             sparkRApplicationConfig=messages.SparkRApplicationConfig(
                 args=args.job_args or [],
                 fileUris=args.files or [],

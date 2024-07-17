@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for updating spokes."""
+"""Command for updating Gateway spokes."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,18 +29,22 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Update(base.Command):
-  """Update a PSA spoke.
+  """Update a Gateway spoke.
 
-  Update the details of a PSA spoke.
+  Update the details of a Gateway spoke.
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddSpokeResourceArg(parser, 'to update', global_spoke_command=True)
-    flags.AddRegionGroup(parser, hide_global_arg=False, hide_region_arg=True)
+    flags.AddSpokeResourceArg(
+        parser, 'to update', flags.ResourceLocationType.REGION_ONLY
+    )
+    flags.AddRegionFlag(
+        parser, supports_region_wildcard=False, hidden=False, required=True
+    )
     flags.AddDescriptionFlag(parser, 'New description of the spoke.')
     flags.AddAsyncFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -96,9 +100,9 @@ class Update(base.Command):
 Update.detailed_help = {
     'EXAMPLES':
         """ \
-  To update the description of a PSA spoke named ``my-spoke'', run:
+  To update the description of a Gateway spoke in us-central1 named ``my-spoke'', run:
 
-    $ {command} myspoke --global --description="new spoke description"
+    $ {command} myspoke --region us-central1 --description="new spoke description"
   """,
     'API REFERENCE':
         """ \

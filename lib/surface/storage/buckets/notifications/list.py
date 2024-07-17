@@ -66,6 +66,7 @@ def _get_human_readable_notification(url, config):
   )
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the notification configurations belonging to a given bucket."""
 

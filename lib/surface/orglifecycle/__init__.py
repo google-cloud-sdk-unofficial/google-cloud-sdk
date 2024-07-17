@@ -20,7 +20,17 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OrglifecycleALPHA(base.Group):
   """Manage Org Lifecycle resources."""
+  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.DefaultUniverseOnly
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class OrglifecycleGA(base.Group):
+  """Manage Org Lifecycle resources."""
+  category = base.UNCATEGORIZED_CATEGORY

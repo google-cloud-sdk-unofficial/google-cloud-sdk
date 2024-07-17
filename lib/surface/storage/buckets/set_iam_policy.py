@@ -40,6 +40,7 @@ def _set_iam_policy_task_iterator(url_strings, policy):
       )
 
 
+@base.UniverseCompatible
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a bucket."""
 

@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import storage_url
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List service account HMAC keys."""
 

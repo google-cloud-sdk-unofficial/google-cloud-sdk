@@ -268,6 +268,7 @@ def AddBaseArgs(parser):
   flags.AddClearAllowedPscProjects(psc_update_group)
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
+  flags.AddEnableDataplexIntegration(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddSimulateMaintenanceEvent(parser)
 

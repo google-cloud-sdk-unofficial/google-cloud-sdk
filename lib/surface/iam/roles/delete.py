@@ -42,6 +42,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Delete(base.DescribeCommand):
   """Delete a custom role from an organization or a project.
 
