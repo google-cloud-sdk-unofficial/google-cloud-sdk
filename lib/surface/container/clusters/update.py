@@ -554,6 +554,9 @@ class Update(base.UpdateCommand):
           'with this feature enabled. For additional details, please refer to '
           'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
       )
+
+    container_command_util.CheckReleaseChannel(args)
+
     # locations will be None if additional-zones was specified, an empty list
     # if it was specified with no argument, or a populated list if zones were
     # provided. We want to distinguish between the case where it isn't

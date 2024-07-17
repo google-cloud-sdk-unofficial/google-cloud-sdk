@@ -79,7 +79,8 @@ class Create(base.CreateCommand):
     )
     flags.AddSSLMode(parser)
     flags.AddRequireConnectors(parser)
-    flags.AddAssignInboundPublicIp(parser, False)
+    flags.AddAssignInboundPublicIp(parser)
+    flags.AddAuthorizedExternalNetworks(parser)
     flags.AddAllowedPSCProjects(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases

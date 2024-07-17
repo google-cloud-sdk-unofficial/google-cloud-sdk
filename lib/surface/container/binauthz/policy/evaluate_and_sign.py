@@ -31,6 +31,7 @@ from googlecloudsdk.core.exceptions import Error
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EvaluateAndSign(base.Command):
   """Evaluate a Binary Authorization platform policy and sign the results, if conformant.

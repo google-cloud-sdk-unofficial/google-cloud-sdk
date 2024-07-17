@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a new VPC spoke.
@@ -49,7 +50,7 @@ class Create(base.Command):
         parser, hide_exclude_export_ranges_flag=False
     )
     flags.AddIncludeExportRangesFlag(
-        parser, hide_include_export_ranges_flag=True
+        parser, hide_include_export_ranges_flag=False
     )
     labels_util.AddCreateLabelsFlags(parser)
 

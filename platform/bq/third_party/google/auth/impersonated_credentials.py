@@ -29,17 +29,14 @@ service account.
 import base64
 import copy
 from datetime import datetime
+import http.client as http_client
 import json
-
-import six
-from six.moves import http_client
 
 from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
 from google.auth import jwt
-
-_DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
+from google.auth import metrics
 
 _IAM_SCOPE = ["https://www.googleapis.com/auth/iam"]
 
@@ -117,7 +114,7 @@ def _make_iam_token_request(
             ),
             response_body,
         )
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
 
 
 class Credentials(
@@ -230,6 +227,13 @@ class Credentials(
         # their original scopes modified.
         if isinstance(self._source_credentials, credentials.Scoped):
             self._source_credentials = self._source_credentials.with_scopes(_IAM_SCOPE)
+            # If the source credential is service account and self signed jwt
+            # is needed, we need to create a jwt credential inside it
+            if (
+                hasattr(self._source_credentials, "_create_self_signed_jwt")
+                and self._source_credentials._always_use_jwt_access
+            ):
+                self._source_credentials._create_self_signed_jwt(None)
         self._target_principal = target_principal
         self._target_scopes = target_scopes
         self._delegates = delegates
@@ -238,6 +242,9 @@ class Credentials(
         self.expiry = _helpers.utcnow()
         self._quota_project_id = quota_project_id
         self._iam_endpoint_override = iam_endpoint_override
+
+    def _metric_header_for_usage(self):
+        return metrics.CRED_TYPE_SA_IMPERSONATE
 
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
@@ -253,7 +260,10 @@ class Credentials(
         """
 
         # Refresh our source credentials if it is not valid.
-        if not self._source_credentials.valid:
+        if (
+            self._source_credentials.token_state == credentials.TokenState.STALE
+            or self._source_credentials.token_state == credentials.TokenState.INVALID
+        ):
             self._source_credentials.refresh(request)
 
         body = {
@@ -262,7 +272,10 @@ class Credentials(
             "lifetime": str(self._lifetime) + "s",
         }
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            metrics.API_CLIENT_HEADER: metrics.token_request_access_token_impersonate(),
+        }
 
         # Apply the source credentials authentication info.
         self._source_credentials.apply(headers)
@@ -423,18 +436,31 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
             "includeEmail": self._include_email,
         }
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            metrics.API_CLIENT_HEADER: metrics.token_request_id_token_impersonate(),
+        }
 
         authed_session = AuthorizedSession(
             self._target_credentials._source_credentials, auth_request=request
         )
 
-        response = authed_session.post(
-            url=iam_sign_endpoint,
-            headers=headers,
-            data=json.dumps(body).encode("utf-8"),
-        )
+        try:
+            response = authed_session.post(
+                url=iam_sign_endpoint,
+                headers=headers,
+                data=json.dumps(body).encode("utf-8"),
+            )
+        finally:
+            authed_session.close()
+
+        if response.status_code != http_client.OK:
+            raise exceptions.RefreshError(
+                "Error getting ID token: {}".format(response.json())
+            )
 
         id_token = response.json()["token"]
         self.token = id_token
-        self.expiry = datetime.fromtimestamp(jwt.decode(id_token, verify=False)["exp"])
+        self.expiry = datetime.utcfromtimestamp(
+            jwt.decode(id_token, verify=False)["exp"]
+        )

@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Binary Authorization policy.
 

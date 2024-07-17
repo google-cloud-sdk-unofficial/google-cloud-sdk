@@ -37,3 +37,4 @@ arguments:
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:labels
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:encryption-key
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
+    default: true

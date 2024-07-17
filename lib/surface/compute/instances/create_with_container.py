@@ -128,7 +128,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_host_error_timeout_seconds = False
   _support_numa_node_count = False
   _support_visible_core_count = True
-  _support_confidential_compute_type = False
+  _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = False
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
@@ -141,7 +141,7 @@ class CreateWithContainer(base.CreateCommand):
         parser,
         container_mount_enabled=True,
         support_multi_writer=False,
-        support_confidential_compute_type=False,
+        support_confidential_compute_type=True,
         support_confidential_compute_type_tdx=False,
         support_specific_then_x_affinity=False,
         support_disk_labels=False,

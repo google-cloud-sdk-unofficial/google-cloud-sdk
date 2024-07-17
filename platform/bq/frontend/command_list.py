@@ -14,7 +14,9 @@ from absl import flags
 
 import bq_flags
 from clients import client_connection
+from clients import client_data_transfer
 from clients import client_dataset
+from clients import client_job
 from clients import client_reservation
 from clients import client_routine
 from clients import utils as bq_client_utils
@@ -332,7 +334,8 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           'Cannot determine job(s) associated with "%s"' % (identifier,),
           is_usage_error=True,
       )
-      objects_metadata = client.ListJobsWithTokenAndUnreachable(
+      objects_metadata = client_job.ListJobsWithTokenAndUnreachable(
+          bqclient=client,
           reference=reference,
           max_results=self.max_results,
           all_users=self.a,
@@ -500,7 +503,8 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
       # transfer_configs tuple contains transfer configs at index 0 and
       # next page token at index 1 if there is one.
-      transfer_configs = client.ListTransferConfigs(
+      transfer_configs = client_data_transfer.ListTransferConfigs(
+          transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           location=self.transfer_location,
           page_size=self.max_results,
@@ -519,12 +523,13 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
-      reference = bq_id_utils.ApiClientHelper.TransferRunReference(
-          transferRunName=formatted_identifier
+      reference = bq_id_utils.ApiClientHelper.TransferConfigReference(
+          transferConfigName=formatted_identifier
       )
       # list_transfer_runs_result tuple contains transfer runs at index 0 and
       # next page token at index 1 if there is next page token.
-      list_transfer_runs_result = client.ListTransferRuns(
+      list_transfer_runs_result = client_data_transfer.ListTransferRuns(
+          client.GetTransferV1ApiClient(),
           reference,
           run_attempt,
           max_results=self.max_results,
@@ -542,12 +547,13 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
-      reference = bq_id_utils.ApiClientHelper.TransferLogReference(
+      reference = bq_id_utils.ApiClientHelper.TransferRunReference(
           transferRunName=formatted_identifier
       )
       # list_transfer_log_result tuple contains transfer logs at index 0 and
       # next page token at index 1 if there is one.
-      list_transfer_log_result = client.ListTransferLogs(
+      list_transfer_log_result = client_data_transfer.ListTransferLogs(
+          client.GetTransferV1ApiClient(),
           reference,
           message_type=self.message_type,
           max_results=self.max_results,

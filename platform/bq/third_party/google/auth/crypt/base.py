@@ -19,16 +19,13 @@ import abc
 import io
 import json
 
-import six
-
 from google.auth import exceptions
 
 _JSON_FILE_PRIVATE_KEY = "private_key"
 _JSON_FILE_PRIVATE_KEY_ID = "private_key_id"
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Verifier(object):
+class Verifier(metaclass=abc.ABCMeta):
     """Abstract base class for crytographic signature verifiers."""
 
     @abc.abstractmethod
@@ -48,8 +45,7 @@ class Verifier(object):
         raise NotImplementedError("Verify must be implemented")
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Signer(object):
+class Signer(metaclass=abc.ABCMeta):
     """Abstract base class for cryptographic signers."""
 
     @abc.abstractproperty
@@ -72,8 +68,7 @@ class Signer(object):
         raise NotImplementedError("Sign must be implemented")
 
 
-@six.add_metaclass(abc.ABCMeta)
-class FromServiceAccountMixin(object):
+class FromServiceAccountMixin(metaclass=abc.ABCMeta):
     """Mix-in to enable factory constructors for a Signer."""
 
     @abc.abstractmethod

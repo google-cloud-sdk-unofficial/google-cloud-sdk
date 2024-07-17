@@ -20,6 +20,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class NodeEventsALPHA(base.Group):
   """Manage node event resources."""

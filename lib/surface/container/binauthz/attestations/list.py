@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.container.binauthz import util as binauthz_comma
 from googlecloudsdk.core import resources
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   r"""List Binary Authorization attestations.
 

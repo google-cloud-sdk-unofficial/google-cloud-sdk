@@ -43,6 +43,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   r"""Create an Attestor.
   """

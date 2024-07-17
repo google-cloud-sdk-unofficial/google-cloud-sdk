@@ -18,18 +18,15 @@
 import base64
 import calendar
 import datetime
+from email.message import Message
 import sys
-
-import six
-from six.moves import urllib
+import urllib
 
 from google.auth import exceptions
 
-# Token server doesn't provide a new a token when doing refresh unless the
-# token is expiring within 30 seconds, so refresh threshold should not be
-# more than 30 seconds. Otherwise auth lib will send tons of refresh requests
-# until 30 seconds before the expiration, and cause a spike of CPU usage.
-REFRESH_THRESHOLD = datetime.timedelta(seconds=20)
+# The smallest MDS cache used by this library stores tokens until 4 minutes from
+# expiry.
+REFRESH_THRESHOLD = datetime.timedelta(minutes=3, seconds=45)
 
 
 def copy_docstring(source_class):
@@ -66,13 +63,42 @@ def copy_docstring(source_class):
     return decorator
 
 
+def parse_content_type(header_value):
+    """Parse a 'content-type' header value to get just the plain media-type (without parameters).
+
+    This is done using the class Message from email.message as suggested in PEP 594
+        (because the cgi is now deprecated and will be removed in python 3.13,
+        see https://peps.python.org/pep-0594/#cgi).
+
+    Args:
+        header_value (str): The value of a 'content-type' header as a string.
+
+    Returns:
+        str: A string with just the lowercase media-type from the parsed 'content-type' header.
+            If the provided content-type is not parsable, returns 'text/plain',
+            the default value for textual files.
+    """
+    m = Message()
+    m["content-type"] = header_value
+    return (
+        m.get_content_type()
+    )  # Despite the name, actually returns just the media-type
+
+
 def utcnow():
     """Returns the current UTC datetime.
 
     Returns:
         datetime: The current time in UTC.
     """
-    return datetime.datetime.utcnow()
+    # We used datetime.utcnow() before, since it's deprecated from python 3.12,
+    # we are using datetime.now(timezone.utc) now. "utcnow()" is offset-native
+    # (no timezone info), but "now()" is offset-aware (with timezone info).
+    # This will cause datetime comparison problem. For backward compatibility,
+    # we need to remove the timezone info.
+    now = datetime.datetime.now(datetime.timezone.utc)
+    now = now.replace(tzinfo=None)
+    return now
 
 
 def datetime_to_secs(value):
@@ -90,9 +116,6 @@ def datetime_to_secs(value):
 def to_bytes(value, encoding="utf-8"):
     """Converts a string value to bytes, if necessary.
 
-    Unfortunately, ``six.b`` is insufficient for this task since in
-    Python 2 because it does not modify ``unicode`` objects.
-
     Args:
         value (Union[str, bytes]): The value to be converted.
         encoding (str): The encoding to use to convert unicode to bytes.
@@ -105,8 +128,8 @@ def to_bytes(value, encoding="utf-8"):
     Raises:
         google.auth.exceptions.InvalidValue: If the value could not be converted to bytes.
     """
-    result = value.encode(encoding) if isinstance(value, six.text_type) else value
-    if isinstance(result, six.binary_type):
+    result = value.encode(encoding) if isinstance(value, str) else value
+    if isinstance(result, bytes):
         return result
     else:
         raise exceptions.InvalidValue(
@@ -127,8 +150,8 @@ def from_bytes(value):
     Raises:
         google.auth.exceptions.InvalidValue: If the value could not be converted to unicode.
     """
-    result = value.decode("utf-8") if isinstance(value, six.binary_type) else value
-    if isinstance(result, six.text_type):
+    result = value.decode("utf-8") if isinstance(value, bytes) else value
+    if isinstance(result, str):
         return result
     else:
         raise exceptions.InvalidValue(
@@ -172,7 +195,7 @@ def update_query(url, params, remove=None):
     query_params.update(params)
     # Remove any values specified in remove.
     query_params = {
-        key: value for key, value in six.iteritems(query_params) if key not in remove
+        key: value for key, value in query_params.items() if key not in remove
     }
     # Re-encoded the query string.
     new_query = urllib.parse.urlencode(query_params, doseq=True)

@@ -114,12 +114,7 @@ class BigqueryModel(model.JsonModel):
       path_params: Dict[str, str],
       query_params: Dict[str, Any],  # TODO(b/314756043): This seems incorrect.
       body_value: object,
-  ) -> Tuple[
-      Dict[str, str],
-      Dict[str, str],
-      str,
-      str
-  ]:
+  ) -> Tuple[Dict[str, str], Dict[str, str], str, str]:
     """Updates outgoing request.
 
 
@@ -128,7 +123,8 @@ class BigqueryModel(model.JsonModel):
       path_params: dict, parameters that appear in the request path
       query_params: dict, parameters that appear in the query
       body_value: object, the request body as a Python object, which must be
-                  serializable.
+        serializable.
+
     Returns:
       A tuple of (headers, path_params, query, body)
 

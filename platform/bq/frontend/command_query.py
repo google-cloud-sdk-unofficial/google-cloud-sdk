@@ -18,6 +18,8 @@ from absl import flags
 import bq_flags
 from clients import bigquery_client
 from clients import bigquery_client_extended
+from clients import client_data_transfer
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -501,7 +503,7 @@ class Query(bigquery_command.BigqueryCmd):
         auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
             reference, 'scheduled_query', transfer_client
         )
-      schedule_args = bigquery_client_extended.TransferScheduleArgs(
+      schedule_args = client_data_transfer.TransferScheduleArgs(
           schedule=self.schedule,
           disable_auto_scheduling=self.no_auto_scheduling,
       )
@@ -529,7 +531,8 @@ class Query(bigquery_command.BigqueryCmd):
         params['partitioning_field'] = self.time_partitioning_field
       if self.time_partitioning_type:
         params['partitioning_type'] = self.time_partitioning_type
-      transfer_name = client.CreateTransferConfig(
+      transfer_name = client_data_transfer.CreateTransferConfig(
+          transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           data_source='scheduled_query',
           target_dataset=target_dataset,
@@ -588,8 +591,8 @@ class Query(bigquery_command.BigqueryCmd):
       if self.continuous:
         raise app.UsageError('continuous cannot be specified in rpc mode.')
       kwds['max_results'] = self.max_rows
-      logging.debug('Calling client.RunQueryRpc(%s, %s)', query, kwds)
-      fields, rows, execution = client.RunQueryRpc(query, **kwds)
+      logging.debug('Calling client_job.RunQueryRpc(%s, %s)', query, kwds)
+      fields, rows, execution = client_job.RunQueryRpc(client, query, **kwds)
       if self.dry_run:
         frontend_utils.PrintDryRunInfo(execution)
       else:
@@ -686,7 +689,8 @@ class Query(bigquery_command.BigqueryCmd):
     # Fetch one more child job than the maximum, so we can tell if some of the
     # child jobs are missing.
     child_jobs = list(
-        client.ListJobs(
+        client_job.ListJobs(
+            bqclient=client,
             reference=bq_id_utils.ApiClientHelper.ProjectReference.Create(
                 projectId=job['jobReference']['projectId']
             ),
@@ -726,8 +730,8 @@ class Query(bigquery_command.BigqueryCmd):
         .get('evaluationKind', '')
         == 'STATEMENT'
     ]
-    is_raw_json = FLAGS.format == 'json'
-    is_json = is_raw_json or FLAGS.format == 'prettyjson'
+    is_raw_json = bq_flags.FORMAT.value == 'json'
+    is_json = is_raw_json or bq_flags.FORMAT.value == 'prettyjson'
     if is_json:
       sys.stdout.write('[')
     statements_printed = 0
@@ -793,8 +797,11 @@ class Query(bigquery_command.BigqueryCmd):
       # a successful DML job if the destination table is already deleted.
       # DML, DDL, and ASSERT do not have query result, so skip
       # ReadSchemaAndJobRows.
-      fields, rows = client.ReadSchemaAndJobRows(
-          job['jobReference'], start_row=self.start_row, max_rows=self.max_rows
+      fields, rows = client_job.ReadSchemaAndJobRows(
+          client,
+          job['jobReference'],
+          start_row=self.start_row,
+          max_rows=self.max_rows,
       )
       bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
           fields, rows

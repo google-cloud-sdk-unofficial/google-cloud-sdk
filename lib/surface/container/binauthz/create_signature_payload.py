@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.container.binauthz import flags as binauthz_flag
 from googlecloudsdk.command_lib.container.binauthz import util as binauthz_command_util
 
 
+@base.DefaultUniverseOnly
 class CreateSignaturePayload(base.Command):
   r"""Create a JSON container image signature object.
 

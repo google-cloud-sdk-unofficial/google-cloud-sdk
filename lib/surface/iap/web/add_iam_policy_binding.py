@@ -24,7 +24,10 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding to an IAP IAM resource.
 
@@ -45,6 +48,13 @@ class AddIamPolicyBinding(base.Command):
 
             $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
                 --role='roles/editor'
+
+          To add an IAM policy binding for the role of 'roles/editor' for the
+          user 'test-user@gmail.com' on regional IAP IAM resource
+          IAP_IAM_RESOURCE, run:
+
+            $ {command} --resource-type=IAP_IAM_RESOURCE --member='user:test-user@gmail.com'
+                --role='roles/editor' --region=REGION
 
           To add an IAM policy binding for the role of 'roles/editor' for all
           authenticated users on IAP IAM resource IAP_IAM_RESOURCE,
@@ -92,26 +102,3 @@ class AddIamPolicyBinding(base.Command):
     condition = iam_util.ValidateAndExtractConditionMutexRole(args)
     iap_iam_ref = iap_util.ParseIapIamResource(self.ReleaseTrack(), args)
     return iap_iam_ref.AddIamPolicyBinding(args.member, args.role, condition)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddIamPolicyBindingALPHA(AddIamPolicyBinding):
-  """Add IAM policy binding to an IAP IAM resource.
-
-  Adds a policy binding to the IAM policy of an IAP IAM resource. One binding
-  consists of a member, a role, and an optional condition.
-  See $ {parent_command} get-iam-policy for examples of how to specify an IAP
-  IAM resource.
-  """
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapIamResourceArgs(parser, use_region_arg=True)
-    iap_util.AddAddIamPolicyBindingArgs(parser)
-    base.URI_FLAG.RemoveFromParser(parser)

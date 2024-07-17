@@ -5,6 +5,7 @@ import datetime
 from typing import Dict, List, NamedTuple, Optional
 from googleapiclient import discovery
 from clients import utils as bq_client_utils
+from frontend import utils as frontend_utils
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
@@ -54,8 +55,7 @@ def ListDatasetsWithTokenAndUnreachable(
 ):
   """List the datasets associated with this reference."""
   reference = bq_client_utils.NormalizeProjectReference(
-      id_fallbacks=id_fallbacks,
-      reference=reference
+      id_fallbacks=id_fallbacks, reference=reference
   )
   bq_id_utils.typecheck(
       reference,
@@ -103,11 +103,15 @@ def GetDatasetIAMPolicy(apiclient, reference):
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.DatasetReference,
-      method='GetDatasetIAMPolicy')
-  formatted_resource = ('projects/%s/datasets/%s' %
-                        (reference.projectId, reference.datasetId))
-  return apiclient.datasets().getIamPolicy(
-      resource=formatted_resource).execute()
+      method='GetDatasetIAMPolicy',
+  )
+  formatted_resource = 'projects/%s/datasets/%s' % (
+      reference.projectId,
+      reference.datasetId,
+  )
+  return (
+      apiclient.datasets().getIamPolicy(resource=formatted_resource).execute()
+  )
 
 
 def SetDatasetIAMPolicy(apiclient: discovery.Resource, reference, policy):
@@ -127,12 +131,18 @@ def SetDatasetIAMPolicy(apiclient: discovery.Resource, reference, policy):
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.DatasetReference,
-      method='SetDatasetIAMPolicy')
-  formatted_resource = ('projects/%s/datasets/%s' %
-                        (reference.projectId, reference.datasetId))
+      method='SetDatasetIAMPolicy',
+  )
+  formatted_resource = 'projects/%s/datasets/%s' % (
+      reference.projectId,
+      reference.datasetId,
+  )
   request = {'policy': policy}
-  return apiclient.datasets().setIamPolicy(
-      body=request, resource=formatted_resource).execute()
+  return (
+      apiclient.datasets()
+      .setIamPolicy(body=request, resource=formatted_resource)
+      .execute()
+  )
 
 
 def DatasetExists(
@@ -163,9 +173,7 @@ def GetDatasetRegion(
       method='GetDatasetRegion',
   )
   try:
-    return (
-        apiclient.datasets().get(**dict(reference)).execute()['location']
-    )
+    return apiclient.datasets().get(**dict(reference)).execute()['location']
   except bq_error.BigqueryNotFoundError:
     return None
 
@@ -201,10 +209,10 @@ def CreateDataset(
     description: an optional dataset description.
     display_name: an optional friendly name for the dataset.
     acl: an optional ACL for the dataset, as a list of dicts.
-    default_table_expiration_ms: Default expiration time to apply to new
-      tables in this dataset.
-    default_partition_expiration_ms: Default partition expiration time to
-      apply to new partitioned tables in this dataset.
+    default_table_expiration_ms: Default expiration time to apply to new tables
+      in this dataset.
+    default_partition_expiration_ms: Default partition expiration time to apply
+      to new partitioned tables in this dataset.
     data_location: Location where the data in this dataset should be stored.
       Must be either 'EU' or 'US'. If specified, the project that owns the
       dataset must be enabled for data location.
@@ -212,13 +220,13 @@ def CreateDataset(
     default_kms_key: An optional kms dey that will apply to all newly created
       tables in the dataset, if no explicit key is supplied in the creating
       request.
-    source_dataset_reference: An optional ApiClientHelper.DatasetReference
-      that will be the source of this linked dataset. #
+    source_dataset_reference: An optional ApiClientHelper.DatasetReference that
+      will be the source of this linked dataset. #
     external_source: External source that backs this dataset.
     connection_id: Connection used for accessing the external_source.
     max_time_travel_hours: Optional. Define the max time travel in hours. The
-      value can be from 48 to 168 hours (2 to 7 days). The default value is
-      168 hours if this is not set.
+      value can be from 48 to 168 hours (2 to 7 days). The default value is 168
+      hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
     resource_tags: an optional dict of tags to attach to the dataset.
@@ -262,11 +270,12 @@ def CreateDataset(
     bq_id_utils.typecheck(
         source_dataset_reference,
         bq_id_utils.ApiClientHelper.DatasetReference,
-        method='CreateDataset')
+        method='CreateDataset',
+    )
     body['linkedDatasetSource'] = {
-        'sourceDataset':
-            bq_processor_utils.ConstructObjectInfo(source_dataset_reference)
-            ['datasetReference']
+        'sourceDataset': bq_processor_utils.ConstructObjectInfo(
+            source_dataset_reference
+        )['datasetReference']
     }
   # externalDatasetReference can only be specified in case of externals
   # datasets. This option cannot be used in case of regular dataset or linked
@@ -282,10 +291,13 @@ def CreateDataset(
     body['maxTimeTravelHours'] = max_time_travel_hours
   if storage_billing_model is not None:
     body['storageBillingModel'] = storage_billing_model
+  if resource_tags is not None:
+    body['resourceTags'] = resource_tags
 
   try:
     apiclient.datasets().insert(
-        body=body, **dict(reference.GetProjectReference())).execute()
+        body=body, **dict(reference.GetProjectReference())
+    ).execute()
   except bq_error.BigqueryDuplicateError:
     if not ignore_existing:
       raise
@@ -305,6 +317,9 @@ def UpdateDataset(
     default_kms_key=None,
     max_time_travel_hours=None,
     storage_billing_model=None,
+    tags_to_attach: Optional[Dict[str, str]] = None,
+    tags_to_remove: Optional[List[str]] = None,
+    clear_all_tags: Optional[bool] = False,
 ):
   """Updates a dataset.
 
@@ -314,8 +329,8 @@ def UpdateDataset(
     description: an optional dataset description.
     display_name: an optional friendly name for the dataset.
     acl: an optional ACL for the dataset, as a list of dicts.
-    default_table_expiration_ms: optional number of milliseconds for the
-      default expiration duration for new tables created in this dataset.
+    default_table_expiration_ms: optional number of milliseconds for the default
+      expiration duration for new tables created in this dataset.
     default_partition_expiration_ms: optional number of milliseconds for the
       default partition expiration duration for new partitioned tables created
       in this dataset.
@@ -327,10 +342,13 @@ def UpdateDataset(
       tables in the dataset, if no explicit key is supplied in the creating
       request.
     max_time_travel_hours: Optional. Define the max time travel in hours. The
-      value can be from 48 to 168 hours (2 to 7 days). The default value is
-      168 hours if this is not set.
+      value can be from 48 to 168 hours (2 to 7 days). The default value is 168
+      hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
+    tags_to_attach: an optional dict of tags to attach to the dataset
+    tags_to_remove: an optional list of tag keys to remove from the dataset
+    clear_all_tags: if set, clears all the tags attached to the dataset
 
   Raises:
     TypeError: if reference is not a DatasetReference.
@@ -357,12 +375,9 @@ def UpdateDataset(
     if default_partition_expiration_ms == 0:
       dataset['defaultPartitionExpirationMs'] = None
     else:
-      dataset['defaultPartitionExpirationMs'] = (
-          default_partition_expiration_ms)
+      dataset['defaultPartitionExpirationMs'] = default_partition_expiration_ms
   if default_kms_key is not None:
-    dataset['defaultEncryptionConfiguration'] = {
-        'kmsKeyName': default_kms_key
-    }
+    dataset['defaultEncryptionConfiguration'] = {'kmsKeyName': default_kms_key}
   if 'labels' not in dataset:
     dataset['labels'] = {}
   if labels_to_set:
@@ -375,7 +390,24 @@ def UpdateDataset(
     dataset['maxTimeTravelHours'] = max_time_travel_hours
   if storage_billing_model is not None:
     dataset['storageBillingModel'] = storage_billing_model
-  _ExecutePatchDatasetRequest(apiclient, reference, dataset, etag)
+  resource_tags = {}
+  if clear_all_tags and 'resourceTags' in dataset:
+    for tag in dataset['resourceTags']:
+      resource_tags[tag] = None
+  else:
+    for tag in tags_to_remove or []:
+      resource_tags[tag] = None
+  for tag in tags_to_attach or {}:
+    resource_tags[tag] = tags_to_attach[tag]
+  # resourceTags is used to add a new tag binding, update value of existing
+  # tag and also to remove a tag binding
+  dataset['resourceTags'] = resource_tags
+  _ExecutePatchDatasetRequest(
+      apiclient,
+      reference,
+      dataset,
+      etag,
+  )
 
 
 def _ExecuteGetDatasetRequest(
@@ -414,7 +446,9 @@ def _ExecutePatchDatasetRequest(
     dataset: the body of request
     etag: if set, checks that etag in the existing dataset matches.
   """
-  request = apiclient.datasets().patch(body=dataset, **dict(reference))
+  parameters = dict(reference)
+
+  request = apiclient.datasets().patch(body=dataset, **parameters)
 
   # Perform a conditional update to protect against concurrent
   # modifications to this dataset.  By placing the ETag returned in
@@ -473,7 +507,7 @@ def UndeleteDataset(
   """Undeletes a dataset.
 
   Args:
-    apiclient: the api client to make the request with.
+    apiclient: The api client to make the request with.
     dataset_reference: [Type:
       bq_id_utils.ApiClientHelper.DatasetReference]DatasetReference of the
       dataset to be undeleted
@@ -487,8 +521,13 @@ def UndeleteDataset(
     BigqueryDuplicateError: when the dataset to be undeleted already exists.
   """
   try:
-    _ = timestamp  # TODO: b/270238943 - Add timestamp to the request
     args = dict(dataset_reference)
+    if timestamp:
+      args['body'] = {
+          'deletionTime': frontend_utils.FormatRfc3339(timestamp).replace(
+              '+00:00', ''
+          )
+      }
     return apiclient.datasets().undelete(**args).execute()
 
   except bq_error.BigqueryDuplicateError as e:

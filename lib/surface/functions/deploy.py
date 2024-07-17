@@ -126,7 +126,7 @@ def _CommonArgs(parser, track):
   flags.AddConcurrencyFlag(parser)
 
   # Add flag for user-provided Cloud Build Service Account
-  flags.AddBuildServiceAccountFlag(parser, track)
+  flags.AddBuildServiceAccountFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

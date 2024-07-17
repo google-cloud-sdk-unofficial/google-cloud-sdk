@@ -9,7 +9,7 @@ from __future__ import print_function
 
 from absl import flags
 
-from clients import bigquery_client_extended
+from clients import client_data_transfer
 from frontend import utils as frontend_utils
 
 FLAGS = flags.FLAGS
@@ -103,7 +103,7 @@ def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
         'Please copy and paste the above URL into your web browser'
         ' and follow the instructions to retrieve a version_info.'
     )
-    auth_info[bigquery_client_extended.VERSION_INFO] = frontend_utils.RawInput(
+    auth_info[client_data_transfer.VERSION_INFO] = frontend_utils.RawInput(
         'Enter your version_info here: '
     )
   else:
@@ -111,7 +111,7 @@ def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
         'Please copy and paste the above URL into your web browser'
         ' and follow the instructions to retrieve an authorization code.'
     )
-    auth_info[bigquery_client_extended.AUTHORIZATION_CODE] = (
+    auth_info[client_data_transfer.AUTHORIZATION_CODE] = (
         frontend_utils.RawInput('Enter your authorization code here: ')
     )
 

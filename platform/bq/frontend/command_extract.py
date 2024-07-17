@@ -12,6 +12,7 @@ from typing import Optional
 from absl import flags
 
 import bq_flags
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -142,7 +143,8 @@ class Extract(bigquery_command.BigqueryCmd):
       reference = bq_client_utils.GetTableReference(
           id_fallbacks=client, identifier=identifier
       )
-    job = client.Extract(
+    job = client_job.Extract(
+        client,
         reference,
         destination_uris,
         print_header=self.print_header,

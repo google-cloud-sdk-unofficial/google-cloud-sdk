@@ -130,7 +130,18 @@ class CreateAlpha(Create):
         and have a disk size of 64GB, run:
 
           $ {command} pwp1 --project=p1 --region=us-central1 --peered-network=projects/123/global/networks/default --peered-network-ip-range=192.168.0.0/28 --worker-machine-type=e2-standard-2 --worker-disk-size=64GB
-                    """,
+
+        To create a private pool in project `p1` in region `us-central1` where workers are of machine type
+        `e2-standard-2` and are peered to the network attachment
+        `projects/p1/regions/us-central1/networkAttachments/na`. The workers don't
+        have public IP address and all the traffic is routed to the network attachment.
+
+          $ {command} pwp1 --project=p1 --region=us-central1 \
+              --network-attachment=projects/p1/regions/us-central1/networkAttachments/na \
+              --route-all-traffic \
+              --disable-public-ip-address \
+              --worker-machine-type=e2-standard-2
+        """,
   }
 
   @staticmethod
@@ -311,6 +322,16 @@ def _CreateWorkerPoolFirstGen(args, release_track):
       wp = workerpool_config.LoadWorkerpoolConfigFromPath(
           args.config_from_file, messages.WorkerPool
       )
+      # Public IP in primary network interface of VM has to be disabled when
+      # routing all the traffic to network attachment.
+      config = wp.privatePoolV1Config
+      if (
+          release_track == base.ReleaseTrack.ALPHA
+          and config.privateServiceConnect is not None
+          and config.privateServiceConnect.routeAllTraffic
+          and config.privateServiceConnect.publicIpAddressDisabled is None
+      ):
+        config.privateServiceConnect.publicIpAddressDisabled = True
     except cloudbuild_exceptions.ParseProtoException as err:
       log.err.Print(
           '\nFailed to parse configuration from file. If you'
@@ -341,6 +362,27 @@ def _CreateWorkerPoolFirstGen(args, release_track):
       worker_config.diskSizeGb = compute_utils.BytesToGb(
           args.worker_disk_size)
     wp.privatePoolV1Config.workerConfig = worker_config
+
+    if release_track == base.ReleaseTrack.ALPHA:
+      private_service_connect = messages.PrivateServiceConnect()
+      if args.network_attachment:
+        private_service_connect.networkAttachment = args.network_attachment
+      if args.disable_public_ip_address:
+        private_service_connect.publicIpAddressDisabled = True
+      if args.route_all_traffic:
+        # Public IP in primary network interface of VM has to be disabled when
+        # routing all the traffic to network attachment.
+        private_service_connect.publicIpAddressDisabled = True
+        private_service_connect.routeAllTraffic = True
+      if (
+          args.network_attachment
+          or args.disable_public_ip_address
+          or args.route_all_traffic
+      ):
+        # Private Service Connect related fields are specified, remove
+        # network config.
+        wp.privatePoolV1Config.networkConfig = None
+        wp.privatePoolV1Config.privateServiceConnect = private_service_connect
 
   parent = properties.VALUES.core.project.Get(required=True)
 

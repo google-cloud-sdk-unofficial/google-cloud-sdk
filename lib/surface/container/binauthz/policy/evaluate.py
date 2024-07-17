@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.container.binauthz import util
 from googlecloudsdk.core.exceptions import Error
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Evaluate(base.Command):
   """Evaluate a Binary Authorization platform policy.

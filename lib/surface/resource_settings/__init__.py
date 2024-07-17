@@ -21,6 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('Resource Settings is deprecated. As of November 7, 2023, no '
+             'organizations will be onboarded for any of the enabled settings, '
+             'and the service will be shut down on October 1, 2024.'),
+    error=('Resource Settings is deprecated, the service has been shut down on '
+           'October 1, 2024.'))
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class ResourceSettings(base.Group):
   """Create and manage Resource Settings.

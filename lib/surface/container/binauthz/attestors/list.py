@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Attestors associated with the current project.
 

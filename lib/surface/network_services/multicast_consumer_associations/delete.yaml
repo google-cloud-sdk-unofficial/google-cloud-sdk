@@ -12,6 +12,10 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastConsumerAssociation
     help_text: The multicast consumer association to delete.
+
+async:
+  collection: networkservices.projects.locations.operations
+
 request: &request
   api_version: v1alpha1
   collection: networkservices.projects.locations.multicastConsumerAssociations

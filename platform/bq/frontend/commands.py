@@ -14,13 +14,14 @@ import typing
 from typing import Optional, TextIO
 
 
+
 from absl import app
 from absl import flags
-
 import termcolor
 
 import bq_flags
 import bq_utils
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -137,7 +138,7 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
         formatter, bq_id_utils.ApiClientHelper.TableReference
     )
     results = map(
-        client.FormatTableInfo,
+        bq_client_utils.FormatTableInfo,
         client.ListTables(source_dataset, max_results=1000 * 1000),
     )
 
@@ -225,7 +226,9 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
         }
         if bq_flags.LOCATION.value:
           kwds['location'] = bq_flags.LOCATION.value
-        job = client.CopyTable([source_table], destination_partition, **kwds)
+        job = client_job.CopyTable(
+            client, [source_table], destination_partition, **kwds
+        )
         if not bq_flags.SYNCHRONOUS_MODE.value:
           self.PrintJobStartInfo(job)
         else:
@@ -273,7 +276,8 @@ class Cancel(bigquery_command.BigqueryCmd):
             default_location=bq_flags.LOCATION.value,
         )
     )
-    job = client.CancelJob(
+    job = client_job.CancelJob(
+        bqclient=client,
         job_id=job_reference_dict['jobId'],
         location=job_reference_dict['location'],
     )
@@ -367,12 +371,12 @@ class Head(bigquery_command.BigqueryCmd):
       )
 
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
-      fields, rows = client.ReadSchemaAndJobRows(
-          dict(reference), start_row=self.s, max_rows=self.n
+      fields, rows = client_job.ReadSchemaAndJobRows(
+          client, dict(reference), start_row=self.s, max_rows=self.n
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       fields, rows = client.ReadSchemaAndRows(
-          dict(reference),
+          reference,
           start_row=self.s,
           max_rows=self.n,
           selected_fields=self.c,
@@ -483,7 +487,6 @@ class Insert(bigquery_command.BigqueryCmd):
         'Must provide a table identifier for insert.',
         is_usage_error=True,
     )
-    reference = dict(reference)
     batch = []
 
     def Flush():
@@ -521,9 +524,9 @@ class Insert(bigquery_command.BigqueryCmd):
     if batch and not errors:
       result, errors = Flush()
 
-    if FLAGS.format in ['prettyjson', 'json']:
+    if bq_flags.FORMAT.value in ['prettyjson', 'json']:
       bq_utils.PrintFormattedJsonObject(result)
-    elif FLAGS.format in [None, 'sparse', 'pretty']:
+    elif bq_flags.FORMAT.value in [None, 'sparse', 'pretty']:
       if errors:
         for entry in result['insertErrors']:
           entry_errors = entry['errors']
@@ -588,7 +591,9 @@ class Wait(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
 
     client = bq_cached_client.Client.Get()
     if not job_id:
-      running_jobs = client.ListJobRefs(state_filter=['PENDING', 'RUNNING'])
+      running_jobs = client_job.ListJobRefs(
+          bqclient=client, state_filter=['PENDING', 'RUNNING']
+      )
       if len(running_jobs) != 1:
         raise bq_error.BigqueryError(
             'No job_id provided, found %d running jobs' % (len(running_jobs),)
@@ -601,8 +606,11 @@ class Wait(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstring
           default_location=bq_flags.LOCATION.value,
       )
     try:
-      job = client.WaitJob(
-          job_reference=job_reference, wait=secs, status=self.wait_for_status
+      job = client_job.WaitJob(
+          bqclient=client,
+          job_reference=job_reference,
+          wait=secs,
+          status=self.wait_for_status,
       )
       frontend_utils.PrintObjectInfo(
           job,
@@ -671,7 +679,7 @@ class Init(bigquery_command.BigqueryCmd):
 
     # Capture project_id before loading defaults from ~/.bigqueryrc so that we
     # get the true value of the flag as specified on the command line.
-    project_id_flag = FLAGS.project_id
+    project_id_flag = bq_flags.PROJECT_ID.value
     bq_utils.ProcessBigqueryrc()
     bq_logging.ConfigureLogging(bq_flags.APILOG.value)
     if self.delete_credentials:

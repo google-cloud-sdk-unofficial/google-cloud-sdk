@@ -22,12 +22,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Get(base.Command):
   """Get the setting for an IAP resource."""
+
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To get the IAP setting for the resources within an organization, run:
 
             $ {command} --organization=ORGANIZATION_ID
@@ -65,6 +68,11 @@ class Get(base.Command):
 
             $ {command} --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
 
+          To get the IAP setting for a regional backend service within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+              --region=REGION_ID
+
           """,
   }
 
@@ -92,19 +100,3 @@ class Get(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(self.ReleaseTrack(),
                                                         args)
     return iap_setting_ref.GetIapSetting()
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetALPHA(Get):
-  """Get the setting for an IAP resource."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, use_region_arg=True)
-    base.URI_FLAG.RemoveFromParser(parser)

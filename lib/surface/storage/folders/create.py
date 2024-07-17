@@ -25,9 +25,8 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Create(base.Command):
-  """Create folders for HNS bucket."""
+  """Create folders for hierarchical namespace bucket."""
 
   detailed_help = {
       'DESCRIPTION': 'Create folders.',

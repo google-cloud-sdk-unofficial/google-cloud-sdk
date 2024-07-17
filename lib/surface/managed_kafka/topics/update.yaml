@@ -17,6 +17,8 @@ help_text:
 
 request:
   collection: managedkafka.projects.locations.clusters.topics
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:PatchConfigs
 
 arguments:
   resource:

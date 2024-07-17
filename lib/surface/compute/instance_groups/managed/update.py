@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import functools
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_policy_utils as policy_utils
@@ -35,6 +36,8 @@ import six
 REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
 
 
+# TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
@@ -66,6 +69,7 @@ class UpdateGA(base.UpdateCommand):
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser)
+    managed_flags.AddMigSizeFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(self,
@@ -319,6 +323,8 @@ class UpdateGA(base.UpdateCommand):
             client.messages, args
         )
     )
+    if args.IsSpecified('size'):
+      patch_instance_group_manager.targetSize = args.size
     return patch_instance_group_manager
 
   def Run(self, args):

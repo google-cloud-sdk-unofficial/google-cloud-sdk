@@ -74,7 +74,7 @@ class Create(base.CreateCommand):
         parser, alloydb_messages, cls.ReleaseTrack(), update=False
     )
     flags.AddContinuousBackupConfigFlags(parser, cls.ReleaseTrack())
-    flags.AddDatabaseVersion(parser, alloydb_messages)
+    flags.AddDatabaseVersion(parser, alloydb_messages, cls.ReleaseTrack())
     flags.AddEnablePrivateServiceConnect(parser)
     flags.AddMaintenanceWindow(parser, alloydb_messages)
 

@@ -31,6 +31,7 @@ from googlecloudsdk.core import resources
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a PipelineRun/TaskRun."""
 
@@ -66,6 +67,8 @@ class Create(base.CreateCommand):
           ))
       operation_ref = resources.REGISTRY.ParseRelativeName(
           operation.name, collection='cloudbuild.projects.locations.operations')
+      # Note that this operation only indicates that the run was created, not
+      # necessarily that it also completed.
       created_pipeline_run = waiter.WaitFor(
           waiter.CloudOperationPoller(client.projects_locations_pipelineRuns,
                                       client.projects_locations_operations),
@@ -91,6 +94,8 @@ class Create(base.CreateCommand):
           ))
       operation_ref = resources.REGISTRY.ParseRelativeName(
           operation.name, collection='cloudbuild.projects.locations.operations')
+      # Note that we'll only wait for the run to be created, not necessarily
+      # for it to be completed.
       created_task_run = waiter.WaitFor(
           waiter.CloudOperationPoller(client.projects_locations_taskRuns,
                                       client.projects_locations_operations),

@@ -31,7 +31,6 @@ from googlecloudsdk.core import log
 def _Args(
     parser,
     enable_push_to_cps=False,
-    enable_cloud_storage_use_topic_schema=False,
 ):
   """Adds the arguments for this command.
 
@@ -39,15 +38,12 @@ def _Args(
     parser: the parser for the command.
     enable_push_to_cps: whether or not to enable Pubsub Export config flags
       support.
-    enable_cloud_storage_use_topic_schema: whether or not to enable Cloud
-      Storage `use_topic_schema` field flag support.
   """
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
-      enable_cloud_storage_use_topic_schema=enable_cloud_storage_use_topic_schema,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -66,7 +62,6 @@ class Update(base.UpdateCommand):
       self,
       args,
       enable_push_to_cps=False,
-      enable_cloud_storage_use_topic_schema=False,
   ):
     """This is what gets called when the user runs this command.
 
@@ -75,8 +70,6 @@ class Update(base.UpdateCommand):
         command invocation.
       enable_push_to_cps: whether or not to enable Pubsub Export config flags
         support.
-      enable_cloud_storage_use_topic_schema: whether or not to enable Cloud
-        Storage `use_topic_schema` field flag support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -158,10 +151,8 @@ class Update(base.UpdateCommand):
     cloud_storage_output_format = None
     if cloud_storage_output_format_list:
       cloud_storage_output_format = cloud_storage_output_format_list[0]
-    cloud_storage_use_topic_schema = (
-        getattr(args, 'cloud_storage_use_topic_schema', None)
-        if enable_cloud_storage_use_topic_schema
-        else None
+    cloud_storage_use_topic_schema = getattr(
+        args, 'cloud_storage_use_topic_schema', None
     )
     cloud_storage_write_metadata = getattr(
         args, 'cloud_storage_write_metadata', None
@@ -251,7 +242,6 @@ class UpdateBeta(Update):
     _Args(
         parser,
         enable_push_to_cps=True,
-        enable_cloud_storage_use_topic_schema=True,
     )
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
@@ -260,5 +250,4 @@ class UpdateBeta(Update):
     return super(UpdateBeta, self).Run(
         args,
         enable_push_to_cps=True,
-        enable_cloud_storage_use_topic_schema=True,
     )

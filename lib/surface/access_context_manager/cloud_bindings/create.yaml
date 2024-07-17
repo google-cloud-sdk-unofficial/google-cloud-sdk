@@ -20,7 +20,7 @@
       description: |
         Create a new access binding. The access level will be bound with the group and the
         restricted client application. The access level is enforced at the organization level for
-        all context-aware access group members, as specified in the bind.
+        all context-aware access group members, as specified in the binding.
         If a restricted client application is specified, then the enforcement applies only to the
         specified application, and not to the entire organization.
       examples: |
@@ -67,8 +67,7 @@
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessOrganization
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessRestrictedClientApplicationsAlpha
-      ALPHA:
-        api_version: v1alpha
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
 
   arguments:
     params:
@@ -108,6 +107,49 @@
           `accessPolicies/123/accessLevels/new-def`. If no
           `restricted-client-application-client-ids` or `restricted-client-application-names` are
           provided, then the access level is applied to the entire organization.
+    - api_field: gcpUserAccessBinding.reauthSettings.sessionLength
+      hidden: true
+      arg_name: session-length
+      type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
+      release_tracks: [ALPHA]
+      help_text: |
+        The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
+        least one hour or zero, and no more than twenty-four hours. Granularity is limited to
+        seconds.
+
+        When --session-length=0 then users in the group attached to this binding will have infinite
+        session length, effectively disabling reauth.
+
+        A session begins once a user signs-in successfully. If a user signs out before the end of
+        the session lifetime, a new login creates a new session with a fresh lifetime. When a
+        session expires, the user is asked to reauthenticate in accordance with reauth-method.
+
+        Setting --reauth-method when --session-length is empty raises an error.
+    - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
+      hidden: true
+      arg_name: reauth-method
+      release_tracks: [ALPHA]
+      default: login
+      help_text: |
+        Specifies the security check a user must undergo once their session expires. Defaults to
+        --reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
+        --session-length is empty or 0.
+      choices:
+      - arg_value: login
+        enum_value: LOGIN
+        help_text: |
+          The user will prompted to perform regular login. Users who are enrolled for two-step
+          verification and haven't chosen to "Remember this computer" will be prompted for their
+          second factor.
+      - arg_value: security-key
+        enum_value: SECURITY_KEY
+        help_text: |
+         The user will be prompted to autheticate using their security key. If no security key has
+         been configured, then we will fallback to LOGIN.
+      - arg_value: password
+        enum_value: PASSWORD
+        help_text: |
+          The user will be prompted for their password.
     - api_field: parent
       arg_name: organization
       type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=cloudresourcemanager.organizations

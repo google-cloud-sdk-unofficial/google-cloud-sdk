@@ -46,8 +46,6 @@ import base64
 import enum
 import json
 
-import six
-
 from google.auth import exceptions
 
 
@@ -78,8 +76,7 @@ class ClientAuthentication(object):
         self.client_secret = client_secret
 
 
-@six.add_metaclass(abc.ABCMeta)
-class OAuthClientAuthHandler(object):
+class OAuthClientAuthHandler(metaclass=abc.ABCMeta):
     """Abstract class for handling client authentication in OAuth-based
     operations.
     """

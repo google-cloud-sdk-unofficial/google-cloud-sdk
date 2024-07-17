@@ -28,15 +28,12 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instance_groups import flags as instance_groups_flags
+from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 
 
 def _AddArgs(parser, creation_retries, suspended_stopped_sizes):
   """Adds args."""
-  parser.add_argument(
-      '--size',
-      required=not suspended_stopped_sizes,
-      type=arg_parsers.BoundedInt(0, sys.maxsize, unlimited=True),
-      help='Target number of running instances in managed instance group.')
+  managed_flags.AddMigSizeFlag(parser, required=not suspended_stopped_sizes)
 
   if creation_retries:
     parser.add_argument(
@@ -56,6 +53,8 @@ def _AddArgs(parser, creation_retries, suspended_stopped_sizes):
         help='Target number of stopped instances in managed instance group.')
 
 
+# TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resize(base.Command):
   """Set managed instance group size."""

@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
+@base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for an attestor.
 

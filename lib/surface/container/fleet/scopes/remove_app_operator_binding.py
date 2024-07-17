@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import util as projects_util
-from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -37,7 +36,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddAppOperatorBinding(base.DeleteCommand):
+class RemoveAppOperatorBinding(base.DeleteCommand):
   """Remove project-level and fleet scope-level IAM bindings and delete a fleet scope RBAC role binding for an app operator principal.
 
   One binding consists of an app operator principal (user/group) and a role
@@ -125,7 +124,6 @@ class AddAppOperatorBinding(base.DeleteCommand):
         type=str,
         help='Group for the role binding.',
     )
-    labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
     project = args.project

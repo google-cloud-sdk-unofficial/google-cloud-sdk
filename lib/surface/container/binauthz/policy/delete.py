@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.container.binauthz import flags
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a Binary Authorization platform policy.

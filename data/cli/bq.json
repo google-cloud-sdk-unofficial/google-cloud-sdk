@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.5",
+  "CLI_VERSION": "2.1.6",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -393,6 +393,24 @@
       "sections": {
         "DESCRIPTION": "Truncates table/dataset/project to a particular\ntimestamp.\n",
         "EXAMPLES": "bq truncate project_id:dataset\nbq truncate --overwrite project_id:dataset\n--timestamp 123456789\nbq truncate --skip_fully_replicated_tables=false\nproject_id:dataset\n"
+      }
+    },
+    "undelete": {
+      "capsule": "",
+      "commands": {},
+      "flags": {},
+      "groups": {},
+      "is_group": false,
+      "is_hidden": false,
+      "path": [
+        "bq",
+        "undelete"
+      ],
+      "positionals": [],
+      "release": "GA",
+      "sections": {
+        "DESCRIPTION": "Undelete the dataset described by identifier.\n\nAlways requires an identifier, unlike the show and ls\ncommands. By default, also requires confirmation\nbefore undeleting. Supports:\n- timestamp[int]: This signifies the timestamp\nversion of the dataset that\nneeds to be restored, this should be in milliseconds\n",
+        "EXAMPLES": "bq undelete dataset\nbq undelete --timestamp 1714720875568 dataset\n"
       }
     },
     "update": {

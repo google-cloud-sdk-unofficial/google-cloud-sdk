@@ -72,11 +72,13 @@ def get_tpc_root_url_from_flags(
             ('MTLS', flags.FlagHolder[bool]),
         ],
     ),
-    local_params: Optional[NamedTuple(
-        'LocalParams',
-        [
-        ],
-    )]=None,
+    local_params: Optional[
+        NamedTuple(
+            'LocalParams',
+            [
+            ],
+        )
+    ] = None,
 ) -> str:
   """Takes BQ CLI flags to build a root URL to make requests to.
 
@@ -85,8 +87,8 @@ def get_tpc_root_url_from_flags(
   endpoint.
 
   Args:
-    service: The service that this request will be made to. Usually the API
-      that is being hit.
+    service: The service that this request will be made to. Usually the API that
+      is being hit.
     inputted_flags: The flags set, usually straight from bq_flags.
 
   Returns:
@@ -172,7 +174,7 @@ def get_tpc_root_url_from_flags(
       region=region,
       is_mtls=inputted_flags.MTLS.value,
       is_rep=inputted_flags.USE_REP.value,
-      is_lep=is_lep
+      is_lep=is_lep,
   )
 
   root_url = add_trailing_slash_if_missing(

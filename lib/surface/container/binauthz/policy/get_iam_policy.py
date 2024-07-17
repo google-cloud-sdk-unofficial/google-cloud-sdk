@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Binary Authorization policy.
 

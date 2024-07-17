@@ -10,7 +10,9 @@ import shlex
 from typing import List, Optional
 
 
+
 from absl import flags
+
 from pyglib import appcommands
 
 import bq_utils
@@ -229,6 +231,8 @@ class CommandLoop(cmd.Cmd):
 
   def postcmd(self, stop, line: str) -> bool:
     return bool(stop) or line == 'EOF'
+
+
 # pylint: enable=g-bad-name
 
 

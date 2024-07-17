@@ -8,8 +8,10 @@ from __future__ import print_function
 from typing import Any, Dict, List, Mapping, Optional
 
 
+
 from googleapiclient import discovery
 import inflection
+
 from clients import utils as bq_client_utils
 from utils import bq_api_utils
 from utils import bq_error
@@ -39,8 +41,13 @@ def GetConnection(
   Returns:
     Connection object with the given id.
   """
-  return client.projects().locations().connections().get(
-      name=reference.path()).execute()
+  return (
+      client.projects()
+      .locations()
+      .connections()
+      .get(name=reference.path())
+      .execute()
+  )
 
 
 def CreateConnection(
@@ -87,13 +94,14 @@ def CreateConnection(
     connection['kmsKeyName'] = kms_key_name
 
   property_name = bq_client_utils.CONNECTION_TYPE_TO_PROPERTY_MAP.get(
-      connection_type)
+      connection_type
+  )
   if property_name:
     connection[property_name] = bq_processor_utils.ParseJson(properties)
     if connection_credential:
       if isinstance(connection[property_name], Mapping):
-        connection[property_name]['credential'] = (
-            bq_processor_utils.ParseJson(connection_credential)
+        connection[property_name]['credential'] = bq_processor_utils.ParseJson(
+            connection_credential
         )
       else:
         raise ValueError('The `properties` were not a dictionary.')
@@ -109,8 +117,13 @@ def CreateConnection(
     raise ValueError(error)
 
   parent = 'projects/%s/locations/%s' % (project_id, location)
-  return client.projects().locations().connections().create(
-      parent=parent, connectionId=connection_id, body=connection).execute()
+  return (
+      client.projects()
+      .locations()
+      .connections()
+      .create(parent=parent, connectionId=connection_id, body=connection)
+      .execute()
+  )
 
 
 def UpdateConnection(
@@ -136,6 +149,7 @@ def UpdateConnection(
     description: Description of the connection
     kms_key_name: Optional KMS key name.
     connector_configuration: Optional configuration for connector
+
   Raises:
     bq_error.BigqueryClientError: The connection type is not defined
       when updating
@@ -203,7 +217,8 @@ def UpdateConnection(
       connection['cloudSql'] = cloudsql_properties
 
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), cloudsql_properties))
+          GetUpdateMask(connection_type.lower(), cloudsql_properties)
+      )
 
     else:
       connection['cloudSql'] = {}
@@ -223,9 +238,9 @@ def UpdateConnection(
           'crossAccountRole'
       ].get('iamRoleId'):
         update_mask.append('aws.crossAccountRole.iamRoleId')
-      if aws_properties.get('accessRole') and aws_properties[
-          'accessRole'
-      ].get('iamRoleId'):
+      if aws_properties.get('accessRole') and aws_properties['accessRole'].get(
+          'iamRoleId'
+      ):
         update_mask.append('aws.access_role.iam_role_id')
     else:
       connection['aws'] = {}
@@ -251,14 +266,15 @@ def UpdateConnection(
       connection['sqlDataSource'] = sql_data_source_properties
 
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), sql_data_source_properties))
+          GetUpdateMask(connection_type.lower(), sql_data_source_properties)
+      )
 
     else:
       connection['sqlDataSource'] = {}
 
     if connection_credential:
-      connection['sqlDataSource']['credential'] = (
-          bq_processor_utils.ParseJson(connection_credential)
+      connection['sqlDataSource']['credential'] = bq_processor_utils.ParseJson(
+          connection_credential
       )
       update_mask.append('sqlDataSource.credential')
 
@@ -267,7 +283,8 @@ def UpdateConnection(
       cloudspanner_properties = bq_processor_utils.ParseJson(properties)
       connection['cloudSpanner'] = cloudspanner_properties
       update_mask.extend(
-          GetUpdateMask(connection_type.lower(), cloudspanner_properties))
+          GetUpdateMask(connection_type.lower(), cloudspanner_properties)
+      )
     else:
       connection['cloudSpanner'] = {}
 
@@ -289,10 +306,17 @@ def UpdateConnection(
         GetUpdateMaskRecursively('configuration', connection['configuration'])
     )
 
-  return client.projects().locations().connections().patch(
-      name=reference.path(),
-      updateMask=','.join(update_mask),
-      body=connection).execute()
+  return (
+      client.projects()
+      .locations()
+      .connections()
+      .patch(
+          name=reference.path(),
+          updateMask=','.join(update_mask),
+          body=connection,
+      )
+      .execute()
+  )
 
 
 def DeleteConnection(
@@ -306,7 +330,8 @@ def DeleteConnection(
     reference: Connection to delete.
   """
   client.projects().locations().connections().delete(
-      name=reference.path()).execute()
+      name=reference.path()
+  ).execute()
 
 
 def ListConnections(
@@ -329,8 +354,13 @@ def ListConnections(
     List of connection objects
   """
   parent = 'projects/%s/locations/%s' % (project_id, location)
-  return client.projects().locations().connections().list(
-      parent=parent, pageToken=page_token, pageSize=max_results).execute()
+  return (
+      client.projects()
+      .locations()
+      .connections()
+      .list(parent=parent, pageToken=page_token, pageSize=max_results)
+      .execute()
+  )
 
 
 def SetConnectionIAMPolicy(
@@ -356,9 +386,13 @@ def SetConnectionIAMPolicy(
       bq_id_utils.ApiClientHelper.ConnectionReference,
       method='SetConnectionIAMPolicy',
   )
-  return client.projects().locations().connections().setIamPolicy(
-      resource=reference.path(), body={'policy': policy}
-  ).execute()
+  return (
+      client.projects()
+      .locations()
+      .connections()
+      .setIamPolicy(resource=reference.path(), body={'policy': policy})
+      .execute()
+  )
 
 
 def GetConnectionIAMPolicy(

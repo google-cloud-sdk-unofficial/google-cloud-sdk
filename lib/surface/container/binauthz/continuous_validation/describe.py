@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.container.binauthz import util
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Show the configuration of Binary Authorization Continuous Validation for the project.

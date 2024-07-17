@@ -12,12 +12,13 @@ from typing import Optional
 
 from absl import app
 from absl import flags
+
 from pyglib import appcommands
 
 import bq_flags
 import bq_utils
-from clients import bigquery_client_extended
 from clients import client_connection
+from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
 from clients import utils as bq_client_utils
@@ -765,7 +766,7 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'add_tags',
         None,
-        'Tags to attach to the table.'
+        'Tags to attach to the dataset or table.'
         ' The format is namespaced'
         ' key:value pair like'
         ' "1234567/my_tag_key:my_tag_value,test-project123/environment:production" ',  # pylint: disable=line-too-long
@@ -954,13 +955,14 @@ class Make(bigquery_command.BigqueryCmd):
             reference, self.data_source, transfer_client
         )
       location = self.data_location or bq_flags.LOCATION.value
-      schedule_args = bigquery_client_extended.TransferScheduleArgs(
+      schedule_args = client_data_transfer.TransferScheduleArgs(
           schedule=self.schedule,
           start_time=self.schedule_start_time,
           end_time=self.schedule_end_time,
           disable_auto_scheduling=self.no_auto_scheduling,
       )
-      transfer_name = client.CreateTransferConfig(
+      transfer_name = client_data_transfer.CreateTransferConfig(
+          transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           data_source=self.data_source,
           target_dataset=self.target_dataset,
@@ -996,8 +998,9 @@ class Make(bigquery_command.BigqueryCmd):
         )
       results = list(
           map(
-              client.FormatTransferRunInfo,
-              client.StartManualTransferRuns(
+              bq_client_utils.FormatTransferRunInfo,
+              client_data_transfer.StartManualTransferRuns(
+                  transfer_client=client.GetTransferV1ApiClient(),
                   reference=reference,
                   start_time=self.start_time,
                   end_time=self.end_time,
@@ -1085,15 +1088,13 @@ class Make(bigquery_command.BigqueryCmd):
         )
     elif self.d or not identifier:
       reference = bq_client_utils.GetDatasetReference(
-          id_fallbacks=client,
-          identifier=identifier
+          id_fallbacks=client, identifier=identifier
       )
       if reference.datasetId and identifier:
         frontend_utils.ValidateDatasetName(reference.datasetId)
     else:
       reference = bq_client_utils.GetReference(
-          id_fallbacks=client,
-          identifier=identifier
+          id_fallbacks=client, identifier=identifier
       )
       bq_id_utils.typecheck(
           reference,
@@ -1137,8 +1138,7 @@ class Make(bigquery_command.BigqueryCmd):
 
       if self.source_dataset:
         source_dataset_reference = bq_client_utils.GetDatasetReference(
-            id_fallbacks=client,
-            identifier=self.source_dataset
+            id_fallbacks=client, identifier=self.source_dataset
         )
       else:
         source_dataset_reference = None
@@ -1160,6 +1160,8 @@ class Make(bigquery_command.BigqueryCmd):
               'connection_id is required when external_source is specified.'
           )
       resource_tags = None
+      if self.add_tags is not None:
+        resource_tags = bq_utils.ParseTags(self.add_tags)
       client_dataset.CreateDataset(
           apiclient=client.apiclient,
           reference=reference,

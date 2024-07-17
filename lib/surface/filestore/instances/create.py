@@ -33,6 +33,7 @@ def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
   instances_flags.AddInstanceCreateArgs(parser, api_version)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Filestore instance."""
@@ -46,7 +47,7 @@ class Create(base.CreateCommand):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -106,7 +107,8 @@ class Create(base.CreateCommand):
         labels=labels,
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
-        kms_key_name=instances_flags.GetAndValidateKmsKeyName(args))
+        kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
+        source_instance=args.source_instance)
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
@@ -118,6 +120,7 @@ class Create(base.CreateCommand):
     return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Filestore instance."""
@@ -131,7 +134,7 @@ class CreateBeta(Create):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -187,6 +190,7 @@ class CreateBeta(Create):
           client.messages
       ).GetEnumForChoice(args.protocol)
     managed_ad = args.managed_ad or None
+    source_instance = args.source_instance or None
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Instance.LabelsValue)
     try:
@@ -206,7 +210,8 @@ class CreateBeta(Create):
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
-        managed_ad=managed_ad)
+        managed_ad=managed_ad,
+        source_instance=source_instance)
 
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:
@@ -217,6 +222,7 @@ class CreateBeta(Create):
           'Check the status of the new instance by listing all instances:\n  '
           '$ {} '.format(' '.join(command)))
     return result
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):

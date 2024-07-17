@@ -36,6 +36,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a Binary Authorization attestation.

@@ -107,17 +107,18 @@ def CreateReservation(
       reference.projectId,
       reference.location,
   )
-  return client.projects().locations().reservations().create(
-      parent=parent, body=reservation,
-      reservationId=reference.reservationId).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .create(
+          parent=parent, body=reservation, reservationId=reference.reservationId
+      )
+      .execute()
+  )
 
 
-def ListReservations(
-    client,
-    reference,
-    page_size,
-    page_token
-):
+def ListReservations(client, reference, page_size, page_token):
   """List reservations in the project and location for the given reference.
 
   Arguments:
@@ -133,14 +134,16 @@ def ListReservations(
       reference.projectId,
       reference.location,
   )
-  return client.projects().locations().reservations().list(
-      parent=parent, pageSize=page_size, pageToken=page_token).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .list(parent=parent, pageSize=page_size, pageToken=page_token)
+      .execute()
+  )
 
 
-def ListBiReservations(
-    client,
-    reference
-):
+def ListBiReservations(client, reference):
   """List BI reservations in the project and location for the given reference.
 
   Arguments:
@@ -154,15 +157,13 @@ def ListBiReservations(
       reference.projectId,
       reference.location,
   )
-  response = client.projects().locations().getBiReservation(
-      name=parent).execute()
+  response = (
+      client.projects().locations().getBiReservation(name=parent).execute()
+  )
   return response
 
 
-def GetReservation(
-    client,
-    reference
-):
+def GetReservation(client, reference):
   """Gets a reservation with the given reservation reference.
 
   Arguments:
@@ -172,8 +173,13 @@ def GetReservation(
   Returns:
     Reservation object corresponding to the given id.
   """
-  return client.projects().locations().reservations().get(
-      name=reference.path()).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .get(name=reference.path())
+      .execute()
+  )
 
 
 def DeleteReservation(
@@ -191,11 +197,7 @@ def DeleteReservation(
   ).execute()
 
 
-def UpdateBiReservation(
-    client,
-    reference,
-    reservation_size: str
-):
+def UpdateBiReservation(client, reference, reservation_size: str):
   """Updates a BI reservation with the given reservation reference.
 
   Arguments:
@@ -210,11 +212,14 @@ def UpdateBiReservation(
     ValueError: if reservation_size is malformed.
   """
 
-  if (reservation_size.upper().endswith('GB') and
-      reservation_size[:-2].isdigit()):
+  if (
+      reservation_size.upper().endswith('GB')
+      and reservation_size[:-2].isdigit()
+  ):
     reservation_digits = reservation_size[:-2]
-  elif (reservation_size.upper().endswith('G') and
-        reservation_size[:-1].isdigit()):
+  elif (
+      reservation_size.upper().endswith('G') and reservation_size[:-1].isdigit()
+  ):
     reservation_digits = reservation_size[:-1]
   elif reservation_size.isdigit():
     reservation_digits = reservation_size
@@ -229,9 +234,14 @@ def UpdateBiReservation(
   update_mask = ''
   bi_reservation['size'] = reservation_size
   update_mask += 'size,'
-  return client.projects().locations().updateBiReservation(
-      name=reference.path(), updateMask=update_mask,
-      body=bi_reservation).execute()
+  return (
+      client.projects()
+      .locations()
+      .updateBiReservation(
+          name=reference.path(), updateMask=update_mask, body=bi_reservation
+      )
+      .execute()
+  )
 
 
 
@@ -321,9 +331,13 @@ def UpdateReservation(
       target_job_concurrency,
       autoscale_max_slots,
   )
-  return client.projects().locations().reservations().patch(
-      name=reference.path(), updateMask=update_mask,
-      body=reservation).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .patch(name=reference.path(), updateMask=update_mask, body=reservation)
+      .execute()
+  )
 
 
 def CreateCapacityCommitment(
@@ -344,8 +358,7 @@ def CreateCapacityCommitment(
     slots: Number of slots in this commitment.
     plan: Commitment plan for this capacity commitment.
     renewal_plan: Renewal plan for this capacity commitment.
-    multi_region_auxiliary: Whether this commitment is for the auxiliary
-      region.
+    multi_region_auxiliary: Whether this commitment is for the auxiliary region.
 
   Returns:
     Capacity commitment object that was created.
@@ -362,8 +375,12 @@ def CreateCapacityCommitment(
       reference.projectId,
       reference.location,
   )
-  request = client.projects().locations().capacityCommitments().create(
-      parent=parent, body=capacity_commitment)
+  request = (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .create(parent=parent, body=capacity_commitment)
+  )
   return request.execute()
 
 
@@ -383,14 +400,16 @@ def ListCapacityCommitments(client, reference, page_size, page_token):
       reference.projectId,
       reference.location,
   )
-  return client.projects().locations().capacityCommitments().list(
-      parent=parent, pageSize=page_size, pageToken=page_token).execute()
+  return (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .list(parent=parent, pageSize=page_size, pageToken=page_token)
+      .execute()
+  )
 
 
-def GetCapacityCommitment(
-    client,
-    reference
-):
+def GetCapacityCommitment(client, reference):
   """Gets a capacity commitment with the given capacity commitment reference.
 
   Arguments:
@@ -400,15 +419,16 @@ def GetCapacityCommitment(
   Returns:
     Capacity commitment object corresponding to the given id.
   """
-  return client.projects().locations().capacityCommitments().get(
-      name=reference.path()).execute()
+  return (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .get(name=reference.path())
+      .execute()
+  )
 
 
-def DeleteCapacityCommitment(
-    client,
-    reference,
-    force=None
-):
+def DeleteCapacityCommitment(client, reference, force=None):
   """Deletes a capacity commitment with the given capacity commitment reference.
 
   Arguments:
@@ -417,15 +437,11 @@ def DeleteCapacityCommitment(
     force: Force delete capacity commitment, ignoring commitment end time.
   """
   client.projects().locations().capacityCommitments().delete(
-      name=reference.path(), force=force).execute()
+      name=reference.path(), force=force
+  ).execute()
 
 
-def UpdateCapacityCommitment(
-    client,
-    reference,
-    plan,
-    renewal_plan
-):
+def UpdateCapacityCommitment(client, reference, plan, renewal_plan):
   """Updates a capacity commitment with the given reference.
 
   Arguments:
@@ -451,10 +467,17 @@ def UpdateCapacityCommitment(
     capacity_commitment['renewal_plan'] = renewal_plan
     update_mask.append('renewal_plan')
 
-  return client.projects().locations().capacityCommitments().patch(
-      name=reference.path(),
-      updateMask=','.join(update_mask),
-      body=capacity_commitment).execute()
+  return (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .patch(
+          name=reference.path(),
+          updateMask=','.join(update_mask),
+          body=capacity_commitment,
+      )
+      .execute()
+  )
 
 
 def SplitCapacityCommitment(
@@ -478,18 +501,20 @@ def SplitCapacityCommitment(
   if slots is None:
     raise bq_error.BigqueryError('Please specify slots for the split.')
   body = {'slotCount': slots}
-  response = client.projects().locations().capacityCommitments().split(
-      name=reference.path(), body=body).execute()
+  response = (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .split(name=reference.path(), body=body)
+      .execute()
+  )
   if 'first' not in response or 'second' not in response:
     raise bq_error.BigqueryError('internal error')
   return [response['first'], response['second']]
 
 
 def MergeCapacityCommitments(
-    client,
-    project_id,
-    location,
-    capacity_commitment_ids
+    client, project_id, location, capacity_commitment_ids
 ):
   """Merges capacity commitments into one.
 
@@ -511,20 +536,21 @@ def MergeCapacityCommitments(
     raise bq_error.BigqueryError('location must be specified.')
   if capacity_commitment_ids is None or len(capacity_commitment_ids) < 2:
     raise bq_error.BigqueryError(
-        'at least 2 capacity commitments must be specified.')
+        'at least 2 capacity commitments must be specified.'
+    )
   parent = 'projects/%s/locations/%s' % (project_id, location)
   body = {'capacityCommitmentIds': capacity_commitment_ids}
-  return client.projects().locations().capacityCommitments().merge(
-      parent=parent, body=body).execute()
+  return (
+      client.projects()
+      .locations()
+      .capacityCommitments()
+      .merge(parent=parent, body=body)
+      .execute()
+  )
 
 
 def CreateReservationAssignment(
-    client,
-    reference,
-    job_type,
-    priority,
-    assignee_type,
-    assignee_id
+    client, reference, job_type, priority, assignee_type, assignee_id
 ):
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -560,14 +586,17 @@ def CreateReservationAssignment(
       assignee_type.lower(),
       assignee_id,
   )
-  return client.projects().locations().reservations().assignments().create(
-      parent=reference.path(), body=reservation_assignment).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .assignments()
+      .create(parent=reference.path(), body=reservation_assignment)
+      .execute()
+  )
 
 
-def DeleteReservationAssignment(
-    client,
-    reference
-):
+def DeleteReservationAssignment(client, reference):
   """Deletes given reservation assignment.
 
   Arguments:
@@ -575,7 +604,8 @@ def DeleteReservationAssignment(
     reference: Reference to the reservation assignment.
   """
   client.projects().locations().reservations().assignments().delete(
-      name=reference.path()).execute()
+      name=reference.path()
+  ).execute()
 
 
 def MoveReservationAssignment(
@@ -596,18 +626,21 @@ def MoveReservationAssignment(
       id_fallbacks=id_fallbacks,
       identifier=destination_reservation_id,
       default_location=default_location,
-      check_reservation_project=False)
+      check_reservation_project=False,
+  )
   body = {'destinationId': destination_reservation_reference.path()}
 
-  return client.projects().locations().reservations().assignments().move(
-      name=reference.path(), body=body).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .assignments()
+      .move(name=reference.path(), body=body)
+      .execute()
+  )
 
 
-def UpdateReservationAssignment(
-    client,
-    reference,
-    priority
-):
+def UpdateReservationAssignment(client, reference, priority):
   """Updates reservation assignment.
 
   Arguments:
@@ -629,18 +662,21 @@ def UpdateReservationAssignment(
     reservation_assignment['priority'] = priority
     update_mask += 'priority,'
 
-  return client.projects().locations().reservations().assignments().patch(
-      name=reference.path(),
-      updateMask=update_mask,
-      body=reservation_assignment).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .assignments()
+      .patch(
+          name=reference.path(),
+          updateMask=update_mask,
+          body=reservation_assignment,
+      )
+      .execute()
+  )
 
 
-def ListReservationAssignments(
-    client,
-    reference,
-    page_size,
-    page_token
-):
+def ListReservationAssignments(client, reference, page_size, page_token):
   """Lists reservation assignments for given project and location.
 
   Arguments:
@@ -652,19 +688,21 @@ def ListReservationAssignments(
   Returns:
     ReservationAssignment object that was created.
   """
-  return client.projects().locations().reservations().assignments().list(
-      parent=reference.path(), pageSize=page_size,
-      pageToken=page_token).execute()
+  return (
+      client.projects()
+      .locations()
+      .reservations()
+      .assignments()
+      .list(parent=reference.path(), pageSize=page_size, pageToken=page_token)
+      .execute()
+  )
 
 
 
 
 def SearchAllReservationAssignments(
-    client,
-    location: str,
-    job_type: str,
-    assignee_type: str,
-    assignee_id: str) -> Dict[str, Any]:
+    client, location: str, job_type: str, assignee_type: str, assignee_id: str
+) -> Dict[str, Any]:
   """Searches reservations assignments for given assignee.
 
   Arguments:
@@ -696,8 +734,12 @@ def SearchAllReservationAssignments(
   query = 'assignee=%s' % assignee
   parent = 'projects/-/locations/%s' % location
 
-  response = client.projects().locations().searchAllAssignments(
-      parent=parent, query=query).execute()
+  response = (
+      client.projects()
+      .locations()
+      .searchAllAssignments(parent=parent, query=query)
+      .execute()
+  )
   if 'assignments' in response:
     for assignment in response['assignments']:
       if assignment['jobType'] == job_type:

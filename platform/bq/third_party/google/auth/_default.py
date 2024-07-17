@@ -24,8 +24,6 @@ import logging
 import os
 import warnings
 
-import six
-
 from google.auth import environment_vars
 from google.auth import exceptions
 import google.auth.transport._http_client
@@ -125,9 +123,53 @@ def load_credentials_from_file(
             new_exc = exceptions.DefaultCredentialsError(
                 "File {} is not a valid json file.".format(filename), caught_exc
             )
-            six.raise_from(new_exc, caught_exc)
+            raise new_exc from caught_exc
     return _load_credentials_from_info(
         filename, info, scopes, default_scopes, quota_project_id, request
+    )
+
+
+def load_credentials_from_dict(
+    info, scopes=None, default_scopes=None, quota_project_id=None, request=None
+):
+    """Loads Google credentials from a dict.
+
+    The credentials file must be a service account key, stored authorized
+    user credentials, external account credentials, or impersonated service
+    account credentials.
+
+    Args:
+        info (Dict[str, Any]): A dict object containing the credentials
+        scopes (Optional[Sequence[str]]): The list of scopes for the credentials. If
+            specified, the credentials will automatically be scoped if
+            necessary
+        default_scopes (Optional[Sequence[str]]): Default scopes passed by a
+            Google client library. Use 'scopes' for user-defined scopes.
+        quota_project_id (Optional[str]):  The project ID used for
+            quota and billing.
+        request (Optional[google.auth.transport.Request]): An object used to make
+            HTTP requests. This is used to determine the associated project ID
+            for a workload identity pool resource (external account credentials).
+            If not specified, then it will use a
+            google.auth.transport.requests.Request client to make requests.
+
+    Returns:
+        Tuple[google.auth.credentials.Credentials, Optional[str]]: Loaded
+            credentials and the project ID. Authorized user credentials do not
+            have the project ID information. External account credentials project
+            IDs may not always be determined.
+
+    Raises:
+        google.auth.exceptions.DefaultCredentialsError: if the file is in the
+            wrong format or is missing.
+    """
+    if not isinstance(info, dict):
+        raise exceptions.DefaultCredentialsError(
+            "info object was of type {} but dict type was expected.".format(type(info))
+        )
+
+    return _load_credentials_from_info(
+        "dict object", info, scopes, default_scopes, quota_project_id, request
     )
 
 
@@ -282,7 +324,7 @@ def _get_gce_credentials(request=None, quota_project_id=None):
     if request is None:
         request = google.auth.transport._http_client.Request()
 
-    if _metadata.ping(request=request):
+    if _metadata.is_on_gce(request=request):
         # Get the project ID.
         try:
             project_id = _metadata.get_project_id(request=request)
@@ -397,7 +439,7 @@ def _get_authorized_user_credentials(filename, info, scopes=None):
     except ValueError as caught_exc:
         msg = "Failed to load authorized user credentials from {}".format(filename)
         new_exc = exceptions.DefaultCredentialsError(msg, caught_exc)
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
     return credentials, None
 
 
@@ -411,7 +453,7 @@ def _get_service_account_credentials(filename, info, scopes=None, default_scopes
     except ValueError as caught_exc:
         msg = "Failed to load service account credentials from {}".format(filename)
         new_exc = exceptions.DefaultCredentialsError(msg, caught_exc)
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
     return credentials, info.get("project_id")
 
 
@@ -457,7 +499,7 @@ def _get_impersonated_service_account_credentials(filename, info, scopes):
             filename
         )
         new_exc = exceptions.DefaultCredentialsError(msg, caught_exc)
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
     return credentials, None
 
 
@@ -471,7 +513,7 @@ def _get_gdch_service_account_credentials(filename, info):
     except ValueError as caught_exc:
         msg = "Failed to load GDCH service account credentials from {}".format(filename)
         new_exc = exceptions.DefaultCredentialsError(msg, caught_exc)
-        six.raise_from(new_exc, caught_exc)
+        raise new_exc from caught_exc
     return credentials, info.get("project")
 
 
@@ -619,24 +661,25 @@ def default(scopes=None, request=None, quota_project_id=None, default_scopes=Non
                 credentials, scopes, default_scopes=default_scopes
             )
 
+            effective_project_id = explicit_project_id or project_id
+
             # For external account credentials, scopes are required to determine
             # the project ID. Try to get the project ID again if not yet
             # determined.
-            if not project_id and callable(
+            if not effective_project_id and callable(
                 getattr(credentials, "get_project_id", None)
             ):
                 if request is None:
                     import google.auth.transport.requests
 
                     request = google.auth.transport.requests.Request()
-                project_id = credentials.get_project_id(request=request)
+                effective_project_id = credentials.get_project_id(request=request)
 
             if quota_project_id and isinstance(
                 credentials, CredentialsWithQuotaProject
             ):
                 credentials = credentials.with_quota_project(quota_project_id)
 
-            effective_project_id = explicit_project_id or project_id
             if not effective_project_id:
                 _LOGGER.warning(
                     "No project ID could be determined. Consider running "

@@ -173,6 +173,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
   enable_ip_alias = get_default('enable_ip_alias')
   if hasattr(args, 'enable_ip_alias'):
     flags.WarnForUnspecifiedIpAllocationPolicy(args)
+
+  flags.WarnForUnspecifiedKubeletReadonlyPort()
+
   flags.WarnForEnablingBetaAPIs(args)
   enable_autorepair = None
   if hasattr(args, 'enable_autorepair'):
@@ -1168,6 +1171,8 @@ class Create(base.CreateCommand):
           'details, please refer to '
           'https://cloud.google.com/kubernetes-engine/docs/how-to/pod-security-policies'
       )
+
+    cmd_util.CheckReleaseChannel(args)
 
     if options.enable_kubernetes_alpha:
       console_io.PromptContinue(

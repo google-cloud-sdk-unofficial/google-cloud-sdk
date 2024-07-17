@@ -55,6 +55,23 @@
             enum_value: OVERLAP_EXISTING_SUBNET_RANGE
             help_text: |
               Allows for creation of internal ranges that overlap with existing subnets.
+    - group:
+        mutex: true
+        params:
+        - arg_name: clear-labels
+          type: bool
+          help_text: |
+            Clear existing labels for the range.
+        - arg_name: labels
+          api_field: internalRange.labels.additionalProperties
+          metavar: KEY=VALUE
+          help_text: List of label KEY=VALUE pairs for the range being updated.
+          type:
+            arg_dict:
+              flatten: true
+              spec:
+              - api_field: key
+              - api_field: value
 
   async:
     collection: networkconnectivity.projects.locations.operations
@@ -64,9 +81,11 @@
       api_version: v1alpha1
       modify_request_hooks:
       - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearLabels
     GA:
       api_version: v1
       modify_request_hooks:
       - googlecloudsdk.command_lib.network_connectivity.util:ClearOverlaps
+      - googlecloudsdk.command_lib.network_connectivity.util:ClearLabels
     collection: networkconnectivity.projects.locations.internalRanges
     method: patch

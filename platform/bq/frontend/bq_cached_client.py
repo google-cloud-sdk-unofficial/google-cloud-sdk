@@ -8,22 +8,21 @@ from typing import Any, Dict, List, Optional, Type
 
 from absl import app
 from absl import flags
-
 import httplib2
 import termcolor
 
-import bigquery_client
 import bq_auth_flags
 import bq_flags
 import bq_utils
 import credential_loader
 from auth import main_credential_loader
+from clients import bigquery_client_extended
+from clients import utils as bq_client_utils
 from frontend import utils as bq_frontend_utils
 from utils import bq_logging
 
 
 FLAGS = flags.FLAGS
-BigqueryClient = bigquery_client.BigqueryClient
 
 
 
@@ -31,14 +30,15 @@ BigqueryClient = bigquery_client.BigqueryClient
 def _GetWaitPrinterFactoryFromFlags():
   """Returns the default wait_printer_factory to use while waiting for jobs."""
   if bq_flags.QUIET.value:
-    return BigqueryClient.QuietWaitPrinter
+    return bq_client_utils.QuietWaitPrinter
   if bq_flags.HEADLESS.value:
-    return BigqueryClient.TransitionWaitPrinter
-  return BigqueryClient.VerboseWaitPrinter
+    return bq_client_utils.TransitionWaitPrinter
+  return bq_client_utils.VerboseWaitPrinter
 
 
 class Client(object):
   """Class caching bigquery_client.BigqueryClient based on arguments."""
+
   client_cache = {}
 
   @staticmethod
@@ -66,7 +66,8 @@ class Client(object):
         and not bq_auth_flags.USE_GOOGLE_AUTH.value
     ):
       raise app.UsageError(
-          'Attempting to use TPC without setting `use_google_auth`.')
+          'Attempting to use TPC without setting `use_google_auth`.'
+      )
 
     if bq_flags.HTTPLIB2_DEBUGLEVEL.value:
       httplib2.debuglevel = bq_flags.HTTPLIB2_DEBUGLEVEL.value
@@ -128,7 +129,7 @@ class Client(object):
   @staticmethod
   def Create(
       config_logging: bool = True, credentials=None, **kwds
-  ) -> bigquery_client.BigqueryClient:
+  ) -> bigquery_client_extended.BigqueryClientExtended:
     """Build a new BigqueryClient configured from kwds and FLAGS.
 
     Args:
@@ -164,7 +165,7 @@ class Client(object):
     )
 
   @classmethod
-  def Get(cls) -> bigquery_client.BigqueryClient:
+  def Get(cls) -> bigquery_client_extended.BigqueryClientExtended:
     """Return a BigqueryClient initialized from flags."""
     logging.debug('In Client.Get')
     cache_key = Client._GetClientCacheKey()
@@ -189,12 +190,14 @@ class Client(object):
       del cls.client_cache[cache_key]
 
 
-class Factory():
+class Factory:
   """Class encapsulating factory creation of BigqueryClient."""
+
   _BIGQUERY_CLIENT_FACTORY = None
 
-  class ClientTablePrinter():
+  class ClientTablePrinter:
     """Class encapsulating factory creation of TablePrinter."""
+
     _TABLE_PRINTER = None
 
     @classmethod
@@ -212,15 +215,18 @@ class Factory():
   @classmethod
   def GetBigqueryClientFactory(
       cls,
-  ) -> Type[bigquery_client.BigqueryClient.__init__]:
+  ) -> Type[bigquery_client_extended.BigqueryClientExtended]:
     if cls._BIGQUERY_CLIENT_FACTORY is None:
-      cls._BIGQUERY_CLIENT_FACTORY = bigquery_client.BigqueryClient
+      cls._BIGQUERY_CLIENT_FACTORY = (
+          bigquery_client_extended.BigqueryClientExtended
+      )
     return cls._BIGQUERY_CLIENT_FACTORY
 
   @classmethod
   def SetBigqueryClientFactory(
-      cls, factory: Type[bigquery_client.BigqueryClient.__init__]
+      cls,
+      factory: Type[bigquery_client_extended.BigqueryClientExtended],
   ) -> None:
-    if not issubclass(factory, bigquery_client.BigqueryClient):
+    if not issubclass(factory, bigquery_client_extended.BigqueryClientExtended):
       raise TypeError('Factory must be subclass of BigqueryClient.')
     cls._BIGQUERY_CLIENT_FACTORY = factory

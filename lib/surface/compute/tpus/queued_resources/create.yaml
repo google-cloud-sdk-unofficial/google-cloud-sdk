@@ -94,8 +94,19 @@
             - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:topology
               api_field: queuedResource.tpu.nodeSpec.node.acceleratorConfig.topology
               required: true
+    - group:
+        mutex: true
+        release_tracks: [ALPHA]
+        params:
+        - group:
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:internal_ips
+        - group:
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network_config
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:runtime_version
-
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:best_effort
       release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:spot
@@ -110,11 +121,14 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_duration
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_time
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:internal_ips
+      release_tracks: [GA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network
+      release_tracks: [GA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork
+      release_tracks: [GA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:service_account_scopes
     - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:metadata

@@ -11,7 +11,6 @@ import types
 
 from absl import app
 from absl import flags
-
 import googleapiclient
 
 import bq_flags
@@ -19,8 +18,6 @@ import bq_utils
 from utils import bq_error
 from utils import bq_logging
 from utils import bq_processor_utils
-
-
 from pyglib import appcommands
 
 FLAGS = flags.FLAGS
@@ -45,7 +42,7 @@ class NewCmd(appcommands.Cmd):
     if self._new_style:
       func = run_with_args.__func__
       code = func.__code__  # pylint: disable=redefined-outer-name
-      self._full_arg_list = list(code.co_varnames[:code.co_argcount])
+      self._full_arg_list = list(code.co_varnames[: code.co_argcount])
       # TODO(user): There might be some corner case where this
       # is *not* the right way to determine bound vs. unbound method.
       if isinstance(run_with_args.__self__, run_with_args.__self__.__class__):
@@ -63,7 +60,8 @@ class NewCmd(appcommands.Cmd):
         and self.Run.__func__ is NewCmd.Run.__func__  # pytype: disable=attribute-error
     ):
       raise appcommands.AppCommandsError(
-          'Subclasses of NewCmd must override Run or RunWithArgs')
+          'Subclasses of NewCmd must override Run or RunWithArgs'
+      )
 
   def __getattr__(self, name: str):
     if name in self._command_flags:
@@ -89,20 +87,25 @@ class NewCmd(appcommands.Cmd):
     If no extraneous flags exist, this function will do nothing.
     """
     unused_flags = [
-        f for f in appcommands.GetCommandArgv()
+        f
+        for f in appcommands.GetCommandArgv()
         if f.startswith('--') or f.startswith('-')
     ]
     for flag in unused_flags:
       flag_name = flag[4:] if flag.startswith('--no') else flag[2:]
       flag_name = flag_name.split('=')[0]
       if flag_name not in FLAGS:
-        print(("FATAL Flags parsing error: Unknown command line flag '%s'\n"
-               "Run 'bq help' to get help" % flag))
+        print((
+            "FATAL Flags parsing error: Unknown command line flag '%s'\n"
+            "Run 'bq help' to get help" % flag
+        ))
         sys.exit(1)
       else:
-        print(("FATAL Flags positioning error: Flag '%s' appears after final "
-               'command line argument. Please reposition the flag.\n'
-               "Run 'bq help' to get help." % flag))
+        print((
+            "FATAL Flags positioning error: Flag '%s' appears after final "
+            'command line argument. Please reposition the flag.\n'
+            "Run 'bq help' to get help." % flag
+        ))
         sys.exit(1)
 
   def Run(self, argv):
@@ -138,7 +141,7 @@ class NewCmd(appcommands.Cmd):
         if value == original_values[flag_name]:
           original_values.pop(flag_name)
       new_args = []
-      for argname in self._full_arg_list[:self._min_args]:
+      for argname in self._full_arg_list[: self._min_args]:
         flag = self._GetFlag(argname)
         if flag is not None and flag.present:
           new_args.append(flag.value)
@@ -151,7 +154,7 @@ class NewCmd(appcommands.Cmd):
           return 1
 
       new_kwds = {}
-      for argname in self._full_arg_list[self._min_args:]:
+      for argname in self._full_arg_list[self._min_args :]:
         flag = self._GetFlag(argname)
         if flag is not None and flag.present:
           new_kwds[argname] = flag.value
@@ -185,8 +188,9 @@ class NewCmd(appcommands.Cmd):
     message = bq_logging.EncodeForPrinting(e)
     if isinstance(e, bq_error.BigqueryClientConfigurationError):
       message += ' Try running "bq init".'
-    print('Exception raised in %s operation: %s' %
-          (self._command_name, message))
+    print(
+        'Exception raised in %s operation: %s' % (self._command_name, message)
+    )
     return 1
 
   def RunDebug(self, args, kwds):
@@ -197,10 +201,14 @@ class NewCmd(appcommands.Cmd):
     # pylint: disable=broad-except
     except (BaseException, googleapiclient.errors.ResumableUploadError) as e:
       # Don't break into the debugger for expected exceptions.
-      if (isinstance(e, app.UsageError) or
-          (isinstance(e, bq_error.BigqueryError) and
-           not isinstance(e, bq_error.BigqueryInterfaceError)) or
-          isinstance(e, googleapiclient.errors.ResumableUploadError)):
+      if (
+          isinstance(e, app.UsageError)
+          or (
+              isinstance(e, bq_error.BigqueryError)
+              and not isinstance(e, bq_error.BigqueryInterfaceError)
+          )
+          or isinstance(e, googleapiclient.errors.ResumableUploadError)
+      ):
         return self._HandleError(e)
       print()
       print('****************************************************')
@@ -239,9 +247,10 @@ class BigqueryCmd(NewCmd):
 
     Subclasses will override for any exceptional cases.
     """
-    return (not _UseServiceAccount() and
-            not (os.path.exists(bq_utils.GetBigqueryRcFilename()) or
-                 os.path.exists(FLAGS.credential_file)))
+    return not _UseServiceAccount() and not (
+        os.path.exists(bq_utils.GetBigqueryRcFilename())
+        or os.path.exists(FLAGS.credential_file)
+    )
 
   def Run(self, argv):
     """Bigquery commands run `init` before themselves if needed."""
@@ -271,7 +280,7 @@ class BigqueryCmd(NewCmd):
 
   def PrintJobStartInfo(self, job):
     """Print a simple status line."""
-    if FLAGS.format in ['prettyjson', 'json']:
+    if bq_flags.FORMAT.value in ['prettyjson', 'json']:
       bq_utils.PrintFormattedJsonObject(job)
     else:
       reference = bq_processor_utils.ConstructObjectReference(job)

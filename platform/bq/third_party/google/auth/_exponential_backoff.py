@@ -16,8 +16,6 @@
 import random
 import time
 
-import six
-
 # The default amount of retry attempts
 _DEFAULT_RETRY_TOTAL_ATTEMPTS = 3
 
@@ -39,7 +37,7 @@ an HTTP request.
 """
 
 
-class ExponentialBackoff(six.Iterator):
+class ExponentialBackoff:
     """An exponential backoff iterator. This can be used in a for loop to
     perform requests with exponential backoff.
 

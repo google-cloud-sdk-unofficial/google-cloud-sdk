@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import arg_parsers
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ExportSystemPolicy(base.Command):
   """Export the Binary Authorization system policy.

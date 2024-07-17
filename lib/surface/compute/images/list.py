@@ -84,7 +84,7 @@ def _Args(parser, support_image_zone_flag=False):
       help="""\
        List images from public image projects. The public image projects
        that are available include the following: {0}.
-       """.format(', '.join(_PublicImageProjects())),
+       """.format(', '.join(constants.PUBLIC_IMAGE_PROJECTS)),
   )
 
   # Alpha Args
@@ -100,6 +100,7 @@ def _Args(parser, support_image_zone_flag=False):
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine images."""

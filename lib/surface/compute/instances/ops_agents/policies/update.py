@@ -194,7 +194,7 @@ class Update(base.Command):
         required=True,
         help="""\
           YAML file with a subset of Cloud Ops Policy fields you wish to update. For
-          information about the Cloud Ops Agents Policy Assignment format, see [PLACEHOLDER for our public doc].""",
+          information about the Cloud Ops Agents Policy Assignment format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
     )
     parser.add_argument(
         '--zone',
@@ -203,8 +203,9 @@ class Update(base.Command):
           Zone where the OS Policy Assignment is located.""",
     )
     parser.add_argument(
-        '--dry-run',
+        '--debug-dry-run',
         action='store_true',
+        hidden=True,
         help=(
             'If provided, the resulting OSPolicyAssignment will be printed to'
             ' standard output and no actual changes are made.'
@@ -244,7 +245,7 @@ class Update(base.Command):
             name=assignment_id, ops_agents_policy=updated_policy
         )
     )
-    if args.dry_run:
+    if args.debug_dry_run:
       return os_policy_assignment
 
     update_request = (

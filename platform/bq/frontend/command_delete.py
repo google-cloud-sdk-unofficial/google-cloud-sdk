@@ -8,12 +8,16 @@ from __future__ import print_function
 from typing import Optional
 
 
+
 from absl import app
 from absl import flags
 
 import bq_flags
 from clients import client_connection
+from clients import client_data_transfer
 from clients import client_dataset
+from clients import client_job
+from clients import client_reservation
 from clients import client_routine
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
@@ -184,8 +188,9 @@ class Delete(bigquery_command.BigqueryCmd):
             identifier=identifier,
             default_location=bq_flags.LOCATION.value,
         )
-        client.DeleteReservation(
-            reference
+        client_reservation.DeleteReservation(
+            client=client.GetReservationApiClient(),
+            reference=reference,
         )
         print("Reservation '%s' successfully deleted." % identifier)
       except BaseException as e:
@@ -199,7 +204,9 @@ class Delete(bigquery_command.BigqueryCmd):
             identifier=identifier,
             default_location=bq_flags.LOCATION.value,
         )
-        client.DeleteReservationAssignment(reference)
+        client_reservation.DeleteReservationAssignment(
+            client=client.GetReservationApiClient(), reference=reference
+        )
         print("Reservation assignment '%s' successfully deleted." % identifier)
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -212,7 +219,11 @@ class Delete(bigquery_command.BigqueryCmd):
             identifier=identifier,
             default_location=bq_flags.LOCATION.value,
         )
-        client.DeleteCapacityCommitment(reference, self.force)
+        client_reservation.DeleteCapacityCommitment(
+            client=client.GetReservationApiClient(),
+            reference=reference,
+            force=self.force,
+        )
         print("Capacity commitment '%s' successfully deleted." % identifier)
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -275,7 +286,7 @@ class Delete(bigquery_command.BigqueryCmd):
           )
           or (
               isinstance(reference, bq_id_utils.ApiClientHelper.JobReference)
-              and client.JobExists(reference)
+              and client_job.JobExists(client, reference)
           )
           or (
               isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference)
@@ -287,14 +298,16 @@ class Delete(bigquery_command.BigqueryCmd):
               )
               and client_routine.RoutineExists(
                   routines_api_client=client.GetRoutinesApiClient(),
-                  reference=reference
+                  reference=reference,
               )
           )
           or (
               isinstance(
                   reference, bq_id_utils.ApiClientHelper.TransferConfigReference
               )
-              and client.TransferExists(reference)
+              and client_data_transfer.TransferExists(
+                  client.GetTransferV1ApiClient(), reference
+              )
           )
       ):
         if 'y' != frontend_utils.PromptYN(
@@ -313,7 +326,7 @@ class Delete(bigquery_command.BigqueryCmd):
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       client.DeleteTable(reference, ignore_not_found=self.force)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
-      client.DeleteJob(reference, ignore_not_found=self.force)
+      client_job.DeleteJob(client, reference, ignore_not_found=self.force)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):
       client.DeleteModel(reference, ignore_not_found=self.force)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
@@ -325,4 +338,8 @@ class Delete(bigquery_command.BigqueryCmd):
     elif isinstance(
         reference, bq_id_utils.ApiClientHelper.TransferConfigReference
     ):
-      client.DeleteTransferConfig(reference, ignore_not_found=self.force)
+      client_data_transfer.DeleteTransferConfig(
+          client.GetTransferV1ApiClient(),
+          reference,
+          ignore_not_found=self.force,
+      )

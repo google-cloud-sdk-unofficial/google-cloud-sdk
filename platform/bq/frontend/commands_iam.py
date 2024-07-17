@@ -11,6 +11,7 @@ import json
 from typing import Optional
 
 
+
 from absl import app
 from absl import flags
 
@@ -18,10 +19,13 @@ import bq_flags
 import bq_utils
 from clients import client_connection
 from clients import client_dataset
+from clients import client_routine
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import utils as frontend_utils
 from utils import bq_id_utils
+
 
 FLAGS = flags.FLAGS
 
@@ -68,7 +72,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     )
     flags.DEFINE_boolean(
         'connection',
-        None,
+        False,
         '%s IAM policy for connection described by this identifier.' % verb,
         flag_values=fv,
     )
@@ -77,13 +81,16 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
   def GetReferenceFromIdentifier(self, client, identifier):
     # pylint: disable=g-doc-exception
-    provided_flags = [
-        f for f in [self.d, self.t, self.connection] if f is not None and f
-    ]
-    if len(provided_flags) > 1:
+    if frontend_utils.ValidateAtMostOneSelected(
+        self.d,
+        self.t,
+        self.connection,
+    ):
+      # TODO(b/343587607): Add routine in the usage error message.
       raise app.UsageError(
           'Cannot specify more than one of -d, -t or -connection.'
       )
+
     if not identifier:
       raise app.UsageError(
           'Must provide an identifier for %s.' % (self._command_name,)
@@ -119,6 +126,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     return reference
 
   def GetPolicyForReference(self, client, reference):
+    # TODO(b/343587607): Add routine support in the help text.
     """Get the IAM policy for a table or dataset.
 
     Args:
@@ -138,13 +146,14 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ConnectionReference):
       return client_connection.GetConnectionIAMPolicy(
-          client=client.GetConnectionV1ApiClient(),
-          reference=reference)
+          client=client.GetConnectionV1ApiClient(), reference=reference
+      )
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference))
     )
 
   def SetPolicyForReference(self, client, reference, policy):
+    # TODO(b/343587607): Add routine support in the help text.
     """Set the IAM policy for a table or dataset.
 
     Args:
@@ -175,13 +184,15 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
 
 class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
+  # TODO(b/343587607): Add routine support in the usage text.
   usage = """get-iam-policy [(-d|-t|-connection)] <identifier>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
-    super(GetIamPolicy, self).__init__(name, fv, 'Get')
+    super().__init__(name, fv, 'Get')
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str) -> Optional[int]:
+    # TODO(b/343587607): Add routine support in the help text.
     """Get the IAM policy for a resource.
 
     Gets the IAM policy for a dataset, table or connection resource, and prints
@@ -208,13 +219,15 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
 
 class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
+  # TODO(b/343587607): Add routine support in the usage text.
   usage = """set-iam-policy [(-d|-t|-connection)] <identifier> <filename>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
-    super(SetIamPolicy, self).__init__(name, fv, 'Set')
+    super().__init__(name, fv, 'Set')
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str, filename: str) -> Optional[int]:
+    # TODO(b/343587607): Add routine support in the help text.
     """Set the IAM policy for a resource.
 
     Sets the IAM policy for a dataset, table or connection resource. After

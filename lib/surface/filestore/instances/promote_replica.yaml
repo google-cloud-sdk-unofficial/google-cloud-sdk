@@ -1,0 +1,43 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Promote a Filestore standby replication instance.
+    description: |
+      Promote a Filestore standby replication instance to a regular instance.
+
+      This command can fail for the following reasons:
+        * The target instance does not exist.
+        * The instance is not a standby replication member.
+    examples: |
+      To promote an instance with the name ``my-instance'' that's located in
+      ``us-central1'', run:
+
+        $ {command} my-instance --zone=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:instance
+      help_text: |
+        Arguments and flags that specify the Filestore instance to promote.
+      command_level_fallthroughs:
+        zone:
+        - arg_name: location
+          release_tracks: [BETA]
+    params:
+    - arg_name: location
+      release_tracks: [BETA]
+      help_text: |
+        Location of the Filestore instance to promote.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    collection: file.projects.locations.instances
+    method: promoteReplica
+
+  async:
+    collection: file.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      Warning: You are about to promote the replication standby instance [{__name__}], this action
+      will permanently remove replication settings and convert the standby into a regular instance.

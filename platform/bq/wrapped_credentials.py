@@ -5,6 +5,7 @@ In particular, the External Account credentials don't have an equivalent in
 oauth2client, so we create helper methods to allow variants of this particular
 class to be used in oauth2client workflows.
 """
+
 import copy
 import datetime
 import io
@@ -23,11 +24,12 @@ import bq_utils
 
 
 class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
-  """A utility class to use Google Auth credentials in place of oauth2client credentials.
-  """
+  """A utility class to use Google Auth credentials in place of oauth2client credentials."""
+
   NON_SERIALIZED_MEMBERS = frozenset(
-      list(oauth2client_4_0.client.OAuth2Credentials.NON_SERIALIZED_MEMBERS) +
-      ['_base'])
+      list(oauth2client_4_0.client.OAuth2Credentials.NON_SERIALIZED_MEMBERS)
+      + ['_base']
+  )
 
   def __init__(
       self,
@@ -39,14 +41,15 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     """Initializes oauth2client credentials based on underlying Google Auth credentials.
 
     Args:
-      base_creds: subclass of
-        google.auth.external_account.Credentials or
+      base_creds: subclass of google.auth.external_account.Credentials or
         google.auth.external_account_authorized_user.Credentials
     """
 
     if not isinstance(
-        base_creds, external_account.Credentials) and not isinstance(
-            base_creds, external_account_authorized_user.Credentials):
+        base_creds, external_account.Credentials
+    ) and not isinstance(
+        base_creds, external_account_authorized_user.Credentials
+    ):
       raise TypeError('Invalid Credentials')
     self._base = base_creds
     super().__init__(
@@ -114,7 +117,8 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
       cls, filename: str
   ) -> 'WrappedCredentials':
     creds = _get_external_account_authorized_user_credentials_from_file(
-        filename)
+        filename
+    )
     return cls(creds)
 
   @classmethod
@@ -139,15 +143,18 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
       base_creds = _get_external_account_credentials_from_info(base)
     elif base.get('type') == 'external_account_authorized_user':
       base_creds = _get_external_account_authorized_user_credentials_from_info(
-          base)
+          base
+      )
     creds = cls(base_creds)
     # Inject token and expiry.
     creds.access_token = data.get('access_token')
-    if (data.get('token_expiry') and
-        not isinstance(data['token_expiry'], datetime.datetime)):
+    if data.get('token_expiry') and not isinstance(
+        data['token_expiry'], datetime.datetime
+    ):
       try:
         data['token_expiry'] = datetime.datetime.strptime(
-            data['token_expiry'], oauth2client_4_0.client.EXPIRY_FORMAT)
+            data['token_expiry'], oauth2client_4_0.client.EXPIRY_FORMAT
+        )
       except ValueError:
         data['token_expiry'] = None
     creds.token_expiry = data.get('token_expiry')
@@ -156,7 +163,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
 
 
 def _get_external_account_credentials_from_info(
-    info: Dict[str, Dict[str, object]]
+    info: Dict[str, Dict[str, object]],
 ) -> 'external_account.Credentials':
   """Create External Account Credentials using the mapping provided as json data.
 
@@ -170,8 +177,10 @@ def _get_external_account_credentials_from_info(
   """
 
   scopes = bq_utils.GetClientScopesFromFlags()
-  if info.get(
-      'subject_token_type') == 'urn:ietf:params:aws:token-type:aws4_request':
+  if (
+      info.get('subject_token_type')
+      == 'urn:ietf:params:aws:token-type:aws4_request'
+  ):
     # Configuration corresponds to an AWS credentials.
     return aws.Credentials.from_info(info, scopes=scopes)
   elif info.get('credential_source', {}).get('executable') is not None:
@@ -191,7 +200,7 @@ def _get_external_account_credentials_from_file(
 
 
 def _get_external_account_authorized_user_credentials_from_info(
-    info: Dict[str, object]
+    info: Dict[str, object],
 ) -> 'external_account_authorized_user.Credentials':
   """Create External Account Authorized User Credentials using the mapping provided as json data.
 

@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  hidden: true
   help_text:
     brief: List all node events of an IP range in a registry book.
     description: |

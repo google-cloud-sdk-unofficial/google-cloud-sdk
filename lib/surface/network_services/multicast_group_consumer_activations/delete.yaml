@@ -12,6 +12,8 @@ arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastGroupConsumerActivation
     help_text: The multicast group consumer activation to delete.
+async:
+  collection: networkservices.projects.locations.operations
 request: &request
   api_version: v1alpha1
   collection: networkservices.projects.locations.multicastGroupConsumerActivations

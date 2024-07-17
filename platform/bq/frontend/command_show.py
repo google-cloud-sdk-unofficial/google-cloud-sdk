@@ -8,6 +8,7 @@ from absl import flags
 
 import bq_flags
 from clients import client_connection
+from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
 from clients import utils as bq_client_utils
@@ -21,12 +22,12 @@ ApiClientHelper = bq_id_utils.ApiClientHelper
 DatasetReference = bq_id_utils.ApiClientHelper.DatasetReference
 TransferConfigReference = bq_id_utils.ApiClientHelper.TransferConfigReference
 TransferRunReference = bq_id_utils.ApiClientHelper.TransferRunReference
-EncryptionServiceAccount = (
-    bq_id_utils.ApiClientHelper.EncryptionServiceAccount)
+EncryptionServiceAccount = bq_id_utils.ApiClientHelper.EncryptionServiceAccount
 
 
 class Show(bigquery_command.BigqueryCmd):
   """The BQ CLI command to display a resource to the user."""
+
   usage = """show [<identifier>]"""
 
   def __init__(self, name: str, fv: flags.FlagValues) -> None:
@@ -36,24 +37,28 @@ class Show(bigquery_command.BigqueryCmd):
         False,
         'If true, interpret this identifier as a job id.',
         short_name='j',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'dataset',
         False,
         'Show dataset with this name.',
         short_name='d',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'view',
         False,
         'Show view specific details instead of general table details.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'materialized_view',
         False,
         'Show materialized view specific details instead of general table '
         'details.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'table_replica',
         False,
@@ -71,47 +76,57 @@ class Show(bigquery_command.BigqueryCmd):
         False,
         'Show the service account for a user if it exists, or create one '
         'if it does not exist.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'transfer_config',
         False,
         'Show transfer configuration for configuration resource name.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'transfer_run',
         False,
         'Show information about the particular transfer run.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'model',
         False,
         'Show details of model with this model ID.',
         short_name='m',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'routine',
         False,
         'Show the details of a particular routine.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'reservation',
         None,
         'Shows details for the reservation described by this identifier.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'capacity_commitment',
-        None, 'Shows details for the capacity commitment described by this '
+        None,
+        'Shows details for the capacity commitment described by this '
         'identifier.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'reservation_assignment',
-        None, 'Looks up reservation assignments for a specified '
+        None,
+        'Looks up reservation assignments for a specified '
         'project/folder/organization. Explicit reservation assignments will be '
         'returned if exist. Otherwise implicit reservation assignments from '
         'parents will be returned. '
         'Used in conjunction with --job_type, --assignee_type and '
         '--assignee_id.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'job_type',
         None,
@@ -132,24 +147,28 @@ class Show(bigquery_command.BigqueryCmd):
     )
     flags.DEFINE_enum(
         'assignee_type',
-        None, ['PROJECT', 'FOLDER', 'ORGANIZATION'],
+        None,
+        ['PROJECT', 'FOLDER', 'ORGANIZATION'],
         'Type of assignees for the reservation assignment. Options include:'
         '\n PROJECT'
         '\n FOLDER'
         '\n ORGANIZATION'
         '\n Used in conjunction with --reservation_assignment.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'assignee_id',
         None,
         'Project/folder/organization ID, to which the reservation is assigned. '
         'Used in conjunction with --reservation_assignment.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'connection',
         None,
         'Shows details for the connection described by this identifier.',
-        flag_values=fv)
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str = '') -> Optional[int]:
@@ -223,14 +242,19 @@ class Show(bigquery_command.BigqueryCmd):
           client, identifier
       )
       reference = TransferConfigReference(
-          transferConfigName=formatted_identifier)
-      object_info = client.GetTransferConfig(formatted_identifier)
+          transferConfigName=formatted_identifier
+      )
+      object_info = client_data_transfer.GetTransferConfig(
+          client.GetTransferV1ApiClient(), formatted_identifier
+      )
     elif self.transfer_run:
       formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
       reference = TransferRunReference(transferRunName=formatted_identifier)
-      object_info = client.GetTransferRun(formatted_identifier)
+      object_info = client_data_transfer.GetTransferRun(
+          client.GetTransferV1ApiClient(), formatted_identifier
+      )
     elif self.m:
       reference = bq_client_utils.GetModelReference(
           id_fallbacks=client, identifier=identifier
@@ -256,7 +280,8 @@ class Show(bigquery_command.BigqueryCmd):
             location=bq_flags.LOCATION.value,
             job_type=self.job_type,
             assignee_type=self.assignee_type,
-            assignee_id=self.assignee_id)
+            assignee_id=self.assignee_id,
+        )
       # Here we just need any object of ReservationAssignmentReference type, but
       # the value of the object doesn't matter here.
       # PrintObjectInfo() will use the type and object_info to format the
@@ -265,7 +290,8 @@ class Show(bigquery_command.BigqueryCmd):
           projectId=' ',
           location=' ',
           reservationId=' ',
-          reservationAssignmentId=' ')
+          reservationAssignmentId=' ',
+      )
       print_reference = False
     elif self.capacity_commitment:
       reference = bq_client_utils.GetCapacityCommitmentReference(

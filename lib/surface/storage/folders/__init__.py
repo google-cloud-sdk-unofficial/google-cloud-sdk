@@ -24,6 +24,5 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Folders(base.Group):
   """Manage Cloud Storage folders."""

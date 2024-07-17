@@ -33,7 +33,8 @@ if os.environ.get('CLOUDSDK_WRAPPER') == '1':
   _CLIENT_ID = '32555940559.apps.googleusercontent.com'
   _CLIENT_SECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
   _CLIENT_USER_AGENT = 'google-cloud-sdk' + os.environ.get(
-      'CLOUDSDK_VERSION', bq_utils.VERSION_NUMBER)
+      'CLOUDSDK_VERSION', bq_utils.VERSION_NUMBER
+  )
 else:
   _CLIENT_ID = '977385342095.apps.googleusercontent.com'
   _CLIENT_SECRET = 'wbER7576mc_1YOII0dGk7jEE'
@@ -101,10 +102,12 @@ class CachedCredentialLoader(CredentialLoader):
     self._scopes_key = ','.join(sorted(bq_utils.GetClientScopesFromFlags()))
     try:
       self._storage = oauth2client_4_0.contrib.multiprocess_file_storage.MultiprocessFileStorage(
-          credential_cache_file, self._scopes_key)
+          credential_cache_file, self._scopes_key
+      )
     except OSError as e:
       raise bq_error.BigqueryError(
-          'Cannot create credential file %s: %s' % (credential_cache_file, e))
+          'Cannot create credential file %s: %s' % (credential_cache_file, e)
+      )
 
   @property
   def storage(
@@ -139,7 +142,8 @@ class CachedCredentialLoader(CredentialLoader):
 
       if not creds:
         legacy_storage = oauth2client_4_0.file.Storage(
-            self.credential_cache_file)
+            self.credential_cache_file
+        )
         creds = legacy_storage.get()
         if creds:
           self._storage.put(creds)
@@ -168,7 +172,9 @@ class CachedCredentialLoader(CredentialLoader):
             'Credentials appear corrupt. Please delete the credential file '
             'and try your command again. You can delete your credential '
             'file using "bq init --delete_credentials".\n\nIf that does '
-            'not work, you may have encountered a bug in the BigQuery CLI.'))
+            'not work, you may have encountered a bug in the BigQuery CLI.'
+        ),
+    )
     sys.exit(1)
 
 
@@ -180,7 +186,8 @@ class ServiceAccountPrivateKeyLoader(CachedCredentialLoader):
       raise app.UsageError(
           'BigQuery requires OpenSSL to be installed in order to use '
           'service account credentials. Please install OpenSSL '
-          'and the Python OpenSSL package.')
+          'and the Python OpenSSL package.'
+      )
     return super(ServiceAccountPrivateKeyLoader, self).Load()
 
 
@@ -206,18 +213,19 @@ class ServiceAccountPrivateKeyFileLoader(ServiceAccountPrivateKeyLoader):
 
   def _Load(self) -> WrappedCredentialsUnionType:
     try:
-      return (oauth2client_4_0.service_account.ServiceAccountCredentials
-              .from_p12_keyfile(
-                  service_account_email=self._service_account,
-                  filename=self._file_path,
-                  scopes=bq_utils.GetClientScopesFromFlags(),
-                  private_key_password=self._password,
-                  token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
-                  revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI))
+      return oauth2client_4_0.service_account.ServiceAccountCredentials.from_p12_keyfile(
+          service_account_email=self._service_account,
+          filename=self._file_path,
+          scopes=bq_utils.GetClientScopesFromFlags(),
+          private_key_password=self._password,
+          token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
+          revoke_uri=oauth2client_4_0.GOOGLE_REVOKE_URI,
+      )
     except IOError as e:
       raise app.UsageError(
           'Service account specified, but private key in file "%s" '
-          'cannot be read:\n%s' % (self._file_path, e))
+          'cannot be read:\n%s' % (self._file_path, e)
+      )
 
 
 
@@ -233,8 +241,9 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
       *args: additional arguments to apply to base class.
       **kwargs: additional keyword arguments to apply to base class.
     """
-    super(ApplicationDefaultCredentialFileLoader,
-          self).__init__(*args, **kwargs)
+    super(ApplicationDefaultCredentialFileLoader, self).__init__(
+        *args, **kwargs
+    )
     self._credential_file = credential_file
 
   def _Load(self) -> WrappedCredentialsUnionType:
@@ -252,20 +261,21 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
           token_expiry=None,
           token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
           user_agent=_CLIENT_USER_AGENT,
-          scopes=client_scope)
+          scopes=client_scope,
+      )
     elif credentials['type'] == 'external_account':
       return wrapped_credentials.WrappedCredentials.for_external_account(
-          self._credential_file)
+          self._credential_file
+      )
     elif credentials['type'] == 'external_account_authorized_user':
       return wrapped_credentials.WrappedCredentials.for_external_account_authorized_user(
-          self._credential_file)
+          self._credential_file
+      )
     else:  # Service account
       credentials['type'] = oauth2client_4_0.client.SERVICE_ACCOUNT
-      service_account_credentials = (
-          oauth2client_4_0.service_account.ServiceAccountCredentials
-          .from_json_keyfile_dict(
-              keyfile_dict=credentials,
-              scopes=client_scope))
+      service_account_credentials = oauth2client_4_0.service_account.ServiceAccountCredentials.from_json_keyfile_dict(
+          keyfile_dict=credentials, scopes=client_scope
+      )
       service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
       return service_account_credentials
 
@@ -303,7 +313,8 @@ def _GetCredentialsLoaderFromFlags() -> (
     if not FLAGS.service_account_credential_file:
       raise app.UsageError(
           'The flag --service_account_credential_file must be specified '
-          'if --service_account is used.')
+          'if --service_account is used.'
+      )
     if FLAGS.service_account_private_key_file:
       logging.info('Loading credentials using service_account_private_key_file')
       return ServiceAccountPrivateKeyFileLoader(
@@ -311,21 +322,27 @@ def _GetCredentialsLoaderFromFlags() -> (
           read_cache_first=True,
           service_account=FLAGS.service_account,
           file_path=FLAGS.service_account_private_key_file,
-          password=FLAGS.service_account_private_key_password)
-    raise app.UsageError('Service account authorization requires '
-                         '--service_account_private_key_file flag to be set.')
+          password=FLAGS.service_account_private_key_password,
+      )
+    raise app.UsageError(
+        'Service account authorization requires '
+        '--service_account_private_key_file flag to be set.'
+    )
 
   if FLAGS.application_default_credential_file:
     logging.info(
         'Loading credentials using application_default_credential_file'
     )
     if not FLAGS.credential_file:
-      raise app.UsageError('The flag --credential_file must be specified if '
-                           '--application_default_credential_file is used.')
+      raise app.UsageError(
+          'The flag --credential_file must be specified if '
+          '--application_default_credential_file is used.'
+      )
     return ApplicationDefaultCredentialFileLoader(
         credential_cache_file=FLAGS.credential_file,
         read_cache_first=True,
-        credential_file=FLAGS.application_default_credential_file)
+        credential_file=FLAGS.application_default_credential_file,
+    )
   raise app.UsageError(
       'bq.py should not be invoked. Use bq command instead.')
 

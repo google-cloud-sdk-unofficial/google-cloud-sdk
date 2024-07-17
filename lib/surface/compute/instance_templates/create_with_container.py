@@ -329,7 +329,7 @@ class CreateWithContainer(base.CreateCommand):
         create_utils.BuildConfidentialInstanceConfigMessage(
             messages=client.messages,
             args=args,
-            support_confidential_compute_type=False,
+            support_confidential_compute_type=True,
             support_confidential_compute_type_tdx=False))
 
     properties = client.messages.InstanceProperties(

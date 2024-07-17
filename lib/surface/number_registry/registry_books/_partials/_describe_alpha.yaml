@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  hidden: true
   help_text:
     brief: Gets details of a single registry book resource
     description: |

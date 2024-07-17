@@ -14,15 +14,14 @@ from typing import Any, Callable, Dict, List, Optional
 import uuid
 
 
+
 # To configure apiclient logging.
 from absl import flags
 from google.api_core.iam import Policy
 from googleapiclient import http as http_request
-import inflection
 
 from clients import bigquery_client
 from clients import client_dataset
-from clients import client_reservation
 from clients import table_reader as bq_table_reader
 from clients import utils as bq_client_utils
 from utils import bq_api_utils
@@ -32,53 +31,8 @@ from utils import bq_processor_utils
 
 Service = bq_api_utils.Service
 
-# Data Transfer Service Authorization Info
-AUTHORIZATION_CODE = 'authorization_code'
-VERSION_INFO = 'version_info'
-
 # IAM role name that represents being a grantee on a row access policy.
 _FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
-
-
-class TransferScheduleArgs:
-  """Arguments to customize data transfer schedule."""
-
-  def __init__(self,
-               schedule=None,
-               start_time=None,
-               end_time=None,
-               disable_auto_scheduling=False):
-    self.schedule = schedule
-    self.start_time = start_time
-    self.end_time = end_time
-    self.disable_auto_scheduling = disable_auto_scheduling
-
-  def ToScheduleOptionsPayload(self, options_to_copy=None):
-    """Returns a dictionary of schedule options.
-
-    Args:
-      options_to_copy: Existing options to be copied.
-
-    Returns:
-      A dictionary of schedule options expected by the
-      bigquery.transfers.create and bigquery.transfers.update API methods.
-    """
-
-    # Copy the current options or start with an empty dictionary.
-    options = dict(options_to_copy or {})
-
-    if self.start_time is not None:
-      options['startTime'] = self._TimeOrInfitity(self.start_time)
-    if self.end_time is not None:
-      options['endTime'] = self._TimeOrInfitity(self.end_time)
-
-    options['disableAutoScheduling'] = self.disable_auto_scheduling
-
-    return options
-
-  def _TimeOrInfitity(self, time_str):
-    """Returns None to indicate Inifinity, if time_str is an empty string."""
-    return time_str or None
 
 
 class BigqueryClientExtended(bigquery_client.BigqueryClient):
@@ -151,22 +105,21 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       project_id, dataset_id, table_id: (string, string, string)
     """
     return bq_client_utils._ParseIdentifier(identifier)
+
   # pylint: enable=protected-access
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
   def GetProjectReference(self, identifier=''):
     """Determine a project reference from an identifier and self."""
     return bq_client_utils.GetProjectReference(
-        id_fallbacks=self,
-        identifier=identifier
+        id_fallbacks=self, identifier=identifier
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
   def GetDatasetReference(self, identifier=''):
     """Determine a DatasetReference from an identifier and self."""
     return bq_client_utils.GetDatasetReference(
-        id_fallbacks=self,
-        identifier=identifier
+        id_fallbacks=self, identifier=identifier
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
@@ -175,23 +128,21 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return bq_client_utils.GetTableReference(
         id_fallbacks=self,
         identifier=identifier,
-        default_dataset_id=default_dataset_id
+        default_dataset_id=default_dataset_id,
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
   def GetModelReference(self, identifier=''):
     """Returns a ModelReference from an identifier."""
     return bq_client_utils.GetModelReference(
-        id_fallbacks=self,
-        identifier=identifier
+        id_fallbacks=self, identifier=identifier
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
   def GetRoutineReference(self, identifier=''):
     """Returns a RoutineReference from an identifier."""
     return bq_client_utils.GetRoutineReference(
-        id_fallbacks=self,
-        identifier=identifier
+        id_fallbacks=self, identifier=identifier
     )
 
   # TODO(b/324243535): Delete these once the migration is complete.
@@ -216,8 +167,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       bq_error.BigqueryError: if no valid reference can be determined.
     """
     return bq_client_utils.GetReference(
-        id_fallbacks=self,
-        identifier=identifier
+        id_fallbacks=self, identifier=identifier
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
@@ -226,39 +176,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return bq_client_utils.GetJobReference(
         id_fallbacks=self,
         identifier=identifier,
-        default_location=default_location
-    )
-
-  # TODO(b/324243535): Migrate `bq.py` off of this.
-  def GetReservationReference(self,
-                              identifier=None,
-                              default_location=None,
-                              default_reservation_id=None,
-                              check_reservation_project=True):
-    """Determine a ReservationReference from an identifier and location."""
-    return bq_client_utils.GetReservationReference(
-        id_fallbacks=self,
-        identifier=identifier,
         default_location=default_location,
-        default_reservation_id=default_reservation_id,
-        check_reservation_project=check_reservation_project
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
-  def GetBiReservationReference(self, default_location=None):
-    """Determine a ReservationReference from an identifier and location."""
-    return bq_client_utils.GetBiReservationReference(
-        id_fallbacks=self,
-        default_location=default_location
-    )
-
-  # TODO(b/324243535): Migrate `bq.py` off of this.
-  def GetCapacityCommitmentReference(self,
-                                     identifier=None,
-                                     path=None,
-                                     default_location=None,
-                                     default_capacity_commitment_id=None,
-                                     allow_commas=None):
+  def GetCapacityCommitmentReference(
+      self,
+      identifier=None,
+      path=None,
+      default_location=None,
+      default_capacity_commitment_id=None,
+      allow_commas=None,
+  ):
     """Determine a CapacityCommitmentReference from an identifier and location."""
     return bq_client_utils.GetCapacityCommitmentReference(
         id_fallbacks=self,
@@ -266,39 +195,24 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         path=path,
         default_location=default_location,
         default_capacity_commitment_id=default_capacity_commitment_id,
-        allow_commas=allow_commas
+        allow_commas=allow_commas,
     )
 
   # TODO(b/324243535): Migrate `bq.py` off of this.
-  def GetReservationAssignmentReference(self,
-                                        identifier=None,
-                                        path=None,
-                                        default_location=None,
-                                        default_reservation_id=None,
-                                        default_reservation_assignment_id=None):
-    """Determine a ReservationAssignmentReference from an identifier and location."""
-    return bq_client_utils.GetReservationAssignmentReference(
-        id_fallbacks=self,
-        identifier=identifier,
-        path=path,
-        default_location=default_location,
-        default_reservation_id=default_reservation_id,
-        default_reservation_assignment_id=default_reservation_assignment_id
-    )
-
-  # TODO(b/324243535): Migrate `bq.py` off of this.
-  def GetConnectionReference(self,
-                             identifier=None,
-                             path=None,
-                             default_location=None,
-                             default_connection_id=None):
+  def GetConnectionReference(
+      self,
+      identifier=None,
+      path=None,
+      default_location=None,
+      default_connection_id=None,
+  ):
     """Determine a ConnectionReference from an identifier and location."""
     return bq_client_utils.GetConnectionReference(
         id_fallbacks=self,
         identifier=identifier,
         path=path,
         default_location=default_location,
-        default_connection_id=default_connection_id
+        default_connection_id=default_connection_id,
     )
 
   def GetObjectInfo(self, reference):
@@ -317,8 +231,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
             'Number of projects found exceeded limit, please instead run'
             ' gcloud projects describe %s' % (reference,),
         )
-      raise bq_error.BigqueryNotFoundError('Unknown %r' % (reference,),
-                                           {'reason': 'notFound'}, [])
+      raise bq_error.BigqueryNotFoundError(
+          'Unknown %r' % (reference,), {'reason': 'notFound'}, []
+      )
 
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       return self.apiclient.jobs().get(**dict(reference)).execute()
@@ -327,29 +242,45 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       return self.apiclient.tables().get(**dict(reference)).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):
-      return self.GetModelsApiClient().models().get(
-          projectId=reference.projectId,
-          datasetId=reference.datasetId,
-          modelId=reference.modelId).execute()
+      return (
+          self.GetModelsApiClient()
+          .models()
+          .get(
+              projectId=reference.projectId,
+              datasetId=reference.datasetId,
+              modelId=reference.modelId,
+          )
+          .execute()
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
-      return self.GetRoutinesApiClient().routines().get(
-          projectId=reference.projectId,
-          datasetId=reference.datasetId,
-          routineId=reference.routineId).execute()
+      return (
+          self.GetRoutinesApiClient()
+          .routines()
+          .get(
+              projectId=reference.projectId,
+              datasetId=reference.datasetId,
+              routineId=reference.routineId,
+          )
+          .execute()
+      )
     else:
-      raise TypeError('Type of reference must be one of: ProjectReference, '
-                      'JobReference, DatasetReference, or TableReference')
+      raise TypeError(
+          'Type of reference must be one of: ProjectReference, '
+          'JobReference, DatasetReference, or TableReference'
+      )
 
   def GetTableSchema(self, table_dict):
     table_info = self.apiclient.tables().get(**table_dict).execute()
     return table_info.get('schema', {})
 
-  def InsertTableRows(self,
-                      table_dict: bq_id_utils.ApiClientHelper.TableReference,
-                      inserts: List[Optional[bq_processor_utils.InsertEntry]],
-                      skip_invalid_rows: Optional[bool] = None,
-                      ignore_unknown_values: Optional[bool] = None,
-                      template_suffix: Optional[int] = None):
+  def InsertTableRows(
+      self,
+      table_dict: bq_id_utils.ApiClientHelper.TableReference,
+      inserts: List[Optional[bq_processor_utils.InsertEntry]],
+      skip_invalid_rows: Optional[bool] = None,
+      ignore_unknown_values: Optional[bool] = None,
+      template_suffix: Optional[int] = None,
+  ):
     """Insert rows into a table.
 
     Arguments:
@@ -372,887 +303,45 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         encoded['insertId'] = insert.insert_id
       return encoded
 
-    op = self.GetInsertApiClient().tabledata().insertAll(
-        body=dict(
-            skipInvalidRows=skip_invalid_rows,
-            ignoreUnknownValues=ignore_unknown_values,
-            templateSuffix=template_suffix,
-            rows=list(map(_EncodeInsert, inserts))),
-        **table_dict)
+    op = (
+        self.GetInsertApiClient()
+        .tabledata()
+        .insertAll(
+            body=dict(
+                skipInvalidRows=skip_invalid_rows,
+                ignoreUnknownValues=ignore_unknown_values,
+                templateSuffix=template_suffix,
+                rows=list(map(_EncodeInsert, inserts)),
+            ),
+            **table_dict,
+        )
+    )
     return op.execute()
 
   def GetTransferConfig(self, transfer_id):
     client = self.GetTransferV1ApiClient()
-    return client.projects().locations().transferConfigs().get(
-        name=transfer_id).execute()
-
-  def GetTransferRun(self, identifier):
-    transfer_client = self.GetTransferV1ApiClient()
-    return transfer_client.projects().locations().transferConfigs().runs().get(
-        name=identifier).execute()
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def GetBodyForCreateReservation(
-      self,
-      slots: int,
-      ignore_idle_slots: bool,
-      edition,
-      target_job_concurrency: Optional[int],
-      multi_region_auxiliary: Optional[bool],
-      autoscale_max_slots: Optional[int] = None,
-  ) -> Dict[str, Any]:
-    """Return the request body for CreateReservation.
-
-    Arguments:
-      slots: Number of slots allocated to this reservation subtree.
-      ignore_idle_slots: Specifies whether queries should ignore idle slots from
-        other reservations.
-      edition: The edition for this reservation.
-      target_job_concurrency: Job concurrency target.
-      multi_region_auxiliary: Whether this reservation is for the auxiliary
-        region.
-      autoscale_max_slots: Number of slots to be scaled when needed.
-
-    Returns:
-      Reservation object that was created.
-
-    Raises:
-      bq_error.BigqueryError: if autoscale_max_slots is used with other
-        version.
-    """
-    return client_reservation.GetBodyForCreateReservation(
-        api_version=self.api_version,
-        slots=slots,
-        ignore_idle_slots=ignore_idle_slots,
-        edition=edition,
-        target_job_concurrency=target_job_concurrency,
-        multi_region_auxiliary=multi_region_auxiliary,
-        autoscale_max_slots=autoscale_max_slots,
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def CreateReservation(
-      self,
-      reference,
-      slots: int,
-      ignore_idle_slots: bool,
-      edition,
-      target_job_concurrency: Optional[int],
-      multi_region_auxiliary: Optional[bool],
-      autoscale_max_slots: Optional[int] = None,
-  ) -> Dict[str, Any]:
-    """Create a reservation with the given reservation reference.
-
-    Arguments:
-      reference: Reservation to create.
-      slots: Number of slots allocated to this reservation subtree.
-      ignore_idle_slots: Specifies whether queries should ignore idle slots from
-        other reservations.
-      edition: The edition for this reservation.
-      target_job_concurrency: Job concurrency target.
-      multi_region_auxiliary: Whether this reservation is for the auxiliary
-        region.
-      autoscale_max_slots: Number of slots to be scaled when needed.
-
-    Returns:
-      Reservation object that was created.
-
-    Raises:
-      bq_error.BigqueryError: if autoscale_max_slots is used with other
-        version.
-    """
-    return client_reservation.CreateReservation(
-        client=self.GetReservationApiClient(),
-        api_version=self.api_version,
-        reference=reference,
-        slots=slots,
-        ignore_idle_slots=ignore_idle_slots,
-        edition=edition,
-        target_job_concurrency=target_job_concurrency,
-        multi_region_auxiliary=multi_region_auxiliary,
-        autoscale_max_slots=autoscale_max_slots,
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def ListReservations(self, reference, page_size, page_token):
-    """List reservations in the project and location for the given reference.
-
-    Arguments:
-      reference: Reservation reference containing project and location.
-      page_size: Number of results to show.
-      page_token: Token to retrieve the next page of results.
-
-    Returns:
-      Reservation object that was created.
-    """
-    return client_reservation.ListReservations(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        page_size=page_size,
-        page_token=page_token
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def ListBiReservations(self, reference):
-    """List BI reservations in the project and location for the given reference.
-
-    Arguments:
-      reference: Reservation reference containing project and location.
-
-    Returns:
-      List of BI reservations in the given project/location.
-    """
-    return client_reservation.ListBiReservations(
-        client=self.GetReservationApiClient(),
-        reference=reference
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def GetReservation(self, reference):
-    """Gets a reservation with the given reservation reference.
-
-    Arguments:
-      reference: Reservation to get.
-
-    Returns:
-      Reservation object corresponding to the given id.
-    """
-    return client_reservation.GetReservation(
-        client=self.GetReservationApiClient(),
-        reference=reference
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def DeleteReservation(
-      self,
-      reference: ...
-  ):
-    """Deletes a reservation with the given reservation reference.
-
-    Arguments:
-      reference: Reservation to delete.
-    """
-    return client_reservation.DeleteReservation(
-        client=self.GetReservationApiClient(),
-        reference=reference
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def UpdateBiReservation(self, reference, reservation_size):
-    """Updates a BI reservation with the given reservation reference.
-
-    Arguments:
-      reference: Reservation to update.
-      reservation_size: size of reservation in GBs. It may only contain digits,
-        optionally followed by 'G', 'g', 'GB, 'gb', 'gB', or 'Gb'.
-
-    Returns:
-      Reservation object that was updated.
-    Raises:
-      ValueError: if reservation_size is malformed.
-    """
-    return client_reservation.UpdateBiReservation(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        reservation_size=reservation_size
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def GetParamsForUpdateReservation(
-      self,
-      slots,
-      ignore_idle_slots,
-      target_job_concurrency,
-      autoscale_max_slots,
-  ):
-    """Return the request body and update mask for UpdateReservation.
-
-    Arguments:
-      slots: Number of slots allocated to this reservation subtree.
-      ignore_idle_slots: Specifies whether queries should ignore idle slots from
-        other reservations.
-      target_job_concurrency: Job concurrency target.
-      autoscale_max_slots: Number of slots to be scaled when needed.
-
-    Returns:
-      Reservation object that was updated.
-
-    Raises:
-      bq_error.BigqueryError: if autoscale_max_slots is used with other
-        version.
-    """
-    return client_reservation.GetParamsForUpdateReservation(
-        api_version=self.api_version,
-        slots=slots,
-        ignore_idle_slots=ignore_idle_slots,
-        target_job_concurrency=target_job_concurrency,
-        autoscale_max_slots=autoscale_max_slots,
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def UpdateReservation(
-      self,
-      reference,
-      slots,
-      ignore_idle_slots,
-      target_job_concurrency,
-      autoscale_max_slots,
-  ):
-    """Updates a reservation with the given reservation reference.
-
-    Arguments:
-      reference: Reservation to update.
-      slots: Number of slots allocated to this reservation subtree.
-      ignore_idle_slots: Specifies whether queries should ignore idle slots from
-        other reservations.
-      target_job_concurrency: Job concurrency target.
-      autoscale_max_slots: Number of slots to be scaled when needed.
-
-    Returns:
-      Reservation object that was updated.
-
-    Raises:
-      bq_error.BigqueryError: if autoscale_max_slots is used with other
-        version.
-    """
-    return client_reservation.UpdateReservation(
-        client=self.GetReservationApiClient(),
-        api_version=self.api_version,
-        reference=reference,
-        slots=slots,
-        ignore_idle_slots=ignore_idle_slots,
-        target_job_concurrency=target_job_concurrency,
-        autoscale_max_slots=autoscale_max_slots,
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def CreateCapacityCommitment(
-      self,
-      reference,
-      edition,
-      slots: int,
-      plan: str,
-      renewal_plan: str,
-      multi_region_auxiliary: bool,
-  ) -> Dict[str, Any]:
-    """Create a capacity commitment.
-
-    Arguments:
-      reference: Project to create a capacity commitment within.
-      edition: The edition for this capacity commitment.
-      slots: Number of slots in this commitment.
-      plan: Commitment plan for this capacity commitment.
-      renewal_plan: Renewal plan for this capacity commitment.
-      multi_region_auxiliary: Whether this commitment is for the auxiliary
-        region.
-
-    Returns:
-      Capacity commitment object that was created.
-    """
-    return client_reservation.CreateCapacityCommitment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        edition=edition,
-        slots=slots,
-        plan=plan,
-        renewal_plan=renewal_plan,
-        multi_region_auxiliary=multi_region_auxiliary,
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def ListCapacityCommitments(self, reference, page_size, page_token):
-    """Lists capacity commitments for given project and location.
-
-    Arguments:
-      reference: Reference to the project and location.
-      page_size: Number of results to show.
-      page_token: Token to retrieve the next page of results.
-
-    Returns:
-      list of CapacityCommitments objects.
-    """
-    return client_reservation.ListCapacityCommitments(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        page_size=page_size,
-        page_token=page_token
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def GetCapacityCommitment(self, reference):
-    """Gets a capacity commitment with the given capacity commitment reference.
-
-    Arguments:
-      reference: Capacity commitment to get.
-
-    Returns:
-      Capacity commitment object corresponding to the given id.
-    """
-    return client_reservation.GetCapacityCommitment(
-        client=self.GetReservationApiClient(),
-        reference=reference
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def DeleteCapacityCommitment(self, reference, force=None):
-    """Deletes a capacity commitment with the given capacity commitment reference.
-
-    Arguments:
-      reference: Capacity commitment to delete.
-      force: Force delete capacity commitment, ignoring commitment end time.
-    """
-    return client_reservation.DeleteCapacityCommitment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        force=force
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def UpdateCapacityCommitment(self, reference, plan, renewal_plan):
-    """Updates a capacity commitment with the given reference.
-
-    Arguments:
-      reference: Capacity commitment to update.
-      plan: Commitment plan for this capacity commitment.
-      renewal_plan: Renewal plan for this capacity commitment.
-
-    Returns:
-      Capacity commitment object that was updated.
-
-    Raises:
-      bq_error.BigqueryError: if capacity commitment cannot be updated.
-    """
-    return client_reservation.UpdateCapacityCommitment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        plan=plan,
-        renewal_plan=renewal_plan
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def SplitCapacityCommitment(self, reference, slots):
-    """Splits a capacity commitment with the given reference into two.
-
-    Arguments:
-      reference: Capacity commitment to split.
-      slots: Number of slots in the first capacity commitment after the split.
-
-    Returns:
-      List of capacity commitment objects after the split.
-
-    Raises:
-      bq_error.BigqueryError: if capacity commitment cannot be updated.
-    """
-    return client_reservation.SplitCapacityCommitment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        slots=slots
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def MergeCapacityCommitments(self, location, capacity_commitment_ids):
-    """Merges capacity commitments into one.
-
-    Arguments:
-      location: Capacity commitments location.
-      capacity_commitment_ids: List of capacity commitment ids.
-
-    Returns:
-      Merged capacity commitment.
-
-    Raises:
-      bq_error.BigqueryError: if capacity commitment cannot be merged.
-    """
-    return client_reservation.MergeCapacityCommitments(
-        client=self.GetReservationApiClient(),
-        project_id=self.project_id,
-        location=location,
-        capacity_commitment_ids=capacity_commitment_ids
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def CreateReservationAssignment(self, reference, job_type, priority,
-                                  assignee_type, assignee_id):
-    """Creates a reservation assignment for a given project/folder/organization.
-
-    Arguments:
-      reference: Reference to the project reservation is assigned. Location must
-        be the same location as the reservation.
-      job_type: Type of jobs for this assignment.
-      priority: Default job priority for this assignment.
-      assignee_type: Type of assignees for the reservation assignment.
-      assignee_id: Project/folder/organization ID, to which the reservation is
-        assigned.
-
-    Returns:
-      ReservationAssignment object that was created.
-
-    Raises:
-      bq_error.BigqueryError: if assignment cannot be created.
-    """
-    return client_reservation.CreateReservationAssignment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        job_type=job_type,
-        priority=priority,
-        assignee_type=assignee_type,
-        assignee_id=assignee_id
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def DeleteReservationAssignment(self, reference):
-    """Deletes given reservation assignment.
-
-    Arguments:
-      reference: Reference to the reservation assignment.
-    """
-    return client_reservation.DeleteReservationAssignment(
-        client=self.GetReservationApiClient(),
-        reference=reference
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def MoveReservationAssignment(self, reference, destination_reservation_id,
-                                default_location):
-    """Moves given reservation assignment under another reservation."""
-    return client_reservation.MoveReservationAssignment(
-        client=self.GetReservationApiClient(),
-        id_fallbacks=self,
-        reference=reference,
-        destination_reservation_id=destination_reservation_id,
-        default_location=default_location
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def UpdateReservationAssignment(self, reference, priority):
-    """Updates reservation assignment.
-
-    Arguments:
-      reference: Reference to the reservation assignment.
-      priority: Default job priority for this assignment.
-
-    Returns:
-      Reservation assignment object that was updated.
-
-    Raises:
-      bq_error.BigqueryError: if assignment cannot be updated.
-    """
-    return client_reservation.UpdateReservationAssignment(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        priority=priority
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def ListReservationAssignments(self, reference, page_size, page_token):
-    """Lists reservation assignments for given project and location.
-
-    Arguments:
-      reference: Reservation reference for the parent.
-      page_size: Number of results to show.
-      page_token: Token to retrieve the next page of results.
-
-    Returns:
-      ReservationAssignment object that was created.
-    """
-    return client_reservation.ListReservationAssignments(
-        client=self.GetReservationApiClient(),
-        reference=reference,
-        page_size=page_size,
-        page_token=page_token
-    )
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-
-  # TODO(b/324243535): Delete these once the migration is complete.
-  def SearchAllReservationAssignments(
-      self,
-      location: str,
-      job_type: str,
-      assignee_type: str,
-      assignee_id: str) -> Dict[str, Any]:
-    """Searches reservations assignments for given assignee.
-
-    Arguments:
-      location: location of interest.
-      job_type: type of job to be queried.
-      assignee_type: Type of assignees for the reservation assignment.
-      assignee_id: Project/folder/organization ID, to which the reservation is
-        assigned.
-
-    Returns:
-      ReservationAssignment object if it exists.
-
-    Raises:
-      bq_error.BigqueryError: If required parameters are not passed in or
-        reservation assignment not found.
-    """
-    return client_reservation.SearchAllReservationAssignments(
-        client=self.GetReservationApiClient(),
-        location=location,
-        job_type=job_type,
-        assignee_type=assignee_type,
-        assignee_id=assignee_id,
-    )
-
-  def GetConnection(
-      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
-  ):
-    """Gets connection with the given connection reference.
-
-    Arguments:
-      reference: Connection to get.
-
-    Returns:
-      Connection object with the given id.
-    """
-    client = self.GetConnectionV1ApiClient()
-    return client.projects().locations().connections().get(
-        name=reference.path()).execute()
-
-  def CreateConnection(
-      self,
-      project_id: str,
-      location: str,
-      connection_type: str,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
-      properties: str,
-      connection_credential: Optional[str] = None,
-      display_name: Optional[str] = None,
-      description: Optional[str] = None,
-      connection_id: Optional[str] = None,
-      kms_key_name: Optional[str] = None,
-      connector_configuration: Optional[str] = None,
-  ):
-    """Create a connection with the given connection reference.
-
-    Arguments:
-      project_id: Project ID.
-      location: Location of connection.
-      connection_type: Type of connection, allowed values: ['CLOUD_SQL']
-      properties: Connection properties in JSON format.
-      connection_credential: Connection credentials in JSON format.
-      display_name: Friendly name for the connection.
-      description: Description of the connection.
-      connection_id: Optional connection ID.
-      kms_key_name: Optional KMS key name.
-      connector_configuration: Optional configuration for connector.
-
-    Returns:
-      Connection object that was created.
-    """
-
-    connection: Dict[str, Any] = {}
-
-    if display_name:
-      connection['friendlyName'] = display_name
-
-    if description:
-      connection['description'] = description
-
-    if kms_key_name:
-      connection['kmsKeyName'] = kms_key_name
-
-    property_name = bq_client_utils.CONNECTION_TYPE_TO_PROPERTY_MAP.get(
-        connection_type)
-    if property_name:
-      connection[property_name] = bq_processor_utils.ParseJson(properties)
-      if connection_credential:
-        connection[property_name]['credential'] = bq_processor_utils.ParseJson(
-            connection_credential
-        )
-    elif connector_configuration:
-      connection['configuration'] = bq_processor_utils.ParseJson(
-          connector_configuration
-      )
-    else:
-      error = (
-          'connection_type %s is unsupported or connector_configuration is not'
-          ' specified' % connection_type
-      )
-      raise ValueError(error)
-
-    client = self.GetConnectionV1ApiClient()
-    parent = 'projects/%s/locations/%s' % (project_id, location)
-    return client.projects().locations().connections().create(
-        parent=parent, connectionId=connection_id, body=connection).execute()
-
-  def UpdateConnection(
-      self,
-      reference: bq_id_utils.ApiClientHelper.ConnectionReference,
-      connection_type: str,  # Actually a CONNECTION_TYPE_TO_PROPERTY_MAP key.
-      properties: str,
-      connection_credential: Optional[str] = None,
-      display_name: Optional[str] = None,
-      description: Optional[str] = None,
-      kms_key_name: Optional[str] = None,
-      connector_configuration: Optional[str] = None,
-  ):
-    """Update connection with the given connection reference.
-
-    Arguments:
-      reference: Connection to update
-      connection_type: Type of connection, allowed values: ['CLOUD_SQL']
-      properties: Connection properties
-      connection_credential: Connection credentials in JSON format.
-      display_name: Friendly name for the connection
-      description: Description of the connection
-      kms_key_name: Optional KMS key name.
-      connector_configuration: Optional configuration for connector
-    Raises:
-      bq_error.BigqueryClientError: The connection type is not defined
-        when updating
-      connection_credential or properties.
-    Returns:
-      Connection object that was created.
-    """
-
-    if (connection_credential or properties) and not connection_type:
-      raise bq_error.BigqueryClientError(
-          'connection_type is required when updating connection_credential or'
-          ' properties'
-      )
-    connection = {}
-    update_mask = []
-
-    def GetUpdateMask(
-        base_path: str, json_properties: Dict[str, Any]
-    ) -> List[str]:
-      """Creates an update mask from json_properties.
-
-      Arguments:
-        base_path: 'cloud_sql'
-        json_properties: { 'host': ... , 'instanceId': ... }
-
-      Returns:
-         list of  paths in snake case:
-         mask = ['cloud_sql.host', 'cloud_sql.instance_id']
-      """
-      return [
-          base_path + '.' + inflection.underscore(json_property)
-          for json_property in json_properties
-      ]
-
-    def GetUpdateMaskRecursively(
-        prefix: str, json_value: Dict[str, Any]
-    ) -> List[str]:
-      if not isinstance(json_value, dict) or not json_value:
-        return [inflection.underscore(prefix)]
-
-      result = []
-      for name in json_value:
-        new_prefix = prefix + '.' + name
-        new_json_value = json_value.get(name)
-        result.extend(GetUpdateMaskRecursively(new_prefix, new_json_value))
-
-      return result
-
-    if display_name:
-      connection['friendlyName'] = display_name
-      update_mask.append('friendlyName')
-
-    if description:
-      connection['description'] = description
-      update_mask.append('description')
-
-    if kms_key_name is not None:
-      update_mask.append('kms_key_name')
-    if kms_key_name:
-      connection['kmsKeyName'] = kms_key_name
-
-    if connection_type == 'CLOUD_SQL':
-      if properties:
-        cloudsql_properties = bq_processor_utils.ParseJson(properties)
-        connection['cloudSql'] = cloudsql_properties
-
-        update_mask.extend(
-            GetUpdateMask(connection_type.lower(), cloudsql_properties))
-
-      else:
-        connection['cloudSql'] = {}
-
-      if connection_credential:
-        connection['cloudSql']['credential'] = bq_processor_utils.ParseJson(
-            connection_credential
-        )
-        update_mask.append('cloudSql.credential')
-
-    elif connection_type == 'AWS':
-
-      if properties:
-        aws_properties = bq_processor_utils.ParseJson(properties)
-        connection['aws'] = aws_properties
-        if aws_properties.get('crossAccountRole') and aws_properties[
-            'crossAccountRole'
-        ].get('iamRoleId'):
-          update_mask.append('aws.crossAccountRole.iamRoleId')
-        if aws_properties.get('accessRole') and aws_properties[
-            'accessRole'
-        ].get('iamRoleId'):
-          update_mask.append('aws.access_role.iam_role_id')
-      else:
-        connection['aws'] = {}
-
-      if connection_credential:
-        connection['aws']['credential'] = bq_processor_utils.ParseJson(
-            connection_credential
-        )
-        update_mask.append('aws.credential')
-
-    elif connection_type == 'Azure':
-      if properties:
-        azure_properties = bq_processor_utils.ParseJson(properties)
-        connection['azure'] = azure_properties
-        if azure_properties.get('customerTenantId'):
-          update_mask.append('azure.customer_tenant_id')
-        if azure_properties.get('federatedApplicationClientId'):
-          update_mask.append('azure.federated_application_client_id')
-
-    elif connection_type == 'SQL_DATA_SOURCE':
-      if properties:
-        sql_data_source_properties = bq_processor_utils.ParseJson(properties)
-        connection['sqlDataSource'] = sql_data_source_properties
-
-        update_mask.extend(
-            GetUpdateMask(connection_type.lower(), sql_data_source_properties))
-
-      else:
-        connection['sqlDataSource'] = {}
-
-      if connection_credential:
-        connection['sqlDataSource']['credential'] = (
-            bq_processor_utils.ParseJson(connection_credential)
-        )
-        update_mask.append('sqlDataSource.credential')
-
-    elif connection_type == 'CLOUD_SPANNER':
-      if properties:
-        cloudspanner_properties = bq_processor_utils.ParseJson(properties)
-        connection['cloudSpanner'] = cloudspanner_properties
-        update_mask.extend(
-            GetUpdateMask(connection_type.lower(), cloudspanner_properties))
-      else:
-        connection['cloudSpanner'] = {}
-
-    elif connection_type == 'SPARK':
-      if properties:
-        spark_properties = bq_processor_utils.ParseJson(properties)
-        connection['spark'] = spark_properties
-        if 'sparkHistoryServerConfig' in spark_properties:
-          update_mask.append('spark.spark_history_server_config')
-        if 'metastoreServiceConfig' in spark_properties:
-          update_mask.append('spark.metastore_service_config')
-      else:
-        connection['spark'] = {}
-    elif connector_configuration:
-      connection['configuration'] = bq_processor_utils.ParseJson(
-          connector_configuration
-      )
-      update_mask.extend(
-          GetUpdateMaskRecursively('configuration', connection['configuration'])
-      )
-
-    client = self.GetConnectionV1ApiClient()
-
-    return client.projects().locations().connections().patch(
-        name=reference.path(),
-        updateMask=','.join(update_mask),
-        body=connection).execute()
-
-  def DeleteConnection(
-      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
-  ):
-    """Delete a connection with the given connection reference.
-
-    Arguments:
-      reference: Connection to delete.
-    """
-    client = self.GetConnectionV1ApiClient()
-    client.projects().locations().connections().delete(
-        name=reference.path()).execute()
-
-  def ListConnections(
-      self,
-      project_id: str,
-      location: str,
-      max_results: int,
-      page_token: Optional[str],
-  ):
-    """List connections in the project and location for the given reference.
-
-    Arguments:
-      project_id: Project ID.
-      location: Location.
-      max_results: Number of results to show.
-      page_token: Token to retrieve the next page of results.
-
-    Returns:
-      List of connection objects
-    """
-    parent = 'projects/%s/locations/%s' % (project_id, location)
-    client = self.GetConnectionV1ApiClient()
-    return client.projects().locations().connections().list(
-        parent=parent, pageToken=page_token, pageSize=max_results).execute()
-
-  def SetConnectionIAMPolicy(
-      self,
-      reference: bq_id_utils.ApiClientHelper.ConnectionReference,
-      policy: str,
-  ):
-    """Sets IAM policy for the given connection resource.
-
-    Arguments:
-      reference: the ConnectionReference for the connection resource.
-      policy: The policy string in JSON format.
-
-    Returns:
-      The updated IAM policy attached to the given connection resource.
-
-    Raises:
-      TypeError: if reference is not a ConnectionReference.
-    """
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.ConnectionReference,
-        method='SetConnectionIAMPolicy',
-    )
-    client = self.GetConnectionV1ApiClient()
-    return client.projects().locations().connections().setIamPolicy(
-        resource=reference.path(), body={'policy': policy}
-    ).execute()
-
-  def GetConnectionIAMPolicy(
-      self, reference: bq_id_utils.ApiClientHelper.ConnectionReference
-  ):
-    """Gets IAM policy for the given connection resource.
-
-    Arguments:
-      reference: the ConnectionReference for the connection resource.
-
-    Returns:
-      The IAM policy attached to the given connection resource.
-
-    Raises:
-      TypeError: if reference is not a ConnectionReference.
-    """
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.ConnectionReference,
-        method='GetConnectionIAMPolicy',
-    )
-    client = self.GetConnectionV1ApiClient()
     return (
         client.projects()
         .locations()
-        .connections()
-        .getIamPolicy(resource=reference.path())
+        .transferConfigs()
+        .get(name=transfer_id)
+        .execute()
+    )
+
+  def GetTransferRun(self, identifier):
+    transfer_client = self.GetTransferV1ApiClient()
+    return (
+        transfer_client.projects()
+        .locations()
+        .transferConfigs()
+        .runs()
+        .get(name=identifier)
         .execute()
     )
 
   def ReadSchemaAndRows(
       self,
-      table_dict: bq_id_utils.ApiClientHelper.TableReference,
+      table_ref: bq_id_utils.ApiClientHelper.TableReference,
       start_row: Optional[int] = None,
       max_rows: Optional[int] = None,
       selected_fields: Optional[str] = None,
@@ -1260,7 +349,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     """Convenience method to get the schema and rows from a table.
 
     Arguments:
-      table_dict: table reference dictionary.
+      table_ref: table reference.
       start_row: first row to read.
       max_rows: number of rows to read.
       selected_fields: a subset of fields to return.
@@ -1277,17 +366,16 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       raise ValueError('start_row is required')
     if max_rows is None:
       raise ValueError('max_rows is required')
-    table_ref = bq_id_utils.ApiClientHelper.TableReference.Create(**table_dict)
     table_reader = bq_table_reader.TableTableReader(
-        self.apiclient, self.max_rows_per_request, table_ref)
+        self.apiclient, self.max_rows_per_request, table_ref
+    )
     return table_reader.ReadSchemaAndRows(
-        start_row, max_rows, selected_fields=selected_fields)
+        start_row, max_rows, selected_fields=selected_fields
+    )
 
-  def ReadSchemaAndJobRows(self,
-                           job_dict,
-                           start_row=None,
-                           max_rows=None,
-                           result_first_page=None):
+  def ReadSchemaAndJobRows(
+      self, job_dict, start_row=None, max_rows=None, result_first_page=None
+  ):
     """Convenience method to get the schema and rows from job query result.
 
     Arguments:
@@ -1313,18 +401,19 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       job_ref = bq_id_utils.ApiClientHelper.JobReference.Create(**job_dict)
     if flags.FLAGS.jobs_query_use_results_from_response and result_first_page:
       reader = bq_table_reader.QueryTableReader(
-          self.apiclient, self.max_rows_per_request, job_ref, result_first_page)
+          self.apiclient, self.max_rows_per_request, job_ref, result_first_page
+      )
     else:
       reader = bq_table_reader.JobTableReader(
-          self.apiclient, self.max_rows_per_request, job_ref)
+          self.apiclient, self.max_rows_per_request, job_ref
+      )
     return reader.ReadSchemaAndRows(start_row, max_rows)
 
   # TODO(b/324243535): Delete these once the migration is complete.
   @staticmethod
-  def ConfigureFormatter(formatter,
-                         reference_type,
-                         print_format='list',
-                         object_info=None):
+  def ConfigureFormatter(
+      formatter, reference_type, print_format='list', object_info=None
+  ):
     """Configure a formatter for a given reference type.
 
     If print_format is 'show', configures the formatter with several
@@ -1339,7 +428,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       ValueError: If reference_type or format is unknown.
     """
     return bq_client_utils.ConfigureFormatter(
-        formatter, reference_type, print_format, object_info)
+        formatter, reference_type, print_format, object_info
+    )
 
   # TODO(b/324243535): Delete these once the migration is complete.
   @staticmethod
@@ -1655,7 +745,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       A dictionary of reservation_assignment properties.
     """
     return bq_client_utils.FormatReservationAssignmentInfo(
-        reservation_assignment)
+        reservation_assignment
+    )
 
   # TODO(b/324243535): Delete this once the migration is complete.
   @staticmethod
@@ -1688,11 +779,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return bq_processor_utils.ConstructObjectInfo(reference)
 
   # TODO(b/324243535): Delete this once the migration is complete.
-  def _PrepareListRequest(self,
-                          reference,
-                          max_results=None,
-                          page_token=None,
-                          filter_expression=None):
+  def _PrepareListRequest(
+      self, reference, max_results=None, page_token=None, filter_expression=None
+  ):
     """Create and populate a list request."""
     return bq_processor_utils.PrepareListRequest(
         reference, max_results, page_token, filter_expression
@@ -1701,35 +790,37 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
   # TODO(b/324243535): Delete these once the migration is complete.
 
   # TODO(b/324243535): Delete this once the migration is complete.
-  def _PrepareTransferListRequest(self,
-                                  reference,
-                                  location,
-                                  page_size=None,
-                                  page_token=None,
-                                  data_source_ids=None):
+  def _PrepareTransferListRequest(
+      self,
+      reference,
+      location,
+      page_size=None,
+      page_token=None,
+      data_source_ids=None,
+  ):
     """Create and populate a list request."""
     return bq_processor_utils.PrepareTransferListRequest(
         reference, location, page_size, page_token, data_source_ids
     )
 
   # TODO(b/324243535): Delete this once the migration is complete.
-  def _PrepareTransferRunListRequest(self,
-                                     reference,
-                                     run_attempt,
-                                     max_results=None,
-                                     page_token=None,
-                                     states=None):
+  def _PrepareTransferRunListRequest(
+      self,
+      reference,
+      run_attempt,
+      max_results=None,
+      page_token=None,
+      states=None,
+  ):
     """Create and populate a transfer run list request."""
     return bq_processor_utils.PrepareTransferRunListRequest(
         reference, run_attempt, max_results, page_token, states
     )
 
   # TODO(b/324243535): Delete this once the migration is complete.
-  def _PrepareListTransferLogRequest(self,
-                                     reference,
-                                     max_results=None,
-                                     page_token=None,
-                                     message_type=None):
+  def _PrepareListTransferLogRequest(
+      self, reference, max_results=None, page_token=None, message_type=None
+  ):
     """Create and populate a transfer log list request."""
     return bq_processor_utils.PrepareListTransferLogRequest(
         reference, max_results, page_token, message_type
@@ -1742,17 +833,21 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
   def ListJobRefs(self, **kwds):
     return list(
         map(  # pylint: disable=g-long-lambda
-            bq_processor_utils.ConstructObjectReference, self.ListJobs(**kwds)))
+            bq_processor_utils.ConstructObjectReference, self.ListJobs(**kwds)
+        )
+    )
 
-  def ListJobs(self,
-               reference=None,
-               max_results=None,
-               page_token=None,
-               state_filter=None,
-               min_creation_time=None,
-               max_creation_time=None,
-               all_users=None,
-               parent_job_id=None):
+  def ListJobs(
+      self,
+      reference=None,
+      max_results=None,
+      page_token=None,
+      state_filter=None,
+      min_creation_time=None,
+      max_creation_time=None,
+      all_users=None,
+      parent_job_id=None,
+  ):
     # pylint: disable=g-doc-args
     """Return a list of jobs.
 
@@ -1820,8 +915,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         'token': nextPageToken for the last page, if present.
     """
     reference = bq_client_utils.NormalizeProjectReference(
-        id_fallbacks=self,
-        reference=reference
+        id_fallbacks=self, reference=reference
     )
     bq_id_utils.typecheck(
         reference,
@@ -1845,7 +939,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         projection='full',
         state_filter=state_filter,
         all_users=all_users,
-        parent_job_id=parent_job_id)
+        parent_job_id=parent_job_id,
+    )
     if min_creation_time is not None:
       request['minCreationTime'] = min_creation_time
     if max_creation_time is not None:
@@ -1868,153 +963,6 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       response['unreachable'] = result['unreachable']
     return response
 
-  def ListTransferConfigs(self,
-                          reference=None,
-                          location=None,
-                          page_size=None,
-                          page_token=None,
-                          data_source_ids=None):
-    """Return a list of transfer configurations.
-
-    Args:
-      reference: The ProjectReference to list transfer configurations for.
-      location: The location id, e.g. 'us' or 'eu'.
-      page_size: The maximum number of transfer configurations to return.
-      page_token: Current page token (optional).
-      data_source_ids: The dataSourceIds to display transfer configurations for.
-
-    Returns:
-      A list of transfer configurations.
-    """
-    results = None
-    client = self.GetTransferV1ApiClient()
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.ProjectReference,
-        method='ListTransferConfigs')
-    if page_size is not None:
-      if page_size > bq_processor_utils.MAX_RESULTS:
-        page_size = bq_processor_utils.MAX_RESULTS
-    request = bq_processor_utils.PrepareTransferListRequest(
-        reference, location, page_size, page_token, data_source_ids
-    )
-    if request:
-      bq_processor_utils.ApplyParameters(request)
-      result = client.projects().locations().transferConfigs().list(
-          **request).execute()
-      results = result.get('transferConfigs', [])
-      if page_size is not None:
-        while 'nextPageToken' in result and len(results) < page_size:
-          request = bq_processor_utils.PrepareTransferListRequest(
-              reference,
-              location,
-              page_size - len(results),
-              result['nextPageToken'],
-              data_source_ids,
-          )
-          if request:
-            bq_processor_utils.ApplyParameters(request)
-            result = client.projects().locations().transferConfigs().list(
-                **request).execute()
-            results.extend(result.get('nextPageToken', []))
-          else:
-            return
-      if len(results) < 1:
-        logging.info('There are no transfer configurations to be shown.')
-      if result.get('nextPageToken'):
-        return (results, result.get('nextPageToken'))
-    return (results,)
-
-  def ListTransferRuns(self,
-                       reference,
-                       run_attempt,
-                       max_results=None,
-                       page_token=None,
-                       states=None):
-    """Return a list of transfer runs.
-
-    Args:
-      reference: The ProjectReference to list transfer runs for.
-      run_attempt: Which runs should be pulled. The default value is 'LATEST',
-        which only returns the latest run per day. To return all runs, please
-        specify 'RUN_ATTEMPT_UNSPECIFIED'.
-      max_results: The maximum number of transfer runs to return (optional).
-      page_token: Current page token (optional).
-      states: States to filter transfer runs (optional).
-
-    Returns:
-      A list of transfer runs.
-    """
-    transfer_client = self.GetTransferV1ApiClient()
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.TransferRunReference,
-        method='ListTransferRuns')
-    reference = str(reference)
-    request = bq_processor_utils.PrepareTransferRunListRequest(
-        reference, run_attempt, max_results, page_token, states
-    )
-    response = transfer_client.projects().locations().transferConfigs().runs(
-    ).list(**request).execute()
-    transfer_runs = response.get('transferRuns', [])
-    if max_results is not None:
-      while 'nextPageToken' in response and len(transfer_runs) < max_results:
-        page_token = response.get('nextPageToken')
-        max_results -= len(transfer_runs)
-        request = bq_processor_utils.PrepareTransferRunListRequest(
-            reference, run_attempt, max_results, page_token, states
-        )
-        response = transfer_client.projects().locations().transferConfigs(
-        ).runs().list(**request).execute()
-        transfer_runs.extend(response.get('transferRuns', []))
-      if response.get('nextPageToken'):
-        return (transfer_runs, response.get('nextPageToken'))
-    return (transfer_runs,)
-
-  def ListTransferLogs(self,
-                       reference,
-                       message_type=None,
-                       max_results=None,
-                       page_token=None):
-    """Return a list of transfer run logs.
-
-    Args:
-      reference: The ProjectReference to list transfer run logs for.
-      message_type: Message types to return.
-      max_results: The maximum number of transfer run logs to return.
-      page_token: Current page token (optional).
-
-    Returns:
-      A list of transfer run logs.
-    """
-    transfer_client = self.GetTransferV1ApiClient()
-    reference = str(reference)
-    request = bq_processor_utils.PrepareListTransferLogRequest(
-        reference,
-        max_results=max_results,
-        page_token=page_token,
-        message_type=message_type)
-    response = (
-        transfer_client.projects().locations().transferConfigs().runs()
-        .transferLogs().list(**request).execute())
-    transfer_logs = response.get('transferMessages', [])
-    if max_results is not None:
-      while 'nextPageToken' in response and len(transfer_logs) < max_results:
-        page_token = response['nextPageToken']
-        max_results -= len(transfer_logs)
-        request = bq_processor_utils.PrepareListTransferLogRequest(
-            reference,
-            max_results=max_results,
-            page_token=page_token,
-            message_type=message_type)
-        response = (
-            transfer_client.projects().locations().transferConfigs().runs()
-            .transferLogs().list(**request).execute())
-        transfer_logs.extend(response.get('transferMessages', []))
-    if response.get('nextPageToken'):
-      return (transfer_logs, response.get('nextPageToken'))
-    return (transfer_logs,)
-
   def ListProjectRefs(self, **kwds):
     """List the project references this user has access to."""
     return list(
@@ -2029,8 +977,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     request = bq_processor_utils.PrepareListRequest({}, max_results, page_token)
     result = self._ExecuteListProjectsRequest(request)
     results = result.get('projects', [])
-    while 'nextPageToken' in result and (max_results is not None and
-                                         len(results) < max_results):
+    while 'nextPageToken' in result and (
+        max_results is not None and len(results) < max_results
+    ):
       request['pageToken'] = result['nextPageToken']
       result = self._ExecuteListProjectsRequest(request)
       results.extend(result.get('projects', []))
@@ -2048,12 +997,14 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     )
 
   # TODO(b/324243535): Delete these once the migration is complete.
-  def ListDatasets(self,
-                   reference=None,
-                   max_results=None,
-                   page_token=None,
-                   list_all=None,
-                   filter_expression=None):
+  def ListDatasets(
+      self,
+      reference=None,
+      max_results=None,
+      page_token=None,
+      list_all=None,
+      filter_expression=None,
+  ):
     """List the datasets associated with this reference."""
     return client_dataset.ListDatasets(
         apiclient=self.apiclient,
@@ -2105,11 +1056,17 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         'results': a list of models
         'token': nextPageToken for the last page, if present.
     """
-    return self.GetModelsApiClient().models().list(
-        projectId=reference.projectId,
-        datasetId=reference.datasetId,
-        maxResults=max_results,
-        pageToken=page_token).execute()
+    return (
+        self.GetModelsApiClient()
+        .models()
+        .list(
+            projectId=reference.projectId,
+            datasetId=reference.datasetId,
+            maxResults=max_results,
+            pageToken=page_token,
+        )
+        .execute()
+    )
 
   def _ListRowAccessPolicies(
       self,
@@ -2118,12 +1075,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       page_token: str,
   ) -> Dict[str, List[Any]]:
     """Lists row access policies for the given table reference."""
-    return self.GetRowAccessPoliciesApiClient().rowAccessPolicies().list(
-        projectId=table_reference.projectId,
-        datasetId=table_reference.datasetId,
-        tableId=table_reference.tableId,
-        pageSize=page_size,
-        pageToken=page_token).execute()
+    return (
+        self.GetRowAccessPoliciesApiClient()
+        .rowAccessPolicies()
+        .list(
+            projectId=table_reference.projectId,
+            datasetId=table_reference.datasetId,
+            tableId=table_reference.tableId,
+            pageSize=page_size,
+            pageToken=page_token,
+        )
+        .execute()
+    )
 
   def ListRowAccessPoliciesWithGrantees(
       self,
@@ -2180,8 +1143,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       return []
 
     filtered_data_viewer_binding = next(
-        (binding for binding in bindings
-         if binding.get('role') == _FILTERED_DATA_VIEWER_ROLE), None)
+        (
+            binding
+            for binding in bindings
+            if binding.get('role') == _FILTERED_DATA_VIEWER_ROLE
+        ),
+        None,
+    )
     if not filtered_data_viewer_binding:
       return []
 
@@ -2221,11 +1189,17 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         bq_id_utils.ApiClientHelper.TableReference,
         method='GetTableIAMPolicy',
     )
-    formatted_resource = (
-        'projects/%s/datasets/%s/tables/%s' %
-        (reference.projectId, reference.datasetId, reference.tableId))
-    return self.GetIAMPolicyApiClient().tables().getIamPolicy(
-        resource=formatted_resource).execute()
+    formatted_resource = 'projects/%s/datasets/%s/tables/%s' % (
+        reference.projectId,
+        reference.datasetId,
+        reference.tableId,
+    )
+    return (
+        self.GetIAMPolicyApiClient()
+        .tables()
+        .getIamPolicy(resource=formatted_resource)
+        .execute()
+    )
 
   def GetRowAccessPolicyIAMPolicy(
       self, reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference'
@@ -2245,13 +1219,23 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     bq_id_utils.typecheck(
         reference,
         bq_id_utils.ApiClientHelper.RowAccessPolicyReference,
-        method='GetRowAccessPolicyIAMPolicy')
+        method='GetRowAccessPolicyIAMPolicy',
+    )
     formatted_resource = (
-        'projects/%s/datasets/%s/tables/%s/rowAccessPolicies/%s' %
-        (reference.projectId, reference.datasetId, reference.tableId,
-         reference.policyId))
-    return self.GetIAMPolicyApiClient().rowAccessPolicies().getIamPolicy(
-        resource=formatted_resource).execute()
+        'projects/%s/datasets/%s/tables/%s/rowAccessPolicies/%s'
+        % (
+            reference.projectId,
+            reference.datasetId,
+            reference.tableId,
+            reference.policyId,
+        )
+    )
+    return (
+        self.GetIAMPolicyApiClient()
+        .rowAccessPolicies()
+        .getIamPolicy(resource=formatted_resource)
+        .execute()
+    )
 
   # TODO(b/324243535): Delete these once the migration is complete.
   def SetDatasetIAMPolicy(self, reference, policy):
@@ -2291,50 +1275,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         bq_id_utils.ApiClientHelper.TableReference,
         method='SetTableIAMPolicy',
     )
-    formatted_resource = (
-        'projects/%s/datasets/%s/tables/%s' %
-        (reference.projectId, reference.datasetId, reference.tableId))
+    formatted_resource = 'projects/%s/datasets/%s/tables/%s' % (
+        reference.projectId,
+        reference.datasetId,
+        reference.tableId,
+    )
     request = {'policy': policy}
-    return self.GetIAMPolicyApiClient().tables().setIamPolicy(
-        body=request, resource=formatted_resource).execute()
-
-  #################################
-  ##       Transfer run
-  #################################
-  def StartManualTransferRuns(self, reference, start_time, end_time, run_time):
-    """Starts manual transfer runs.
-
-    Args:
-      reference: Transfer configuration name for the run.
-      start_time: Start time of the range of transfer runs.
-      end_time: End time of the range of transfer runs.
-      run_time: Specific time for a transfer run.
-
-    Returns:
-      The list of started transfer runs.
-    """
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.TransferConfigReference,
-        method='StartManualTransferRuns')
-    transfer_client = self.GetTransferV1ApiClient()
-    parent = str(reference)
-
-    if run_time:
-      body = {'requestedRunTime': run_time}
-    else:
-      body = {
-          'requestedTimeRange': {
-              'startTime': start_time,
-              'endTime': end_time
-          }
-      }
-
-    configs_request = transfer_client.projects().locations().transferConfigs()
-    response = configs_request.startManualRuns(
-        parent=parent, body=body).execute()
-
-    return response.get('runs')
+    return (
+        self.GetIAMPolicyApiClient()
+        .tables()
+        .setIamPolicy(body=request, resource=formatted_resource)
+        .execute()
+    )
 
   #################################
   ## Table and dataset management
@@ -2350,7 +1302,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       encryption_configuration=None,
       operation_type='COPY',
       destination_expiration_time=None,
-      **kwds):
+      **kwds,
+  ):
     """Copies a table.
 
     Args:
@@ -2389,8 +1342,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         'sourceTables': [dict(src_ref) for src_ref in source_references],
     }
     if encryption_configuration:
-      copy_config[
-          'destinationEncryptionConfiguration'] = encryption_configuration
+      copy_config['destinationEncryptionConfiguration'] = (
+          encryption_configuration
+      )
 
     if operation_type:
       copy_config['operationType'] = operation_type
@@ -2401,7 +1355,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     bq_processor_utils.ApplyParameters(
         copy_config,
         create_disposition=create_disposition,
-        write_disposition=write_disposition)
+        write_disposition=write_disposition,
+    )
 
     try:
       return self.ExecuteJob({'copy': copy_config}, **kwds)
@@ -2446,7 +1401,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
 
   def TableExists(
       self, reference: 'bq_id_utils.ApiClientHelper.TableReference'
-  ) -> bool:
+  ):
     """Returns true if the table exists."""
     bq_id_utils.typecheck(
         reference,
@@ -2490,23 +1445,6 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           )
           .execute()
       )
-    except bq_error.BigqueryNotFoundError:
-      return False
-
-  def TransferExists(
-      self, reference: 'bq_id_utils.ApiClientHelper.TransferConfigReference'
-  ) -> bool:
-    """Returns true if the transfer exists."""
-    # pylint: disable=missing-function-docstring
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.TransferConfigReference,
-        method='TransferExists')
-    try:
-      transfer_client = self.GetTransferV1ApiClient()
-      transfer_client.projects().locations().transferConfigs().get(
-          name=reference.transferConfigName).execute()
-      return True
     except bq_error.BigqueryNotFoundError:
       return False
 
@@ -2616,7 +1554,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       destination_kms_key=None,
       location=None,
       table_constraints=None,
-      resource_tags=None):
+      resource_tags=None,
+  ):
     """Create a table corresponding to TableReference.
 
     Args:
@@ -2721,249 +1660,11 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       if resource_tags is not None:
         body['resourceTags'] = resource_tags
       self.apiclient.tables().insert(
-          body=body, **dict(reference.GetDatasetReference())).execute()
+          body=body, **dict(reference.GetDatasetReference())
+      ).execute()
     except bq_error.BigqueryDuplicateError:
       if not ignore_existing:
         raise
-
-  def _FetchDataSource(self, project_reference, data_source_id):
-    transfer_client = self.GetTransferV1ApiClient()
-    data_source_retrieval = (
-        project_reference + '/locations/-/dataSources/' + data_source_id
-    )
-
-    return (
-        transfer_client.projects()
-        .locations()
-        .dataSources()
-        .get(name=data_source_retrieval)
-        .execute()
-    )
-
-  def UpdateTransferConfig(self,
-                           reference,
-                           target_dataset=None,
-                           display_name=None,
-                           refresh_window_days=None,
-                           params=None,
-                           auth_info=None,
-                           service_account_name=None,
-                           destination_kms_key=None,
-                           notification_pubsub_topic=None,
-                           schedule_args=None):
-    """Updates a transfer config.
-
-    Args:
-      reference: the TransferConfigReference to update.
-      target_dataset: Optional updated target dataset.
-      display_name: Optional change to the display name.
-      refresh_window_days: Optional update to the refresh window days. Some data
-        sources do not support this.
-      params: Optional parameters to update.
-      auth_info: A dict contains authorization info which can be either an
-        authorization_code or a version_info that the user input if they want to
-        update credentials.
-      service_account_name: The service account that the user could act as and
-        used as the credential to create transfer runs from the transfer config.
-      destination_kms_key: Optional KMS key for encryption.
-      notification_pubsub_topic: The Pub/Sub topic where notifications will be
-        sent after transfer runs associated with this transfer config finish.
-      schedule_args: Optional parameters to customize data transfer schedule.
-
-    Raises:
-      TypeError: if reference is not a TransferConfigReference.
-      BigqueryNotFoundError: if dataset is not found
-      bq_error.BigqueryError: required field not given.
-    """
-
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.TransferConfigReference,
-        method='UpdateTransferConfig')
-    project_reference = 'projects/' + (
-        bq_client_utils.GetProjectReference(id_fallbacks=self).projectId)
-    transfer_client = self.GetTransferV1ApiClient()
-    current_config = transfer_client.projects().locations().transferConfigs(
-    ).get(name=reference.transferConfigName).execute()
-    update_mask = []
-    update_items = {}
-    update_items['dataSourceId'] = current_config['dataSourceId']
-    if target_dataset:
-      dataset_reference = bq_client_utils.GetDatasetReference(
-          id_fallbacks=self,
-          identifier=target_dataset
-      )
-      if client_dataset.DatasetExists(
-          apiclient=self.apiclient, reference=dataset_reference
-      ):
-        update_items['destinationDatasetId'] = target_dataset
-        update_mask.append('transfer_config.destination_dataset_id')
-      else:
-        raise bq_error.BigqueryNotFoundError(
-            'Unknown %r' % (dataset_reference,), {'reason': 'notFound'}, [])
-      update_items['destinationDatasetId'] = target_dataset
-
-    if display_name:
-      update_mask.append('transfer_config.display_name')
-      update_items['displayName'] = display_name
-
-    if params:
-      update_items = bq_processor_utils.ProcessParamsFlag(params, update_items)
-      update_mask.append('transfer_config.params')
-
-    # if refresh window provided, check that data source supports it
-    if refresh_window_days:
-      data_source_info = self._FetchDataSource(
-          project_reference, current_config['dataSourceId']
-      )
-      update_items = bq_processor_utils.ProcessRefreshWindowDaysFlag(
-          refresh_window_days,
-          data_source_info,
-          update_items,
-          current_config['dataSourceId'],
-      )
-      update_mask.append('transfer_config.data_refresh_window_days')
-
-    if schedule_args:
-      if schedule_args.schedule is not None:
-        # update schedule if a custom string was provided
-        update_items['schedule'] = schedule_args.schedule
-        update_mask.append('transfer_config.schedule')
-
-      update_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload(
-          options_to_copy=current_config.get('scheduleOptions'))
-      update_mask.append('transfer_config.scheduleOptions')
-
-    if notification_pubsub_topic:
-      update_items['notification_pubsub_topic'] = notification_pubsub_topic
-      update_mask.append('transfer_config.notification_pubsub_topic')
-
-    if auth_info is not None and AUTHORIZATION_CODE in auth_info:
-      update_mask.append(AUTHORIZATION_CODE)
-
-    if auth_info is not None and VERSION_INFO in auth_info:
-      update_mask.append(VERSION_INFO)
-
-    if service_account_name:
-      update_mask.append('service_account_name')
-
-    if destination_kms_key:
-      update_items['encryption_configuration'] = {
-          'kms_key_name': {'value': destination_kms_key}
-      }
-      update_mask.append('encryption_configuration.kms_key_name')
-
-    transfer_client.projects().locations().transferConfigs().patch(
-        body=update_items,
-        name=reference.transferConfigName,
-        updateMask=','.join(update_mask),
-        authorizationCode=(None if auth_info is None else
-                           auth_info.get(AUTHORIZATION_CODE)),
-        versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
-        serviceAccountName=service_account_name,
-        x__xgafv='2').execute()
-
-  def CreateTransferConfig(self,
-                           reference,
-                           data_source,
-                           target_dataset=None,
-                           display_name=None,
-                           refresh_window_days=None,
-                           params=None,
-                           auth_info=None,
-                           service_account_name=None,
-                           notification_pubsub_topic=None,
-                           schedule_args=None,
-                           destination_kms_key=None,
-                           location=None):
-    """Create a transfer config corresponding to TransferConfigReference.
-
-    Args:
-      reference: the TransferConfigReference to create.
-      data_source: The data source for the transfer config.
-      target_dataset: The dataset where the new transfer config will exist.
-      display_name: A display name for the transfer config.
-      refresh_window_days: Refresh window days for the transfer config.
-      params: Parameters for the created transfer config. The parameters should
-        be in JSON format given as a string. Ex: --params="{'param':'value'}".
-        The params should be the required values needed for each data source and
-        will vary.
-      auth_info: A dict contains authorization info which can be either an
-        authorization_code or a version_info that the user input if they need
-        credentials.
-      service_account_name: The service account that the user could act as and
-        used as the credential to create transfer runs from the transfer config.
-      notification_pubsub_topic: The Pub/Sub topic where notifications will be
-        sent after transfer runs associated with this transfer config finish.
-      schedule_args: Optional parameters to customize data transfer schedule.
-      destination_kms_key: Optional KMS key for encryption.
-      location: The location where the new transfer config will run.
-
-    Raises:
-      BigqueryNotFoundError: if a requested item is not found.
-      bq_error.BigqueryError: if a required field isn't provided.
-
-    Returns:
-      The generated transfer configuration name.
-    """
-    create_items = {}
-    transfer_client = self.GetTransferV1ApiClient()
-
-    # The backend will check if the dataset exists.
-    if target_dataset:
-      create_items['destinationDatasetId'] = target_dataset
-
-    if display_name:
-      create_items['displayName'] = display_name
-    else:
-      raise bq_error.BigqueryError('A display name must be provided.')
-
-    create_items['dataSourceId'] = data_source
-
-    # if refresh window provided, check that data source supports it
-    if refresh_window_days:
-      data_source_info = self._FetchDataSource(reference, data_source)
-      create_items = bq_processor_utils.ProcessRefreshWindowDaysFlag(
-          refresh_window_days, data_source_info, create_items, data_source
-      )
-
-    # checks that all required params are given
-    # if a param that isn't required is provided, it is ignored.
-    if params:
-      create_items = bq_processor_utils.ProcessParamsFlag(params, create_items)
-    else:
-      raise bq_error.BigqueryError('Parameters must be provided.')
-
-    if location:
-      parent = reference + '/locations/' + location
-    else:
-      # The location is infererred by the data transfer service from the
-      # dataset location.
-      parent = reference + '/locations/-'
-
-    if schedule_args:
-      if schedule_args.schedule is not None:
-        create_items['schedule'] = schedule_args.schedule
-      create_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload()
-
-    if notification_pubsub_topic:
-      create_items['notification_pubsub_topic'] = notification_pubsub_topic
-
-    if destination_kms_key:
-      create_items['encryption_configuration'] = {
-          'kms_key_name': {'value': destination_kms_key}
-      }
-
-    new_transfer_config = transfer_client.projects().locations(
-    ).transferConfigs().create(
-        parent=parent,
-        body=create_items,
-        authorizationCode=(None if auth_info is None else
-                           auth_info.get(AUTHORIZATION_CODE)),
-        versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
-        serviceAccountName=service_account_name).execute()
-
-    return new_transfer_config['name']
 
   # TODO(b/324243535): Delete this once the migration is complete.
   def ProcessParamsFlag(self, params, items):
@@ -2983,8 +1684,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return bq_processor_utils.ProcessParamsFlag(params, items)
 
   # TODO(b/324243535): Delete this once the migration is complete.
-  def ProcessRefreshWindowDaysFlag(self, refresh_window_days, data_source_info,
-                                   items, data_source):
+  def ProcessRefreshWindowDaysFlag(
+      self, refresh_window_days, data_source_info, items, data_source
+  ):
     """Processes the Refresh Window Days flag.
 
     Args:
@@ -3001,7 +1703,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         window days.
     """
     return bq_processor_utils.ProcessRefreshWindowDaysFlag(
-        refresh_window_days, data_source_info, items, data_source)
+        refresh_window_days, data_source_info, items, data_source
+    )
 
   def UpdateTable(
       self,
@@ -3031,7 +1734,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       table_constraints=None,
       tags_to_attach: Optional[Dict[str, str]] = None,
       tags_to_remove: Optional[List[str]] = None,
-      clear_all_tags: bool = False):
+      clear_all_tags: bool = False,
+  ):
     """Updates a table.
 
     Args:
@@ -3079,6 +1783,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       tags_to_attach: an optional dict of tags to attach to the table
       tags_to_remove: an optional list of tag keys to remove from the table
       clear_all_tags: if set, clears all the tags attached to the table
+
     Raises:
       TypeError: if reference is not a TableReference.
     """
@@ -3176,11 +1881,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
   def _ExecuteGetTableRequest(self, reference):
     return self.apiclient.tables().get(**dict(reference)).execute()
 
-  def _ExecutePatchTableRequest(self,
-                                reference,
-                                table,
-                                autodetect_schema: bool = False,
-                                etag: Optional[str] = None):
+  def _ExecutePatchTableRequest(
+      self,
+      reference,
+      table,
+      autodetect_schema: bool = False,
+      etag: Optional[str] = None,
+  ):
     """Executes request to patch table.
 
     Args:
@@ -3190,7 +1897,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       etag: if set, checks that etag in the existing table matches.
     """
     request = self.apiclient.tables().patch(
-        autodetect_schema=autodetect_schema, body=table, **dict(reference))
+        autodetect_schema=autodetect_schema, body=table, **dict(reference)
+    )
 
     # Perform a conditional update to protect against concurrent
     # modifications to this table. If there is a conflicting
@@ -3200,14 +1908,16 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       request.headers['If-Match'] = etag if etag else table['etag']
     request.execute()
 
-  def UpdateModel(self,
-                  reference,
-                  description=None,
-                  expiration=None,
-                  labels_to_set=None,
-                  label_keys_to_remove=None,
-                  vertex_ai_model_id=None,
-                  etag=None):
+  def UpdateModel(
+      self,
+      reference,
+      description=None,
+      expiration=None,
+      labels_to_set=None,
+      label_keys_to_remove=None,
+      vertex_ai_model_id=None,
+      etag=None,
+  ):
     """Updates a Model.
 
     Args:
@@ -3244,15 +1954,20 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       for label_key in label_keys_to_remove:
         updated_model['labels'][label_key] = None
     if vertex_ai_model_id is not None:
-      updated_model['trainingRuns'] = [{
-          'vertex_ai_model_id': vertex_ai_model_id
-      }]
+      updated_model['trainingRuns'] = [
+          {'vertex_ai_model_id': vertex_ai_model_id}
+      ]
 
-    request = self.GetModelsApiClient().models().patch(
-        body=updated_model,
-        projectId=reference.projectId,
-        datasetId=reference.datasetId,
-        modelId=reference.modelId)
+    request = (
+        self.GetModelsApiClient()
+        .models()
+        .patch(
+            body=updated_model,
+            projectId=reference.projectId,
+            datasetId=reference.datasetId,
+            modelId=reference.modelId,
+        )
+    )
 
     # Perform a conditional update to protect against concurrent
     # modifications to this model. If there is a conflicting
@@ -3277,7 +1992,10 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       default_kms_key=None,
       max_time_travel_hours=None,
       storage_billing_model=None,
-      ):
+      tags_to_attach: Optional[Dict[str, str]] = None,
+      tags_to_remove: Optional[List[str]] = None,
+      clear_all_tags: Optional[bool] = False,
+  ):
     """Updates a dataset.
 
     Args:
@@ -3302,6 +2020,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         168 hours if this is not set.
       storage_billing_model: Optional. Sets the storage billing model for the
         dataset.
+      tags_to_attach: an optional dict of tags to attach to the dataset
+      tags_to_remove: an optional list of tag keys to remove from the dataset
+      clear_all_tags: if set, clears all the tags attached to the dataset
 
     Raises:
       TypeError: if reference is not a DatasetReference.
@@ -3320,6 +2041,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         default_kms_key=default_kms_key,
         max_time_travel_hours=max_time_travel_hours,
         storage_billing_model=storage_billing_model,
+        tags_to_attach=tags_to_attach,
+        tags_to_remove=tags_to_remove,
+        clear_all_tags=clear_all_tags,
     )
 
   # TODO(b/324243535): Delete these once the migration is complete.
@@ -3341,7 +2065,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
 
   # TODO(b/324243535): Delete these once the migration is complete.
   def _ExecutePatchDatasetRequest(
-      self, reference, dataset, etag: Optional[str] = None):
+      self, reference, dataset, etag: Optional[str] = None
+  ):
     """Executes request to patch dataset.
 
     Args:
@@ -3434,36 +2159,11 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       self.GetModelsApiClient().models().delete(
           projectId=reference.projectId,
           datasetId=reference.datasetId,
-          modelId=reference.modelId).execute()
+          modelId=reference.modelId,
+      ).execute()
     except bq_error.BigqueryNotFoundError:
       if not ignore_not_found:
         raise
-
-  def DeleteTransferConfig(self, reference, ignore_not_found=False):
-    """Deletes TransferConfigReference reference.
-
-    Args:
-      reference: the TransferConfigReference to delete.
-      ignore_not_found: Whether to ignore "not found" errors.
-
-    Raises:
-      TypeError: if reference is not a TransferConfigReference.
-      bq_error.BigqueryNotFoundError: if reference does not exist and
-        ignore_not_found is False.
-    """
-
-    bq_id_utils.typecheck(
-        reference,
-        bq_id_utils.ApiClientHelper.TransferConfigReference,
-        method='DeleteTransferConfig')
-    try:
-      transfer_client = self.GetTransferV1ApiClient()
-      transfer_client.projects().locations().transferConfigs().delete(
-          name=reference.transferConfigName).execute()
-    except bq_error.BigqueryNotFoundError as e:
-      if not ignore_not_found:
-        raise bq_error.BigqueryNotFoundError(
-            'Not found: %r' % (reference,), {'reason': 'notFound'}, []) from e
 
   #################################
   ## Job control
@@ -3486,12 +2186,14 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     """
     return bq_client_utils.ExecuteInChunksWithProgress(request)
 
-  def StartJob(self,
-               configuration,
-               project_id=None,
-               upload_file=None,
-               job_id=None,
-               location=None):
+  def StartJob(
+      self,
+      configuration,
+      project_id=None,
+      upload_file=None,
+      job_id=None,
+      location=None,
+  ):
     """Start a job with the given configuration.
 
     Args:
@@ -3517,11 +2219,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     project_id = project_id or self.project_id
     if not project_id:
       raise bq_error.BigqueryClientConfigurationError(
-          'Cannot start a job without a project id.')
+          'Cannot start a job without a project id.'
+      )
     configuration = configuration.copy()
     if self.job_property:
       configuration['properties'] = dict(
-          prop.partition('=')[0::2] for prop in self.job_property)
+          prop.partition('=')[0::2] for prop in self.job_property
+      )
     job_request = {'configuration': configuration}
 
     # Use the default job id generator if no job id was supplied.
@@ -3545,9 +2249,11 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       media_upload = http_request.MediaFileUpload(
           filename=upload_file,
           mimetype='application/octet-stream',
-          resumable=resumable)
+          resumable=resumable,
+      )
     request = self.apiclient.jobs().insert(
-        body=job_request, media_body=media_upload, projectId=project_id)
+        body=job_request, media_body=media_upload, projectId=project_id
+    )
     if upload_file and resumable:
       result = bq_client_utils.ExecuteInChunksWithProgress(request)
     else:
@@ -3624,7 +2330,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     project_id = project_id or self.project_id
     if not project_id:
       raise bq_error.BigqueryClientConfigurationError(
-          'Cannot run a query without a project id.')
+          'Cannot run a query without a project id.'
+      )
     request = {'query': query}
     if external_table_definitions_json:
       request['tableDefinitions'] = external_table_definitions_json
@@ -3632,7 +2339,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       request['userDefinedFunctionResources'] = udf_resources
     if self.dataset_id:
       request['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(
-          self.dataset_id)
+          self.dataset_id
+      )
 
     # If the request id flag is set, generate a random one if it is not provided
     # explicitly.
@@ -3662,16 +2370,24 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     bq_processor_utils.ApplyParameters(request, dry_run=dry_run)
     logging.debug(
         'Calling self.apiclient.jobs().query(%s, %s, %s)',
-        request, project_id, kwds)
-    return self.apiclient.jobs().query(
-        body=request, projectId=project_id, **kwds).execute()
+        request,
+        project_id,
+        kwds,
+    )
+    return (
+        self.apiclient.jobs()
+        .query(body=request, projectId=project_id, **kwds)
+        .execute()
+    )
 
-  def GetQueryResults(self,
-                      job_id=None,
-                      project_id=None,
-                      max_results=None,
-                      timeout_ms=None,
-                      location=None):
+  def GetQueryResults(
+      self,
+      job_id=None,
+      project_id=None,
+      max_results=None,
+      timeout_ms=None,
+      location=None,
+  ):
     """Waits for a query job to run and returns results if complete.
 
     By default, waits 10s for the provided job to complete and either returns
@@ -3696,7 +2412,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     project_id = project_id or self.project_id
     if not project_id:
       raise bq_error.BigqueryClientConfigurationError(
-          'Cannot get query results without a project id.')
+          'Cannot get query results without a project id.'
+      )
     kwds = {}
     bq_processor_utils.ApplyParameters(
         kwds,
@@ -3704,15 +2421,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         project_id=project_id,
         timeout_ms=timeout_ms,
         max_results=max_results,
-        location=location)
+        location=location,
+    )
     return self.apiclient.jobs().getQueryResults(**kwds).execute()
 
-  def RunJobSynchronously(self,
-                          configuration,
-                          project_id=None,
-                          upload_file=None,
-                          job_id=None,
-                          location=None):
+  def RunJobSynchronously(
+      self,
+      configuration,
+      project_id=None,
+      upload_file=None,
+      job_id=None,
+      location=None,
+  ):
     """Starts a job and waits for it to complete.
 
     Args:
@@ -3737,19 +2457,22 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         project_id=project_id,
         upload_file=upload_file,
         job_id=job_id,
-        location=location)
+        location=location,
+    )
     if result['status']['state'] != 'DONE':
       job_reference = bq_processor_utils.ConstructObjectReference(result)
       result = self.WaitJob(job_reference)
     return bq_client_utils.RaiseIfJobError(result)
 
-  def ExecuteJob(self,
-                 configuration,
-                 sync=None,
-                 project_id=None,
-                 upload_file=None,
-                 job_id=None,
-                 location=None):
+  def ExecuteJob(
+      self,
+      configuration,
+      sync=None,
+      project_id=None,
+      upload_file=None,
+      job_id=None,
+      location=None,
+  ):
     """Execute a job, possibly waiting for results."""
     if sync is None:
       sync = self.sync
@@ -3760,14 +2483,16 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           project_id=project_id,
           upload_file=upload_file,
           job_id=job_id,
-          location=location)
+          location=location,
+      )
     else:
       job = self.StartJob(
           configuration,
           project_id=project_id,
           upload_file=upload_file,
           job_id=job_id,
-          location=location)
+          location=location,
+      )
       bq_client_utils.RaiseIfJobError(job)
     return job
 
@@ -3790,15 +2515,19 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     project_id = project_id or self.project_id
     if not project_id:
       raise bq_error.BigqueryClientConfigurationError(
-          'Cannot cancel a job without a project id.')
+          'Cannot cancel a job without a project id.'
+      )
     if not job_id:
       raise bq_error.BigqueryClientConfigurationError(
-          'Cannot cancel a job without a job id.')
+          'Cannot cancel a job without a job id.'
+      )
 
     job_reference = bq_id_utils.ApiClientHelper.JobReference.Create(
-        projectId=project_id, jobId=job_id, location=location)
+        projectId=project_id, jobId=job_id, location=location
+    )
     result = (
-        self.apiclient.jobs().cancel(**dict(job_reference)).execute()['job'])
+        self.apiclient.jobs().cancel(**dict(job_reference)).execute()['job']
+    )
     if result['status']['state'] != 'DONE' and self.sync:
       job_reference = bq_processor_utils.ConstructObjectReference(result)
       result = self.WaitJob(job_reference=job_reference)
@@ -3889,8 +2618,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         time.sleep(1)
     else:
       raise StopIteration(
-          'Wait timed out. Operation not finished, in state %s' %
-          (current_status,))
+          'Wait timed out. Operation not finished, in state %s'
+          % (current_status,)
+      )
     printer.Done()
     return job
 
@@ -3940,7 +2670,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     job = self.Query(**new_kwds)
 
     return self.ReadSchemaAndJobRows(
-        job['jobReference'], start_row=start_row, max_rows=max_rows)
+        job['jobReference'], start_row=start_row, max_rows=max_rows
+    )
 
   def RunQueryRpc(
       self,
@@ -4009,13 +2740,13 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     """
     if not self.sync:
       raise bq_error.BigqueryClientError(
-          'Running RPC-style query asynchronously is not supported')
+          'Running RPC-style query asynchronously is not supported'
+      )
     if not query:
       raise bq_error.BigqueryClientError('No query string provided')
 
     if request_id is not None and not flags.FLAGS.jobs_query_use_request_id:
-      raise bq_error.BigqueryClientError(
-          'request_id is not yet supported')
+      raise bq_error.BigqueryClientError('request_id is not yet supported')
 
     if wait_printer_factory:
       printer = wait_printer_factory()
@@ -4068,13 +2799,17 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
                 statistics=dict(
                     query=dict(
                         totalBytesProcessed=result['totalBytesProcessed'],
-                        cacheHit=result['cacheHit'])))
+                        cacheHit=result['cacheHit'],
+                    )
+                )
+            )
             if 'schema' in result:
               execution['statistics']['query']['schema'] = result['schema']
             return ([], [], execution)
           if 'jobReference' in result:
             job_reference = bq_id_utils.ApiClientHelper.JobReference.Create(
-                **result['jobReference'])
+                **result['jobReference']
+            )
         else:
           # The query/getQueryResults methods do not return the job state,
           # so we just print 'RUNNING' while we are actively waiting.
@@ -4083,13 +2818,15 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
               job_reference.jobId,
               max_results=max_results,
               timeout_ms=current_wait_ms,
-              location=location)
+              location=location,
+          )
         if result['jobComplete']:
           (schema, rows) = self.ReadSchemaAndJobRows(
               dict(job_reference) if job_reference else {},
               start_row=0,
               max_rows=max_results,
-              result_first_page=result)
+              result_first_page=result,
+          )
           # If we get here, we must have succeeded.  We could still have
           # non-fatal errors though.
           status = {}
@@ -4098,7 +2835,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           execution = {
               'State': 'SUCCESS',
               'status': status,
-              'jobReference': job_reference
+              'jobReference': job_reference,
           }
           return (schema, rows, execution)
       except bq_error.BigqueryCommunicationError as e:
@@ -4208,7 +2945,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     query_config = {'query': query}
     if self.dataset_id:
       query_config['defaultDataset'] = bq_client_utils.GetQueryDefaultDataset(
-          self.dataset_id)
+          self.dataset_id
+      )
     if external_table_definitions_json:
       query_config['tableDefinitions'] = external_table_definitions_json
     if udf_resources:
@@ -4216,15 +2954,18 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     if destination_table:
       try:
         reference = bq_client_utils.GetTableReference(
-            id_fallbacks=self, identifier=destination_table)
+            id_fallbacks=self, identifier=destination_table
+        )
       except bq_error.BigqueryError as e:
         raise bq_error.BigqueryError(
-            'Invalid value %s for destination_table: %s' %
-            (destination_table, e))
+            'Invalid value %s for destination_table: %s'
+            % (destination_table, e)
+        )
       query_config['destinationTable'] = dict(reference)
     if destination_encryption_configuration:
       query_config['destinationEncryptionConfiguration'] = (
-          destination_encryption_configuration)
+          destination_encryption_configuration
+      )
     if script_options:
       query_config['scriptOptions'] = script_options
     bq_processor_utils.ApplyParameters(
@@ -4429,7 +3170,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     load_config['decimalTargetTypes'] = decimal_target_types
     if destination_encryption_configuration:
       load_config['destinationEncryptionConfiguration'] = (
-          destination_encryption_configuration)
+          destination_encryption_configuration
+      )
     bq_processor_utils.ApplyParameters(
         load_config,
         create_disposition=create_disposition,
@@ -4455,7 +3197,8 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         thrift_options=thrift_options,
         connection_properties=connection_properties,
         copy_files_only=copy_files_only,
-        parquet_options=parquet_options)
+        parquet_options=parquet_options,
+    )
     configuration = {'load': load_config}
     return self.ExecuteJob(
         configuration=configuration, upload_file=upload_file, **kwds
@@ -4517,7 +3260,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       if not uri.startswith(bq_processor_utils.GCS_SCHEME_PREFIX):
         raise bq_error.BigqueryClientError(
             'Illegal URI: {}. Extract URI must start with "{}".'.format(
-                uri, bq_processor_utils.GCS_SCHEME_PREFIX))
+                uri, bq_processor_utils.GCS_SCHEME_PREFIX
+            )
+        )
     if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       extract_config = {'sourceTable': dict(reference)}
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):
@@ -4537,6 +3282,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
         print_header=print_header,
         field_delimiter=field_delimiter,
         compression=compression,
-        use_avro_logical_types=use_avro_logical_types)
+        use_avro_logical_types=use_avro_logical_types,
+    )
     configuration = {'extract': extract_config}
     return self.ExecuteJob(configuration=configuration, **kwds)

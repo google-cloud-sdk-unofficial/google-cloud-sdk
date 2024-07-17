@@ -10,7 +10,6 @@ from http import client as http_client_lib
 import json
 import logging
 import re
-import sys
 import tempfile
 import time
 import traceback
@@ -36,12 +35,14 @@ from utils import bq_error
 
 try:
   from google.auth import credentials as google_credentials
+
   _HAS_GOOGLE_AUTH = True
 except ImportError:
   _HAS_GOOGLE_AUTH = False
 
 try:
   import google_auth_httplib2
+
   _HAS_GOOGLE_AUTH_HTTPLIB2 = True
 except ImportError:
   _HAS_GOOGLE_AUTH_HTTPLIB2 = False
@@ -50,11 +51,7 @@ except ImportError:
 # distinguish default from None.
 _DEFAULT = object()
 
-
 Service = bq_api_utils.Service
-
-
-
 
 
 class BigqueryClient:
@@ -146,19 +143,27 @@ class BigqueryClient:
         setattr(self, flagname, default)
 
   columns_to_include_for_transfer_run = [
-      'updateTime', 'schedule', 'runTime', 'scheduleTime', 'params', 'endTime',
-      'dataSourceId', 'destinationDatasetId', 'state', 'startTime', 'name'
+      'updateTime',
+      'schedule',
+      'runTime',
+      'scheduleTime',
+      'params',
+      'endTime',
+      'dataSourceId',
+      'destinationDatasetId',
+      'state',
+      'startTime',
+      'name',
   ]
 
   # These columns appear to be empty with scheduling a new transfer run
   # so there are listed as excluded from the transfer run output.
   columns_excluded_for_make_transfer_run = ['schedule', 'endTime', 'startTime']
 
-
   def GetHttp(
       self,
   ) -> Union[
-      'httplib2.Http',
+      httplib2.Http,
   ]:
     """Returns the httplib2 Http to use."""
 
@@ -167,19 +172,22 @@ class BigqueryClient:
       try:
         port = int(flags.FLAGS.proxy_port)
       except ValueError:
-        raise ValueError('Invalid value for proxy_port: {}'.format(
-            flags.FLAGS.proxy_port))
+        raise ValueError(
+            'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
+        )
       proxy_info = httplib2.ProxyInfo(
           proxy_type=3,
           proxy_host=flags.FLAGS.proxy_address,
           proxy_port=port,
           proxy_user=flags.FLAGS.proxy_username or None,
-          proxy_pass=flags.FLAGS.proxy_password or None)
+          proxy_pass=flags.FLAGS.proxy_password or None,
+      )
 
     http = httplib2.Http(
         proxy_info=proxy_info,
         ca_certs=flags.FLAGS.ca_certificates_file or None,
-        disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation)
+        disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation,
+    )
 
     if hasattr(http, 'redirect_codes'):
       http.redirect_codes = set(http.redirect_codes) - {308}
@@ -187,11 +195,10 @@ class BigqueryClient:
     if flags.FLAGS.mtls:
       _, self._cert_file = tempfile.mkstemp()
       _, self._key_file = tempfile.mkstemp()
-      discovery.add_mtls_creds(http, discovery.get_client_options(),
-                               self._cert_file, self._key_file)
-
+      discovery.add_mtls_creds(
+          http, discovery.get_client_options(), self._cert_file, self._key_file
+      )
     return http
-
 
   def GetDiscoveryUrl(self, service: Service, api_version: str) -> str:
     """Returns the url to the discovery document for bigquery."""
@@ -201,7 +208,7 @@ class BigqueryClient:
           bq_api_utils.get_tpc_root_url_from_flags(
               service=service, inputted_flags=bq_flags, local_params=self
           ),
-          api_version=api_version
+          api_version=api_version,
       )
     return discovery_url
 
@@ -220,28 +227,32 @@ class BigqueryClient:
     if is_for_discovery:
       # Discovery request shouldn't have any quota project ID set.
       credentials = bq_utils.GetSanitizedCredentialForDiscoveryRequest(
-          self.use_google_auth, credentials)
+          self.use_google_auth, credentials
+      )
 
     if self.use_google_auth:
       if not _HAS_GOOGLE_AUTH:
         logging.error(
-            'System is set to use `google.auth`, but it did not load.')
+            'System is set to use `google.auth`, but it did not load.'
+        )
       if not isinstance(credentials, google_credentials.Credentials):
         logging.error(
             'The system is using `google.auth` but the parsed credentials are'
             ' of an incorrect type.'
-            )
+        )
     else:
       logging.debug('System is set to not use `google.auth`.')
 
-    if _HAS_GOOGLE_AUTH and isinstance(credentials,
-                                       google_credentials.Credentials):
+    if _HAS_GOOGLE_AUTH and isinstance(
+        credentials, google_credentials.Credentials
+    ):
       if not _HAS_GOOGLE_AUTH_HTTPLIB2:
         raise ValueError(
             'Credentials from google.auth specified, but '
             'google-api-python-client is unable to use these credentials '
             'unless google-auth-httplib2 is installed. Please install '
-            'google-auth-httplib2.')
+            'google-auth-httplib2.'
+        )
       return google_auth_httplib2.AuthorizedHttp(credentials, http=http)
     return credentials.authorize(http)
 
@@ -254,14 +265,14 @@ class BigqueryClient:
     logging.info('BuildApiClient discovery_url: %s', discovery_url)
     http_client = self.GetHttp()
     http = self.GetAuthorizedHttp(
-        self.credentials,
-        http_client,
-        is_for_discovery=True)
+        self.credentials, http_client, is_for_discovery=True
+    )
     bigquery_model = bigquery_http.BigqueryModel(
         trace=self.trace,
         quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
             self.quota_project_id, self.use_google_auth, self.credentials
-        ))
+        ),
+    )
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
         bigquery_model,
         self.use_google_auth,
@@ -271,7 +282,8 @@ class BigqueryClient:
       discovery_document = self.discovery_document
       logging.info(
           'Skipping local discovery document load since discovery_document has'
-          ' a value: %s', discovery_document
+          ' a value: %s',
+          discovery_document,
       )
     elif discovery_url is not None:
       logging.info(
@@ -296,10 +308,8 @@ class BigqueryClient:
       # Use the api description packed with this client, if one exists
       # TODO(b/318711380): Local discovery load for different APIs.
       try:
-        discovery_document = (
-            discovery_document_loader.load_local_discovery_doc(
-                discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
-            )
+        discovery_document = discovery_document_loader.load_local_discovery_doc(
+            discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
         )
       except FileNotFoundError as e:
         logging.warning('Failed to load discovery doc from local files: %s', e)
@@ -332,17 +342,20 @@ class BigqueryClient:
                 discovery_url, headers=headers
             )
           else:
-            response_metadata, discovery_document = http.request(
-                discovery_url
-            )
+            response_metadata, discovery_document = http.request(discovery_url)
           discovery_document = discovery_document.decode('utf-8')
           if int(response_metadata.get('status')) >= 400:
             msg = 'Got %s response from discovery url: %s' % (
-                response_metadata.get('status'), discovery_url)
+                response_metadata.get('status'),
+                discovery_url,
+            )
             logging.error('%s:\n%s', msg, discovery_document)
             raise bq_error.BigqueryCommunicationError(msg)
-        except (httplib2.HttpLib2Error, googleapiclient.errors.HttpError,
-                http_client_lib.HTTPException) as e:
+        except (
+            httplib2.HttpLib2Error,
+            googleapiclient.errors.HttpError,
+            http_client_lib.HTTPException,
+        ) as e:
           # We can't find the specified server. This can be thrown for
           # multiple reasons, so inspect the error.
           if hasattr(e, 'content'):
@@ -352,21 +365,25 @@ class BigqueryClient:
                 content = e.content
               raise bq_error.BigqueryCommunicationError(
                   'Cannot contact server. Please try again.\nError: %r'
-                  '\nContent: %s' % (e, content))
+                  '\nContent: %s' % (e, content)
+              )
           else:
             if iterations == max_retries:
               raise bq_error.BigqueryCommunicationError(
-                  'Cannot contact server. Please try again.\n'
-                  'Traceback: %s' % (traceback.format_exc(),))
+                  'Cannot contact server. Please try again.\nTraceback: %s'
+                  % (traceback.format_exc(),)
+              )
         except IOError as e:
           if iterations == max_retries:
             raise bq_error.BigqueryCommunicationError(
-                'Cannot contact server. Please try again.\nError: %r' % (e,))
+                'Cannot contact server. Please try again.\nError: %r' % (e,)
+            )
         except googleapiclient.errors.UnknownApiNameOrVersion as e:
           # We can't resolve the discovery url for the given server.
           # Don't retry in this case.
           raise bq_error.BigqueryCommunicationError(
-              'Invalid API name or version: %s' % (str(e),))
+              'Invalid API name or version: %s' % (str(e),)
+          )
 
     discovery_document_to_build_client = self.OverrideEndpoint(
         discovery_document=discovery_document, service=service
@@ -384,10 +401,12 @@ class BigqueryClient:
           discovery_document_to_build_client,
           http=http,
           model=bigquery_model,
-          requestBuilder=bq_request_builder)
+          requestBuilder=bq_request_builder,
+      )
     except Exception:
-      logging.error('Error building from discovery document: %s',
-                    discovery_document)
+      logging.error(
+          'Error building from discovery document: %s', discovery_document
+      )
       raise
 
 
@@ -399,7 +418,9 @@ class BigqueryClient:
     bigquery_model = bigquery_http.BigqueryModel(
         trace=self.trace,
         quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            self.quota_project_id, self.use_google_auth, self.credentials))
+            self.quota_project_id, self.use_google_auth, self.credentials
+        ),
+    )
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
         bigquery_model,
         self.use_google_auth,
@@ -407,7 +428,8 @@ class BigqueryClient:
     models_doc = None
     try:
       models_doc = discovery_document_loader.load_local_discovery_doc(
-          discovery_document_loader.DISCOVERY_NEXT_BIGQUERY)
+          discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
+      )
       models_doc = self.OverrideEndpoint(
           discovery_document=models_doc, service=Service.BIGQUERY
       )
@@ -420,7 +442,8 @@ class BigqueryClient:
           models_doc,
           http=http,
           model=bigquery_model,
-          requestBuilder=bq_request_builder)
+          requestBuilder=bq_request_builder,
+      )
     except Exception:
       logging.error('Error building from models document: %s', models_doc)
       raise
@@ -431,14 +454,17 @@ class BigqueryClient:
     bigquery_model = bigquery_http.BigqueryModel(
         trace=self.trace,
         quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            self.quota_project_id, self.use_google_auth, self.credentials))
+            self.quota_project_id, self.use_google_auth, self.credentials
+        ),
+    )
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
         bigquery_model,
         self.use_google_auth,
     )
     try:
       iam_pol_doc = discovery_document_loader.load_local_discovery_doc(
-          discovery_document_loader.DISCOVERY_NEXT_IAM_POLICY)
+          discovery_document_loader.DISCOVERY_NEXT_IAM_POLICY
+      )
       iam_pol_doc = self.OverrideEndpoint(
           discovery_document=iam_pol_doc, service=Service.BQ_IAM
       )
@@ -451,7 +477,8 @@ class BigqueryClient:
           iam_pol_doc,
           http=http,
           model=bigquery_model,
-          requestBuilder=bq_request_builder)
+          requestBuilder=bq_request_builder,
+      )
     except Exception:
       logging.error('Error building from iam policy document: %s', iam_pol_doc)
       raise
@@ -495,8 +522,8 @@ class BigqueryClient:
     return insert_client
 
   def GetTransferV1ApiClient(
-      self,
-      transferserver_address: Optional[str] = None) -> discovery.Resource:
+      self, transferserver_address: Optional[str] = None
+  ) -> discovery.Resource:
     """Return the apiclient that supports Transfer v1 operation."""
     logging.info(
         'GetTransferV1ApiClient transferserver_address: %s',
@@ -514,10 +541,9 @@ class BigqueryClient:
       )
       self._op_transfer_client = self.BuildApiClient(
           discovery_url=discovery_url,
-          service=Service.DTS
+          service=Service.DTS,
       )
     return self._op_transfer_client
-
 
   def GetReservationApiClient(
       self, reservationserver_address: Optional[str] = None
@@ -541,7 +567,7 @@ class BigqueryClient:
       )
       self._op_reservation_client = self.BuildApiClient(
           discovery_url=discovery_url,
-          service=Service.RESERVATIONS
+          service=Service.RESERVATIONS,
       )
     return self._op_reservation_client
 
@@ -565,11 +591,9 @@ class BigqueryClient:
       )
       self._op_connection_service_client = self.BuildApiClient(
           discovery_url=discovery_url,
-          service=Service.CONNECTIONS
+          service=Service.CONNECTIONS,
       )
     return self._op_connection_service_client
-
-
 
   def OverrideEndpoint(
       self, discovery_document: Union[str, bytes], service: Service
@@ -610,4 +634,3 @@ class BigqueryClient:
     )
 
     return json.dumps(discovery_document)
-

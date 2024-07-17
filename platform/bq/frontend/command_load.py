@@ -14,6 +14,7 @@ from typing import Optional
 from absl import flags
 
 import bq_flags
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -574,7 +575,9 @@ class Load(bigquery_command.BigqueryCmd):
         )
       if parquet_options:
         opts['parquet_options'] = parquet_options
-    job = client.Load(table_reference, source, schema=schema, **opts)
+    job = client_job.Load(
+        client, table_reference, source, schema=schema, **opts
+    )
     if bq_flags.SYNCHRONOUS_MODE.value:
       frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
     else:

@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  hidden: true
   help_text:
     brief: List registry node resources in a registry book.
     description: |

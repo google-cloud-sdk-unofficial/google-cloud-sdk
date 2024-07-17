@@ -10,11 +10,13 @@ import time
 from typing import List, Optional, Tuple
 
 
+
 from absl import flags
 
 import bq_flags
 from clients import bigquery_client
 from clients import client_dataset
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -292,7 +294,9 @@ class Copy(bigquery_command.BigqueryCmd):
       kwds['destination_expiration_time'] = frontend_utils.FormatRfc3339(
           datetime_utc
       )
-    job = client.CopyTable(source_references, dest_reference, **kwds)
+    job = client_job.CopyTable(
+        client, source_references, dest_reference, **kwds
+    )
     if job is None:
       print("Table '%s' already exists, skipping" % (dest_reference,))
     elif not bq_flags.SYNCHRONOUS_MODE.value:

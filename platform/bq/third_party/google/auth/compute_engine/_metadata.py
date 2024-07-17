@@ -19,17 +19,16 @@ See https://cloud.google.com/compute/docs/metadata for more details.
 """
 
 import datetime
+import http.client as http_client
 import json
 import logging
 import os
-
-import six
-from six.moves import http_client
-from six.moves.urllib import parse as urlparse
+from urllib.parse import urljoin
 
 from google.auth import _helpers
 from google.auth import environment_vars
 from google.auth import exceptions
+from google.auth import metrics
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +59,47 @@ try:
 except ValueError:  # pragma: NO COVER
     _METADATA_DEFAULT_TIMEOUT = 3
 
+# Detect GCE Residency
+_GOOGLE = "Google"
+_GCE_PRODUCT_NAME_FILE = "/sys/class/dmi/id/product_name"
+
+
+def is_on_gce(request):
+    """Checks to see if the code runs on Google Compute Engine
+
+    Args:
+        request (google.auth.transport.Request): A callable used to make
+            HTTP requests.
+
+    Returns:
+        bool: True if the code runs on Google Compute Engine, False otherwise.
+    """
+    if ping(request):
+        return True
+
+    if os.name == "nt":
+        # TODO: implement GCE residency detection on Windows
+        return False
+
+    # Detect GCE residency on Linux
+    return detect_gce_residency_linux()
+
+
+def detect_gce_residency_linux():
+    """Detect Google Compute Engine residency by smbios check on Linux
+
+    Returns:
+        bool: True if the GCE product name file is detected, False otherwise.
+    """
+    try:
+        with open(_GCE_PRODUCT_NAME_FILE, "r") as file_obj:
+            content = file_obj.read().strip()
+
+    except Exception:
+        return False
+
+    return content.startswith(_GOOGLE)
+
 
 def ping(request, timeout=_METADATA_DEFAULT_TIMEOUT, retry_count=3):
     """Checks to see if the metadata server is available.
@@ -81,13 +121,13 @@ def ping(request, timeout=_METADATA_DEFAULT_TIMEOUT, retry_count=3):
     #       the metadata resolution was particularly slow. The latter case is
     #       "unlikely".
     retries = 0
+    headers = _METADATA_HEADERS.copy()
+    headers[metrics.API_CLIENT_HEADER] = metrics.mds_ping()
+
     while retries < retry_count:
         try:
             response = request(
-                url=_METADATA_IP_ROOT,
-                method="GET",
-                headers=_METADATA_HEADERS,
-                timeout=timeout,
+                url=_METADATA_IP_ROOT, method="GET", headers=headers, timeout=timeout
             )
 
             metadata_flavor = response.headers.get(_METADATA_FLAVOR_HEADER)
@@ -110,7 +150,14 @@ def ping(request, timeout=_METADATA_DEFAULT_TIMEOUT, retry_count=3):
 
 
 def get(
-    request, path, root=_METADATA_ROOT, params=None, recursive=False, retry_count=5
+    request,
+    path,
+    root=_METADATA_ROOT,
+    params=None,
+    recursive=False,
+    retry_count=5,
+    headers=None,
+    return_none_for_not_found_error=False,
 ):
     """Fetch a resource from the metadata server.
 
@@ -127,6 +174,9 @@ def get(
             details.
         retry_count (int): How many times to attempt connecting to metadata
             server using above timeout.
+        headers (Optional[Mapping[str, str]]): Headers for the request.
+        return_none_for_not_found_error (Optional[bool]): If True, returns None
+            for 404 error instead of throwing an exception.
 
     Returns:
         Union[Mapping, str]: If the metadata server returns JSON, a mapping of
@@ -137,8 +187,12 @@ def get(
         google.auth.exceptions.TransportError: if an error occurred while
             retrieving metadata.
     """
-    base_url = urlparse.urljoin(root, path)
+    base_url = urljoin(root, path)
     query_params = {} if params is None else params
+
+    headers_to_use = _METADATA_HEADERS.copy()
+    if headers:
+        headers_to_use.update(headers)
 
     if recursive:
         query_params["recursive"] = "true"
@@ -148,7 +202,7 @@ def get(
     retries = 0
     while retries < retry_count:
         try:
-            response = request(url=url, method="GET", headers=_METADATA_HEADERS)
+            response = request(url=url, method="GET", headers=headers_to_use)
             break
 
         except exceptions.TransportError as e:
@@ -166,9 +220,16 @@ def get(
             "metadata service. Compute Engine Metadata server unavailable".format(url)
         )
 
+    content = _helpers.from_bytes(response.data)
+
+    if response.status == http_client.NOT_FOUND and return_none_for_not_found_error:
+        return None
+
     if response.status == http_client.OK:
-        content = _helpers.from_bytes(response.data)
-        if response.headers["content-type"] == "application/json":
+        if (
+            _helpers.parse_content_type(response.headers["content-type"])
+            == "application/json"
+        ):
             try:
                 return json.loads(content)
             except ValueError as caught_exc:
@@ -176,17 +237,17 @@ def get(
                     "Received invalid JSON from the Google Compute Engine "
                     "metadata service: {:.20}".format(content)
                 )
-                six.raise_from(new_exc, caught_exc)
+                raise new_exc from caught_exc
         else:
             return content
-    else:
-        raise exceptions.TransportError(
-            "Failed to retrieve {} from the Google Compute Engine "
-            "metadata service. Status: {} Response:\n{}".format(
-                url, response.status, response.data
-            ),
-            response,
-        )
+
+    raise exceptions.TransportError(
+        "Failed to retrieve {} from the Google Compute Engine "
+        "metadata service. Status: {} Response:\n{}".format(
+            url, response.status, response.data
+        ),
+        response,
+    )
 
 
 def get_project_id(request):
@@ -204,6 +265,29 @@ def get_project_id(request):
             retrieving metadata.
     """
     return get(request, "project/project-id")
+
+
+def get_universe_domain(request):
+    """Get the universe domain value from the metadata server.
+
+    Args:
+        request (google.auth.transport.Request): A callable used to make
+            HTTP requests.
+
+    Returns:
+        str: The universe domain value. If the universe domain endpoint is not
+        not found, return the default value, which is googleapis.com
+
+    Raises:
+        google.auth.exceptions.TransportError: if an error other than
+            404 occurs while retrieving metadata.
+    """
+    universe_domain = get(
+        request, "universe/universe_domain", return_none_for_not_found_error=True
+    )
+    if not universe_domain:
+        return "googleapis.com"
+    return universe_domain
 
 
 def get_service_account_info(request, service_account="default"):
@@ -260,8 +344,12 @@ def get_service_account_token(request, service_account="default", scopes=None):
     else:
         params = None
 
+    metrics_header = {
+        metrics.API_CLIENT_HEADER: metrics.token_request_access_token_mds()
+    }
+
     path = "instance/service-accounts/{0}/token".format(service_account)
-    token_json = get(request, path, params=params)
+    token_json = get(request, path, params=params, headers=metrics_header)
     token_expiry = _helpers.utcnow() + datetime.timedelta(
         seconds=token_json["expires_in"]
     )

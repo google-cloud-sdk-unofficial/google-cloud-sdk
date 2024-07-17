@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import tempfile
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.calliope import base
@@ -117,12 +116,6 @@ class Download(base.Command):
 
   def downloadGenericArtifact(self, args, repo_ref, file_id, file_name):
     final_path = os.path.join(args.destination, file_name)
-
-    if args.name:
-      tmp_path = os.path.join(tempfile.gettempdir(), file_name)
-    else:
-      tmp_path = final_path
-
     file_escaped = file_util.EscapeFileNameFromIDs(
         repo_ref.projectsId,
         repo_ref.locationsId,
@@ -131,7 +124,6 @@ class Download(base.Command):
     )
 
     download_util.Download(
-        tmp_path,
         final_path,
         file_escaped.RelativeName(),
         file_name,

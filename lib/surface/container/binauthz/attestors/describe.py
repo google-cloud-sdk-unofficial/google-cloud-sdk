@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.binauthz import flags
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe an Attestor.
 

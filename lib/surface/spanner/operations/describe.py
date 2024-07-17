@@ -138,7 +138,7 @@ class BetaDescribe(Describe):
     flags.InstancePartition(
         positional=False,
         required=False,
-        hidden=True,
+        hidden=False,
         text=(
             'For instance partition operations, the name of the instance '
             'partition the operation is executing on.'

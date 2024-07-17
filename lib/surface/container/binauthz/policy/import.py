@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 # TODO(b/77499756): Add help text for etags here (or maybe to the group help).
 class Import(base.Command):
   """Import a Binary Authorization policy to the current project.

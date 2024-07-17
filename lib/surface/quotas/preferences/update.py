@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.quotas import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):

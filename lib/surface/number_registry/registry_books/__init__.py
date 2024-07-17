@@ -20,6 +20,7 @@
 from googlecloudsdk.calliope import base
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class RegistryBooksALPHA(base.Group):
   """Manage registry book resources."""

@@ -50,7 +50,7 @@ class Describe(base.DescribeCommand):
         prefixes=False,
     ).AddToParser(parser)
     parser.display_info.AddTransforms(
-        {'trim_message': utils.TransformTrimMessage}
+        {'all_messages': utils.TransformAllClusterLevelMessages}
     )
     parser.add_argument(
         '--show-cluster-status',

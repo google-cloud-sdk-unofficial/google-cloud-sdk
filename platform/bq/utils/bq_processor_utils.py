@@ -68,7 +68,7 @@ def MakeTenantIdPropertiesJson(tenant_id: str) -> str:
 
 
 def MakeAzureFederatedAppClientIdPropertiesJson(
-    federated_app_client_id: str
+    federated_app_client_id: str,
 ) -> str:
   """Returns properties for a connection with a federated app (client) id.
 
@@ -84,8 +84,8 @@ def MakeAzureFederatedAppClientIdPropertiesJson(
 
 
 def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
-    tenant_id: str,
-    federated_app_client_id: str) -> str:
+    tenant_id: str, federated_app_client_id: str
+) -> str:
   """Returns properties for a connection with tenant and federated app ids.
 
   Args:
@@ -98,7 +98,9 @@ def MakeAzureFederatedAppClientAndTenantIdPropertiesJson(
   """
 
   return '{"customerTenantId": "%s", "federatedApplicationClientId" : "%s"}' % (
-      tenant_id, federated_app_client_id)
+      tenant_id,
+      federated_app_client_id,
+  )
 
 
 
@@ -117,8 +119,7 @@ def ApplyParameters(config, **kwds) -> None:
     config: A configuration dict.
     **kwds: A dict of keys and values to set in the config.
   """
-  config.update(
-      (ToLowerCamel(k), v) for k, v in kwds.items() if v is not None)
+  config.update((ToLowerCamel(k), v) for k, v in kwds.items() if v is not None)
 
 
 def FormatProjectIdentifierForTransfers(
@@ -161,7 +162,7 @@ class InsertEntry(NamedTuple):
 
 def JsonToInsertEntry(
     insert_id: Optional[str],  # Optional here is to support legacy tests.
-    json_string: str
+    json_string: str,
 ) -> InsertEntry:
   """Parses a JSON encoded record and returns an InsertEntry.
 
@@ -200,8 +201,11 @@ def GetJobTypeName(job_info):
   """Helper for job printing code."""
   job_names = set(('extract', 'load', 'query', 'copy'))
   try:
-    return set(job_info.get('configuration',
-                            {}).keys()).intersection(job_names).pop()
+    return (
+        set(job_info.get('configuration', {}).keys())
+        .intersection(job_names)
+        .pop()
+    )
   except KeyError:
     return None
 
@@ -231,21 +235,24 @@ def ProcessSources(source_string: str) -> List[str]:
   if gs_uris:
     if len(gs_uris) != len(sources):
       raise bq_error.BigqueryClientError(
-          'All URIs must begin with "{}" if any do.'.format(
-              GCS_SCHEME_PREFIX))
+          'All URIs must begin with "{}" if any do.'.format(GCS_SCHEME_PREFIX)
+      )
     return sources
   else:
     source = sources[0]
     if len(sources) > 1:
       raise bq_error.BigqueryClientError(
-          'Local upload currently supports only one file, found %d' %
-          (len(sources),))
+          'Local upload currently supports only one file, found %d'
+          % (len(sources),)
+      )
     if not os.path.exists(source):
       raise bq_error.BigqueryClientError(
-          'Source file not found: %s' % (source,))
+          'Source file not found: %s' % (source,)
+      )
     if not os.path.isfile(source):
       raise bq_error.BigqueryClientError(
-          'Source path is not a file: %s' % (source,))
+          'Source path is not a file: %s' % (source,)
+      )
   return sources
 
 
@@ -294,7 +301,10 @@ def ConstructObjectInfo(reference):
 
 
 def PrepareListRequest(
-    reference, max_results=None, page_token=None, filter_expression=None
+    reference,
+    max_results: Optional[int] = None,
+    page_token: Optional[str] = None,
+    filter_expression: Optional[str] = None,
 ):
   """Create and populate a list request."""
   request = dict(reference)
@@ -318,6 +328,7 @@ class TransferListRequest(TypedDict):
   pageToken: Optional[str]
   dataSourceIds: Optional[List[str]]
 
+
 # pylint: enable=invalid-name
 
 
@@ -330,7 +341,8 @@ def PrepareTransferListRequest(
 ) -> TransferListRequest:
   """Create and populate a list request."""
   request = dict(
-      parent=FormatProjectIdentifierForTransfers(reference, location))
+      parent=FormatProjectIdentifierForTransfers(reference, location)
+  )
   if page_size is not None:
     request['pageSize'] = page_size
   if page_token is not None:
@@ -342,9 +354,10 @@ def PrepareTransferListRequest(
       request['dataSourceIds'] = data_source_ids
     else:
       raise bq_error.BigqueryError(
-          'Invalid filter flag values: \'%s\'. '
-          'Expected format: \'--filter=dataSourceIds:id1,id2\'' %
-          data_source_ids[0])
+          "Invalid filter flag values: '%s'. "
+          "Expected format: '--filter=dataSourceIds:id1,id2'"
+          % data_source_ids[0]
+      )
 
   return request
 
@@ -370,10 +383,10 @@ def PrepareTransferRunListRequest(
         request['states'] = states
       except IndexError as e:
         raise bq_error.BigqueryError(
-            'Invalid flag argument "' + states + '"') from e
+            'Invalid flag argument "' + states + '"'
+        ) from e
     else:
-      raise bq_error.BigqueryError(
-          'Invalid flag argument "' + states + '"')
+      raise bq_error.BigqueryError('Invalid flag argument "' + states + '"')
   if page_token is not None:
     request['pageToken'] = page_token
   return request
@@ -400,10 +413,12 @@ def PrepareListTransferLogRequest(
         request['messageTypes'] = message_type
       except IndexError as e:
         raise bq_error.BigqueryError(
-            'Invalid flag argument "' + message_type + '"') from e
+            'Invalid flag argument "' + message_type + '"'
+        ) from e
     else:
       raise bq_error.BigqueryError(
-          'Invalid flag argument "' + message_type + '"')
+          'Invalid flag argument "' + message_type + '"'
+      )
   return request
 
 
@@ -426,7 +441,8 @@ def ProcessParamsFlag(params: str, items: Dict[str, Any]):
   except Exception as e:
     raise bq_error.BigqueryError(
         'Parameters should be specified in JSON format when creating the'
-        ' transfer configuration.') from e
+        ' transfer configuration.'
+    ) from e
   items['params'] = parsed_params
   return items
 
@@ -458,9 +474,10 @@ def ProcessRefreshWindowDaysFlag(
       return items
     else:
       raise bq_error.BigqueryError(
-          'Data source \'%s\' does not support custom refresh window days.'
-          % data_source)
+          "Data source '%s' does not support custom refresh window days."
+          % data_source
+      )
   else:
     raise bq_error.BigqueryError(
-        'Data source \'%s\' does not support refresh window days.'
-        % data_source)
+        "Data source '%s' does not support refresh window days." % data_source
+    )

@@ -29,15 +29,14 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Describe(base.DescribeCommand):
-  """Describe HNS bucket folders."""
+  """Describe hierarchical namesapace bucket folders."""
 
   detailed_help = {
-      'DESCRIPTION': """Describe HNS bucket folders.""",
+      'DESCRIPTION': """Describe hierarchical namespace bucket folders.""",
       'EXAMPLES': """
       The following command shows information about a folder named
-      `folder` in an HNS bucket called `my-bucket`:
+      `folder` in an hierarchical namespace bucket called `my-bucket`:
 
         $ {command} gs://my-bucket/folder/
       """,

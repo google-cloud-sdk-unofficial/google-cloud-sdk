@@ -77,6 +77,7 @@ Container Flags
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
     group.AddArgument(flags.GpuFlag())
+    group.AddArgument(flags.BuildServiceAccountFlag())
   else:
     group.AddArgument(flags.CommandFlag())
 
@@ -314,6 +315,7 @@ class Deploy(base.Command):
     base_image = getattr(container, 'base_image', None)
     if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
       image = pack[0].get('image') if pack else image
+    build_service_account = getattr(container, 'build_service_account', None)
     operation_message = (
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
@@ -331,6 +333,7 @@ class Deploy(base.Command):
         operation_message,
         repo_to_create,
         base_image,
+        build_service_account,
         changes,
     )
 
@@ -426,6 +429,7 @@ class Deploy(base.Command):
     repo_to_create = None
     is_function = False
     base_image = None
+    build_service_account = None
     build_changes = []
     # Build an image from source if source specified
     if build_from_source:
@@ -437,6 +441,7 @@ class Deploy(base.Command):
           operation_message,
           repo_to_create,
           base_image,
+          build_service_account,
           build_changes,
       ) = self._BuildFromSource(
           args,
@@ -502,6 +507,7 @@ class Deploy(base.Command):
             ),
             delegate_builds=flags.FlagIsExplicitlySet(args, 'delegate_builds'),
             base_image=base_image,
+            build_service_account=build_service_account,
         )
 
       if args.async_:

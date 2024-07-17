@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class CloudQuotas(base.Group):
   """Manage Cloud Quotas quota info and quota preferences."""
 

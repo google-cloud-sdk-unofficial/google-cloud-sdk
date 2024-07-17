@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
-import tempfile
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.calliope import base
@@ -29,6 +28,7 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Download(base.Command):
   """Download an Artifact Registry file.
@@ -84,7 +84,6 @@ class Download(base.Command):
         if args.local_filename
         else self.os_friendly_filename(file_escaped.filesId)
     )
-    tmp_path = os.path.join(tempfile.gettempdir(), filename)
     final_path = os.path.join(args.destination, filename)
     final_path = os.path.expanduser(final_path)
     dest_dir = os.path.dirname(final_path)
@@ -97,7 +96,6 @@ class Download(base.Command):
           'Destination is not a directory: ' + dest_dir
       )
     download_util.Download(
-        tmp_path,
         final_path,
         file_escaped.RelativeName(),
         filename,

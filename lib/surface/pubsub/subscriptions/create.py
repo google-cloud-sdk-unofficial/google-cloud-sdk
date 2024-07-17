@@ -35,7 +35,6 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
-    enable_cloud_storage_use_topic_schema=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -85,10 +84,8 @@ def _Run(
   cloud_storage_output_format = None
   if cloud_storage_output_format_list:
     cloud_storage_output_format = cloud_storage_output_format_list[0]
-  cloud_storage_use_topic_schema = (
-      getattr(args, 'cloud_storage_use_topic_schema', None)
-      if enable_cloud_storage_use_topic_schema
-      else None
+  cloud_storage_use_topic_schema = getattr(
+      args, 'cloud_storage_use_topic_schema', None
   )
   cloud_storage_write_metadata = getattr(
       args, 'cloud_storage_write_metadata', None
@@ -233,7 +230,6 @@ class CreateBeta(Create):
     flags.AddSubscriptionSettingsFlags(
         parser,
         enable_push_to_cps=True,
-        enable_cloud_storage_use_topic_schema=True,
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -246,5 +242,4 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
-        enable_cloud_storage_use_topic_schema=True,
     )

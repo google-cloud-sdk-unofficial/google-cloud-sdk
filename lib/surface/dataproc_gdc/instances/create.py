@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.edge_cloud.container import resource_args as gdce_resource_args
+from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -32,11 +33,13 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
+
 DATAPROCGDC_API_NAME = 'dataprocgdc'
 DATAPROCGDC_API_VERSION = 'v1alpha1'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Dataproc GDC service instance.
 
@@ -94,6 +97,14 @@ class Create(base.CreateCommand):
             'List of annotation KEY=VALUE pairs to add to the service instance.'
         ),
     )
+    parser.add_argument(
+        '--service-account',
+        type=iam_util.GetIamAccountFormatValidator(),
+        help=""" Requested google cloud service account to associate with the ServiceInstance.
+
+        Service account must be of format my-iam-account@somedomain.com or
+        my-iam-account@my-project.iam.gserviceaccount.com""",
+    )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -128,6 +139,7 @@ class Create(base.CreateCommand):
                 gdceCluster=messages.GdceCluster(
                     gdceCluster=cluster_ref.RelativeName()
                 ),
+                serviceAccount=args.service_account,
             ),
         )
     )

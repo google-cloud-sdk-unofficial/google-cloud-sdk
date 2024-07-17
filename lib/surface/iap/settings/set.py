@@ -22,12 +22,15 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Set(base.Command):
   """Set the setting for an IAP resource."""
+
   detailed_help = {
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To set the IAP setting for the resources within an organization, run:
 
             $ {command} iap_settings.yaml --organization=ORGANIZATION_ID
@@ -65,6 +68,11 @@ class Set(base.Command):
 
             $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
 
+          To set the IAP setting for a region backend service within a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+                --region=REGION_ID
+
           """,
   }
 
@@ -93,20 +101,3 @@ class Set(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(self.ReleaseTrack(),
                                                         args)
     return iap_setting_ref.SetIapSetting(args.setting_file)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetALPHA(Set):
-  """Set the setting for an IAP resource."""
-
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, use_region_arg=True)
-    iap_util.AddIapSettingFileArg(parser)
-    base.URI_FLAG.RemoveFromParser(parser)

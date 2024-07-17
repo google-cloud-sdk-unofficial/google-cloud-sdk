@@ -23,7 +23,7 @@
       hidden: true
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
-        added to the list now. If it's empty, the spoke will not import any subnets from the hub.
+        added to the list. If it's empty, the spoke does not import any subnets from the hub.
     labels:
       api_field: spoke.labels
 

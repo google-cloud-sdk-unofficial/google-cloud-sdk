@@ -57,7 +57,7 @@ class List(base.ListCommand):
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(apis.GetRolloutURI)
     parser.display_info.AddTransforms(
-        {'trim_message': utils.TransformTrimMessage}
+        {'trim_message': utils.TransformTrimRolloutLevelMessage}
     )
     flags.AddLocationFlag(parser)
     flags.AddFleetPackageFlag(parser)

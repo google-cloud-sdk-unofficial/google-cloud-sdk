@@ -18,6 +18,7 @@ from typing import Dict, List, Literal, Optional, TextIO, Union
 from absl import app
 from absl import flags
 from google.auth import credentials as google_credentials
+from google.auth import exceptions as google_auth_exceptions
 from google.auth import version as google_auth_version
 from google.oauth2 import credentials as google_oauth2
 import googleapiclient
@@ -490,6 +491,16 @@ def ProcessError(
           'If this problem still occurs, you may have encountered a bug '
           'in the bigquery client.'
       )
+    elif isinstance(err, google_auth_exceptions.RefreshError):
+      message_prefix = (
+          'Authorization error. If you used service account credentials, the '
+          'server likely returned an Unauthorized response. Verify that you '
+          'are using the correct service account with the correct permissions '
+          'to access the service endpoint.'
+          '\n\n'
+          'If this problem still occurs, you may have encountered a bug '
+          'in the bigquery client.'
+      )
     elif (
         isinstance(err, http.client.HTTPException)
         or isinstance(err, googleapiclient.errors.Error)
@@ -606,7 +617,9 @@ def GetInfoString() -> str:
   )
 
 
-def PrintFormattedJsonObject(obj: object, default_format: Literal['json', 'prettyjson'] = 'json'):
+def PrintFormattedJsonObject(
+    obj: object, default_format: Literal['json', 'prettyjson'] = 'json'
+):
   """Prints obj in a JSON format according to the "--format" flag.
 
   Args:

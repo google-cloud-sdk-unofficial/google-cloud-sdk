@@ -77,7 +77,7 @@ class Update(base.UpdateCommand):
     )
     flags.AddSSLMode(parser, update=True)
     flags.AddRequireConnectors(parser)
-    flags.AddAssignInboundPublicIp(parser, update=True)
+    flags.AddAssignInboundPublicIp(parser)
     flags.AddAuthorizedExternalNetworks(parser)
     flags.AddAllowedPSCProjects(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we

@@ -280,6 +280,7 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
+  flags.AddSwitchTransactionLogsToCloudStorage(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -403,6 +404,7 @@ def RunBasePatchCommand(args, release_track):
   return _Result(changed_instance_resource, original_instance_resource)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Patch(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
@@ -421,6 +423,7 @@ class Patch(base.UpdateCommand):
     flags.AddDatabaseVersion(parser, support_default_version=False)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PatchBeta(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""
@@ -443,6 +446,7 @@ class PatchBeta(base.UpdateCommand):
         support_default_version=False)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class PatchAlpha(base.UpdateCommand):
   """Updates the settings of a Cloud SQL instance."""

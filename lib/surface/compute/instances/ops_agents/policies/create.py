@@ -159,7 +159,7 @@ class Create(base.Command):
         required=True,
         help="""\
           YAML file with the Cloud Ops Agents Policy to create. For
-          information about the Cloud Ops Agents Policy format, see [PLACEHOLDER for our public doc].""",
+          information about the Cloud Ops Agents Policy format, see https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/agent-policies#config-files.""",
     )
     parser.add_argument(
         '--zone',
@@ -168,7 +168,8 @@ class Create(base.Command):
           Zone in which to create the OS Policy Assignment.""",
     )
     parser.add_argument(
-        '--dry-run',
+        '--debug-dry-run',
+        hidden=True,
         action='store_true',
         help=(
             'If provided, the resulting OSPolicyAssignment will be printed to'
@@ -202,7 +203,7 @@ class Create(base.Command):
             assignment_id, ops_agents_policy
         )
     )
-    if args.dry_run:
+    if args.debug_dry_run:
       return ops_policy_assignment
 
     release_track = self.ReleaseTrack()

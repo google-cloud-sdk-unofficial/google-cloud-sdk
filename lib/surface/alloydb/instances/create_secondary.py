@@ -62,6 +62,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddSSLMode(parser, default_from_primary=True)
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser)
+    flags.AddAuthorizedExternalNetworks(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -105,7 +106,7 @@ class CreateSecondary(base.CreateCommand):
         instance_helper.NetworkConfig(
             alloydb_messages,
             args.assign_inbound_public_ip,
-            None
+            args.authorized_external_networks,
         )
     )
     req = alloydb_messages.AlloydbProjectsLocationsClustersInstancesCreatesecondaryRequest(

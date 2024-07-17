@@ -30,6 +30,7 @@ from googlecloudsdk.core import resources
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Run a Workflow."""
 
@@ -85,6 +86,8 @@ class Create(base.CreateCommand):
 
     # Wait for RunWorkflow LRO to be marked as Done.
     # Underlying, this also waits for the CreatePipelineRun LRO to be Done.
+    # Note that this does not necessarily mean that the run completed; only that
+    # it was successfully created.
     waiter.WaitFor(
         waiter.CloudOperationPoller(client.projects_locations_workflows,
                                     client.projects_locations_operations),

@@ -266,17 +266,18 @@ def _UpdateWorkerPoolFirstGen(args, release_track):
 
     nc = messages.NetworkConfig()
     # All of the egress flags are mutually exclusive with each other.
-    if args.no_public_egress or (
+    if (args.public_egress is not None and not args.public_egress) or (
         release_track == base.ReleaseTrack.GA and args.no_external_ip
     ):
       nc.egressOption = (
           messages.NetworkConfig.EgressOptionValueValuesEnum.NO_PUBLIC_EGRESS
       )
+      wp.privatePoolV1Config.networkConfig = nc
     if args.public_egress:
       nc.egressOption = (
           messages.NetworkConfig.EgressOptionValueValuesEnum.PUBLIC_EGRESS
       )
-    wp.privatePoolV1Config.networkConfig = nc
+      wp.privatePoolV1Config.networkConfig = nc
 
   # Get the workerpool ref
   wp_resource = resources.REGISTRY.Parse(

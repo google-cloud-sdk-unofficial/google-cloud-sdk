@@ -30,17 +30,17 @@ token exchange endpoint following the `OAuth 2.0 Token Exchange`_ spec.
 
 import abc
 import copy
+from dataclasses import dataclass
 import datetime
 import io
 import json
 import re
 
-import six
-
 from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
 from google.auth import impersonated_credentials
+from google.auth import metrics
 from google.oauth2 import sts
 from google.oauth2 import utils
 
@@ -52,13 +52,36 @@ _STS_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:token-exchange"
 _STS_REQUESTED_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:access_token"
 # Cloud resource manager URL used to retrieve project information.
 _CLOUD_RESOURCE_MANAGER = "https://cloudresourcemanager.googleapis.com/v1/projects/"
+# Default Google sts token url.
+_DEFAULT_TOKEN_URL = "https://sts.googleapis.com/v1/token"
 
 
-@six.add_metaclass(abc.ABCMeta)
+@dataclass
+class SupplierContext:
+    """A context class that contains information about the requested third party credential that is passed
+        to AWS security credential and subject token suppliers.
+
+        Attributes:
+            subject_token_type (str): The requested subject token type based on the Oauth2.0 token exchange spec.
+                Expected values include::
+
+                    “urn:ietf:params:oauth:token-type:jwt”
+                    “urn:ietf:params:oauth:token-type:id-token”
+                    “urn:ietf:params:oauth:token-type:saml2”
+                    “urn:ietf:params:aws:token-type:aws4_request”
+
+            audience (str): The requested audience for the subject token.
+    """
+
+    subject_token_type: str
+    audience: str
+
+
 class Credentials(
     credentials.Scoped,
     credentials.CredentialsWithQuotaProject,
     credentials.CredentialsWithTokenUri,
+    metaclass=abc.ABCMeta,
 ):
     """Base class for all external account credentials.
 
@@ -83,12 +106,21 @@ class Credentials(
         scopes=None,
         default_scopes=None,
         workforce_pool_user_project=None,
+        universe_domain=credentials.DEFAULT_UNIVERSE_DOMAIN,
+        trust_boundary=None,
     ):
         """Instantiates an external account credentials object.
 
         Args:
             audience (str): The STS audience field.
-            subject_token_type (str): The subject token type.
+            subject_token_type (str): The subject token type based on the Oauth2.0 token exchange spec.
+                Expected values include::
+
+                    “urn:ietf:params:oauth:token-type:jwt”
+                    “urn:ietf:params:oauth:token-type:id-token”
+                    “urn:ietf:params:oauth:token-type:saml2”
+                    “urn:ietf:params:aws:token-type:aws4_request”
+
             token_url (str): The STS endpoint URL.
             credential_source (Mapping): The credential source dictionary.
             service_account_impersonation_url (Optional[str]): The optional service account
@@ -106,6 +138,9 @@ class Credentials(
                 a workload identity pool. The underlying principal must still have
                 serviceusage.services.use IAM permission to use the project for
                 billing/quota.
+            universe_domain (str): The universe domain. The default universe
+                domain is googleapis.com.
+            trust_boundary (str): String representation of trust boundary meta.
         Raises:
             google.auth.exceptions.RefreshError: If the generateAccessToken
                 endpoint returned an error.
@@ -126,6 +161,11 @@ class Credentials(
         self._scopes = scopes
         self._default_scopes = default_scopes
         self._workforce_pool_user_project = workforce_pool_user_project
+        self._universe_domain = universe_domain or credentials.DEFAULT_UNIVERSE_DOMAIN
+        self._trust_boundary = {
+            "locations": [],
+            "encoded_locations": "0x0",
+        }  # expose a placeholder trust boundary value.
 
         if self._client_id:
             self._client_auth = utils.ClientAuthentication(
@@ -135,11 +175,13 @@ class Credentials(
             self._client_auth = None
         self._sts_client = sts.Client(self._token_url, self._client_auth)
 
-        if self._service_account_impersonation_url:
-            self._impersonated_credentials = self._initialize_impersonated_credentials()
-        else:
-            self._impersonated_credentials = None
+        self._metrics_options = self._create_default_metrics_options()
+
+        self._impersonated_credentials = None
         self._project_id = None
+        self._supplier_context = SupplierContext(
+            self._subject_token_type, self._audience
+        )
 
         if not self.is_workforce_pool and self._workforce_pool_user_project:
             # Workload identity pools do not support workforce pool user projects.
@@ -187,6 +229,7 @@ class Credentials(
             "workforce_pool_user_project": self._workforce_pool_user_project,
             "scopes": self._scopes,
             "default_scopes": self._default_scopes,
+            "universe_domain": self._universe_domain,
         }
         if not self.is_workforce_pool:
             args.pop("workforce_pool_user_project")
@@ -278,7 +321,9 @@ class Credentials(
     def with_scopes(self, scopes, default_scopes=None):
         kwargs = self._constructor_args()
         kwargs.update(scopes=scopes, default_scopes=default_scopes)
-        return self.__class__(**kwargs)
+        scoped = self.__class__(**kwargs)
+        scoped._metrics_options = self._metrics_options
+        return scoped
 
     @abc.abstractmethod
     def retrieve_subject_token(self, request):
@@ -345,6 +390,10 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
         scopes = self._scopes if self._scopes is not None else self._default_scopes
+
+        if self._should_initialize_impersonated_credentials():
+            self._impersonated_credentials = self._initialize_impersonated_credentials()
+
         if self._impersonated_credentials:
             self._impersonated_credentials.refresh(request)
             self.token = self._impersonated_credentials.token
@@ -356,6 +405,11 @@ class Credentials(
             # is used. The client ID is sufficient for determining the user project.
             if self._workforce_pool_user_project and not self._client_id:
                 additional_options = {"userProject": self._workforce_pool_user_project}
+            additional_headers = {
+                metrics.API_CLIENT_HEADER: metrics.byoid_metrics_header(
+                    self._metrics_options
+                )
+            }
             response_data = self._sts_client.exchange_token(
                 request=request,
                 grant_type=_STS_GRANT_TYPE,
@@ -365,9 +419,17 @@ class Credentials(
                 scopes=scopes,
                 requested_token_type=_STS_REQUESTED_TOKEN_TYPE,
                 additional_options=additional_options,
+                additional_headers=additional_headers,
             )
             self.token = response_data.get("access_token")
-            lifetime = datetime.timedelta(seconds=response_data.get("expires_in"))
+            expires_in = response_data.get("expires_in")
+            # Some services do not respect the OAUTH2.0 RFC and send expires_in as a
+            # JSON String.
+            if isinstance(expires_in, str):
+                expires_in = int(expires_in)
+
+            lifetime = datetime.timedelta(seconds=expires_in)
+
             self.expiry = now + lifetime
 
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
@@ -375,13 +437,31 @@ class Credentials(
         # Return copy of instance with the provided quota project ID.
         kwargs = self._constructor_args()
         kwargs.update(quota_project_id=quota_project_id)
-        return self.__class__(**kwargs)
+        new_cred = self.__class__(**kwargs)
+        new_cred._metrics_options = self._metrics_options
+        return new_cred
 
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):
         kwargs = self._constructor_args()
         kwargs.update(token_url=token_uri)
-        return self.__class__(**kwargs)
+        new_cred = self.__class__(**kwargs)
+        new_cred._metrics_options = self._metrics_options
+        return new_cred
+
+    @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
+    def with_universe_domain(self, universe_domain):
+        kwargs = self._constructor_args()
+        kwargs.update(universe_domain=universe_domain)
+        new_cred = self.__class__(**kwargs)
+        new_cred._metrics_options = self._metrics_options
+        return new_cred
+
+    def _should_initialize_impersonated_credentials(self):
+        return (
+            self._service_account_impersonation_url is not None
+            and self._impersonated_credentials is None
+        )
 
     def _initialize_impersonated_credentials(self):
         """Generates an impersonated credentials.
@@ -405,6 +485,7 @@ class Credentials(
             service_account_impersonation_options={},
         )
         source_credentials = self.__class__(**kwargs)
+        source_credentials._metrics_options = self._metrics_options
 
         # Determine target_principal.
         target_principal = self.service_account_email
@@ -425,6 +506,19 @@ class Credentials(
                 "token_lifetime_seconds"
             ),
         )
+
+    def _create_default_metrics_options(self):
+        metrics_options = {}
+        if self._service_account_impersonation_url:
+            metrics_options["sa-impersonation"] = "true"
+        else:
+            metrics_options["sa-impersonation"] = "false"
+        if self._service_account_impersonation_options.get("token_lifetime_seconds"):
+            metrics_options["config-lifetime"] = "true"
+        else:
+            metrics_options["config-lifetime"] = "false"
+
+        return metrics_options
 
     @classmethod
     def from_info(cls, info, **kwargs):
@@ -459,6 +553,9 @@ class Credentials(
             credential_source=info.get("credential_source"),
             quota_project_id=info.get("quota_project_id"),
             workforce_pool_user_project=info.get("workforce_pool_user_project"),
+            universe_domain=info.get(
+                "universe_domain", credentials.DEFAULT_UNIVERSE_DOMAIN
+            ),
             **kwargs
         )
 

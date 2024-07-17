@@ -9,7 +9,10 @@ from typing import Optional
 
 
 
+from googleapiclient import discovery
+
 from utils import bq_error
+from utils import bq_id_utils
 
 
 class _TableReader:
@@ -38,7 +41,8 @@ class _TableReader:
       list of rows, each of which is a list of field values.
     """
     (_, rows) = self.ReadSchemaAndRows(
-        start_row=start_row, max_rows=max_rows, selected_fields=selected_fields)
+        start_row=start_row, max_rows=max_rows, selected_fields=selected_fields
+    )
     return rows
 
   def ReadSchemaAndRows(
@@ -82,7 +86,8 @@ class _TableReader:
           None if page_token else start_row,
           max_rows=rows_to_read,
           page_token=page_token,
-          selected_fields=selected_fields)
+          selected_fields=selected_fields,
+      )
       if not schema and current_schema:
         schema = current_schema.get('fields', [])
       for row in more_rows:
@@ -101,7 +106,8 @@ class _TableReader:
     for field, v in zip(schema, values):
       if 'type' not in field:
         raise bq_error.BigqueryCommunicationError(
-            'Invalid response: missing type property')
+            'Invalid response: missing type property'
+        )
       if field['type'].upper() == 'RECORD':
         # Nested field.
         subfields = field.get('fields', [])
@@ -132,11 +138,13 @@ class _TableReader:
     """Returns context for what is being read."""
     raise NotImplementedError('Subclass must implement GetPrintContext')
 
-  def _ReadOnePage(self,
-                   start_row: Optional[int],
-                   max_rows: Optional[int],
-                   page_token: Optional[str] = None,
-                   selected_fields: Optional[str] = None):
+  def _ReadOnePage(
+      self,
+      start_row: Optional[int],
+      max_rows: Optional[int],
+      page_token: Optional[str] = None,
+      selected_fields: Optional[str] = None,
+  ):
     """Read one page of data, up to max_rows rows.
 
     Assumes that the table is ready for reading. Will signal an error otherwise.
@@ -159,11 +167,15 @@ class _TableReader:
 class TableTableReader(_TableReader):
   """A TableReader that reads from a table."""
 
-  def __init__(self, local_apiclient, max_rows_per_request, table_ref):
+  def __init__(
+      self,
+      local_apiclient: discovery.Resource,
+      max_rows_per_request: int,
+      table_ref: bq_id_utils.ApiClientHelper.TableReference,
+  ):
     self.table_ref = table_ref
     self.max_rows_per_request = max_rows_per_request
     self._apiclient = local_apiclient
-
 
   def _GetPrintContext(self) -> str:
     return '%r' % (self.table_ref,)
@@ -201,7 +213,12 @@ class TableTableReader(_TableReader):
 class JobTableReader(_TableReader):
   """A TableReader that reads from a completed job."""
 
-  def __init__(self, local_apiclient, max_rows_per_request, job_ref):
+  def __init__(
+      self,
+      local_apiclient: discovery.Resource,
+      max_rows_per_request: int,
+      job_ref: bq_id_utils.ApiClientHelper.JobReference,
+  ):
     self.job_ref = job_ref
     self.max_rows_per_request = max_rows_per_request
     self._apiclient = local_apiclient
@@ -209,11 +226,13 @@ class JobTableReader(_TableReader):
   def _GetPrintContext(self) -> str:
     return '%r' % (self.job_ref,)
 
-  def _ReadOnePage(self,
-                   start_row: Optional[int],
-                   max_rows: Optional[int],
-                   page_token: Optional[str] = None,
-                   selected_fields: Optional[str] = None):
+  def _ReadOnePage(
+      self,
+      start_row: Optional[int],
+      max_rows: Optional[int],
+      page_token: Optional[str] = None,
+      selected_fields: Optional[str] = None,
+  ):
     kwds = dict(self.job_ref)
     kwds['maxResults'] = max_rows
     # Sets the timeout to 0 because we assume the table is already ready.
@@ -234,7 +253,13 @@ class JobTableReader(_TableReader):
 class QueryTableReader(_TableReader):
   """A TableReader that reads from a completed query."""
 
-  def __init__(self, local_apiclient, max_rows_per_request, job_ref, results):
+  def __init__(
+      self,
+      local_apiclient: discovery.Resource,
+      max_rows_per_request: int,
+      job_ref: bq_id_utils.ApiClientHelper.JobReference,
+      results,
+  ):
     self.job_ref = job_ref
     self.max_rows_per_request = max_rows_per_request
     self._apiclient = local_apiclient
@@ -280,10 +305,11 @@ class QueryTableReader(_TableReader):
         and len(result_rows) >= min(int(total_rows), start_row + max_rows)
     ):
       page_token = self._results.get('pageToken', None)
-      if (len(result_rows) < int(total_rows) and page_token is None):
+      if len(result_rows) < int(total_rows) and page_token is None:
         raise bq_error.BigqueryError(
             'Synchronous query %s did not return all rows, yet it did not'
-            ' return a page token' % (self,))
+            ' return a page token' % (self,)
+        )
       schema = self._results.get('schema', None)
       rows = self._results.get('rows', [])
     else:

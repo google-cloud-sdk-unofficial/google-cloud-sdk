@@ -14,12 +14,14 @@ from typing import Dict, List, Optional
 
 from absl import app
 from absl import flags
+
 from pyglib import appcommands
 
 import bq_flags
 import bq_utils
 from clients import bigquery_client_extended
 from clients import client_connection
+from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
 from clients import utils as bq_client_utils
@@ -602,7 +604,7 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'add_tags',
         None,
-        'Tags to attach to the table'
+        'Tags to attach to the dataset or table.'
         'The format is namespaced key:value pair '
         'like "1234567/my_tag_key:my_tag_value,test-project123/environment:production"',  # pylint: disable=line-too-long
         flag_values=fv,
@@ -610,7 +612,7 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'remove_tags',
         None,
-        'Tags to remove from the table.'
+        'Tags to remove from the dataset or table'
         'The format is namespaced keys like'
         ' "1234567/my_tag_key,test-project123/environment"',
         flag_values=fv,
@@ -618,7 +620,7 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'clear_all_tags',
         False,
-        'Clear all tags attached to the table',
+        'Clear all tags attached to the dataset or table',
         flag_values=fv,
     )
     self._ProcessCommandRc(fv)
@@ -759,7 +761,7 @@ class Update(bigquery_command.BigqueryCmd):
               client=client.GetReservationApiClient(),
               project_id=reference.projectId,
               location=reference.location,
-              capacity_commitment_ids=reference.capacityCommitmentId.split(',')
+              capacity_commitment_ids=reference.capacityCommitmentId.split(','),
           )
           if not isinstance(object_info['name'], str):
             raise ValueError('Parsed object does not have a name of type str.')
@@ -936,6 +938,12 @@ class Update(bigquery_command.BigqueryCmd):
       default_partition_exp_ms = None
       if self.default_partition_expiration is not None:
         default_partition_exp_ms = self.default_partition_expiration * 1000
+      tags_to_attach = None
+      if self.add_tags:
+        tags_to_attach = bq_utils.ParseTags(self.add_tags)
+      tags_to_remove = None
+      if self.remove_tags:
+        tags_to_remove = bq_utils.ParseTagKeys(self.remove_tags)
       _UpdateDataset(
           client,
           reference,
@@ -949,6 +957,9 @@ class Update(bigquery_command.BigqueryCmd):
           etag=self.etag,
           max_time_travel_hours=self.max_time_travel_hours,
           storage_billing_model=self.storage_billing_model,
+          tags_to_attach=tags_to_attach,
+          tags_to_remove=tags_to_remove,
+          clear_all_tags=self.clear_all_tags,
       )
       print("Dataset '%s' successfully updated." % (reference,))
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
@@ -1062,7 +1073,9 @@ class Update(bigquery_command.BigqueryCmd):
     elif isinstance(
         reference, bq_id_utils.ApiClientHelper.TransferConfigReference
     ):
-      if client.TransferExists(reference):
+      if client_data_transfer.TransferExists(
+          client.GetTransferV1ApiClient(), reference
+      ):
         auth_info = {}
         service_account_name = ''
         if self.update_credentials:
@@ -1074,7 +1087,9 @@ class Update(bigquery_command.BigqueryCmd):
                     client, reference.transferConfigName
                 )
             )
-            current_config = client.GetTransferConfig(transfer_config_name)
+            current_config = client_data_transfer.GetTransferConfig(
+                client.GetTransferV1ApiClient(), transfer_config_name
+            )
             auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
                 'projects/'
                 + bq_client_utils.GetProjectReference(
@@ -1083,13 +1098,16 @@ class Update(bigquery_command.BigqueryCmd):
                 current_config['dataSourceId'],
                 client.GetTransferV1ApiClient(),
             )
-        schedule_args = bigquery_client_extended.TransferScheduleArgs(
+        schedule_args = client_data_transfer.TransferScheduleArgs(
             schedule=self.schedule,
             start_time=self.schedule_start_time,
             end_time=self.schedule_end_time,
             disable_auto_scheduling=self.no_auto_scheduling,
         )
-        client.UpdateTransferConfig(
+        client_data_transfer.UpdateTransferConfig(
+            transfer_client=client.GetTransferV1ApiClient(),
+            apiclient=client.apiclient,
+            id_fallbacks=client,
             reference=reference,
             target_dataset=self.target_dataset,
             display_name=self.display_name,
@@ -1205,4 +1223,7 @@ def _UpdateDataset(
       default_kms_key=default_kms_key,
       max_time_travel_hours=max_time_travel_hours,
       storage_billing_model=storage_billing_model,
+      tags_to_attach=tags_to_attach,
+      tags_to_remove=tags_to_remove,
+      clear_all_tags=clear_all_tags,
   )

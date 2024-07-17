@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.Hidden
 class InstancePartitions(base.Group):
   """Manage Cloud Spanner instance partitions."""
 

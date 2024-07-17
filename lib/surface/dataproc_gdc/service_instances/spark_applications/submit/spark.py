@@ -111,7 +111,15 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
     request_id = args.request_id or uuid.uuid4().hex
     application_environment = None
     if application_environment_ref:
-      application_environment = application_environment_ref.RelativeName()
+      application_environment = application_environment_ref.Name()
+
+    spark_app_properties = None
+
+    if args.properties:
+      spark_app_properties = encoding.DictToAdditionalPropertyMessage(
+          args.properties,
+          messages.SparkApplication.PropertiesValue,
+      )
 
     create_req = messages.DataprocgdcProjectsLocationsServiceInstancesSparkApplicationsCreateRequest(
         parent=application_ref.Parent().RelativeName(),
@@ -126,7 +134,7 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
             annotations=annotations,
             name=application_ref.RelativeName(),
             namespace=args.namespace,
-            properties=args.properties,
+            properties=spark_app_properties,
             version=args.version,
             sparkApplicationConfig=messages.SparkApplicationConfig(
                 args=args.job_args or [],

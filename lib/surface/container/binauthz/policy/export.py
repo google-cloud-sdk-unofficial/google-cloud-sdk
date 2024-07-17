@@ -27,6 +27,7 @@ from googlecloudsdk.core.exceptions import Error
 OLD_SYSTEM_POLICY_PROJECT_NAME = 'binauthz-global-policy'
 
 
+@base.DefaultUniverseOnly
 class Export(base.Command):
   """Export the Binary Authorization policy for the current project.
 

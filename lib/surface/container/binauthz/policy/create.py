@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.container.binauthz import parsing
 import six
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   r"""Create a Binary Authorization platform policy.

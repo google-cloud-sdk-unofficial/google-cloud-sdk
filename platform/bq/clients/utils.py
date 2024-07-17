@@ -9,6 +9,7 @@ from __future__ import print_function
 import abc
 import collections
 import datetime
+import enum
 import hashlib
 import json
 import logging
@@ -19,6 +20,7 @@ import string
 import sys
 import time
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
+
 
 
 from absl import flags
@@ -55,9 +57,27 @@ CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 
 
 _COLUMNS_TO_INCLUDE_FOR_TRANSFER_RUN = [
-    'updateTime', 'schedule', 'runTime', 'scheduleTime', 'params', 'endTime',
-    'dataSourceId', 'destinationDatasetId', 'state', 'startTime', 'name'
+    'updateTime',
+    'schedule',
+    'runTime',
+    'scheduleTime',
+    'params',
+    'endTime',
+    'dataSourceId',
+    'destinationDatasetId',
+    'state',
+    'startTime',
+    'name',
 ]
+
+
+class UpdateMode(enum.Enum):
+  """Enum for update modes."""
+
+  UPDATE_METADATA = 'UPDATE_METADATA'
+  UPDATE_ACL = 'UPDATE_ACL'
+  UPDATE_FULL = 'UPDATE_FULL'
+
 
 # These columns appear to be empty with scheduling a new transfer run
 # so there are listed as excluded from the transfer run output.
@@ -79,8 +99,9 @@ def _PrintFormattedJsonObject(obj, obj_format='json'):
     print(json.dumps(obj, sort_keys=True, indent=2))
   else:
     raise ValueError(
-        'Invalid json format for printing: \'%s\', expected one of: %s' %
-        (obj_format, json_formats))
+        "Invalid json format for printing: '%s', expected one of: %s"
+        % (obj_format, json_formats)
+    )
 
 
 def MaybePrintManualInstructionsForConnection(connection, flag_format=None):
@@ -93,61 +114,85 @@ def MaybePrintManualInstructionsForConnection(connection, flag_format=None):
     obj = {
         'iamRoleId': connection['aws']['crossAccountRole'].get('iamRoleId'),
         'iamUserId': connection['aws']['crossAccountRole'].get('iamUserId'),
-        'externalId': connection['aws']['crossAccountRole'].get('externalId')
+        'externalId': connection['aws']['crossAccountRole'].get('externalId'),
     }
     if flag_format in ['prettyjson', 'json']:
       _PrintFormattedJsonObject(obj, obj_format=flag_format)
     else:
-      print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
-             'IAM user: \'%s\'\n'
-             'External Id: \'%s\'\n') %
-            (connection['aws']['crossAccountRole'].get('iamRoleId'),
-             connection['aws']['crossAccountRole'].get('iamUserId'),
-             connection['aws']['crossAccountRole'].get('externalId')))
+      print(
+          (
+              "Please add the following identity to your AWS IAM Role '%s'\n"
+              "IAM user: '%s'\n"
+              "External Id: '%s'\n"
+          )
+          % (
+              connection['aws']['crossAccountRole'].get('iamRoleId'),
+              connection['aws']['crossAccountRole'].get('iamUserId'),
+              connection['aws']['crossAccountRole'].get('externalId'),
+          )
+      )
 
   if connection.get('aws') and connection['aws'].get('accessRole'):
     obj = {
         'iamRoleId': connection['aws']['accessRole'].get('iamRoleId'),
-        'identity': connection['aws']['accessRole'].get('identity')
+        'identity': connection['aws']['accessRole'].get('identity'),
     }
     if flag_format in ['prettyjson', 'json']:
       _PrintFormattedJsonObject(obj, obj_format=flag_format)
     else:
-      print(('Please add the following identity to your AWS IAM Role \'%s\'\n'
-             'Identity: \'%s\'\n') %
-            (connection['aws']['accessRole'].get('iamRoleId'),
-             connection['aws']['accessRole'].get('identity')))
+      print(
+          (
+              "Please add the following identity to your AWS IAM Role '%s'\n"
+              "Identity: '%s'\n"
+          )
+          % (
+              connection['aws']['accessRole'].get('iamRoleId'),
+              connection['aws']['accessRole'].get('identity'),
+          )
+      )
 
   if connection.get('azure') and connection['azure'].get(
-      'federatedApplicationClientId'):
+      'federatedApplicationClientId'
+  ):
     obj = {
-        'federatedApplicationClientId':
-            connection['azure'].get('federatedApplicationClientId'),
-        'identity':
-            connection['azure'].get('identity')
+        'federatedApplicationClientId': connection['azure'].get(
+            'federatedApplicationClientId'
+        ),
+        'identity': connection['azure'].get('identity'),
     }
     if flag_format in ['prettyjson', 'json']:
       _PrintFormattedJsonObject(obj, obj_format=flag_format)
     else:
-      print((
-          'Please add the following identity to your Azure application \'%s\'\n'
-          'Identity: \'%s\'\n') %
-            (connection['azure'].get('federatedApplicationClientId'),
-             connection['azure'].get('identity')))
+      print(
+          (
+              'Please add the following identity to your Azure application'
+              " '%s'\nIdentity: '%s'\n"
+          )
+          % (
+              connection['azure'].get('federatedApplicationClientId'),
+              connection['azure'].get('identity'),
+          )
+      )
   elif connection.get('azure'):
     obj = {
         'clientId': connection['azure'].get('clientId'),
-        'application': connection['azure'].get('application')
+        'application': connection['azure'].get('application'),
     }
     if flag_format in ['prettyjson', 'json']:
       _PrintFormattedJsonObject(obj, obj_format=flag_format)
     else:
-      print(('Please create a Service Principal in your directory '
-             'for appId: \'%s\',\n'
-             'and perform role assignment to app: \'%s\' to allow BigQuery '
-             'to access your Azure data. \n') %
-            (connection['azure'].get('clientId'),
-             connection['azure'].get('application')))
+      print(
+          (
+              'Please create a Service Principal in your directory '
+              "for appId: '%s',\n"
+              "and perform role assignment to app: '%s' to allow BigQuery "
+              'to access your Azure data. \n'
+          )
+          % (
+              connection['azure'].get('clientId'),
+              connection['azure'].get('application'),
+          )
+      )
 
 
 def _ToFilename(url: str) -> str:
@@ -201,20 +246,9 @@ def _FormatTableReference(
   )
 
 
-def _FormatTags(tags: List[Dict[str, str]]) -> str:
-  """Format a resource's tags for printing."""
-  # When Python 3.6 is supported in client libraries use f-strings
-  result_lines = [
-      '{}:{}'.format(tag.get('tagKey'), tag.get('tagValue')) for tag in tags
-  ]
-  return '\n'.join(result_lines)
-
-
 def _FormatResourceTags(tags: Dict[str, str]) -> str:
   """Format a resource's tags for printing."""
-  result_lines = [
-      '{}:{}'.format(key, value) for key, value in tags.items()
-  ]
+  result_lines = ['{}:{}'.format(key, value) for key, value in tags.items()]
   return '\n'.join(result_lines)
 
 
@@ -268,17 +302,22 @@ def _ParseJobIdentifier(
     \.)?
     (?P<job_id>%(JOB_ID)s)
     $
-  """ % {
-      'PROJECT_ID': project_id_pattern,
-      'LOCATION': location_pattern,
-      'JOB_ID': job_id_pattern
-  }, re.X)
+  """
+      % {
+          'PROJECT_ID': project_id_pattern,
+          'LOCATION': location_pattern,
+          'JOB_ID': job_id_pattern,
+      },
+      re.X,
+  )
 
   match = re.search(pattern, identifier)
   if match:
-    return (match.groupdict().get('project_id', None),
-            match.groupdict().get('location',
-                                  None), match.groupdict().get('job_id', None))
+    return (
+        match.groupdict().get('project_id', None),
+        match.groupdict().get('location', None),
+        match.groupdict().get('job_id', None),
+    )
   return (None, None, None)
 
 
@@ -305,12 +344,15 @@ def _ParseReservationIdentifier(
   ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
   ((?P<location>[\w\-]+)\.)?
   (?P<reservation_id>[\w\-]*)$
-  """, re.X)
+  """,
+      re.X,
+  )
 
   match = re.search(pattern, identifier)
   if not match:
     raise bq_error.BigqueryError(
-        'Could not parse reservation identifier: %s' % identifier)
+        'Could not parse reservation identifier: %s' % identifier
+    )
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -326,8 +368,7 @@ def ParseReservationPath(
   Args:
     path: String specifying the reservation path in the format
       projects/<project_id>/locations/<location>/reservations/<reservation_id>
-      or
-      projects/<project_id>/locations/<location>/biReservation
+      or projects/<project_id>/locations/<location>/biReservation
 
   Returns:
     A tuple of three elements: containing project_id, location and
@@ -338,18 +379,20 @@ def ParseReservationPath(
   """
 
   pattern = re.compile(
-      r'^projects/(?P<project_id>[\w:\-.]*[\w:\-]+)?' +
-      r'/locations/(?P<location>[\w\-]+)?' +
+      r'^projects/(?P<project_id>[\w:\-.]*[\w:\-]+)?'
+      + r'/locations/(?P<location>[\w\-]+)?'
+      +
       # Accept a suffix of '/reservations/<reservation ID>' or
       # one of '/biReservation'
-      r'/(reservations/(?P<reservation_id>[\w\-/]+)' +
-      r'|(?P<bi_id>biReservation)' + r')$',
-      re.X)
+      r'/(reservations/(?P<reservation_id>[\w\-/]+)'
+      + r'|(?P<bi_id>biReservation)'
+      + r')$',
+      re.X,
+  )
 
   match = re.search(pattern, path)
   if not match:
-    raise bq_error.BigqueryError(
-        'Could not parse reservation path: %s' % path)
+    raise bq_error.BigqueryError('Could not parse reservation path: %s' % path)
 
   group = lambda key: match.groupdict().get(key, None)
   project_id = group('project_id')
@@ -384,19 +427,24 @@ def _ParseCapacityCommitmentIdentifier(
     ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
     ((?P<location>[\w\-]+)\.)?
     (?P<capacity_commitment_id>[\w|,-]*)$
-    """, re.X)
+    """,
+        re.X,
+    )
   else:
     pattern = re.compile(
         r"""
     ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
     ((?P<location>[\w\-]+)\.)?
     (?P<capacity_commitment_id>[\w|-]*)$
-    """, re.X)
+    """,
+        re.X,
+    )
 
   match = re.search(pattern, identifier)
   if not match:
     raise bq_error.BigqueryError(
-        'Could not parse capacity commitment identifier: %s' % identifier)
+        'Could not parse capacity commitment identifier: %s' % identifier
+    )
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -426,12 +474,15 @@ def ParseCapacityCommitmentPath(
   ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
   \/locations\/(?P<location>[\w\-]+)?
   \/capacityCommitments\/(?P<capacity_commitment_id>[\w|-]+)$
-  """, re.X)
+  """,
+      re.X,
+  )
 
   match = re.search(pattern, path)
   if not match:
     raise bq_error.BigqueryError(
-        'Could not parse capacity commitment path: %s' % path)
+        'Could not parse capacity commitment path: %s' % path
+    )
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -465,18 +516,22 @@ def _ParseReservationAssignmentIdentifier(
   ((?P<location>[\w\-]+)\.)?
   (?P<reservation_id>[\w\-\/]+)\.
   (?P<reservation_assignment_id>[\w\-_]+)$
-  """, re.X)
+  """,
+      re.X,
+  )
 
   match = re.search(pattern, identifier)
   if not match:
     raise bq_error.BigqueryError(
-        'Could not parse reservation assignment identifier: %s' % identifier)
+        'Could not parse reservation assignment identifier: %s' % identifier
+    )
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
   reservation_id = match.groupdict().get('reservation_id', None)
-  reservation_assignment_id = match.groupdict().get('reservation_assignment_id',
-                                                    None)
+  reservation_assignment_id = match.groupdict().get(
+      'reservation_assignment_id', None
+  )
   return (project_id, location, reservation_id, reservation_assignment_id)
 
 
@@ -506,18 +561,22 @@ def _ParseReservationAssignmentPath(
   \/locations\/(?P<location>[\w\-]+)?
   \/reservations\/(?P<reservation_id>[\w\-]+)
   \/assignments\/(?P<reservation_assignment_id>[\w\-_]+)$
-  """, re.X)
+  """,
+      re.X,
+  )
 
   match = re.search(pattern, path)
   if not match:
     raise bq_error.BigqueryError(
-        'Could not parse reservation assignment path: %s' % path)
+        'Could not parse reservation assignment path: %s' % path
+    )
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
   reservation_id = match.groupdict().get('reservation_id', None)
-  reservation_assignment_id = match.groupdict().get('reservation_assignment_id',
-                                                    None)
+  reservation_assignment_id = match.groupdict().get(
+      'reservation_assignment_id', None
+  )
   return (project_id, location, reservation_id, reservation_assignment_id)
 
 
@@ -546,10 +605,11 @@ def _ParseConnectionIdentifier(
   num_tokens = len(tokens)
   if num_tokens > 4:
     raise bq_error.BigqueryError(
-        'Could not parse connection identifier: %s' % identifier)
+        'Could not parse connection identifier: %s' % identifier
+    )
   connection_id = tokens[num_tokens - 1]
   location = tokens[num_tokens - 2] if num_tokens > 1 else None
-  project_id = '.'.join(tokens[:num_tokens - 2]) if num_tokens > 2 else None
+  project_id = '.'.join(tokens[: num_tokens - 2]) if num_tokens > 2 else None
 
   return (project_id, location, connection_id)
 
@@ -576,12 +636,13 @@ def _ParseConnectionPath(
   ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
   \/locations\/(?P<location>[\w\-]+)?
   \/connections\/(?P<connection_id>[\w\-\/]+)$
-  """, re.X)
+  """,
+      re.X,
+  )
 
   match = re.search(pattern, path)
   if not match:
-    raise bq_error.BigqueryError(
-        'Could not parse connection path: %s' % path)
+    raise bq_error.BigqueryError('Could not parse connection path: %s' % path)
 
   project_id = match.groupdict().get('project_id', None)
   location = match.groupdict().get('location', None)
@@ -605,7 +666,8 @@ def ReadTableConstrants(table_constraints: str):
   """
   if not table_constraints:
     raise bq_error.BigqueryTableConstraintsError(
-        'table_constraints cannot be empty')
+        'table_constraints cannot be empty'
+    )
   if os.path.exists(table_constraints):
     with open(table_constraints) as f:
       try:
@@ -654,7 +716,8 @@ def RaiseErrorFromHttpError(e):
 def RaiseErrorFromNonHttpError(e):
   """Raises a BigQueryError given a non-HttpError."""
   raise bq_error.BigqueryCommunicationError(
-      'Could not connect with BigQuery server due to: %r' % (e,))
+      'Could not connect with BigQuery server due to: %r' % (e,)
+  )
 
 
 class JobIdGenerator(abc.ABC):
@@ -679,8 +742,10 @@ class JobIdGeneratorRandom(JobIdGenerator):
   """Generates random job id_fallbacks."""
 
   def Generate(self, job_configuration):
-    return 'bqjob_r%08x_%016x' % (random.SystemRandom().randint(
-        0, sys.maxsize), int(time.time() * 1000))
+    return 'bqjob_r%08x_%016x' % (
+        random.SystemRandom().randint(0, sys.maxsize),
+        int(time.time() * 1000),
+    )
 
 
 class JobIdGeneratorFingerprint(JobIdGenerator):
@@ -755,8 +820,9 @@ def FormatAcl(acl):
     routine = entry.pop('routine', None)
     if view:
       acl_entries['VIEW'].append(
-          '%s:%s.%s' %
-          (view.get('projectId'), view.get('datasetId'), view.get('tableId')))
+          '%s:%s.%s'
+          % (view.get('projectId'), view.get('datasetId'), view.get('tableId'))
+      )
     elif dataset:
       dataset_reference = dataset.get('dataset')
       for target in dataset.get('targetTypes'):
@@ -769,17 +835,27 @@ def FormatAcl(acl):
         )
     elif routine:
       acl_entries['ROUTINE'].append(
-          '%s:%s.%s' % (routine.get('projectId'), routine.get('datasetId'),
-                        routine.get('routineId')))
+          '%s:%s.%s'
+          % (
+              routine.get('projectId'),
+              routine.get('datasetId'),
+              routine.get('routineId'),
+          )
+      )
     else:
       role = entry.pop('role', None)
       if not role or len(list(entry.values())) != 1:
         raise bq_error.BigqueryInterfaceError(
-            'Invalid ACL returned by server: %s' % acl, {}, [])
+            'Invalid ACL returned by server: %s' % acl, {}, []
+        )
       acl_entries[role].extend(entry.values())
   # Show a couple things first.
-  original_roles = [('OWNER', 'Owners'), ('WRITER', 'Writers'),
-                    ('READER', 'Readers'), ('VIEW', 'Authorized Views')]
+  original_roles = [
+      ('OWNER', 'Owners'),
+      ('WRITER', 'Writers'),
+      ('READER', 'Readers'),
+      ('VIEW', 'Authorized Views'),
+  ]
   result_lines = []
   for role, name in original_roles:
     members = acl_entries.pop(role, None)
@@ -802,8 +878,11 @@ def FormatSchema(schema):
     for field in fields:
       prefix = '|  ' * indent
       junction = '|' if field.get('type', 'STRING') != 'RECORD' else '+'
-      entry = '%s- %s: %s' % (junction, field['name'],
-                              field.get('type', 'STRING').lower())
+      entry = '%s- %s: %s' % (
+          junction,
+          field['name'],
+          field.get('type', 'STRING').lower(),
+      )
       # Print type parameters.
       if 'maxLength' in field:
         entry += '(%s)' % (field['maxLength'])
@@ -847,7 +926,7 @@ def ValidatePrintFormat(print_format: str) -> None:
 def _ParseDatasetIdentifier(identifier: str) -> Tuple[str, str]:
   # We need to parse plx datasets separately.
   if identifier.startswith('plx.google:'):
-    return 'plx.google', identifier[len('plx.google:'):]
+    return 'plx.google', identifier[len('plx.google:') :]
   else:
     project_id, _, dataset_id = identifier.rpartition(':')
     return project_id, dataset_id
@@ -861,7 +940,8 @@ def _ShiftInformationSchema(dataset_id: str, table_id: str) -> Tuple[str, str]:
   dataset_parts = dataset_id.split('.')
   if dataset_parts[-1] != 'INFORMATION_SCHEMA' or table_id in (
       'SCHEMATA',
-      'SCHEMATA_OPTIONS'):
+      'SCHEMATA_OPTIONS',
+  ):
     # We don't shift unless INFORMATION_SCHEMA is present and table_id is for
     # a dataset qualified table.
     return dataset_id, table_id
@@ -904,8 +984,7 @@ def _ParseIdentifier(identifier: str) -> Tuple[str, str, str]:
     dataset_id = ''
     table_id = dataset_and_table_id
 
-  dataset_id, table_id = _ShiftInformationSchema(
-      dataset_id, table_id)
+  dataset_id, table_id = _ShiftInformationSchema(dataset_id, table_id)
 
   return project_id, dataset_id, table_id
 
@@ -920,8 +999,7 @@ def GetProjectReference(
     identifier: str = '',
 ) -> bq_id_utils.ApiClientHelper.ProjectReference:
   """Determine a project reference from an identifier or fallback."""
-  project_id, dataset_id, table_id = _ParseIdentifier(
-      identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
   try:
     # ParseIdentifier('foo') is just a table_id, but we want to read
     # it as a project_id.
@@ -936,7 +1014,8 @@ def GetProjectReference(
     raise bq_error.BigqueryClientError('Please provide a project ID.')
   else:
     raise bq_error.BigqueryClientError(
-        'Cannot determine project described by %s' % (identifier,))
+        'Cannot determine project described by %s' % (identifier,)
+    )
 
 
 def GetDatasetReference(
@@ -951,8 +1030,7 @@ def GetDatasetReference(
 ) -> bq_id_utils.ApiClientHelper.DatasetReference:
   """Determine a DatasetReference from an identifier or fallback."""
   identifier = id_fallbacks.dataset_id if not identifier else identifier
-  project_id, dataset_id, table_id = _ParseIdentifier(
-      identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
   if table_id and not project_id and not dataset_id:
     # identifier is 'foo'
     project_id = id_fallbacks.project_id
@@ -965,14 +1043,17 @@ def GetDatasetReference(
     pass
   else:
     raise bq_error.BigqueryError(
-        'Cannot determine dataset described by %s' % (identifier,))
+        'Cannot determine dataset described by %s' % (identifier,)
+    )
 
   try:
     return bq_id_utils.ApiClientHelper.DatasetReference.Create(
-        projectId=project_id, datasetId=dataset_id)
+        projectId=project_id, datasetId=dataset_id
+    )
   except ValueError as e:
     raise bq_error.BigqueryError(
-        'Cannot determine dataset described by %s' % (identifier,)) from e
+        'Cannot determine dataset described by %s' % (identifier,)
+    ) from e
 
 
 def GetTableReference(
@@ -987,8 +1068,7 @@ def GetTableReference(
     default_dataset_id: str = '',
 ) -> bq_id_utils.ApiClientHelper.TableReference:
   """Determine a TableReference from an identifier and fallbacks."""
-  project_id, dataset_id, table_id = _ParseIdentifier(
-      identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   if default_dataset_id and not dataset_id:
@@ -1001,7 +1081,8 @@ def GetTableReference(
     )
   except ValueError as e:
     raise bq_error.BigqueryError(
-        'Cannot determine table described by %s' % (identifier,)) from e
+        'Cannot determine table described by %s' % (identifier,)
+    ) from e
 
 
 def GetModelReference(
@@ -1015,18 +1096,19 @@ def GetModelReference(
     identifier: str = '',
 ) -> bq_id_utils.ApiClientHelper.ModelReference:
   """Returns a ModelReference from an identifier."""
-  project_id, dataset_id, table_id = _ParseIdentifier(
-      identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   try:
     return bq_id_utils.ApiClientHelper.ModelReference.Create(
         projectId=project_id or id_fallbacks.project_id,
         datasetId=dataset_id,
-        modelId=table_id)
+        modelId=table_id,
+    )
   except ValueError as e:
     raise bq_error.BigqueryError(
-        'Cannot determine model described by %s' % identifier) from e
+        'Cannot determine model described by %s' % identifier
+    ) from e
 
 
 def GetRoutineReference(
@@ -1040,23 +1122,23 @@ def GetRoutineReference(
     identifier: str = '',
 ) -> bq_id_utils.ApiClientHelper.RoutineReference:
   """Returns a RoutineReference from an identifier."""
-  project_id, dataset_id, table_id = _ParseIdentifier(
-      identifier)
+  project_id, dataset_id, table_id = _ParseIdentifier(identifier)
   if not dataset_id:
     project_id, dataset_id = _ParseDatasetIdentifier(id_fallbacks.dataset_id)
   try:
     return bq_id_utils.ApiClientHelper.RoutineReference.Create(
         projectId=project_id or id_fallbacks.project_id,
         datasetId=dataset_id,
-        routineId=table_id)
+        routineId=table_id,
+    )
   except ValueError as e:
     raise bq_error.BigqueryError(
-        'Cannot determine routine described by %s' % identifier) from e
+        'Cannot determine routine described by %s' % identifier
+    ) from e
 
 
 def GetQueryDefaultDataset(identifier: str) -> Dict[str, str]:
-  parsed_project_id, parsed_dataset_id = _ParseDatasetIdentifier(
-      identifier)
+  parsed_project_id, parsed_dataset_id = _ParseDatasetIdentifier(identifier)
   result = dict(datasetId=parsed_dataset_id)
   if parsed_project_id:
     result['projectId'] = parsed_project_id
@@ -1106,7 +1188,8 @@ def GetReference(
   except bq_error.BigqueryError:
     pass
   raise bq_error.BigqueryError(
-      'Cannot determine reference for "%s"' % (identifier,))
+      'Cannot determine reference for "%s"' % (identifier,)
+  )
 
 
 def GetJobReference(
@@ -1128,11 +1211,13 @@ def GetJobReference(
   if job_id:
     try:
       return bq_id_utils.ApiClientHelper.JobReference.Create(
-          projectId=project_id, jobId=job_id, location=location)
+          projectId=project_id, jobId=job_id, location=location
+      )
     except ValueError:
       pass
   raise bq_error.BigqueryError(
-      'Cannot determine job described by %s' % (identifier,))
+      'Cannot determine job described by %s' % (identifier,)
+  )
 
 
 def GetReservationReference(
@@ -1150,14 +1235,20 @@ def GetReservationReference(
 ) -> bq_id_utils.ApiClientHelper.ReservationReference:
   """Determine a ReservationReference from an identifier and location."""
   project_id, location, reservation_id = _ParseReservationIdentifier(
-      identifier=identifier)
+      identifier=identifier
+  )
   # For MoveAssignment rpc, reservation reference project can be different
   # from the project_id_fallback. We'll skip this check in this case.
-  if (check_reservation_project and project_id and id_fallbacks.project_id and
-      project_id != id_fallbacks.project_id):
+  if (
+      check_reservation_project
+      and project_id
+      and id_fallbacks.project_id
+      and project_id != id_fallbacks.project_id
+  ):
     raise bq_error.BigqueryError(
         "Specified project '%s' should be the same as the project of the "
-        "reservation '%s'." % (id_fallbacks.project_id, project_id))
+        "reservation '%s'." % (id_fallbacks.project_id, project_id)
+    )
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
@@ -1167,17 +1258,21 @@ def GetReservationReference(
   if default_location and location.lower() != default_location.lower():
     raise bq_error.BigqueryError(
         "Specified location '%s' should be the same as the location of the "
-        "reservation '%s'." % (default_location, location))
+        "reservation '%s'." % (default_location, location)
+    )
   reservation_id = reservation_id or default_reservation_id
   if not reservation_id:
     raise bq_error.BigqueryError('Reservation name not specified.')
-  elif (id_fallbacks.api_version == 'v1beta1'
-        ):
+  elif (
+      id_fallbacks.api_version == 'v1beta1'
+  ):
     return bq_id_utils.ApiClientHelper.BetaReservationReference(
-        projectId=project_id, location=location, reservationId=reservation_id)
+        projectId=project_id, location=location, reservationId=reservation_id
+    )
   else:
     return bq_id_utils.ApiClientHelper.ReservationReference(
-        projectId=project_id, location=location, reservationId=reservation_id)
+        projectId=project_id, location=location, reservationId=reservation_id
+    )
 
 
 def GetBiReservationReference(
@@ -1197,7 +1292,8 @@ def GetBiReservationReference(
   if not location:
     raise bq_error.BigqueryError('Location not specified.')
   return bq_id_utils.ApiClientHelper.BiReservationReference.Create(
-      projectId=project_id, location=location)
+      projectId=project_id, location=location
+  )
 
 
 def GetCapacityCommitmentReference(
@@ -1220,10 +1316,10 @@ def GetCapacityCommitmentReference(
     )
   elif path is not None:
     project_id, location, capacity_commitment_id = ParseCapacityCommitmentPath(
-        path)
+        path
+    )
   else:
-    raise bq_error.BigqueryError(
-        'Either identifier or path must be specified.')
+    raise bq_error.BigqueryError('Either identifier or path must be specified.')
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
@@ -1234,13 +1330,13 @@ def GetCapacityCommitmentReference(
       capacity_commitment_id or default_capacity_commitment_id
   )
   if not capacity_commitment_id:
-    raise bq_error.BigqueryError(
-        'Capacity commitment id not specified.')
+    raise bq_error.BigqueryError('Capacity commitment id not specified.')
 
   return bq_id_utils.ApiClientHelper.CapacityCommitmentReference.Create(
       projectId=project_id,
       location=location,
-      capacityCommitmentId=capacity_commitment_id)
+      capacityCommitmentId=capacity_commitment_id,
+  )
 
 
 def GetReservationAssignmentReference(
@@ -1259,15 +1355,15 @@ def GetReservationAssignmentReference(
 ) -> bq_id_utils.ApiClientHelper.ReservationAssignmentReference:
   """Determine a ReservationAssignmentReference from inputs."""
   if identifier is not None:
-    (project_id, location, reservation_id, reservation_assignment_id
-    ) = _ParseReservationAssignmentIdentifier(identifier)
+    (project_id, location, reservation_id, reservation_assignment_id) = (
+        _ParseReservationAssignmentIdentifier(identifier)
+    )
   elif path is not None:
     (project_id, location, reservation_id, reservation_assignment_id) = (
         _ParseReservationAssignmentPath(path)
     )
   else:
-    raise bq_error.BigqueryError(
-        'Either identifier or path must be specified.')
+    raise bq_error.BigqueryError('Either identifier or path must be specified.')
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
@@ -1278,8 +1374,9 @@ def GetReservationAssignmentReference(
   reservation_assignment_id = (
       reservation_assignment_id or default_reservation_assignment_id
   )
-  if (id_fallbacks.api_version == 'v1beta1'
-      ):
+  if (
+      id_fallbacks.api_version == 'v1beta1'
+  ):
     return (
         bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference.Create(
             projectId=project_id,
@@ -1293,7 +1390,8 @@ def GetReservationAssignmentReference(
         projectId=project_id,
         location=location,
         reservationId=reservation_id,
-        reservationAssignmentId=reservation_assignment_id)
+        reservationAssignmentId=reservation_assignment_id,
+    )
 
 
 def GetConnectionReference(
@@ -1326,7 +1424,8 @@ def GetConnectionReference(
   if not connection_id:
     raise bq_error.BigqueryError('Connection name not specified.')
   return bq_id_utils.ApiClientHelper.ConnectionReference.Create(
-      projectId=project_id, location=location, connectionId=connection_id)
+      projectId=project_id, location=location, connectionId=connection_id
+  )
 
 
 def ConfigureFormatter(
@@ -1375,6 +1474,7 @@ def ConfigureFormatter(
       ))
       formatter.AddColumns(('Labels',))
       add_tags = 'tags' in object_info
+      add_tags = add_tags or 'resource_tags' in object_info
       if add_tags:
         formatter.AddColumns(('Tags',))
       if 'defaultEncryptionConfiguration' in object_info:
@@ -1430,8 +1530,13 @@ def ConfigureFormatter(
         formatter.AddColumns(('kmsKeyName',))
   elif reference_type == bq_id_utils.ApiClientHelper.RoutineReference:
     if print_format == 'list':
-      formatter.AddColumns(('Id', 'Routine Type', 'Language', 'Creation Time',
-                            'Last Modified Time'))
+      formatter.AddColumns((
+          'Id',
+          'Routine Type',
+          'Language',
+          'Creation Time',
+          'Last Modified Time',
+      ))
       formatter.AddColumns(('Is Remote',))
     if print_format == 'show':
       formatter.AddColumns((
@@ -1464,26 +1569,32 @@ def ConfigureFormatter(
         ))
   elif reference_type == bq_id_utils.ApiClientHelper.RowAccessPolicyReference:
     if print_format == 'list':
-      formatter.AddColumns(('Id', 'Filter Predicate', 'Grantees',
-                            'Creation Time', 'Last Modified Time'))
+      formatter.AddColumns((
+          'Id',
+          'Filter Predicate',
+          'Grantees',
+          'Creation Time',
+          'Last Modified Time',
+      ))
   elif reference_type == bq_id_utils.ApiClientHelper.TableReference:
     if print_format == 'list':
       formatter.AddColumns((
           'tableId',
           'Type',
       ))
-      formatter.AddColumns(
-          ('Labels', 'Time Partitioning', 'Clustered Fields'))
+      formatter.AddColumns(('Labels', 'Time Partitioning', 'Clustered Fields'))
     if print_format == 'show':
       use_default = True
       if object_info is not None:
         if object_info['type'] == 'VIEW':
           formatter.AddColumns(
-              ('Last modified', 'Schema', 'Type', 'Expiration'))
+              ('Last modified', 'Schema', 'Type', 'Expiration')
+          )
           use_default = False
         elif object_info['type'] == 'EXTERNAL':
           formatter.AddColumns(
-              ('Last modified', 'Schema', 'Type', 'Total URIs', 'Expiration'))
+              ('Last modified', 'Schema', 'Type', 'Total URIs', 'Expiration')
+          )
           use_default = False
         elif 'snapshotDefinition' in object_info:
           formatter.AddColumns(('Base Table', 'Snapshot TimeStamp'))
@@ -1542,7 +1653,8 @@ def ConfigureFormatter(
         'multiRegionAuxiliary',
         'edition',
         'autoscaleMaxSlots',
-        'autoscaleCurrentSlots'))
+        'autoscaleCurrentSlots',
+    ))
   elif reference_type == bq_id_utils.ApiClientHelper.BetaReservationReference:
     formatter.AddColumns((
         'name',
@@ -1551,10 +1663,10 @@ def ConfigureFormatter(
         'ignoreIdleSlots',
         'creationTime',
         'updateTime',
-        'multiRegionAuxiliary'))
+        'multiRegionAuxiliary',
+    ))
   elif (
-      reference_type
-      == bq_id_utils.ApiClientHelper.CapacityCommitmentReference
+      reference_type == bq_id_utils.ApiClientHelper.CapacityCommitmentReference
   ):
     formatter.AddColumns((
         'name',
@@ -1633,8 +1745,11 @@ def GetJobTypeName(job_info):
   """Helper for job printing code."""
   job_names = set(('extract', 'load', 'query', 'copy'))
   try:
-    return set(job_info.get('configuration',
-                            {}).keys()).intersection(job_names).pop()
+    return (
+        set(job_info.get('configuration', {}).keys())
+        .intersection(job_names)
+        .pop()
+    )
   except KeyError:
     return None
 
@@ -1667,20 +1782,25 @@ def ProcessSources(source_string):
     if len(gs_uris) != len(sources):
       raise bq_error.BigqueryClientError(
           'All URIs must begin with "{}" if any do.'.format(
-              bq_processor_utils.GCS_SCHEME_PREFIX))
+              bq_processor_utils.GCS_SCHEME_PREFIX
+          )
+      )
     return sources
   else:
     source = sources[0]
     if len(sources) > 1:
       raise bq_error.BigqueryClientError(
-          'Local upload currently supports only one file, found %d' %
-          (len(sources),))
+          'Local upload currently supports only one file, found %d'
+          % (len(sources),)
+      )
     if not os.path.exists(source):
       raise bq_error.BigqueryClientError(
-          'Source file not found: %s' % (source,))
+          'Source file not found: %s' % (source,)
+      )
     if not os.path.isfile(source):
       raise bq_error.BigqueryClientError(
-          'Source path is not a file: %s' % (source,))
+          'Source path is not a file: %s' % (source,)
+      )
   return sources
 
 
@@ -1703,14 +1823,12 @@ def ReadSchema(schema: str) -> List[str]:
   """
 
   if schema.startswith(bq_processor_utils.GCS_SCHEME_PREFIX):
-    raise bq_error.BigquerySchemaError(
-        'Cannot load schema files from GCS.')
+    raise bq_error.BigquerySchemaError('Cannot load schema files from GCS.')
 
   def NewField(entry):
     name, _, field_type = entry.partition(':')
     if entry.count(':') > 1 or not name.strip():
-      raise bq_error.BigquerySchemaError(
-          'Invalid schema entry: %s' % (entry,))
+      raise bq_error.BigquerySchemaError('Invalid schema entry: %s' % (entry,))
     return {
         'name': name.strip(),
         'type': field_type.strip().upper() or 'STRING',
@@ -1732,8 +1850,9 @@ def ReadSchema(schema: str) -> List[str]:
         )
     if not isinstance(loaded_json, list):
       raise bq_error.BigquerySchemaError(
-          'Error in "%s": Table schemas must be specified as JSON lists.' %
-          schema)
+          'Error in "%s": Table schemas must be specified as JSON lists.'
+          % schema
+      )
     return loaded_json
   elif re.match(r'[./\\]', schema) is not None:
     # We have something that looks like a filename, but we didn't
@@ -1849,10 +1968,12 @@ def FormatJobInfo(job_info):
     result['DDL Target Routine'] = dict(query_stats['ddlTargetRoutine'])
   if 'ddlTargetRowAccessPolicy' in query_stats:
     result['DDL Target Row Access Policy'] = dict(
-        query_stats['ddlTargetRowAccessPolicy'])
+        query_stats['ddlTargetRowAccessPolicy']
+    )
   if 'ddlAffectedRowAccessPolicyCount' in query_stats:
     result['DDL Affected Row Access Policy Count'] = query_stats[
-        'ddlAffectedRowAccessPolicyCount']
+        'ddlAffectedRowAccessPolicyCount'
+    ]
   if 'statementType' in query_stats:
     result['Statement Type'] = query_stats['statementType']
     if query_stats['statementType'] == 'ASSERT':
@@ -1892,17 +2013,19 @@ def FormatModelInfo(model_info):
   if 'labels' in model_info:
     result['Labels'] = _FormatLabels(model_info['labels'])
   if 'creationTime' in model_info:
-    result['Creation Time'] = FormatTime(
-        int(model_info['creationTime']) / 1000)
+    result['Creation Time'] = FormatTime(int(model_info['creationTime']) / 1000)
   if 'expirationTime' in model_info:
     result['Expiration Time'] = FormatTime(
-        int(model_info['expirationTime']) / 1000)
+        int(model_info['expirationTime']) / 1000
+    )
   if 'featureColumns' in model_info:
     result['Feature Columns'] = _FormatStandardSqlFields(
-        model_info['featureColumns'])
+        model_info['featureColumns']
+    )
   if 'labelColumns' in model_info:
     result['Label Columns'] = _FormatStandardSqlFields(
-        model_info['labelColumns'])
+        model_info['labelColumns']
+    )
   if 'encryptionConfiguration' in model_info:
     result['kmsKeyName'] = model_info['encryptionConfiguration']['kmsKeyName']
   return result
@@ -1920,8 +2043,8 @@ def FormatRoutineDataType(data_type):
   type_kind = data_type['typeKind']
   if type_kind == 'ARRAY':
     return '{}<{}>'.format(
-        type_kind,
-        FormatRoutineDataType(data_type['arrayElementType']))
+        type_kind, FormatRoutineDataType(data_type['arrayElementType'])
+    )
   elif type_kind == 'STRUCT':
     struct_fields = [
         '{} {}'.format(field['name'], FormatRoutineDataType(field['type']))
@@ -1952,8 +2075,8 @@ def FormatRoutineArgumentInfo(routine_type, argument):
   """Converts a routine argument to a pretty string representation.
 
   Arguments:
-    routine_type: The routine type of the corresponding routine. It's of
-      string type corresponding to the string value of enum
+    routine_type: The routine type of the corresponding routine. It's of string
+      type corresponding to the string value of enum
       cloud.bigquery.v2.Routine.RoutineType.
     argument: Routine argument dict to format.
 
@@ -2003,36 +2126,38 @@ def FormatRoutineInfo(routine_info):
     argument_list = routine_info['arguments']
     signature = '({})'.format(
         ', '.join(
-            FormatRoutineArgumentInfo(
-                routine_info['routineType'], argument
-            )
+            FormatRoutineArgumentInfo(routine_info['routineType'], argument)
             for argument in argument_list
         )
     )
   if return_type:
-    signature = '{} -> {}'.format(
-        signature, FormatRoutineDataType(return_type))
+    signature = '{} -> {}'.format(signature, FormatRoutineDataType(return_type))
   if return_table_type:
     signature = '{} -> {}'.format(
-        signature, FormatRoutineTableType(return_table_type))
+        signature, FormatRoutineTableType(return_table_type)
+    )
   if return_type or return_table_type or ('arguments' in routine_info):
     result['Signature'] = signature
   if 'definitionBody' in routine_info:
     result['Definition'] = routine_info['definitionBody']
   if 'creationTime' in routine_info:
     result['Creation Time'] = FormatTime(
-        int(routine_info['creationTime']) / 1000)
+        int(routine_info['creationTime']) / 1000
+    )
   if 'lastModifiedTime' in routine_info:
     result['Last Modified Time'] = FormatTime(
-        int(routine_info['lastModifiedTime']) / 1000)
+        int(routine_info['lastModifiedTime']) / 1000
+    )
   result['Is Remote'] = 'No'
   if 'remoteFunctionOptions' in routine_info:
     result['Is Remote'] = 'Yes'
-    result['Remote Function Endpoint'] = routine_info[
-        'remoteFunctionOptions']['endpoint']
+    result['Remote Function Endpoint'] = routine_info['remoteFunctionOptions'][
+        'endpoint'
+    ]
     result['Connection'] = routine_info['remoteFunctionOptions']['connection']
-    result['User Defined Context'] = routine_info[
-        'remoteFunctionOptions'].get('userDefinedContext', '')
+    result['User Defined Context'] = routine_info['remoteFunctionOptions'].get(
+        'userDefinedContext', ''
+    )
   if 'sparkOptions' in routine_info:
     spark_options = routine_info['sparkOptions']
     options = [
@@ -2063,8 +2188,7 @@ def FormatRowAccessPolicyInfo(row_access_policy_info):
     A dictionary of row access policy properties.
   """
   result = {}
-  result['Id'] = row_access_policy_info['rowAccessPolicyReference'][
-      'policyId']
+  result['Id'] = row_access_policy_info['rowAccessPolicyReference']['policyId']
   result['Filter Predicate'] = row_access_policy_info['filterPredicate']
   result['Grantees'] = ', '.join(row_access_policy_info['grantees'])
   if 'creationTime' in row_access_policy_info:
@@ -2091,25 +2215,23 @@ def FormatDatasetInfo(dataset_info):
   reference = bq_processor_utils.ConstructObjectReference(result)
   result.update(dict(reference))
   if 'lastModifiedTime' in result:
-    result['Last modified'] = FormatTime(
-        int(result['lastModifiedTime']) / 1000)
+    result['Last modified'] = FormatTime(int(result['lastModifiedTime']) / 1000)
   if 'access' in result:
     result['ACLs'] = FormatAcl(result['access'])
   if 'labels' in result:
     result['Labels'] = _FormatLabels(result['labels'])
-  if 'tags' in result:
-    result['Tags'] = _FormatTags(result['tags'])
+  if 'resourceTags' in result:
+    result['Tags'] = _FormatResourceTags(result['resourceTags'])
   if 'defaultEncryptionConfiguration' in result:
     result['kmsKeyName'] = result['defaultEncryptionConfiguration'][
-        'kmsKeyName']
+        'kmsKeyName'
+    ]
   if 'type' in result:
     result['Type'] = result['type']
     if result['type'] == 'LINKED' and 'linkedDatasetSource' in result:
       source_dataset = result['linkedDatasetSource']['sourceDataset']
       result['Source dataset'] = str(
-          bq_id_utils.ApiClientHelper.DatasetReference.Create(
-              **source_dataset
-          )
+          bq_id_utils.ApiClientHelper.DatasetReference.Create(**source_dataset)
       )
     if result['type'] == 'EXTERNAL' and 'externalDatasetReference' in result:
       external_dataset_reference = result['externalDatasetReference']
@@ -2137,8 +2259,7 @@ def FormatTableInfo(table_info):
   reference = bq_processor_utils.ConstructObjectReference(result)
   result.update(dict(reference))
   if 'lastModifiedTime' in result:
-    result['Last modified'] = FormatTime(
-        int(result['lastModifiedTime']) / 1000)
+    result['Last modified'] = FormatTime(int(result['lastModifiedTime']) / 1000)
   if 'schema' in result:
     result['Schema'] = FormatSchema(result['schema'])
   if 'numBytes' in result:
@@ -2162,8 +2283,7 @@ def FormatTableInfo(table_info):
   if 'numRows' in result:
     result['Total Rows'] = result['numRows']
   if 'expirationTime' in result:
-    result['Expiration'] = FormatTime(
-        int(result['expirationTime']) / 1000)
+    result['Expiration'] = FormatTime(int(result['expirationTime']) / 1000)
   if 'labels' in result:
     result['Labels'] = _FormatLabels(result['labels'])
   if 'resourceTags' in result:
@@ -2181,7 +2301,7 @@ def FormatTableInfo(table_info):
       expiration_ms = int(result['timePartitioning']['expirationMs'])
       extra_info.append('expirationMs: %d' % (expiration_ms,))
     if extra_info:
-      result['Time Partitioning'] += (' (%s)' % (', '.join(extra_info),))
+      result['Time Partitioning'] += ' (%s)' % (', '.join(extra_info),)
   if 'clustering' in result:
     if 'fields' in result['clustering']:
       result['Clustered Fields'] = ', '.join(result['clustering']['fields'])
@@ -2195,11 +2315,15 @@ def FormatTableInfo(table_info):
         result['Enable Refresh'] = result['materializedView']['enableRefresh']
       if 'refreshIntervalMs' in result['materializedView']:
         result['Refresh Interval Ms'] = result['materializedView'][
-            'refreshIntervalMs']
-      if ('lastRefreshTime' in result['materializedView'] and
-          result['materializedView']['lastRefreshTime'] != '0'):
+            'refreshIntervalMs'
+        ]
+      if (
+          'lastRefreshTime' in result['materializedView']
+          and result['materializedView']['lastRefreshTime'] != '0'
+      ):
         result['Last Refresh Time'] = FormatTime(
-            int(result['materializedView']['lastRefreshTime']) / 1000)
+            int(result['materializedView']['lastRefreshTime']) / 1000
+        )
     if 'tableReplicationInfo' in result:
       result['Source Table'] = _FormatTableReference(
           result['tableReplicationInfo']['sourceTable']
@@ -2226,7 +2350,8 @@ def FormatTableInfo(table_info):
     if result['type'] == 'EXTERNAL':
       if 'externalDataConfiguration' in result:
         result['Total URIs'] = len(
-            result['externalDataConfiguration']['sourceUris'])
+            result['externalDataConfiguration']['sourceUris']
+        )
   if (
       'encryptionConfiguration' in result
       and 'kmsKeyName' in result['encryptionConfiguration']
@@ -2234,14 +2359,14 @@ def FormatTableInfo(table_info):
     result['kmsKeyName'] = result['encryptionConfiguration']['kmsKeyName']
   if 'snapshotDefinition' in result:
     result['Base Table'] = result['snapshotDefinition']['baseTableReference']
-    result['Snapshot TimeStamp'] = (
-        FormatTimeFromProtoTimestampJsonString(
-            result['snapshotDefinition']['snapshotTime']))
+    result['Snapshot TimeStamp'] = FormatTimeFromProtoTimestampJsonString(
+        result['snapshotDefinition']['snapshotTime']
+    )
   if 'cloneDefinition' in result:
     result['Base Table'] = result['cloneDefinition']['baseTableReference']
-    result['Clone TimeStamp'] = (
-        FormatTimeFromProtoTimestampJsonString(
-            result['cloneDefinition']['cloneTime']))
+    result['Clone TimeStamp'] = FormatTimeFromProtoTimestampJsonString(
+        result['cloneDefinition']['cloneTime']
+    )
   return result
 
 
@@ -2311,9 +2436,8 @@ def FormatReservationInfo(reservation, reference_type):
     if key == 'name':
       project_id, location, reservation_id = ParseReservationPath(value)
       reference = bq_id_utils.ApiClientHelper.ReservationReference.Create(
-          projectId=project_id,
-          location=location,
-          reservationId=reservation_id)
+          projectId=project_id, location=location, reservationId=reservation_id
+      )
       result[key] = reference.__str__()
     else:
       result[key] = value
@@ -2417,7 +2541,8 @@ def FormatConnectionInfo(connection):
     if key == 'name':
       project_id, location, connection_id = _ParseConnectionPath(value)
       reference = bq_id_utils.ApiClientHelper.ConnectionReference.Create(
-          projectId=project_id, location=location, connectionId=connection_id)
+          projectId=project_id, location=location, connectionId=connection_id
+      )
       result[key] = reference.__str__()
     elif key == 'lastModifiedTime':
       result['Last modified'] = FormatTime(int(value) / 1000)
@@ -2444,7 +2569,8 @@ def NormalizeProjectReference(
       return GetProjectReference(id_fallbacks=id_fallbacks)
     except bq_error.BigqueryClientError as e:
       raise bq_error.BigqueryClientError(
-          'Project reference or a default project is required') from e
+          'Project reference or a default project is required'
+      ) from e
   return reference
 
 
@@ -2469,8 +2595,9 @@ def ExecuteInChunksWithProgress(request):
     try:
       status, result = request.next_chunk()
     except googleapiclient.errors.HttpError as e:
-      logging.error('HTTP Error %d during resumable media upload',
-                    e.resp.status)
+      logging.error(
+          'HTTP Error %d during resumable media upload', e.resp.status
+      )
       # Log response headers, which contain debug info for GFEs.
       for key, value in e.resp.items():
         logging.info('  %s: %s', key, value)
@@ -2488,7 +2615,8 @@ def ExecuteInChunksWithProgress(request):
       RaiseErrorFromNonHttpError(e)
     if status:
       output_token = _OverwriteCurrentLine(
-          'Uploaded %d%%... ' % int(status.progress() * 100), output_token)
+          'Uploaded %d%%... ' % int(status.progress() * 100), output_token
+      )
   _OverwriteCurrentLine('Upload complete.', output_token)
   sys.stderr.write('\n')
   return result
@@ -2541,8 +2669,10 @@ class VerboseWaitPrinter(WaitPrinterHelper):
   def Print(self, job_id, wait_time, status):
     self.print_on_done = True
     self.output_token = _OverwriteCurrentLine(
-        'Waiting on %s ... (%ds) Current status: %-7s' %
-        (job_id, wait_time, status), self.output_token)
+        'Waiting on %s ... (%ds) Current status: %-7s'
+        % (job_id, wait_time, status),
+        self.output_token,
+    )
 
 
 class TransitionWaitPrinter(VerboseWaitPrinter):
@@ -2553,5 +2683,4 @@ class TransitionWaitPrinter(VerboseWaitPrinter):
   def Print(self, job_id, wait_time, status):
     if status != self._previous_status:
       self._previous_status = status
-      super(TransitionWaitPrinter,
-            self).Print(job_id, wait_time, status)
+      super(TransitionWaitPrinter, self).Print(job_id, wait_time, status)

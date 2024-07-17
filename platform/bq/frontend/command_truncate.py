@@ -7,10 +7,13 @@ from __future__ import print_function
 
 from typing import Optional
 
+
+
 from absl import app
 from absl import flags
 
 import bq_flags
+from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -247,7 +250,7 @@ FROM (
   def _ReadTableInfo(self, query: str, row_count: int):
     client = bq_cached_client.Client.Get()
     try:
-      job = client.Query(query, use_legacy_sql=False)
+      job = client_job.Query(client, query, use_legacy_sql=False)
     except bq_error.BigqueryError as e:
       # TODO(b/324243535): Correct this typing.
       # pytype: disable=attribute-error
@@ -260,8 +263,8 @@ FROM (
         raise e
     all_table_infos = []
     if not bq_client_utils.IsFailedJob(job):
-      _, rows = client.ReadSchemaAndJobRows(
-          job['jobReference'], start_row=0, max_rows=row_count
+      _, rows = client_job.ReadSchemaAndJobRows(
+          client, job['jobReference'], start_row=0, max_rows=row_count
       )
       for i in range(len(rows)):
         table_info = {}
@@ -308,7 +311,7 @@ FROM (
       )
     kwds = {
         'write_disposition': 'WRITE_TRUNCATE',
-        'ignore_already_exists': 'False',
+        'ignore_already_exists': False,
         'operation_type': 'COPY',
     }
     if bq_flags.LOCATION.value:
@@ -319,7 +322,7 @@ FROM (
     )
     job_ref = ' '
     try:
-      job = client.CopyTable([source_table], dest, **kwds)
+      job = client_job.CopyTable(client, [source_table], dest, **kwds)
       if job is None:
         self.failed_table_count += 1
         return self._formatOutputString(dest, 'Failed')

@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.quotas import flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
