@@ -32,6 +32,7 @@ def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
   instances_flags.AddInstanceUpdateArgs(parser, api_version)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.CreateCommand):
   """Update a Filestore instance."""
@@ -169,6 +170,7 @@ class UpdateBeta(Update):
           description=args.description,
           labels=labels,
           file_share=args.file_share,
+          performance=args.performance,
           managed_ad=args.managed_ad,
           disconnect_managed_ad=args.disconnect_managed_ad,
           clear_nfs_export_options=args.clear_nfs_export_options)
@@ -184,6 +186,8 @@ class UpdateBeta(Update):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
+    if args.IsSpecified('performance'):
+      updated_fields.append('performance')
     if args.IsSpecified('managed_ad') or args.IsSpecified(
         'disconnect_managed_ad'
     ):

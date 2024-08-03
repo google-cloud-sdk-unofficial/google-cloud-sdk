@@ -29,6 +29,15 @@
       type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
       help_text: |
         Environment variables passed to the Workstation.
+    - arg_name: source-workstation
+      api_field: workstation.sourceWorkstation
+      release_tracks: [ALPHA, BETA]
+      type: str
+      help_text: |
+        Source workstation from which this workstations persistent directories are cloned on
+        creation. When specified, the workstations service agent must have
+        `compute.disks.createSnapshot` and `compute.snapshots.useReadOnly` permissions on the source
+        workstation's host project.
 
   request:
     GA:

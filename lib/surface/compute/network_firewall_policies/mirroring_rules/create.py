@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine network firewall policy packet mirroring rule.
 

@@ -22,11 +22,14 @@ from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Describe(base.DescribeCommand):
   """Retrieves information about a backup.
 
@@ -44,14 +47,13 @@ class Describe(base.DescribeCommand):
     """
     flags.AddBackupId(parser)
     flags.AddOptionalInstance(parser)
-    flags.AddProjectLevelBackupEndpoint(parser)
 
-  def _GetById(self, backup_id, instance_name, project_level):
+  def _GetById(self, backup_id, instance_name):
     client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    if project_level:
+    if command_validate.IsProjectLevelBackupRequest(backup_id):
       request = sql_messages.SqlBackupsGetBackupRequest(name=backup_id)
       return sql_client.backups.GetBackup(request)
 
@@ -83,4 +85,4 @@ class Describe(base.DescribeCommand):
     if args.instance:
       validate.ValidateInstanceName(args.instance)
 
-    return self._GetById(args.id, args.instance, args.project_level)
+    return self._GetById(args.id, args.instance)

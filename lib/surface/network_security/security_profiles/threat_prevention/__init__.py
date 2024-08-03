@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class ThreatPrevention(base.Group):
   """Manage Security Profiles - Threat Prevention Profile.
 

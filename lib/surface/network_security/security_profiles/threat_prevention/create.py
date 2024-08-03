@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
+from googlecloudsdk.api_lib.network_security.security_profiles import tpp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -43,6 +43,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class CreateProfile(base.CreateCommand):
   """Create a new Threat Prevention Profile."""
 
@@ -55,7 +56,7 @@ class CreateProfile(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    client = sp_api.Client(self.ReleaseTrack())
+    client = tpp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     description = args.description
     labels = labels_util.ParseCreateArgs(
@@ -71,7 +72,7 @@ class CreateProfile(base.CreateCommand):
           'Only `global` location is supported, but got: %s' % args.location
       )
 
-    response = client.CreateSecurityProfile(
+    response = client.CreateThreatPreventionProfile(
         name=security_profile.RelativeName(),
         sp_id=security_profile.Name(),
         parent=security_profile.Parent().RelativeName(),

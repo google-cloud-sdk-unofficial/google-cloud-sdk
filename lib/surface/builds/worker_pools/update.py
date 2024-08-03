@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
-from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as cloudbuild_v2_util
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -124,7 +123,11 @@ class UpdateBeta(Update):
     if args.generation == 1:
       return _UpdateWorkerPoolFirstGen(args, self.ReleaseTrack())
     if args.generation == 2:
-      return _UpdateWorkerPoolSecondGen(args)
+      raise exceptions.InvalidArgumentException(
+          '--generation',
+          'for generation=2 please use the gcloud command "gcloud builds'
+          ' worker-pools apply" to update a worker pool',
+      )
 
     raise exceptions.InvalidArgumentException(
         '--generation',
@@ -174,85 +177,16 @@ class UpdateAlpha(Update):
     if args.generation == 1:
       return _UpdateWorkerPoolFirstGen(args, self.ReleaseTrack())
     if args.generation == 2:
-      return _UpdateWorkerPoolSecondGen(args)
+      raise exceptions.InvalidArgumentException(
+          '--generation',
+          'for generation=2 please use the gcloud command "gcloud builds'
+          ' worker-pools apply" to update a worker pool',
+      )
 
     raise exceptions.InvalidArgumentException(
         '--generation',
         'please use one of the following valid generation values: 1, 2',
     )
-
-
-def _UpdateWorkerPoolSecondGen(args):
-  """Updates a Worker Pool Second Generation.
-
-  Args:
-    args: an argparse namespace. All the arguments that were provided to the
-        update command invocation.
-
-  Returns:
-    A Worker Pool Second Generation resource.
-  """
-  client = cloudbuild_v2_util.GetClientInstance()
-  messages = client.MESSAGES_MODULE
-
-  # Get the workerpool second gen proto from either the flags or the specified
-  # file.
-  wpsg = messages.WorkerPoolSecondGen()
-  if args.config_from_file is not None:
-    try:
-      wpsg = workerpool_config.LoadWorkerpoolConfigFromPath(
-          args.config_from_file, messages.WorkerPoolSecondGen)
-    except cloudbuild_exceptions.ParseProtoException as err:
-      log.err.Print('\nFailed to parse configuration from file.\n')
-      raise err
-  else:
-    wpsg.worker = messages.WorkerConfig()
-    if args.worker_machine_type is not None:
-      wpsg.worker.machineType = args.worker_machine_type
-    if args.worker_disk_size is not None:
-      wpsg.worker.diskStorage = compute_utils.BytesToGb(
-          args.worker_disk_size)
-
-  wp_region = args.region
-  if not wp_region:
-    wp_region = properties.VALUES.builds.region.GetOrFail()
-
-  # Get the workerpool second gen ref
-  wp_resource = resources.REGISTRY.Parse(
-      None,
-      collection='cloudbuild.projects.locations.workerPoolSecondGen',
-      api_version=cloudbuild_v2_util.GA_API_VERSION,
-      params={
-          'projectsId': properties.VALUES.core.project.Get(required=True),
-          'locationsId': wp_region,
-          'workerPoolSecondGenId': args.WORKER_POOL,
-      },
-  )
-
-  update_mask = cloudbuild_v2_util.MessageToFieldPaths(wpsg)
-  req = messages.CloudbuildProjectsLocationsWorkerPoolSecondGenPatchRequest(
-      name=wp_resource.RelativeName(),
-      workerPoolSecondGen=wpsg,
-      updateMask=','.join(update_mask),
-  )
-  # Send the Update request
-  updated_op = client.projects_locations_workerPoolSecondGen.Patch(req)
-
-  op_resource = resources.REGISTRY.ParseRelativeName(
-      updated_op.name, collection='cloudbuild.projects.locations.operations'
-  )
-  updated_wp = waiter.WaitFor(
-      waiter.CloudOperationPoller(
-          client.projects_locations_workerPoolSecondGen,
-          client.projects_locations_operations,
-      ),
-      op_resource,
-      'Updating worker pool second gen',
-  )
-
-  log.UpdatedResource(wp_resource)
-
-  return updated_wp
 
 
 def _UpdateWorkerPoolFirstGen(args, release_track):

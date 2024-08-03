@@ -98,6 +98,64 @@
       resource_method_params:
         instance.reservedIpRange: '{__relative_name__}'
       required: false
+    - arg_name: file-stripe-level
+      api_field: instance.fileStripeLevel
+      required: false
+      help_text: |-
+        Stripe level for files.
+        MIN better suited for small size files.
+        MAX higher throughput performance for larger files.
+      choices:
+      - arg_value: file-stripe-level-min
+        enum_value: FILE_STRIPE_LEVEL_MIN
+        help_text: |-
+          Minimum file striping
+      - arg_value: file-stripe-level-balanced
+        enum_value: FILE_STRIPE_LEVEL_BALANCED
+        help_text: |-
+          Medium file striping
+      - arg_value: file-stripe-level-max
+        enum_value: FILE_STRIPE_LEVEL_MAX
+        help_text: |-
+          Maximum file striping
+    - arg_name: directory-stripe-level
+      api_field: instance.directoryStripeLevel
+      required: false
+      help_text: |-
+        Stripe level for directories.
+        MIN when directory has a small number of files.
+        MAX when directory has a large number of files.
+      choices:
+      - arg_value: directory-stripe-level-min
+        enum_value: DIRECTORY_STRIPE_LEVEL_MIN
+        help_text: |-
+          Minimum directory striping
+      - arg_value: directory-stripe-level-balanced
+        enum_value: DIRECTORY_STRIPE_LEVEL_BALANCED
+        help_text: |-
+          Medium directory striping
+      - arg_value: directory-stripe-level-max
+        enum_value: DIRECTORY_STRIPE_LEVEL_MAX
+        help_text: |-
+          Maximum directory striping
+    - arg_name: request-id
+      api_field: requestId
+      required: false
+      repeated: false
+      help_text: |-
+        An optional request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server will know to ignore
+        the request if it has already been completed. The server will guarantee
+        that for at least 60 minutes since the first request.
+
+        For example, consider a situation where you make an initial request and t
+        he request times out. If you make the request again with the same request
+        ID, the server can check if original operation with the same request ID
+        was received, and if so, will ignore the second request. This prevents
+        clients from accidentally creating duplicate commitments.
+
+        The request ID must be a valid UUID with the exception that zero UUID is
+        not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1beta
     collection:

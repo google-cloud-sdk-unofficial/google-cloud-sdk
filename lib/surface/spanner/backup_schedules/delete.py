@@ -28,7 +28,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Cloud Spanner backup schedule."""
 

@@ -31,6 +31,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine Network.
 
@@ -140,6 +141,14 @@ class Update(base.UpdateCommand):
               args.bgp_routing_mode.upper()))
 
     if getattr(args, 'bgp_best_path_selection_mode', None) is not None:
+      bps_change_warning_message = (
+          'Updating the best path selection mode can cause routing changes for'
+          ' egress traffic. No new routes are learned or deleted, and data'
+          " plane traffic isn't dropped or interrupted."
+      )
+      console_io.PromptContinue(
+          message=bps_change_warning_message, default=True, cancel_on_no=True)
+
       should_patch = True
       if getattr(network_resource, 'routingConfig', None) is None:
         network_resource.routingConfig = messages.NetworkRoutingConfig()
@@ -226,6 +235,7 @@ class Update(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class UpdateAlpha(Update):
   """Update a Compute Engine Network."""
   _support_firewall_order = True

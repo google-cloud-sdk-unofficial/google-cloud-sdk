@@ -403,6 +403,8 @@ class Update(base.UpdateCommand):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
+    flags.AddEnableDNSAccessFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -518,6 +520,8 @@ class Update(base.UpdateCommand):
     opts.enable_insecure_binding_system_unauthenticated = (
         args.enable_insecure_binding_system_unauthenticated
     )
+    opts.enable_private_nodes = args.enable_private_nodes
+    opts.enable_dns_access = args.enable_dns_access
     return opts
 
   def Run(self, args):
@@ -1026,6 +1030,8 @@ class UpdateBeta(Update):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
+    flags.AddEnableDNSAccessFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1199,6 +1205,8 @@ class UpdateBeta(Update):
     opts.enable_insecure_binding_system_unauthenticated = (
         args.enable_insecure_binding_system_unauthenticated
     )
+    opts.enable_private_nodes = args.enable_private_nodes
+    opts.enable_dns_access = args.enable_dns_access
     return opts
 
 
@@ -1322,6 +1330,8 @@ class UpdateAlpha(Update):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
+    flags.AddEnableDNSAccessFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1490,4 +1500,6 @@ class UpdateAlpha(Update):
     opts.enable_insecure_binding_system_unauthenticated = (
         args.enable_insecure_binding_system_unauthenticated
     )
+    opts.enable_private_nodes = args.enable_private_nodes
+    opts.enable_dns_access = args.enable_dns_access
     return opts

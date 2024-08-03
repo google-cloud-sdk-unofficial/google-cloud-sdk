@@ -129,7 +129,7 @@ def _CommonArgs(parser, track):
   flags.AddBuildServiceAccountFlag(parser)
 
   # Add flag for Binary Authorization Policy (2nd Gen only)
-  flags.AddBinaryAuthorizationMutexGroup(parser, track)
+  flags.AddBinaryAuthorizationMutexGroup(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

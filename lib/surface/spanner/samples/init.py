@@ -138,7 +138,7 @@ def insert_graph_data_in_one_file(appname, file_name, session_ref):
   for insert_statement in insert_statements.split('\n'):
     if not insert_statement:
       continue
-    if not insert_statement.startswith('INSERT INTO'):
+    if not insert_statement.startswith('INSERT'):
       continue
     # Use a retryer to handle 409 txn abort errors that tend to happen
     # when db is just created and group assignment contends with insert and
@@ -220,12 +220,16 @@ class Init(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To initialize the 'finance' sample app using instance
           'my-instance', run:
 
           $ {command} finance --instance-id=my-instance
+
+          To initialize the 'finance-graph' sample app using instance
+          'my-instance', run:
+
+          $ {command} finance-graph --instance-id=my-instance
         """),
   }
 
@@ -237,7 +241,9 @@ class Init(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    parser.add_argument('appname', help='The sample app name, e.g. "finance".')
+    parser.add_argument(
+        'appname', help='The sample app name, e.g. "finance", "finance-graph".'
+    )
     parser.add_argument(
         '--instance-id',
         required=True,

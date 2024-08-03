@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Check Privileged Access Manager (PAM) onboarding status for a resource.
@@ -24,6 +24,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: checkOnboardingStatus
     collection:
     - privilegedaccessmanager.projects.locations

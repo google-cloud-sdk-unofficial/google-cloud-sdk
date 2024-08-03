@@ -30,8 +30,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a group.
 
@@ -45,16 +45,16 @@ class Update(base.Command):
     flags.AddAsyncFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     repeated.AddPrimitiveArgs(
-        parser, 'group', 'auto-accept-projects', 'auto-accept projects',
+        parser,
+        'group',
+        'auto-accept-projects',
+        'auto-accept projects',
         additional_help="""This controls the list of project ids or
         project numbers for which auto-accept is enabled for the group.""",
-        include_set=False)
+        include_set=False,
+    )
 
-  def Run(self, args):
-    client = networkconnectivity_api.GroupsClient(
-        release_track=self.ReleaseTrack())
-
-    group_ref = args.CONCEPTS.group.Parse()
+  def UpdateGroupBeta(self, client, group_ref, args):
     update_mask = []
     description = args.description
     if description is not None:
@@ -64,11 +64,56 @@ class Update(base.Command):
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     original_group = client.Get(group_ref)
     if labels_diff.MayHaveUpdates():
-      labels_update = labels_diff.Apply(client.messages.Group.LabelsValue,
-                                        original_group.labels)
+      labels_update = labels_diff.Apply(
+          client.messages.GoogleCloudNetworkconnectivityV1betaGroup.LabelsValue,
+          original_group.labels,
+      )
       if labels_update.needs_update:
         labels = labels_update.labels
         update_mask.append('labels')
+
+    # TODO: b/349140768 - Add e2e test for this command.
+    def _get_current_auto_accept_projects():
+      if original_group.autoAccept is None:
+        return []
+      return original_group.autoAccept.autoAcceptProjects
+
+    auto_accept_projects = repeated.ParsePrimitiveArgs(
+        args, 'auto_accept_projects', _get_current_auto_accept_projects
+    )
+    auto_accept = None
+    if auto_accept_projects is not None:
+      auto_accept = (
+          client.messages.GoogleCloudNetworkconnectivityV1betaAutoAccept(
+              autoAcceptProjects=auto_accept_projects
+          )
+      )
+      update_mask.append('auto_accept.auto_accept_projects')
+
+    # Construct a group message with only the updated fields
+    group = client.messages.GoogleCloudNetworkconnectivityV1betaGroup(
+        description=description, labels=labels, autoAccept=auto_accept
+    )
+
+    return client.UpdateGroupBeta(group_ref, group, update_mask)
+
+  def UpdateGroupGA(self, client, group_ref, args):
+    update_mask = []
+    description = args.description
+    if description is not None:
+      update_mask.append('description')
+
+    labels = None
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    original_group = client.Get(group_ref)
+    if labels_diff.MayHaveUpdates():
+      labels_update = labels_diff.Apply(
+          client.messages.Group.LabelsValue, original_group.labels
+      )
+      if labels_update.needs_update:
+        labels = labels_update.labels
+        update_mask.append('labels')
+
     # TODO(b/349140768): Add e2e test for this command.
     def _get_current_auto_accept_projects():
       if original_group.autoAccept is None:
@@ -81,14 +126,26 @@ class Update(base.Command):
     auto_accept = None
     if auto_accept_projects is not None:
       auto_accept = client.messages.AutoAccept(
-          autoAcceptProjects=auto_accept_projects)
+          autoAcceptProjects=auto_accept_projects
+      )
       update_mask.append('auto_accept.auto_accept_projects')
 
     # Construct a group message with only the updated fields
-    group = client.messages.Group(description=description, labels=labels,
-                                  autoAccept=auto_accept)
+    group = client.messages.Group(
+        description=description, labels=labels, autoAccept=auto_accept
+    )
 
-    op_ref = client.UpdateGroup(group_ref, group, update_mask)
+    return client.UpdateGroup(group_ref, group, update_mask)
+
+  def Run(self, args):
+    client = networkconnectivity_api.GroupsClient(
+        release_track=self.ReleaseTrack()
+    )
+    group_ref = args.CONCEPTS.group.Parse()
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      op_ref = self.UpdateGroupBeta(client, group_ref, args)
+    else:
+      op_ref = self.UpdateGroupGA(client, group_ref, args)
 
     log.status.Print('Update request issued for: [{}]'.format(group_ref.Name()))
 
@@ -103,18 +160,22 @@ class Update(base.Command):
     op_resource = resources.REGISTRY.ParseRelativeName(
         op_ref.name,
         collection='networkconnectivity.projects.locations.operations',
-        api_version=networkconnectivity_util.VERSION_MAP[self.ReleaseTrack()])
-    poller = waiter.CloudOperationPoller(client.group_service,
-                                         client.operation_service)
+        api_version=networkconnectivity_util.VERSION_MAP[self.ReleaseTrack()],
+    )
+    poller = waiter.CloudOperationPoller(
+        client.group_service, client.operation_service
+    )
     res = waiter.WaitFor(
-        poller, op_resource,
-        'Waiting for operation [{}] to complete'.format(op_ref.name))
+        poller,
+        op_resource,
+        'Waiting for operation [{}] to complete'.format(op_ref.name),
+    )
     log.UpdatedResource(group_ref.Name(), kind='group')
     return res
 
+
 Update.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
   To update the description of a group named ``my-group'', in the hub ``my-hub'', run:
 
     $ {command} my-group --hub=my-hub --description="new group description"
@@ -123,8 +184,7 @@ Update.detailed_help = {
 
     $ {command} my-group --hub=my-hub --add-auto-accept-projects=my-project
   """,
-    'API REFERENCE':
-        """ \
+    'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation
   for this API can be found at:
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest

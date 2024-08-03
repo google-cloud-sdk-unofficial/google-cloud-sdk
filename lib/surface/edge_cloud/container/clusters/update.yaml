@@ -103,7 +103,6 @@
     - group:
         release_tracks: [ALPHA]
         mutex: true
-        hidden: true
         params:
         - arg_name: clear-max-unavailable-worker-nodes
           action: store_true

@@ -30,7 +30,10 @@ from googlecloudsdk.command_lib.compute.reservations import util
 
 
 def _ValidateArgs(
-    args, support_share_with_flag, support_auto_delete=False
+    args,
+    support_share_with_flag,
+    support_auto_delete=False,
+    support_reservation_sharing_policy=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -38,6 +41,8 @@ def _ValidateArgs(
     args: The arguments given to the update command.
     support_share_with_flag: Check if share_with is supported.
     support_auto_delete: Check if auto-delete settings are supported.
+    support_reservation_sharing_policy: Check if reservation sharing policy is
+      supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -61,6 +66,14 @@ def _ValidateArgs(
         '3- Modify auto-delete'
         ' properties with specifing auto-delete-at-time or'
         ' auto-delete-after-duration or disable-auto-delete flags.'
+    )
+  if support_reservation_sharing_policy:
+    parameter_names.extend([
+        '--reservation-sharing-policy',
+    ])
+    one_option_exception_message += (
+        '4- Modify reservation sharing policy with specifying'
+        ' reservation-sharing-policy flag.'
     )
 
   has_share_with = False
@@ -97,6 +110,11 @@ def _ValidateArgs(
     )
     minimum_argument_specified = (
         minimum_argument_specified and not auto_delete_settings_updated
+    )
+  if support_reservation_sharing_policy:
+    minimum_argument_specified = (
+        minimum_argument_specified
+        and not args.IsSpecified('reservation_sharing_policy')
     )
 
   # Check parameters (add_share_with and remove_share_with are on GA).
@@ -160,6 +178,40 @@ def _GetShareSettingUpdateRequest(
   return r_update_request
 
 
+def _GetReservationSharingPolicyUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for the reservation sharing policy.
+
+  Returns:
+    UpdateRequest
+  Args:
+    args: The arguments given to the update command.
+    reservation_ref: reservation refrence.
+    holder: base_classes.ComputeApiHolder.
+  """
+  messages = holder.client.messages
+
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+      reservation_sharing_policy=getattr(
+          args, 'reservation_sharing_policy', None
+      ),
+  )
+  # Build update request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=['reservationSharingPolicy.serviceShareType'],
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 def _GetResizeRequest(args, reservation_ref, holder):
   """Create Update Request for vm_count.
 
@@ -187,7 +239,7 @@ def _GetResizeRequest(args, reservation_ref, holder):
 
 
 def _AutoDeleteUpdateRequest(args, reservation_ref, holder):
-  """Create Update Request for mofigying auto-delete properties."""
+  """Create Update Request for modifying auto-delete properties."""
   messages = holder.client.messages
 
   update_mask = []
@@ -235,6 +287,7 @@ class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
   _support_share_with_flag = False
   _support_auto_delete = False
+  _support_reservation_sharing_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -255,6 +308,7 @@ class Update(base.UpdateCommand):
         args,
         self._support_share_with_flag,
         self._support_auto_delete,
+        self._support_reservation_sharing_policy,
     )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
@@ -285,6 +339,22 @@ class Update(base.UpdateCommand):
                   errors=errors)))
       if errors:
         utils.RaiseToolException(errors)
+
+    if self._support_reservation_sharing_policy:
+      if args.IsSpecified('reservation_sharing_policy'):
+        r_sharing_policy_request = _GetReservationSharingPolicyUpdateRequest(
+            args, reservation_ref, holder
+        )
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_sharing_policy_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )
+            )
+        )
 
     if args.IsSpecified('vm_count'):
       r_resize_request = _GetResizeRequest(args, reservation_ref, holder)
@@ -322,6 +392,7 @@ class UpdateBeta(Update):
   """Update Compute Engine reservations."""
   _support_share_with_flag = True
   _support_auto_delete = True
+  _support_reservation_sharing_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -349,6 +420,7 @@ class UpdateAlpha(Update):
 
   _support_share_with_flag = True
   _support_auto_delete = True
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -359,6 +431,7 @@ class UpdateAlpha(Update):
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
+    r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

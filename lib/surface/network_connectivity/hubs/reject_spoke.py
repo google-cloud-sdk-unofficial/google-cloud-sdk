@@ -28,7 +28,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class RejectSpoke(base.Command):
   """Reject a spoke from a hub.
 
@@ -48,7 +49,10 @@ class RejectSpoke(base.Command):
     client = networkconnectivity_api.HubsClient(
         release_track=self.ReleaseTrack())
     hub_ref = args.CONCEPTS.hub.Parse()
-    op_ref = client.RejectSpoke(hub_ref, args.spoke, args.details)
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      op_ref = client.RejectSpokeBeta(hub_ref, args.spoke, args.details)
+    else:
+      op_ref = client.RejectSpoke(hub_ref, args.spoke, args.details)
 
     log.status.Print('Reject spoke request issued for: [{}]'.format(
         hub_ref.Name()))

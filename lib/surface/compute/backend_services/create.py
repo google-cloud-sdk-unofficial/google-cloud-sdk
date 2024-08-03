@@ -99,6 +99,7 @@ class CreateHelper(object):
       support_subsetting_subset_size,
       support_advanced_load_balancing,
       support_ip_address_selection_policy,
+      support_stateful_affinity,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -124,8 +125,12 @@ class CreateHelper(object):
         default=None,
         support_unspecified_protocol=support_unspecified_protocol)
     flags.AddEnableCdn(parser)
-    flags.AddSessionAffinity(parser, support_client_only=support_client_only)
-    flags.AddAffinityCookieTtl(parser)
+    flags.AddSessionAffinity(
+        parser,
+        support_stateful_affinity=support_stateful_affinity,
+        support_client_only=support_client_only,
+    )
+    flags.AddAffinityCookie(parser)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
@@ -245,8 +250,9 @@ class CreateHelper(object):
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
-    if args.affinity_cookie_ttl is not None:
-      backend_service.affinityCookieTtlSec = args.affinity_cookie_ttl
+    backend_services_utils.ApplyAffinityCookieArgs(
+        client, args, backend_service
+    )
     if args.custom_request_header is not None:
       backend_service.customRequestHeaders = args.custom_request_header
     if args.custom_response_header is not None:
@@ -366,6 +372,10 @@ class CreateHelper(object):
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
 
+    backend_services_utils.ApplyAffinityCookieArgs(
+        client, args, backend_service
+    )
+
     backend_services_utils.ApplyLogConfigArgs(
         client.messages,
         args,
@@ -465,6 +475,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
+  _support_stateful_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -480,6 +491,7 @@ class CreateGA(base.CreateCommand):
         support_ip_address_selection_policy=(
             cls._support_ip_address_selection_policy
         ),
+        support_stateful_affinity=cls._support_stateful_affinity,
     )
 
   def Run(self, args):
@@ -524,6 +536,7 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
+  _support_stateful_affinity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -550,3 +563,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
+  _support_stateful_affinity = True

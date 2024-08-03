@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   help_text:
     brief: Revoke a Privileged Access Manager (PAM) grant.
@@ -14,6 +14,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: revoke
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants

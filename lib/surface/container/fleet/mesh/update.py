@@ -101,19 +101,19 @@ def _RunUpdateV2(cmd, args):
 
     if hasattr(args, 'config_api') and args.config_api is not None:
       config_api = (
-          cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+          cmd.messages_v2.ServiceMeshSpec.ConfigApiValueValuesEnum(
               'CONFIG_API_UNSPECIFIED'
           )
       )
       if args.config_api == 'istio':
         config_api = (
-            cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+            cmd.messages_v2.ServiceMeshSpec.ConfigApiValueValuesEnum(
                 'CONFIG_API_ISTIO'
             )
         )
       if args.config_api == 'gateway':
         config_api = (
-            cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+            cmd.messages_v2.ServiceMeshSpec.ConfigApiValueValuesEnum(
                 'CONFIG_API_GATEWAY'
             )
         )

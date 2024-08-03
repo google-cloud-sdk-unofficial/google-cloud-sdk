@@ -62,6 +62,9 @@ class Create(base.Command):
         '--location',
         '-l',
         type=str,
+        required=arg_parsers.ArgRequiredInUniverse(
+            default_universe=False, non_default_universe=True
+        ),
         help=('[Location](https://cloud.google.com/storage/docs/locations)'
               ' for the bucket. If not specified, the location used by Cloud'
               ' Storage is ``us\'\'. A bucket\'s location cannot be changed'

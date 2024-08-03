@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -43,7 +44,6 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.AddOptionalInstance(parser, True)
-    flags.AddProjectLevelBackupEndpoint(parser)
     parser.display_info.AddFormat("""
       table(
         id,
@@ -71,7 +71,7 @@ class List(base.ListCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    if args.project_level:
+    if not args.instance:
       # For project-level backups, this command updates the output table.
       # pylint:disable-next=protected-access
       args._GetParser().ai.display_info.AddFormat("""table(

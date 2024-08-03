@@ -90,7 +90,17 @@ class ProxyConfig(base.BinaryBackedCommand):
         choices=['json', 'yaml'],
         required=False,
         help=(
-            'Output format.'
+            'Return the detailed proxy config. The output format is either json'
+            ' or yaml.'
+        ),
+    )
+
+    parser.add_argument(
+        '--fqdn',
+        required=False,
+        help=(
+            'Filter clusters by substring of Service FQDN field. If'
+            ' unspecified, all clusters will be included in the output"'
         ),
     )
 
@@ -111,6 +121,7 @@ class ProxyConfig(base.BinaryBackedCommand):
         proxy_config_type=args.type,
         pod_name_namespace=args.pod_name_namespace,
         output_format=args.output,
+        fqdn=args.fqdn,
         stdin=auth_cred,
     )
     return response

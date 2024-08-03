@@ -37,7 +37,7 @@ ROLE_BINDING_ID = 'gke-fleet-support-access'
 RESOURCE_NAME_FORMAT = '{membership_name}/rbacrolebindings/{rbacrolebinding_id}'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class GetYaml(base.Command):
   """Generates YAML for anthos support RBAC policies.
 
