@@ -18,15 +18,135 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base as features_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 from googlecloudsdk.command_lib.container.fleet.mesh import utils
 
 
+# LINT.IfChange(update_v2)
+def _RunUpdateV2(cmd, args):
+  """Runs the update command implementation that is common across release tracks.
+
+  For membership level spec update, we will use v2alpha API to directly update
+  the membership feature resource.
+
+  Args:
+    cmd: the release track specific command
+    args: the args passed to the command
+  """
+
+  memberships = []
+  resource = False
+  update_mask = []
+
+  # Deprecated non-resource arg
+  if args.IsKnownAndSpecified('membership'):
+    resource = False
+    memberships = utils.ParseMemberships(args)
+  elif args.fleet_default_member_config is None:
+    resource = True
+    memberships = features_base.ParseMembershipsPlural(
+        args, prompt=True, search=True
+    )
+
+  for membership in memberships:
+    if not resource:
+      membership = cmd.MembershipResourceName(membership)
+
+    patch_v2 = cmd.messages_v2.FeatureSpec()
+
+    try:
+      existing_membership_feature = cmd.GetMembershipFeature(membership)
+    except apitools_exceptions.HttpNotFoundError:
+      existing_membership_feature = cmd.messages_v2.MembershipFeature()
+
+    if existing_membership_feature.spec:
+      patch_v2 = existing_membership_feature.spec
+
+    if not patch_v2.servicemesh:
+      patch_v2.servicemesh = cmd.messages_v2.ServiceMeshSpec()
+
+    if hasattr(args, 'origin') and args.origin is not None:
+      if args.origin == 'fleet':
+        patch_v2.origin = cmd.messages_v2.Origin(
+            type=cmd.messages_v2.Origin.TypeValueValuesEnum('FLEET')
+        )
+
+    if hasattr(args, 'management') and args.management is not None:
+      management_v2 = (
+          cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
+              'MANAGEMENT_MANUAL'))
+      if args.management == 'automatic':
+        management_v2 = (
+            cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
+                'MANAGEMENT_AUTOMATIC'))
+      patch_v2.servicemesh.management = management_v2
+
+    if args.control_plane is not None:
+      control_plane_v2 = (
+          cmd.messages_v2.ServiceMeshSpec.ControlPlaneValueValuesEnum(
+              'MANUAL'))
+      if args.control_plane == 'automatic':
+        control_plane_v2 = (
+            cmd.messages_v2.ServiceMeshSpec.ControlPlaneValueValuesEnum(
+                'AUTOMATIC'))
+      patch_v2.servicemesh.controlPlane = control_plane_v2
+
+    if hasattr(args, 'config_api') and args.config_api is not None:
+      config_api = (
+          cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+              'CONFIG_API_UNSPECIFIED'
+          )
+      )
+      if args.config_api == 'istio':
+        config_api = (
+            cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+                'CONFIG_API_ISTIO'
+            )
+        )
+      if args.config_api == 'gateway':
+        config_api = (
+            cmd.messages_v2.ServiceMeshMembershipSpec.ConfigApiValueValuesEnum(
+                'CONFIG_API_GATEWAY'
+            )
+        )
+      patch_v2.servicemesh.configApi = config_api
+
+    cmd.UpdateV2(
+        membership, ['spec'], cmd.messages_v2.MembershipFeature(spec=patch_v2)
+    )
+
+  f = cmd.messages.Feature()
+
+  if args.fleet_default_member_config:
+    # Load config YAML file.
+    loaded_config = file_parsers.YamlConfigFile(
+        file_path=args.fleet_default_member_config,
+        item_type=utils.FleetDefaultMemberConfigObject,
+    )
+
+    # Create new service mesh feature spec.
+    member_config = utils.ParseFleetDefaultMemberConfig(
+        loaded_config, cmd.messages
+    )
+    f.fleetDefaultMemberConfig = (
+        cmd.messages.CommonFleetDefaultMemberConfigSpec(mesh=member_config)
+    )
+    update_mask.append('fleet_default_member_config')
+
+  if update_mask:
+    cmd.Update(update_mask, f)
+# LINT.ThenChange(:update_v1)
+
+
+# LINT.IfChange(update_v1)
 def _RunUpdate(cmd, args):
   """Runs the update command implementation that is common across release tracks.
 
@@ -144,11 +264,12 @@ def _RunUpdate(cmd, args):
     update_mask.append('fleet_default_member_config')
 
   cmd.Update(update_mask, f)
+# LINT.ThenChange(:update_v2)
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(features_base.UpdateCommand):
+class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
   Update the Service Mesh Feature Spec of a membership.
@@ -163,6 +284,7 @@ class UpdateAlpha(features_base.UpdateCommand):
   """
 
   feature_name = 'servicemesh'
+  mf_name = 'servicemesh'
 
   @staticmethod
   def Args(parser):
@@ -242,7 +364,10 @@ class UpdateAlpha(features_base.UpdateCommand):
     )
 
   def Run(self, args):
-    _RunUpdate(self, args)
+    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+      _RunUpdateV2(self, args)
+    else:
+      _RunUpdate(self, args)
 
 
 @base.DefaultUniverseOnly

@@ -47,6 +47,7 @@ class CreateAlpha(base.DeleteCommand):
       'EXAMPLES': """\
         To create a new backup vault ``BACKUP_VAULT'' in location ``MY_LOCATION'' with
         minimum enforced-retention for backups of 1 month and 1 day, run:
+
         $ {command} BACKUP_VAULT --location=MY_LOCATION \
             --backup-min-enforced-retention="p1m1d"
 

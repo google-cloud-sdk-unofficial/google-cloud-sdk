@@ -495,6 +495,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_insecure_binding_system_unauthenticated=get_default(
           'enable_insecure_binding_system_unauthenticated'
       ),
+      cp_disk_encryption_key=get_default('cp_disk_encryption_key'),
   )
 
 
@@ -708,7 +709,9 @@ flags_to_add = {
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True),
+            p, hidden=True
+        ),
+        'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -880,7 +883,9 @@ flags_to_add = {
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True),
+            p, hidden=True
+        ),
+        'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1061,7 +1066,9 @@ flags_to_add = {
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True),
+            p, hidden=True
+        ),
+        'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
     },
 }
 
@@ -1341,6 +1348,7 @@ class CreateBeta(Create):
     ops.enable_insecure_binding_system_unauthenticated = get_default(
         'enable_insecure_binding_system_unauthenticated'
     )
+    ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
     return ops
 
 
@@ -1471,4 +1479,5 @@ class CreateAlpha(Create):
     ops.enable_insecure_binding_system_unauthenticated = get_default(
         'enable_insecure_binding_system_unauthenticated'
     )
+    ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
     return ops

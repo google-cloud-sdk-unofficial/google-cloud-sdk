@@ -77,9 +77,12 @@ class Update(base.UpdateCommand):
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddAcceleratorFields(parser)
     workstations_flags.AddVmTags(parser)
-    if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
-      workstations_flags.AddBoostConfigs(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      workstations_flags.AddDisallowUnauthenticatedCorsPreflightRequestsToggleFlag(
+          parser
+      )
       workstations_flags.AddAllowedPortsFlag(parser)
+      workstations_flags.AddBoostConfigs(parser)
 
   def Collection(self):
     return (

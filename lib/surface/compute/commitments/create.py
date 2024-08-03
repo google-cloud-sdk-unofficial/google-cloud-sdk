@@ -43,12 +43,14 @@ def _CommonArgs(track, parser):
   flags.GetTypeMapperFlag(messages).choice_arg.AddToParser(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = False
   _support_existing_reservation = True
+  _support_custom_end_time = False
 
   detailed_help = {
       'EXAMPLES': '''
@@ -67,7 +69,9 @@ class Create(base.Command):
         parser,
         support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
-        support_existing_reservation=cls._support_existing_reservation)
+        support_existing_reservation=cls._support_existing_reservation,
+        support_custom_end_time=cls._support_custom_end_time,
+    )
 
   def _MakeCreateRequest(
       self,
@@ -102,8 +106,13 @@ class Create(base.Command):
         mergeSourceCommitments=flags.TranslateMergeArg(
             args.merge_source_commitments,
         ),
-        existingReservations=existing_reservations
+        existingReservations=existing_reservations,
     )
+    # TODO(b/331842266): Merge this to previous statement once enter GA.
+    if self._support_custom_end_time:
+      commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(
+          args
+      )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -163,12 +172,14 @@ class Create(base.Command):
     return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = True
   _support_existing_reservation = True
+  _support_custom_end_time = False
 
   @classmethod
   def Args(cls, parser):
@@ -177,15 +188,19 @@ class CreateBeta(Create):
         parser,
         support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
-        support_existing_reservation=cls._support_existing_reservation)
+        support_existing_reservation=cls._support_existing_reservation,
+        support_custom_end_time=cls._support_custom_end_time,
+    )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create Compute Engine commitments."""
   _support_share_setting = True
   _support_stable_fleet = True
   _support_existing_reservation = True
+  _support_custom_end_time = True
 
   @classmethod
   def Args(cls, parser):
@@ -193,7 +208,8 @@ class CreateAlpha(CreateBeta):
     flags.AddCreateFlags(
         parser, support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
-        support_existing_reservation=cls._support_existing_reservation)
+        support_existing_reservation=cls._support_existing_reservation,
+        support_custom_end_time=cls._support_custom_end_time)
 
   def _MakeCreateRequest(
       self,
@@ -215,7 +231,8 @@ class CreateAlpha(CreateBeta):
     commitment_type = commitment_type_flag.GetEnumForChoice(args.type)
     commitment = messages.Commitment(
         reservations=reservation_helper.MakeReservations(
-            args, messages, holder),
+            args, messages, holder
+        ),
         name=commitment_ref.Name(),
         plan=flags.TranslatePlanArg(messages, args.plan),
         resources=flags.TranslateResourcesArgGroup(messages, args),
@@ -223,9 +240,15 @@ class CreateAlpha(CreateBeta):
         autoRenew=flags.TranslateAutoRenewArgForCreate(args),
         splitSourceCommitment=args.split_source_commitment,
         mergeSourceCommitments=flags.TranslateMergeArg(
-            args.merge_source_commitments),
+            args.merge_source_commitments
+        ),
         existingReservations=existing_reservations,
-        )
+    )
+    # TODO(b/331842266): Merge this to previous statement once enter GA.
+    if self._support_custom_end_time:
+      commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(
+          args
+      )
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

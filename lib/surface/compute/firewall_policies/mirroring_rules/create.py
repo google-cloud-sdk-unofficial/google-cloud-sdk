@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine firewall policy packet mirroring rule.
 
@@ -50,15 +51,6 @@ class Create(base.CreateCommand):
     flags.AddDirection(parser)
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
-    flags.AddTargetServiceAccounts(parser)
-    flags.AddSrcThreatIntelligence(parser)
-    flags.AddDestThreatIntelligence(parser)
-    flags.AddSrcRegionCodes(parser)
-    flags.AddDestRegionCodes(parser)
-    flags.AddSrcFqdns(parser)
-    flags.AddDestFqdns(parser)
-    flags.AddSrcAddressGroups(parser)
-    flags.AddDestAddressGroups(parser)
     flags.AddSecurityProfileGroup(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
@@ -85,15 +77,6 @@ class Create(base.CreateCommand):
     dest_ip_ranges = []
     layer4_configs = []
     target_resources = []
-    target_service_accounts = []
-    src_address_groups = []
-    dest_address_groups = []
-    src_fqdns = []
-    dest_fqdns = []
-    src_region_codes = []
-    dest_region_codes = []
-    src_threat_intelligence = []
-    dest_threat_intelligence = []
     security_profile_group = None
     disabled = False
     if args.IsSpecified('src_ip_ranges'):
@@ -104,34 +87,6 @@ class Create(base.CreateCommand):
       layer4_configs = args.layer4_configs
     if args.IsSpecified('target_resources'):
       target_resources = args.target_resources
-    if args.IsSpecified('target_service_accounts'):
-      target_service_accounts = args.target_service_accounts
-    if args.IsSpecified('src_threat_intelligence'):
-      src_threat_intelligence = args.src_threat_intelligence
-    if args.IsSpecified('dest_threat_intelligence'):
-      dest_threat_intelligence = args.dest_threat_intelligence
-    if args.IsSpecified('src_region_codes'):
-      src_region_codes = args.src_region_codes
-    if args.IsSpecified('dest_region_codes'):
-      dest_region_codes = args.dest_region_codes
-    if args.IsSpecified('src_address_groups'):
-      src_address_groups = [
-          firewall_policies_utils.BuildAddressGroupUrl(
-              x, args.organization, org_firewall_policy, args.firewall_policy
-          )
-          for x in args.src_address_groups
-      ]
-    if args.IsSpecified('dest_address_groups'):
-      dest_address_groups = [
-          firewall_policies_utils.BuildAddressGroupUrl(
-              x, args.organization, org_firewall_policy, args.firewall_policy
-          )
-          for x in args.dest_address_groups
-      ]
-    if args.IsSpecified('src_fqdns'):
-      src_fqdns = args.src_fqdns
-    if args.IsSpecified('dest_fqdns'):
-      dest_fqdns = args.dest_fqdns
     if args.IsSpecified('security_profile_group'):
       security_profile_group = (
           firewall_policies_utils.BuildSecurityProfileGroupUrl(
@@ -153,14 +108,6 @@ class Create(base.CreateCommand):
         srcIpRanges=src_ip_ranges,
         destIpRanges=dest_ip_ranges,
         layer4Configs=layer4_config_list,
-        srcAddressGroups=src_address_groups,
-        destAddressGroups=dest_address_groups,
-        srcFqdns=src_fqdns,
-        destFqdns=dest_fqdns,
-        srcRegionCodes=src_region_codes,
-        destRegionCodes=dest_region_codes,
-        srcThreatIntelligences=src_threat_intelligence,
-        destThreatIntelligences=dest_threat_intelligence,
     )
 
     traffic_direct = (
@@ -182,7 +129,6 @@ class Create(base.CreateCommand):
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
-        targetServiceAccounts=target_service_accounts,
         securityProfileGroup=security_profile_group,
         description=args.description,
         disabled=disabled,

@@ -50,10 +50,12 @@ def _CommonArgs(parser):
   resource_args.AddLocationResourceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Apply(base.UpdateCommand):
-  """Applies a yaml configuration containing Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) declarative definitions."""
+  """Applies a yaml configuration containing Delivery Pipeline(s), Target(s), Custom Target Type(s), Deploy Policy(ies), and Automation(s) declarative definitions."""
 
   detailed_help = _DETAILED_HELP
 

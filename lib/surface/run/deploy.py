@@ -313,6 +313,13 @@ class Deploy(base.Command):
       already_activated_services,
       service,
   ):
+    # Get run functions annotations to make values sticky
+    (
+        annotated_build_service_account,
+        annotated_build_worker_pool,
+        annotated_build_env_vars,
+    ) = service.run_functions_annotations if service else (None, None, None)
+
     # Only one container can deployed from source
     name, container = next(iter(build_from_source.items()))
     pack = None
@@ -362,7 +369,10 @@ class Deploy(base.Command):
 
     if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
       image = pack[0].get('image') if pack else image
+    self._AddBaseImageToServiceAnnotations(changes, service, base_image)
     build_service_account = getattr(container, 'build_service_account', None)
+    if build_service_account is None:
+      build_service_account = annotated_build_service_account
     operation_message = (
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
@@ -372,12 +382,9 @@ class Deploy(base.Command):
             service_ref.servicesId, pack, source
         )
     )
-    build_worker_pool = None
-    if flags.FlagIsExplicitlySet(args, 'build_worker_pool'):
-      build_worker_pool = args.build_worker_pool
-
-    # TODO(b/349628618): Replace with retrieved previous build env vars
-    old_build_env_vars = None
+    build_worker_pool = _GetBuildWorkerPool(args, annotated_build_worker_pool)
+    old_build_env_vars = (json.loads(annotated_build_env_vars)
+                          if annotated_build_env_vars else None)
     build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
     build_env_vars = map_util.ApplyMapFlags(
         old_build_env_vars, **build_env_var_flags
@@ -396,6 +403,15 @@ class Deploy(base.Command):
         build_worker_pool,
         build_env_vars,
     )
+
+  def _AddBaseImageToServiceAnnotations(self, changes, service, base_image):
+    """Adds the base image to the service annotations."""
+    if base_image:
+      changes.append(config_changes.SetAnnotationChange(
+          revision.BASE_IMAGES_ANNOTATION, base_image))
+    elif service and service.annotations.get(revision.BASE_IMAGES_ANNOTATION):
+      changes.append(config_changes.DeleteAnnotationChange(
+          revision.BASE_IMAGES_ANNOTATION))
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -648,6 +664,14 @@ def _CreateBuildPack(
             )
         })
   return pack, changes
+
+
+def _GetBuildWorkerPool(args, annotated_build_worker_pool):
+  if flags.FlagIsExplicitlySet(args, 'clear_build_worker_pool'):
+    return None
+  elif flags.FlagIsExplicitlySet(args, 'build_worker_pool'):
+    return args.build_worker_pool
+  return annotated_build_worker_pool
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

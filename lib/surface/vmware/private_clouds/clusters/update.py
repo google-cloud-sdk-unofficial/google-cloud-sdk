@@ -41,6 +41,10 @@ DETAILED_HELP = {
             $ {command} my-cluster --private-cloud=my-private-cloud --update-nodes-config=type=standard-72,count=3
 
            In the second example, the project and location are taken from gcloud properties core/project and compute/zone.
+
+          To enable autoscale in a cluster called `my-cluster` in private cloud `my-private-cloud` and zone `us-west2-a`, run:
+
+            $ {command} my-cluster --location=us-west2-a --project=my-project --private-cloud=my-private-cloud --autoscaling-min-cluster-node-count=3 --autoscaling-max-cluster-node-count=5 --update-autoscaling-policy=name=custom-policy,node-type-id=standard-72,scale-out-size=1,storage-thresholds-scale-in=10,storage-thresholds-scale-out=80
     """,
 }
 
@@ -207,6 +211,7 @@ def _RemoveAutoscalingPolicies(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Google Cloud VMware Engine cluster."""
 
@@ -259,7 +264,7 @@ class Update(base.UpdateCommand):
         help='Type of node that should be removed from the cluster',
     )
     autoscaling_settings_group = parser.add_mutually_exclusive_group(
-        required=False, hidden=True
+        required=False
     )
     inlined_autoscaling_settings_group = autoscaling_settings_group.add_group()
     inlined_autoscaling_settings_group.add_argument(
@@ -315,7 +320,6 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--remove-autoscaling-policy',
         required=False,
-        hidden=True,
         metavar='NAME',
         default=list(),
         type=str,

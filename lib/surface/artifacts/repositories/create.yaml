@@ -11,14 +11,14 @@
         * The active account does not have permission to create repositories.
         * A valid repository format was not provided.
     examples: |
-      To create a repository with the name `my-repo` under the current project, run:
+      To create a docker repository with the name `my-repo` in the default project and location, run the following command:
 
-        $ {command} my-repo
+        $ {command} my-repo --repository-format=docker
 
-      To create repository `my-repo` with a KMS key
-      `projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key`, run:
+      To create a docker repository `my-repo` with a KMS key
+      `projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key` in the default project and location, run the following command:
 
-        $ {command} my-repo --kms-key=projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key
+        $ {command} my-repo --repository-format=docker --kms-key=projects/my-project/locations/us/keyRings/my-kr/cryptoKeys/my-key
 
   arguments:
     resource:

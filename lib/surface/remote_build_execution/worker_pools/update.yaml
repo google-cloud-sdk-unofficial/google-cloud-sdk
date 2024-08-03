@@ -200,6 +200,10 @@
               help_text: |
                 The maximal number of autoscale workers. Must be equal to or greater than
                 autoscale-min-size.
+            - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.autoscale.minIdleWorkers
+              arg_name: autoscale-min-idle-workers
+              help_text: |
+                The minimum number of idle workers. Must be equal to or greater than 0.
         - arg_name: clear-autoscale
           action: store_true
           processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag

@@ -30,6 +30,7 @@ _SQL_LOGIN = 'https://www.googleapis.com/auth/sqlservice.login'
 _SCOPES = [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE, _SQL_LOGIN]
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class GenerateLoginToken(base.Command):
@@ -73,7 +74,7 @@ class GenerateLoginToken(base.Command):
         '--application-default-credential',
         action='store_true',
         help='Use application default credentials to generate the login token.')
-    parser.display_info.AddFormat('value(token)')
+    parser.display_info.AddFormat('value[teriminator="",private](token)')
 
   def Run(self, args):
     """Runs the command to reschedule maintenance for a Cloud SQL instance."""

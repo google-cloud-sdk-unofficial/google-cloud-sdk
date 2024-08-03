@@ -42,6 +42,22 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.session_duration
       hidden: true
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.inline_certificate_issuance_config_file
+        - group:
+            hidden: true
+            params:
+            - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.key_algorithm
+            - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.certificate_lifetime
+            - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.rotation_window_percentage
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.inline_trust_config_file
 
 # ALPHA and BETA release track should not be updated going forward. All preview features should be
 # added to the GA release track and marked as hidden.

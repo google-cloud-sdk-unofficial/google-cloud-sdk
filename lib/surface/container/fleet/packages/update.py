@@ -67,6 +67,7 @@ class Update(base.UpdateCommand):
         'variantSelector',
         'rolloutStrategy',
         'deletionPropagationPolicy',
+        'state',
     ]
     update_mask_attrs = []
     for attr in possible_attributes:

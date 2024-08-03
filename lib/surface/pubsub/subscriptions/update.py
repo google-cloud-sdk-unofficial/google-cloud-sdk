@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 def _Args(
     parser,
     enable_push_to_cps=False,
+    enable_cps_gcs_max_messages=False,
 ):
   """Adds the arguments for this command.
 
@@ -38,12 +39,15 @@ def _Args(
     parser: the parser for the command.
     enable_push_to_cps: whether or not to enable Pubsub Export config flags
       support.
+    enable_cps_gcs_max_messages: whether or not to enable flags for GCS
+      subscription max messages batching support.
   """
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
+      enable_cps_gcs_max_messages=enable_cps_gcs_max_messages,
   )
   labels_util.AddUpdateLabelsFlags(parser)
 
@@ -62,14 +66,17 @@ class Update(base.UpdateCommand):
       self,
       args,
       enable_push_to_cps=False,
+      enable_cps_gcs_max_messages=False,
   ):
     """This is what gets called when the user runs this command.
 
     Args:
-      args: an argparse namespace. All the arguments that were provided to this
+      args: An argparse namespace. All the arguments that were provided to this
         command invocation.
-      enable_push_to_cps: whether or not to enable Pubsub Export config flags
+      enable_push_to_cps: Whether or not to enable Pubsub Export config flags
         support.
+      enable_cps_gcs_max_messages: Whether or not to enable GCS max messages
+        batching flag support.
 
     Returns:
       A serialized object (dict) describing the results of the operation. This
@@ -141,6 +148,11 @@ class Update(base.UpdateCommand):
     cloud_storage_max_duration = getattr(
         args, 'cloud_storage_max_duration', None
     )
+    cloud_storage_max_messages = (
+        getattr(args, 'cloud_storage_max_messages', None)
+        if enable_cps_gcs_max_messages
+        else None
+    )
     if args.IsSpecified('cloud_storage_max_duration'):
       cloud_storage_max_duration = util.FormatDuration(
           cloud_storage_max_duration
@@ -209,6 +221,7 @@ class Update(base.UpdateCommand):
           cloud_storage_file_datetime_format=cloud_storage_file_datetime_format,
           cloud_storage_max_bytes=cloud_storage_max_bytes,
           cloud_storage_max_duration=cloud_storage_max_duration,
+          cloud_storage_max_messages=cloud_storage_max_messages,
           cloud_storage_output_format=cloud_storage_output_format,
           cloud_storage_use_topic_schema=cloud_storage_use_topic_schema,
           cloud_storage_write_metadata=cloud_storage_write_metadata,
@@ -242,12 +255,12 @@ class UpdateBeta(Update):
     _Args(
         parser,
         enable_push_to_cps=True,
+        enable_cps_gcs_max_messages=True,
     )
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
     flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
     return super(UpdateBeta, self).Run(
-        args,
-        enable_push_to_cps=True,
+        args, enable_push_to_cps=True, enable_cps_gcs_max_messages=True
     )

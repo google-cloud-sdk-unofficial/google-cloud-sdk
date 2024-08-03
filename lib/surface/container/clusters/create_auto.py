@@ -56,6 +56,7 @@ auto_flags = [
     'labels',
     'secretManagerConfig',
     'enableCiliumClusterwideNetworkPolicy',
+    'cpDiskEncryptionKey',
 ]
 
 # Change default flag values in create-auto

@@ -45,6 +45,17 @@
       hidden: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.mode
       hidden: true
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.inline_certificate_issuance_config_file
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.inline_trust_config_file
+
 
 # ALPHA and BETA release track should not be updated going forward. All preview features should be
 # added to the GA release track and marked as hidden.

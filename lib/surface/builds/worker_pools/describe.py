@@ -74,6 +74,46 @@ class Describe(base.DescribeCommand):
 class DescribeBeta(Describe):
   """Describe a worker pool used by Cloud Build."""
 
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    parser.add_argument(
+        '--region',
+        help='The Cloud region where the worker pool is.')
+    parser.add_argument(
+        '--generation',
+        default=1,
+        type=int,
+        help=('Generation of the worker pool.'))
+    parser.add_argument(
+        'WORKER_POOL', help='The ID of the worker pool to describe.')
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    if args.generation == 1:
+      return _DescribeWorkerPoolFirstGen(args, self.ReleaseTrack())
+    if args.generation == 2:
+      return _DescribeWorkerPoolSecondGen(args)
+
+    raise exceptions.InvalidArgumentException(
+        '--generation',
+        'please use one of the following valid generation values: 1, 2',
+    )
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):

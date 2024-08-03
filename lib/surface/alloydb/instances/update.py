@@ -147,6 +147,7 @@ class UpdateBeta(Update):
     flags.AddObservabilityConfigTrackActiveQueries(
         parser, show_negated_in_help=True
     )
+    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

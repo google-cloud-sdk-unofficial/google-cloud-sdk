@@ -112,6 +112,65 @@ class List(base.ListCommand):
 class ListBeta(List):
   """List all worker pools in a Google Cloud project."""
 
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+
+    parser.add_argument(
+        '--region',
+        help='The Cloud region to list worker pools in.')
+    parser.add_argument(
+        '--generation',
+        default=1,
+        type=int,
+        help=('Generation of the worker pool.'))
+    parser.display_info.AddFormat("""
+          table(
+            name.segment(-1),
+            createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
+            state
+          )
+        """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    wp_region = args.region
+    if not wp_region:
+      wp_region = properties.VALUES.builds.region.GetOrFail()
+    parent = properties.VALUES.core.project.Get(required=True)
+
+    # Get the parent project ref
+    parent_resource = resources.REGISTRY.Create(
+        collection='cloudbuild.projects.locations',
+        projectsId=parent,
+        locationsId=wp_region)
+
+    if args.generation == 1:
+      args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolURI)
+      return _ListWorkerPoolFirstGen(parent_resource, self.ReleaseTrack())
+    if args.generation == 2:
+      args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolSecondGenURI)
+      return _ListWorkerPoolSecondGen(parent_resource)
+
+    raise exceptions.InvalidArgumentException(
+        '--generation',
+        'please use one of the following valid generation values: 1, 2',
+    )
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):

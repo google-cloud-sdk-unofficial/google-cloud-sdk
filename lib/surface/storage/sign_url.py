@@ -238,7 +238,7 @@ class SignUrl(base.Command):
         if c_creds.IsServiceAccountCredentials(creds):
           try:
             client_id, key = sign_url_util.get_signing_information_from_json(
-                c_creds.ToJson(creds)
+                c_creds.ToJsonGoogleAuth(creds)
             )
           except ModuleNotFoundError as error:
             if 'OpenSSL' in str(error):

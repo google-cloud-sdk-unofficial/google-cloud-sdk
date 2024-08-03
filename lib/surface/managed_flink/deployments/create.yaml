@@ -9,6 +9,15 @@ help_text:
         $ {command} my-deployment \
             --location=us-central1
 
+    To create a Managed Flink deployment with all optional parameters set, run:
+
+        $ {command} my-deployment \
+            --location=us-central1
+            --max-slots=100 \
+            --secrets-path=projects/my-project/secrets/my-secret/versions/1 \
+            --network-config-vpc=my-vpc \
+            --network-config-subnetwork=my-subnetwork
+
 request:
   collection: managedflink.projects.locations.deployments
   method: create
@@ -23,7 +32,8 @@ arguments:
 
   params:
   - _REF_: googlecloudsdk.command_lib.managed_flink.flags:max-slots
-  - _REF_: googlecloudsdk.command_lib.managed_flink.flags:workload-identity
+    required: true
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags:secrets-path
   - group:
       params:
       - _REF_: googlecloudsdk.command_lib.managed_flink.flags:network-config-vpc

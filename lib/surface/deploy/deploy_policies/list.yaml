@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA, GA]
   hidden: true
   help_text:
     brief: List the deploy policies.

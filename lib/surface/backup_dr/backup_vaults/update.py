@@ -74,6 +74,7 @@ class UpdateAlpha(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddEffectiveTime(parser)
     flags.AddUnlockBackupMinEnforcedRetention(parser)
+    flags.AddForceUpdateFlag(parser)
 
   def GetUpdateMask(self, args):
     updated_fields = []
@@ -125,10 +126,12 @@ class UpdateAlpha(base.UpdateCommand):
       )
 
       update_mask = self.GetUpdateMask(args)
+
       operation = client.Update(
           backup_vault,
           parsed_bv,
           update_mask=update_mask,
+          force_update=args.force_update,
       )
 
     except apitools_exceptions.HttpError as e:

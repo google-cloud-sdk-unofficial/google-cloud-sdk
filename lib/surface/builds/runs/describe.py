@@ -24,7 +24,8 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Get a PipelineRun/TaskRun."""
 

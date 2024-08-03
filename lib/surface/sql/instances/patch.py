@@ -285,9 +285,9 @@ def AddBetaArgs(parser):
   flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddSqlServerTimeZone(parser, hidden=True)
 
 
 def RunBasePatchCommand(args, release_track):

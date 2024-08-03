@@ -96,13 +96,40 @@ class UpdateBeta(Update):
     """
     parser = workerpool_flags.AddWorkerpoolUpdateArgs(parser,
                                                       base.ReleaseTrack.BETA)
+    parser.add_argument(
+        '--generation',
+        default=1,
+        type=int,
+        help=('Generation of the worker pool.'),
+    )
     parser.display_info.AddFormat("""
           table(
-            name,
+            name.segment(-1),
             createTime.date('%Y-%m-%dT%H:%M:%S%Oz', undefined='-'),
             state
           )
         """)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Some value that we want to have printed later.
+    """
+
+    if args.generation == 1:
+      return _UpdateWorkerPoolFirstGen(args, self.ReleaseTrack())
+    if args.generation == 2:
+      return _UpdateWorkerPoolSecondGen(args)
+
+    raise exceptions.InvalidArgumentException(
+        '--generation',
+        'please use one of the following valid generation values: 1, 2',
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

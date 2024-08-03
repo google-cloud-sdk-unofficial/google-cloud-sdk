@@ -36,7 +36,8 @@ def _GetResultURI(resource):
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List all Cloud Build runs in a Google Cloud project."""
 

@@ -32,6 +32,73 @@ from googlecloudsdk.core.console import console_io
 
 # 1h, based off of the max time it usually takes to create a SQL instance.
 _INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
+# override flags , future override flags should be declared here.
+OVERRIDE_FLAGS_SET = (
+    'activation_policy',
+    'active_directory_domain',
+    'assign_ip',
+    'authorized_networks',
+    'availability_type',
+    'backup',
+    'backup_start_time',
+    'backup_location',
+    'cpu',
+    'collation',
+    'database_flags',
+    'enable_bin_log',
+    'retained_backups_count',
+    'retained_transaction_log_days',
+    'failover_replica_name',
+    'maintenance_release_channel',
+    'maintenance_window_day',
+    'maintenance_window_hour',
+    'deny_maintenance_period_start_date',
+    'deny_maintenance_period_end_date',
+    'deny_maintenance_period_time',
+    'insights_config_query_insights_enabled',
+    'insights_config_query_string_length',
+    'insights_config_record_application_tags',
+    'insights_config_record_client_address',
+    'insights_config_query_plans_per_minute',
+    'master_instance_name',
+    'memory',
+    'password_policy_min_length',
+    'password_policy_complexity',
+    'password_policy_reuse_interval',
+    'password_policy_disallow_username_substring',
+    'password_policy_password_change_interval',
+    'enable_password_policy',
+    'replica_type',
+    'replication',
+    'require_ssl',
+    'root_password',
+    'storage_auto_increase',
+    'storage_size',
+    'storage_type',
+    'tier',
+    'edition',
+    'enable_point_in_time_recovery',
+    'network',
+    'audit_bucket_path',
+    'deletion_protection',
+    'time_zone',
+    'connector_enforcement',
+    'timeout',
+    'enable_google_private_path',
+    'threads_per_core',
+    'cascadable_replica',
+    'enable_data_cache',
+    'recreate_replicas_on_primary_crash',
+    'enable_private_service_connect',
+    'allowed_psc_projects',
+    'ssl_mode',
+    'enable_google_ml_integration',
+    'database_version',
+    'disk_encryption_key',
+    'disk_encryption_key_keyring',
+    'disk_encryption_key_location',
+    'disk_encryption_key_project',
+)
 
 
 def AddInstanceSettingsArgs(parser):
@@ -180,27 +247,32 @@ class RestoreBackup(base.RestoreCommand):
         'All current data on the instance will be lost when the backup is '
         'restored.'):
       return None
-    if not args.backup_instance:
-      args.backup_instance = args.restore_instance
 
+    specified_args_dict = getattr(args, '_specified_args', None)
+    override = any(key in OVERRIDE_FLAGS_SET for key in specified_args_dict)
     if args.project_level:
-      instance_resource = (
-          command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
-              sql_messages, args, instance_ref=instance_ref
+      restore_backup_request = sql_messages.SqlInstancesRestoreBackupRequest(
+          project=instance_ref.project,
+          instance=instance_ref.instance,
+          instancesRestoreBackupRequest=sql_messages.InstancesRestoreBackupRequest(
+              backup=args.id
+              )
           )
-      )
+      if override:
+        instance_resource = (
+            command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
+                sql_messages, args, instance_ref=instance_ref
+            )
+        )
+        restore_backup_request.instancesRestoreBackupRequest.restoreInstanceSettings = (
+            instance_resource
+        )
       result_operation = sql_client.instances.RestoreBackup(
-          sql_messages.SqlInstancesRestoreBackupRequest(
-              project=instance_ref.project,
-              instance=instance_ref.instance,
-              instancesRestoreBackupRequest=(
-                  sql_messages.InstancesRestoreBackupRequest(
-                      backup=args.id, restoreInstanceSettings=instance_resource
-                  )
-              ),
+          restore_backup_request
           )
-      )
     else:
+      if not args.backup_instance:
+        args.backup_instance = args.restore_instance
       backup_run_id = int(args.id)
       result_operation = sql_client.instances.RestoreBackup(
           sql_messages.SqlInstancesRestoreBackupRequest(
