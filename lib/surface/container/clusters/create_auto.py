@@ -90,6 +90,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
   flags.AddInsecureRBACBindingFlags(parser, hidden=True)
+  flags.AddEnableMultiNetworkingFlag(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class BulkMute(base.Command):
   """Bulk mute Security Command Center findings based on a filter."""
@@ -91,6 +92,16 @@ class BulkMute(base.Command):
         "--filter",
         help="The filter string which will applied to findings being muted.",
     )
+
+    # To accept both lower and uppercase arguments for the choices we use
+    # base.ChoiceArgument.
+    base.ChoiceArgument(
+        "--mute-state",
+        default="muted",
+        choices=["muted", "undefined"],
+        help_str="Desired mute state of the finding.",
+    ).AddToParser(parser)
+
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
 
@@ -100,7 +111,8 @@ class BulkMute(base.Command):
     messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsFindingsBulkMuteRequest()
     request.bulkMuteFindingsRequest = messages.BulkMuteFindingsRequest(
-        filter=args.filter
+        filter=args.filter,
+        muteState=util.ConvertMuteStateInput(args.mute_state, messages)
     )
     request.parent = util.ValidateAndGetParent(args)
     args.filter = ""

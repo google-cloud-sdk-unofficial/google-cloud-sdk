@@ -157,7 +157,7 @@ class Compute(base.Command):
       restore_config['MachineType'] = args.machine_type
     if args.hostname:
       restore_config['Hostname'] = args.hostname
-    if args.enable_uefi_networking:
+    if args.enable_uefi_networking is not None:
       restore_config['EnableUefiNetworking'] = args.enable_uefi_networking
     if args.threads_per_core:
       restore_config['ThreadsPerCore'] = args.threads_per_core
@@ -175,9 +175,9 @@ class Compute(base.Command):
       restore_config['MinCpuPlatform'] = args.min_cpu_platform
     if args.maintenance_policy:
       restore_config['MaintenancePolicy'] = args.maintenance_policy
-    if args.preemptible:
+    if args.preemptible is not None:
       restore_config['Preemptible'] = args.preemptible
-    if args.restart_on_failure:
+    if args.restart_on_failure is not None:
       restore_config['RestartOnFailure'] = args.restart_on_failure
     if args.min_node_cpu:
       restore_config['MinNodeCpus'] = args.min_node_cpu
@@ -197,9 +197,9 @@ class Compute(base.Command):
       restore_config['ReservationAffinity'] = args.reservation_affinity
     if args.reservation:
       restore_config['Reservation'] = args.reservation
-    if args.enable_display_device:
+    if args.enable_display_device is not None:
       restore_config['EnableDisplayDevice'] = args.enable_display_device
-    if args.can_ip_forward:
+    if args.can_ip_forward is not None:
       restore_config['CanIpForward'] = args.can_ip_forward
     if args.private_ipv6_google_access_type:
       restore_config['PrivateIpv6GoogleAccessType'] = (
@@ -211,7 +211,7 @@ class Compute(base.Command):
       )
     if args.confidential_compute:
       restore_config['ConfidentialCompute'] = args.confidential_compute
-    if args.deletion_protection:
+    if args.deletion_protection is not None:
       restore_config['DeletionProtection'] = args.deletion_protection
     if args.resource_manager_tags:
       restore_config['ResourceManagerTags'] = args.resource_manager_tags
@@ -235,10 +235,7 @@ class Compute(base.Command):
           backup.Name(),
           kind='backup',
           is_async=True,
-          details=(
-              'Run the [gcloud backup-dr operations describe] command to check'
-              ' the status of this operation [{}]'.format(operation.name)
-          ),
+          details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
       )
       return operation
 

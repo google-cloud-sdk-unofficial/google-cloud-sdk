@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command to describe universe descriptor data."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from cloudsdk.google.protobuf import json_format
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.universe_descriptor import universe_descriptor

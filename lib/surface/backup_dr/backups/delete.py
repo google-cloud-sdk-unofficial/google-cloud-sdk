@@ -86,13 +86,10 @@ class DeleteAlpha(base.DeleteCommand):
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
     if is_async:
       log.DeletedResource(
-          operation.name,
+          backup.RelativeName(),
           kind='backup',
           is_async=True,
-          details=(
-              'Run the [gcloud backup-dr operations describe] command '
-              'to check the status of this operation.'
-          ),
+          details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
       )
       return operation
 

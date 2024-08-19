@@ -368,6 +368,7 @@ class Create(base.CreateCommand):
         ._support_confidential_compute_type_tdx)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
 
   def Collection(self):
@@ -899,6 +900,7 @@ class CreateBeta(Create):
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
+    instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 

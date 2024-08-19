@@ -49,7 +49,7 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    endpoint_group_flags.AddEndpointGroupResource(parser)
+    endpoint_group_flags.AddEndpointGroupResource(cls.ReleaseTrack(), parser)
 
   def Run(self, args):
     client = api.Client(self.ReleaseTrack())

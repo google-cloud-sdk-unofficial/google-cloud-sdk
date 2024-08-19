@@ -29,7 +29,8 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a spoke.
 

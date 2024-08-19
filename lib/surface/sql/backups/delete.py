@@ -19,17 +19,21 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Delete(base.DeleteCommand):
   """Delete a backup of a Cloud SQL instance."""
 
@@ -45,7 +49,6 @@ class Delete(base.DeleteCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddBackupId(parser)
     flags.AddOptionalInstance(parser)
-    flags.AddProjectLevelBackupEndpoint(parser)
     parser.display_info.AddCacheUpdater(None)
 
   def Run(self, args):
@@ -73,7 +76,10 @@ class Delete(base.DeleteCommand):
         default=True,
         cancel_on_no=True,
     )
-    if args.project_level:
+    is_project_level_backup_deletion = (
+        command_validate.IsProjectLevelBackupRequest(args.id)
+    )
+    if is_project_level_backup_deletion:
       result = sql_client.backups.DeleteBackup(
           sql_messages.SqlBackupsDeleteBackupRequest(name=args.id)
       )
@@ -81,6 +87,10 @@ class Delete(base.DeleteCommand):
           'sql.operations', operation=result.name, project=args.id.split('/')[1]
       )
     else:
+      if args.instance is None:
+        raise exceptions.ArgumentError(
+            "[--instance | --i] is required for instance's backup deletion."
+        )
       validate.ValidateInstanceName(args.instance)
       instance_ref = client.resource_parser.Parse(
           args.instance,
@@ -105,9 +115,12 @@ class Delete(base.DeleteCommand):
               project=operation_ref.project, operation=operation_ref.operation
           )
       )
+    message = 'backup run'
+    if is_project_level_backup_deletion:
+      message = 'backup'
 
     operations.OperationsV1Beta4.WaitForOperation(
-        sql_client, operation_ref, 'Deleting backup run'
+        sql_client, operation_ref, 'Deleting {0}'.format(message)
     )
 
-    log.DeletedResource(args.id, 'backup run')
+    log.DeletedResource(args.id, message)

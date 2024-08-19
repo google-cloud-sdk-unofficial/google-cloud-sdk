@@ -23,28 +23,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class ListBeta(base.ListCommand):
-  """Lists all Firestore databases under the project.
-
-  ## EXAMPLES
-
-  To list all Firestore databases.
-
-      $ {command}
-  """
-
-  def ListDatabases(self, show_deleted):
-    project = properties.VALUES.core.project.Get(required=True)
-    return databases.ListDatabases(project, show_deleted)
-
-  def Run(self, args):
-    return self.ListDatabases(show_deleted=False)
-
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+class ListAlpha(base.ListCommand):
   """Lists all Firestore databases under the project.
 
   ## EXAMPLES
@@ -66,6 +49,10 @@ class ListAlpha(ListBeta):
         action='store_true',
         default=False,
     )
+
+  def ListDatabases(self, show_deleted):
+    project = properties.VALUES.core.project.Get(required=True)
+    return databases.ListDatabases(project, show_deleted)
 
   def Run(self, args):
     return self.ListDatabases(args.show_deleted)

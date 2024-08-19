@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.findings import util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class SetMute(base.Command):
   """Update a Security Command Center finding's mute state."""
@@ -100,7 +101,7 @@ class SetMute(base.Command):
         "--mute",
         required=True,
         default="mute_unspecified",
-        choices=["muted", "unmuted"],
+        choices=["muted", "unmuted", "undefined"],
         help_str="Desired mute state of the finding.",
     ).AddToParser(parser)
 

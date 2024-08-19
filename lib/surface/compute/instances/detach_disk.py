@@ -46,7 +46,7 @@ class DetachDisk(base.UpdateCommand):
 
   detailed_help = {
       'EXAMPLES': """
-          To detach a disk named 'my-disk' to an instance named 'my-instance',
+          To detach a disk named 'my-disk' from an instance named 'my-instance',
           run:
 
             $ {command} my-instance --disk=my-disk

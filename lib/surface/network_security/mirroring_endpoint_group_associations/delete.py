@@ -52,7 +52,9 @@ class Delete(base.DeleteCommand):
 
   @classmethod
   def Args(cls, parser):
-    endpoint_group_association_flags.AddEndpointGroupAssociationResource(parser)
+    endpoint_group_association_flags.AddEndpointGroupAssociationResource(
+        cls.ReleaseTrack(), parser
+    )
     endpoint_group_association_flags.AddMaxWait(
         parser, '20m'  # default to 20 minutes wait.
     )

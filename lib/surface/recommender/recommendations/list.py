@@ -64,8 +64,6 @@ class List(base.ListCommand):
   recommendations for child resources and projects are also listed.
   Supported recommenders can be found here:
   https://cloud.google.com/recommender/docs/recommenders.
-  The following Google Cloud resources are supported: project,
-  billing_account, folder and organization.
   """
 
   detailed_help = DETAILED_HELP
@@ -106,19 +104,22 @@ class List(base.ListCommand):
         type=arg_parsers.ArgBoolean(),
         default=False,
         help=("""
-            By default, `--recursive` is set to false and can be ommitted.
+            By default, `--recursive` is set to false and can be omitted.
             If `--recursive=true` is used, in addition to listing the
             recommendations for the specified
-            organization, billing account, or folder, recursively list all of
-            the recommendations for that resource's child resources, including
+            organization or folder, recursively lists all of
+            the recommendations for the resource's child resources, including
             their descendents (for example, a folder's sub-folders), and for
-            that resource's child projects. For example, when using the
+            the resource's child projects. For example, when using the
             `--recursive` flag and specifying an organization, the response
             lists all of the recommendations associated with that
             organization, all of the recommendations associated with that
             organization's folders and sub-folders, and all of the
             recommendations associated with that organization's child
-            projects.
+            projects.  The maximum number of resources (organization,
+            folders, projects, and descendant resources) that can be accessed at
+            once with the `--recursive` flag is 100. For a larger
+            number of nested resources, use BigQuery Export.
             """),
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)

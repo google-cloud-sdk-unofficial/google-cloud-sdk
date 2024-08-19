@@ -34,6 +34,11 @@ MODE_OPTIONS = {
         'compute/docs/disks/add-persistent-disk#use_multi_instances'),
 }
 
+PD_INTERFACE_OPTIONS = {
+    'SCSI': 'SCSI',
+    'NVME': 'NVME',
+}
+
 DETAILED_HELP = {
     'DESCRIPTION': """
         *{command}* is used to attach a disk to an instance. For example,
@@ -62,6 +67,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class AttachDisk(base.SilentCommand):
@@ -94,6 +100,14 @@ class AttachDisk(base.SilentCommand):
         '--boot',
         action='store_true',
         help='Attach the disk to the instance as a boot disk.')
+
+    parser.add_argument(
+        '--interface',
+        choices=PD_INTERFACE_OPTIONS,
+        help="""
+        The interface of the disk.
+        """,
+    )
 
     flags.AddDiskScopeFlag(parser)
 
@@ -144,6 +158,13 @@ class AttachDisk(base.SilentCommand):
         source=disk_ref.SelfLink(),
         type=client.messages.AttachedDisk.TypeValueValuesEnum.PERSISTENT,
         diskEncryptionKey=disk_key_or_none)
+
+    if args.interface:
+      if args.interface == 'SCSI':
+        interface = client.messages.AttachedDisk.InterfaceValueValuesEnum.SCSI
+      else:
+        interface = client.messages.AttachedDisk.InterfaceValueValuesEnum.NVME
+      attached_disk.interface = interface
 
     if args.boot:
       attached_disk.boot = args.boot

@@ -82,13 +82,10 @@ class TriggerBackup(base.Command):
       # none of the log.CreatedResource, log.DeletedResource etc. matched
       log._PrintResourceChange(
           'on demand backup',
-          operation.name,
+          backup_plan_association.RelativeName(),
           kind='backup plan association',
           is_async=True,
-          details=(
-              'Run the [gcloud backup-dr operations describe] command '
-              'to check the status of this operation.'
-          ),
+          details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
           failed=None,
       )
       return

@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a Security Command Center mute config."""
@@ -76,6 +77,8 @@ class Create(base.CreateCommand):
     flags.AddParentGroup(parser)
     flags.DESCRIPTION_FLAG.AddToParser(parser)
     flags.FILTER_FLAG.AddToParser(parser)
+    flags.TYPE_FLAG.AddToParser(parser)
+    flags.EXPIRY_TIME_FLAG.AddToParser(parser)
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
@@ -86,18 +89,24 @@ class Create(base.CreateCommand):
     # Build request from args.
     messages = securitycenter_client.GetMessages(version)
     request = messages.SecuritycenterOrganizationsMuteConfigsCreateRequest()
+    mute_config_type = util.ValidateAndGetType(args, version)
+    expiry_time = util.ValidateAndGetExpiryTime(args)
     if version == "v2":
       request.googleCloudSecuritycenterV2MuteConfig = (
           messages.GoogleCloudSecuritycenterV2MuteConfig(
               filter=args.filter,
               description=args.description,
-              type=messages.GoogleCloudSecuritycenterV2MuteConfig.TypeValueValuesEnum.STATIC,
+              type=mute_config_type,
+              expiryTime=expiry_time,
           )
       )
     else:
       request.googleCloudSecuritycenterV1MuteConfig = (
           messages.GoogleCloudSecuritycenterV1MuteConfig(
-              filter=args.filter, description=args.description
+              filter=args.filter,
+              description=args.description,
+              type=mute_config_type,
+              expiryTime=expiry_time,
           )
       )
     request = _GenerateMuteConfig(args, request, version)

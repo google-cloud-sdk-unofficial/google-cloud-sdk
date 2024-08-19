@@ -41,14 +41,20 @@ class Download(base.Command):
     To download version v0.1.0 of myfile.txt located in a repository in "us-central1" to /path/to/destination/:
 
         $ {command} --location=us-central1 --project=myproject --repository=myrepo \
-          --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
-          --name=myfile.txt
+            --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
+            --name=myfile.txt
+
+    To download version v0.1.0 of myfile.txt in 8000 byte chunks located in a repository in "us-central1" to /path/to/destination/:
+
+        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
+            --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
+            --name=myfile.txt --chunk-size=8000
 
     To download all files of version v0.1.0 and package mypackage located in a repository in "us-central1" to /path/to/destination/
     while maintaining the folder hierarchy:
 
         $ {command} --location=us-central1 --project=myproject --repository=myrepo \
-          --package=mypackage --version=v0.1.0 --destination=/path/to/destination/
+            --package=mypackage --version=v0.1.0 --destination=/path/to/destination/
     """,
   }
 
@@ -60,6 +66,7 @@ class Download(base.Command):
       parser: An argparse.ArgumentParser.
     """
     flags.GetRequiredRepoFlag().AddToParser(parser)
+    flags.GetChunkSize().AddToParser(parser)
 
     parser.add_argument(
         '--destination',
@@ -122,12 +129,16 @@ class Download(base.Command):
         repo_ref.repositoriesId,
         file_id,
     )
+    default_chunk_size = 3 * 1024 * 1024
+    chunk_size = args.chunk_size or default_chunk_size
 
     download_util.Download(
         final_path,
         file_escaped.RelativeName(),
         file_name,
-        False)
+        False,
+        int(chunk_size),
+    )
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)
     )

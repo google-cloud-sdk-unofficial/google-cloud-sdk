@@ -15,15 +15,13 @@
 
 """Command to create named configuration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.config import config_validators
 from googlecloudsdk.core import log
 from googlecloudsdk.core.configurations import named_configs
 
 
+@base.UniverseCompatible
 class Create(base.SilentCommand):
   """Creates a new named configuration."""
 
@@ -49,13 +47,14 @@ class Create(base.SilentCommand):
   def Args(parser):
     """Adds args for this command."""
     parser.add_argument(
-        'configuration_name',
-        help='Name of the configuration to create')
+        'configuration_name', help='Name of the configuration to create'
+    )
     parser.add_argument(
         '--activate',
         action='store_true',
         default=True,
-        help='If true, activate this configuration upon create.')
+        help='If true, activate this configuration upon create.',
+    )
     parser.add_argument(
         '--universe-domain',
         type=str,
@@ -75,10 +74,16 @@ class Create(base.SilentCommand):
       named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
       log.status.Print('Activated [{0}].'.format(args.configuration_name))
     else:
-      log.status.Print('To use this configuration, activate it by running:\n'
-                       '  $ gcloud config configurations activate {name}\n\n'.
-                       format(name=args.configuration_name))
+      log.status.Print(
+          'To use this configuration, activate it by running:\n'
+          '  $ gcloud config configurations activate {name}\n\n'.format(
+              name=args.configuration_name
+          )
+      )
     if args.universe_domain:
+      config_validators.WarnIfSettingUniverseDomainWithNoDescriptorData(
+          args.universe_domain
+      )
       created_config.PersistProperty(
           'core', 'universe_domain', args.universe_domain
       )

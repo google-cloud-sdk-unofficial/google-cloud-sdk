@@ -30,6 +30,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.credentials import store as c_store
 
 
+@base.UniverseCompatible
 class Set(base.Command):
   """Set a Google Cloud CLI property.
 
@@ -152,6 +153,11 @@ class Set(base.Command):
       showed_warning = config_validators.WarnIfSettingUniverseDomainOutsideOfConfigAccountUniverse(
           args.value
       )
+      showed_warning = (
+          config_validators.WarnIfSettingUniverseDomainWithNoDescriptorData(
+              args.value
+          )
+      ) or showed_warning
 
     if showed_warning and not args.quiet and console_io.CanPrompt():
       if not console_io.PromptContinue(

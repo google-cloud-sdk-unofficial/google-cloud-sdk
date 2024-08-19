@@ -231,11 +231,12 @@ def _Run(args, holder, include_log_config, include_source_regions):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a TCP health check."""
 
   _include_log_config = True
-  _include_source_regions = False
+  _include_source_regions = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -252,10 +253,10 @@ class Update(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
 
-  _include_source_regions = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
 
-  _include_source_regions = True
+  pass

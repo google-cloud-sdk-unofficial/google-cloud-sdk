@@ -36,21 +36,11 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
-DETAILED_HELP_ALPHA = {
-    'EXAMPLES':
-        """\
+DETAILED_HELP = {
+    'EXAMPLES': """\
         To switch over an instance to its replica called replica-instance:
 
-          $ gcloud alpha sql instances switchover replica-instance
-        """,
-}
-
-DETAILED_HELP_BETA = {
-    'EXAMPLES':
-        """\
-        To switch over an instance to its replica called replica-instance:
-
-          $ gcloud beta sql instances switchover replica-instance
+          $ {command} replica-instance
         """,
 }
 
@@ -149,40 +139,18 @@ def RunBaseSwitchoverCommand(args):
   )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SwitchoverAlpha(base.Command):
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+class Switchover(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.
 
   Switches over a Cloud SQL instance to one of its replicas. Only supported on
   Cloud SQL for SQL Server and MySQL instances.
   """
 
-  detailed_help = DETAILED_HELP_ALPHA
-
-  def Run(self, args):
-    return RunBaseSwitchoverCommand(args)
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
-    """
-    AddBaseArgs(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SwitchoverBeta(base.Command):
-  """Switches over a Cloud SQL instance to one of its replicas.
-
-  Switches over a Cloud SQL instance to one of its replicas. Only supported on
-  Cloud SQL for SQL Server and MySQL instances.
-  """
-
-  detailed_help = DETAILED_HELP_BETA
+  detailed_help = DETAILED_HELP
 
   def Run(self, args):
     return RunBaseSwitchoverCommand(args)

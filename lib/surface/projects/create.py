@@ -45,6 +45,7 @@ ID_DESCRIPTION = ('Project IDs are immutable and can be set only during '
                   'Project IDs must be between 6 and 30 characters.')
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
@@ -89,7 +90,7 @@ class Create(base.CreateCommand):
       )
     else:
       type_ = arg_parsers.RegexpValidator(
-          r'^(?!.*-$)(((?:[a-z][\.a-z0-9-]{5,29})\:?)?(?:[a-z][a-z0-9-]{5,29})$)',
+          r'^(?!.*-$)(((?:[a-z][\.a-z0-9-]{2,29})\:?)?(?:[a-z][a-z0-9-]{5,29})$)',
           ID_DESCRIPTION,
       )
     parser.add_argument(

@@ -95,11 +95,13 @@ class Download(base.Command):
       raise ar_exceptions.PathNotDirectoryError(
           'Destination is not a directory: ' + dest_dir
       )
+    default_chunk_size = 3 * 1024 * 1024
     download_util.Download(
         final_path,
         file_escaped.RelativeName(),
         filename,
         args.allow_overwrite,
+        default_chunk_size
     )
     log.status.Print('Successfully downloaded the file to ' + args.destination)
 

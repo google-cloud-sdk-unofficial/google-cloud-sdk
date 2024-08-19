@@ -26,8 +26,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import requests as ar_requests
 from googlecloudsdk.command_lib.artifacts import vex_util
+from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class LoadVex(base.Command):
   """Load VEX data from a CSAF file into Artifact Analysis.
@@ -116,7 +118,6 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
   def writeNotes(self, notes, project, uri):
     notes_to_create = []
     notes_to_update = []
-    notes_to_retain = notes
     for note in notes:
       get_request = self.ca_messages.ContaineranalysisProjectsNotesGetRequest(
           name='projects/{}/notes/{}'.format(project, note.key)
@@ -132,21 +133,65 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
         notes_to_create.append(note)
     self.batchWriteNotes(notes_to_create, project)
     self.updateNotes(notes_to_update, project)
-    self.deleteNotes(notes_to_retain, project, uri)
+
+    # Delete notes that are not in the uploaded file (deleteNotes looks at which
+    # notes are stored in the db but not in the uploaded file and deletes
+    # those).
+    self.deleteNotes(notes, project, uri)
 
   def batchWriteNotes(self, notes, project):
-    if not notes:
-      return
-    note_value = self.ca_messages.BatchCreateNotesRequest.NotesValue()
-    note_value.additionalProperties = notes
-    batch_request = self.ca_messages.BatchCreateNotesRequest(
-        notes=note_value,
+    # Helper function to validate the artifacts/max_notes_per_batch_request
+    # hidden flag. The value must be an integer between 1 and 1000.
+    def validate_max_notes_per_batch_request(note_limit_str):
+      try:
+        max_notes_per_batch_request = int(note_limit_str)
+      except ValueError:
+        raise ar_exceptions.InvalidInputValueError(
+            'max_notes_per_batch_request must be an integer'
+        )
+      if max_notes_per_batch_request < 1 or max_notes_per_batch_request > 1000:
+        raise ar_exceptions.InvalidInputValueError(
+            'max_notes_per_batch_request must be between 1 and 1000'
+        )
+      return max_notes_per_batch_request
+
+    # Helper function to chunk notes into lists of max_notes_per_request size.
+    def chunked(notes):
+      notes_chunk = []
+      for note in notes:
+        notes_chunk.append(note)
+        if len(notes_chunk) == max_notes_per_batch_request:
+          yield notes_chunk
+          notes_chunk = []
+
+      # If there are any notes left over, yield them.
+      if notes_chunk:
+        yield notes_chunk
+
+    # Default batch size is 1000, based on the Container Analysis API
+    # BatchWriteNotes request. Sometimes the default batch size is reduced for
+    # testing.
+    max_notes_per_batch_request = validate_max_notes_per_batch_request(
+        properties.VALUES.artifacts.max_notes_per_batch_request.Get()
     )
-    request = self.ca_messages.ContaineranalysisProjectsNotesBatchCreateRequest(
-        parent='projects/{}'.format(project),
-        batchCreateNotesRequest=batch_request,
-    )
-    self.ca_client.projects_notes.BatchCreate(request)
+
+    # Split notes into chunks to avoid exceeding the max notes per batch
+    # request limit.
+    for notes_chunk in chunked(notes):
+      if not notes_chunk:
+        return
+      note_value = self.ca_messages.BatchCreateNotesRequest.NotesValue()
+      note_value.additionalProperties = notes_chunk
+      batch_request = self.ca_messages.BatchCreateNotesRequest(
+          notes=note_value,
+      )
+      request = (
+          self.ca_messages.ContaineranalysisProjectsNotesBatchCreateRequest(
+              parent='projects/{}'.format(project),
+              batchCreateNotesRequest=batch_request,
+          )
+      )
+      self.ca_client.projects_notes.BatchCreate(request)
 
   def updateNotes(self, notes, project):
     if not notes:

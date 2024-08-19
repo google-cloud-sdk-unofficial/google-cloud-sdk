@@ -37,7 +37,7 @@
     - api_field: membership.description
       release_tracks: [BETA]
       arg_name: description
-      required: true
+      hidden: true
       help_text: Description of the membership resource.
     - api_field: membership.externalId
       arg_name: external-id

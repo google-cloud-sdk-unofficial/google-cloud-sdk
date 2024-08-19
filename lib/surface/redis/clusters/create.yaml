@@ -90,6 +90,9 @@
     - arg_name: deletion-protection
       api_field: cluster.deletionProtectionEnabled
       type: bool
+      # To distinguish b/w unset and default value. Otherwise, the request is always sent with
+      # deletionProtectionEnabled=false.
+      default: null
       help_text: |
         Enable deletion protection for the Redis Cluster. Use
         `--deletion-protection`/`--no-deletion-protection` to enable/disable it.

@@ -58,8 +58,12 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    endpoint_group_association_flags.AddEndpointGroupAssociationResource(parser)
-    endpoint_group_association_flags.AddMirroringEndpointGroupResource(parser)
+    endpoint_group_association_flags.AddEndpointGroupAssociationResource(
+        cls.ReleaseTrack(), parser
+    )
+    endpoint_group_association_flags.AddMirroringEndpointGroupResource(
+        cls.ReleaseTrack(), parser
+    )
     endpoint_group_association_flags.AddNetworkResource(parser)
     endpoint_group_association_flags.AddMaxWait(
         parser,

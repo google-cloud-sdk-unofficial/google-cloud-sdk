@@ -21,6 +21,7 @@ import os.path
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import revision
+from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -39,7 +40,6 @@ from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
-from googlecloudsdk.command_lib.run.sourcedeploys import builders
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -80,8 +80,9 @@ Container Flags
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
+    group.AddArgument(flags.AutomaticUpdatesFlag())
     group.AddArgument(flags.GpuFlag())
-    group.AddArgument(flags.BuildServiceAccountFlag())
+    group.AddArgument(flags.BuildServiceAccountMutexGroup())
     group.AddArgument(flags.BuildWorkerPoolMutexGroup())
     group.AddArgument(flags.MutexBuildEnvVarsFlags())
   else:
@@ -238,6 +239,11 @@ class Deploy(base.Command):
       )
     return containers
 
+  def _ValidateNoAutomaticUpdatesForContainers(
+      self, build_from_source, containers
+  ):
+    pass
+
   def _ValidateAndGetBuildFromSource(self, containers):
     build_from_source = {
         name: container
@@ -255,7 +261,7 @@ class Deploy(base.Command):
       raise c_exceptions.InvalidArgumentException(
           '--container', 'At most one container can be deployed from source.'
       )
-
+    self._ValidateNoAutomaticUpdatesForContainers(build_from_source, containers)
     for name, container in build_from_source.items():
       if not flags.FlagIsExplicitlySet(container, 'source'):
         if console_io.CanPrompt():
@@ -279,15 +285,14 @@ class Deploy(base.Command):
           )
     return build_from_source
 
-  def _GetBaseImage(
-      self, container, service, args, build_from_source_container_name
+  def _GetBaseImageForSourceContainer(
+      self, container, service, build_from_source_container_name
   ):
     """Returns the base image for the container.
 
     Args:
       container: command line arguments for container that is build from source
       service: existing Cloud run service which could be None.
-      args: argparse.Namespace, Command line arguments
       build_from_source_container_name: name of container that is build from
         source
 
@@ -308,9 +313,7 @@ class Deploy(base.Command):
       )
       if (
           build_from_source_container_name in existing_base_images_map
-          and not self._ShouldClearBaseImageForBuildFromSourceContainer(
-              args, build_from_source_container_name
-          )
+          and not container.clear_base_image
       ):
         base_image = existing_base_images_map[build_from_source_container_name]
     return base_image
@@ -330,7 +333,9 @@ class Deploy(base.Command):
         annotated_build_service_account,
         annotated_build_worker_pool,
         annotated_build_env_vars,
-    ) = service.run_functions_annotations if service else (None, None, None)
+    ) = (
+        service.run_functions_annotations if service else (None, None, None)
+    )
 
     # Only one container can deployed from source
     name, container = next(iter(build_from_source.items()))
@@ -367,14 +372,14 @@ class Deploy(base.Command):
     )
     # Use GCP Buildpacks if Dockerfile doesn't exist
     docker_file = source + '/Dockerfile'
-    base_image = self._GetBaseImage(container, service, args, name)
+    base_image = self._GetBaseImageForSourceContainer(container, service, name)
 
     if os.path.exists(docker_file):
       build_type = BuildType.DOCKERFILE
       # TODO(b/310727875): check --function is not provided
     else:
       pack, changes = _CreateBuildPack(
-          container, base_image, self.ReleaseTrack()
+          container, self.ReleaseTrack()
       )
       build_type = BuildType.BUILDPACKS
     image = None if pack else container.image
@@ -382,16 +387,21 @@ class Deploy(base.Command):
     if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
       image = pack[0].get('image') if pack else image
     self._AddBaseImageToServiceAnnotations(changes, service, base_image)
-    build_service_account = getattr(container, 'build_service_account', None)
-    if build_service_account is None:
-      build_service_account = annotated_build_service_account
+    build_service_account = _GetBuildServiceAccount(
+        args, annotated_build_service_account, container, service, changes
+    )
     operation_message = (
         'Building using {build_type} and deploying container to'
     ).format(build_type=build_type.value)
 
-    build_worker_pool = _GetBuildWorkerPool(args, annotated_build_worker_pool)
-    old_build_env_vars = (json.loads(annotated_build_env_vars)
-                          if annotated_build_env_vars else None)
+    build_worker_pool = _GetBuildWorkerPool(
+        args, annotated_build_worker_pool, service, changes
+    )
+    old_build_env_vars = (
+        json.loads(annotated_build_env_vars)
+        if annotated_build_env_vars
+        else None
+    )
     build_env_var_flags = map_util.GetMapFlagsFromArgs('build-env-vars', args)
     build_env_vars = map_util.ApplyMapFlags(
         old_build_env_vars, **build_env_var_flags
@@ -414,11 +424,15 @@ class Deploy(base.Command):
   def _AddBaseImageToServiceAnnotations(self, changes, service, base_image):
     """Adds the base image to the service annotations."""
     if base_image:
-      changes.append(config_changes.SetAnnotationChange(
-          revision.BASE_IMAGES_ANNOTATION, base_image))
+      changes.append(
+          config_changes.SetAnnotationChange(
+              revision.BASE_IMAGES_ANNOTATION, base_image
+          )
+      )
     elif service and service.annotations.get(revision.BASE_IMAGES_ANNOTATION):
-      changes.append(config_changes.DeleteAnnotationChange(
-          revision.BASE_IMAGES_ANNOTATION))
+      changes.append(
+          config_changes.DeleteAnnotationChange(revision.BASE_IMAGES_ANNOTATION)
+      )
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -476,27 +490,6 @@ class Deploy(base.Command):
         failure_message='Deployment failed',
         suppress_output=args.async_,
     )
-
-  def _ShouldClearBaseImageForBuildFromSourceContainer(
-      self, args, build_from_source_container_name
-  ):
-    """Checks if --clear-base-image is set and if the container is build from source.
-
-    Args:
-      args: argparse.Namespace, Command line arguments
-      build_from_source_container_name: string. The name of the ingress
-        containers that is build from source.
-
-    Returns:
-      shouldClearBaseImage: bool.
-    """
-    if flags.FlagIsExplicitlySet(args, 'clear_base_image'):
-      return True
-    if flags.FlagIsExplicitlySet(args, 'containers'):
-      for name, args in args.containers.items():
-        if name == build_from_source_container_name and args.clear_base_image:
-          return True
-    return False
 
   def _GetRequiredApis(self, args):
     return [api_enabler.get_run_api()]
@@ -640,7 +633,7 @@ class Deploy(base.Command):
 
 
 def _CreateBuildPack(
-    container, base_image_arg, release_track=base.ReleaseTrack.GA
+    container, release_track=base.ReleaseTrack.GA
 ):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
@@ -665,21 +658,79 @@ def _CreateBuildPack(
               'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
           ]
       })
-      if base_image_arg:
-        pack[0].update({
-            'builder': '{builder}'.format(
-                builder=builders.FunctionBuilder(base_image_arg)
-            )
-        })
   return pack, changes
 
 
-def _GetBuildWorkerPool(args, annotated_build_worker_pool):
-  if flags.FlagIsExplicitlySet(args, 'clear_build_worker_pool'):
+def _GetBuildWorkerPool(args, annotated_build_worker_pool, service, changes):
+  """Gets the build worker pool from user flags and annotations.
+
+  Args:
+    args: argparse.Namespace, Command line arguments
+    annotated_build_worker_pool: Build worker pool value from service
+      annotations.
+    service: Existing Cloud Run service.
+    changes: List of config changes.
+
+  Returns:
+    build_worker_pool value or
+    None meaning clear-worker-pool flag was set
+    or build-worker-pool was an empty string.
+  """
+  if _ShouldClearBuildWorkerPool(args):
+    worker_pool_key = service_lib.RUN_FUNCTIONS_BUILD_WORKER_POOL_ANNOTATION
+    if service and service.annotations.get(worker_pool_key):
+      changes.append(config_changes.DeleteAnnotationChange(worker_pool_key))
     return None
-  elif flags.FlagIsExplicitlySet(args, 'build_worker_pool'):
-    return args.build_worker_pool
-  return annotated_build_worker_pool
+  return (
+      args.build_worker_pool
+      if flags.FlagIsExplicitlySet(args, 'build_worker_pool')
+      else annotated_build_worker_pool
+  )
+
+
+def _ShouldClearBuildWorkerPool(args):
+  return flags.FlagIsExplicitlySet(args, 'clear_build_worker_pool') or (
+      flags.FlagIsExplicitlySet(args, 'build_worker_pool')
+      and not args.build_worker_pool
+  )
+
+
+def _GetBuildServiceAccount(
+    args, annotated_build_service_account, container, service, changes
+):
+  """Returns cloud build service account.
+
+  Args:
+    args: argparse.Namespace, Command line arguments
+    annotated_build_service_account: string. The build service account annotated
+      on the service used by cloud run functions.
+    container: Container. The container to deploy.
+    service: Service. The service being changed.
+    changes: List of config changes.
+
+  Returns:
+    build service account value where
+    None means there were no annotations, user specified to clear the
+    build service account, or the build service account was an empty string.
+  """
+  build_sa_key = service_lib.RUN_FUNCTIONS_BUILD_SERVICE_ACCOUNT_ANNOTATION
+  build_service_account = getattr(container, 'build_service_account', None)
+  if _ShouldClearBuildServiceAccount(args, build_service_account):
+    if service and service.annotations.get(build_sa_key):
+      changes.append(config_changes.DeleteAnnotationChange(build_sa_key))
+    return None
+  return build_service_account or annotated_build_service_account
+
+
+def _ShouldClearBuildServiceAccount(args, build_service_account):
+  if flags.FlagIsExplicitlySet(args, 'clear_build_service_account'):
+    return True
+  if (
+      flags.FlagIsExplicitlySet(args, 'build_service_account')
+      and not build_service_account
+  ):
+    return True
+  return False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -861,6 +912,19 @@ class AlphaDeploy(BetaDeploy):
             'Sucessfully created mapping {svc} to domain {domain}',
             svc=service_name,
             domain=domain_name,
+        )
+
+  def _ValidateNoAutomaticUpdatesForContainers(
+      self, build_from_source, containers
+  ):
+    for name, container in containers.items():
+      if name not in build_from_source and container.IsSpecified(
+          'automatic_updates'
+      ):
+        raise c_exceptions.InvalidArgumentException(
+            '--automatic-updates',
+            '--automatic-updates can only be specified in the container that'
+            ' is built from source.',
         )
 
   def Run(self, args):

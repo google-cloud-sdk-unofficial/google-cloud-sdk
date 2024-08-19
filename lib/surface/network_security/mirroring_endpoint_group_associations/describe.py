@@ -49,7 +49,9 @@ class Describe(base.DescribeCommand):
 
   @classmethod
   def Args(cls, parser):
-    endpoint_group_association_flags.AddEndpointGroupAssociationResource(parser)
+    endpoint_group_association_flags.AddEndpointGroupAssociationResource(
+        cls.ReleaseTrack(), parser
+    )
 
   def Run(self, args):
     client = api.Client(self.ReleaseTrack())

@@ -47,6 +47,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -59,7 +60,6 @@ class List(base.ListCommand):
     flags.AddOptionalInstance(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
     parser.display_info.AddCacheUpdater(None)
-    flags.AddProjectLevelBackupEndpoint(parser)
 
   def Run(self, args):
     """Lists all instance operations that have been performed on an instance.
@@ -76,7 +76,7 @@ class List(base.ListCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    if args.project_level:
+    if not args.instance:
       # For project-level operations, this command updates the output table.
       # pylint:disable=protected-access
       args._GetParser().ai.display_info.AddFormat(
