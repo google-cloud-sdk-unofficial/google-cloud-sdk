@@ -49,8 +49,9 @@
     - arg_name: hot-to-standard-time
       api_field: backup.hotToStandardTime
       help_text: |
-        Absolute time at which a hot backup will be converted to a standard backup. Only applies for
-        hot backups.
+        Time at which a hot backup will be converted to a standard backup; must be at least 24 hours
+        from the time the request is received. Only applies for hot backups. See
+        `$ gcloud topic datetimes` for information on date/time formats.
       release_tracks: ALPHA
       hidden: true  # TODO: b/337328220 - Unhide for GA.
     resource:

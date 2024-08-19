@@ -271,6 +271,7 @@ def AddBaseArgs(parser):
   flags.AddEnableDataplexIntegration(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddSimulateMaintenanceEvent(parser)
+  flags.AddSwitchTransactionLogsToCloudStorage(parser)
 
 
 def AddBetaArgs(parser):
@@ -281,7 +282,6 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
-  flags.AddSwitchTransactionLogsToCloudStorage(parser)
   flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
 
 

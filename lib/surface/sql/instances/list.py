@@ -51,6 +51,7 @@ class List(base.ListCommand):
     parser.display_info.AddUriFunc(_GetUriFromResource)
     flags.AddShowEdition(parser)
     flags.AddShowSqlNetworkArchitecture(parser)
+    flags.AddShowTransactionalLogStorageState(parser)
 
   def Run(self, args):
     """Lists Cloud SQL instances in a given project.
@@ -67,6 +68,10 @@ class List(base.ListCommand):
     if args.show_sql_network_architecture:
       args.GetDisplayInfo().AddFormat(
           flags.GetInstanceListFormatForNetworkArchitectureUpgrade()
+      )
+    if args.show_transactional_log_storage_state:
+      args.GetDisplayInfo().AddFormat(
+          flags.GetInstanceListFormatForTransactionalLogStorageSwitch()
       )
     return instances.InstancesV1Beta4.GetDatabaseInstances(
         limit=args.limit, batch_size=args.page_size

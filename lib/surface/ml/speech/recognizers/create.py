@@ -32,7 +32,6 @@ class Create(base.Command):
 
   def ValidateCreateRecognizerFlags(self, args):
     """Validates create flags."""
-    flag_validations.ValidateLocation(args)
     flag_validations.ValidateSpeakerDiarization(args)
     flag_validations.ValidateDecodingConfig(args)
 

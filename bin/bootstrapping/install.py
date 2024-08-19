@@ -55,6 +55,14 @@ def ParseArgs():
       help='(true/false) Enable screen reader mode.',
   )
   parser.add_argument(
+      '--universe-domain',
+      default=None,
+      help=(
+          'Universe domain to default to. If specified, sets the'
+          ' [core/universe_domain] property installation-wide.'
+      ),
+  )
+  parser.add_argument(
       '--rc-path',
       help=(
           'Profile to update with PATH and completion. If'
@@ -142,23 +150,34 @@ def ParseArgs():
   return parser.parse_args(bootstrapping.GetDecodedArgv()[1:])
 
 
-def Prompts(usage_reporting):
+def Prompts(usage_reporting, universe_domain):
   """Display prompts to opt out of usage reporting.
 
   Args:
-    usage_reporting: bool, If True, enable usage reporting. If None, check
-    the environmental variable. If None, check if its alternate release channel.
-    If not, ask.
+    usage_reporting: bool, If True, enable usage reporting. If None, check the
+      environmental variable. If None, check if its alternate release channel.
+      If not, ask.
+    universe_domain: str, if specified and not 'googleapis.com', set
+      usage-reporting to False.
   """
-
   if usage_reporting is None:
 
-    if encoding.GetEncodedValue(
-        os.environ, 'CLOUDSDK_CORE_DISABLE_USAGE_REPORTING') is not None:
+    if (
+        encoding.GetEncodedValue(
+            os.environ, 'CLOUDSDK_CORE_DISABLE_USAGE_REPORTING'
+        )
+        is not None
+    ):
       usage_reporting = not encoding.GetEncodedValue(
-          os.environ, 'CLOUDSDK_CORE_DISABLE_USAGE_REPORTING')
+          os.environ, 'CLOUDSDK_CORE_DISABLE_USAGE_REPORTING'
+      )
     else:
-      if config.InstallationConfig.Load().IsAlternateReleaseChannel():
+      if (
+          universe_domain is not None
+          and universe_domain != properties.VALUES.core.universe_domain.default
+      ):
+        usage_reporting = False
+      elif config.InstallationConfig.Load().IsAlternateReleaseChannel():
         usage_reporting = True
         print("""
     Usage reporting is always on for alternate release channels.
@@ -331,6 +350,10 @@ def main():
     properties.PersistProperty(properties.VALUES.accessibility.screen_reader,
                                pargs.screen_reader,
                                scope=properties.Scope.INSTALLATION)
+  if pargs.universe_domain is not None:
+    properties.PersistProperty(properties.VALUES.core.universe_domain,
+                               pargs.universe_domain,
+                               scope=properties.Scope.INSTALLATION)
   update_manager.RestartIfUsingBundledPython(sdk_root=config.Paths().sdk_root,
                                              command=__file__)
   reinstall_components = encoding.GetEncodedValue(
@@ -339,7 +362,7 @@ def main():
     if reinstall_components:
       ReInstall(reinstall_components.split(','), pargs.no_compile_python)
     else:
-      Prompts(pargs.usage_reporting)
+      Prompts(pargs.usage_reporting, pargs.universe_domain)
       bootstrapping.CommandStart('INSTALL', component_id='core')
       if not config.INSTALLATION_CONFIG.disable_updater:
         Install(

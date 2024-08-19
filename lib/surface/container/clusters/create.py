@@ -495,6 +495,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_insecure_binding_system_unauthenticated=get_default(
           'enable_insecure_binding_system_unauthenticated'
       ),
+      enable_dns_access=get_default('enable_dns_access'),
       cp_disk_encryption_key=get_default('cp_disk_encryption_key'),
   )
 
@@ -712,6 +713,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
+        'enableDnsAccess': flags.AddEnableDNSAccessFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -870,7 +872,6 @@ flags_to_add = {
         'enableRuntimeVulnerabilityInsight': (
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
-        'enableDnsEndpoint': flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
@@ -886,6 +887,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
+        'enableDnsAccess': flags.AddEnableDNSAccessFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1053,7 +1055,6 @@ flags_to_add = {
         'enableRuntimeVulnerabilityInsight': (
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
-        'enableDnsEndpoint': flags.AddEnableDNSEndpoint,
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
@@ -1069,6 +1070,7 @@ flags_to_add = {
             p, hidden=True
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
+        'enableDnsAccess': flags.AddEnableDNSAccessFlag,
     },
 }
 
@@ -1327,7 +1329,6 @@ class CreateBeta(Create):
     )
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight')
-    ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.containerd_config_from_file = get_default(
         'containerd_config_from_file',
@@ -1348,6 +1349,7 @@ class CreateBeta(Create):
     ops.enable_insecure_binding_system_unauthenticated = get_default(
         'enable_insecure_binding_system_unauthenticated'
     )
+    ops.enable_dns_access = get_default('enable_dns_access')
     ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
     return ops
 
@@ -1460,7 +1462,6 @@ class CreateAlpha(Create):
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight'
     )
-    ops.enable_dns_endpoint = get_default('enable_dns_endpoint')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
@@ -1479,5 +1480,6 @@ class CreateAlpha(Create):
     ops.enable_insecure_binding_system_unauthenticated = get_default(
         'enable_insecure_binding_system_unauthenticated'
     )
+    ops.enable_dns_access = get_default('enable_dns_access')
     ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
     return ops

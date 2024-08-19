@@ -28,6 +28,7 @@ import six
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine firewall policy packet mirroring rule.
 

@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describes a Compute Engine organization firewall policy packet mirroring rule.
 

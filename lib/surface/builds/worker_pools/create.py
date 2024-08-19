@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_exceptions
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild import workerpool_config
-from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as cloudbuild_v2_util
 from googlecloudsdk.api_lib.compute import utils as compute_utils
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
@@ -130,7 +129,11 @@ class CreateBeta(Create):
     if args.generation == 1:
       return _CreateWorkerPoolFirstGen(args, self.ReleaseTrack())
     if args.generation == 2:
-      return _CreateWorkerPoolSecondGen(args)
+      raise exceptions.InvalidArgumentException(
+          '--generation',
+          'for generation=2 please use the gcloud command "gcloud builds'
+          ' worker-pools apply" to create a worker pool',
+      )
 
     raise exceptions.InvalidArgumentException(
         '--generation',
@@ -209,121 +212,16 @@ class CreateAlpha(Create):
     if args.generation == 1:
       return _CreateWorkerPoolFirstGen(args, self.ReleaseTrack())
     if args.generation == 2:
-      return _CreateWorkerPoolSecondGen(args)
+      raise exceptions.InvalidArgumentException(
+          '--generation',
+          'for generation=2 please use the gcloud command "gcloud builds'
+          ' worker-pools apply" to create a worker pool',
+      )
 
     raise exceptions.InvalidArgumentException(
         '--generation',
         'please use one of the following valid generation values: 1, 2',
     )
-
-
-def _CreateWorkerPoolSecondGen(args):
-  """Creates a Worker Pool Second Generation.
-
-  Args:
-    args: an argparse namespace. All the arguments that were provided to the
-        create command invocation.
-
-  Returns:
-    A Worker Pool Second Generation resource.
-  """
-  wp_name = args.WORKER_POOL
-  wp_region = args.region
-  if not wp_region:
-    wp_region = properties.VALUES.builds.region.GetOrFail()
-
-  client = cloudbuild_v2_util.GetClientInstance()
-  messages = client.MESSAGES_MODULE
-
-  wpsg = messages.WorkerPoolSecondGen()
-  if args.config_from_file is not None:
-    try:
-      wpsg = workerpool_config.LoadWorkerpoolConfigFromPath(
-          args.config_from_file, messages.WorkerPoolSecondGen
-      )
-      # Public IP in primary network interface of VM has to be disabled when
-      # routing all the traffic to network attachment.
-      if (
-          wpsg.network is not None
-          and wpsg.network.privateServiceConnect is not None
-          and wpsg.network.privateServiceConnect.routeAllTraffic
-          and wpsg.network.publicIpAddressDisabled is None
-      ):
-        wpsg.network.publicIpAddressDisabled = True
-    except cloudbuild_exceptions.ParseProtoException as err:
-      log.err.Print(
-          '\nFailed to parse configuration from file. If you'
-          ' were a Private Preview user, note that the format for this'
-          ' file has changed slightly for GA.\n')
-      raise err
-  else:
-    wpsg.worker = messages.WorkerConfig()
-    if args.worker_machine_type is not None:
-      wpsg.worker.machineType = args.worker_machine_type
-    if args.worker_disk_size is not None:
-      wpsg.worker.diskStorage = compute_utils.BytesToGb(
-          args.worker_disk_size)
-
-    wpsg.network = messages.NetworkConfig()
-    if args.disable_public_ip_address:
-      wpsg.network.publicIpAddressDisabled = True
-
-    private_service_connect = messages.PrivateServiceConnect()
-    if args.network_attachment:
-      private_service_connect.networkAttachment = args.network_attachment
-    if args.route_all_traffic:
-      # Public IP in primary network interface of VM has to be disabled when
-      # routing all the traffic to network attachment.
-      wpsg.network.publicIpAddressDisabled = True
-      private_service_connect.routeAllTraffic = True
-    if args.network_attachment or args.route_all_traffic:
-      wpsg.network.privateServiceConnect = private_service_connect
-
-  parent = properties.VALUES.core.project.Get(required=True)
-
-  # Get the parent project.location ref
-  parent_resource = resources.REGISTRY.Create(
-      collection='cloudbuild.projects.locations',
-      projectsId=parent,
-      locationsId=wp_region,
-  )
-
-  # Send the Create request
-  created_op = client.projects_locations_workerPoolSecondGen.Create(
-      messages.CloudbuildProjectsLocationsWorkerPoolSecondGenCreateRequest(
-          workerPoolSecondGen=wpsg,
-          parent=parent_resource.RelativeName(),
-          workerPoolSecondGenId=wp_name,
-      )
-  )
-
-  op_resource = resources.REGISTRY.ParseRelativeName(
-      created_op.name, collection='cloudbuild.projects.locations.operations'
-  )
-  created_wp = waiter.WaitFor(
-      waiter.CloudOperationPoller(
-          client.projects_locations_workerPoolSecondGen,
-          client.projects_locations_operations,
-      ),
-      op_resource,
-      'Creating worker pool second gen',
-      max_wait_ms=3600000,
-  )  # 1 hour
-
-  # Get the workerpool second gen ref
-  wp_resource = resources.REGISTRY.Parse(
-      None,
-      collection='cloudbuild.projects.locations.workerPoolSecondGen',
-      api_version=cloudbuild_v2_util.GA_API_VERSION,
-      params={
-          'projectsId': parent,
-          'locationsId': wp_region,
-          'workerPoolSecondGenId': wp_name,
-      })
-
-  log.CreatedResource(wp_resource)
-
-  return created_wp
 
 
 def _CreateWorkerPoolFirstGen(args, release_track):

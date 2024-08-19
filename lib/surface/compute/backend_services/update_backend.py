@@ -49,6 +49,7 @@ class UpdateBackend(base.UpdateCommand):
   # This fields decides whether --preference flag can be set when updating the
   # backend.
   support_preference = True
+  support_custom_metrics = False
 
   @staticmethod
   def Args(parser):
@@ -150,6 +151,13 @@ class UpdateBackend(base.UpdateCommand):
           client.messages.Backend.PreferenceValueValuesEnum(args.preference)
       )
 
+    if self.support_custom_metrics and args.custom_metrics:
+      backend_to_update.customMetrics = args.custom_metrics
+    if self.support_custom_metrics and args.custom_metrics_file:
+      backend_to_update.customMetrics = args.custom_metrics_file
+    if self.support_custom_metrics and args.clear_custom_metrics:
+      backend_to_update.customMetrics = []
+
     return replacement
 
   def _ModifyBalancingModeArgs(self, client, args, backend_to_update):
@@ -238,6 +246,7 @@ class UpdateBackendBeta(UpdateBackend):
 
   # Allow --preference flag to be set when updating the backend.
   support_preference = True
+  support_custom_metrics = False
 
   @classmethod
   def Args(cls, parser):
@@ -296,6 +305,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   """
   # Allow --preference flag to be set when updating the backend.
   support_preference = True
+  support_custom_metrics = True
 
   @classmethod
   def Args(cls, parser):
@@ -307,6 +317,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
+    backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -324,6 +335,9 @@ class UpdateBackendAlpha(UpdateBackendBeta):
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
+        args.custom_metrics is not None,
+        args.custom_metrics_file is not None,
+        args.clear_custom_metrics is not None,
     ]):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')

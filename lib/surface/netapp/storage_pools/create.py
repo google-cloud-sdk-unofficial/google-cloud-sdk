@@ -70,12 +70,10 @@ class Create(base.CreateCommand):
         args, client.messages.StoragePool.LabelsValue)
     capacity_in_gib = args.capacity >> 30
 
-    allow_auto_tiering = None
     zone = None
     replica_zone = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      allow_auto_tiering = args.allow_auto_tiering
       zone = args.zone
       replica_zone = args.replica_zone
 
@@ -88,7 +86,7 @@ class Create(base.CreateCommand):
         enable_ldap=args.enable_ldap,
         capacity=capacity_in_gib,
         description=args.description,
-        allow_auto_tiering=allow_auto_tiering,
+        allow_auto_tiering=args.allow_auto_tiering,
         zone=zone,
         replica_zone=replica_zone,
         labels=labels,

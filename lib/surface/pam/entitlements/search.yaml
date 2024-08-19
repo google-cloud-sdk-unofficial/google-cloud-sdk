@@ -1,10 +1,10 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
 
   command_type: LIST
 
   help_text:
-    brief: Search and list all Privileged Access Manager (PAM) entitlements in a parent for which you are either a requester or an approver.
-    description: Search and list all Privileged Access Manager (PAM) entitlements in a project/folder/organization location for which you are either a requester or an approver.
+    brief: Search and list all Privileged Access Manager (PAM) entitlements in a parent for which you are a requester/approver.
+    description: Search and list all Privileged Access Manager (PAM) entitlements in a project/folder/organization location for which you are a requester/approver.
     examples: |
       The following command searches for and lists all entitlements for which you are a requester,
       in a project named `sample-project`, and in location `global`:
@@ -41,6 +41,8 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     method: search
     collection:
     - privilegedaccessmanager.projects.locations.entitlements

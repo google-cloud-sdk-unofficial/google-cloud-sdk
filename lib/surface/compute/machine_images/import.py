@@ -36,6 +36,20 @@ _OUTPUT_FILTER = ['[Daisy', '[import-', 'starting build', '  import', 'ERROR']
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is being deprecated. Instead, use the `gcloud migration'
+        ' vms machine-image-imports` command. For more information, See "gcloud'
+        ' alpha migration vms machine-image-imports --help".'
+    ),
+    error=(
+        'This command has been deprecated. Instead, use the `gcloud migration'
+        ' vms machine-image-imports` command. For more information, See "gcloud'
+        ' alpha migration vms machine-image-imports --help".'
+    ),
+)
+@base.DefaultUniverseOnly
 class Import(base.CreateCommand):
   """Import a machine image into Compute Engine from OVF."""
 

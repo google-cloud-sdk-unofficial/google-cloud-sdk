@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner backup schedule with ALPHA features."""
 

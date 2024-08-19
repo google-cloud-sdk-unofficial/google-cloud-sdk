@@ -207,3 +207,7 @@
       type: str
       help_text: |
         The access level that binds to all the service accounts belong to the given project number.
+
+  output:
+    ALPHA:
+      format: yaml

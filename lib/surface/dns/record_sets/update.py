@@ -25,8 +25,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Updates a record-set in a managed-zone.
 
@@ -61,7 +63,10 @@ class Update(base.UpdateCommand):
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup(
-        use_deprecated_names=cls._IsBetaOrAlpha()).AddToParser(parser)
+        use_deprecated_names=cls._IsBetaOrAlpha(),
+        enable_internet_health_checks=cls._IsBetaOrAlpha(),
+    ).AddToParser(parser)
+
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
@@ -82,14 +87,17 @@ class Update(base.UpdateCommand):
         args,
         zone_ref.project,
         api_version,
-        allow_extended_records=self._IsBetaOrAlpha())
+        allow_extended_records=self._IsBetaOrAlpha(),
+        gcloud_version=self.ReleaseTrack(),
+    )
 
     request = messages.DnsResourceRecordSetsPatchRequest(
         project=zone_ref.project,
-        managedZone=zone_ref.Name(),
+        managedZone=zone_ref.managedZone,
         name=util.AppendTrailingDot(resource_record_set.name),
         type=resource_record_set.type,
-        resourceRecordSet=resource_record_set)
+        resourceRecordSet=resource_record_set,
+    )
 
     if api_version == 'v2':
       request.location = args.location

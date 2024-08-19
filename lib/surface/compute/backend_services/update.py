@@ -79,6 +79,7 @@ class UpdateHelper(object):
       support_advanced_load_balancing,
       support_ip_address_selection_policy,
       support_external_managed_migration,
+      support_stateful_affinity,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -122,8 +123,12 @@ class UpdateHelper(object):
     flags.AddCacheKeyIncludeQueryString(parser, default=None)
     flags.AddCacheKeyQueryStringList(parser)
     flags.AddCacheKeyExtendedCachingArgs(parser)
-    flags.AddSessionAffinity(parser, support_client_only=support_client_only)
-    flags.AddAffinityCookieTtl(parser)
+    flags.AddSessionAffinity(
+        parser,
+        support_stateful_affinity=support_stateful_affinity,
+        support_client_only=support_client_only,
+    )
+    flags.AddAffinityCookie(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
     if support_subsetting:
@@ -249,8 +254,7 @@ class UpdateHelper(object):
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
 
-    if args.affinity_cookie_ttl is not None:
-      replacement.affinityCookieTtlSec = args.affinity_cookie_ttl
+    backend_services_utils.ApplyAffinityCookieArgs(client, args, replacement)
 
     if args.connection_draining_timeout is not None:
       replacement.connectionDraining = client.messages.ConnectionDraining(
@@ -604,6 +608,7 @@ class UpdateGA(base.UpdateCommand):
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
   _support_external_managed_migration = False
+  _support_stateful_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -621,6 +626,7 @@ class UpdateGA(base.UpdateCommand):
         support_external_managed_migration=(
             cls._support_external_managed_migration
         ),
+        support_stateful_affinity=cls._support_stateful_affinity,
     )
 
   def Run(self, args):
@@ -651,6 +657,7 @@ class UpdateBeta(UpdateGA):
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
   _support_external_managed_migration = False
+  _support_stateful_affinity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -667,3 +674,4 @@ class UpdateAlpha(UpdateBeta):
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = True
   _support_external_managed_migration = True
+  _support_stateful_affinity = True

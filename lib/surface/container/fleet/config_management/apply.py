@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base as fleet_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import constants
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
@@ -33,9 +34,17 @@ EXAMPLES = r"""
 
       $ {command} --membership=MEMBERSHIP_NAME --config=APPLY-SPEC.YAML --version=VERSION
 """
+# TODO(b/298461043): Move error message instructions into
+# https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields.
+MAP_NODE_EXCEPTION_FORMAT = ('{} must be a YAML mapping node.'
+                             ' This field should either contain indented'
+                             ' key, value pairs or have the empty map {{}} as'
+                             ' its value.'
+                             ' See --help flag output for links to examples.')
 
 
-class Apply(base.UpdateCommand):
+@base.DefaultUniverseOnly
+class Apply(fleet_base.UpdateCommand):
   """Update a Config Management Feature Spec.
 
   Update a user-specified config file to a ConfigManagement Custom Resource.
@@ -64,6 +73,8 @@ class Apply(base.UpdateCommand):
     utils.enable_poco_api_if_disabled(self.Project())
 
     # check static yaml fields before query membership
+    # TODO(b/298461043): Investigate whether it is worth our time to move the
+    # apply-spec syntax into proto so that we get automatic parsing.
     try:
       loaded_cm = yaml.load_path(args.config)
     except yaml.Error as e:
@@ -72,10 +83,13 @@ class Apply(base.UpdateCommand):
       )
     _validate_meta(loaded_cm)
 
-    membership = base.ParseMembership(
+    membership = fleet_base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
 
+    # TODO(b/298461043): Scan for illegal fields by reading from
+    # utils.APPLY_SPEC_VERSION_1. Access specific fields via constant variables
+    # in utils.
     config_sync = _parse_config_sync(loaded_cm, self.messages)
     policy_controller = _parse_policy_controller(loaded_cm, self.messages)
     hierarchy_controller_config = _parse_hierarchy_controller_config(
@@ -165,32 +179,44 @@ def _validate_meta(configmanagement):
   """Validate the parsed configmanagement yaml.
 
   Args:
-    configmanagement: The dict loaded from yaml.
+    configmanagement: Data type loaded from yaml.
+  Raises: gcloud core Error, if the top-level fields have invalid syntax.
   """
   if not isinstance(configmanagement, dict):
     raise exceptions.Error('Invalid ConfigManagement template.')
-  if configmanagement.get('applySpecVersion') != 1:
+  illegal_root_fields = _find_unknown_fields(configmanagement, {
+      'applySpecVersion',
+      'spec',
+  })
+  if illegal_root_fields:
+    raise exceptions.Error('Please remove illegal field(s) {}'.format(
+        ', '.join(['.'+f for f in illegal_root_fields])
+    ))
+  # TODO(b/298461043): Document applySpecVersion better in
+  # https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields.
+  if 'applySpecVersion' not in configmanagement:
+    raise exceptions.Error('Missing required field .applySpecVersion')
+  if configmanagement['applySpecVersion'] != 1:
     raise exceptions.Error(
         'Only "applySpecVersion: 1" is supported. To use a later version,'
         'please fetch the config by running\n'
         'gcloud container fleet config-management fetch-for-apply'
     )
-
   if 'spec' not in configmanagement:
     raise exceptions.Error('Missing required field .spec')
-  spec = configmanagement['spec']
-  legal_fields = {
+  if not isinstance(configmanagement['spec'], dict):
+    raise exceptions.Error(MAP_NODE_EXCEPTION_FORMAT.format('.spec'))
+  illegal_spec_fields = _find_unknown_fields(configmanagement['spec'], {
       utils.CONFIG_SYNC,
       utils.POLICY_CONTROLLER,
       utils.HNC,
       utils.CLUSTER,
       utils.UPGRADES,
-  }
-  for field in spec:
-    if field not in legal_fields:
-      raise exceptions.Error(
-          'Please remove illegal field .spec.{}'.format(field)
-      )
+  })
+  if illegal_spec_fields:
+    raise exceptions.Error('Please remove illegal field(s) {}'.format(
+        ', '.join(['.spec.'+f for f in illegal_spec_fields])
+    ))
 
 
 def _parse_config_sync(configmanagement, msg):
@@ -204,8 +230,9 @@ def _parse_config_sync(configmanagement, msg):
   Returns:
     config_sync: The ConfigSync configuration holds configmanagement.spec.git
     or configmanagement.spec.oci being used in MembershipConfigs
-  Raises: Error, if required fields are missing from .spec or unsupported fields
-    are included in .spec
+  Raises: gcloud core Error, if the configSync field on configmanagement has
+    invalid syntax. Note that this function does not check semantic meaning of
+    field values, other than for .spec.configSync.sourceType.
   """
 
   if (
@@ -213,16 +240,18 @@ def _parse_config_sync(configmanagement, msg):
       or utils.CONFIG_SYNC not in configmanagement['spec']
   ):
     return None
+  if not isinstance(configmanagement['spec'][utils.CONFIG_SYNC], dict):
+    raise exceptions.Error(
+        MAP_NODE_EXCEPTION_FORMAT.format('.spec.'+utils.CONFIG_SYNC)
+    )
   spec_source = configmanagement['spec'][utils.CONFIG_SYNC]
-  for field in spec_source:
-    if (
-        field
-        not in yaml.load(utils.APPLY_SPEC_VERSION_1)['spec'][utils.CONFIG_SYNC]
-    ):
-      raise exceptions.Error(
-          'The field .spec.{}.{}'.format(utils.CONFIG_SYNC, field)
-          + ' is unrecognized in this applySpecVersion. Please remove.'
-      )
+  illegal_fields = _find_unknown_fields(spec_source,
+                                        yaml.load(utils.APPLY_SPEC_VERSION_1)
+                                        ['spec'][utils.CONFIG_SYNC])
+  if illegal_fields:
+    raise exceptions.Error('Please remove illegal field(s) {}'.format(', '.join(
+        ['.spec.{}.{}'.format(utils.CONFIG_SYNC, f) for f in illegal_fields]
+    )))
 
   config_sync = msg.ConfigManagementConfigSync()
   # missing `enabled: true` will enable configSync
@@ -231,10 +260,17 @@ def _parse_config_sync(configmanagement, msg):
     config_sync.enabled = spec_source['enabled']
   # Default to use sourceType 'git' if not specified
   source_type = spec_source.get('sourceType', 'git')
-  if source_type == 'oci':
+  if source_type == 'git':
+    config_sync.git = _parse_git_config(spec_source, msg)
+  elif source_type == 'oci':
     config_sync.oci = _parse_oci_config(spec_source, msg)
   else:
-    config_sync.git = _parse_git_config(spec_source, msg)
+    raise exceptions.Error((
+        '.spec.{}.sourceType has illegal value {}.'
+        ' Please replace with `git` or `oci`'.format(
+            utils.CONFIG_SYNC, source_type
+        )
+    ))
   if 'sourceFormat' in spec_source:
     config_sync.sourceFormat = spec_source['sourceFormat']
   if 'preventDrift' in spec_source:
@@ -314,7 +350,9 @@ def _parse_policy_controller(configmanagement, msg):
     policy_controller: The Policy Controller configuration for
     MembershipConfigs, filled in the data parsed from
     configmanagement.spec.policyController
-  Raises: Error, if Policy Controller `enabled` is missing or not a boolean
+  Raises: gcloud core Error, if Policy Controller has invalid syntax. Note that
+    this function does not check semantic meaning of field values other than
+    monitoring backends.
   """
 
   if (
@@ -323,12 +361,13 @@ def _parse_policy_controller(configmanagement, msg):
   ):
     return None
 
+  if not isinstance(configmanagement['spec']['policyController'], dict):
+    raise exceptions.Error(
+        MAP_NODE_EXCEPTION_FORMAT.format('.spec.policyController')
+    )
   spec_policy_controller = configmanagement['spec']['policyController']
   # Required field
-  if (
-      configmanagement['spec']['policyController'] is None
-      or 'enabled' not in spec_policy_controller
-  ):
+  if 'enabled' not in spec_policy_controller:
     raise exceptions.Error(
         'Missing required field .spec.policyController.enabled'
     )
@@ -342,20 +381,21 @@ def _parse_policy_controller(configmanagement, msg):
   # When the policyController is set to be enabled, policy_controller will
   # be filled with the valid fields set in spec_policy_controller, which
   # were mapped from the config-management.yaml
+  illegal_fields = _find_unknown_fields(spec_policy_controller, {
+      'enabled',
+      'templateLibraryInstalled',
+      'auditIntervalSeconds',
+      'referentialRulesEnabled',
+      'exemptableNamespaces',
+      'logDeniesEnabled',
+      'mutationEnabled',
+      'monitoring',
+  })
+  if illegal_fields:
+    raise exceptions.Error('Please remove illegal field(s) {}'.format(
+        ', '.join(['.spec.policyController.'+f for f in illegal_fields])
+    ))
   for field in spec_policy_controller:
-    if field not in [
-        'enabled',
-        'templateLibraryInstalled',
-        'auditIntervalSeconds',
-        'referentialRulesEnabled',
-        'exemptableNamespaces',
-        'logDeniesEnabled',
-        'mutationEnabled',
-        'monitoring',
-    ]:
-      raise exceptions.Error(
-          'Please remove illegal field .spec.policyController.{}'.format(field)
-      )
     if field == 'monitoring':
       monitoring = _build_monitoring_msg(spec_policy_controller[field], msg)
       setattr(policy_controller, field, monitoring)
@@ -377,8 +417,8 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
     hierarchy_controller: The Hierarchy Controller configuration for
     MembershipConfigs, filled in the data parsed from
     configmanagement.spec.hierarchyController
-  Raises: Error, if Hierarchy Controller `enabled` set to false but also has
-    other fields present in the config
+  Raises: gcloud core Error, if Hierarchy Controller has invalid syntax. Note
+    that this function does not check semantic meaning of field values.
   """
 
   if (
@@ -387,14 +427,17 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
   ):
     return None
 
+  if not isinstance(configmanagement['spec']['hierarchyController'], dict):
+    raise exceptions.Error(
+        MAP_NODE_EXCEPTION_FORMAT.format('.spec.hierarchyController')
+    )
   spec = configmanagement['spec']['hierarchyController']
   # Required field
-  if spec is None or 'enabled' not in spec:
+  if 'enabled' not in spec:
     raise exceptions.Error(
         'Missing required field .spec.hierarchyController.enabled'
     )
-  enabled = spec['enabled']
-  if not isinstance(enabled, bool):
+  if not isinstance(spec['enabled'], bool):
     raise exceptions.Error(
         'hierarchyController.enabled should be `true` or `false`'
     )
@@ -403,20 +446,33 @@ def _parse_hierarchy_controller_config(configmanagement, msg):
   # When the hierarchyController is set to be enabled, hierarchy_controller will
   # be filled with the valid fields set in spec, which
   # were mapped from the config-management.yaml
+  illegal_fields = _find_unknown_fields(spec, {
+      'enabled',
+      'enablePodTreeLabels',
+      'enableHierarchicalResourceQuota',
+  })
+  if illegal_fields:
+    raise exceptions.Error('Please remove illegal field(s) {}'.format(
+        ', '.join(['.spec.hierarchyController.'+f for f in illegal_fields])
+    ))
   for field in spec:
-    if field not in [
-        'enabled',
-        'enablePodTreeLabels',
-        'enableHierarchicalResourceQuota',
-    ]:
-      raise exceptions.Error(
-          'Please remove illegal field .spec.hierarchyController{}'.format(
-              field
-          )
-      )
     setattr(config_proto, field, spec[field])
 
   return config_proto
+
+
+def _find_unknown_fields(source, known_fields):
+  """Returns the list of string elements in source not in known_fields.
+
+  Args:
+    source: The source iterable to check.
+    known_fields: The collection of known fields.
+  """
+  illegal_fields = []
+  for field in source:
+    if field not in known_fields:
+      illegal_fields.append(field)
+  return illegal_fields
 
 
 def _build_monitoring_msg(spec_monitoring, msg):
@@ -431,8 +487,13 @@ def _build_monitoring_msg(spec_monitoring, msg):
     monitoring: The Policy Controller Monitoring configuration for
     MembershipConfigs, filled in the data parsed from
     configmanagement.spec.policyController.monitoring
-  Raises: Error, if Policy Controller Monitoring Backend is not recognized
+  Raises: gcloud core Error, if spec_monitoring is invalid, including its
+    backend values.
   """
+  if not isinstance(spec_monitoring, dict):
+    raise exceptions.Error(
+        MAP_NODE_EXCEPTION_FORMAT.format('.spec.policyController.monitoring')
+    )
   backends = spec_monitoring.get('backends', [])
   if not backends:
     return None
@@ -449,8 +510,13 @@ def _build_monitoring_msg(spec_monitoring, msg):
           )
       )
     return result
-
-  monitoring_backends = [convert(backend) for backend in backends]
+  try:
+    monitoring_backends = [convert(backend) for backend in backends]
+  except (TypeError, AttributeError):
+    raise exceptions.Error(
+        ('.spec.policyController.monitoring.backend must be a sequence of'
+         ' strings. See --help flag output for details')
+    )
   monitoring = msg.ConfigManagementPolicyControllerMonitoring()
   monitoring.backends = monitoring_backends
   return monitoring

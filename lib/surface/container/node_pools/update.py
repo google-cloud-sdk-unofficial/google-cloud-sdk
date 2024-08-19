@@ -62,6 +62,7 @@ def _Args(parser):
       help='THIS ARGUMENT NEEDS HELP TEXT.')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates a node pool in a running cluster."""
@@ -110,6 +111,7 @@ class Update(base.UpdateCommand):
     flags.AddContainerdConfigFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddMaxRunDurationFlag(group, hidden=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -153,6 +155,7 @@ class Update(base.UpdateCommand):
         windows_os_version=args.windows_os_version,
         containerd_config_from_file=args.containerd_config_from_file,
         enable_queued_provisioning=args.enable_queued_provisioning,
+        max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
@@ -292,6 +295,7 @@ class UpdateBeta(Update):
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddMaxRunDurationFlag(group, hidden=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -340,6 +344,7 @@ class UpdateBeta(Update):
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
         enable_queued_provisioning=args.enable_queued_provisioning,
+        max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
@@ -410,6 +415,7 @@ class UpdateAlpha(Update):
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddMaxRunDurationFlag(group, hidden=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -458,6 +464,7 @@ class UpdateAlpha(Update):
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
         enable_queued_provisioning=args.enable_queued_provisioning,
+        max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,

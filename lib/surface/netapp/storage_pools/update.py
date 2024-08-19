@@ -71,11 +71,9 @@ class Update(base.UpdateCommand):
 
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      allow_auto_tiering = args.allow_auto_tiering
       zone = args.zone
       replica_zone = args.replica_zone
     else:
-      allow_auto_tiering = None
       zone = None
       replica_zone = None
 
@@ -84,7 +82,7 @@ class Update(base.UpdateCommand):
         capacity=capacity_in_gib,
         description=args.description,
         labels=labels,
-        allow_auto_tiering=allow_auto_tiering,
+        allow_auto_tiering=args.allow_auto_tiering,
         zone=zone,
         replica_zone=replica_zone,
     )
@@ -102,10 +100,10 @@ class Update(base.UpdateCommand):
         or args.IsSpecified('clear_labels')
     ):
       updated_fields.append('labels')
+    if args.IsSpecified('allow_auto_tiering'):
+      updated_fields.append('allowAutoTiering')
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      if args.IsSpecified('allow_auto_tiering'):
-        updated_fields.append('allowAutoTiering')
       if args.IsSpecified('zone'):
         updated_fields.append('zone')
       if args.IsSpecified('replica_zone'):

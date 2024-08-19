@@ -157,6 +157,7 @@ class Diagnose(base.Command):
             option.value
             for option in download_throughput_diagnostic_lib.DownloadType
         ]),
+        default=download_throughput_diagnostic_lib.DownloadType.FILE,
         help="""
         Download strategy to use for the DOWNLOAD_THROUGHPUT diagnostic test.
 
@@ -179,6 +180,7 @@ class Diagnose(base.Command):
             option.value
             for option in upload_throughput_diagnostic_lib.UploadType
         ]),
+        default=upload_throughput_diagnostic_lib.UploadType.FILE,
         help="""
         Upload strategy to use for the _UPLOAD_THROUGHPUT_ diagnostic test.
 
@@ -285,8 +287,6 @@ class Diagnose(base.Command):
         PerformanceTestType.LATENCY.value,
         PerformanceTestType.UPLOAD_THROUGHPUT.value,
     ]
-    default_download_type = download_throughput_diagnostic_lib.DownloadType.FILE
-    default_upload_type = upload_throughput_diagnostic_lib.UploadType.FILE
 
     url_object = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
@@ -331,36 +331,32 @@ class Diagnose(base.Command):
         test_results.append(latency_diagnostic.result)
 
       if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
-        download_type = default_download_type
-        if args.download_type:
-          download_type = download_throughput_diagnostic_lib.DownloadType(
-              args.download_type
-          )
+        download_type = download_throughput_diagnostic_lib.DownloadType(
+            args.download_type
+        )
         download_throughput_diagnostic = (
             download_throughput_diagnostic_lib.DownloadThroughputDiagnostic(
                 url_object,
                 download_type,
                 object_sizes,
-                args.process_count,
-                args.thread_count,
+                process_count=args.process_count,
+                thread_count=args.thread_count,
             )
         )
         download_throughput_diagnostic.execute()
         test_results.append(download_throughput_diagnostic.result)
 
       if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
-        upload_type = default_upload_type
-        if args.upload_type:
-          upload_type = upload_throughput_diagnostic_lib.UploadType(
-              args.upload_type
-          )
+        upload_type = upload_throughput_diagnostic_lib.UploadType(
+            args.upload_type
+        )
         upload_throughput_diagnostic = (
             upload_throughput_diagnostic_lib.UploadThroughputDiagnostic(
                 url_object,
                 upload_type,
                 object_sizes,
-                args.process_count,
-                args.thread_count,
+                process_count=args.process_count,
+                thread_count=args.thread_count,
             )
         )
         upload_throughput_diagnostic.execute()

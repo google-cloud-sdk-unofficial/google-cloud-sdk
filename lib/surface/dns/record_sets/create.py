@@ -27,8 +27,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dns import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Creates a record-set in a managed-zone."""
 
@@ -96,8 +98,11 @@ class Create(base.CreateCommand):
     flags.GetResourceRecordSetsTypeArg(True).AddToParser(parser)
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup(
-        use_deprecated_names=cls._BetaOrAlpha()).AddToParser(parser)
+        use_deprecated_names=cls._BetaOrAlpha(),
+        enable_internet_health_checks=cls._BetaOrAlpha(),
+    ).AddToParser(parser)
     flags.GetLocationArg().AddToParser(parser)
+
     parser.display_info.AddCacheUpdater(None)
     parser.display_info.AddTransforms(flags.RESOURCERECORDSETS_TRANSFORMS)
     parser.display_info.AddFormat(flags.RESOURCERECORDSETS_FORMAT)
@@ -112,15 +117,19 @@ class Create(base.CreateCommand):
     zone_ref = util.GetRegistry(api_version).Parse(
         args.zone,
         params=util.GetParamsForRegistry(api_version, args),
-        collection='dns.managedZones')
+        collection='dns.managedZones',
+    )
     request = messages.DnsResourceRecordSetsCreateRequest(
         project=zone_ref.project,
-        managedZone=zone_ref.Name(),
+        managedZone=zone_ref.managedZone,
         resourceRecordSet=rrsets_util.CreateRecordSetFromArgs(
             args,
             zone_ref.project,
             api_version,
-            allow_extended_records=self._BetaOrAlpha()))
+            allow_extended_records=self._BetaOrAlpha(),
+            gcloud_version=self.ReleaseTrack(),
+        ),
+    )
 
     if api_version == 'v2':
       request.location = args.location

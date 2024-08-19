@@ -34,16 +34,26 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.credentials import store
 
 
+@base.UniverseCompatible
 class Proxy(base.BinaryBackedCommand):
-  """Proxy a service to localhost authenticating as the active account or with the specified token."""
+  """Proxy a service to localhost authenticating as the active account or with the specified token.
+
+  Runs a server on localhost that proxies requests to the specified Cloud Run
+  Service with credentials attached.
+
+  You can use this to test services protected with IAM authentication.
+
+  The Cloud Run service must be reachable from the machine running this
+  command. For example, if the Cloud Run Service is configured to only allow
+  `internal` ingress, this command will not work from outside the service's
+  VPC network.
+  """
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {description}
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To proxy the service 'my-service' at localhost port 8080:
 
               $ {command} my-service --port=8080
@@ -61,19 +71,25 @@ class Proxy(base.BinaryBackedCommand):
         resource_args.GetServiceResourceSpec(),
         'Service to proxy locally.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+    )
     flags.AddPortFlag(
         parser,
-        help_text='Local port number to expose the proxied service. '
-        'If not specified, it will be set to 8080.')
+        help_text=(
+            'Local port number to expose the proxied service. '
+            'If not specified, it will be set to 8080.'
+        ),
+    )
     flags.AddTokenFlag(parser)
     flags.AddDeployTagFlag(
         parser,
-        help_text='Traffic tag of the service to expose via the proxy. If not '
-        'specified, the default service URL will be proxied which may '
-        'serve different revisions based on traffic-splits. '
-        'Custom tags can be used to proxy specific revisions. Please see '
-        'https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration#tags.'
+        help_text=(
+            'Traffic tag of the service to expose via the proxy. If not '
+            'specified, the default service URL will be proxied which may '
+            'serve different revisions based on traffic-splits. '
+            'Custom tags can be used to proxy specific revisions. Please see '
+            'https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration#tags.'
+        ),
     )
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
 
@@ -85,13 +101,15 @@ class Proxy(base.BinaryBackedCommand):
     platform = platforms.GetPlatform()
     if platform != platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
-          'This command is only supported for fully managed Cloud Run.')
+          'This command is only supported for fully managed Cloud Run.'
+      )
 
   def Run(self, args):
     self._CheckPlatform()
 
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
     with serverless_operations.Connect(conn_context) as client:
@@ -121,7 +139,8 @@ class Proxy(base.BinaryBackedCommand):
       # until hitting a failure.
       while True:
         response = command_executor(
-            host=host, token=_GetFreshIdToken(), bind=bind, duration='55m')
+            host=host, token=_GetFreshIdToken(), bind=bind, duration='55m'
+        )
         if response.failed:
           break
 
@@ -130,21 +149,26 @@ class Proxy(base.BinaryBackedCommand):
   def _GetUrl(self, serv, tag, serv_id):
     if not serv.status:
       raise exceptions.ArgumentError(
-          'Status of service [{}] is not ready'.format(serv_id))
+          'Status of service [{}] is not ready'.format(serv_id)
+      )
     if tag:
       for t in serv.status.traffic:
         if t.tag == tag:
           if not t.url:
             raise exceptions.ArgumentError(
                 'URL for tag [{}] in service [{}] is not ready'.format(
-                    tag, serv_id))
+                    tag, serv_id
+                )
+            )
           return t.url
       raise exceptions.ArgumentError(
-          'Cannot find tag [{}] in service [{}].'.format(tag, serv_id))
+          'Cannot find tag [{}] in service [{}].'.format(tag, serv_id)
+      )
     # If not tag provided, use the default service URL.
     if not serv.status.url:
       raise exceptions.ArgumentError(
-          'URL for service [{}] is not ready'.format(serv_id))
+          'URL for service [{}] is not ready'.format(serv_id)
+      )
     return serv.status.url
 
 

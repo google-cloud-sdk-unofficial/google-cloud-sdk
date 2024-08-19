@@ -58,6 +58,72 @@
               type: long
               help_text: |-
                 GitHub App installation id.
+        - group:
+            hidden: true
+            required: false
+            help_text: |-
+              Configuration for connections to an instance of GitHub Enterprise.
+            params:
+            - arg_name: github-enterprise-config-host-uri
+              api_field: connection.githubEnterpriseConfig.hostUri
+              required: false
+              repeated: false
+              help_text: |-
+                The URI of the GitHub Enterprise host this connection is for.
+            - arg_name: github-enterprise-config-app-id
+              api_field: connection.githubEnterpriseConfig.appId
+              required: false
+              repeated: false
+              type: long
+              help_text: |-
+                ID of the GitHub App created from the manifest.
+            - arg_name: github-enterprise-config-private-key-secret-version
+              help_text: |-
+                SecretManager resource containing the private key of the GitHub App,
+                formatted as `projects/*/secrets/*/versions/*`.
+              is_positional: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_method_params:
+                connection.githubEnterpriseConfig.privateKeySecretVersion: '{__relative_name__}'
+              required: false
+              clearable: true
+            - arg_name: github-enterprise-config-webhook-secret-version
+              help_text: |-
+                SecretManager resource containing the webhook secret of the GitHub App,
+                formatted as `projects/*/secrets/*/versions/*`.
+              is_positional: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_method_params:
+                connection.githubEnterpriseConfig.webhookSecretSecretVersion: '{__relative_name__}'
+              required: false
+              clearable: true
+            - arg_name: github-enterprise-config-app-installation-id
+              api_field: connection.githubEnterpriseConfig.appInstallationId
+              required: false
+              repeated: false
+              type: long
+              help_text: |-
+                ID of the installation of the GitHub App.
+            - group:
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: github-enterprise-config-service-directory
+                  api_field: connection.githubEnterpriseConfig.serviceDirectoryConfig.service
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+            - arg_name: github-enterprise-config-ssl-ca
+              api_field: connection.githubEnterpriseConfig.sslCa
+              required: false
+              repeated: false
+              help_text: |-
+                SSL certificate to use for requests to GitHub Enterprise.
     - help_text: |-
         Identifier. The resource name of the connection, in the format
         `projects/{project}/locations/{location}/connections/{connection_id}`.
@@ -102,6 +168,44 @@
         This checksum is computed by the server based on the value of other
         fields, and may be sent on update and delete requests to ensure the
         client has an up-to-date value before proceeding.
+    - arg_name: request-id
+      api_field: requestId
+      required: false
+      repeated: false
+      help_text: |-
+        An optional request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server will know to ignore
+        the request if it has already been completed. The server will guarantee
+        that for at least 60 minutes since the first request.
+
+        For example, consider a situation where you make an initial request and the
+        request times out. If you make the request again with the same request
+        ID, the server can check if original operation with the same request ID
+        was received, and if so, will ignore the second request. This prevents
+        clients from accidentally creating duplicate commitments.
+
+        The request ID must be a valid UUID with the exception that zero UUID is
+        not supported (00000000-0000-0000-0000-000000000000).
+    - arg_name: allow-missing
+      api_field: allowMissing
+      action: store_true
+      required: false
+      type: bool
+      help_text: |
+        If set to true, and the connection is not found a new connection
+        will be created. In this situation `update_mask` is ignored.
+        The creation will succeed only if the input connection has all the
+        necessary information (e.g a github_config with both  user_oauth_token and
+        installation_id properties).
+      default: null
+    - arg_name: validate-only
+      api_field: validateOnly
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set, validate the request, but do not actually post it.
+      default: null
   request:
     api_version: v1
     collection:

@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.network_security.security_profiles.threat_prevention import sp_api
+from googlecloudsdk.api_lib.network_security.security_profiles import tpp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -54,6 +54,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class DeleteOverride(base.UpdateCommand):
   """Delete overrides of Threat Prevention Profile."""
 
@@ -69,7 +70,7 @@ class DeleteOverride(base.UpdateCommand):
     return client.GetSecurityProfile(security_profile.RelativeName()).labels
 
   def Run(self, args):
-    client = sp_api.Client(self.ReleaseTrack())
+    client = tpp_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     is_async = args.async_
 

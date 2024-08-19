@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.network_connectivity import util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ListSpokes(base.ListCommand):
   """List hub spokes.
 

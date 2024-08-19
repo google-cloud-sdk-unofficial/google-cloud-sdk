@@ -26,8 +26,8 @@ arguments:
         api_field: backup.expireTime
         help_text: |
           Absolute expiration time of the backup; must be at least 6 hours and at most 90 days from
-          the time the request is received. See `$ gcloud topic datetimes` for information on
-          date/time formats.
+          backup creation time. See `$ gcloud topic datetimes` for information on date/time formats.
+          See `$ gcloud bigtable backups describe` for creation time.
       - arg_name: retention-period
         api_field: backup.expireTime
         help_text: |
@@ -37,7 +37,8 @@ arguments:
   - arg_name: hot-to-standard-time
     api_field: backup.hotToStandardTime
     help_text: |
-      Absolute time at which a hot backup will be converted to a standard backup; must be at least
-      24 hours from the time the request is received. Only applies for hot backups.
+      Time at which a hot backup will be converted to a standard backup; must be at least 24 hours
+      from backup creation time. Only applies for hot backups. See `$ gcloud topic datetimes` for
+      information on date/time formats. See `$ gcloud bigtable backups describe` for creation time.
     release_tracks: ALPHA
     hidden: true  # TODO: b/337328220 - Unhide for GA.

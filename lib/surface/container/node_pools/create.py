@@ -264,6 +264,7 @@ class Create(base.CreateCommand):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddMaxRunDurationFlag(parser, hidden=True)
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)
@@ -282,6 +283,7 @@ class Create(base.CreateCommand):
     ops.min_provision_nodes = args.min_provision_nodes
     ops.placement_policy = args.placement_policy
     ops.enable_queued_provisioning = args.enable_queued_provisioning
+    ops.max_run_duration = args.max_run_duration
     ops.tpu_topology = args.tpu_topology
     ops.secondary_boot_disks = args.secondary_boot_disk
     return ops
@@ -398,6 +400,7 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddMaxRunDurationFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)
@@ -439,6 +442,7 @@ class CreateBeta(Create):
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
+    ops.max_run_duration = args.max_run_duration
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
@@ -487,6 +491,7 @@ class CreateAlpha(Create):
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
+    ops.max_run_duration = args.max_run_duration
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
@@ -553,6 +558,7 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddMaxRunDurationFlag(parser, hidden=True)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)

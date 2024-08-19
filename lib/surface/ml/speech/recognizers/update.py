@@ -32,7 +32,6 @@ class Update(base.Command):
 
   def ValidateUpdateRecognizerFlags(self, args):
     """Validates update flags."""
-    flag_validations.ValidateLocation(args)
     flag_validations.ValidateDecodingConfig(args)
 
   @staticmethod

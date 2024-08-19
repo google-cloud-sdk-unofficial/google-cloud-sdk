@@ -50,7 +50,7 @@ auto_flags = [
     'workloadVulnerabilityScanning',
     'enableRuntimeVulnerabilityInsight',
     'masterglobalaccess',
-    'enableDnsEndpoint',
+    'enableDnsAccess',
     'workloadPolicies',
     'containerdConfig',
     'labels',

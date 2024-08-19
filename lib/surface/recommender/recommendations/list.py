@@ -28,6 +28,7 @@ from googlecloudsdk.api_lib.recommender import recommenders
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
+from googlecloudsdk.command_lib.run import exceptions
 
 
 DETAILED_HELP = {
@@ -122,64 +123,108 @@ class List(base.ListCommand):
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)
 
-  def Run(self, args):
-    """Run 'gcloud recommender recommendations list'.
+  def setArgs(self, args):
+    """Setups up args to search all resources under a project, folder, or organization.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
         with.
 
     Returns:
-      The list of recommendations for this project.
+      (argparse.Namespace) args with additional parameters setup
+    """
+
+    args.read_mask = '*'
+    args.asset_types = [
+        # gcloud-disable-gdu-domain
+        'cloudresourcemanager.googleapis.com/Project',
+        # gcloud-disable-gdu-domain
+        'cloudresourcemanager.googleapis.com/Folder'
+    ]
+    args.order_by = 'createTime'
+    args.query = '*'
+    if args.project:
+      args.scope = 'projects/' + args.project
+    if args.organization:
+      args.scope = 'organizations/' + args.organization
+    if args.folder:
+      args.scope = 'folders/' + args.folder
+
+    return args
+
+  def read(self, asset_in):
+    if isinstance(asset_in, list):
+      return asset_in[0]
+    else:
+      return asset_in
+
+  def AddResource(self, resource_location) -> bool:
+    if resource_location not in self.resource_locations:
+      self.resource_locations.append(resource_location)
+      return True
+    return False
+
+  def searchAllResources(self, args):
+    """Search all nested resources under a project, folder, or organization.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      (List): a list of all Google Cloud resource,location pairs
+    """
+
+    args = self.setArgs(args)
+    client = client_util.AssetSearchClient(client_util.DEFAULT_API_VERSION)
+    resources = list(client.SearchAllResources(args))
+    self.resource_locations = []
+    asset_count = 0
+
+    for r in resources:
+      parent_resource = f'{self.read(args.scope)}/locations/{r.location}'
+      if 'project' not in parent_resource:
+        self.AddResource(parent_resource)
+
+      # gcloud-disable-gdu-domain
+      if r.assetType == 'cloudresourcemanager.googleapis.com/Project':
+        self.AddResource(f'{self.read(r.project)}/locations/{r.location}')
+
+      # gcloud-disable-gdu-domain
+      if (
+          r.assetType == 'cloudresourcemanager.googleapis.com/Folder'
+          and self.AddResource(f'{self.read(r.folders)}/locations/{r.location}')
+      ):
+        args.scope = self.read(r.folders)
+        resources.extend(client.SearchAllResources(args))
+
+      asset_count += 1
+      if asset_count > 100:
+        raise exceptions.UnsupportedOperationError(
+            'The max number of assets to list recommendations is 100.  To list'
+            ' a larger number of assets, please use BigQuery Export.'
+        )
+
+    return self.resource_locations
+
+  def CollectAssets(self, args):
+    """Iterate through search all resources response and collects unique Google Cloud resouce,location pairs.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      (List): a list of all Google Cloud resource,location pairs
     """
 
     # Collect Assets and Locations
     if args.recursive:
-      client = client_util.AssetSearchClient(client_util.DEFAULT_API_VERSION)
-      args.read_mask = '*'
-      args.asset_types = ['*']
-      args.order_by = 'createTime'
-      args.query = '*'
-
-      if args.project:
-        args.scope = 'project/' + args.project
-      if args.organization:
-        args.scope = 'organization/' + args.organization
-      if args.organization:
-        args.scope = 'folder/' + args.folder
-
-      resources = client.SearchAllResources(args)
-      locations_local = []
-      for r in resources:
-        # gcloud-disable-gdu-domain
-        if r.assetType == 'cloudresourcemanager.googleapis.com/Project':
-          if isinstance(r.project, list):
-            asset = r.project[0]
-          else:
-            asset = r.project
-          locations_local.append(f'{asset}/locations/{r.location}')
-        # gcloud-disable-gdu-domain
-        if r.assetType == 'cloudresourcemanager.googleapis.com/Folder':
-          if isinstance(r.folder, list):
-            asset = r.folder[0]
-          else:
-            asset = r.folder
-          locations_local.append(f'{asset}/locations/{r.location}')
-        # gcloud-disable-gdu-domain
-        if r.assetType == 'cloudresourcemanager.googleapis.com/Organization':
-          if isinstance(r.organization, list):
-            asset = r.organization[0]
-          else:
-            asset = r.organization
-          locations_local.append(f'{asset}/locations/{r.location}')
+      resource_locations = self.searchAllResources(args)
     else:
-      if args.location is not None:
-        locations_local = [
-            flags.GetResourceSegment(args) + f'/locations/{args.location}'
-        ]
-      else:
+      if args.location is None:
         loc_client = locations.CreateClient(self.ReleaseTrack())
-        locations_local = [
+        resource_locations = [
             loc.name
             for loc in loc_client.List(
                 args.page_size,
@@ -189,23 +234,42 @@ class List(base.ListCommand):
                 billing_account=args.billing_account,
             )
         ]
-
-    # collect recommendations for all recommenders
-    recommendations = []
-    parent_names = []
-    for location in locations_local:
-      if args.recommender is not None:
-        parent_names.append(f'{location}/recommenders/{args.recommender}')
       else:
-        recommenders_client = recommenders.CreateClient(self.ReleaseTrack())
-        recommenders_response = recommenders_client.List(args.page_size)
-        parent_names.extend([
-            f'{location}/recommenders/{response.name}'
-            for response in recommenders_response
-        ])
+        resource_locations = [
+            flags.GetResourceSegment(args) + f'/locations/{args.location}'
+        ]
+    return resource_locations
 
+  def ListRecommenders(self, args):
+    """List all Recommenders.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      (list) all recommenders in a list of strings
+    """
+
+    recommenders_client = recommenders.CreateClient(self.ReleaseTrack())
+    recommenders_response = recommenders_client.List(args.page_size)
+    return list(recommenders_response)
+
+  def GetRecommendations(self, args, asset_recommenders):
+    """Collects all recommendations for a given Google Cloud Resource.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+      asset_recommenders: list, The list of Google Cloud resource recommender
+        URL to collect recommendations
+
+    Returns:
+      (Recommendations) a iterator for all returned recommendations
+    """
+    recommendations = []
     recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
-    for parent_name in parent_names:
+    for parent_name in asset_recommenders:
       new_recommendations = recommendations_client.List(
           parent_name, args.page_size
       )
@@ -220,8 +284,34 @@ class List(base.ListCommand):
       recommendations = itertools.chain(
           recommendations, (peek,), new_recommendations
       )
-
     return recommendations
+
+  def Run(self, args):
+    """Run 'gcloud recommender recommendations list'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The list of recommendations for this project.
+    """
+
+    # Collect Assets and Locations
+    resource_locations = self.CollectAssets(args)
+
+    # collect recommendations for all recommenders
+    asset_recommenders = []
+    for asset in resource_locations:
+      if args.recommender is not None:
+        asset_recommenders.append(f'{asset}/recommenders/{args.recommender}')
+      else:  # loop through all recommenders
+        asset_recommenders.extend([
+            f'{asset}/recommenders/{response.name}'
+            for response in self.ListRecommenders(args)
+        ])
+
+    return self.GetRecommendations(args, asset_recommenders)
 
 
 @base.UniverseCompatible

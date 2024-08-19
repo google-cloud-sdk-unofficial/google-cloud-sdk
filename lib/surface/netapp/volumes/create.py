@@ -30,6 +30,7 @@ def _CommonArgs(parser, release_track):
   volumes_flags.AddVolumeCreateArgs(parser, release_track=release_track)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Volume."""
@@ -112,11 +113,9 @@ class Create(base.CreateCommand):
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       large_capacity = args.large_capacity
       multiple_endpoints = args.multiple_endpoints
-      tiering_policy = args.tiering_policy
     else:
       large_capacity = None
       multiple_endpoints = None
-      tiering_policy = None
 
     volume = client.ParseVolumeConfig(
         name=volume_ref.RelativeName(),
@@ -140,7 +139,7 @@ class Create(base.CreateCommand):
         backup_config=backup_config,
         large_capacity=large_capacity,
         multiple_endpoints=multiple_endpoints,
-        tiering_policy=tiering_policy)
+        tiering_policy=args.tiering_policy)
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(

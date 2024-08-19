@@ -93,6 +93,7 @@ class Create(base.Command):
         action='store_true',
         help='Enable granular role-based access control for this Data Fusion instance.')
     maintenance_utils.CreateArgumentsGroup(parser)
+    resource_args.GetTagsArg().AddToParser(parser)
 
   def Run(self, args):
     datafusion = df.Datafusion()
@@ -132,9 +133,15 @@ class Create(base.Command):
         enableStackdriverMonitoring=enable_stackdriver_monitoring,
         enableRbac=enable_rbac,
         options=encoding.DictToAdditionalPropertyMessage(
-            options, datafusion.messages.Instance.OptionsValue, True),
+            options, datafusion.messages.Instance.OptionsValue, True
+        ),
         labels=encoding.DictToAdditionalPropertyMessage(
-            labels, datafusion.messages.Instance.LabelsValue, True))
+            labels, datafusion.messages.Instance.LabelsValue, True
+        ),
+        tags=resource_args.GetTagsFromArgs(
+            args, datafusion.messages.Instance.TagsValue
+        ),
+    )
     maintenance_utils.SetMaintenanceWindow(args, instance)
 
     req = datafusion.messages.DatafusionProjectsLocationsInstancesCreateRequest(

@@ -41,6 +41,7 @@ from googlecloudsdk.core.util import platforms
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Init(base.Command):
@@ -164,36 +165,40 @@ class Init(base.Command):
           log.status.write('  gcloud info --run-diagnostics\n\n')
           return
 
-    if args.universe_domain:
-      properties.PersistProperty(
-          properties.VALUES.core.universe_domain, args.universe_domain
-      )
-      return
-
     # User project quota is now the global default, but this command calls
     # legacy APIs where it should be disabled.
     with base.WithLegacyQuota():
-      if not self._PickAccount(
-          args.console_only, args.no_browser, preselected=args.account
-      ):
-        return
-
-      if not self._PickProject(preselected=args.project):
-        return
-
-      self._PickDefaultRegionAndZone()
-
-      self._CreateBotoConfig()
-
+      self._PickProperties(args)
       self._Summarize(configuration_name)
 
-  def _PickAccount(self, console_only, no_browser, preselected=None):
+  def _PickProperties(self, args):
+    if args.universe_domain:
+      properties.PersistProperty(
+          properties.VALUES.core.universe_domain, args.universe_domain)
+    is_default_universe = (
+        not args.universe_domain or
+        args.universe_domain == properties.VALUES.core.universe_domain.default)
+
+    if not self._PickAccount(
+        args.console_only, args.no_browser, is_default_universe,
+        preselected=args.account):
+      return
+
+    if not self._PickProject(preselected=args.project):
+      return
+
+    self._PickDefaultRegionAndZone()
+    self._CreateBotoConfig()
+
+  def _PickAccount(self, console_only, no_browser, is_default_universe,
+                   preselected=None):
     """Checks if current credentials are valid, if not runs auth login.
 
     Args:
       console_only: bool, True if the auth flow shouldn't use the browser
       no_browser: bool, True if the auth flow shouldn't use the browser and
         should ask another gcloud installation to help with the browser flow.
+      is_default_universe: bool, True if selected universe is the default
       preselected: str, disable prompts and use this value if not None
 
     Returns:
@@ -213,27 +218,42 @@ class Init(base.Command):
           return False
         # Fall through to the set the account property.
       else:
+        additional_options = []
+        if is_default_universe:
+          additional_options.append('Sign in with a new Google Account')
+        additional_options.append('Skip this step')
+
         # Prompt for the account to use.
         idx = console_io.PromptChoice(
-            accounts + ['Log in with a new account'],
-            message='Choose the account you would like to use to perform '
-                    'operations for this configuration:',
+            accounts + additional_options,
+            message='Choose the account you want to use '
+                    'for this configuration.\n'
+                    'To use a federated user account, exit this '
+                    'command and sign in to the gcloud CLI with your login '
+                    'configuration file, then run this command again.\n\n'
+                    'Select an account:',
             prompt_string=None)
         if idx is None:
           return False
         if idx < len(accounts):
           account = accounts[idx]
-        else:
+        elif is_default_universe and idx == len(accounts):
           new_credentials = True
+        else:
+          return False
     elif preselected:
       # Preselected account specified but there are no credentialed accounts.
-      log.status.write('\n[{0}] is not a credentialed account.\n'.format(
-          preselected))
+      log.status.write(
+          '\n[{0}] is not a credentialed account.\n'.format(preselected)
+      )
       return False
     else:
-      # Must log in with new credentials.
+      # Must sign in with new credentials.
       answer = console_io.PromptContinue(
-          prompt_string='You must log in to continue. Would you like to log in')
+          prompt_string=(
+              'You must sign in to continue. Would you like to sign in'
+          )
+      )
       if not answer:
         return False
       new_credentials = True
@@ -255,7 +275,7 @@ class Init(base.Command):
       # Set the config account to the already credentialed account.
       properties.PersistProperty(properties.VALUES.core.account, account)
 
-    log.status.write('You are logged in as: [{0}].\n\n'
+    log.status.write('You are signed in as: [{0}].\n\n'
                      .format(properties.VALUES.core.account.Get()))
     return True
 
@@ -417,11 +437,15 @@ https://console.developers.google.com/apis page.
     SetProperty('region', default_region, ['compute', 'regions', 'list'])
 
   def _Summarize(self, configuration_name):
-    log.status.Print('Your Google Cloud SDK is configured and ready to use!\n')
-
-    log.status.Print(
-        '* Commands that require authentication will use {0} by default'
-        .format(properties.VALUES.core.account.Get()))
+    log.status.Print('The Google Cloud CLI is configured and ready to use!\n')
+    if properties.VALUES.core.account.Get():
+      log.status.Print(
+          '* Commands that require authentication will use {0} by default'
+          .format(properties.VALUES.core.account.Get()))
+    else:
+      log.status.Print(
+          '* Commands that require authentication will fail until you are '
+          'authenticated')
     project = properties.VALUES.core.project.Get()
     if project:
       log.status.Print(
@@ -455,7 +479,7 @@ https://console.developers.google.com/apis page.
         'gcloud command.')
     log.status.Print(
         '* Run `gcloud topic --help` to learn about advanced features of the '
-        'SDK like arg files and output formatting')
+        'CLI like arg files and output formatting')
 
     log.status.Print(
         '* Run `gcloud cheat-sheet` to see a roster of go-to `gcloud` '

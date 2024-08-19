@@ -28,7 +28,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AcceptSpoke(base.Command):
   """Accept a spoke into a hub.
 
@@ -47,7 +48,10 @@ class AcceptSpoke(base.Command):
     client = networkconnectivity_api.HubsClient(
         release_track=self.ReleaseTrack())
     hub_ref = args.CONCEPTS.hub.Parse()
-    op_ref = client.AcceptSpoke(hub_ref, args.spoke)
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      op_ref = client.AcceptSpokeBeta(hub_ref, args.spoke)
+    else:
+      op_ref = client.AcceptSpoke(hub_ref, args.spoke)
 
     log.status.Print('Accept spoke request issued for: [{}]'.format(
         hub_ref.Name()))

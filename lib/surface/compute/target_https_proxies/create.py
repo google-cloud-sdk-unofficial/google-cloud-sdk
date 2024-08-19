@@ -64,7 +64,6 @@ def _Args(
     parser,
     traffic_director_security=False,
     certificate_map=False,
-    server_tls_policy_enabled=False,
     list_format=None,
 ):
   """Add the target https proxies command line flags to the parser."""
@@ -84,10 +83,9 @@ def _Args(
 
   target_proxies_utils.AddHttpKeepAliveTimeoutSec(parser)
 
-  if server_tls_policy_enabled:
-    ns_resource_args.GetServerTlsPolicyResourceArg(
-        'to attach', name='server-tls-policy', region_fallthrough=True
-    ).AddToParser(parser)
+  ns_resource_args.GetServerTlsPolicyResourceArg(
+      'to attach', name='server-tls-policy', region_fallthrough=True
+  ).AddToParser(parser)
 
   if certificate_map:
     cm_resource_args.AddCertificateMapResourceArg(
@@ -177,7 +175,6 @@ class Create(base.CreateCommand):
 
   _traffic_director_security = False
   _certificate_map = True
-  _server_tls_policy_enabled = False
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
@@ -228,7 +225,6 @@ class Create(base.CreateCommand):
         parser,
         traffic_director_security=cls._traffic_director_security,
         certificate_map=cls._certificate_map,
-        server_tls_policy_enabled=cls._server_tls_policy_enabled,
         list_format=cls._list_format,
     )
 
@@ -263,9 +259,7 @@ class Create(base.CreateCommand):
         args.CONCEPTS.certificate_map.Parse() if self._certificate_map else None
     )
     server_tls_policy_ref = None
-    if self._server_tls_policy_enabled and args.IsKnownAndSpecified(
-        'server_tls_policy'
-    ):
+    if args.IsKnownAndSpecified('server_tls_policy'):
       server_tls_policy_ref = args.CONCEPTS.server_tls_policy.Parse()
     return _Run(
         args,
@@ -282,7 +276,7 @@ class Create(base.CreateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
-  _server_tls_policy_enabled = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
