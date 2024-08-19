@@ -55,13 +55,13 @@ Container Flags
   group.AddArgument(flags.DependsOnFlag())
 
   if release_track == base.ReleaseTrack.ALPHA:
-    group.AddArgument(flags.GpuFlag())
     group.AddArgument(flags.BaseImageArg())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
+    group.AddArgument(flags.GpuFlag(hidden=False))
 
   return group
 
@@ -271,6 +271,8 @@ class BetaUpdate(Update):
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
+    flags.AddGpuTypeFlag(managed_group, hidden=False)
+    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

@@ -35,6 +35,19 @@
           spec:
           - api_field: key
           - api_field: value
+    - arg_name: tags
+      # TODO(b/347173013): Remove hidden as part of GA launch.
+      hidden: true
+      metavar: KEY=VALUE
+      api_field: instance.tags.additionalProperties
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     - arg_name: authorized-network
       api_field: instance.authorizedNetwork
       help_text: |

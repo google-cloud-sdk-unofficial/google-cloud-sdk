@@ -18,11 +18,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import content
 
 
-class Remove(base.UpdateCommand, command.PocoCommand):
+class Remove(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
   """Removes a bundle installation for Policy Controller content.
 
   Google-defined policy bundles of constraints can be installed onto Policy
@@ -36,6 +37,7 @@ class Remove(base.UpdateCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
+  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):

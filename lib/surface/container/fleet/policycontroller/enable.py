@@ -20,11 +20,17 @@ from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
+class Enable(
+    base.UpdateCommand,
+    mf_base.UpdateCommand,
+    base.EnableCommand,
+    command.PocoCommand,
+):
   """Enable Policy Controller Feature.
 
   Enables the Policy Controller Feature in a fleet.
@@ -37,6 +43,7 @@ class Enable(base.UpdateCommand, base.EnableCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
+  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):

@@ -17,6 +17,7 @@ from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_job
+from clients import client_project
 from clients import client_reservation
 from clients import client_routine
 from clients import client_row_access_policy
@@ -598,38 +599,31 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           id_fallbacks=client, identifier=identifier
       )
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
-      objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
-          apiclient=client.apiclient,
-          id_fallbacks=client,
-          reference=reference,
-          max_results=self.max_results,
-          list_all=self.a,
-          page_token=page_token,
-          filter_expression=self.filter,
-      )
-      results = objects_metadata.pop('datasets')
     elif self.p or reference is None:
       object_type = bq_id_utils.ApiClientHelper.ProjectReference
-      results = client.ListProjects(
-          max_results=self.max_results, page_token=page_token
+      results = client_project.list_projects(
+          apiclient=client.apiclient,
+          max_results=self.max_results,
+          page_token=page_token,
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ProjectReference):
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
-      objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
-          apiclient=client.apiclient,
-          id_fallbacks=client,
-          reference=reference,
-          max_results=self.max_results,
-          list_all=self.a,
-          page_token=page_token,
-          filter_expression=self.filter,
-      )
-      results = objects_metadata.pop('datasets')
     else:  # isinstance(reference, DatasetReference):
       object_type = bq_id_utils.ApiClientHelper.TableReference
       results = client.ListTables(
           reference, max_results=self.max_results, page_token=page_token
       )
+    if object_type is bq_id_utils.ApiClientHelper.DatasetReference:
+      objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
+          apiclient=client.apiclient,
+          id_fallbacks=client,
+          reference=reference,
+          max_results=self.max_results,
+          list_all=self.a,
+          page_token=page_token,
+          filter_expression=self.filter,
+      )
+      results = objects_metadata.pop('datasets')
     if results or self.print_last_token or self.print_unreachable:
       assert object_type is not None
       frontend_utils.PrintObjectsArrayWithMetadata(

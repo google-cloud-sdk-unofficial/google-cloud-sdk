@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.iam import flags
 from googlecloudsdk.command_lib.iam.byoid_utilities import cred_config
 
 
+@base.UniverseCompatible
 class CreateCredConfig(base.CreateCommand):
   """Create a configuration file for generated credentials.
 
@@ -34,8 +35,7 @@ class CreateCredConfig(base.CreateCommand):
   """
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To create a file-sourced credential configuration for your project, run:
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-source-file=$PATH_TO_OIDC_ID_TOKEN --output-file=credentials.json
@@ -56,6 +56,10 @@ class CreateCredConfig(base.CreateCommand):
 
             $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --azure --app-id-uri=$URI_FOR_AZURE_APP_ID --output-file=credentials.json
 
+          To create an X.509 certificate-based credential configuration for your project, run:
+
+            $ {command} projects/$PROJECT_NUMBER/locations/$REGION/workloadIdentityPools/$WORKLOAD_POOL_ID/providers/$PROVIDER_ID --service-account=$EMAIL --credential-cert-path=$PATH_TO_CERTIFICATE_FILE --credential-cert-private-key-path=$PATH_TO_PRIVATE_KEY_FILE --output-file=credentials.json
+
           To use the resulting file for any of these commands, set the GOOGLE_APPLICATION_CREDENTIALS environment variable to point to the generated file
           """),
   }
@@ -72,39 +76,80 @@ class CreateCredConfig(base.CreateCommand):
     )
 
     credential_types = parser.add_group(
-        mutex=True, required=True, help='Credential types.')
+        mutex=True, required=True, help='Credential types.'
+    )
     credential_types.add_argument(
         '--credential-source-file',
-        help='Location of the credential source file.')
+        help='Location of the credential source file.',
+    )
     credential_types.add_argument(
-        '--credential-source-url', help='URL to obtain the credential from.')
+        '--credential-source-url', help='URL to obtain the credential from.'
+    )
     credential_types.add_argument(
         '--executable-command',
-        help='The full command to run to retrieve the credential. Must be an absolute path for the program including arguments.'
+        help=(
+            'The full command to run to retrieve the credential. Must be an'
+            ' absolute path for the program including arguments.'
+        ),
     )
     credential_types.add_argument('--aws', help='Use AWS.', action='store_true')
     credential_types.add_argument(
-        '--azure', help='Use Azure.', action='store_true')
+        '--azure', help='Use Azure.', action='store_true'
+    )
+    credential_types.add_argument(
+        '--credential-cert-path', help='Path of the X.509 certificate file.'
+    )
 
     # Optional args.
     parser.add_argument(
         '--subject-token-type',
-        help='The type of token being used for authorization. ' +
-        'This defaults to urn:ietf:params:oauth:token-type:jwt.')
+        help='The type of token being used for authorization. '
+        + 'This defaults to urn:ietf:params:oauth:token-type:jwt.',
+    )
     parser.add_argument(
         '--app-id-uri',
-        help='The custom Application ID URI for the Azure access token.')
+        help='The custom Application ID URI for the Azure access token.',
+    )
     parser.add_argument(
         '--enable-imdsv2',
-        help='Adds the AWS IMDSv2 session token Url to the credential source to enforce the AWS IMDSv2 flow.',
-        action='store_true')
+        help=(
+            'Adds the AWS IMDSv2 session token Url to the credential source to'
+            ' enforce the AWS IMDSv2 flow.'
+        ),
+        action='store_true',
+    )
+
+    certificate_args = parser.add_group(
+        help='Arguments for an X.509 certificate type credential source.'
+    )
+    certificate_args.add_argument(
+        '--credential-cert-private-key-path',
+        help='Path of the X.509 private key file.',
+        required=True,
+    )
+    certificate_args.add_argument(
+        '--credential-cert-configuration-output-file',
+        help=(
+            'Path for the certificate configuration file. If specified, a'
+            ' certificate configuration file will be created at the specified'
+            ' path. If not specified, the certificate configuration will be'
+            ' created at the default gcloud location.'
+        ),
+    )
 
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:
       raise exceptions.ConflictingArgumentsException(
-          '--enable-imdsv2 can be used only for AWS credential types')
+          '--enable-imdsv2 can be used only for AWS credential types'
+      )
+    if args.credential_cert_private_key_path and not args.credential_cert_path:
+      raise exceptions.ConflictingArgumentsException(
+          '--credential-cert-private-key-path can be used only for X.509'
+          ' certificate credential types'
+      )
 
   def Run(self, args):
     self._ValidateArgs(args)
     cred_config.create_credential_config(
-        args, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS)
+        args, cred_config.ConfigType.WORKLOAD_IDENTITY_POOLS
+    )

@@ -16,7 +16,6 @@ import logging
 import os
 import random
 import re
-import string
 import sys
 import time
 from typing import Dict, List, NamedTuple, Optional, Tuple, Union
@@ -55,6 +54,8 @@ CONNECTION_PROPERTY_TO_TYPE_MAP = {
 }
 CONNECTION_TYPES = CONNECTION_TYPE_TO_PROPERTY_MAP.keys()
 
+
+MAX_SUPPORTED_IAM_POLICY_VERSION = 3
 
 _COLUMNS_TO_INCLUDE_FOR_TRANSFER_RUN = [
     'updateTime',
@@ -193,11 +194,6 @@ def MaybePrintManualInstructionsForConnection(connection, flag_format=None):
               connection['azure'].get('application'),
           )
       )
-
-
-def _ToFilename(url: str) -> str:
-  """Converts a url to a filename."""
-  return ''.join([c for c in url if c in string.ascii_lowercase])
 
 
 def _OverwriteCurrentLine(s: str, previous_token=None) -> int:
@@ -845,25 +841,29 @@ def FormatAcl(acl):
     else:
       role = entry.pop('role', None)
       if not role or len(list(entry.values())) != 1:
+        # pylint: enable=line-too-long
         raise bq_error.BigqueryInterfaceError(
             'Invalid ACL returned by server: %s' % acl, {}, []
         )
       acl_entries[role].extend(entry.values())
   # Show a couple things first.
-  original_roles = [
-      ('OWNER', 'Owners'),
-      ('WRITER', 'Writers'),
-      ('READER', 'Readers'),
-      ('VIEW', 'Authorized Views'),
-  ]
+  original_roles = {
+      'OWNER': 'Owners',
+      'WRITER': 'Writers',
+      'READER': 'Readers',
+      'VIEW': 'Authorized Views',
+  }
   result_lines = []
-  for role, name in original_roles:
+  # TODO(b/351081309): Remove this for loop once dataset conditions is rolled
+  # out.
+  for role, name in original_roles.items():
     members = acl_entries.pop(role, None)
     if members:
       result_lines.append('%s:' % name)
       result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
   # Show everything else.
   for role, members in sorted(acl_entries.items()):
+    # pylint: enable=line-too-long
     result_lines.append('%s:' % role)
     result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
   return '\n'.join(result_lines)
@@ -2368,8 +2368,6 @@ def FormatTableInfo(table_info):
         result['cloneDefinition']['cloneTime']
     )
   return result
-
-
 
 
 def FormatTransferConfigInfo(transfer_config_info):

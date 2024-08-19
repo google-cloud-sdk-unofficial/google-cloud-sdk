@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import networks_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute.network_profiles import flags as network_profile_flags
 from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.command_lib.compute.networks import network_utils
 from googlecloudsdk.core import log
@@ -43,7 +44,8 @@ def EpilogText(network_name):
   log.status.Print(textwrap.dedent(message))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a Compute Engine network.
 
@@ -103,7 +105,9 @@ class Create(base.CreateCommand):
         messages=messages,
         network_ref=network_ref,
         network_args=args,
-        support_firewall_order=self._support_firewall_order)
+        network_profile_ref=None,
+        support_firewall_order=self._support_firewall_order,
+    )
 
     request = (client.apitools_client.networks, 'Insert',
                client.messages.ComputeNetworksInsertRequest(
@@ -117,8 +121,43 @@ class Create(base.CreateCommand):
     EpilogText(self._network_name)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class CreateBeta(Create):
+  r"""Create a Compute Engine network.
+
+  *{command}* is used to create virtual networks. A network
+  performs the same function that a router does in a home
+  network: it describes the network range and gateway IP
+  address, handles communication between instances, and serves
+  as a gateway between instances and callers outside the
+  network.
+
+  ## EXAMPLES
+
+  To create a regional auto subnet mode network with the name 'network-name',
+  run:
+
+    $ {command} network-name
+
+  To create a global custom subnet mode network with the name 'network-name',
+  run:
+
+    $ {command} network-name \
+      --bgp-routing-mode=global \
+      --subnet-mode=custom
+
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    network_utils.AddBgpBestPathSelectionArgGroup(parser)
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.UniverseCompatible
+class CreateAlpha(CreateBeta):
   """Create a Compute Engine network.
 
   *{command}* is used to create virtual networks. A network
@@ -128,13 +167,21 @@ class CreateAlpha(Create):
   as a gateway between instances and callers outside the
   network.
   """
+
   _support_firewall_order = True
+  NETWORK_PROFILE_ARG = None
 
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     cls.NETWORK_ARG = flags.NetworkArgument()
     cls.NETWORK_ARG.AddArgument(parser, operation_type='create')
+    cls.NETWORK_PROFILE_ARG = (
+        network_profile_flags.NetworkProfileArgumentForOtherResource(
+            'The network profile to apply to this network.'
+        )
+    )
+    cls.NETWORK_PROFILE_ARG.AddArgument(parser)
 
     network_utils.AddCreateBaseArgs(parser)
     network_utils.AddCreateSubnetModeArg(parser)
@@ -143,7 +190,40 @@ class CreateAlpha(Create):
     network_utils.AddInternalIpv6RangeArg(parser)
     network_utils.AddEnableUlaInternalIpv6Arg(parser)
     network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
-    network_utils.AddRdmaArg(parser)
     network_utils.AddBgpBestPathSelectionArgGroup(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the network."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = client.messages
+
+    network_utils.CheckRangeLegacyModeOrRaise(args)
+
+    network_profile_ref = self.NETWORK_PROFILE_ARG.ResolveAsResource(
+        args, holder.resources
+    )
+
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
+    self._network_name = network_ref.Name()
+    network_resource = networks_utils.CreateNetworkResourceFromArgs(
+        messages=messages,
+        network_ref=network_ref,
+        network_args=args,
+        network_profile_ref=network_profile_ref,
+        support_firewall_order=self._support_firewall_order,
+    )
+
+    request = (
+        client.apitools_client.networks,
+        'Insert',
+        client.messages.ComputeNetworksInsertRequest(
+            network=network_resource, project=network_ref.project
+        ),
+    )
+    response = client.MakeRequests([request])
+
+    resource_dict = resource_projector.MakeSerializable(response[0])
+    return networks_utils.AddModesForListFormat(resource_dict)

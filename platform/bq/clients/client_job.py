@@ -312,7 +312,7 @@ def DeleteJob(
     ignore_not_found: Whether to ignore "not found" errors.
 
   Raises:
-    TypeError: if reference is not a JobReference.
+    BigqueryTypeError: if reference is not a JobReference.
     bq_error.BigqueryNotFoundError: if reference does not exist and
       ignore_not_found is False.
   """
@@ -1303,9 +1303,9 @@ def Load(
       must start with a letter or underscore. Invalid column names will be
       normalized. Specify 'V2' to support flexible column name. Invalid column
       names will be normalized.
-    file_set_spec_type: (experimental) Set how to discover files for loading.
-      Specify 'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by
-      listing files from the underlying object store. Specify
+    file_set_spec_type: Set how to discover files for loading. Specify
+      'FILE_SYSTEM_MATCH' (default behavior) to expand source URIs by listing
+      files from the underlying object store. Specify
       'NEW_LINE_DELIMITED_MANIFEST' to parse the URIs as new line delimited
       manifest files, where each line contains a URI (No wild-card URIs are
       supported).

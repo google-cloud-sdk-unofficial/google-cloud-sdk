@@ -28,6 +28,7 @@
           --display-name="My Workforce Pool Provider" \
           --description="My workforce pool provider description." \
           --disabled \
+          --detailed_audit_logging \
           --attribute-mapping="google.subject=assertion.sub" \
           --attribute-condition="true" \
           --client-id="client-id" \
@@ -54,6 +55,8 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.display_name
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.description
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.disabled
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.detailed_audit_logging
+      hidden: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_mapping
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_issuer_uri

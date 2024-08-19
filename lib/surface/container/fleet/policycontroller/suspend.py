@@ -19,11 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-class Suspend(base.UpdateCommand, command.PocoCommand):
+class Suspend(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
   """Suspend Policy Controller Feature.
 
   Suspends the Policy Controller. This will disable all kubernetes webhooks on
@@ -42,6 +43,7 @@ class Suspend(base.UpdateCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
+  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):
