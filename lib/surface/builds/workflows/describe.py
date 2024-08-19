@@ -27,7 +27,8 @@ from googlecloudsdk.core.resource import resource_projector
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Get a Workflow."""
 

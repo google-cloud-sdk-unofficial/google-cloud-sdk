@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Updates a Compute Engine firewall policy packet mirroring rule.
 
@@ -51,15 +52,6 @@ class Update(base.UpdateCommand):
     flags.AddDirection(parser)
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
-    flags.AddTargetServiceAccounts(parser)
-    flags.AddSrcThreatIntelligence(parser)
-    flags.AddDestThreatIntelligence(parser)
-    flags.AddSrcRegionCodes(parser)
-    flags.AddDestRegionCodes(parser)
-    flags.AddSrcAddressGroups(parser)
-    flags.AddDestAddressGroups(parser)
-    flags.AddSrcFqdns(parser)
-    flags.AddDestFqdns(parser)
     flags.AddSecurityProfileGroup(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
@@ -69,17 +61,8 @@ class Update(base.UpdateCommand):
     clearable_arg_name_to_field_name = {
         'src_ip_ranges': 'match.srcIpRanges',
         'dest_ip_ranges': 'match.destIpRanges',
-        'src_region_codes': 'match.srcRegionCodes',
-        'dest_region_codes': 'match.destRegionCodes',
-        'src_fqdns': 'match.srcFqdns',
-        'dest_fqdns': 'match.destFqdns',
-        'src_address_groups': 'match.srcAddressGroups',
-        'dest_address_groups': 'match.destAddressGroups',
-        'src_threat_intelligence': 'match.srcThreatIntelligences',
-        'dest_threat_intelligence': 'match.destThreatIntelligences',
         'security_profile_group': 'securityProfileGroup',
         'target_resources': 'targetResources',
-        'target_service_accounts': 'targetServiceAccounts',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -103,15 +86,6 @@ class Update(base.UpdateCommand):
     dest_ip_ranges = []
     layer4_config_list = []
     target_resources = []
-    target_service_accounts = []
-    src_address_groups = []
-    dest_address_groups = []
-    src_fqdns = []
-    dest_fqdns = []
-    src_region_codes = []
-    dest_region_codes = []
-    src_threat_intelligence = []
-    dest_threat_intelligence = []
     disabled = None
     should_setup_match = False
     traffic_direct = None
@@ -135,42 +109,6 @@ class Update(base.UpdateCommand):
       )
     if args.IsSpecified('target_resources'):
       target_resources = args.target_resources
-    if args.IsSpecified('target_service_accounts'):
-      target_service_accounts = args.target_service_accounts
-    if args.IsSpecified('src_threat_intelligence'):
-      src_threat_intelligence = args.src_threat_intelligence
-      should_setup_match = True
-    if args.IsSpecified('dest_threat_intelligence'):
-      dest_threat_intelligence = args.dest_threat_intelligence
-      should_setup_match = True
-    if args.IsSpecified('src_region_codes'):
-      src_region_codes = args.src_region_codes
-      should_setup_match = True
-    if args.IsSpecified('dest_region_codes'):
-      dest_region_codes = args.dest_region_codes
-      should_setup_match = True
-    if args.IsSpecified('src_address_groups'):
-      src_address_groups = [
-          firewall_policies_utils.BuildAddressGroupUrl(
-              x, args.organization, org_firewall_policy, args.firewall_policy
-          )
-          for x in args.src_address_groups
-      ]
-      should_setup_match = True
-    if args.IsSpecified('dest_address_groups'):
-      dest_address_groups = [
-          firewall_policies_utils.BuildAddressGroupUrl(
-              x, args.organization, org_firewall_policy, args.firewall_policy
-          )
-          for x in args.dest_address_groups
-      ]
-      should_setup_match = True
-    if args.IsSpecified('src_fqdns'):
-      src_fqdns = args.src_fqdns
-      should_setup_match = True
-    if args.IsSpecified('dest_fqdns'):
-      dest_fqdns = args.dest_fqdns
-      should_setup_match = True
     if args.IsSpecified('security_profile_group'):
       security_profile_group = (
           firewall_policies_utils.BuildSecurityProfileGroupUrl(
@@ -198,14 +136,6 @@ class Update(base.UpdateCommand):
           srcIpRanges=src_ip_ranges,
           destIpRanges=dest_ip_ranges,
           layer4Configs=layer4_config_list,
-          srcAddressGroups=src_address_groups,
-          destAddressGroups=dest_address_groups,
-          srcFqdns=src_fqdns,
-          destFqdns=dest_fqdns,
-          srcRegionCodes=src_region_codes,
-          destRegionCodes=dest_region_codes,
-          srcThreatIntelligences=src_threat_intelligence,
-          destThreatIntelligences=dest_threat_intelligence,
       )
 
     if args.IsSpecified('direction'):
@@ -224,7 +154,6 @@ class Update(base.UpdateCommand):
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
-        targetServiceAccounts=target_service_accounts,
         description=args.description,
         disabled=disabled,
         securityProfileGroup=security_profile_group,

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine project resource.
@@ -36,7 +37,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     parser.add_argument(
         '--default-network-tier',
-        choices=['PREMIUM', 'STANDARD', 'FIXED_STANDARD'],
+        choices=['PREMIUM', 'STANDARD'],
         type=lambda x: x.upper(),
         help='The default network tier to assign to the project.')
     parser.add_argument(

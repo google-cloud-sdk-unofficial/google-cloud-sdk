@@ -181,6 +181,7 @@ class AlphaCreate(Create):
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
     flags.SsdCache().AddToParser(parser)
+    flags.Edition().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -219,6 +220,7 @@ class AlphaCreate(Create):
         instance_type,
         expire_behavior,
         args.ssd_cache,
+        args.edition,
     )
     if args.async_:
       return op

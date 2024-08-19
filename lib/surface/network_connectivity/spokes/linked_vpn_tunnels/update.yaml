@@ -1,3 +1,43 @@
+- release_tracks: [BETA]
+
+  help_text:
+    brief: Update a VPN spoke.
+    description: Update the details of a VPN spoke.
+
+    examples: |
+      To update the description of a VPN spoke named ``my-spoke'', run:
+
+        $ {command} my-spoke --region=us-central1 --description="new spoke description"
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:spoke
+      help_text: Name of the spoke to update.
+    params:
+    - arg_name: description
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.description
+      help_text: New description of the spoke.
+    - arg_name: include-import-ranges
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.linkedVpnTunnels.includeImportRanges
+      type: arg_list
+      help_text: |
+        IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
+        added to the list. If it's empty, the spoke does not import any subnets from the hub.
+    labels:
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.labels
+
+  update:
+    read_modify_update: true
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    api_version: v1beta
+    collection: networkconnectivity.projects.locations.spokes
+    method: patch
+
+
 - release_tracks: [GA]
 
   help_text:
@@ -20,7 +60,6 @@
     - arg_name: include-import-ranges
       api_field: spoke.linkedVpnTunnels.includeImportRanges
       type: arg_list
-      hidden: true
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
         added to the list. If it's empty, the spoke does not import any subnets from the hub.

@@ -41,7 +41,10 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Export(base.ExportCommand):
   """Returns the .yaml definition of the specified deploy policy.
 

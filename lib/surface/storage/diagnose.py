@@ -316,52 +316,61 @@ class Diagnose(base.Command):
     )
 
     tests_to_run = args.test_type or default_tests
+    system_info_provider = system_info.get_system_info_provider()
+    test_results = []
 
-    test_results = [system_info.get_system_info_diagnostic_result()]
-
-    if PerformanceTestType.LATENCY.value in tests_to_run:
-      latency_diagnostic = latency_diagnostic_lib.LatencyDiagnostic(
-          url_object,
-          object_sizes,
-      )
-      latency_diagnostic.execute()
-      test_results.append(latency_diagnostic.result)
-
-    if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
-      download_type = default_download_type
-      if args.download_type:
-        download_type = download_throughput_diagnostic_lib.DownloadType(
-            args.download_type
+    with system_info.get_disk_io_stats_delta_diagnostic_result(
+        system_info_provider, test_results
+    ):
+      if PerformanceTestType.LATENCY.value in tests_to_run:
+        latency_diagnostic = latency_diagnostic_lib.LatencyDiagnostic(
+            url_object,
+            object_sizes,
         )
-      download_throughput_diagnostic = (
-          download_throughput_diagnostic_lib.DownloadThroughputDiagnostic(
-              url_object,
-              download_type,
-              object_sizes,
-              args.process_count,
-              args.thread_count,
-          )
-      )
-      download_throughput_diagnostic.execute()
-      test_results.append(download_throughput_diagnostic.result)
+        latency_diagnostic.execute()
+        test_results.append(latency_diagnostic.result)
 
-    if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
-      upload_type = default_upload_type
-      if args.upload_type:
-        upload_type = upload_throughput_diagnostic_lib.UploadType(
-            args.upload_type
-        )
-      upload_throughput_diagnostic = (
-          upload_throughput_diagnostic_lib.UploadThroughputDiagnostic(
-              url_object,
-              upload_type,
-              object_sizes,
-              args.process_count,
-              args.thread_count,
+      if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
+        download_type = default_download_type
+        if args.download_type:
+          download_type = download_throughput_diagnostic_lib.DownloadType(
+              args.download_type
           )
+        download_throughput_diagnostic = (
+            download_throughput_diagnostic_lib.DownloadThroughputDiagnostic(
+                url_object,
+                download_type,
+                object_sizes,
+                args.process_count,
+                args.thread_count,
+            )
+        )
+        download_throughput_diagnostic.execute()
+        test_results.append(download_throughput_diagnostic.result)
+
+      if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
+        upload_type = default_upload_type
+        if args.upload_type:
+          upload_type = upload_throughput_diagnostic_lib.UploadType(
+              args.upload_type
+          )
+        upload_throughput_diagnostic = (
+            upload_throughput_diagnostic_lib.UploadThroughputDiagnostic(
+                url_object,
+                upload_type,
+                object_sizes,
+                args.process_count,
+                args.thread_count,
+            )
+        )
+        upload_throughput_diagnostic.execute()
+        test_results.append(upload_throughput_diagnostic.result)
+
+      # Capture the system information at last to CPU load avg could account for
+      # the diagnostic test runs.
+      test_results.append(
+          system_info.get_system_info_diagnostic_result(system_info_provider)
       )
-      upload_throughput_diagnostic.execute()
-      test_results.append(upload_throughput_diagnostic.result)
 
     if args.export:
       log.status.Print('Exporting diagnostic bundle...')

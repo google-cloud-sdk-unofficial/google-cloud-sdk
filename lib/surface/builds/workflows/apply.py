@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Workflow."""

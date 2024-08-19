@@ -22,7 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Runs(base.Group):
   """Manage PipelineRuns and TaskRuns for Cloud Build."""
   category = base.CI_CD_CATEGORY

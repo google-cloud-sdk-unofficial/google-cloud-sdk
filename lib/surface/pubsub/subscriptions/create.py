@@ -35,6 +35,7 @@ def _Run(
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
+    enable_cps_gcs_max_messages=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -76,6 +77,11 @@ def _Run(
   )
   cloud_storage_max_bytes = getattr(args, 'cloud_storage_max_bytes', None)
   cloud_storage_max_duration = getattr(args, 'cloud_storage_max_duration', None)
+  cloud_storage_max_messages = (
+      getattr(args, 'cloud_storage_max_messages', None)
+      if enable_cps_gcs_max_messages
+      else None
+  )
   if args.IsSpecified('cloud_storage_max_duration'):
     cloud_storage_max_duration = util.FormatDuration(cloud_storage_max_duration)
   cloud_storage_output_format_list = getattr(
@@ -151,6 +157,7 @@ def _Run(
           cloud_storage_file_datetime_format=cloud_storage_file_datetime_format,
           cloud_storage_max_bytes=cloud_storage_max_bytes,
           cloud_storage_max_duration=cloud_storage_max_duration,
+          cloud_storage_max_messages=cloud_storage_max_messages,
           cloud_storage_output_format=cloud_storage_output_format,
           cloud_storage_use_topic_schema=cloud_storage_use_topic_schema,
           cloud_storage_write_metadata=cloud_storage_write_metadata,
@@ -230,6 +237,7 @@ class CreateBeta(Create):
     flags.AddSubscriptionSettingsFlags(
         parser,
         enable_push_to_cps=True,
+        enable_cps_gcs_max_messages=True,
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -242,4 +250,5 @@ class CreateBeta(Create):
         enable_labels=True,
         legacy_output=legacy_output,
         enable_push_to_cps=True,
+        enable_cps_gcs_max_messages=True,
     )

@@ -77,6 +77,7 @@ class Create(base.CreateCommand):
     flags.AddDatabaseVersion(parser, alloydb_messages, cls.ReleaseTrack())
     flags.AddEnablePrivateServiceConnect(parser)
     flags.AddMaintenanceWindow(parser, alloydb_messages)
+    flags.AddSubscriptionType(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(self, alloydb_messages, location_ref,
                                      args):
@@ -120,7 +121,6 @@ class CreateBeta(Create):
     super(CreateBeta, cls).Args(parser)
     alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages)
-    flags.AddSubscriptionType(parser, alloydb_messages)
 
   def ConstructCreateRequestFromArgs(
       self, alloydb_messages, location_ref, args

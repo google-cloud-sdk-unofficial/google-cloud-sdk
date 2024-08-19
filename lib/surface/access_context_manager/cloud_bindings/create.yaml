@@ -18,11 +18,19 @@
             --dry-run-level=accessPolicies/123/accessLevels/def
     ALPHA:
       description: |
-        Create a new access binding. The access level will be bound with the group and the
-        restricted client application. The access level is enforced at the organization level for
+        Create a new access binding. The access level will be bound with
+
+        - a group and the restricted client application
+        - a specific service account or all service accounts in a specified project.
+
+        If a group key is specified, the access level is enforced at the organization level for
         all context-aware access group members, as specified in the binding.
-        If a restricted client application is specified, then the enforcement applies only to the
-        specified application, and not to the entire organization.
+        If a restricted client application is also specified, then the enforcement applies only to
+        the specified application, and not to the entire organization.
+        If a service account is specified, then the enforcement applies only to the specified
+        service account.
+        If a service account project is specified, then the enforcement applies to all the service
+        accounts belongs to the specified project.
       examples: |
         To create a new cloud access binding at the organization level, run:
 
@@ -50,6 +58,18 @@
             --restricted-client-application-names='Google Cloud SDK, Cloud Console' \
             --restricted-client-application-client-ids='123456789.apps.googleusercontent.com'
 
+        To create a new cloud access binding for a particular service account, run:
+
+          $ {command} --service-account=service-account@project.iam.gserviceaccount.com \
+            --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890'
+
+        To create a new cloud access binding for all service accounts in a particular project, run:
+
+          $ {command} --service-account-project-number='987654321' \
+            --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890' \
+
   GA:
     request:
       collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -73,9 +93,10 @@
     params:
     - api_field: gcpUserAccessBinding.groupKey
       arg_name: group-key
-      required: true
       type: str
       help_text: Google Group id whose members are subject to the restrictions of this binding.
+      GA:
+        required: true
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
       type: str
@@ -169,3 +190,20 @@
       release_tracks: [ALPHA]
       type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
       help_text: Application names to which the access level is applied.
+    - api_field: gcpUserAccessBinding.principal.serviceAccount
+      arg_name: service-account
+      hidden: true
+      required: false
+      release_tracks: [ALPHA]
+      type: str
+      help_text: |
+        The access level that binds to the given service account email. For example
+        `service-account@project.iam.gserviceaccount.com`.
+    - api_field: gcpUserAccessBinding.principal.serviceAccountProjectNumber
+      arg_name: service-account-project-number
+      hidden: true
+      required: false
+      release_tracks: [ALPHA]
+      type: str
+      help_text: |
+        The access level that binds to all the service accounts belong to the given project number.

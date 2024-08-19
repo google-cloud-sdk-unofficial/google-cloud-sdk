@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Delete a deploy policy.
     description: Delete a deploy policy for a specified region.

@@ -147,6 +147,7 @@ class CreateBeta(Create):
     flags.AddObservabilityConfigTrackActiveQueries(
         parser, show_negated_in_help=True
     )
+    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

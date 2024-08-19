@@ -88,12 +88,17 @@ class Create(base.CreateCommand):
     workstations_flags.AddEphemeralDirectory(parser)
     workstations_flags.AddAcceleratorFields(parser)
     workstations_flags.AddVmTags(parser)
-    if (cls.ReleaseTrack() != base.ReleaseTrack.GA):
-      workstations_flags.AddBoostConfigs(parser)
+    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
+      workstations_flags.AddAllowUnauthenticatedCorsPreflightRequestsFlag(
+          parser
+      )
       workstations_flags.AddAllowedPortsFlag(parser)
+      workstations_flags.AddBoostConfigs(parser)
 
   def Collection(self):
-    return 'workstations.projects.locations.workstationClusters.workstationConfigs'
+    return (
+        'workstations.projects.locations.workstationClusters.workstationConfigs'
+    )
 
   def Run(self, args):
     client = configs.Configs(self.ReleaseTrack())

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Deletes(n >= 0) Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) with current project's Cloud Deploy service.."""
+"""Deletes(n >= 0) Delivery Pipeline(s), Target(s), Custom Target Type(s), Deploy Policy(ies), and Automation(s) with current project's Cloud Deploy service.."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -53,8 +53,10 @@ def _CommonArgs(parser):
   resource_args.AddLocationResourceArg(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Delete(base.UpdateCommand):
   """Deletes Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) in a yaml configuration."""
 

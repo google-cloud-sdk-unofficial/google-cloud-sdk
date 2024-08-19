@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class GcloudignoreHelp(base.TopicCommand):
   r"""Reference for `.gcloudignore` files.
 
@@ -28,8 +29,8 @@ class GcloudignoreHelp(base.TopicCommand):
   Google Cloud to host or build. In many cases, you will not want to
   upload certain files (i.e., "ignore" them).
 
-  If there is a file called `.gcloudignore` _in the top-level directory to
-  upload_, the files that it specifies (see "SYNTAX") will be ignored.
+  If there is a file called `.gcloudignore` _within the top-level directory
+  being uploaded_, the files that it specifies (see "SYNTAX") will be ignored.
 
   Gcloud commands may generate a .gcloudignore file; see the individual
   command help page for details.

@@ -11,7 +11,8 @@ help_text:
             --job-graph-uri=gs:///opt/flink/examples/streaming/job-graph.json \
             --artifact-uris=gs:///opt/flink/examples/streaming/artifact \
             --parallelism=1 \
-            --jar-uris=gs:///opt/flink/examples/streaming/StateMachineExample.jar
+            --jar-uris=gs:///opt/flink/examples/streaming/StateMachineExample.jar \
+            --managed-kafka-clusters=projects/123456789/locations/us-central1/clusters/my-cluster
 
 request:
   collection: managedflink.projects.locations.jobs
@@ -34,4 +35,5 @@ arguments:
     required: true
   - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:jar-uris
   - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:deployment
-  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:parallelism
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:fixed-parallelism
+  - _REF_: googlecloudsdk.command_lib.managed_flink.flags_jobs:managed-kafka-clusters
