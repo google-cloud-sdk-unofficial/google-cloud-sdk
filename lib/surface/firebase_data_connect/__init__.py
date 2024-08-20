@@ -20,8 +20,8 @@
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class FirebaseDataConnectALPHA(base.Group):
   """Manage Firebase Data Connect resources."""
   category = base.UNCATEGORIZED_CATEGORY

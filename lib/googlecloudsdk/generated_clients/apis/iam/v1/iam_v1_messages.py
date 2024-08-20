@@ -2148,9 +2148,9 @@ class IamProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesRemove
   resource = _messages.StringField(2, required=True)
 
 
-class IamProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesSetAttestationRulesRequest(_messages.Message):
+class IamProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesSetAttestationRuleRequest(_messages.Message):
   r"""A IamProjectsLocationsWorkloadIdentityPoolsNamespacesManagedIdentitiesSe
-  tAttestationRulesRequest object.
+  tAttestationRuleRequest object.
 
   Fields:
     resource: Required. The resource name of the managed identity or namespace
@@ -2346,21 +2346,6 @@ class IamProjectsLocationsWorkloadIdentityPoolsNamespacesRemoveAttestationRuleRe
 
   removeAttestationRuleRequest = _messages.MessageField('RemoveAttestationRuleRequest', 1)
   resource = _messages.StringField(2, required=True)
-
-
-class IamProjectsLocationsWorkloadIdentityPoolsNamespacesSetAttestationRulesRequest(_messages.Message):
-  r"""A IamProjectsLocationsWorkloadIdentityPoolsNamespacesSetAttestationRules
-  Request object.
-
-  Fields:
-    resource: Required. The resource name of the managed identity or namespace
-      resource to add an attestation rule to.
-    setAttestationRulesRequest: A SetAttestationRulesRequest resource to be
-      passed as the request body.
-  """
-
-  resource = _messages.StringField(1, required=True)
-  setAttestationRulesRequest = _messages.MessageField('SetAttestationRulesRequest', 2)
 
 
 class IamProjectsLocationsWorkloadIdentityPoolsNamespacesSetIamPolicyRequest(_messages.Message):

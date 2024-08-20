@@ -991,7 +991,6 @@ class UpdateBeta(Update):
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
-    flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
@@ -1149,7 +1148,6 @@ class UpdateBeta(Update):
     opts.pod_autoscaling_direct_metrics_opt_in = (
         args.pod_autoscaling_direct_metrics_opt_in
     )
-    opts.hpa_profile = args.hpa_profile
     opts.enable_workload_vulnerability_scanning = (
         args.enable_workload_vulnerability_scanning
     )
@@ -1294,7 +1292,6 @@ class UpdateAlpha(Update):
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
-    flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddEnablePrivateEndpoint(group)
     flags.AddEnableGoogleCloudAccess(group)
@@ -1447,7 +1444,6 @@ class UpdateAlpha(Update):
     opts.pod_autoscaling_direct_metrics_opt_in = (
         args.pod_autoscaling_direct_metrics_opt_in
     )
-    opts.hpa_profile = args.hpa_profile
     opts.enable_workload_vulnerability_scanning = (
         args.enable_workload_vulnerability_scanning
     )

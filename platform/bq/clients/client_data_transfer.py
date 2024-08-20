@@ -406,7 +406,7 @@ def UpdateTransferConfig(
     schedule_args: Optional parameters to customize data transfer schedule.
 
   Raises:
-    BigqueryTypeError: if reference is not a TransferConfigReference.
+    TypeError: if reference is not a TransferConfigReference.
     BigqueryNotFoundError: if dataset is not found
     bq_error.BigqueryError: required field not given.
   """
@@ -635,7 +635,7 @@ def DeleteTransferConfig(
     ignore_not_found: Whether to ignore "not found" errors.
 
   Raises:
-    BigqueryTypeError: if reference is not a TransferConfigReference.
+    TypeError: if reference is not a TransferConfigReference.
     bq_error.BigqueryNotFoundError: if reference does not exist and
       ignore_not_found is False.
   """

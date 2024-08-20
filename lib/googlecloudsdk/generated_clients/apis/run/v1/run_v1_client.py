@@ -39,6 +39,10 @@ class RunV1(base_api.BaseApiClient):
         default_global_params=default_global_params,
         additional_http_headers=additional_http_headers,
         response_encoding=response_encoding)
+    self.api_v1_namespaces_secrets = self.ApiV1NamespacesSecretsService(self)
+    self.api_v1_namespaces = self.ApiV1NamespacesService(self)
+    self.api_v1 = self.ApiV1Service(self)
+    self.api = self.ApiService(self)
     self.namespaces_authorizeddomains = self.NamespacesAuthorizeddomainsService(self)
     self.namespaces_configurations = self.NamespacesConfigurationsService(self)
     self.namespaces_domainmappings = self.NamespacesDomainmappingsService(self)
@@ -54,12 +58,189 @@ class RunV1(base_api.BaseApiClient):
     self.projects_locations_configurations = self.ProjectsLocationsConfigurationsService(self)
     self.projects_locations_domainmappings = self.ProjectsLocationsDomainmappingsService(self)
     self.projects_locations_jobs = self.ProjectsLocationsJobsService(self)
+    self.projects_locations_namespaces = self.ProjectsLocationsNamespacesService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
     self.projects_locations_revisions = self.ProjectsLocationsRevisionsService(self)
     self.projects_locations_routes = self.ProjectsLocationsRoutesService(self)
+    self.projects_locations_secrets = self.ProjectsLocationsSecretsService(self)
     self.projects_locations_services = self.ProjectsLocationsServicesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
+
+  class ApiV1NamespacesSecretsService(base_api.BaseApiService):
+    """Service class for the api_v1_namespaces_secrets resource."""
+
+    _NAME = 'api_v1_namespaces_secrets'
+
+    def __init__(self, client):
+      super(RunV1.ApiV1NamespacesSecretsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new secret.
+
+      Args:
+        request: (RunApiV1NamespacesSecretsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='api/v1/namespaces/{namespacesId}/secrets',
+        http_method='POST',
+        method_id='run.api.v1.namespaces.secrets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='api/v1/{+parent}/secrets',
+        request_field='secret',
+        request_type_name='RunApiV1NamespacesSecretsCreateRequest',
+        response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Rpc to get information about a secret.
+
+      Args:
+        request: (RunApiV1NamespacesSecretsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='api/v1/namespaces/{namespacesId}/secrets/{secretsId}',
+        http_method='GET',
+        method_id='run.api.v1.namespaces.secrets.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='api/v1/{+name}',
+        request_field='',
+        request_type_name='RunApiV1NamespacesSecretsGetRequest',
+        response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def ReplaceSecret(self, request, global_params=None):
+      r"""Rpc to replace a secret. Only the spec, metadata labels, and annotations are modifiable. After the Update request, Cloud Run will work to make the 'status' match the requested 'spec'. May provide metadata.resourceVersion to enforce update from last read for optimistic concurrency control.
+
+      Args:
+        request: (RunApiV1NamespacesSecretsReplaceSecretRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('ReplaceSecret')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReplaceSecret.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='api/v1/namespaces/{namespacesId}/secrets/{secretsId}',
+        http_method='PUT',
+        method_id='run.api.v1.namespaces.secrets.replaceSecret',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='api/v1/{+name}',
+        request_field='secret',
+        request_type_name='RunApiV1NamespacesSecretsReplaceSecretRequest',
+        response_type_name='Secret',
+        supports_download=False,
+    )
+
+  class ApiV1NamespacesService(base_api.BaseApiService):
+    """Service class for the api_v1_namespaces resource."""
+
+    _NAME = 'api_v1_namespaces'
+
+    def __init__(self, client):
+      super(RunV1.ApiV1NamespacesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Rpc to get information about a namespace.
+
+      Args:
+        request: (RunApiV1NamespacesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Namespace) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='api/v1/namespaces/{namespacesId}',
+        http_method='GET',
+        method_id='run.api.v1.namespaces.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='api/v1/{+name}',
+        request_field='',
+        request_type_name='RunApiV1NamespacesGetRequest',
+        response_type_name='Namespace',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Rpc to update a namespace.
+
+      Args:
+        request: (RunApiV1NamespacesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Namespace) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='api/v1/namespaces/{namespacesId}',
+        http_method='PATCH',
+        method_id='run.api.v1.namespaces.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='api/v1/{+name}',
+        request_field='namespace',
+        request_type_name='RunApiV1NamespacesPatchRequest',
+        response_type_name='Namespace',
+        supports_download=False,
+    )
+
+  class ApiV1Service(base_api.BaseApiService):
+    """Service class for the api_v1 resource."""
+
+    _NAME = 'api_v1'
+
+    def __init__(self, client):
+      super(RunV1.ApiV1Service, self).__init__(client)
+      self._upload_configs = {
+          }
+
+  class ApiService(base_api.BaseApiService):
+    """Service class for the api resource."""
+
+    _NAME = 'api'
+
+    def __init__(self, client):
+      super(RunV1.ApiService, self).__init__(client)
+      self._upload_configs = {
+          }
 
   class NamespacesAuthorizeddomainsService(base_api.BaseApiService):
     """Service class for the namespaces_authorizeddomains resource."""
@@ -136,7 +317,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List configurations. Results are sorted by creation time, descending.
+      r"""List configurations.
 
       Args:
         request: (RunNamespacesConfigurationsListRequest) input message
@@ -372,7 +553,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List executions. Results are sorted by creation time, descending.
+      r"""List executions.
 
       Args:
         request: (RunNamespacesExecutionsListRequest) input message
@@ -490,7 +671,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List jobs. Results are sorted by creation time, descending.
+      r"""List jobs.
 
       Args:
         request: (RunNamespacesJobsListRequest) input message
@@ -635,7 +816,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List revisions. Results are sorted by creation time, descending.
+      r"""List revisions.
 
       Args:
         request: (RunNamespacesRevisionsListRequest) input message
@@ -699,7 +880,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List routes. Results are sorted by creation time, descending.
+      r"""List routes.
 
       Args:
         request: (RunNamespacesRoutesListRequest) input message
@@ -817,7 +998,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists services for the given project and region. Results are sorted by creation time, descending.
+      r"""Lists services for the given project and region.
 
       Args:
         request: (RunNamespacesServicesListRequest) input message
@@ -1056,7 +1237,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List configurations. Results are sorted by creation time, descending.
+      r"""List configurations.
 
       Args:
         request: (RunProjectsLocationsConfigurationsListRequest) input message
@@ -1291,6 +1472,70 @@ class RunV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsNamespacesService(base_api.BaseApiService):
+    """Service class for the projects_locations_namespaces resource."""
+
+    _NAME = 'projects_locations_namespaces'
+
+    def __init__(self, client):
+      super(RunV1.ProjectsLocationsNamespacesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Rpc to get information about a namespace.
+
+      Args:
+        request: (RunProjectsLocationsNamespacesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Namespace) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/namespaces/{namespacesId}',
+        http_method='GET',
+        method_id='run.projects.locations.namespaces.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RunProjectsLocationsNamespacesGetRequest',
+        response_type_name='Namespace',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Rpc to update a namespace.
+
+      Args:
+        request: (RunProjectsLocationsNamespacesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Namespace) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/namespaces/{namespacesId}',
+        http_method='PATCH',
+        method_id='run.projects.locations.namespaces.patch',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['updateMask'],
+        relative_path='v1/{+name}',
+        request_field='namespace',
+        request_type_name='RunProjectsLocationsNamespacesPatchRequest',
+        response_type_name='Namespace',
+        supports_download=False,
+    )
+
   class ProjectsLocationsOperationsService(base_api.BaseApiService):
     """Service class for the projects_locations_operations resource."""
 
@@ -1474,7 +1719,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List revisions. Results are sorted by creation time, descending.
+      r"""List revisions.
 
       Args:
         request: (RunProjectsLocationsRevisionsListRequest) input message
@@ -1538,7 +1783,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""List routes. Results are sorted by creation time, descending.
+      r"""List routes.
 
       Args:
         request: (RunProjectsLocationsRoutesListRequest) input message
@@ -1561,6 +1806,97 @@ class RunV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='RunProjectsLocationsRoutesListRequest',
         response_type_name='ListRoutesResponse',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsSecretsService(base_api.BaseApiService):
+    """Service class for the projects_locations_secrets resource."""
+
+    _NAME = 'projects_locations_secrets'
+
+    def __init__(self, client):
+      super(RunV1.ProjectsLocationsSecretsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Create(self, request, global_params=None):
+      r"""Creates a new secret.
+
+      Args:
+        request: (RunProjectsLocationsSecretsCreateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('Create')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Create.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/secrets',
+        http_method='POST',
+        method_id='run.projects.locations.secrets.create',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=[],
+        relative_path='v1/{+parent}/secrets',
+        request_field='secret',
+        request_type_name='RunProjectsLocationsSecretsCreateRequest',
+        response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Rpc to get information about a secret.
+
+      Args:
+        request: (RunProjectsLocationsSecretsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/secrets/{secretsId}',
+        http_method='GET',
+        method_id='run.projects.locations.secrets.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='RunProjectsLocationsSecretsGetRequest',
+        response_type_name='Secret',
+        supports_download=False,
+    )
+
+    def ReplaceSecret(self, request, global_params=None):
+      r"""Rpc to replace a secret. Only the spec, metadata labels, and annotations are modifiable. After the Update request, Cloud Run will work to make the 'status' match the requested 'spec'. May provide metadata.resourceVersion to enforce update from last read for optimistic concurrency control.
+
+      Args:
+        request: (RunProjectsLocationsSecretsReplaceSecretRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Secret) The response message.
+      """
+      config = self.GetMethodConfig('ReplaceSecret')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ReplaceSecret.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/secrets/{secretsId}',
+        http_method='PUT',
+        method_id='run.projects.locations.secrets.replaceSecret',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='secret',
+        request_type_name='RunProjectsLocationsSecretsReplaceSecretRequest',
+        response_type_name='Secret',
         supports_download=False,
     )
 
@@ -1683,7 +2019,7 @@ class RunV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists services for the given project and region. Results are sorted by creation time, descending.
+      r"""Lists services for the given project and region.
 
       Args:
         request: (RunProjectsLocationsServicesListRequest) input message

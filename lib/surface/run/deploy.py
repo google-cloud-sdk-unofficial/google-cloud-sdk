@@ -20,6 +20,7 @@ import os.path
 
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
+from googlecloudsdk.api_lib.run import revision
 from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
@@ -75,12 +76,12 @@ Container Flags
     group.AddArgument(flags.AddVolumeMountFlag())
     group.AddArgument(flags.RemoveVolumeMountFlag())
     group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddArgument(flags.GpuFlag(hidden=False))
 
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
     group.AddArgument(flags.AutomaticUpdatesFlag())
+    group.AddArgument(flags.GpuFlag())
     group.AddArgument(flags.BuildServiceAccountMutexGroup())
     group.AddArgument(flags.BuildWorkerPoolMutexGroup())
     group.AddArgument(flags.MutexBuildEnvVarsFlags())
@@ -284,60 +285,38 @@ class Deploy(base.Command):
           )
     return build_from_source
 
-  def _GetBaseImageForSourceContainer(self, container_args, service):
+  def _GetBaseImageForSourceContainer(
+      self, container, service, build_from_source_container_name
+  ):
     """Returns the base image for the container.
 
     Args:
-      container_args: command line arguments for container that is build from
-        source
+      container: command line arguments for container that is build from source
       service: existing Cloud run service which could be None.
+      build_from_source_container_name: name of container that is build from
+        source
 
     Returns:
       base_image: string. Base image of the container.
     """
 
-    base_image = getattr(container_args, 'base_image', None)
-    clear_base_image = getattr(container_args, 'clear_base_image', None)
-
-    if base_image:
-      return base_image
+    base_image = getattr(container, 'base_image', None)
     # If service exists, check existing base_image annotation and populate
     # the value if --clear-base-image is not set
     if (
         base_image is None
         and service is not None
-        and service_lib.RUN_FUNCTIONS_BUILD_BASE_IMAGE in service.annotations
-        and not clear_base_image
+        and revision.BASE_IMAGES_ANNOTATION in service.template.annotations
     ):
-      return service.annotations[service_lib.RUN_FUNCTIONS_BUILD_BASE_IMAGE]
-    return service_lib.DEFAULT_BASE_IMAGE
-
-  def _GetAutomaticUpdates(self, container_args, service):
-    """Returns the automatic updates for the container."""
-    automatic_updates = getattr(container_args, 'automatic_updates', None)
-    clear_base_image = getattr(container_args, 'clear_base_image', None)
-    base_image = self._GetBaseImageForSourceContainer(container_args, service)
-    if automatic_updates is not None:
-      return automatic_updates
-    if clear_base_image:
-      # Clear base image will disable automatic updates.
-      return False
-    if service is None:
-      # When it's new service, when users provide
-      # --base-image, it implies automatic updates = True.
-      return base_image != service_lib.DEFAULT_BASE_IMAGE
-    if (
-        service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES
-        in service.annotations
-    ):
-      # When there is existing service, use the old value.
-      # Because the annotation is sticky. Users need
-      # to explicitly set --automatic-updates to change it.
-      automatic_updates_annotation = service.annotations[
-          service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES
-      ]
-      return True if automatic_updates_annotation.lower() == 'true' else False
-    return automatic_updates
+      existing_base_images_map = json.loads(
+          service.template.annotations[revision.BASE_IMAGES_ANNOTATION]
+      )
+      if (
+          build_from_source_container_name in existing_base_images_map
+          and not container.clear_base_image
+      ):
+        base_image = existing_base_images_map[build_from_source_container_name]
+    return base_image
 
   def _BuildFromSource(
       self,
@@ -359,16 +338,15 @@ class Deploy(base.Command):
     )
 
     # Only one container can deployed from source
-    name, container_args = next(iter(build_from_source.items()))
+    name, container = next(iter(build_from_source.items()))
     pack = None
     changes = []
     repo_to_create = None
-    source = container_args.source
+    source = container.source
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
     is_function = (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and container_args.function
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA and container.function
     )
 
     ar_repo = docker_util.DockerRepo(
@@ -389,43 +367,28 @@ class Deploy(base.Command):
       repo_to_create = ar_repo
     # The image is built with latest tag. After build, the image digest
     # from the build result will be added to the image of the service spec.
-    container_args.image = '{repo}/{service}'.format(
+    container.image = '{repo}/{service}'.format(
         repo=ar_repo.GetDockerString(), service=service_ref.servicesId
     )
     # Use GCP Buildpacks if Dockerfile doesn't exist
     docker_file = source + '/Dockerfile'
-    base_image = self._GetBaseImageForSourceContainer(container_args, service)
-    automatic_updates = self._GetAutomaticUpdates(container_args, service)
+    base_image = self._GetBaseImageForSourceContainer(container, service, name)
+
     if os.path.exists(docker_file):
       build_type = BuildType.DOCKERFILE
       # TODO(b/310727875): check --function is not provided
-      # Check whether base_image is provided by user
-      if flags.FlagIsExplicitlySet(container_args, 'base_image'):
-        raise c_exceptions.InvalidArgumentException(
-            '--base-image',
-            'Base image is not supported for services built from Dockerfile.',
-        )
-      # Base image is sticky annotation.
-      # Check whether there was base_image provided in previous revision
-      # even if users are not providing it in this deployment.
-      if base_image != service_lib.DEFAULT_BASE_IMAGE:
-        raise c_exceptions.RequiredArgumentException(
-            '--clear-base-image',
-            'Base image is not supported for services built from Dockerfile. To'
-            ' continue the deployment, please use --clear-base-image to clear'
-            ' the base image.',
-        )
     else:
-      pack, changes = _CreateBuildPack(container_args, self.ReleaseTrack())
+      pack, changes = _CreateBuildPack(
+          container, self.ReleaseTrack()
+      )
       build_type = BuildType.BUILDPACKS
-    image = None if pack else container_args.image
+    image = None if pack else container.image
 
-    if flags.FlagIsExplicitlySet(args, 'delegate_builds') or (
-        base_image is not None and base_image != service_lib.DEFAULT_BASE_IMAGE
-    ):
+    if flags.FlagIsExplicitlySet(args, 'delegate_builds') or base_image:
       image = pack[0].get('image') if pack else image
+    self._AddBaseImageToServiceAnnotations(changes, service, base_image)
     build_service_account = _GetBuildServiceAccount(
-        args, annotated_build_service_account, container_args, service, changes
+        args, annotated_build_service_account, container, service, changes
     )
     operation_message = (
         'Building using {build_type} and deploying container to'
@@ -456,8 +419,20 @@ class Deploy(base.Command):
         name,
         build_worker_pool,
         build_env_vars,
-        automatic_updates,
     )
+
+  def _AddBaseImageToServiceAnnotations(self, changes, service, base_image):
+    """Adds the base image to the service annotations."""
+    if base_image:
+      changes.append(
+          config_changes.SetAnnotationChange(
+              revision.BASE_IMAGES_ANNOTATION, base_image
+          )
+      )
+    elif service and service.annotations.get(revision.BASE_IMAGES_ANNOTATION):
+      changes.append(
+          config_changes.DeleteAnnotationChange(revision.BASE_IMAGES_ANNOTATION)
+      )
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -556,7 +531,6 @@ class Deploy(base.Command):
     build_worker_pool = None
     build_changes = []
     build_from_source_container_name = ''
-    enable_automatic_updates = None
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
@@ -576,7 +550,6 @@ class Deploy(base.Command):
             build_from_source_container_name,
             build_worker_pool,
             build_env_vars,
-            enable_automatic_updates,
         ) = self._BuildFromSource(
             args,
             build_from_source,
@@ -643,7 +616,6 @@ class Deploy(base.Command):
             build_service_account=build_service_account,
             build_worker_pool=build_worker_pool,
             build_env_vars=build_env_vars,
-            enable_automatic_updates=enable_automatic_updates,
         )
 
       if args.async_:
@@ -660,7 +632,9 @@ class Deploy(base.Command):
       return service
 
 
-def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
+def _CreateBuildPack(
+    container, release_track=base.ReleaseTrack.GA
+):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
   changes = []
@@ -673,6 +647,11 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
           {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
       )
     elif function_arg is not None:
+      changes.append(
+          config_changes.EnvVarLiteralChanges(
+              updates={'FUNCTION_TARGET': function_arg}
+          )
+      )
       pack[0].update({
           'envs': [
               'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
@@ -768,8 +747,6 @@ class BetaDeploy(Deploy):
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(managed_group, hidden=False)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

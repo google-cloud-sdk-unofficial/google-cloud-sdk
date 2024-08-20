@@ -322,105 +322,7 @@ class GenerationConfig(proto.Message):
             response.
 
             This field is a member of `oneof`_ ``_response_schema``.
-        routing_config (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.RoutingConfig):
-            Optional. Routing configuration.
-
-            This field is a member of `oneof`_ ``_routing_config``.
     """
-
-    class RoutingConfig(proto.Message):
-        r"""Routing config.
-
-        This message has `oneof`_ fields (mutually exclusive fields).
-        For each oneof, at most one member field can be set at the same time.
-        Setting any member of the oneof automatically clears all other
-        members.
-
-        .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
-
-        Attributes:
-            auto_mode (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.RoutingConfig.AutoRoutingMode):
-                Automated routing.
-
-                This field is a member of `oneof`_ ``routing_config``.
-            manual_mode (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.RoutingConfig.ManualRoutingMode):
-                Manual routing.
-
-                This field is a member of `oneof`_ ``routing_config``.
-        """
-
-        class AutoRoutingMode(proto.Message):
-            r"""When automated routing is specified, the routing will be
-            determined by the pretrained routing model and customer provided
-            model routing preference.
-
-
-            .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
-
-            Attributes:
-                model_routing_preference (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.GenerationConfig.RoutingConfig.AutoRoutingMode.ModelRoutingPreference):
-                    The model routing preference.
-
-                    This field is a member of `oneof`_ ``_model_routing_preference``.
-            """
-            class ModelRoutingPreference(proto.Enum):
-                r"""The model routing preference.
-
-                Values:
-                    UNKNOWN (0):
-                        Unspecified model routing preference.
-                    PRIORITIZE_QUALITY (1):
-                        Prefer higher quality over low cost.
-                    BALANCED (2):
-                        Balanced model routing preference.
-                    PRIORITIZE_COST (3):
-                        Prefer lower cost over higher quality.
-                """
-                UNKNOWN = 0
-                PRIORITIZE_QUALITY = 1
-                BALANCED = 2
-                PRIORITIZE_COST = 3
-
-            model_routing_preference: 'GenerationConfig.RoutingConfig.AutoRoutingMode.ModelRoutingPreference' = proto.Field(
-                proto.ENUM,
-                number=1,
-                optional=True,
-                enum='GenerationConfig.RoutingConfig.AutoRoutingMode.ModelRoutingPreference',
-            )
-
-        class ManualRoutingMode(proto.Message):
-            r"""When manual routing is set, the specified model will be used
-            directly.
-
-
-            .. _oneof: https://proto-plus-python.readthedocs.io/en/stable/fields.html#oneofs-mutually-exclusive-fields
-
-            Attributes:
-                model_name (str):
-                    The model name to use. Only the public LLM
-                    models are accepted. e.g. gemini-1.5-pro-001.
-
-                    This field is a member of `oneof`_ ``_model_name``.
-            """
-
-            model_name: str = proto.Field(
-                proto.STRING,
-                number=1,
-                optional=True,
-            )
-
-        auto_mode: 'GenerationConfig.RoutingConfig.AutoRoutingMode' = proto.Field(
-            proto.MESSAGE,
-            number=1,
-            oneof='routing_config',
-            message='GenerationConfig.RoutingConfig.AutoRoutingMode',
-        )
-        manual_mode: 'GenerationConfig.RoutingConfig.ManualRoutingMode' = proto.Field(
-            proto.MESSAGE,
-            number=2,
-            oneof='routing_config',
-            message='GenerationConfig.RoutingConfig.ManualRoutingMode',
-        )
 
     temperature: float = proto.Field(
         proto.FLOAT,
@@ -470,12 +372,6 @@ class GenerationConfig(proto.Message):
         number=16,
         optional=True,
         message=openapi.Schema,
-    )
-    routing_config: RoutingConfig = proto.Field(
-        proto.MESSAGE,
-        number=17,
-        optional=True,
-        message=RoutingConfig,
     )
 
 
@@ -712,9 +608,9 @@ class Candidate(proto.Message):
             Output only. Index of the candidate.
         content (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Content):
             Output only. Content parts of the candidate.
-        avg_logprobs (float):
-            Output only. Average log probability score of
-            the candidate.
+        score (float):
+            Output only. Confidence score of the
+            candidate.
         finish_reason (googlecloudsdk.generated_clients.gapic_clients.aiplatform_v1.types.Candidate.FinishReason):
             Output only. The reason why the model stopped
             generating tokens. If empty, the model has not
@@ -744,32 +640,34 @@ class Candidate(proto.Message):
             FINISH_REASON_UNSPECIFIED (0):
                 The finish reason is unspecified.
             STOP (1):
-                Token generation reached a natural stopping
-                point or a configured stop sequence.
+                Natural stop point of the model or provided
+                stop sequence.
             MAX_TOKENS (2):
-                Token generation reached the configured
-                maximum output tokens.
+                The maximum number of tokens as specified in
+                the request was reached.
             SAFETY (3):
-                Token generation stopped because the content
-                potentially contains safety violations. NOTE:
-                When streaming, Candidate.content is empty if
-                content filters blocks the output.
+                The token generation was stopped as the
+                response was flagged for safety reasons. NOTE:
+                When streaming the Candidate.content will be
+                empty if content filters blocked the output.
             RECITATION (4):
-                Token generation stopped because the content
-                potentially contains copyright violations.
+                The token generation was stopped as the
+                response was flagged for unauthorized citations.
             OTHER (5):
                 All other reasons that stopped the token
-                generation.
+                generation
             BLOCKLIST (6):
-                Token generation stopped because the content
-                contains forbidden terms.
+                The token generation was stopped as the
+                response was flagged for the terms which are
+                included from the terminology blocklist.
             PROHIBITED_CONTENT (7):
-                Token generation stopped for potentially
-                containing prohibited content.
+                The token generation was stopped as the
+                response was flagged for the prohibited
+                contents.
             SPII (8):
-                Token generation stopped because the content
-                potentially contains Sensitive Personally
-                Identifiable Information (SPII).
+                The token generation was stopped as the
+                response was flagged for Sensitive Personally
+                Identifiable Information (SPII) contents.
             MALFORMED_FUNCTION_CALL (9):
                 The function call generated by the model is
                 invalid.
@@ -794,9 +692,9 @@ class Candidate(proto.Message):
         number=2,
         message='Content',
     )
-    avg_logprobs: float = proto.Field(
+    score: float = proto.Field(
         proto.DOUBLE,
-        number=9,
+        number=8,
     )
     finish_reason: FinishReason = proto.Field(
         proto.ENUM,

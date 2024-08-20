@@ -21,14 +21,13 @@ import argparse
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.command_lib.container.fleet.features import base
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import deployment_configs as deployment
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
-class Remove(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
+class Remove(base.UpdateCommand, command.PocoCommand):
   """Removes configuration properties from Policy Controller components.
 
   Remove customizations of on-cluster components in Policy Controller. These
@@ -83,7 +82,6 @@ class Remove(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
-  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):

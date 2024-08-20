@@ -23,7 +23,6 @@ import httplib2
 import bq_utils
 from clients import utils as bq_client_utils
 
-_NUM_RETRIES_FOR_SERVER_SIDE_ERRORS = 3
 
 # pylint: disable=protected-access
 
@@ -208,24 +207,25 @@ class BigqueryHttp(http_request.HttpRequest):
 
     return _Construct
 
-  # This function is mostly usually called without any parameters from a client
-  # like the `client_dataset` code calling:
-  # `apiclient.datasets().insert(body=body, **args).execute()`
+  # TODO(b/324243535): Delete these once the migration is complete.
+  @staticmethod
+  def RaiseErrorFromHttpError(e):
+    """Raises a BigQueryError given an HttpError."""
+    return bq_client_utils.RaiseErrorFromHttpError(e)
+
+  # TODO(b/324243535): Delete these once the migration is complete.
+  @staticmethod
+  def RaiseErrorFromNonHttpError(e):
+    """Raises a BigQueryError given a non-HttpError."""
+    return bq_client_utils.RaiseErrorFromNonHttpError(e)
+
+  # TODO(b/324243535): Remove pylint guards.
   # pylint: disable=g-bad-name
-  def execute(
-      self,
-      http: Optional[httplib2.Http] = None,
-      num_retries: Optional[int] = None,
-  ):
+  def execute(self, **kwds):  # pytype: disable=signature-mismatch  # overriding-parameter-count-checks
     # pylint: enable=g-bad-name
 
       try:
-        if num_retries is None:
-          num_retries = _NUM_RETRIES_FOR_SERVER_SIDE_ERRORS
-        return super().execute(
-            http=http,
-            num_retries=num_retries,
-        )
+        return super().execute(**kwds)
       except googleapiclient.errors.HttpError as e:
         # TODO(user): Remove this when apiclient supports logging
         # of error responses.

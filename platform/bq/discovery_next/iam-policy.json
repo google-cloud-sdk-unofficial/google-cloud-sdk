@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20240730",
+  "revision": "20240710",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3653,10 +3653,6 @@
         "foreignTypeDefinition": {
           "description": "Optional. Definition of the foreign data type. Only valid for top-level schema fields (not nested fields). If the type is FOREIGN, this field is required.",
           "type": "string"
-        },
-        "identityColumnInfo": {
-          "description": "Optional. Definition of how values are generated for the field. Setting this option means that the field is an identity column. Only valid for top-level schema INTEGER fields (not nested fields).",
-          "$ref": "IdentityColumnInfo"
         }
       }
     },
@@ -3667,35 +3663,6 @@
       "properties": {
         "type": {
           "description": "Required. The type of a field element. For more information, see TableFieldSchema.type.",
-          "type": "string"
-        }
-      }
-    },
-    "IdentityColumnInfo": {
-      "id": "IdentityColumnInfo",
-      "description": "Metadata for value generation for an identity column.",
-      "type": "object",
-      "properties": {
-        "generatedMode": {
-          "description": "Optional. Dictates when system generated values are used to populate the field.",
-          "type": "string",
-          "enumDescriptions": [
-            "Unspecified GeneratedMode will default to GENERATED_ALWAYS.",
-            "Field can only have system generated values. Users cannot manually insert values into the field.",
-            "Use system generated values only if the user does not explicitly provide a value."
-          ],
-          "enum": [
-            "GENERATED_MODE_UNSPECIFIED",
-            "GENERATED_ALWAYS",
-            "GENERATED_BY_DEFAULT"
-          ]
-        },
-        "start": {
-          "description": "Optional. The first generated value. Should be INTEGER compatible. The default value is 1 if the field is not specified.",
-          "type": "string"
-        },
-        "increment": {
-          "description": "Optional. The minimum difference between two successive generated values. Should be INTEGER compatible. Can be negative or positive but not 0. The default value is 1 if the field is not specified.",
           "type": "string"
         }
       }
@@ -4768,23 +4735,6 @@
           "readOnly": true,
           "type": "string",
           "format": "int64"
-        },
-        "edition": {
-          "description": "Output only. Name of edition corresponding to the reservation for this job at the time of this update.",
-          "readOnly": true,
-          "type": "string",
-          "enumDescriptions": [
-            "Default value, which will be treated as ENTERPRISE.",
-            "Standard edition.",
-            "Enterprise edition.",
-            "Enterprise plus edition."
-          ],
-          "enum": [
-            "RESERVATION_EDITION_UNSPECIFIED",
-            "STANDARD",
-            "ENTERPRISE",
-            "ENTERPRISE_PLUS"
-          ]
         }
       }
     },

@@ -713,17 +713,7 @@ class ServerlessOperations(object):
     )
     config_changes.insert(0, _NewRevisionForcingChange(revision_suffix))
 
-  def _DeleteRevisionBaseImageAnnotation(
-      self, config_changes, source_container_name
-  ):
-    """Delete the base image revision level annotation for source container."""
-    config_changes.append(
-        config_changes_mod.BaseImagesAnnotationChange(
-            deletes=[source_container_name]
-        )
-    )
-
-  def _ReplaceOrAddBaseImage(
+  def _ReplaceBaseImage(
       self,
       config_changes,
       base_image_from_build,
@@ -738,11 +728,17 @@ class ServerlessOperations(object):
       ingress_container_name: The name of the ingress container that is build
         from source. This could be empty string.
     """
-    config_changes.append(
-        config_changes_mod.BaseImagesAnnotationChange(
-            updates={ingress_container_name: base_image_from_build}
+    for i, change in enumerate(config_changes):
+      if isinstance(
+          change, config_changes_mod.IngressContainerBaseImagesAnnotationChange
+      ):
+        config_changes[i] = (
+            config_changes_mod.IngressContainerBaseImagesAnnotationChange(
+                base_image=base_image_from_build
+            )
         )
-    )
+      elif isinstance(change, config_changes_mod.BaseImagesAnnotationChange):
+        change.updates[ingress_container_name] = base_image_from_build
 
   def _GetFunctionTargetFromBuildPack(self, pack):
     """Get the function target from the build pack."""
@@ -776,7 +772,6 @@ class ServerlessOperations(object):
       build_from_source_container_name='',
       build_worker_pool=None,
       build_env_vars=None,
-      enable_automatic_updates=False,
   ):
     """Change the given service in prod using the given config_changes.
 
@@ -818,8 +813,6 @@ class ServerlessOperations(object):
       build_worker_pool:  The name of the Cloud Build custom worker pool that
         should be used to build the function.
       build_env_vars: Dictionary of build env vars to send to submit build.
-      enable_automatic_updates: If true, opt-in automatic build image updates.
-        If false, opt-out automatic build image updates.
 
     Returns:
       service.Service, the service as returned by the server on the POST/PUT
@@ -841,10 +834,10 @@ class ServerlessOperations(object):
       # self._ValidateService(service_ref, config_changes)
       (
           image_digest,
-          build_base_image,
+          base_image_from_build,
           build_id,
           uploaded_source,
-          build_name,
+          build_name
       ) = deployer.CreateImage(
           tracker,
           build_image,
@@ -860,7 +853,6 @@ class ServerlessOperations(object):
           build_service_account,
           build_worker_pool,
           build_env_vars,
-          enable_automatic_updates,
       )
       if image_digest is None:
         return
@@ -873,12 +865,14 @@ class ServerlessOperations(object):
           build_pack=build_pack,
           build_id=build_id,
           build_image=build_image,
-          build_name=build_name,
-          build_base_image=build_base_image,
-          build_from_source_container_name=build_from_source_container_name,
-          enable_automatic_updates=enable_automatic_updates,
-      )
+          build_name=build_name)
       config_changes.append(_AddDigestToImageChange(image_digest))
+      if base_image_from_build:
+        self._ReplaceBaseImage(
+            config_changes,
+            base_image_from_build,
+            build_from_source_container_name,
+        )
     if prefetch is None:
       serv = None
     elif build_source:
@@ -1818,19 +1812,8 @@ class ServerlessOperations(object):
     config_changes.pop()
 
   def _AddRunFunctionsAnnotations(
-      self,
-      config_changes,
-      uploaded_source,
-      service_account,
-      worker_pool,
-      build_env_vars,
-      build_pack,
-      build_id,
-      build_image,
-      build_name,
-      build_base_image,
-      build_from_source_container_name,
-      enable_automatic_updates: bool,
+      self, config_changes, uploaded_source, service_account, worker_pool,
+      build_env_vars, build_pack, build_id, build_image, build_name
   ):
     """Add run functions annotations to the service."""
     build_env_vars_str = json.dumps(build_env_vars) if build_env_vars else None
@@ -1851,39 +1834,13 @@ class ServerlessOperations(object):
         service.RUN_FUNCTIONS_BUILD_ID_ANNOTATION: build_id,
         service.RUN_FUNCTIONS_IMAGE_URI_ANNOTATION: image_uri,
         service.RUN_FUNCTIONS_BUILD_NAME_ANNOTATION: build_name,
-        service.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES: (
-            'true' if enable_automatic_updates else 'false'
-        ),
     }
-
-    if enable_automatic_updates:
-      self._ReplaceOrAddBaseImage(
-          config_changes,
-          build_base_image,
-          build_from_source_container_name,
-      )
-    else:
-      self._DeleteRevisionBaseImageAnnotation(
-          config_changes, build_from_source_container_name
-      )
 
     config_changes.extend(
         config_changes_mod.SetAnnotationChange(k, v)
         for k, v in annotations_map.items()
         if v is not None
     )
-    if build_base_image:
-      config_changes.append(
-          config_changes_mod.SetAnnotationChange(
-              service.RUN_FUNCTIONS_BUILD_BASE_IMAGE, build_base_image
-          )
-      )
-    else:
-      config_changes.append(
-          config_changes_mod.DeleteAnnotationChange(
-              service.RUN_FUNCTIONS_BUILD_BASE_IMAGE
-          )
-      )
 
   def ValidateConfigOverrides(self, job_ref, config_overrides):
     """Apply config changes to Job resource to validate.

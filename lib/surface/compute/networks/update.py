@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine Network.
@@ -234,44 +234,10 @@ class Update(base.UpdateCommand):
       tracker.CompleteStage(stage_to_update)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.UniverseCompatible
-class UpdateBeta(Update):
-  r"""Update a Compute Engine Network.
-
-  *{command}* is used to update virtual networks. The updates that
-  cabe be performed on a network are changing the BGP routing mode
-  and switching from auto subnet mode to custom subnet mode. Switching
-  from auto subnet mode to custom subnet mode cannot be undone.
-
-  ## EXAMPLES
-
-  To update regional network with the name 'network-name' to global, run:
-
-    $ {command} network-name \
-      --bgp-routing-mode=global
-
-  To update an auto subnet mode network with the name 'network-name' to custom
-  subnet mode, run:
-
-    $ {command} network-name \
-      --switch-to-custom-subnet-mode
-
-  """
-
-  _support_firewall_order = True
-
-  @classmethod
-  def Args(cls, parser):
-    super(UpdateBeta, cls).Args(parser)
-    network_utils.AddBgpBestPathSelectionArgGroup(parser)
-
-
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class UpdateAlpha(UpdateBeta):
+class UpdateAlpha(Update):
   """Update a Compute Engine Network."""
-
   _support_firewall_order = True
 
   @classmethod

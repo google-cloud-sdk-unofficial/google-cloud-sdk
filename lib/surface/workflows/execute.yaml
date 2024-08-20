@@ -64,26 +64,6 @@
         help_text: |
           Perform no call logging.
       default: none
-    - arg_name: execution-history-level
-      api_field: execution.executionHistoryLevel
-      help_text: |
-        Level of execution history to apply during execution.
-      release_tracks: [GA]
-      hidden: true
-      choices:
-      - enum_value: EXECUTION_HISTORY_LEVEL_UNSPECIFIED
-        arg_value: none
-        help_text: |
-          No execution history level specified.
-      - enum_value: EXECUTION_HISTORY_BASIC
-        arg_value: execution-history-basic
-        help_text: |
-          Enable execution history basic feature.
-      - enum_value:  EXECUTION_HISTORY_DETAILED
-        arg_value: execution-history-detailed
-        help_text: |
-          Enable execution history detailed feature.
-      default: none
     - arg_name: labels
       metavar: KEY=VALUE
       api_field: execution.labels

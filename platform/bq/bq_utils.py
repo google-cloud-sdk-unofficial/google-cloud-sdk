@@ -475,7 +475,7 @@ def ProcessError(
       err, bq_error.BigqueryInterfaceError
   ):
     response.append('BigQuery error in %s operation: %s' % (name, message))
-  elif isinstance(err, (app.UsageError, bq_error.BigqueryTypeError)):
+  elif isinstance(err, (app.UsageError, TypeError)):
     response.append(message)
   elif isinstance(err, SyntaxError) or isinstance(
       err, bq_error.BigquerySchemaError

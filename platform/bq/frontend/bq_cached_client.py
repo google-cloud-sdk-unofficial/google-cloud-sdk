@@ -19,7 +19,6 @@ from auth import main_credential_loader
 from clients import bigquery_client_extended
 from clients import utils as bq_client_utils
 from frontend import utils as bq_frontend_utils
-from utils import bq_error
 from utils import bq_logging
 
 
@@ -72,8 +71,6 @@ class Client(object):
 
     if bq_flags.HTTPLIB2_DEBUGLEVEL.value:
       httplib2.debuglevel = bq_flags.HTTPLIB2_DEBUGLEVEL.value
-      if hasattr(httplib2, 'python3'):
-        httplib2.python3.debuglevel = bq_flags.HTTPLIB2_DEBUGLEVEL.value
 
     client_args = {}
     global_args = (
@@ -212,9 +209,7 @@ class Factory:
     @classmethod
     def SetTablePrinter(cls, printer: bq_frontend_utils.TablePrinter) -> None:
       if not isinstance(printer, bq_frontend_utils.TablePrinter):
-        raise bq_error.BigqueryTypeError(
-            'Printer must be an instance of TablePrinter.'
-        )
+        raise TypeError('Printer must be an instance of TablePrinter.')
       cls._TABLE_PRINTER = printer
 
   @classmethod
@@ -233,7 +228,5 @@ class Factory:
       factory: Type[bigquery_client_extended.BigqueryClientExtended],
   ) -> None:
     if not issubclass(factory, bigquery_client_extended.BigqueryClientExtended):
-      raise bq_error.BigqueryTypeError(
-          'Factory must be subclass of BigqueryClient.'
-      )
+      raise TypeError('Factory must be subclass of BigqueryClient.')
     cls._BIGQUERY_CLIENT_FACTORY = factory

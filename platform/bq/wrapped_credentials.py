@@ -21,7 +21,6 @@ from google.auth.transport import requests
 import oauth2client_4_0
 
 import bq_utils
-from utils import bq_error
 
 
 class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
@@ -51,7 +50,7 @@ class WrappedCredentials(oauth2client_4_0.client.OAuth2Credentials):
     ) and not isinstance(
         base_creds, external_account_authorized_user.Credentials
     ):
-      raise bq_error.BigqueryTypeError('Invalid Credentials')
+      raise TypeError('Invalid Credentials')
     self._base = base_creds
     super().__init__(
         access_token=self._base.token,

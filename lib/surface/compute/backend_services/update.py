@@ -253,9 +253,6 @@ class UpdateHelper(object):
       replacement.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
-      # strongSessionAffinityCookie is only usable with STRONG_COOKIE_AFFINITY.
-      if args.session_affinity != 'STRONG_COOKIE_AFFINITY':
-        cleared_fields.append('strongSessionAffinityCookie')
 
     backend_services_utils.ApplyAffinityCookieArgs(client, args, replacement)
 

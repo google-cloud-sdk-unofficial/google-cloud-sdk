@@ -84,22 +84,35 @@ def RetrieveAuthorizationInfo(reference, data_source, transfer_client):
       .get(name=data_source_retrieval)
       .execute()
   )
+  first_party_oauth = False
+  if data_source_info['authorizationType'] == 'FIRST_PARTY_OAUTH':
+    first_party_oauth = True
   auth_uri = (
       'https://bigquery.cloud.google.com/datatransfer/oauthz/auth?client_id='
       + data_source_info['clientId']
       + '&scope='
       + '%20'.join(data_source_info['scopes'])
-      + '&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=consent_user'
+      + '&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type='
+      + ('version_info' if first_party_oauth else 'authorization_code')
   )
   print('\n' + auth_uri)
 
   auth_info = {}
-  print(
-      'Please copy and paste the above URL into your web browser'
-      ' and follow the instructions to retrieve a version_info.'
-  )
-  auth_info[client_data_transfer.VERSION_INFO] = frontend_utils.RawInput(
-      'Enter your version_info here: '
-  )
+  if first_party_oauth:
+    print(
+        'Please copy and paste the above URL into your web browser'
+        ' and follow the instructions to retrieve a version_info.'
+    )
+    auth_info[client_data_transfer.VERSION_INFO] = frontend_utils.RawInput(
+        'Enter your version_info here: '
+    )
+  else:
+    print(
+        'Please copy and paste the above URL into your web browser'
+        ' and follow the instructions to retrieve an authorization code.'
+    )
+    auth_info[client_data_transfer.AUTHORIZATION_CODE] = (
+        frontend_utils.RawInput('Enter your authorization code here: ')
+    )
 
   return auth_info

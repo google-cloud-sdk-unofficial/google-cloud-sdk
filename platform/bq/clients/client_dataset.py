@@ -4,7 +4,6 @@
 import datetime
 from typing import Dict, List, NamedTuple, Optional
 from googleapiclient import discovery
-import bq_flags
 from clients import utils as bq_client_utils
 from frontend import utils as frontend_utils
 from utils import bq_error
@@ -99,7 +98,7 @@ def GetDatasetIAMPolicy(apiclient, reference):
     The IAM policy attached to the given dataset resource.
 
   Raises:
-    BigqueryTypeError: if reference is not a DatasetReference.
+    TypeError: if reference is not a DatasetReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -111,11 +110,7 @@ def GetDatasetIAMPolicy(apiclient, reference):
       reference.datasetId,
   )
   return (
-      apiclient.datasets()
-      .getIamPolicy(
-          resource=formatted_resource,
-      )
-      .execute()
+      apiclient.datasets().getIamPolicy(resource=formatted_resource).execute()
   )
 
 
@@ -131,7 +126,7 @@ def SetDatasetIAMPolicy(apiclient: discovery.Resource, reference, policy):
     The updated IAM policy attached to the given dataset resource.
 
   Raises:
-    BigqueryTypeError: if reference is not a DatasetReference.
+    TypeError: if reference is not a DatasetReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -237,7 +232,7 @@ def CreateDataset(
     resource_tags: an optional dict of tags to attach to the dataset.
 
   Raises:
-    BigqueryTypeError: if reference is not an ApiClientHelper.DatasetReference
+    TypeError: if reference is not an ApiClientHelper.DatasetReference
       or if source_dataset_reference is provided but is not an
       bq_id_utils.ApiClientHelper.DatasetReference.
       or if both external_dataset_reference and source_dataset_reference
@@ -299,9 +294,10 @@ def CreateDataset(
   if resource_tags is not None:
     body['resourceTags'] = resource_tags
 
-  args = dict(reference.GetProjectReference())
   try:
-    apiclient.datasets().insert(body=body, **args).execute()
+    apiclient.datasets().insert(
+        body=body, **dict(reference.GetProjectReference())
+    ).execute()
   except bq_error.BigqueryDuplicateError:
     if not ignore_existing:
       raise
@@ -355,7 +351,7 @@ def UpdateDataset(
     clear_all_tags: if set, clears all the tags attached to the dataset
 
   Raises:
-    BigqueryTypeError: if reference is not a DatasetReference.
+    TypeError: if reference is not a DatasetReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -414,8 +410,6 @@ def UpdateDataset(
   )
 
 
-
-
 def _ExecuteGetDatasetRequest(
     apiclient: discovery.Resource,
     reference,
@@ -431,8 +425,7 @@ def _ExecuteGetDatasetRequest(
   Returns:
   The result of executing the request, if it succeeds.
   """
-  args = dict(reference)
-  get_request = apiclient.datasets().get(**args)
+  get_request = apiclient.datasets().get(**dict(reference))
   if etag:
     get_request.headers['If-Match'] = etag
   dataset = get_request.execute()
@@ -485,7 +478,7 @@ def DeleteDataset(
       will fail. If not specified, the server default applies.
 
   Raises:
-    BigqueryTypeError: if reference is not a DatasetReference.
+    TypeError: if reference is not a DatasetReference.
     bq_error.BigqueryNotFoundError: if reference does not exist and
       ignore_not_found is False.
   """

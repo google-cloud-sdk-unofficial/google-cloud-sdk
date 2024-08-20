@@ -496,20 +496,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'enable_insecure_binding_system_unauthenticated'
       ),
       enable_dns_access=get_default('enable_dns_access'),
-      cluster_ca=get_default('cluster_ca'),
-      aggregation_ca=get_default('aggregation_ca'),
-      etcd_api_ca=get_default('etcd_api_ca'),
-      etcd_peer_ca=get_default('etcd_peer_ca'),
-      service_account_verification_keys=get_default(
-          'service_account_verification_keys'
-      ),
-      service_account_signing_keys=get_default('service_account_signing_keys'),
-      control_plane_disk_encryption_key=get_default(
-          'control_plane_disk_encryption_key'
-      ),
-      gkeops_etcd_backup_encryption_key=get_default(
-          'gkeops_etcd_backup_encryption_key'
-      ),
+      cp_disk_encryption_key=get_default('cp_disk_encryption_key'),
   )
 
 
@@ -722,7 +709,6 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
-        'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
             p, hidden=True
         ),
@@ -866,7 +852,6 @@ flags_to_add = {
         'podautoscalingdirectmetricsoptin': (
             flags.AddPodAutoscalingDirectMetricsOptInFlag
         ),
-        'hpaprofile': flags.AddHPAProfilesFlag,
         'enableGoogleCloudAccess': flags.AddEnableGoogleCloudAccess,
         'managedConfig': flags.AddManagedConfigFlag,
         'fleetProject': flags.AddFleetProjectFlag,
@@ -898,7 +883,6 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
-        'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
             p, hidden=True
         ),
@@ -915,7 +899,6 @@ flags_to_add = {
         'autoprovisioning': AddAutoprovisioning,
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
-        'hpaprofile': flags.AddHPAProfilesFlag,
         'basicauth': flags.AddBasicAuthFlags,
         'cloudlogging': flags.AddEnableCloudLogging,
         'clusterversion': flags.AddClusterVersionFlag,
@@ -1083,7 +1066,6 @@ flags_to_add = {
         ),
         'enableRayClusterLogging': flags.AddEnableRayClusterLogging,
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
-        'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
             p, hidden=True
         ),
@@ -1331,7 +1313,6 @@ class CreateBeta(Create):
         'enable_workload_config_audit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
-    ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
@@ -1465,7 +1446,6 @@ class CreateAlpha(Create):
     ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
-    ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning')
     ops.managed_config = get_default('managed_config')

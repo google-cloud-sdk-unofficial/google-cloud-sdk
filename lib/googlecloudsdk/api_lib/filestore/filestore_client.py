@@ -259,7 +259,6 @@ class FilestoreClient(object):
                            network=None,
                            performance=None,
                            labels=None,
-                           tags=None,
                            zone=None,
                            nfs_export_options=None,
                            kms_key_name=None,
@@ -275,7 +274,6 @@ class FilestoreClient(object):
       network: The network for the instance.
       performance: The performance configuration for the instance.
       labels: The parsed labels value.
-      tags: The parsed tags value.
       zone: The parsed zone of the instance.
       nfs_export_options: The nfs export options for the file share.
       kms_key_name: The kms key for instance encryption.
@@ -289,8 +287,6 @@ class FilestoreClient(object):
     instance = self.messages.Instance()
 
     instance.tier = tier
-    if tags:
-      instance.tags = tags
 
     # 'instance.protocol' is a member of 'instance' structure only in Beta API.
     # In case of Beta API, protocol is never 'None' (the default is 'NFS_V3').
@@ -334,7 +330,6 @@ class FilestoreClient(object):
                                  labels=None,
                                  file_share=None,
                                  performance=None,
-                                 clear_performance=False,
                                  managed_ad=None,
                                  disconnect_managed_ad=None,
                                  clear_nfs_export_options=False):
@@ -346,7 +341,6 @@ class FilestoreClient(object):
       labels: LabelsValue message, the new labels value, if any.
       file_share: dict representing a new file share config, if any.
       performance: The performance configuration for the instance.
-      clear_performance: bool, whether to clear the performance configuration.
       managed_ad: The Managed Active Directory settings of the instance.
       disconnect_managed_ad: Disconnect from Managed Active Directory.
       clear_nfs_export_options: bool, whether to clear the NFS export options.
@@ -364,7 +358,6 @@ class FilestoreClient(object):
         labels=labels,
         file_share=file_share,
         performance=performance,
-        clear_performance=clear_performance,
         managed_ad=managed_ad,
         disconnect_managed_ad=disconnect_managed_ad,
         clear_nfs_export_options=clear_nfs_export_options)
@@ -523,12 +516,14 @@ class FilestoreClient(object):
               maxReadIops=performance_config.get('max-read-iops')
           )
       )
-    elif 'max-read-iops-per-tb' in performance_config:
+    elif 'max-read-iops-per-gb' in performance_config:
       return messages.PerformanceConfig(
-          iopsPerTb=messages.IOPSPerTB(
-              maxReadIopsPerTb=performance_config.get('max-read-iops-per-tb')
+          iopsPerGb=messages.IOPSPerGB(
+              maxReadIopsPerGb=performance_config.get('max-read-iops-per-gb')
           )
       )
+    elif 'iops-by-capacity' in performance_config:
+      return messages.PerformanceConfig(iopsByCapacity=True)
     else:
       raise InvalidArgumentError(
           'Invalid performance configuration. Must be one of max-read-iops, '
@@ -616,7 +611,6 @@ class AlphaFilestoreAdapter(object):
       labels=None,
       file_share=None,
       performance=None,
-      clear_performance=False,
       managed_ad=None,
       disconnect_managed_ad=None,
       clear_nfs_export_options=False,
@@ -653,9 +647,6 @@ class AlphaFilestoreAdapter(object):
 
     if performance:
       self.ParsePerformanceIntoInstance(instance_config, performance)
-    if clear_performance:
-      instance_config.performanceConfig = None
-
     if managed_ad:
       self.ParseManagedADIntoInstance(instance_config, managed_ad)
     if disconnect_managed_ad:

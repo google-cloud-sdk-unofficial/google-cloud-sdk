@@ -1076,8 +1076,6 @@ class GoogleCloudAssuredworkloadsV1WorkloadPartnerPermissions(_messages.Message)
   workload
 
   Fields:
-    accessTransparencyLogsSupportCaseViewer: Optional. Allow partner to view
-      support case details for an AXT log
     assuredWorkloadsMonitoring: Optional. Allow partner to view violation
       alerts.
     dataLogsViewer: Allow the partner to view inspectability logs and
@@ -1086,10 +1084,9 @@ class GoogleCloudAssuredworkloadsV1WorkloadPartnerPermissions(_messages.Message)
       logs.
   """
 
-  accessTransparencyLogsSupportCaseViewer = _messages.BooleanField(1)
-  assuredWorkloadsMonitoring = _messages.BooleanField(2)
-  dataLogsViewer = _messages.BooleanField(3)
-  serviceAccessApprover = _messages.BooleanField(4)
+  assuredWorkloadsMonitoring = _messages.BooleanField(1)
+  dataLogsViewer = _messages.BooleanField(2)
+  serviceAccessApprover = _messages.BooleanField(3)
 
 
 class GoogleCloudAssuredworkloadsV1WorkloadResourceInfo(_messages.Message):

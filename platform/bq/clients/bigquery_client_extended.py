@@ -15,7 +15,6 @@ from absl import flags
 from clients import bigquery_client
 from clients import client_dataset
 from clients import client_job
-from clients import client_project
 from clients import table_reader as bq_table_reader
 from clients import utils as bq_client_utils
 from utils import bq_api_utils
@@ -39,9 +38,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     # bigquery.projects.list.
     if isinstance(reference, bq_id_utils.ApiClientHelper.ProjectReference):
       max_project_results = 1000
-      projects = client_project.list_projects(
-          apiclient=self.apiclient, max_results=max_project_results
-      )
+      projects = self.ListProjects(max_results=max_project_results)
       for project in projects:
         if bq_processor_utils.ConstructObjectReference(project) == reference:
           project['kind'] = 'bigquery#project'
@@ -58,8 +55,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       return self.apiclient.jobs().get(**dict(reference)).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
-      request = dict(reference)
-      return self.apiclient.datasets().get(**request).execute()
+      return self.apiclient.datasets().get(**dict(reference)).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       return self.apiclient.tables().get(**dict(reference)).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):
@@ -85,7 +81,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
           .execute()
       )
     else:
-      raise bq_error.BigqueryTypeError(
+      raise TypeError(
           'Type of reference must be one of: ProjectReference, '
           'JobReference, DatasetReference, or TableReference'
       )
@@ -231,6 +227,15 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
     return reader.ReadSchemaAndRows(start_row, max_rows)
 
 
+  def ListProjectRefs(self, **kwds):
+    """List the project references this user has access to."""
+    return list(
+        map(
+            bq_processor_utils.ConstructObjectReference,
+            self.ListProjects(**kwds),
+        )
+    )
+
   def ListProjects(self, max_results=None, page_token=None):
     """List the projects this user has access to."""
     request = bq_processor_utils.PrepareListRequest({}, max_results, page_token)
@@ -247,6 +252,25 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
   def _ExecuteListProjectsRequest(self, request):
     return self.apiclient.projects().list(**request).execute()
 
+  def ListDatasetRefs(self, **kwds):
+    return list(
+        map(
+            bq_processor_utils.ConstructObjectReference,
+            client_dataset.ListDatasets(
+                self.apiclient,  # apiclient
+                self,  # id_fallbacks
+                **kwds,
+            ),
+        )
+    )
+
+
+  def ListTableRefs(self, **kwds):
+    return list(
+        map(
+            bq_processor_utils.ConstructObjectReference, self.ListTables(**kwds)
+        )
+    )
 
   def ListTables(self, reference, max_results=None, page_token=None):
     """List the tables associated with this reference."""
@@ -303,7 +327,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       The IAM policy attached to the given table resource.
 
     Raises:
-      BigqueryTypeError: if reference is not a TableReference.
+      TypeError: if reference is not a TableReference.
     """
     bq_id_utils.typecheck(
         reference,
@@ -333,7 +357,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       The updated IAM policy attached to the given table resource.
 
     Raises:
-      BigqueryTypeError: if reference is not a TableReference.
+      TypeError: if reference is not a TableReference.
     """
     bq_id_utils.typecheck(
         reference,
@@ -485,7 +509,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       resource_tags: an optional dict of tags to attach to the table.
 
     Raises:
-      BigqueryTypeError: if reference is not a TableReference.
+      TypeError: if reference is not a TableReference.
       BigqueryDuplicateError: if reference exists and ignore_existing
         is False.
     """
@@ -630,7 +654,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       clear_all_tags: if set, clears all the tags attached to the table
 
     Raises:
-      BigqueryTypeError: if reference is not a TableReference.
+      TypeError: if reference is not a TableReference.
     """
     bq_id_utils.typecheck(
         reference,
@@ -777,7 +801,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       etag: if set, checks that etag in the existing model matches.
 
     Raises:
-      BigqueryTypeError: if reference is not a ModelReference.
+      TypeError: if reference is not a ModelReference.
     """
     bq_id_utils.typecheck(
         reference,
@@ -831,7 +855,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       ignore_not_found: Whether to ignore "not found" errors.
 
     Raises:
-      BigqueryTypeError: if reference is not a TableReference.
+      TypeError: if reference is not a TableReference.
       bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """
@@ -855,7 +879,7 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       ignore_not_found: Whether to ignore "not found" errors.
 
     Raises:
-      BigqueryTypeError: if reference is not a ModelReference.
+      TypeError: if reference is not a ModelReference.
       bq_error.BigqueryNotFoundError: if reference does not exist and
         ignore_not_found is False.
     """

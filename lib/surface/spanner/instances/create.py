@@ -55,7 +55,6 @@ class Create(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -93,7 +92,6 @@ class Create(base.CreateCommand):
         autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
-        edition=args.edition,
     )
     if args.async_:
       return op
@@ -127,7 +125,6 @@ class BetaCreate(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -165,7 +162,6 @@ class BetaCreate(base.CreateCommand):
         autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
-        edition=args.edition,
     )
     if args.async_:
       return op

@@ -912,9 +912,7 @@ class GenerateContentResponse(proto.Message):
 
         Attributes:
             prompt_token_count (int):
-                Number of tokens in the request. When ``cached_content`` is
-                set, this is still the total effective prompt size meaning
-                this includes the number of tokens in the cached content.
+                Number of tokens in the request.
             candidates_token_count (int):
                 Number of tokens in the response(s).
             total_token_count (int):

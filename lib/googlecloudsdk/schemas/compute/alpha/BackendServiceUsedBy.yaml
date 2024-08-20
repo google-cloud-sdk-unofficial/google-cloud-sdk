@@ -26,8 +26,5 @@ properties:
     items:
       type: string
   reference:
-    description: |-
-      [Output Only] Server-defined URL for resources referencing given
-      BackendService like UrlMaps, TargetTcpProxies, TargetSslProxies and
-      ForwardingRule.
+    description: A string attribute.
     type: string

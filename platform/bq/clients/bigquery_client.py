@@ -246,7 +246,6 @@ class BigqueryClient:
     else:
       logging.debug('System is set to not use `google.auth`.')
 
-    # LINT.IfChange(http_authorization)
     if _HAS_GOOGLE_AUTH and isinstance(
         credentials, google_credentials.Credentials
     ):
@@ -259,7 +258,6 @@ class BigqueryClient:
         )
       return google_auth_httplib2.AuthorizedHttp(credentials, http=http)
     return credentials.authorize(http)
-    # LINT.ThenChange(//depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_lib.py:http_authorization)
 
   def BuildApiClient(
       self,
@@ -295,13 +293,26 @@ class BigqueryClient:
           'Skipping local discovery document load since discovery_url has'
           ' a value'
       )
+    # For now, align this strictly with the default flag values. We can loosen
+    # this but for a first pass I'm keeping the current code flow.
+    # TODO(b/318711380): Local discovery load for different APIs.
+    elif (
+        self.api not in discovery_document_loader.SUPPORTED_BIGQUERY_APIS
+        or self.api_version != 'v2'
+    ):
+      logging.info(
+          'Loading discovery doc from the server since this is not'
+          ' v2 (%s) and the API endpoint (%s) is not one of (%s).',
+          self.api_version,
+          self.api,
+          ', '.join(discovery_document_loader.SUPPORTED_BIGQUERY_APIS),
+      )
     else:
-      # Load the local api description if one exists and is supported.
+      # Use the api description packed with this client, if one exists
+      # TODO(b/318711380): Local discovery load for different APIs.
       try:
-        discovery_document = (
-            discovery_document_loader.load_local_discovery_doc_from_service(
-                service=service, api=self.api, api_version=self.api_version
-            )
+        discovery_document = discovery_document_loader.load_local_discovery_doc(
+            discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
         )
       except FileNotFoundError as e:
         logging.warning('Failed to load discovery doc from local files: %s', e)
@@ -404,6 +415,42 @@ class BigqueryClient:
 
     return built_client
 
+  def BuildDiscoveryNextApiClient(self) -> discovery.Resource:
+    """Builds and returns BigQuery API client from discovery_next document."""
+    http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
+    bigquery_model = bigquery_http.BigqueryModel(
+        trace=self.trace,
+        quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
+            self.quota_project_id, self.use_google_auth, self.credentials
+        ),
+    )
+    bq_request_builder = bigquery_http.BigqueryHttp.Factory(
+        bigquery_model,
+        self.use_google_auth,
+    )
+    models_doc = None
+    try:
+      models_doc = discovery_document_loader.load_local_discovery_doc(
+          discovery_document_loader.DISCOVERY_NEXT_BIGQUERY
+      )
+      models_doc = self.OverrideEndpoint(
+          discovery_document=models_doc, service=Service.BIGQUERY
+      )
+    except (bq_error.BigqueryClientError, FileNotFoundError) as e:
+      logging.warning('Failed to load discovery doc from local files: %s', e)
+      raise
+
+    try:
+      return discovery.build_from_document(
+          models_doc,
+          http=http,
+          model=bigquery_model,
+          requestBuilder=bq_request_builder,
+      )
+    except Exception:
+      logging.error('Error building from models document: %s', models_doc)
+      raise
+
   def BuildIAMPolicyApiClient(self) -> discovery.Resource:
     """Builds and returns IAM policy API client from discovery document."""
     http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
@@ -451,21 +498,19 @@ class BigqueryClient:
   def GetModelsApiClient(self) -> discovery.Resource:
     """Returns the apiclient attached to self."""
     if self._models_apiclient is None:
-      self._models_apiclient = self.BuildApiClient(service=Service.BIGQUERY)
+      self._models_apiclient = self.BuildDiscoveryNextApiClient()
     return self._models_apiclient
 
   def GetRoutinesApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._routines_apiclient is None:
-      self._routines_apiclient = self.BuildApiClient(service=Service.BIGQUERY)
+      self._routines_apiclient = self.BuildDiscoveryNextApiClient()
     return self._routines_apiclient
 
   def GetRowAccessPoliciesApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._row_access_policies_apiclient is None:
-      self._row_access_policies_apiclient = self.BuildApiClient(
-          service=Service.BIGQUERY
-      )
+      self._row_access_policies_apiclient = self.BuildDiscoveryNextApiClient()
     return self._row_access_policies_apiclient
 
   def GetIAMPolicyApiClient(self) -> discovery.Resource:

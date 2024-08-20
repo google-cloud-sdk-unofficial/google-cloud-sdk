@@ -31,14 +31,13 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
 
   detailed_help = {
-      'EXAMPLES': textwrap.dedent("""\
+      'EXAMPLES':
+          textwrap.dedent("""\
           To create an instance with id `my-instance-id` with a cluster located
           in `us-east1-c`, run:
 
@@ -58,17 +57,10 @@ class CreateInstance(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    (
-        arguments.ArgAdder(parser)
-        .AddInstanceDisplayName(required=True)
-        .AddClusterConfig()
-        .AddDeprecatedCluster()
-        .AddDeprecatedClusterZone()
-        .AddDeprecatedClusterNodes()
-        .AddClusterStorage()
-        .AddAsync()
-        .AddDeprecatedInstanceType()
-    )
+    (arguments.ArgAdder(parser).AddInstanceDisplayName(
+        required=True).AddClusterConfig().AddDeprecatedCluster()
+     .AddDeprecatedClusterZone().AddDeprecatedClusterNodes().AddClusterStorage(
+     ).AddAsync().AddDeprecatedInstanceType())
     arguments.AddInstanceResourceArg(parser, 'to create', positional=True)
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
@@ -151,15 +143,8 @@ class CreateInstance(base.CreateCommand):
       new_clusters = {}
       for cluster_dict in args.cluster_config:
         nodes = cluster_dict.get('nodes', 1)
-        node_scaling_factor = cluster_dict.get(
-            'node-scaling-factor',
-            msgs.Cluster.NodeScalingFactorValueValuesEnum(
-                msgs.Cluster.NodeScalingFactorValueValuesEnum.NODE_SCALING_FACTOR_1X
-            ),
-        )
         cluster = msgs.Cluster(
             serveNodes=nodes,
-            nodeScalingFactor=node_scaling_factor,
             defaultStorageType=storage_type,
             # TODO(b/36049938): switch location to resource
             # when b/29566669 is fixed on API
@@ -194,11 +179,7 @@ class CreateInstance(base.CreateCommand):
             '--cluster-zone', '--cluster-zone must be specified.')
       cluster = msgs.Cluster(
           serveNodes=arguments.ProcessInstanceTypeAndNodes(args),
-          # nodeScalingFactor is not supported in deprecated workflow
           defaultStorageType=storage_type,
-          nodeScalingFactor=msgs.Cluster.NodeScalingFactorValueValuesEnum(
-              msgs.Cluster.NodeScalingFactorValueValuesEnum.NODE_SCALING_FACTOR_1X
-          ),
           # TODO(b/36049938): switch location to resource
           # when b/29566669 is fixed on API
           location=util.LocationUrl(args.cluster_zone))
@@ -206,11 +187,56 @@ class CreateInstance(base.CreateCommand):
     else:
       raise exceptions.InvalidArgumentException(
           '--cluster --cluster-config',
-          'Use --cluster-config to specify cluster(s).',
-      )
+          'Use --cluster-config to specify cluster(s).')
 
-    # TODO(b/188686383): Remove in favor of argDict spec in AddClusterConfig.
+  def _ValidateClusterConfigArgs(self, cluster_config):
+    """Validates arguments in cluster-config as a repeated dict."""
+    # Validate cluster-config of each cluster.
+    for cluster_dict in cluster_config:
+      if ('autoscaling-min-nodes' in cluster_dict or
+          'autoscaling-max-nodes' in cluster_dict or
+          'autoscaling-cpu-target' in cluster_dict or
+          'autoscaling-storage-target' in cluster_dict):
+        # nodes and autoscaling args are mutual exclusive.
+        if 'nodes' in cluster_dict:
+          raise exceptions.InvalidArgumentException(
+              '--autoscaling-min-nodes --autoscaling-max-nodes '
+              '--autoscaling-cpu-target --autoscaling-storage-target',
+              'At most one of nodes | autoscaling-min-nodes '
+              'autoscaling-max-nodes autoscaling-cpu-target '
+              'autoscaling-storage-target may be specified in --cluster-config')
+        # To enable autoscaling, all related args must be set.
+        if ('autoscaling-min-nodes' not in cluster_dict or
+            'autoscaling-max-nodes' not in cluster_dict or
+            'autoscaling-cpu-target' not in cluster_dict):
+          raise exceptions.InvalidArgumentException(
+              '--autoscaling-min-nodes --autoscaling-max-nodes '
+              '--autoscaling-cpu-target', 'All of --autoscaling-min-nodes '
+              '--autoscaling-max-nodes --autoscaling-cpu-target must be set to '
+              'enable Autoscaling.')
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstance):
+  """Create a new Bigtable instance."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    (
+        arguments.ArgAdderAlpha(parser)
+        .AddInstanceDisplayName(required=True)
+        .AddClusterConfig()
+        .AddDeprecatedCluster()
+        .AddDeprecatedClusterZone()
+        .AddDeprecatedClusterNodes()
+        .AddClusterStorage()
+        .AddAsync()
+        .AddDeprecatedInstanceType()
+    )
+    arguments.AddInstanceResourceArg(parser, 'to create', positional=True)
+    parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
+
+  # TODO(b/188686383): Remove in favor of argDict spec in AddClusterConfig.
   # In go/cbt-large-nodes-new-clusters-ga we introduce a new node_scaling_factor
   # field on new clusters. While in preview, this field should remain hidden.
   # Since clusterConfig (ArgDict) does not support partially hidden fields, we
@@ -237,17 +263,12 @@ class CreateInstance(base.CreateCommand):
 
   def _ValidateClusterConfigArgs(self, cluster_config):
     """Validates arguments in cluster-config as a repeated dict."""
-    valid_cluster_config_params = set([
-        'id',
-        'zone',
-        'nodes',
-        'node-scaling-factor',
-        'kms-key',
-        'autoscaling-min-nodes',
-        'autoscaling-max-nodes',
-        'autoscaling-cpu-target',
-        'autoscaling-storage-target',
-    ])
+    valid_cluster_config_params = set(['id', 'zone', 'nodes',
+                                       'node-scaling-factor', 'kms-key',
+                                       'autoscaling-min-nodes',
+                                       'autoscaling-max-nodes',
+                                       'autoscaling-cpu-target',
+                                       'autoscaling-storage-target'])
     # Validate cluster-config of each cluster.
     for cluster_dict in cluster_config:
       # TODO(b/340864145): Remove in favor of argDict spec in AddClusterConfig
@@ -281,3 +302,99 @@ class CreateInstance(base.CreateCommand):
               '--autoscaling-cpu-target', 'All of --autoscaling-min-nodes '
               '--autoscaling-max-nodes --autoscaling-cpu-target must be set to '
               'enable Autoscaling.')
+  def _Clusters(self, args):
+    """Get the clusters configs from command arguments.
+
+    Args:
+      args: the argparse namespace from Run().
+
+    Returns:
+      A dict mapping from cluster id to msg.Cluster.
+    """
+
+    msgs = util.GetAdminMessages()
+    storage_type = msgs.Cluster.DefaultStorageTypeValueValuesEnum(
+        args.cluster_storage_type.upper()
+    )
+
+    if args.cluster_config is not None:
+      if (
+          args.cluster is not None
+          or args.cluster_zone is not None
+          or args.cluster_num_nodes is not None
+      ):
+        raise exceptions.InvalidArgumentException(
+            '--cluster-config --cluster --cluster-zone --cluster-num-nodes',
+            'Use --cluster-config or the combination of --cluster, '
+            '--cluster-zone and --cluster-num-nodes to specify cluster(s), not '
+            'both.',
+        )
+
+      self._ValidateClusterConfigArgs(args.cluster_config)
+      new_clusters = {}
+      for cluster_dict in args.cluster_config:
+        nodes = cluster_dict.get('nodes', 1)
+        node_scaling_factor = cluster_dict.get(
+            'node-scaling-factor',
+            msgs.Cluster.NodeScalingFactorValueValuesEnum(
+                msgs.Cluster.NodeScalingFactorValueValuesEnum.NODE_SCALING_FACTOR_1X
+            ),
+        )
+        cluster = msgs.Cluster(
+            serveNodes=nodes,
+            nodeScalingFactor=node_scaling_factor,
+            defaultStorageType=storage_type,
+            # TODO(b/36049938): switch location to resource
+            # when b/29566669 is fixed on API
+            location=util.LocationUrl(cluster_dict['zone']),
+        )
+        if 'kms-key' in cluster_dict:
+          cluster.encryptionConfig = msgs.EncryptionConfig(
+              kmsKeyName=cluster_dict['kms-key']
+          )
+
+        if (
+            'autoscaling-min-nodes' in cluster_dict
+            or 'autoscaling-max-nodes' in cluster_dict
+            or 'autoscaling-cpu-target' in cluster_dict
+        ):
+          # autoscaling-storage-target is optional.
+          if 'autoscaling-storage-target' in cluster_dict:
+            storage_target = cluster_dict['autoscaling-storage-target']
+          else:
+            storage_target = None
+
+          cluster.clusterConfig = clusters.BuildClusterConfig(
+              autoscaling_min=cluster_dict['autoscaling-min-nodes'],
+              autoscaling_max=cluster_dict['autoscaling-max-nodes'],
+              autoscaling_cpu_target=cluster_dict['autoscaling-cpu-target'],
+              autoscaling_storage_target=storage_target,
+          )
+          # serveNodes must be set to None or 0 to enable Autoscaling.
+          # go/cbt-autoscaler-api
+          cluster.serveNodes = None
+
+        new_clusters[cluster_dict['id']] = cluster
+      return new_clusters
+    elif args.cluster is not None:
+      if args.cluster_zone is None:
+        raise exceptions.InvalidArgumentException(
+            '--cluster-zone', '--cluster-zone must be specified.'
+        )
+      cluster = msgs.Cluster(
+          serveNodes=arguments.ProcessInstanceTypeAndNodes(args),
+          # nodeScalingFactor is not supported in deprecated workflow
+          defaultStorageType=storage_type,
+          nodeScalingFactor=msgs.Cluster.NodeScalingFactorValueValuesEnum(
+              msgs.Cluster.NodeScalingFactorValueValuesEnum.NODE_SCALING_FACTOR_1X
+          ),
+          # TODO(b/36049938): switch location to resource
+          # when b/29566669 is fixed on API
+          location=util.LocationUrl(args.cluster_zone),
+      )
+      return {args.cluster: cluster}
+    else:
+      raise exceptions.InvalidArgumentException(
+          '--cluster --cluster-config',
+          'Use --cluster-config to specify cluster(s).',
+      )

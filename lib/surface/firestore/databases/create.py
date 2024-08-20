@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import textwrap
-
 from googlecloudsdk.api_lib.firestore import api_utils
 from googlecloudsdk.api_lib.firestore import databases
 from googlecloudsdk.calliope import base
@@ -131,40 +129,39 @@ class CreateFirestoreAPI(base.Command):
     )
     parser.add_argument(
         '--database',
-        help=textwrap.dedent("""\
-            The ID to use for the database, which will become the final
-            component of the database's resource name. If database ID is not
-            provided, (default) will be used as database ID.
+        help="""The ID to use for the database, which will become the final
+        component of the database's resource name. If database ID is not
+        provided, (default) will be used as database ID.
 
-            This value should be 4-63 characters. Valid characters are /[a-z][0-9]-/
-            with first character a letter and the last a letter or a number. Must
-            not be UUID-like /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/.
+        This value should be 4-63 characters. Valid characters are /[a-z][0-9]-/
+        with first character a letter and the last a letter or a number. Must
+        not be UUID-like /[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/.
 
-            Using "(default)" database ID is also allowed.
-            """),
+        Using "(default)" database ID is also allowed.
+        """,
         type=str,
         default='(default)',
     )
     parser.add_argument(
         '--delete-protection',
-        help=textwrap.dedent("""\
-            Whether to enable delete protection on the created database.
+        help="""Whether to enable delete protection on the created database.
 
-            If set to true, delete protection of the new database will be enabled
-            and delete operations will fail unless delete protection is disabled.
+        If set to true, delete protection of the new database will be enabled
+        and delete operations will fail unless delete protection is disabled.
 
-            Default to false.
-            """),
+        Default to false.
+        """,
         action='store_true',
         default=False,
     )
     parser.add_argument(
         '--enable-pitr',
-        help=textwrap.dedent("""\
-            Whether to enable Point In Time Recovery (PITR) on the created database.
+        help="""Whether to enable Point In Time Recovery (PITR) on the created
+        database.
 
-            If set to true, PITR on the new database will be enabled. By default, this feature is not enabled.
-            """),
+        If set to true, PITR on the new database will be enabled. By default,
+        this feature is not enabled.
+        """,
         action='store_true',
         default=None,
     )

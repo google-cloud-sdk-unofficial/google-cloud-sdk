@@ -86,7 +86,7 @@ def DeleteRoutine(
     ignore_not_found: Whether to ignore "not found" errors.
 
   Raises:
-    BigqueryTypeError: if reference is not a RoutineReference.
+    TypeError: if reference is not a RoutineReference.
     bq_error.BigqueryNotFoundError: if reference does not exist and
       ignore_not_found is False.
   """
@@ -118,7 +118,7 @@ def SetRoutineIAMPolicy(
     The updated IAM policy attached to the given routine resource.
 
   Raises:
-    BigqueryTypeError: if reference is not a RoutineReference.
+    TypeError: if reference is not a RoutineReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -147,7 +147,7 @@ def GetRoutineIAMPolicy(
     The IAM policy attached to the given routine resource.
 
   Raises:
-    BigqueryTypeError: if reference is not a RoutineReference.
+    TypeError: if reference is not a RoutineReference.
   """
   bq_id_utils.typecheck(
       reference,

@@ -292,7 +292,7 @@ class Load(bigquery_command.BigqueryCmd):
         'file_set_spec_type',
         None,
         ['FILE_SYSTEM_MATCH', 'NEW_LINE_DELIMITED_MANIFEST'],
-        'Specifies how to discover files given source URIs. '
+        '[Experimental] Specifies how to discover files given source URIs. '
         'Options include: '
         '\n FILE_SYSTEM_MATCH: expand source URIs by listing files from the '
         'underlying object store. This is the default behavior.'

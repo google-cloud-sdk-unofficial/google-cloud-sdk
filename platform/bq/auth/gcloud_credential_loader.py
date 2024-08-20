@@ -18,8 +18,9 @@ from pyglib import resources
 def LoadCredential() -> google_oauth2.Credentials:
   """Loads credentials by calling gcloud commands."""
   logging.info('Loading auth credentials from gcloud')
-  access_token = _GetAccessTokenAndPrintOutput()
-  refresh_token = _GetRefreshTokenAndPrintOutput()
+  gcloud_path = _GetGcloudPath()
+  access_token = _GetAccessTokenAndPrintOutput(gcloud_path)
+  refresh_token = _GetRefreshTokenAndPrintOutput(gcloud_path)
   return google_oauth2.Credentials(
       token=access_token,
       refresh_token=refresh_token,
@@ -41,12 +42,16 @@ def _GetGcloudPath() -> str:
   return binary
 
 
-def _GetAccessTokenAndPrintOutput() -> Optional[str]:
-  return _GetTokenFromGcloudAndPrintOtherOutput(['auth', 'print-access-token'])
+def _GetAccessTokenAndPrintOutput(gcloud_path: str) -> Optional[str]:
+  return _GetTokenFromGcloudAndPrintOtherOutput(
+      [gcloud_path, 'auth', 'print-access-token']
+  )
 
 
-def _GetRefreshTokenAndPrintOutput() -> Optional[str]:
-  return _GetTokenFromGcloudAndPrintOtherOutput(['auth', 'print-refresh-token'])
+def _GetRefreshTokenAndPrintOutput(gcloud_path: str) -> Optional[str]:
+  return _GetTokenFromGcloudAndPrintOtherOutput(
+      [gcloud_path, 'auth', 'print-refresh-token']
+  )
 
 
 def _GetTokenFromGcloudAndPrintOtherOutput(cmd: List[str]) -> Optional[str]:
@@ -96,7 +101,7 @@ def _GetTokenFromGcloudAndPrintOtherOutput(cmd: List[str]) -> Optional[str]:
 def _RunGcloudCommand(cmd: List[str]) -> Iterator[str]:
   """Runs the given gcloud command, yields the output, and returns the final status code."""
   popen = subprocess.Popen(
-      [_GetGcloudPath()] + cmd,
+      cmd,
       stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT,
       universal_newlines=True,

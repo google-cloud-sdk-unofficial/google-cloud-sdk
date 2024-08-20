@@ -525,9 +525,9 @@ class Collections(enum.Enum):
   REGIONINSTANTSNAPSHOTGROUPS = (
       'regionInstantSnapshotGroups',
       'projects/{project}/regions/{region}/instantSnapshotGroups/'
-      '{instantSnapshotGroup}',
+      '{instantSnapshot}',
       {},
-      ['project', 'region', 'instantSnapshotGroup'],
+      ['project', 'region', 'instantSnapshot'],
       True
   )
   REGIONINSTANTSNAPSHOTS = (
@@ -542,6 +542,13 @@ class Collections(enum.Enum):
       'projects/{project}/regions/{region}/machineTypes/{machineType}',
       {},
       ['project', 'region', 'machineType'],
+      True
+  )
+  REGIONMULTIMIGS = (
+      'regionMultiMigs',
+      'projects/{project}/regions/{region}/multiMigs/{multiMig}',
+      {},
+      ['project', 'region', 'multiMig'],
       True
   )
   REGIONNETWORKENDPOINTGROUPS = (

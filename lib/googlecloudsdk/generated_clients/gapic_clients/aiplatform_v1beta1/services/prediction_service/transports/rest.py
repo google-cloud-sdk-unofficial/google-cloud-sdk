@@ -608,16 +608,6 @@ class PredictionServiceRestTransport(PredictionServiceTransport):
                 'uri': '/v1beta1/{endpoint=projects/*/locations/*/publishers/*/models/*}:countTokens',
                 'body': '*',
             },
-{
-                'method': 'post',
-                'uri': '/v1beta1/{endpoint=endpoints/*}:countTokens',
-                'body': '*',
-            },
-{
-                'method': 'post',
-                'uri': '/v1beta1/{endpoint=publishers/*/models/*}:countTokens',
-                'body': '*',
-            },
             ]
             request, metadata = self._interceptor.pre_count_tokens(request, metadata)
             pb_request = prediction_service.CountTokensRequest.pb(request)

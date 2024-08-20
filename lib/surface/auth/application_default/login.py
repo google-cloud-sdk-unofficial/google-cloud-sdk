@@ -197,9 +197,13 @@ class Login(base.Command):
       if args.scopes:
         raise c_exc.ConflictingArgumentsException(
             '--scopes is not currently supported for third party login flows.')
+      # Redirect URI must be sdk.cloud.google for 3PI.
       creds = workforce_login_config_util.DoWorkforceHeadfulLogin(
           login_config_file,
           True,
+          auth_proxy_redirect_uri=(
+              'https://sdk.cloud.google/applicationdefaultauthcode.html'
+          ),
           **flow_params
       )
     else:

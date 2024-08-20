@@ -4509,8 +4509,6 @@ class LeaseWorkItemRequest(_messages.Message):
     location: The [regional endpoint]
       (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints)
       that contains the WorkItem's job.
-    projectNumber: Optional. The project number of the project this worker
-      belongs to.
     requestedLeaseDuration: The initial lease period.
     unifiedWorkerRequest: Untranslated bag-of-bytes WorkRequest from
       UnifiedWorker.
@@ -4549,12 +4547,11 @@ class LeaseWorkItemRequest(_messages.Message):
 
   currentWorkerTime = _messages.StringField(1)
   location = _messages.StringField(2)
-  projectNumber = _messages.IntegerField(3)
-  requestedLeaseDuration = _messages.StringField(4)
-  unifiedWorkerRequest = _messages.MessageField('UnifiedWorkerRequestValue', 5)
-  workItemTypes = _messages.StringField(6, repeated=True)
-  workerCapabilities = _messages.StringField(7, repeated=True)
-  workerId = _messages.StringField(8)
+  requestedLeaseDuration = _messages.StringField(3)
+  unifiedWorkerRequest = _messages.MessageField('UnifiedWorkerRequestValue', 4)
+  workItemTypes = _messages.StringField(5, repeated=True)
+  workerCapabilities = _messages.StringField(6, repeated=True)
+  workerId = _messages.StringField(7)
 
 
 class LeaseWorkItemResponse(_messages.Message):
@@ -5729,8 +5726,6 @@ class ReportWorkItemStatusRequest(_messages.Message):
     location: The [regional endpoint]
       (https://cloud.google.com/dataflow/docs/concepts/regional-endpoints)
       that contains the WorkItem's job.
-    projectNumber: Optional. The project number of the project which owns the
-      WorkItem's job.
     unifiedWorkerRequest: Untranslated bag-of-bytes WorkProgressUpdateRequest
       from UnifiedWorker.
     workItemStatuses: The order is unimportant, except that the order of the
@@ -5771,10 +5766,9 @@ class ReportWorkItemStatusRequest(_messages.Message):
 
   currentWorkerTime = _messages.StringField(1)
   location = _messages.StringField(2)
-  projectNumber = _messages.IntegerField(3)
-  unifiedWorkerRequest = _messages.MessageField('UnifiedWorkerRequestValue', 4)
-  workItemStatuses = _messages.MessageField('WorkItemStatus', 5, repeated=True)
-  workerId = _messages.StringField(6)
+  unifiedWorkerRequest = _messages.MessageField('UnifiedWorkerRequestValue', 3)
+  workItemStatuses = _messages.MessageField('WorkItemStatus', 4, repeated=True)
+  workerId = _messages.StringField(5)
 
 
 class ReportWorkItemStatusResponse(_messages.Message):

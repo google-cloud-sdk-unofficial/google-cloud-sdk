@@ -185,7 +185,6 @@ class SasPortalDeviceAirInterface(_messages.Message):
       CW: <no description>
       REDLINE: <no description>
       TARANA_WIRELESS: <no description>
-      FAROS: <no description>
     """
     RADIO_TECHNOLOGY_UNSPECIFIED = 0
     E_UTRA = 1
@@ -196,7 +195,6 @@ class SasPortalDeviceAirInterface(_messages.Message):
     CW = 6
     REDLINE = 7
     TARANA_WIRELESS = 8
-    FAROS = 9
 
   radioTechnology = _messages.EnumField('RadioTechnologyValueValuesEnum', 1)
   supportedSpec = _messages.StringField(2)

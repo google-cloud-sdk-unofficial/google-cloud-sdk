@@ -147,10 +147,10 @@ class BaseGDCSparkApplicationCommand(base.CreateCommand):
           ),
       )
       log.CreatedResource(
-          application_id,
+          application_ref.Name(),
           details=(
               '- spark application in service instance [{0}]'.format(
-                  create_req.parent
+                  application_ref.Parent().RelativeName()
               )
           ),
       )

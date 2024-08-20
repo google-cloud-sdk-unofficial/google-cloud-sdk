@@ -50,7 +50,6 @@ from frontend import command_copy
 from frontend import command_delete
 from frontend import command_extract
 from frontend import command_info
-from frontend import command_init
 from frontend import command_list
 from frontend import command_load
 from frontend import command_make
@@ -90,7 +89,7 @@ def main(unused_argv):
         'get-iam-policy': commands_iam.GetIamPolicy,
         'head': commands.Head,
         'info': command_info.Info,
-        'init': command_init.Init,
+        'init': commands.Init,
         'insert': commands.Insert,
         'load': command_load.Load,
         'ls': command_list.ListCmd,

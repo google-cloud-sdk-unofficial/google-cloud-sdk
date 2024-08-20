@@ -866,7 +866,3 @@ def AddRemoveIamPolicyBindingFlags(parser):
 
 def AddSetIamPolicyFlags(parser):
   GetApplicationResourceArg().AddToParser(parser)
-
-
-def AddDescribeLocationFlags(parser):
-  GetLocationResourceArg(positional=True).AddToParser(parser)

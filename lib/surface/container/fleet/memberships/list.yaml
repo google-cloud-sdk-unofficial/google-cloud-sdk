@@ -15,7 +15,7 @@
     ALPHA:
       api_version: v1alpha
     BETA:
-      api_version: v1beta
+      api_version: v1beta1
     GA:
       api_version: v1
 

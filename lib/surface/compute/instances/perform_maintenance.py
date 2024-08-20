@@ -19,18 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
-from googlecloudsdk.api_lib.compute import exceptions
-from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 
 
-class PerformMaintenanceError(exceptions.Error):
-  """Exception thrown when there is a problem with performing maintenance on an instance."""
-
-
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -39,35 +32,23 @@ class PerformMaintenance(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    instance_flags.INSTANCES_ARG.AddArgument(parser)
+    instance_flags.INSTANCE_ARG.AddArgument(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
     messages = holder.client.messages
 
-    instance_refs = instance_flags.INSTANCES_ARG.ResolveAsResource(
-        args, holder.resources, scope_lister=flags.GetDefaultScopeLister(client)
-    )
-    requests = []
-    for instance_ref in instance_refs:
-      request_protobuf = messages.ComputeInstancesPerformMaintenanceRequest(
-          **instance_ref.AsDict()
-      )
-      request = (
-          client.apitools_client.instances,
-          'PerformMaintenance',
-          request_protobuf,
-      )
-      requests.append(request)
-    errors = []
-    holder.client.MakeRequests(requests, errors_to_collect=errors)
-    if errors:
-      utils.RaiseException(
-          errors,
-          PerformMaintenanceError,
-          error_message='Could not set named ports for resource:',
-      )
+    instance_ref = instance_flags.INSTANCE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(client))
+
+    request_protobuf = messages.ComputeInstancesPerformMaintenanceRequest(
+        **instance_ref.AsDict())
+    request = (client.apitools_client.instances, 'PerformMaintenance',
+               request_protobuf)
+    return holder.client.MakeRequests([request])
 
 
 PerformMaintenance.detailed_help = {

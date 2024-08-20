@@ -369,7 +369,6 @@ API_SERVER = 'API_SERVER'
 SCHEDULER = 'SCHEDULER'
 CONTROLLER_MANAGER = 'CONTROLLER_MANAGER'
 ADDON_MANAGER = 'ADDON_MANAGER'
-KCP_SSHD = 'KCP_SSHD'
 STORAGE = 'STORAGE'
 HPA_COMPONENT = 'HPA'
 POD = 'POD'
@@ -387,7 +386,6 @@ LOGGING_OPTIONS = [
     SCHEDULER,
     CONTROLLER_MANAGER,
     ADDON_MANAGER,
-    KCP_SSHD,
 ]
 MONITORING_OPTIONS = [
     NONE,
@@ -418,7 +416,6 @@ LOCATION_POLICY_OPTIONS = ['BALANCED', 'ANY']
 # gcloud-disable-gdu-domain
 SUBNETWORK_URL_PATTERN = (
     r'^https://www.googleapis.com/compute/[a-z1-9_]+/(?P<resource>.*)$')
-ZONE_PATTERN = '^[^-]+-[^-]+-[^-]+$'
 
 
 def CheckResponse(response):
@@ -644,7 +641,6 @@ class CreateClusterOptions(object):
       security_profile=None,
       security_profile_runtime_rules=None,
       autoscaling_profile=None,
-      hpa_profile=None,
       database_encryption_key=None,
       metadata=None,
       enable_network_egress_metering=None,
@@ -764,14 +760,7 @@ class CreateClusterOptions(object):
       enable_insecure_binding_system_authenticated=None,
       enable_insecure_binding_system_unauthenticated=None,
       enable_dns_access=None,
-      cluster_ca=None,
-      aggregation_ca=None,
-      etcd_api_ca=None,
-      etcd_peer_ca=None,
-      service_account_signing_keys=None,
-      service_account_verification_keys=None,
-      control_plane_disk_encryption_key=None,
-      gkeops_etcd_backup_encryption_key=None,
+      cp_disk_encryption_key=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -870,7 +859,6 @@ class CreateClusterOptions(object):
     self.security_profile = security_profile
     self.security_profile_runtime_rules = security_profile_runtime_rules
     self.autoscaling_profile = autoscaling_profile
-    self.hpa_profile = hpa_profile
     self.database_encryption_key = database_encryption_key
     self.metadata = metadata
     self.enable_network_egress_metering = enable_network_egress_metering
@@ -1013,14 +1001,7 @@ class CreateClusterOptions(object):
         enable_insecure_binding_system_unauthenticated
     )
     self.enable_dns_access = enable_dns_access
-    self.cluster_ca = cluster_ca
-    self.aggregation_ca = aggregation_ca
-    self.etcd_api_ca = etcd_api_ca
-    self.etcd_peer_ca = etcd_peer_ca
-    self.service_account_signing_keys = service_account_signing_keys
-    self.service_account_verification_keys = service_account_verification_keys
-    self.control_plane_disk_encryption_key = control_plane_disk_encryption_key
-    self.gkeops_etcd_backup_encryption_key = gkeops_etcd_backup_encryption_key
+    self.cp_disk_encryption_key = cp_disk_encryption_key
 
 
 class UpdateClusterOptions(object):
@@ -1070,7 +1051,6 @@ class UpdateClusterOptions(object):
       security_profile=None,
       security_profile_runtime_rules=None,
       autoscaling_profile=None,
-      hpa_profile=None,
       enable_peering_route_sharing=None,
       workload_pool=None,
       identity_provider=None,
@@ -1220,7 +1200,6 @@ class UpdateClusterOptions(object):
     self.security_profile = security_profile
     self.security_profile_runtime_rules = security_profile_runtime_rules
     self.autoscaling_profile = autoscaling_profile
-    self.hpa_profile = hpa_profile
     self.enable_intra_node_visibility = enable_intra_node_visibility
     self.enable_l4_ilb_subsetting = enable_l4_ilb_subsetting
     self.enable_peering_route_sharing = enable_peering_route_sharing
@@ -2414,12 +2393,6 @@ class APIAdapter(object):
           directMetricsOptIn=options.pod_autoscaling_direct_metrics_opt_in)
       cluster.podAutoscaling = pod_autoscaling_config
 
-    if (options.hpa_profile is not None
-        and options.hpa_profile.lower() == 'performance'):
-      pod_autoscaling_config = self.messages.PodAutoscaling(
-          directMetricsOptIn=True)
-      cluster.podAutoscaling = pod_autoscaling_config
-
     if options.private_endpoint_subnetwork is not None:
       if cluster.privateClusterConfig is None:
         cluster.privateClusterConfig = self.messages.PrivateClusterConfig()
@@ -2651,45 +2624,11 @@ class APIAdapter(object):
           dns_endpoint_config
       )
 
-    if options.cluster_ca is not None:
+    if options.cp_disk_encryption_key is not None:
       if cluster.userManagedKeysConfig is None:
         cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.clusterCa = options.cluster_ca
-    if options.aggregation_ca is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.aggregationCa = options.aggregation_ca
-    if options.etcd_peer_ca is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.etcdPeerCa = options.etcd_peer_ca
-    if options.etcd_api_ca is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.etcdApiCa = options.etcd_api_ca
-    if options.service_account_verification_keys is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.serviceAccountVerificationKeys.extend(
-          options.service_account_verification_keys
-      )
-    if options.service_account_signing_keys is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.serviceAccountSigningKeys.extend(
-          options.service_account_signing_keys
-      )
-    if options.control_plane_disk_encryption_key is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.controlPlaneDiskEncryptionKey = (
-          options.control_plane_disk_encryption_key
-      )
-    if options.gkeops_etcd_backup_encryption_key is not None:
-      if cluster.userManagedKeysConfig is None:
-        cluster.userManagedKeysConfig = self.messages.UserManagedKeysConfig()
-      cluster.userManagedKeysConfig.gkeopsEtcdBackupEncryptionKey = (
-          options.gkeops_etcd_backup_encryption_key
+      cluster.userManagedKeysConfig.cmekControlPlaneDisksCaKey = (
+          options.cp_disk_encryption_key
       )
 
     return cluster
@@ -3959,18 +3898,6 @@ class APIAdapter(object):
           directMetricsOptIn=options.pod_autoscaling_direct_metrics_opt_in)
       update = self.messages.ClusterUpdate(
           desiredPodAutoscaling=pod_autoscaling_config)
-
-    if options.hpa_profile is not None:
-      if options.hpa_profile == 'performance':
-        pod_autoscaling_config = self.messages.PodAutoscaling(
-            directMetricsOptIn=True)
-        update = self.messages.ClusterUpdate(
-            desiredPodAutoscaling=pod_autoscaling_config)
-      else:
-        pod_autoscaling_config = self.messages.PodAutoscaling(
-            directMetricsOptIn=False)
-        update = self.messages.ClusterUpdate(
-            desiredPodAutoscaling=pod_autoscaling_config)
 
     if options.enable_private_endpoint is not None:
       update = self.messages.ClusterUpdate(
@@ -7489,10 +7416,6 @@ def _GetLoggingConfig(options, messages):
     config.enableComponents.append(
         messages.LoggingComponentConfig.EnableComponentsValueListEntryValuesEnum
         .ADDON_MANAGER)
-  if KCP_SSHD in options.logging:
-    config.enableComponents.append(
-        messages.LoggingComponentConfig.EnableComponentsValueListEntryValuesEnum
-        .KCP_SSHD)
 
   return messages.LoggingConfig(componentConfig=config)
 
@@ -7748,7 +7671,7 @@ def ProjectLocationSubnetwork(project, region, subnetwork):
           subnetwork)
 
 
-def SubnetworkNameToPath(subnetwork, project, location):
+def SubnetworkNameToPath(subnetwork, project, zone):
   match = re.match(SUBNETWORK_URL_PATTERN + '$', subnetwork)
   if match:
     subnetwork = match[1]
@@ -7756,9 +7679,8 @@ def SubnetworkNameToPath(subnetwork, project, location):
   if (len(parts) == 6 and parts[0] == 'projects' and parts[2] == 'regions' and
       parts[4] == 'subnetworks'):
     return subnetwork
-  if re.match(ZONE_PATTERN, location):
-    location = location[:location.rfind('-')]
-  return ProjectLocationSubnetwork(project, location, subnetwork)
+  region = zone[:zone.rfind('-')]
+  return ProjectLocationSubnetwork(project, region, subnetwork)
 
 
 def NormalizeBinauthzMode(mode):

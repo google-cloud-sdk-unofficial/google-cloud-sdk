@@ -126,7 +126,7 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
         recovery_timestamp = min(
             list(map(self._GetRecoveryTimestamp, all_table_infos))
         )
-      except (ValueError, bq_error.BigqueryTypeError):
+      except (ValueError, TypeError):
         recovery_timestamp = None
       # Error out if we can't figure out a recovery timestamp
       # This can happen in following cases:

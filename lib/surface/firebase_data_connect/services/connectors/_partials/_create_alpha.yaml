@@ -71,8 +71,6 @@
               relative to a local workspace (e.g. dataconnect/(schema|connector)/*.gql)
               and not an absolute path (e.g. /absolute/path/(schema|connector)/*.gql).
           - api_field: content
-            arg_name: contentFromFile
-            type: file_type
             help_text: |-
               The file's textual content.
     - arg_name: display-name

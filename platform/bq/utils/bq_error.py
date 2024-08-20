@@ -21,10 +21,6 @@ class BigqueryError(Exception):
   """Class to represent a BigQuery error."""
 
 
-class BigqueryTypeError(BigqueryError):
-  """A BQ CLI type error that should not show a stack trace."""
-
-
 class BigqueryCommunicationError(BigqueryError):
   """Error communicating with the server."""
 

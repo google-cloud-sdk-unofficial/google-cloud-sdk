@@ -2199,8 +2199,8 @@ def CreateRepositories(project, repos):
       )
     except apitools_exceptions.HttpError as e:
       log.status.Print(
-          f"Failed to create repository {repo['location']}:"
-          f" {json.loads(e.content)['error']['message']}\n"
+          "Failed to create repository %s: %s\n" % (repo["location"]),
+          json.loads(e.content)["error"]["message"],
       )
 
   client = ar_requests.GetClient()

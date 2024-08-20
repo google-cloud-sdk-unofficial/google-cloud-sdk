@@ -199,12 +199,6 @@ class BackendResourcesContext(_messages.Message):
   Fields:
     additionalContext: Optional. Represents GCP product-specific backend
       resources context.
-    fullResourceNames: The full resource names
-      (https://cloud.google.com/apis/design/resource_names) of the GCP
-      resources that are referenced or relevant to the Duet query. For
-      example, a BigQuery SQL generation in the context of a particular
-      BigQuery table would set this to: `//bigquery.googleapis.com/bigquery/v2
-      /projects/{projectId}/datasets/{datasetId}/tables/{tableId}`
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -234,7 +228,6 @@ class BackendResourcesContext(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   additionalContext = _messages.MessageField('AdditionalContextValue', 1)
-  fullResourceNames = _messages.StringField(2, repeated=True)
 
 
 class BigQueryDatasetReference(_messages.Message):
@@ -444,14 +437,11 @@ class ChartValidation(_messages.Message):
       VALIDATION_STATUS_INVALID_JSON: Generated Vega Lite is in invalid JSON
         format
       VALIDATION_STATUS_MISSING_FIELDS: Generated Vega Lite has missing fields
-      VALIDATION_STATUS_TOO_MANY_ROWS: The request has too many rows in the
-        sample data.
     """
     VALIDATION_STATUS_UNSPECIFIED = 0
     VALIDATION_STATUS_PASSED = 1
     VALIDATION_STATUS_INVALID_JSON = 2
     VALIDATION_STATUS_MISSING_FIELDS = 3
-    VALIDATION_STATUS_TOO_MANY_ROWS = 4
 
   errorMessage = _messages.StringField(1)
   validationStatus = _messages.EnumField('ValidationStatusValueValuesEnum', 2)
@@ -944,14 +934,11 @@ class CloudaicompanionProjectsLocationsEnablementsCreateRequest(_messages.Messag
     enablementId: Required. The ID to use for the enablement.
     parent: Required. The parent resource where this enablement will be
       created. Format: projects/{project}/locations/{location}
-    requestId: Optional. A unique identifier for this request. Restricted to
-      36 ASCII characters. A random UUID is recommended.
   """
 
   enablement = _messages.MessageField('Enablement', 1)
   enablementId = _messages.StringField(2)
   parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
 
 
 class CloudaicompanionProjectsLocationsEnablementsDeleteRequest(_messages.Message):
@@ -960,12 +947,9 @@ class CloudaicompanionProjectsLocationsEnablementsDeleteRequest(_messages.Messag
   Fields:
     name: Required. The name of the enablement to delete. Format:
       projects/{project}/locations/{location}/enablement/{enablement_id}
-    requestId: Optional. A unique identifier for this request. Restricted to
-      36 ASCII characters. A random UUID is recommended.
   """
 
   name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
 
 
 class CloudaicompanionProjectsLocationsEnablementsGetRequest(_messages.Message):
@@ -1008,16 +992,13 @@ class CloudaicompanionProjectsLocationsEnablementsPatchRequest(_messages.Message
     enablement: A Enablement resource to be passed as the request body.
     name: Identifier. The name of the enablement. Format:
       projects/{project}/locations/{location}/enablement/{enablement_id}
-    requestId: Optional. A unique identifier for this request. Restricted to
-      36 ASCII characters. A random UUID is recommended.
     updateMask: Required. The list of fields to update. None of the fields are
       allowed to be updated as of now.
   """
 
   enablement = _messages.MessageField('Enablement', 1)
   name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
+  updateMask = _messages.StringField(3)
 
 
 class CloudaicompanionProjectsLocationsEnablementsUndeleteRequest(_messages.Message):
@@ -2236,14 +2217,12 @@ class GenerateDataInsightsRequest(_messages.Message):
       EVAL_PIPELINE: Summary and insights in Eval Pipeline.
       LOOKER_STUDIO_CONVERSATIONAL_NOTEBOOK: Summary and insights in Looker
         Studio Conversational Notebook.
-      DATAPORT_RESULT_SET: Summary and insights in DataPort for result set.
     """
     CLIENT_TYPE_UNSPECIFIED = 0
     DUET_AI_IN_LOOKER_AUTO_SLIDEGEN = 1
     DATAPORT = 2
     EVAL_PIPELINE = 3
     LOOKER_STUDIO_CONVERSATIONAL_NOTEBOOK = 4
-    DATAPORT_RESULT_SET = 5
 
   chartData = _messages.MessageField('ChartData', 1)
   clientType = _messages.EnumField('ClientTypeValueValuesEnum', 2)
@@ -3261,11 +3240,21 @@ class RawData(_messages.Message):
 class ReplaceTaskRequest(_messages.Message):
   r"""Message for Replace Task Scenario.
 
+  Fields:
+    taskConfig: Required. The current task selected on the UI.
+  """
+
+  taskConfig = _messages.MessageField('TaskConfig', 1)
+
+
+class ReplaceTaskResponse(_messages.Message):
+  r"""Response proto for task recommendations.
+
   Enums:
     TaskTypesValueListEntryValuesEnum:
 
   Fields:
-    taskConfig: Required. The current task selected on the UI.
+    taskConfigs: The list of recommended tasks.
     taskTypes: The list of task types.
   """
 
@@ -3281,18 +3270,8 @@ class ReplaceTaskRequest(_messages.Message):
     CONNECTOR_TASK = 1
     REST_TASK = 2
 
-  taskConfig = _messages.MessageField('TaskConfig', 1)
-  taskTypes = _messages.EnumField('TaskTypesValueListEntryValuesEnum', 2, repeated=True)
-
-
-class ReplaceTaskResponse(_messages.Message):
-  r"""Response proto for task recommendations.
-
-  Fields:
-    taskConfigs: The list of recommended tasks.
-  """
-
   taskConfigs = _messages.MessageField('TaskConfig', 1, repeated=True)
+  taskTypes = _messages.EnumField('TaskTypesValueListEntryValuesEnum', 2, repeated=True)
 
 
 class Repository(_messages.Message):
@@ -3769,14 +3748,12 @@ class SummarizeDataRequest(_messages.Message):
       EVAL_PIPELINE: Summary and insights in Eval Pipeline.
       LOOKER_STUDIO_CONVERSATIONAL_NOTEBOOK: Summary and insights in Looker
         Studio Conversational Notebook.
-      DATAPORT_RESULT_SET: Summary and insights in DataPort for result set.
     """
     CLIENT_TYPE_UNSPECIFIED = 0
     DUET_AI_IN_LOOKER_AUTO_SLIDEGEN = 1
     DATAPORT = 2
     EVAL_PIPELINE = 3
     LOOKER_STUDIO_CONVERSATIONAL_NOTEBOOK = 4
-    DATAPORT_RESULT_SET = 5
 
   chartData = _messages.MessageField('ChartData', 1)
   clientType = _messages.EnumField('ClientTypeValueValuesEnum', 2)
@@ -4217,14 +4194,7 @@ class TriggerConfig(_messages.Message):
 
 
 class UndeleteEnablementRequest(_messages.Message):
-  r"""Request message for UndeleteEnablement.
-
-  Fields:
-    requestId: Optional. A unique identifier for this request. Restricted to
-      36 ASCII characters. A random UUID is recommended.
-  """
-
-  requestId = _messages.StringField(1)
+  r"""Request message for UndeleteEnablement."""
 
 
 class ValueType(_messages.Message):
