@@ -2,7 +2,7 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    List all Apache Kafka for BigQuery clusters in a given location.
+    List all Managed Service for Apache Kafka clusters in a given location.
   description: |
     List all Apache Kafka for BigQuery clusters in a given location.
     To specify the maximum number of clusters to list, use the --limit flag.

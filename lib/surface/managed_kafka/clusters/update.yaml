@@ -2,10 +2,10 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Update an Apache Kafka for BigQuery cluster.
+    Update a Managed Service for Apache Kafka cluster.
 
   description: |
-    Update an Apache Kafka for BigQuery cluster.
+    Update a Managed Service for Apache Kafka cluster.
 
   examples: |
     To update an attribute in a cluster named mycluster located in us-central1,

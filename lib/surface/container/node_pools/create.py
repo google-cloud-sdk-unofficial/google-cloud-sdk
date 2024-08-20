@@ -257,6 +257,8 @@ class Create(base.CreateCommand):
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
+    flags.AddStoragePoolsFlag(
+        parser, for_node_pool=True, for_create=True)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddNodePoolEnablePrivateNodes(parser)
     flags.AddEnableFastSocketFlag(parser)
@@ -286,6 +288,7 @@ class Create(base.CreateCommand):
     ops.max_run_duration = args.max_run_duration
     ops.tpu_topology = args.tpu_topology
     ops.secondary_boot_disks = args.secondary_boot_disk
+    ops.storage_pools = args.storage_pools
     return ops
 
   def Run(self, args):
@@ -393,7 +396,7 @@ class CreateBeta(Create):
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
-        parser, for_node_pool=True, for_create=True, hidden=False)
+        parser, for_node_pool=True, for_create=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
@@ -551,7 +554,7 @@ class CreateAlpha(Create):
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
-        parser, for_node_pool=True, for_create=True, hidden=False)
+        parser, for_node_pool=True, for_create=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)

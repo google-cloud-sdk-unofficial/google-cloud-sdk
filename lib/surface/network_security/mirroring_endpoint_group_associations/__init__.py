@@ -21,11 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MirroingEndpointGroupAssociations(base.Group):
-  """Manage Mirroing Endpoint Group Association resources.
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class MirroringEndpointGroupAssociations(base.Group):
+  """Manage Mirroring Endpoint Group Association resources.
 
   This class provides commands for managing MirroringEndpoint Group
   Associations.
@@ -33,4 +32,5 @@ class MirroingEndpointGroupAssociations(base.Group):
   Attributes:
       category (str): The category under which this command group falls.
   """
+
   category = base.NETWORK_SECURITY_CATEGORY

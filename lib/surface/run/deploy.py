@@ -77,7 +77,6 @@ Container Flags
     group.AddArgument(flags.ClearVolumeMountsFlag())
     group.AddArgument(flags.GpuFlag(hidden=False))
 
-  if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
     group.AddArgument(flags.AutomaticUpdatesFlag())
@@ -360,6 +359,9 @@ class Deploy(base.Command):
 
     # Only one container can deployed from source
     name, container_args = next(iter(build_from_source.items()))
+    # If service exists and it's GCF's worker container, use the name.
+    if not name and service:
+      name = service.template.container.name or ''
     pack = None
     changes = []
     repo_to_create = None
@@ -367,8 +369,7 @@ class Deploy(base.Command):
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
     is_function = (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and container_args.function
+        self.ReleaseTrack() != base.ReleaseTrack.GA and container_args.function
     )
 
     ar_repo = docker_util.DockerRepo(
@@ -664,7 +665,7 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
   changes = []
-  if release_track is base.ReleaseTrack.ALPHA:
+  if release_track != base.ReleaseTrack.GA:
     command_arg = getattr(container, 'command', None)
     function_arg = getattr(container, 'function', None)
     if command_arg is not None:
@@ -757,6 +758,19 @@ def _ShouldClearBuildServiceAccount(args, build_service_account):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
+
+  def _ValidateNoAutomaticUpdatesForContainers(
+      self, build_from_source, containers
+  ):
+    for name, container in containers.items():
+      if name not in build_from_source and container.IsSpecified(
+          'automatic_updates'
+      ):
+        raise c_exceptions.InvalidArgumentException(
+            '--automatic-updates',
+            '--automatic-updates can only be specified in the container that'
+            ' is built from source.',
+        )
 
   @classmethod
   def Args(cls, parser):
@@ -935,19 +949,6 @@ class AlphaDeploy(BetaDeploy):
             'Sucessfully created mapping {svc} to domain {domain}',
             svc=service_name,
             domain=domain_name,
-        )
-
-  def _ValidateNoAutomaticUpdatesForContainers(
-      self, build_from_source, containers
-  ):
-    for name, container in containers.items():
-      if name not in build_from_source and container.IsSpecified(
-          'automatic_updates'
-      ):
-        raise c_exceptions.InvalidArgumentException(
-            '--automatic-updates',
-            '--automatic-updates can only be specified in the container that'
-            ' is built from source.',
         )
 
   def Run(self, args):

@@ -80,7 +80,7 @@ class CreateBeta(Create):
   _support_ssd_count = False
   _support_auto_delete = True
   _support_folder_share_setting = False
-  _support_reservation_sharing_policy = False
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):

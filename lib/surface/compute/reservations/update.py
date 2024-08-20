@@ -392,7 +392,7 @@ class UpdateBeta(Update):
   """Update Compute Engine reservations."""
   _support_share_with_flag = True
   _support_auto_delete = True
-  _support_reservation_sharing_policy = False
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -402,6 +402,7 @@ class UpdateBeta(Update):
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
+    r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

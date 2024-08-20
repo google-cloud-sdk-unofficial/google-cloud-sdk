@@ -84,24 +84,59 @@
                     help_text: |-
                       SDP Basic configuration.
                     params:
-                    - arg_name: basic-config-sdp-info-types
-                      api_field: template.filterConfig.sdpSettings.basicConfig.sdpInfoTypes
+                    - arg_name: basic-config-filter-enforcement
+                      api_field: template.filterConfig.sdpSettings.basicConfig.filterEnforcement
                       required: false
-                      repeated: true
                       help_text: |-
-                        List of SDP information types enabled for template. For each request,
-                        maximum 150 info types can be specified.
-                      clearable: true
-                      spec:
-                      - api_field: infoType
+                        Tells whether the SDP basic config is enabled or disabled.
+                      choices:
+                      - arg_value: enabled
+                        enum_value: ENABLED
                         help_text: |-
-                          SDP info type names are listed at
-                          https://cloud.google.com/sensitive-data-protection/docs/infotypes-reference
-                          The name should conform to the pattern `[A-Za-z0-9$_-]{1,64}`.
-                      - api_field: minLikelihood
-                        help_text: |
-                          Minimum finding likelihood override per SDP info type.
-                          Only returns findings if likelihood equal to or above this threshold.
+                          Enabled
+                      - arg_value: disabled
+                        enum_value: DISABLED
+                        help_text: |-
+                          Disabled
+                - group:
+                    required: false
+                    help_text: |-
+                      SDP Advanced configuration.
+                    params:
+                    - arg_name: advanced-config-inspect-template
+                      api_field: template.filterConfig.sdpSettings.advancedConfig.inspectTemplate
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        SDP inspect template resource name
+
+                        If only inspect template is provided (de-identify template not provided),
+                        then SDP InspectContent action is performed during Sanitization.
+                        All DLP findings identified during inspection will be returned as
+                        SdpFinding in SdpInsepctionResult
+                        e.g.
+                        `organizations/{organization}/inspectTemplates/{inspect_template}`,
+                        `projects/{project}/inspectTemplates/{inspect_template}`
+                        `organizations/{organization}/locations/{location}/inspectTemplates/{inspect_template}`
+                        `projects/{project}/locations/{location}/inspectTemplates/{inspect_template}`
+                    - arg_name: advanced-config-deidentify-template
+                      api_field: template.filterConfig.sdpSettings.advancedConfig.deidentifyTemplate
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        Optional SDP Deidentify template resource name.
+
+                        If provided then DeidentifyContent action is performed during Sanitization
+                        using this template and inspect template. The De-identified data will
+                        be returned in SdpDeidentifyResult.
+                        Note that if only Deidentify template is provided then SDP will perform
+                        identification using all SDP built-in info types.
+
+                        e.g.
+                        `organizations/{organization}/deidentifyTemplates/{deidentify_template}`,
+                        `projects/{project}/deidentifyTemplates/{deidentify_template}`
+                        `organizations/{organization}/locations/{location}/deidentifyTemplates/{deidentify_template}`
+                        `projects/{project}/locations/{location}/deidentifyTemplates/{deidentify_template}`
         - group:
             required: false
             help_text: |-

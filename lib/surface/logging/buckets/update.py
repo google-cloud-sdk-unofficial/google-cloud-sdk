@@ -61,6 +61,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -81,7 +82,11 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         '--retention-days',
         type=int,
-        help='A new retention period for the bucket.')
+        help=arg_parsers.UniverseHelpText(
+            default='A new retention period for the bucket.',
+            universe_help='This is not available.\n',
+        ),
+    )
     parser.add_argument(
         '--description', help='A new description for the bucket.')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
@@ -155,9 +160,12 @@ class Update(base.UpdateCommand):
         '--enable-analytics',
         action='store_true',
         default=None,
-        help=(
-            'Whether to opt the bucket into Log Analytics. Once opted in, the'
-            ' bucket cannot be opted out of Log Analytics.'
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                'Whether to opt the bucket into Log Analytics. Once opted in,'
+                ' the bucket cannot be opted out of Log Analytics.'
+            ),
+            universe_help='This is not available.\n',
         ),
     )
     parser.add_argument(

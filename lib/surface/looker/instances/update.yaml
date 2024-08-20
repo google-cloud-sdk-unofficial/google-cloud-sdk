@@ -201,32 +201,26 @@
     - group:
         required: false
         release_tracks: [GA]
-        hidden: true
         help_text: |
           Private Service Connect - Private Service Connect allows private consumption of services
           across VPC networks that belong to different groups, teams, projects, or organizations.
         params:
         - group:
             mutex: true
-            hidden: true
             params:
             - api_field: instance.pscConfig.allowedVpcs
               arg_name: psc-allowed-vpcs
-              hidden: true
               help_text: |
                 List of VPCs that are allowed ingress into the Looker instance.
             - arg_name: clear-psc-allowed-vpcs
               action: store_true
-              hidden: true
               help_text: |
                 Remove all service attachments from the PSC config of the instance.
         - group:
             mutex: true
-            hidden: true
             params:
             - api_field: instance.pscConfig.serviceAttachments
               arg_name: psc-service-attachment
-              hidden: true
               help_text: |
                 The service attachments asigned to the Private Service Connect (PSC) config.
                 This flag can be repeated.
@@ -243,7 +237,6 @@
                     type: str
             - arg_name: clear-psc-service-attachments
               action: store_true
-              hidden: true
               help_text: |
                 Remove all service attachments from the PSC config of the instance.
 

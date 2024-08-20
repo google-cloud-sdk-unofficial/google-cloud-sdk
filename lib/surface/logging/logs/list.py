@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List your project's logs.
 

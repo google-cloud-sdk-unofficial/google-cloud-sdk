@@ -34,6 +34,7 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 
 # TODO(b/321801975) make command public after preview.
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DisableAlpha(base.SilentCommand):
@@ -94,9 +95,11 @@ class DisableAlpha(base.SilentCommand):
         action='store_true',
         help=(
             'If specified, the disable call will proceed even if there are'
-            ' enabled services which depend on the service to be disabled.'
-            ' Forcing the call means that the services which depend on the'
-            ' service to be disabled will also be disabled.'
+            ' enabled services which depend on the service to be disabled, or'
+            ' the service to be disabled was used in the last 30 days, or the'
+            ' service to be disabled was enabled in the last 3 days. Forcing'
+            ' the call means that the services which depend on the service to'
+            ' be disabled will also be disabled.'
         ),
     )
 
@@ -199,9 +202,10 @@ class Disable(base.SilentCommand):
         action='store_true',
         help=(
             'If specified, the disable call will proceed even if there are'
-            ' enabled services which depend on the service to be disabled.'
-            ' Forcing the call means that the services which depend on the'
-            ' service to be disabled will also be disabled.'
+            ' enabled services which depend on the service to be disabled or'
+            ' disable the service used in last 30 days or was enabled in'
+            ' recent 3 days. Forcing the call means that the services which'
+            ' depend on the service to be disabled will also be disabled.'
         ),
     )
 

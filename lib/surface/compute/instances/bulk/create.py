@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.api_lib.compute import utils
+from googlecloudsdk.api_lib.compute.regions import utils as region_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
@@ -31,12 +32,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
-    'brief':
-        """
+    'brief': """
           Create multiple Compute Engine virtual machines.
         """,
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         *{command}* facilitates the creation of multiple Compute Engine
         virtual machines with a single command. They offer a number of advantages
         compared to the single instance creation command. This includes the
@@ -44,8 +43,7 @@ DETAILED_HELP = {
         on resource availability, the ability to specify that the request be
         atomic or best-effort, and a faster rate of instance creation.
         """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
         To create instances called 'example-instance-1', 'example-instance-2',
         and 'example-instance-3' in the 'us-central1-a' zone, run:
 
@@ -54,38 +52,76 @@ DETAILED_HELP = {
 }
 
 
-def _GetOperations(compute_client, project, operation_group_id):
+def _GetOperations(
+    compute_client, project, operation_group_id, holder, location, scope
+):
   """Requests operations with group id matching the given one."""
 
   errors_to_collect = []
 
   _, operation_filter = filter_rewrite.Rewriter().Rewrite(
-      expression='operationGroupId=' + operation_group_id)
+      expression='operationGroupId=' + operation_group_id
+  )
+
+  resource_parser = holder.resources
+  zones = []
+  if scope == compute_scopes.ScopeEnum.REGION:
+    region_fetcher = region_utils.RegionResourceFetcher(holder.client)
+    regions = region_fetcher.GetRegions([
+        resource_parser.Create(
+            collection='compute.regions', project=project, region=location
+        )
+    ])
+    if len(regions) != 1:
+      errors_to_collect.append(
+          exceptions.ToolException(
+              'Region count is not 1: {}'.format(location)
+          )
+      )
+      return None, errors_to_collect
+    zones += [resource_parser.Parse(zone).zone for zone in regions[0].zones]
+  else:
+    zones += [location]
 
   operations_response = compute_client.MakeRequests(
-      [(compute_client.apitools_client.globalOperations, 'AggregatedList',
-        compute_client.apitools_client.globalOperations.GetRequestType(
-            'AggregatedList')(filter=operation_filter, project=project))],
+      [(
+          compute_client.apitools_client.zoneOperations,
+          'List',
+          compute_client.apitools_client.zoneOperations.GetRequestType('List')(
+              filter=operation_filter, project=project, zone=zone
+          ),
+      ) for zone in zones],
       errors_to_collect=errors_to_collect,
       log_result=False,
       always_return_operation=True,
-      no_followup=True)
+      no_followup=True,
+  )
 
   return operations_response, errors_to_collect
 
 
-def _GetResult(compute_client, request, operation_group_id):
+def _GetResult(
+    compute_client, request, operation_group_id, holder, location, scope
+):
   """Requests operations with group id and parses them as an output."""
 
-  operations_response, errors = _GetOperations(compute_client, request.project,
-                                               operation_group_id)
+  operations_response, errors = _GetOperations(
+      compute_client,
+      request.project,
+      operation_group_id,
+      holder,
+      location,
+      scope,
+  )
   if errors:
     utils.RaiseToolException(errors, error_message='Could not fetch resource:')
   result = {'operationGroupId': operation_group_id, 'instances': []}
-
   successful = [
-      op for op in operations_response if op.operationType == 'insert' and
-      str(op.status) == 'DONE' and op.error is None
+      op
+      for op in operations_response
+      if op.operationType == 'insert'
+      and str(op.status) == 'DONE'
+      and op.error is None
   ]
   num_successful = len(successful)
   num_unsuccessful = request.bulkInsertInstanceResource.count - num_successful
@@ -95,7 +131,7 @@ def _GetResult(compute_client, request, operation_group_id):
         'id': op.targetId,
         'name': op.targetLink.split('/')[-1],
         'zone': op.zone,
-        'selfLink': op.targetLink
+        'selfLink': op.targetLink,
     }
 
   instances_status = [GetInstanceStatus(op) for op in successful]
@@ -192,8 +228,16 @@ class Create(base.Command):
   def Collection(self):
     return 'compute.instances'
 
-  def _CreateRequests(self, args, holder, compute_client, resource_parser,
-                      project, location, scope):
+  def _CreateRequests(
+      self,
+      args,
+      holder,
+      compute_client,
+      resource_parser,
+      project,
+      location,
+      scope,
+  ):
     supported_features = bulk_util.SupportedFeatures(
         self._support_nvdimm,
         self._support_public_dns,
@@ -293,10 +337,9 @@ class Create(base.Command):
       location = args.region
       scope = compute_scopes.ScopeEnum.REGION
 
-    instances_service, request = self._CreateRequests(args, holder,
-                                                      compute_client,
-                                                      resource_parser, project,
-                                                      location, scope)
+    instances_service, request = self._CreateRequests(
+        args, holder, compute_client, resource_parser, project, location, scope
+    )
 
     self._errors = []
     self._log_async = False
@@ -317,16 +360,22 @@ class Create(base.Command):
         errors_to_collect=errors_to_collect,
         log_result=False,
         always_return_operation=True,
-        no_followup=True)
+        no_followup=True,
+    )
 
     self._errors = errors_to_collect
     if response:
       operation_group_id = response[0].operationGroupId
-      result = _GetResult(compute_client, request, operation_group_id)
-      if (result.get('createdInstanceCount') is not None and
-          result.get('failedInstanceCount') is not None):
+      result = _GetResult(
+          compute_client, request, operation_group_id, holder, location, scope
+      )
+      if (
+          result.get('createdInstanceCount') is not None
+          and result.get('failedInstanceCount') is not None
+      ):
         self._status_message = 'VM instances created: {}, failed: {}.'.format(
-            result['createdInstanceCount'], result['failedInstanceCount'])
+            result['createdInstanceCount'], result['failedInstanceCount']
+        )
       return result
     return
 
@@ -335,14 +384,19 @@ class Create(base.Command):
     if self._errors:
       log.error(self._errors[0][1])
     elif self._log_async:
-      log.status.Print('Bulk instance creation in progress: {}'.format(
-          self._operation_selflink))
+      log.status.Print(
+          'Bulk instance creation in progress: {}'.format(
+              self._operation_selflink
+          )
+      )
     else:
       if self._errors:
         log.warning(self._errors[0][1])
       log.status.Print(
           'Bulk create request finished with status message: [{}]'.format(
-              self._status_message))
+              self._status_message
+          )
+      )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -386,8 +440,7 @@ class CreateBeta(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx,
+        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,

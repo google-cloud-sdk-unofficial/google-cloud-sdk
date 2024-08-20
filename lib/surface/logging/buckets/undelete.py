@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Undelete(base.RestoreCommand):
   """Undelete a bucket.
 

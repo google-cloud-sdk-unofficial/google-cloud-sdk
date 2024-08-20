@@ -24,6 +24,7 @@ import textwrap
 from googlecloudsdk.api_lib.firestore import databases
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import flags
+from googlecloudsdk.command_lib.firestore import util as utils
 from googlecloudsdk.core import properties
 
 
@@ -83,7 +84,6 @@ class RestoreBeta(base.Command):
         args.source_backup,
         args.destination_database,
         None,
-        None,
     )
 
 
@@ -112,41 +112,7 @@ class RestoreAlpha(RestoreBeta):
   @classmethod
   def Args(cls, parser):
     super(RestoreAlpha, cls).Args(parser)
-    encryption_config = parser.add_argument_group(
-        required=False,
-        help=textwrap.dedent("""\
-            The encryption configuration of the restored database. If not specified, the same encryption settings as the backup will be used.
-
-            To restore to a CMEK-enabled database:
-
-              $ {command} --encryption-type=customer-managed-encryption --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
-
-            To restore to a Google-default-encrypted database:
-
-              $ {command} --encryption-type=google-default-encryption
-
-            To restore to a database using the same encryption settings as the backup:
-
-              $ {command} --encryption-type=backup-encryption
-            """),
-    )
-    encryption_config.add_argument(
-        '--encryption-type',
-        metavar='ENCRYPTION_TYPE',
-        type=str,
-        required=True,
-        choices=[
-            'backup-encryption',
-            'customer-managed-encryption',
-            'google-default-encryption',
-        ],
-        help='The encryption type of the destination database.',
-    )
-    flags.AddKmsKeyNameFlag(
-        encryption_config,
-        'This flag must only be specified when encryption-type is'
-        ' `customer-managed-encryption`.',
-    )
+    flags.AddEncryptionConfigGroup(parser, 'backup')
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
@@ -154,6 +120,8 @@ class RestoreAlpha(RestoreBeta):
         project,
         args.source_backup,
         args.destination_database,
-        args.encryption_type,
-        args.kms_key_name,
+        self.EncryptionConfig(args),
     )
+
+  def EncryptionConfig(self, args):
+    return utils.ExtractEncryptionConfig(args)

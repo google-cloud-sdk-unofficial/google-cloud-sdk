@@ -2,10 +2,10 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-   List all Apache Kafka for BigQuery consumer groups in a given cluster and location.
+   List all Managed Service for Apache Kafka consumer groups in a given cluster and location.
 
   description: |
-    List all Apache Kafka for BigQuery consumer groups in a given cluster and location.
+    List all Managed Service for Apache Kafka consumer groups in a given cluster and location.
     To specify the maximum number of consumer groups to list, use the --limit flag.
 
   examples: |

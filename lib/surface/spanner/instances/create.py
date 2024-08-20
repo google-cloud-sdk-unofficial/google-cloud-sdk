@@ -192,6 +192,7 @@ class AlphaCreate(Create):
         require_all_autoscaling_args=True,
         hide_autoscaling_args=False,
         parser=parser,
+        add_asymmetric_option_flag=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
@@ -221,6 +222,7 @@ class AlphaCreate(Create):
         args.autoscaling_max_processing_units,
         args.autoscaling_high_priority_cpu_target,
         args.autoscaling_storage_target,
+        args.asymmetric_autoscaling_option,
         instance_type,
         expire_behavior,
         args.ssd_cache,

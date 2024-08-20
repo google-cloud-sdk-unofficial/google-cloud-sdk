@@ -2,9 +2,9 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Describe an Apache Kafka for BigQuery topic.
+    Describe a Managed Service for Apache Kafka topic.
   description: |
-    Describe an Apache Kafka for BigQuery topic.
+    Describe a Managed Service for Apache Kafka topic.
 
   examples: |
     To describe a topic in a cluster named mycluster located in us-central1,

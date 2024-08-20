@@ -20,7 +20,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
 class TranslationsALPHA(base.Group):
   """Manage Translation resources."""

@@ -95,9 +95,11 @@ class RemovedEnableRules(base.SilentCommand):
         help=(
             'If specified, the remove-enable-rules call will proceed even if'
             ' there are enabled services which depend on the service to be'
-            ' removed from enable rule. Forcing the call means that the'
-            ' services which depend on the service to be removed from enable'
-            ' rule will also be removed  .'
+            ' removed from enable rule or the service to be removed was used in'
+            ' the last 30 days, or the service to be removed was enabled in the'
+            ' last 3 days. Forcing the call means that the services which'
+            ' depend on the service to be removed from the enable rule will'
+            ' also be removed.'
         ),
     )
     common_flags.validate_only_args(parser)

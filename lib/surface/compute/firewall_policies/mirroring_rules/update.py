@@ -53,7 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddDirection(parser)
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
-    flags.AddSecurityProfileGroup(parser)
+    flags.AddMirroringSecurityProfileGroup(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)

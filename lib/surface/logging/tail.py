@@ -63,6 +63,7 @@ class NoGRPCInstalledError(exceptions.ToolException):
     super(NoGRPCInstalledError, self).__init__(_GrpcSetupHelpMessage())
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.Command):
   """Tail log entries."""

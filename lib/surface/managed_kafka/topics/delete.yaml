@@ -2,9 +2,9 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Delete an Apache Kafka for BigQuery topic.
+    Delete a Managed Service for Apache Kafka topic.
   description: |
-    Delete an Apache Kafka for BigQuery topic.
+    Delete a Managed Service for Apache Kafka topic.
 
   examples: |
     To delete a topic in a cluster named mycluster located in us-central1,

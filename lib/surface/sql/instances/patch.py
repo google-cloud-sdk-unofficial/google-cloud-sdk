@@ -283,6 +283,9 @@ def AddBetaArgs(parser):
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
   flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
+  flags.AddEnablePrivateServiceConnect(
+      parser, show_negated_in_help=True, hidden=True
+  )
 
 
 def AddAlphaArgs(parser):

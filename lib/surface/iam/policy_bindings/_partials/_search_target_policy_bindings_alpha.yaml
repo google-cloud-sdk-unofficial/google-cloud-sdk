@@ -36,21 +36,24 @@
         The target resource, which is bound to the policy in the binding.
 
         Format:
-          `//iam.googleapis.com/locations/global/workforcePools/POOL_ID`
-          `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID`
-          `//iam.googleapis.com/locations/global/workspace/WORKSPACE_ID`
-          `//cloudresourcemanager.googleapis.com/projects/{project_number}`
-          `//cloudresourcemanager.googleapis.com/folders/{folder_id}`
-          `//cloudresourcemanager.googleapis.com/organizations/{organization_id}`
+
+        * `//iam.googleapis.com/locations/global/workforcePools/POOL_ID`
+        * `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID`
+        * `//iam.googleapis.com/locations/global/workspace/WORKSPACE_ID`
+        * `//cloudresourcemanager.googleapis.com/projects/{project_number}`
+        * `//cloudresourcemanager.googleapis.com/folders/{folder_id}`
+        * `//cloudresourcemanager.googleapis.com/organizations/{organization_id}`
     - help_text: |-
         The parent resource where this search will be performed. This should be the
-        nearest CRM resource to the target.
+        nearest Resource Manager resource (project, folder, or organization) to the
+        target.
 
         Format:
-          `projects/{project_id}/locations/{location}`
-          `projects/{project_number}/locations/{location}`
-          `folders/{folder_id}/locations/{location}`
-          `organizations/{organization_id}/locations/{location}`
+
+        * `projects/{project_id}/locations/{location}`
+        * `projects/{project_number}/locations/{location}`
+        * `folders/{folder_id}/locations/{location}`
+        * `organizations/{organization_id}/locations/{location}`
       is_positional: false
       is_parent_resource: true
       is_primary_resource: true
@@ -59,7 +62,7 @@
   request:
     api_version: v3alpha
     collection:
+    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
-    - iam.projects.locations.policyBindings
     method: searchTargetPolicyBindings

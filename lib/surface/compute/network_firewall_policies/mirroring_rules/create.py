@@ -52,7 +52,7 @@ class Create(base.CreateCommand):
     flags.AddDisabled(parser)
     flags.AddDescription(parser)
     flags.AddGlobalFirewallPolicy(parser)
-    flags.AddSecurityProfileGroup(parser)
+    flags.AddMirroringSecurityProfileGroup(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 

@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -80,8 +81,14 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--retention-days',
         type=int,
-        help='The period logs will be retained, after which logs will '
-        'automatically be deleted. The default is 30 days.')
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                'The period logs will be retained, after which logs will'
+                ' automatically be deleted. The default is 30 days.'
+            ),
+            universe_help='This is not available.\n',
+        ),
+    )
     parser.add_argument(
         '--index',
         action='append',
@@ -113,9 +120,12 @@ class Create(base.CreateCommand):
         '--enable-analytics',
         action='store_true',
         default=None,
-        help=(
-            'Whether to opt the bucket into Log Analytics. Once opted in, the'
-            ' bucket cannot be opted out of Log Analytics.'
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                'Whether to opt the bucket into Log Analytics. Once opted in,'
+                ' the bucket cannot be opted out of Log Analytics.'
+            ),
+            universe_help='This is not available.\n',
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)

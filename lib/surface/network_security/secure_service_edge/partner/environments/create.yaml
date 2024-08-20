@@ -20,9 +20,9 @@ arguments:
   params:
   - arg_name: security-service
     required: true
-    api_field: partnerSSEEnvironment.sseService
+    api_field: partnerSSEEnvironment.securityService
     help_text: |
-      SSE service for this environment.
+      Security service for this environment.
     choices:
     - arg_value: symantec-cloud-swg
       enum_value: SYMANTEC_CLOUD_SWG

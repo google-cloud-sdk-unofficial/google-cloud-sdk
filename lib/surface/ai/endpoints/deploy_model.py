@@ -71,7 +71,9 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          reservation_affinity=args.reservation_affinity,
           autoscaling_metric_specs=args.autoscaling_metric_specs,
+          spot=args.spot,
           enable_access_logging=args.enable_access_logging,
           disable_container_logging=args.disable_container_logging,
           service_account=args.service_account,
@@ -96,7 +98,9 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          reservation_affinity=args.reservation_affinity,
           autoscaling_metric_specs=args.autoscaling_metric_specs,
+          spot=args.spot,
           enable_access_logging=args.enable_access_logging,
           enable_container_logging=args.enable_container_logging,
           service_account=args.service_account,
@@ -116,6 +120,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DeployModelGa(base.Command):
   """Deploy a model to an existing Vertex AI endpoint.
 

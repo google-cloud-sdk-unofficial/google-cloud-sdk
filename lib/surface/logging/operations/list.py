@@ -19,13 +19,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class List(base.ListCommand):
   """List long running operations."""
 
@@ -37,7 +40,13 @@ class List(base.ListCommand):
     parser.add_argument(
         '--operation-filter',
         required=True,
-        help='Filter expression that specifies the operations to return.')
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                'Filter expression that specifies the operations to return.'
+            ),
+            universe_help='Not all operation types are supported.\n',
+        ),
+    )
     base.URI_FLAG.RemoveFromParser(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
 

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class MirroingDeploymentGroups(base.Group):
+class MirroringDeploymentGroups(base.Group):
   """Manage Mirroring Deployment Group resources.
 
   This class provides commands for managing Mirroring Deployment Groups.

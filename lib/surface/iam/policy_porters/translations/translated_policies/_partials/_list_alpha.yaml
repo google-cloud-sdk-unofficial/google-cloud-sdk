@@ -25,7 +25,8 @@
     examples: |-
       To list translated policies, run:
 
-      ${command} my-translation
+      $ {command} --translation=my-translation --policy-porter=my-policy-porter \
+        --location=global --project=my-project
   arguments:
     params:
     - help_text: |-

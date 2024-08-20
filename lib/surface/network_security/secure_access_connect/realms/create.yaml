@@ -30,6 +30,12 @@ arguments:
     api_field: sACRealm.symantecOptions.secretId
     help_text: |
       ID of the Secret in Secret Manager containing the Symantec credentials.
+  - arg_name: partner-environment
+    hidden: true
+    api_field: sACRealm.partnerEnvironment
+    help_text: |
+      URI of the Partner Environment to be used for this realm. Only supported for internal users
+      of SYMANTEC_CLOUD_SWG.
 
 async:
   collection: networksecurity.projects.locations.operations

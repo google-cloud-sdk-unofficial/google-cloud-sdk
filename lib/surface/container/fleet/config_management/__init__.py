@@ -27,9 +27,10 @@ from googlecloudsdk.calliope import base as calliope_base
 class Configmanagement(calliope_base.Group):
   """Manage Config Management Feature.
 
-  Manage Config Management Feature, which currently supports Config Sync, Policy
-  Controller, and Hierarchy Controller. Policy Controller users should use the
-  separate command group: `gcloud container fleet policycontroller`.
+  Manage Config Sync using the Config Management Feature. Policy Controller
+  users should use the separate command group: `gcloud container fleet
+  policycontroller`. Hierarchy Controller users should use
+  https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
   """
 
   category = calliope_base.COMPUTE_CATEGORY

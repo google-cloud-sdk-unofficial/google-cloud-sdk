@@ -21,14 +21,17 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.resource_manager import completers
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.Command):
   # pylint: disable=line-too-long
   """Update the settings for the Cloud Logging Logs Router.
@@ -117,10 +120,14 @@ class Update(base.Command):
         required=False,
         hidden=True,
         choices=['enabled', 'disabled', 'unspecified'],
-        help=(
-            'Update the analytics mode for ```_Default``` bucket and'
-            ' ```_Required``` bucket. Note: It only applies to the newly'
-            ' created buckets and will not affect the buckets created before.'
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                'Update the analytics mode for ```_Default``` bucket and'
+                ' ```_Required``` bucket. Note: It only applies to the newly'
+                ' created buckets and will not affect the buckets created'
+                ' before.'
+            ),
+            universe_help='This is not available.\n',
         ),
     )
 

@@ -674,6 +674,7 @@ flags_to_add = {
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'stacktype': flags.AddStackTypeFlag,
+        'storagePools': flags.AddStoragePoolsFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'tags': flags.AddTagsCreate,
         'threads_per_core': flags.AddThreadsPerCore,
@@ -709,9 +710,7 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
-            p, hidden=True
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
@@ -890,9 +889,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
-            p, hidden=False
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1075,9 +1072,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlag(
-            p, hidden=False
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
