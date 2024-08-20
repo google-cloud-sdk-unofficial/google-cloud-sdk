@@ -67,7 +67,7 @@ class RunShort(base.Command):
         )
     )
 
-    if args.hints:
+    if args.hint_phrases or args.hint_phrase_sets:
       recognition_config.adaptation, recognition_config_update_mask = (
           speech_client.InitializeAdaptationConfigFromArgs(
               args, update_mask=recognition_config_update_mask

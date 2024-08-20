@@ -5,8 +5,11 @@ Discovery Documents are used to create API Clients.
 """
 
 import pkgutil
-from typing import Optional
+from typing import Optional, Union
+
 from absl import logging
+
+from utils import bq_consts
 
 PKG_NAME = 'bigquery_client'
 
@@ -19,6 +22,43 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://www.googleapis.com',
     'https://bigquery.googleapis.com',
 ])
+
+SERVICES_TO_LOCAL_DISCOVERY_DOC_MAP = {
+    bq_consts.Service.BIGQUERY: DISCOVERY_NEXT_BIGQUERY,
+    bq_consts.Service.CONNECTIONS: DISCOVERY_NEXT_BIGQUERY,
+    bq_consts.Service.RESERVATIONS: DISCOVERY_NEXT_BIGQUERY,
+}
+
+
+# TODO(b/318711380): Local discovery load for different APIs.
+def load_local_discovery_doc_from_service(
+    service: bq_consts.Service,
+    api: str,
+    api_version: str,
+) -> Union[None, bytes]:
+  """Loads the discovery document for a service."""
+  if service not in SERVICES_TO_LOCAL_DISCOVERY_DOC_MAP:
+    logging.info(
+        'Skipping local %s discovery document load since the service is not yet'
+        ' supported',
+        service,
+    )
+    return
+  if service == bq_consts.Service.BIGQUERY and (
+      api not in SUPPORTED_BIGQUERY_APIS or api_version != 'v2'
+  ):
+    # For now, align this strictly with the default flag values. We can loosen
+    # this but for a first pass I'm keeping the current code flow.
+    logging.info(
+        'Loading the "%s" discovery doc from the server since this is not'
+        ' v2 (%s) and the API endpoint (%s) is not one of (%s).',
+        service,
+        api_version,
+        api,
+        ', '.join(SUPPORTED_BIGQUERY_APIS),
+    )
+    return
+  return load_local_discovery_doc(SERVICES_TO_LOCAL_DISCOVERY_DOC_MAP[service])
 
 
 def load_local_discovery_doc(doc_filename: str) -> bytes:

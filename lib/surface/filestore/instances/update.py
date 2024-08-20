@@ -86,6 +86,7 @@ class Update(base.CreateCommand):
           labels=labels,
           file_share=args.file_share,
           performance=args.performance,
+          clear_performance=args.clear_performance,
           clear_nfs_export_options=args.clear_nfs_export_options)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
@@ -99,7 +100,7 @@ class Update(base.CreateCommand):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
-    if args.IsSpecified('performance'):
+    if args.IsSpecified('performance') or args.IsSpecified('clear_performance'):
       updated_fields.append('performanceConfig')
     update_mask = ','.join(updated_fields)
 
@@ -241,6 +242,7 @@ class UpdateBeta(Update):
           labels=labels,
           file_share=args.file_share,
           performance=args.performance,
+          clear_performance=args.clear_performance,
           managed_ad=args.managed_ad,
           disconnect_managed_ad=args.disconnect_managed_ad,
           clear_nfs_export_options=args.clear_nfs_export_options)
@@ -256,7 +258,7 @@ class UpdateBeta(Update):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
-    if args.IsSpecified('performance'):
+    if args.IsSpecified('performance') or args.IsSpecified('clear_performance'):
       updated_fields.append('performanceConfig')
     if args.IsSpecified('managed_ad') or args.IsSpecified(
         'disconnect_managed_ad'

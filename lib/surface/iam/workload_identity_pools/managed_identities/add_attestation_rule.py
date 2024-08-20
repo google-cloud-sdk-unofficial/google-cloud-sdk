@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions as gcloud_exceptions
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.iam import identity_pool_waiter
 from googlecloudsdk.command_lib.util.apis import yaml_data
@@ -65,27 +64,18 @@ class AddAttestationRule(base.Command):
     parser.add_argument(
         '--google-cloud-resource',
         help="""A single workload operating on Google Cloud. This will be set
-                in the attestation rule to be added. Must set exact one
-                google-cloud-resource or google-cloud-resource-set.""",
-    )
-    parser.add_argument(
-        '--google-cloud-resource-set',
-        help="""A set of workloads operating on Google Cloud. This will be set
-                in the attestation rule to be added. Must set exact one
-                google-cloud-resource or google-cloud-resource-set.""",
+                in the attestation rule to be added.""",
+        required=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
-    self._CheckArgs(args)
-
     client, messages = util.GetClientAndMessages()
     managed_identity_ref = args.CONCEPTS.managed_identity.Parse()
 
     add_attestation_rule_request = messages.AddAttestationRuleRequest(
         attestationRule=messages.AttestationRule(
             googleCloudResource=args.google_cloud_resource,
-            googleCloudResourceSet=args.google_cloud_resource_set,
         )
     )
 
@@ -129,22 +119,3 @@ class AddAttestationRule(base.Command):
     )
 
     return result
-
-  def _CheckArgs(self, args):
-    if not args.google_cloud_resource and not args.google_cloud_resource_set:
-      raise gcloud_exceptions.OneOfArgumentsRequiredException(
-          [
-              '--google-cloud-resource',
-              '--google-cloud-resource-set',
-          ],
-          'Must provide one of --google-cloud-resource or'
-          ' --google-cloud-resource-set.',
-      )
-
-    if args.google_cloud_resource and args.google_cloud_resource_set:
-      raise gcloud_exceptions.ConflictingArgumentsException(
-          '--google-cloud-resource',
-          '--google-cloud-resource-set',
-          'Only one of --google-cloud-resource or --google-cloud-resource-set'
-          ' can be provided.',
-      )

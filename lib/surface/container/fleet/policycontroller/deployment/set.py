@@ -19,13 +19,14 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import deployment_configs as deployment
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 from googlecloudsdk.core import exceptions
 
 
-class Set(base.UpdateCommand, command.PocoCommand):
+class Set(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
   """Sets configuration of the Policy Controller components.
 
   Customizes on-cluster components of Policy Controller. Supported
@@ -88,6 +89,7 @@ class Set(base.UpdateCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
+  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):

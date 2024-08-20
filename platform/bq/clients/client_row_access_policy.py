@@ -128,7 +128,7 @@ def get_row_access_policy_iam_policy(
     The IAM policy attached to the given row access policy resource.
 
   Raises:
-    TypeError: if reference is not a RowAccessPolicyReference.
+    BigqueryTypeError: if reference is not a RowAccessPolicyReference.
   """
   bq_id_utils.typecheck(
       reference,

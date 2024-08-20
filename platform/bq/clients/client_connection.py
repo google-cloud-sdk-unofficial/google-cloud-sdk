@@ -432,7 +432,7 @@ def SetConnectionIAMPolicy(
     The updated IAM policy attached to the given connection resource.
 
   Raises:
-    TypeError: if reference is not a ConnectionReference.
+    BigqueryTypeError: if reference is not a ConnectionReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -462,7 +462,7 @@ def GetConnectionIAMPolicy(
     The IAM policy attached to the given connection resource.
 
   Raises:
-    TypeError: if reference is not a ConnectionReference.
+    BigqueryTypeError: if reference is not a ConnectionReference.
   """
   bq_id_utils.typecheck(
       reference,

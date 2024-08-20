@@ -92,6 +92,8 @@ class Create(base.CreateCommand):
     )
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
+    tags = instances_flags.GetTagsFromArgs(args,
+                                           client.messages.Instance.TagsValue)
     try:
       nfs_export_options = client.MakeNFSExportOptionsMsg(
           messages=client.messages,
@@ -106,6 +108,7 @@ class Create(base.CreateCommand):
         network=args.network,
         performance=args.performance,
         labels=labels,
+        tags=tags,
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
@@ -178,7 +181,11 @@ class CreateBeta(Create):
   def Run(self, args):
     """Creates a Filestore instance in the current project.
 
-    This is a copied code from Run() of base.ReleaseTrack.GA.
+    Note: This is a copied code from Run() of base.ReleaseTrack.GA.
+    Args:
+      args: A list of fields.
+    Returns:
+      A filestore instance.
     """
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
@@ -194,6 +201,8 @@ class CreateBeta(Create):
     source_instance = args.source_instance or None
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Instance.LabelsValue)
+    tags = instances_flags.GetTagsFromArgs(args,
+                                           client.messages.Instance.TagsValue)
     try:
       nfs_export_options = client.MakeNFSExportOptionsMsgBeta(
           messages=client.messages,
@@ -209,6 +218,7 @@ class CreateBeta(Create):
         network=args.network,
         performance=args.performance,
         labels=labels,
+        tags=tags,
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
