@@ -1266,7 +1266,6 @@ def IsThirdPartyUser():
     return False
   creds_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(creds)
   return creds_type in (
-      c_creds.CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT,
       c_creds.CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_USER,
       c_creds.CredentialTypeGoogleAuth.EXTERNAL_ACCOUNT_AUTHORIZED_USER,
   )
