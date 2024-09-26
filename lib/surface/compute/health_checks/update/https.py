@@ -280,12 +280,13 @@ def _Run(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a HTTPS health check."""
 
   _include_log_config = True
   _include_weighted_load_balancing = False
-  _include_source_regions = False
+  _include_source_regions = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -312,11 +313,9 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
 
   _include_weighted_load_balancing = False
-  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
 
   _include_weighted_load_balancing = True
-  _include_source_regions = True

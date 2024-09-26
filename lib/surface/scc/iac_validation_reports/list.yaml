@@ -1,9 +1,8 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
-    brief: List the details of the Cloud Security Command Center (SCC) IaC validation reports.
+    brief: Lists all the Cloud Security Command Center (SCC) IaC validation reports for an organization.
     description: |
-      List the details of the Cloud Security Command Center (SCC) IaC validation reports for the specified organization.
+      Lists all the Cloud Security Command Center (SCC) IaC validation reports for an organization.
     examples: |
       To list Cloud Security Command Center IaC validation reports for organization `123` in the `global` location, run:
 
@@ -13,6 +12,8 @@
     collection: securityposture.organizations.locations.reports
     disable_resource_check: true
     api_version: v1alpha
+    GA:
+      api_version: v1
 
   arguments:
     params:

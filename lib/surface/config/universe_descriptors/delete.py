@@ -37,25 +37,20 @@ class Delete(base.Command):
   def Run(self, args):
     del self
     universe_descriptor_obj = universe_descriptor.UniverseDescriptor()
-    descriptor_message = universe_descriptor_obj.Get(
-        args.universe_domain, fetch_if_not_cached=False
-    )
-    if (
-        not descriptor_message
-        or descriptor_message.universe_domain != args.universe_domain
-    ):
-      log.warning(
-          'No descriptor found for universe domain [%s].', args.universe_domain
-      )
-      return
     log.warning(
         'The universe descriptor with universe domain [%s] will be deleted:',
         args.universe_domain,
     )
     console_io.PromptContinue(default=True, cancel_on_no=True)
-    if universe_descriptor_obj.DeleteDescriptorFromUniverseDomain(
-        args.universe_domain
-    ):
+    try:
+      universe_descriptor_obj.DeleteDescriptorFromUniverseDomain(
+          args.universe_domain
+      )
       log.DeletedResource(
           'Universe descriptor with universe domain [%s]' % args.universe_domain
       )
+    except universe_descriptor.UniverseDescriptorError:
+      log.warning(
+          'No descriptor found for universe domain [%s].', args.universe_domain
+      )
+      return

@@ -28,7 +28,9 @@
       api_field: version.annotations
       required: false
       help_text: |
-        User defined annotations. For more details on annotations, see https://google.aip.dev/148#annotations.
+        List of annotations in the format of KEY=VALUE pairs to add, update, or remove.
+        Duplicate keys will be overwritten. For more details on annotations,
+        see https://google.aip.dev/148#annotations.
       spec:
       - api_field: key
       - api_field: value

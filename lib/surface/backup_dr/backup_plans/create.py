@@ -168,14 +168,10 @@ class Create(base.CreateCommand):
 
     if is_async:
       log.CreatedResource(
-          operation.name,
+          backup_plan.RelativeName(),
           kind='backup plan',
           is_async=True,
-          details=(
-              'Creation in progress for backup plan [{}]. Run the [gcloud'
-              ' backup-dr operations describe] command to check the status of'
-              ' this operation.'.format(backup_plan.RelativeName())
-          ),
+          details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
       )
       return operation
 

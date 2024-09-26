@@ -47,20 +47,32 @@ class Update(base.Command):
 
     self.ValidateUpdateRecognizerFlags(args)
 
-    update_mask = []
+    recognition_config_update_mask = []
 
-    recognition_config, features, update_mask = (
-        speech_client.SeparateArgsForRecognizeCommand(
-            args, record_updates=True, update_mask=update_mask
+    recognition_config, recognition_config_update_mask = (
+        speech_client.InitializeRecognitionConfig(
+            args.model, args.language_codes, recognition_config_update_mask
         )
     )
 
-    if args.model is not None:
-      recognition_config.model = args.model
-      update_mask.append('default_recognition_config.model')
-    if args.language_codes is not None:
-      recognition_config.languageCodes = args.language_codes
-      update_mask.append('default_recognition_config.language_codes')
+    recognition_config, recognition_config_update_mask = (
+        speech_client.InitializeDecodingConfigFromArgs(
+            recognition_config,
+            args,
+            update_mask=recognition_config_update_mask,
+        )
+    )
+
+    recognition_config.features, recognition_config_update_mask = (
+        speech_client.InitializeASRFeaturesFromArgs(
+            args, update_mask=recognition_config_update_mask
+        )
+    )
+
+    recognition_config_update_mask = [
+        'default_recognition_config.' + field
+        for field in recognition_config_update_mask
+    ]
 
     operation = speech_client.UpdateRecognizer(
         recognizer,
@@ -68,8 +80,7 @@ class Update(base.Command):
         args.model,
         args.language_codes,
         recognition_config,
-        features,
-        update_mask,
+        update_mask=recognition_config_update_mask,
     )
 
     if is_async:

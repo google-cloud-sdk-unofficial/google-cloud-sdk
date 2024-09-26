@@ -50,12 +50,18 @@ class Create(base.Command):
     speech_client = client.SpeechV2Client()
     is_async = args.async_
 
-    recognition_config, features, _ = (
-        speech_client.SeparateArgsForRecognizeCommand(args)
+    recognition_config, _ = speech_client.InitializeRecognitionConfig(
+        args.model, args.language_codes
     )
 
-    recognition_config.model = args.model
-    recognition_config.languageCodes = args.language_codes
+    recognition_config, _ = speech_client.InitializeDecodingConfigFromArgs(
+        recognition_config,
+        args,
+    )
+
+    recognition_config.features, _ = (
+        speech_client.InitializeASRFeaturesFromArgs(args)
+    )
 
     operation = speech_client.CreateRecognizer(
         recognizer,
@@ -63,7 +69,6 @@ class Create(base.Command):
         args.model,
         args.language_codes,
         recognition_config,
-        features,
     )
 
     if is_async:

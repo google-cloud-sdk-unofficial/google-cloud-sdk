@@ -44,16 +44,16 @@ class Update(base.CreateCommand):
     _CommonArgs(parser, Update._API_VERSION)
 
   def Run(self, args):
-    """Run command line arguments.
+    """Runs command line arguments.
 
     Args:
-      args: cmd line arguments.
+      args: Command line arguments.
+
+    Returns:
+       The client instance.
 
     Raises:
-       InvalidArgumentException: for invalid jason formatted --file-args.
-       KeyError: for key errors in Jason values.
-    Returns:
-       client: client instance.
+       InvalidArgumentException: For invalid JSON formatted --file-args.
     """
 
     instance_ref = args.CONCEPTS.instance.Parse()
@@ -71,12 +71,93 @@ class Update(base.CreateCommand):
       raise exceptions.InvalidArgumentException(
           '--file-share', six.text_type(err)
       )
+
     if labels_diff.MayHaveUpdates():
       labels = labels_diff.Apply(
           client.messages.Instance.LabelsValue, orig_instance.labels
       ).GetOrNone()
     else:
       labels = None
+
+    try:
+      instance = client.ParseUpdatedInstanceConfig(
+          orig_instance,
+          description=args.description,
+          labels=labels,
+          file_share=args.file_share,
+          performance=args.performance,
+          clear_nfs_export_options=args.clear_nfs_export_options)
+    except filestore_client.Error as e:
+      raise exceptions.InvalidArgumentException('--file-share',
+                                                six.text_type(e))
+
+    updated_fields = []
+    if args.IsSpecified('description'):
+      updated_fields.append('description')
+    if (args.IsSpecified('update_labels') or
+        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+      updated_fields.append('labels')
+    if args.IsSpecified('file_share'):
+      updated_fields.append('fileShares')
+    if args.IsSpecified('performance'):
+      updated_fields.append('performanceConfig')
+    update_mask = ','.join(updated_fields)
+
+    result = client.UpdateInstance(instance_ref, instance, update_mask,
+                                   args.async_)
+    if args.async_:
+      log.status.Print(
+          'To check the status of the operation, run `gcloud {} filestore '
+          'operations describe {}`'.format(self._API_VERSION, result.name))
+    return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Filestore instance."""
+
+  _API_VERSION = filestore_client.ALPHA_API_VERSION
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser, UpdateAlpha._API_VERSION)
+
+  def Run(self, args):
+    """Runs command line arguments.
+
+    Args:
+      args: Command line arguments.
+
+    Returns:
+       The client instance.
+
+    Raises:
+       InvalidArgumentException: For invalid JSON formatted --file-args.
+    """
+
+    instance_ref = args.CONCEPTS.instance.Parse()
+    client = filestore_client.FilestoreClient(self._API_VERSION)
+    labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    orig_instance = client.GetInstance(instance_ref)
+
+    try:
+      if args.file_share:
+        client.MakeNFSExportOptionsMsg(
+            messages=client.messages,
+            nfs_export_options=args.file_share.get('nfs-export-options', []),
+        )
+    except KeyError as err:
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(err)
+      )
+
+    if labels_diff.MayHaveUpdates():
+      labels = labels_diff.Apply(
+          client.messages.Instance.LabelsValue, orig_instance.labels
+      ).GetOrNone()
+    else:
+      labels = None
+
     try:
       instance = client.ParseUpdatedInstanceConfig(
           orig_instance,
@@ -105,17 +186,6 @@ class Update(base.CreateCommand):
           'To check the status of the operation, run `gcloud {} filestore '
           'operations describe {}`'.format(self._API_VERSION, result.name))
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
-  """Update a Filestore instance."""
-
-  _API_VERSION = filestore_client.ALPHA_API_VERSION
-
-  @staticmethod
-  def Args(parser):
-    _CommonArgs(parser, UpdateAlpha._API_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -187,7 +257,7 @@ class UpdateBeta(Update):
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
     if args.IsSpecified('performance'):
-      updated_fields.append('performance')
+      updated_fields.append('performanceConfig')
     if args.IsSpecified('managed_ad') or args.IsSpecified(
         'disconnect_managed_ad'
     ):

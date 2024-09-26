@@ -200,12 +200,12 @@ class Diagnose(base.Command):
 
     parser.add_argument(
         '--process-count',
-        type=int,
+        type=arg_parsers.BoundedInt(lower_bound=1),
         help='Number of processes at max to use for each diagnostic test.',
     )
     parser.add_argument(
         '--thread-count',
-        type=int,
+        type=arg_parsers.BoundedInt(lower_bound=1),
         help='Number of threads at max to use for each diagnostic test.',
     )
 
@@ -216,7 +216,7 @@ class Diagnose(base.Command):
     object_properties_group.add_argument(
         '--object-count',
         required=True,
-        type=int,
+        type=arg_parsers.BoundedInt(lower_bound=1),
         help='Number of objects to use for each diagnostic test.',
     )
 

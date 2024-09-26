@@ -28,6 +28,24 @@ arguments:
     api_field: sACAttachment.nccGateway
     help_text: |
       NCC gateway whose traffic will be inspected by this attachment.
+  - arg_name: symantec-site
+    api_field: sACAttachment.symantecOptions.symantecSite
+    help_text: |
+      Identifier of the Symantec site to which this attachment connects.
+  - arg_name: symantec-location-name
+    api_field: sACAttachment.symantecOptions.symantecLocationName
+    help_text: |
+      Name of the Symantec Location that should be created along with this attachment.
+  - arg_name: country
+    api_field: sACAttachment.country
+    help_text: |
+      ISO 3166 alpha-2 country code associated with this attachment for localization. Does not need
+      to match the region where this attachment is created.
+  - arg_name: time-zone
+    api_field: sACAttachment.timeZone
+    help_text: |
+      tzinfo time zone associated with this attachment for localization. Does not need to match the
+      region where this attachment is created.
 
 async:
   collection: networksecurity.projects.locations.operations

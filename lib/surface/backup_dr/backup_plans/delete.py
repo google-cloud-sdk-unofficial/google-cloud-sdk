@@ -87,15 +87,10 @@ class Delete(base.DeleteCommand):
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT) from e
     if is_async:
       log.DeletedResource(
-          operation.name,
+          backup_plan.RelativeName(),
           kind='backup plan',
           is_async=True,
-          details=(
-              'Delete in progress for backup plan [{}] '
-              'Run the [gcloud backup-dr operations describe] command '
-              'to check the status of this operation.'
-              .format(backup_plan.RelativeName())
-          ),
+          details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
       )
       return operation
 

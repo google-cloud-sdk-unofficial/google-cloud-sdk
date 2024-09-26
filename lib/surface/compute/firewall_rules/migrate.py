@@ -68,11 +68,12 @@ def _GetLegacyTags(selected_firewalls):
   return tags
 
 
-def _GetServiceAccounts(selected_firewalls):
+def _GetServiceAccounts(selected_firewalls, keep_target_service_accounts):
   service_accounts = set()
   for firewall in selected_firewalls:
     service_accounts.update(firewall.sourceServiceAccounts)
-    service_accounts.update(firewall.targetServiceAccounts)
+    if not keep_target_service_accounts:
+      service_accounts.update(firewall.targetServiceAccounts)
   return service_accounts
 
 
@@ -88,7 +89,7 @@ def _UnsupportedTagResult(field, tag):
   return (False, "Mapping for {} '{}' was not found.".format(field, tag))
 
 
-def _IsFirewallSupported(firewall, tag_mapping):
+def _IsFirewallSupported(firewall, tag_mapping, keep_target_service_accounts):
   """Checks if the given VPC Firewall can be converted by the Migration Tool."""
   # Source Service Accounts
   for service_account in firewall.sourceServiceAccounts:
@@ -98,12 +99,13 @@ def _IsFirewallSupported(firewall, tag_mapping):
           'source_service_account', prefixed_service_account
       )
   # Target Service Accounts
-  for service_account in firewall.targetServiceAccounts:
-    prefixed_service_account = 'sa:' + service_account
-    if prefixed_service_account not in tag_mapping:
-      return _UnsupportedTagResult(
-          'target_service_account', prefixed_service_account
-      )
+  if not keep_target_service_accounts:
+    for service_account in firewall.targetServiceAccounts:
+      prefixed_service_account = 'sa:' + service_account
+      if prefixed_service_account not in tag_mapping:
+        return _UnsupportedTagResult(
+            'target_service_account', prefixed_service_account
+        )
   # Source Tags
   for tag in firewall.sourceTags:
     if tag not in tag_mapping:
@@ -155,7 +157,22 @@ def _ConvertServiceAccounts(messages, tag_mapping, service_accounts):
   ]
 
 
-def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
+def _ConvertRuleInternal(
+    messages,
+    firewall,
+    action,
+    l4_configs,
+    tag_mapping,
+    keep_target_service_accounts,
+):
+  """Converts VPC Firewall to FirewallPolicy.Rule."""
+  target_service_accounts = firewall.targetServiceAccounts
+  target_secure_tags = _ConvertTags(messages, tag_mapping, firewall.targetTags)
+  if not keep_target_service_accounts:
+    target_service_accounts = []
+    target_secure_tags = target_secure_tags + _ConvertServiceAccounts(
+        messages, tag_mapping, firewall.targetServiceAccounts
+    )
   return messages.FirewallPolicyRule(
       disabled=firewall.disabled,
       ruleName=firewall.name,  # Allow and deny cannot be in the same rule
@@ -175,22 +192,28 @@ def _ConvertRuleInternal(messages, firewall, action, l4_configs, tag_mapping):
           ),
           layer4Configs=_ConvertLayer4Configs(messages, l4_configs),
       ),
-      targetSecureTags=(
-          _ConvertTags(messages, tag_mapping, firewall.targetTags)
-          + _ConvertServiceAccounts(
-              messages, tag_mapping, firewall.targetServiceAccounts
-          )
-      ),
+      targetServiceAccounts=target_service_accounts,
+      targetSecureTags=target_secure_tags,
   )
 
 
-def _ConvertRule(messages, firewall, tag_mapping):
+def _ConvertRule(messages, firewall, tag_mapping, keep_target_service_accounts):
   if firewall.denied:
     return _ConvertRuleInternal(
-        messages, firewall, 'deny', firewall.denied, tag_mapping
+        messages,
+        firewall,
+        'deny',
+        firewall.denied,
+        tag_mapping,
+        keep_target_service_accounts,
     )
   return _ConvertRuleInternal(
-      messages, firewall, 'allow', firewall.allowed, tag_mapping
+      messages,
+      firewall,
+      'allow',
+      firewall.allowed,
+      tag_mapping,
+      keep_target_service_accounts,
   )
 
 
@@ -576,6 +599,16 @@ class Migrate(base.CreateCommand):
             ' original rule evaluation order cannot be preserved.'
         ),
     )
+    # optional --force argument
+    parser.add_argument(
+        '--skip-migrate-target-service-accounts-to-tags',
+        action='store_true',
+        required=False,
+        help=(
+            'If set, migration will keep target service accounts as they are'
+            ' and will not try to replace them with secure tags.'
+        ),
+    )
 
   def Run(self, args):
     """Run the migration logic."""
@@ -606,6 +639,9 @@ class Migrate(base.CreateCommand):
         args, 'terraform_script_output_file', None
     )
     force = getattr(args, 'force', False)
+    keep_target_service_accounts = getattr(
+        args, 'skip-migrate-target-service-accounts-to-tags', False
+    )
 
     # In the export tag mode, the tag mapping file must be provided
     if export_tag_mapping and not tag_mapping_file_name:
@@ -744,7 +780,9 @@ class Migrate(base.CreateCommand):
         if selected:
           selected_firewalls.append(firewall)
       legacy_tags = _GetLegacyTags(selected_firewalls)
-      service_accounts = _GetServiceAccounts(selected_firewalls)
+      service_accounts = _GetServiceAccounts(
+          selected_firewalls, keep_target_service_accounts
+      )
       _WriteTagMapping(tag_mapping_file_name, legacy_tags, service_accounts)
       log.status.Print(
           "Legacy tags were exported to '{}'".format(tag_mapping_file_name)
@@ -779,9 +817,16 @@ class Migrate(base.CreateCommand):
       # Convert only supported selected VPC Firewalls
       if selected:
         selected_firewalls_count = selected_firewalls_count + 1
-        (status, error) = _IsFirewallSupported(firewall, tag_mapping)
+        (status, error) = _IsFirewallSupported(
+            firewall, tag_mapping, keep_target_service_accounts
+        )
         if status:
-          converted_firewall = _ConvertRule(messages, firewall, tag_mapping)
+          converted_firewall = _ConvertRule(
+              messages,
+              firewall,
+              tag_mapping,
+              keep_target_service_accounts,
+          )
         else:
           conversion_failures_count = conversion_failures_count + 1
       converted_firewalls.append(

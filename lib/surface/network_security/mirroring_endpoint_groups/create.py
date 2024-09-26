@@ -59,8 +59,10 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    endpoint_group_flags.AddEndpointGroupResource(parser)
-    endpoint_group_flags.AddMirroringDeploymentGroupResource(parser)
+    endpoint_group_flags.AddEndpointGroupResource(cls.ReleaseTrack(), parser)
+    endpoint_group_flags.AddMirroringDeploymentGroupResource(
+        cls.ReleaseTrack(), parser
+    )
     endpoint_group_flags.AddMaxWait(
         parser,
         '20m',  # default to 20 minutes wait.

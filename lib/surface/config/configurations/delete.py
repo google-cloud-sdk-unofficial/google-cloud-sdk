@@ -159,5 +159,12 @@ class Delete(base.SilentCommand):
       named_configs.ConfigurationStore.DeleteConfig(configuration_name)
       config_store_to_delete = config.GetConfigStore(configuration_name)
       config_store_to_delete.DeleteConfig()
-      self._DeleteUniverseDescriptor(delete_config_universe_domain)
+      try:
+        self._DeleteUniverseDescriptor(delete_config_universe_domain)
+      except universe_descriptor.UniverseDescriptorError as e:
+        log.warning(
+            'Failed to delete universe descriptor for universe domain %s: %s',
+            delete_config_universe_domain,
+            e,
+        )
       log.DeletedResource(configuration_name)

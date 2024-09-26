@@ -64,6 +64,7 @@ $ {command} my-cluster --location=us-west1 --platform-version=PLATFORM_VERSION -
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Register(base.CreateCommand):
   """Register an Attached cluster."""
 
@@ -89,6 +90,7 @@ class Register(base.CreateCommand):
     flags.AddMonitoringConfig(parser, True)
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroups(parser)
+    flags.AddSecurityPosture(parser)
 
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)
 

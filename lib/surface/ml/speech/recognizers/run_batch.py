@@ -43,23 +43,41 @@ class RunBatch(base.Command):
 
     self.ValidateRunBatchFlags(args)
 
-    recognition_config, features, _ = (
-        speech_client.SeparateArgsForRecognizeCommand(
-            args, default_to_auto_decoding_config=True
+    recognition_config_update_mask = []
+
+    recognition_config, recognition_config_update_mask = (
+        speech_client.InitializeRecognitionConfig(
+            args.model, args.language_codes, recognition_config_update_mask
         )
     )
 
-    if args.model is not None:
-      recognition_config.model = args.model
-    if args.language_codes is not None:
-      recognition_config.languageCodes = args.language_codes
+    recognition_config, recognition_config_update_mask = (
+        speech_client.InitializeDecodingConfigFromArgs(
+            recognition_config,
+            args,
+            default_to_auto_decoding_config=True,
+            update_mask=recognition_config_update_mask,
+        )
+    )
+
+    recognition_config.features, recognition_config_update_mask = (
+        speech_client.InitializeASRFeaturesFromArgs(
+            args, update_mask=recognition_config_update_mask
+        )
+    )
+
+    if args.hints:
+      recognition_config.adaptation, recognition_config_update_mask = (
+          speech_client.InitializeAdaptationConfigFromArgs(
+              args, update_mask=recognition_config_update_mask
+          )
+      )
 
     operation = speech_client.RunBatch(
         resource,
         args.audio,
-        args.hints,
         recognition_config,
-        features,
+        update_mask=recognition_config_update_mask,
     )
 
     if args.async_:

@@ -38,6 +38,7 @@ $ {command} my-cluster --location=us-west1 --platform-version=PLATFORM_VERSION
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Attached cluster."""
 
@@ -62,6 +63,7 @@ class Create(base.CreateCommand):
     flags.AddMonitoringConfig(parser, True)
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroups(parser)
+    flags.AddSecurityPosture(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 

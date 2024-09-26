@@ -110,11 +110,12 @@ def _Run(args, holder, include_log_config, include_source_regions):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a TCP health."""
 
   _include_log_config = True
-  _include_source_regions = False
+  _include_source_regions = True
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -131,10 +132,10 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
 
-  _include_source_regions = True
+  pass
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
-  _include_source_regions = True
+  pass

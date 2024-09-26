@@ -133,6 +133,7 @@ def _Run(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a HTTP health check."""
 
@@ -140,7 +141,7 @@ class Create(base.CreateCommand):
 
   _include_log_config = True
   _include_weighted_load_balancing = False
-  _include_source_regions = False
+  _include_source_regions = True
 
   @classmethod
   def Args(cls, parser):
@@ -166,11 +167,9 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
 
   _include_weighted_load_balancing = False
-  _include_source_regions = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
 
   _include_weighted_load_balancing = True
-  _include_source_regions = True

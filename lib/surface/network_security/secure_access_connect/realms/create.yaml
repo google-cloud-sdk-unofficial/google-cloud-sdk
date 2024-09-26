@@ -24,6 +24,12 @@ arguments:
     choices:
     - arg_value: prisma-access
       enum_value: PALO_ALTO_PRISMA_ACCESS
+    - arg_value: symantec-cloud-swg
+      enum_value: SYMANTEC_CLOUD_SWG
+  - arg_name: symantec-secret
+    api_field: sACRealm.symantecOptions.secretId
+    help_text: |
+      ID of the Secret in Secret Manager containing the Symantec credentials.
 
 async:
   collection: networksecurity.projects.locations.operations

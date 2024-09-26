@@ -26,7 +26,8 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
@@ -53,6 +54,13 @@ class CreateFirestoreAPI(base.Command):
   (PITR) enabled.
 
       $ {command} --location=nam5 --enable-pitr
+
+  To create a Firestore Native database in `nam5` encrypted by a
+  Customer-managed encryption key (CMEK).
+
+      $ {command}
+      --location=nam5
+      --kms-key-name=projects/PROJECT_ID/locations/us/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
   """
 
   def DatabaseType(self, database_type):
@@ -90,6 +98,10 @@ class CreateFirestoreAPI(base.Command):
     )
 
   def DatabaseCmekConfig(self, args):
+    if args.kms_key_name is not None:
+      return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig(
+          kmsKeyName=args.kms_key_name
+      )
     return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig()
 
   def Run(self, args):
@@ -153,45 +165,4 @@ class CreateFirestoreAPI(base.Command):
         action='store_true',
         default=None,
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPIWithCmekConfig(CreateFirestoreAPI):
-  r"""Create a Google Cloud Firestore database via Firestore API.
-
-  ## EXAMPLES
-
-  To create a Firestore Native database in `nam5`.
-
-      $ {command} --location=nam5
-
-  To create a Datastore Mode database in `us-east1`.
-
-      $ {command} --location=us-east1 --type=datastore-mode
-
-  To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
-
-      $ {command} --database=foo --location=us-east1 --type=datastore-mode
-
-  To create a Firestore Native database in `nam5` with delete protection
-  enabled.
-
-      $ {command} --location=nam5 --delete-protection
-
-  To create a Firestore Native database in `nam5` with Point In Time Recovery
-  (PITR) enabled.
-
-      $ {command} --location=nam5 --enable-pitr
-  """
-
-  def DatabaseCmekConfig(self, args):
-    if args.kms_key_name is not None:
-      return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig(
-          kmsKeyName=args.kms_key_name
-      )
-    return api_utils.GetMessages().GoogleFirestoreAdminV1CmekConfig()
-
-  @classmethod
-  def Args(cls, parser):
-    super(CreateFirestoreAPIWithCmekConfig, cls).Args(parser)
     flags.AddKmsKeyNameFlag(parser)

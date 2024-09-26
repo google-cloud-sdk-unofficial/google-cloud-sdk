@@ -150,12 +150,9 @@ class UpdateAlpha(base.UpdateCommand):
       return resource
 
     log.UpdatedResource(
-        operation.name,
+        backup_vault.RelativeName(),
         kind='backup vault',
         is_async=True,
-        details=(
-            'Run the [gcloud backup-dr operations describe] command '
-            'to check the status of this operation.'
-        ),
+        details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation

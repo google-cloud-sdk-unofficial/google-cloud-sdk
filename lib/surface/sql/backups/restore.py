@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
+from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
@@ -218,7 +219,6 @@ class RestoreBackup(base.RestoreCommand):
         'argument must be specified when the backup instance is different '
         'from the restore instance. If it is not specified, the backup '
         'instance is considered the same as the restore instance.')
-    flags.AddProjectLevelBackupEndpoint(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     AddInstanceSettingsArgs(parser)
 
@@ -250,7 +250,7 @@ class RestoreBackup(base.RestoreCommand):
 
     specified_args_dict = getattr(args, '_specified_args', None)
     override = any(key in OVERRIDE_FLAGS_SET for key in specified_args_dict)
-    if args.project_level:
+    if command_validate.IsProjectLevelBackupRequest(args.id):
       restore_backup_request = sql_messages.SqlInstancesRestoreBackupRequest(
           project=instance_ref.project,
           instance=instance_ref.instance,
