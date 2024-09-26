@@ -17,13 +17,15 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: Update connections
-    description: Update a connection
+    brief: Update the parameters of a single connection
+    description: |
+      Update a connection.
     examples: |-
-      To update the connection, run:
+      To update the labels of a connection `my-connection` in location `us-central1` run:
 
-      $ {command}
+      $ {command} my-connection --labels=key1=value1 --location=us-central1
   arguments:
     params:
     - group:
@@ -47,6 +49,7 @@
                     A SecretManager resource containing the OAuth token that authorizes
                     the connection. Format: `projects/*/secrets/*/versions/*`.
                   is_positional: false
+                  is_primary_resource: false
                   resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
                   resource_method_params:
                     connection.githubConfig.authorizerCredential.oauthTokenSecretVersion: '{__relative_name__}'
@@ -59,7 +62,6 @@
               help_text: |-
                 GitHub App installation id.
         - group:
-            hidden: true
             required: false
             help_text: |-
               Configuration for connections to an instance of GitHub Enterprise.
@@ -82,6 +84,7 @@
                 SecretManager resource containing the private key of the GitHub App,
                 formatted as `projects/*/secrets/*/versions/*`.
               is_positional: false
+              is_primary_resource: false
               resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
               resource_method_params:
                 connection.githubEnterpriseConfig.privateKeySecretVersion: '{__relative_name__}'
@@ -92,6 +95,7 @@
                 SecretManager resource containing the webhook secret of the GitHub App,
                 formatted as `projects/*/secrets/*/versions/*`.
               is_positional: false
+              is_primary_resource: false
               resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
               resource_method_params:
                 connection.githubEnterpriseConfig.webhookSecretSecretVersion: '{__relative_name__}'
@@ -163,10 +167,77 @@
                   resource_method_params:
                     connection.gitlabConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
+        - group:
+            required: false
+            help_text: |-
+              Configuration for connections to an instance of GitLab Enterprise.
+            params:
+            - arg_name: gitlab-enterprise-config-host-uri
+              api_field: connection.gitlabEnterpriseConfig.hostUri
+              required: false
+              repeated: false
+              help_text: |-
+                The URI of the GitLab Enterprise host this connection is for.
+            - group:
+                required: false
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: gitlab-enterprise-config-read-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.gitlabEnterpriseConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: false
+            - group:
+                required: false
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: gitlab-enterprise-config-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.gitlabEnterpriseConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: false
+            - group:
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: gitlab-enterprise-config-service-directory
+                  api_field: connection.gitlabEnterpriseConfig.serviceDirectoryConfig.service
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+            - arg_name: gitlab-enterprise-config-ssl-ca-certificate
+              api_field: connection.gitlabEnterpriseConfig.sslCaCertificate
+              required: false
+              repeated: false
+              help_text: |-
+                SSL Certificate Authority certificate to use for requests to GitLab
+                Enterprise instance.
     - help_text: |-
         Identifier. The resource name of the connection, in the format
         `projects/{project}/locations/{location}/connections/{connection_id}`.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection
       required: true
     - arg_name: labels
@@ -181,14 +252,13 @@
       - api_field: value
     - arg_name: disabled
       api_field: connection.disabled
-      action: store_true
+      action: store_true_false
       required: false
       type: bool
       help_text: |-
         If disabled is set to true, functionality is disabled for this connection.
         Repository based API methods and webhooks processing for repositories in
         this connection will be disabled.
-      default: null
     - arg_name: annotations
       api_field: connection.annotations
       required: false
@@ -207,6 +277,23 @@
         This checksum is computed by the server based on the value of other
         fields, and may be sent on update and delete requests to ensure the
         client has an up-to-date value before proceeding.
+    - group:
+        required: false
+        help_text: |-
+          The crypto key configuration. This field is used by the Customer-managed
+          encryption keys (CMEK) feature.
+        params:
+        - arg_name: crypto-key-config-reference
+          help_text: |-
+            The name of the key which is used to encrypt/decrypt customer data. For key
+            in Cloud KMS, the key should be in the format of
+            `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_key_ring_crypto_key
+          resource_method_params:
+            connection.cryptoKeyConfig.keyReference: '{__relative_name__}'
+          required: false
     - arg_name: request-id
       api_field: requestId
       required: false
@@ -227,7 +314,7 @@
         not supported (00000000-0000-0000-0000-000000000000).
     - arg_name: allow-missing
       api_field: allowMissing
-      action: store_true
+      action: store_true_false
       required: false
       type: bool
       help_text: |
@@ -236,15 +323,13 @@
         The creation will succeed only if the input connection has all the
         necessary information (e.g a github_config with both  user_oauth_token and
         installation_id properties).
-      default: null
     - arg_name: validate-only
       api_field: validateOnly
-      action: store_true
+      action: store_true_false
       required: false
       type: bool
       help_text: |-
         If set, validate the request, but do not actually post it.
-      default: null
   request:
     api_version: v1
     collection:

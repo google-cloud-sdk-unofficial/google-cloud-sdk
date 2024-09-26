@@ -111,7 +111,9 @@ def _GetKmsKeyNameFromArgs(args):
   return None
 
 
-def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
+def _Args(
+    parser, include_ingestion_from_cloud_storage_flags_and_log_severity=False
+):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
   labels_util.AddUpdateLabelsFlags(parser)
@@ -133,7 +135,7 @@ def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
   flags.AddIngestionDatasourceFlags(
       parser,
       is_update=True,
-      include_ingestion_from_cloud_storage_flags=include_ingestion_from_cloud_storage_flags,
+      include_ingestion_from_cloud_storage_flags_and_log_severity=include_ingestion_from_cloud_storage_flags_and_log_severity,
   )
 
 
@@ -214,6 +216,7 @@ def _Run(args):
   cloud_storage_ingestion_match_glob = getattr(
       args, 'cloud_storage_ingestion_match_glob', None
   )
+  ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
   clear_ingestion_data_source_settings = getattr(
       args, 'clear_ingestion_data_source_settings', None
   )
@@ -243,6 +246,7 @@ def _Run(args):
         cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
         cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
         clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
+        ingestion_log_severity=ingestion_log_severity,
     )
   except topics.NoFieldsSpecifiedError:
     operations = [
@@ -270,7 +274,10 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Registers flags for this command."""
-    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
+    _Args(
+        parser,
+        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+    )
 
   def Run(self, args):
     return _Run(args)
@@ -282,7 +289,10 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
+    _Args(
+        parser,
+        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+    )
 
   def Run(self, args):
     return _Run(args)
@@ -294,4 +304,6 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_from_cloud_storage_flags=True)
+    _Args(
+        parser, include_ingestion_from_cloud_storage_flags_and_log_severity=True
+    )

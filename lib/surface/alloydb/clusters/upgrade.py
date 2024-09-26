@@ -33,7 +33,9 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.Hidden
 class Upgrade(base.SilentCommand):
   """Upgrade an AlloyDB cluster within a given project and region."""
@@ -60,12 +62,12 @@ class Upgrade(base.SilentCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
-    flags.AddVersion(parser, alloydb_messages, cls.ReleaseTrack())
+    flags.AddVersion(parser, alloydb_messages)
 
   def ConstructUpgradeRequestFromArgs(
       self, alloydb_messages, cluster_ref, args
   ):
-    return cluster_helper.ConstructUpgradeRequestFromArgsAlpha(
+    return cluster_helper.ConstructUpgradeRequestFromArgs(
         alloydb_messages, cluster_ref, args
     )
 

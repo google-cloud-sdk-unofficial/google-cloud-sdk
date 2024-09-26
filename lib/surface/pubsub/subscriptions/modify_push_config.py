@@ -47,9 +47,12 @@ def _Run(args, legacy_output=False):
 
 def _Args(parser):
   resource_args.AddSubscriptionResourceArg(parser, 'to modify.')
-  flags.AddPushConfigFlags(parser, required=True)
+  flags.AddPushConfigFlags(
+      parser, required=True, is_modify_push_config_request=True
+  )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ModifyPushConfig(base.Command):
   """Modifies the push configuration of a Cloud Pub/Sub subscription."""

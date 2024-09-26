@@ -101,6 +101,7 @@ def ValidateUpdatePolicyAgainstStateful(update_policy, group_ref,
         'set to \'NONE\'. Use \'--instance-redistribution-type=NONE\'.')
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.CreateCommand):
   """Create Compute Engine managed instance groups."""
@@ -440,6 +441,7 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
+    managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -458,6 +460,15 @@ class CreateBeta(CreateGA):
       instance_group_manager.targetSuspendedSize = args.suspended_size
     if args.stopped_size:
       instance_group_manager.targetStoppedSize = args.stopped_size
+
+    instance_flexibility_policy = (
+        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+            args, client.messages
+        )
+    )
+    instance_group_manager.instanceFlexibilityPolicy = (
+        instance_flexibility_policy
+    )
     return instance_group_manager
 
 
@@ -473,7 +484,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -481,14 +491,6 @@ class CreateAlpha(CreateBeta):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
-    instance_flexibility_policy = (
-        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            args, client.messages
-        )
-    )
-    instance_group_manager.instanceFlexibilityPolicy = (
-        instance_flexibility_policy
-    )
     return instance_group_manager
 
 CreateAlpha.detailed_help = CreateGA.detailed_help

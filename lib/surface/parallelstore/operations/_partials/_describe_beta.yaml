@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
+  auto_generated: true
   hidden: true
   help_text:
     brief: Describe operations

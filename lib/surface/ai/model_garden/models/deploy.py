@@ -18,17 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.endpoints import client as client_endpoints
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import model_garden_utils
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 
 
@@ -122,23 +123,37 @@ class Deploy(base.Command):
         # Convert to lower case because API only takes in lower case.
         publisher_name, model_name = args.hugging_face_model.lower().split('/')
 
+        try:
+          publisher_model = mg_client.GetPublisherModel(
+              model_name=f'publishers/{publisher_name}/models/{model_name}',
+              is_hugging_face_model=True,
+          )
+        except apitools_exceptions.HttpUnauthorizedError:
+          raise c_exceptions.UnknownArgumentException(
+              '--hugging-face-model',
+              f'{args.hugging_face_model} is not a supported Hugging Face model'
+              ' for deployment in Model Garden.',
+          )
         # Only requires HF access token in argument when the model is gated.
         requires_hf_token = model_garden_utils.IsHFModelGated(
             publisher_name, model_name
         )
-        if requires_hf_token and args.hugging_face_access_token is None:
-          raise core_exceptions.Error(
-              '--hugging-face-access-token is required to read the model'
-              ' artifacts of gated models.'
+        if requires_hf_token:
+          if args.hugging_face_access_token is None:
+            raise c_exceptions.RequiredArgumentException(
+                '--hugging-face-access-token',
+                '--hugging-face-access-token is required to read the model'
+                ' artifacts of the gated Hugging Face model:'
+                f' {args.hugging_face_model}.',
+            )
+          model_garden_utils.VerifyHFTokenPermission(
+              args.hugging_face_access_token, publisher_name, model_name
           )
-        publisher_model = mg_client.GetPublisherModel(
-            model_name=f'publishers/{publisher_name}/models/{model_name}',
-            is_hugging_face_model=True,
-        )
+
         default_endpoint_name = '-'.join(
             [publisher_name, model_name, 'hf', 'mg-cli-deploy']
         )
-        endpoint_label_value = model_garden_utils.GetEndpointLabelValue(
+        endpoint_label_value = model_garden_utils.GetCLIEndpointLabelValue(
             is_hf_model, publisher_name, model_name=model_name
         )
       else:
@@ -152,7 +167,7 @@ class Deploy(base.Command):
         default_endpoint_name = '-'.join(
             [publisher_name, model_version_name, 'mg-cli-deploy']
         )
-        endpoint_label_value = model_garden_utils.GetEndpointLabelValue(
+        endpoint_label_value = model_garden_utils.GetCLIEndpointLabelValue(
             is_hf_model, publisher_name, model_version_name=model_version_name
         )
 

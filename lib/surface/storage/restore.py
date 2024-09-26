@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.tasks import task_executor
 from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
+from googlecloudsdk.command_lib.storage.tasks.buckets import restore_bucket_task
 from googlecloudsdk.command_lib.storage.tasks.objects import bulk_restore_objects_task
 from googlecloudsdk.command_lib.storage.tasks.objects import restore_object_task
 from googlecloudsdk.core import log
@@ -44,6 +45,15 @@ _BULK_RESTORE_FLAGS = [
     'deleted_after_time',
     'deleted_before_time',
 ]
+
+_INVALID_BUCKET_RESTORE_FLAGS = [
+    'all_versions',
+    'allow_overwrite',
+    'deleted_after_time',
+    'deleted_before_time',
+    'asyncronous',
+]
+
 _SYNCHRONOUS_RESTORE_FLAGS = ['all_versions']
 
 
@@ -73,14 +83,47 @@ def _raise_if_invalid_flag_combination(args, execution_mode, invalid_flags):
       )
 
 
+def _raise_error_if_invalid_flags_for_bucket_restore(url, args):
+  """Raises error if invalid combination of flags found in user input for bucket restore.
+
+  Args:
+    url: CloudUrl object.
+    args: (parser_extensions.Namespace): User input object.
+
+  Raises:
+    Error: Flags incompatible with execution mode.
+  """
+  if _is_bucket_restore(url):
+    # Bucket restore doesn't work with flags that are specific to objects.
+    invalid_flags_found = []
+    for invalid_flag in _INVALID_BUCKET_RESTORE_FLAGS:
+      if getattr(args, invalid_flag):
+        invalid_flags_found.append(invalid_flag)
+
+    if invalid_flags_found:
+      raise errors.Error(
+          'Bucket restore does not support the following flags: {}.'
+          ' See help text with --help.'.format(', '.join(invalid_flags_found))
+      )
+
+
+def _is_bucket_restore(url):
+  return (
+      isinstance(url, storage_url.CloudUrl)
+      and url.is_bucket()
+      and not wildcard_iterator.contains_wildcard(url.url_string)
+  )
+
+
 def _url_iterator(args):
   """Extracts, validates, and yields URLs."""
   for url_string in stdin_iterator.get_urls_iterable(
       args.urls, args.read_paths_from_stdin
   ):
-    url = storage_url.storage_url_from_string(url_string)
-    # TODO(b/292075826): Remove once bucket restore supported.
-    errors_util.raise_error_if_not_cloud_object(args.command_path, url)
+    url = storage_url.storage_url_from_string(
+        url_string, is_bucket_gen_parsing_allowed=True
+    )
+    _raise_error_if_invalid_flags_for_bucket_restore(url, args)
     errors_util.raise_error_if_not_gcs(args.command_path, url)
     yield url
 
@@ -89,8 +132,6 @@ def _async_restore_task_iterator(args, user_request_args):
   """Yields non-blocking restore tasks."""
   bucket_to_globs = collections.defaultdict(list)
   for url in _url_iterator(args):
-    # TODO(b/292075826): Add exception for buckets once bucket restore
-    # is supported
     if not wildcard_iterator.contains_wildcard(url.url_string):
       log.warning(
           'Bulk restores are long operations. For restoring a single'
@@ -116,6 +157,9 @@ def _sync_restore_task_iterator(args, fields_scope, user_request_args):
   """Yields blocking restore tasks."""
   last_resource = None
   for url in _url_iterator(args):
+    if _is_bucket_restore(url):
+      yield restore_bucket_task.RestoreBucketTask(url)
+      continue
     resources = list(
         wildcard_iterator.get_wildcard_iterator(
             url.url_string,
@@ -169,12 +213,20 @@ class Restore(base.Command):
   # TODO(b/292075826): Update docstring and help once bucket restore supported.
   detailed_help = {
       'DESCRIPTION': """
-      The restore command restores soft-deleted objects:
+      The restore command restores soft-deleted resources:
 
         $ {command} url...
 
       """,
       'EXAMPLES': """
+
+      Restore soft-deleted version of bucket with generations:
+
+        $ {command} gs://bucket#123
+
+      Restore several soft-deleted buckets with generations:
+
+        $ {command} gs://bucket1#123 gs://bucket2#456
 
       Restore latest soft-deleted version of object in a bucket.
 

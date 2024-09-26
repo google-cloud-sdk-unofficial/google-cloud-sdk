@@ -32,14 +32,14 @@ MEMBERSHIP_FLAG = '--membership'
            'Please use `unmanage` instead.'))
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class Delete(unmanage.Unmanage):
-  """Remove the Config Management Feature Spec for the given membership.
+  """Remove the Config Management feature spec for the given membership.
 
-  Remove the Config Management Feature Spec for the given membership. The
+  Remove the Config Management feature spec for the given membership. The
   existing ConfigManagement resources in the clusters will become unmanaged.
 
   ## EXAMPLES
 
-  To remove the Config Management Feature spec for a membership, run:
+  To remove the Config Management feature spec for a membership, run:
 
     $ {command} --membership=MEMBERSHIP_NAME
   """

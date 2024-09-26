@@ -15,8 +15,12 @@
 """Command for obtaining details about a given worker-pool."""
 
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
@@ -59,6 +63,7 @@ class Describe(base.Command):
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
+    # TODO(b/366115709): Add WorkerPool printer.
 
   @staticmethod
   def Args(parser):
@@ -66,4 +71,24 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Obtain details about a given worker-pool."""
-    raise NotImplementedError
+
+    # TODO(b/366115714): Make sure to cover all edge cases and possibly find
+    # better location to be shared by all worker pools operations.
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.worker_pool.Parse().locationsId
+      return region + '-' + endpoint
+
+    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
+    flags.ValidateResource(worker_pool_ref)
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+    if not worker_pool:
+      raise exceptions.ArgumentError(
+          'Cannot find WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+      )
+    return worker_pool

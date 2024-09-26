@@ -17,7 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - GA
-  hidden: true
+  auto_generated: true
   help_text:
     brief: List all code repository index instances in a specified project and location.
     description: List all code repository index instances in a specified project and

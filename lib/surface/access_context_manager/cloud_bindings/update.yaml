@@ -4,8 +4,8 @@
     help_text:
       brief: Update a existing cloud access binding under an organization.
       description: |
-        Update an existing cloud access binding. You can update the level, dry run level or both.
-        They can't be both empty after update.
+        Update an existing cloud access binding. You can update the level, dry run level
+        and scoped access settings. They can't all be empty.
       examples: |
         To update an existing cloud access binding, run:
 
@@ -15,18 +15,25 @@
 
           $ {command} --binding=my-binding-id --level=  \
             --dry-run-level=accessPolicies/123/accessLevels/new-def
+
+        To update scoped access settings, run:
+
+          $ {command} --binding=my-binding-id --binding-file='binding.yaml'
     request:
       collection: accesscontextmanager.organizations.gcpUserAccessBindings
       api_version: v1
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMask
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
+
   ALPHA:
     help_text:
       brief: Update an existing access binding under an organization.
       description: |
-        Update an existing access binding. You can update the level, dry run level,
-        restricted client application client IDs and restricted client application names.
+        Update an existing access binding. You can update the level, dry run level, scoped access
+        settings, restricted client application client IDs and restricted client application names.
         They can't all be empty.
       examples: |
         To update an existing access binding, run:
@@ -68,7 +75,6 @@
     - api_field: gcpUserAccessBinding
       metavar: YAML_FILE
       arg_name: binding-file
-      release_tracks: [ALPHA]
       help_text: |
         Path to a file containing a Google Cloud Platform User Access Binding.
 
@@ -80,6 +86,8 @@
       hidden: true
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
+      GA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
       type: str
@@ -98,7 +106,6 @@
       hidden: true
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
-      release_tracks: [ALPHA]
       help_text: |
         The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
         least one hour or zero, and no more than twenty-four hours. Granularity is limited to
@@ -116,7 +123,6 @@
     - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
       hidden: true
       arg_name: reauth-method
-      release_tracks: [ALPHA]
       default: login
       help_text: |
         Specifies the security check a user must undergo once their session expires. Defaults to
@@ -156,3 +162,12 @@
       help_text: |
         The application names that replace the existing application names for
         the restricted client applications in the given binding.
+    - api_field: appendScopedAccessSettings
+      arg_name: append
+      help_text: |
+        When true, append the ScopedAccessSettings in `--binding-file` to the existing
+        ScopedAccessSettings on the binding. When false, the existing binding's ScopedAccessSettings
+        will be overwritten. Defaults to false.
+      required: false
+      hidden: true
+      default: false

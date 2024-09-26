@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.sql import import_util
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Bak(base.Command):
@@ -84,6 +85,7 @@ class Bak(base.Command):
     flags.AddBakImportBakTypeArgument(parser)
     flags.AddBakImportStopAtArgument(parser)
     flags.AddBakImportStopAtMarkArgument(parser)
+    flags.AddBakImportKeepEncryptedArgument(parser)
 
   def Run(self, args):
     """Runs the command to import into the Cloud SQL instance."""

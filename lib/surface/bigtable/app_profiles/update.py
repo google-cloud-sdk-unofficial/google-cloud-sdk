@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateAppProfile(base.CreateCommand):
   """Update a Bigtable app profile."""
@@ -51,6 +52,10 @@ class UpdateAppProfile(base.CreateCommand):
           To update the request priority for an app profile to PRIORITY_LOW, run:
 
             $ {command} my-app-profile-id --instance=my-instance-id --priority=PRIORITY_LOW
+
+          To update an app profile to enable Data Boost which bills usage to the host project, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
 
           """),
   }
@@ -91,6 +96,8 @@ class UpdateAppProfile(base.CreateCommand):
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         priority=args.priority,
+        data_boost=args.data_boost,
+        data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,
     )
 
@@ -169,7 +176,7 @@ class UpdateAppProfileBeta(UpdateAppProfile):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(required=False)
-        .AddIsolation(allow_data_boost=True)
+        .AddIsolation()
         .AddForce('update')
         .AddAsync()
     )
@@ -219,7 +226,7 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
             allow_failover_radius=True,
             allow_row_affinity=True,
         )
-        .AddIsolation(allow_data_boost=True)
+        .AddIsolation()
         .AddForce('update')
         .AddAsync()
     )

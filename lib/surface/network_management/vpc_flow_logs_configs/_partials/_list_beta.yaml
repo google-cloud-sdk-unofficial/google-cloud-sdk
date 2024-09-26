@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
+  auto_generated: true
   help_text:
     brief: List all VPC Flow Logs configurations in the project.
     description: Lists all VPC Flow Logs configurations in the project.

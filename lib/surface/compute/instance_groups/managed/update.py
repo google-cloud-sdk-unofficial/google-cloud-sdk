@@ -395,6 +395,7 @@ class UpdateBeta(UpdateGA):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
+    managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
@@ -413,6 +414,11 @@ class UpdateBeta(UpdateGA):
       patch_instance_group_manager.targetSuspendedSize = args.suspended_size
     if args.stopped_size:
       patch_instance_group_manager.targetStoppedSize = args.stopped_size
+
+    patch_instance_group_manager.instanceFlexibilityPolicy = (
+        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+            args, client.messages, igm_resource))
+
     return patch_instance_group_manager
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
@@ -425,15 +431,11 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,
                                        client, holder):
     igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder)
-    igm_patch.instanceFlexibilityPolicy = (
-        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            args, client.messages, igm_resource))
 
     return igm_patch
 

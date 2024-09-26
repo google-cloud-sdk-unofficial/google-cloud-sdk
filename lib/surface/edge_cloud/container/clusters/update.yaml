@@ -23,6 +23,8 @@
     - googlecloudsdk.command_lib.edge_cloud.container.max_unavailable:ClearMaxUnavailable
     - googlecloudsdk.command_lib.edge_cloud.container.kms:UseGoogleManagedKey
     - googlecloudsdk.command_lib.edge_cloud.container.kms:UpdateKmsKey
+    - googlecloudsdk.command_lib.edge_cloud.container.kms:UseGoogleManagedZoneKey
+    - googlecloudsdk.command_lib.edge_cloud.container.kms:UpdateZoneKmsKey
 
   arguments:
     resource:
@@ -129,6 +131,18 @@
           repeated: false
           help_text: |
             If set, use the specified KMS key for the cluster control plane nodes encryption.
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - arg_name: use-google-managed-zone-key
+          action: store_true
+          help_text: |
+            If set, use Google managed key for zone storage encryption.
+        - arg_name: zone-storage-kms-key
+          repeated: false
+          help_text: |
+            If set, use the specified KMS key for zone storage encryption.
 
   response:
     modify_response_hooks:

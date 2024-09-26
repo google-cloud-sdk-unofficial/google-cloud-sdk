@@ -18,6 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import apitools
+from googlecloudsdk import api_lib
+from googlecloudsdk import core
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import command
@@ -30,7 +33,12 @@ from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util a
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
 EXAMPLES = r"""
-    To apply a YAML config file to a membership, prepare
+    To apply the [fleet-default membership configuration](https://cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
+    to `MEMBERSHIP_NAME`, run:
+
+    $ {command} --membership=MEMBERSHIP_NAME --origin=FLEET
+
+    To apply a membership configuration as a YAML file, prepare
     [apply-spec.yaml](https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields#example_gcloud_apply_spec) then run:
 
       $ {command} --membership=MEMBERSHIP_NAME --config=APPLY-SPEC.YAML --version=VERSION
@@ -39,11 +47,11 @@ EXAMPLES = r"""
 
 @base.DefaultUniverseOnly
 class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
-  """Update a Config Management Feature Spec.
+  """Update a Config Management feature spec.
 
-  Update a user-specified config file to a ConfigManagement Custom Resource.
-  The config file should be a .yaml file, all eligible fields are listed in
-  https://cloud.google.com/anthos-config-management/docs/reference/gcloud-apply-fields
+  Update a membership configuration for the Config Management feature in a
+  fleet. This command errors if the Config Management feature is not enabled on
+  the fleet.
   """
 
   detailed_help = {'EXAMPLES': EXAMPLES}
@@ -54,54 +62,108 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
   @classmethod
   def Args(cls, parser):
     resources.AddMembershipResourceArg(parser)
-    parser.add_argument(
-        '--config',
-        type=str,
-        help='The path to config-management.yaml.',
+    spec_group = parser.add_group(
         required=True,
+        mutex=True,
+        help=('Update the membership configuration either to the [fleet-default'
+              ' membership configuration]('
+              'https://cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)'
+              ' with `--origin` or to a user-provided configuration with'
+              ' `--config` and `--version`.'),
     )
-    parser.add_argument(
-        '--version', type=str, help='The version of ACM to install.'
+    spec_group.add_argument(
+        '--origin',
+        choices=['FLEET'],
+        help=('Updates the configuration of the target membership to the'
+              ' current [fleet-default membership configuration]('
+              'https://cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features).'
+              ' Errors if fleet-default membership configuration is not'
+              ' enabled; see the `enable` command for more details.'),
+    )
+    config_group = spec_group.add_group(
+        help=('Provide the entire membership configuration to update with'
+              ' `--config` and `--version`.')
+    )
+    config_group.add_argument(
+        '--config',
+        required=True,
+        help=('Path to YAML file that contains the configuration to update the'
+              ' target membership to.'
+              ' The file accepts the [following fields]('
+              'https://cloud.google.com/anthos-config-management/docs/reference'
+              '/gcloud-apply-fields).'),
+    )
+    config_group.add_argument(
+        '--version',
+        help=('Version of Config Management.'
+              ' Equivalent to the [`spec.version`]('
+              'https://cloud.google.com/anthos-config-management/docs/reference'
+              '/gcloud-apply-fields#common)'
+              ' field in the `--config` file.'
+              ' Provides `--config` with a version in the absence of'
+              ' `spec.version`.'
+              ' Cannot specify this flag without `--config`; cannot set both'
+              ' this flag and `spec.version`.'
+              ' See [`spec.version`]('
+              'https://cloud.google.com/anthos-config-management/docs/reference'
+              '/gcloud-apply-fields#common)'
+              ' for more details.')
     )
 
   def Run(self, args):
-    utils.enable_poco_api_if_disabled(self.Project())
+    # Initialize and defend against more than 1 call to Run.
+    self.__feature_cache = None
 
-    # check static yaml fields before query membership
-    cm = self.parse_config_management(args.config)
-    cm.version = args.version
-    membership = fleet_base.ParseMembership(
+    # Help PoCo migrate to its own feature.
+    utils.enable_poco_api_if_disabled(self.Project())
+    self.membership = fleet_base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
-    if (not cm.version and
-        cm.management !=
-        self.messages.ConfigManagementMembershipSpec.ManagementValueValuesEnum.MANAGEMENT_AUTOMATIC):
-      cm.version = self._get_backfill_version(membership)
-
-    # UpdateFeature uses patch method to update membership_configs map,
-    # there's no need to get the existing feature spec
-    patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs({
-            membership: self.messages.MembershipFeatureSpec(
-                configmanagement=cm
-            )
-        })
-    )
-
-    use_fleet_default_config = (
-        hasattr(args, 'origin')
-        and args.origin is not None
-    )
-    if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
-        self.ReleaseTrack()
-    ):
-      membershipfeature = convert.ToV2MembershipFeature(
-          self, membership, self.mf_name,
-          self.messages.MembershipFeatureSpec(configmanagement=cm),
+    feature_spec = self.messages.MembershipFeatureSpec()
+    if args.origin:
+      # TODO(b/361345385): Remove this redundant FDC check once the v1 CLH error
+      # message is more explicit.
+      # TODO(b/361373747): Remove FDC check once it is added to v2 CLH.
+      if not self._get_feature_cache().fleetDefaultMemberConfig:
+        project = core.properties.VALUES.core.project.GetOrFail()
+        raise core.exceptions.Error((
+            'Fleet-default membership configuration is not enabled on the {}'
+            ' feature for project [{}].'
+            ' Enable fleet-default membership configuration to apply it to'
+            ' memberships.'
+            " See the 'enable' command for more details"
+        ).format(self.feature.display_name, project))
+      feature_spec.origin = self.messages.Origin(
+          type=self.messages.Origin.TypeValueValuesEnum.FLEET
       )
-      self.UpdateV2(membership, ['spec'], membershipfeature)
     else:
-      self.Update(['membership_specs'], patch)
+      cm = self.parse_config_management(args.config)
+      if cm.version and args.version:
+        raise core.exceptions.Error(
+            'Cannot set version in multiple flags: --version={} and the version'
+            ' field in --config has value {}'.format(args.version, cm.version)
+        )
+      if args.version:
+        cm.version = args.version
+      if (not cm.version and
+          cm.management !=
+          self.messages.ConfigManagementMembershipSpec.ManagementValueValuesEnum.MANAGEMENT_AUTOMATIC):
+        cm.version = self._get_backfill_version(self.membership)
+      feature_spec.configmanagement = cm
+    self._update_membership(feature_spec)
+
+  # Not strictly necessary yet, but helps communicate that we only GetFeature
+  # once per execution.
+  def _get_feature_cache(self):
+    """Gets the Config Management feature at most once per command execution.
+
+    Returns:
+      Cached Config Management feature.
+    """
+    if self.__feature_cache is None:
+      # Raises a comprehensible error if feature not enabled.
+      self.__feature_cache = self.GetFeature()
+    return self.__feature_cache
 
   def _get_backfill_version(self, membership):
     """Get the value the version field in FeatureSpec should be set to.
@@ -113,5 +175,30 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
       version: A string denoting the version field in MembershipConfig
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
-    f = self.GetFeature()
+    f = self._get_feature_cache()
     return utils.get_backfill_version_from_feature(f, membership)
+
+  def _update_membership(self, feature_spec):
+    """Update the spec of the target membership to feature_spec.
+
+    Args:
+      feature_spec: gkehub API MembershipFeatureSpec to update to.
+
+    Returns:
+      Updated feature or membership feature, for projects migrated to v2 by Hub.
+    """
+    try:
+      if (not feature_spec.origin and
+          mf_util.UseMembershipFeatureV2(self.ReleaseTrack())):
+        membershipfeature = convert.ToV2MembershipFeature(
+            self, self.membership, self.mf_name, feature_spec
+        )
+        return self.UpdateV2(self.membership, ['spec'], membershipfeature)
+      else:
+        return self.Update(['membership_specs'], self.messages.Feature(
+            membershipSpecs=self.hubclient.ToMembershipSpecs({
+                self.membership: feature_spec
+            })
+        ))
+    except apitools.base.py.exceptions.HttpError as e:
+      raise api_lib.util.exceptions.HttpException(e, '{message}')

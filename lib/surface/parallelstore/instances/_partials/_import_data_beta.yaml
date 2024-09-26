@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
+  auto_generated: true
   hidden: true
   help_text:
     brief: Imports data from Cloud Storage to Parallelstore instance.
@@ -33,15 +34,16 @@
       required: true
       repeated: false
       help_text: |-
-        URI to a Cloud Storage object in format:
-        'gs://<bucket_name>/<path_inside_bucket>'.
+        URI to a Cloud Storage bucket in the format:
+        `gs://<bucket_name>/<path_inside_bucket>`. The path inside the bucket is
+        optional.
     - arg_name: destination-parallelstore-path
       api_field: importDataRequest.destinationParallelstore.path
       required: false
       repeated: false
       help_text: |-
-        Root directory path to the Paralellstore filesystem, starting with '/'.
-        Defaults to '/' if unset.
+        Root directory path to the Paralellstore filesystem, starting with `/`.
+        Defaults to `/` if unset.
     - help_text: |-
         Name of the resource.
       is_positional: true
@@ -65,6 +67,25 @@
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).
+    - arg_name: service-account
+      help_text: |-
+        User-specified service account credentials to be used when
+        performing the transfer.
+
+        Use one of the following formats:
+
+        * {EMAIL_ADDRESS_OR_UNIQUE_ID}
+        * `projects/{PROJECT_ID_OR_NUMBER}/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}`
+        * `projects/-/serviceAccounts/{EMAIL_ADDRESS_OR_UNIQUE_ID}
+
+        If unspecified, the Parallelstore service agent is used:
+        `service-<PROJECT_NUMBER>@gcp-sa-parallelstore.iam.gserviceaccount.com`
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_service_account
+      resource_method_params:
+        importDataRequest.serviceAccount: '{__relative_name__}'
+      required: false
   request:
     api_version: v1beta
     collection:

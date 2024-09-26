@@ -17,18 +17,21 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: List gitRepositoryLinks
-    description: List gitRepositoryLinks
+    brief: List all git repository links in a connection
+    description: |
+      List all git repository links in a connection.
     examples: |-
-      To list all gitRepositoryLinks, run:
+      To list all git repository links in a connection `my-connection` in location `us-central1` run:
 
-      $ {command}
+      $ {command} --connection=my-connection --location=us-central1
   arguments:
     params:
     - help_text: |-
         Parent value for ListGitRepositoryLinksRequest
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection
       required: true
   request:

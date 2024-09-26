@@ -17,18 +17,21 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: Describe gitRepositoryLinks
-    description: Describe a gitRepositoryLink
+    brief: Get details of a single git repository link
+    description: |
+      Get details of a single git repository link.
     examples: |-
-      To describe the gitRepositoryLink, run:
+      To get the details of a single git repository link `my-git-repository-link` in a conenction `my-connection` in location `us-central1` run:
 
-      $ {command}
+      $ {command} my-git-repository-link --connection=my-connection --location=us-central1-a
   arguments:
     params:
     - help_text: |-
         Name of the resource
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection_git_repository_link
       required: true
   request:

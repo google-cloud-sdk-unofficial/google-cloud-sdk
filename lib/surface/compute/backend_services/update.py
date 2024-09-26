@@ -177,6 +177,7 @@ class UpdateHelper(object):
       support_ip_address_selection_policy,
       support_external_managed_migration=False,
       support_advanced_load_balancing=False,
+      support_stateful_affinity=False,
       release_track=None,
   ):
     self._support_failover = support_failover
@@ -189,6 +190,7 @@ class UpdateHelper(object):
         support_external_managed_migration
     )
     self._support_advanced_load_balancing = support_advanced_load_balancing
+    self._support_stateful_affinity = support_stateful_affinity
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -253,9 +255,10 @@ class UpdateHelper(object):
       replacement.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
-      # strongSessionAffinityCookie is only usable with STRONG_COOKIE_AFFINITY.
-      if args.session_affinity != 'STRONG_COOKIE_AFFINITY':
-        cleared_fields.append('strongSessionAffinityCookie')
+      if self._support_stateful_affinity:
+        # strongSessionAffinityCookie only usable with STRONG_COOKIE_AFFINITY.
+        if args.session_affinity != 'STRONG_COOKIE_AFFINITY':
+          cleared_fields.append('strongSessionAffinityCookie')
 
     backend_services_utils.ApplyAffinityCookieArgs(client, args, replacement)
 
@@ -642,6 +645,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_ip_address_selection_policy,
         self._support_external_managed_migration,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
+        support_stateful_affinity=self._support_stateful_affinity,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 

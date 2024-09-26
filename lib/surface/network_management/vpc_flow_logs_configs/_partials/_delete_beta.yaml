@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
+  auto_generated: true
   help_text:
     brief: Deletes the specified VPC Flow Logs configuration.
     description: Deletes the specified VPC Flow Logs configuration.

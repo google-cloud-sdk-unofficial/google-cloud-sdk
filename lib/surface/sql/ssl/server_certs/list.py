@@ -64,8 +64,10 @@ class _BaseList(object):
         for status, cert in server_cert_types.items()
     }
     result = [
-        flags.ServerCertForPrint(cert, hash2status[cert.sha1Fingerprint])
-        for cert in resp.serverCerts
+        flags.ServerCertForPrint(
+            cert, hash2status[cert.sha1Fingerprint], resp.caCerts[i]
+        )
+        for i, cert in enumerate(resp.serverCerts)
     ]
     return iter(result)
 

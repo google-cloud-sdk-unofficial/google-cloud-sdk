@@ -17,18 +17,21 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: Delete gitRepositoryLinks
-    description: Delete a gitRepositoryLink
+    brief: Delete a single git repository link
+    description: |
+      Delete a single git repository link.
     examples: |-
-      To delete the gitRepositoryLink, run:
+      To delete a git repository link `my-git-repository-link` in a connection `my-comection` in location `us-central1` run:
 
-      $ {command}
+      $ {command} my-git-repository-link --connection=my-connection --location=us-central1
   arguments:
     params:
     - help_text: |-
         Name of the resource
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection_git_repository_link
       required: true
     - arg_name: request-id
@@ -56,6 +59,7 @@
       type: bool
       help_text: |-
         If set, validate the request, but do not actually post it.
+      default: null
     - arg_name: etag
       api_field: etag
       required: false

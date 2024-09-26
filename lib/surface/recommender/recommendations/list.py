@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.core import log
 
 
 DETAILED_HELP = {
@@ -84,6 +85,7 @@ class List(base.ListCommand):
         help=(
             'Location to list recommendations for. If no location is specified,'
             ' recommendations for all supported locations are listed.'
+            ' Not specifying a location can add 15-20 seconds to the runtime.'
         ),
     )
     parser.add_argument(
@@ -95,6 +97,8 @@ class List(base.ListCommand):
             ' specified, recommendations for all supported recommenders are'
             ' listed. Supported recommenders can be found here:'
             ' https://cloud.google.com/recommender/docs/recommenders'
+            ' Not specifying a recommender can add 15-20 seconds to the'
+            ' runtime.'
         ),
     )
     parser.add_argument(
@@ -115,8 +119,8 @@ class List(base.ListCommand):
             projects.  The maximum number of resources (organization,
             folders, projects, and descendant resources) that can be accessed at
             once with the `--recursive` flag is 100. For a larger
-            number of nested resources, use BigQuery Export. Use `--recursive`
-            to enable and `--no-recursive` to disable.
+            number of nested resources, use BigQuery Export. Using `--recursive`
+            can add 15-20 seconds per resource to the runtime.
             """),
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)
@@ -199,8 +203,10 @@ class List(base.ListCommand):
       asset_count += 1
       if asset_count > 100:
         raise exceptions.UnsupportedOperationError(
-            'The max number of assets to list recommendations is 100.  To list'
-            ' a larger number of assets, please use BigQuery Export.'
+            'The maximum number of resources (organizations, folders, projects,'
+            ' and descendant resources) that can be accessed to list'
+            ' recommendations is 100. To access'
+            ' a larger number of resources, use BigQuery Export.'
         )
 
     return self.resource_locations
@@ -217,6 +223,7 @@ class List(base.ListCommand):
     """
 
     # Collect Assets and Locations
+    log.status.Print('Collecting Resources... This may take some time...')
     if args.recursive:
       resource_locations = self.searchAllResources(args)
     else:
@@ -267,7 +274,15 @@ class List(base.ListCommand):
     """
     recommendations = []
     recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
-    for parent_name in asset_recommenders:
+
+    resource_prev = None
+    location_prev = None
+    for resource, location, recommender in asset_recommenders:
+      if resource != resource_prev or location != location_prev:
+        log.status.Print(f'Reading Recommendations for: {resource} {location}')
+      resource_prev = resource
+      location_prev = location
+      parent_name = '/'.join([resource, location, recommender])
       new_recommendations = recommendations_client.List(
           parent_name, args.page_size
       )
@@ -301,11 +316,16 @@ class List(base.ListCommand):
     # collect recommendations for all recommenders
     asset_recommenders = []
     for asset in resource_locations:
+      tokens = asset.split('/')
+      resource = '/'.join(tokens[:2])
+      location = '/'.join(tokens[2:4])
       if args.recommender is not None:
-        asset_recommenders.append(f'{asset}/recommenders/{args.recommender}')
+        asset_recommenders.append(
+            (resource, location, f'recommenders/{args.recommender}')
+        )
       else:  # loop through all recommenders
         asset_recommenders.extend([
-            f'{asset}/recommenders/{response.name}'
+            (resource, location, f'recommenders/{response.name}')
             for response in self.ListRecommenders(args)
         ])
 

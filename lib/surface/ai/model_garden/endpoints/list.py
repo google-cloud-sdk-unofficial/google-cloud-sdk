@@ -104,24 +104,46 @@ class List(base.ListCommand):
     version = constants.BETA_VERSION
     region_ref = args.CONCEPTS.region.Parse()
     args.region = region_ref.AsDict()['locationsId']
-    label_filter = '*'
+    list_all_models = args.model is None and args.hugging_face_model is None
+    cli_label_filter, one_click_filter = '', ''
     if args.model is not None:
-      label_filter = model_garden_utils.GetEndpointLabelValue(
+      cli_label_filter = model_garden_utils.GetCLIEndpointLabelValue(
           is_hf_model=False,
           publisher_name=args.model.lower().split('/')[0],
           model_version_name=args.model.lower().split('/')[2],
       )
+      one_click_filter = model_garden_utils.GetOneClickEndpointLabelValue(
+          is_hf_model=False,
+          publisher_name=args.model.lower().split('/')[0],
+          model_name=args.model.lower().split('/')[1],
+          model_version_name=args.model.lower().split('/')[2],
+      )
     elif args.hugging_face_model is not None:
-      label_filter = model_garden_utils.GetEndpointLabelValue(
+      cli_label_filter = model_garden_utils.GetCLIEndpointLabelValue(
           is_hf_model=True,
           publisher_name=args.hugging_face_model.lower().split('/')[0],
           model_name=args.hugging_face_model.lower().split('/')[1],
       )
-    if label_filter == '*':
-      filter_str = 'labels.mg-cli-deploy:*'
-    else:
-      filter_str = f'labels.mg-cli-deploy="{label_filter}"'
-    with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
-      return client.EndpointsClient(version=version).List(
-          region_ref, filter_str
+      one_click_filter = model_garden_utils.GetOneClickEndpointLabelValue(
+          is_hf_model=True,
+          publisher_name=args.hugging_face_model.lower().split('/')[0],
+          model_name=args.hugging_face_model.lower().split('/')[1],
       )
+
+    if list_all_models:
+      cli_filter_str = 'labels.mg-cli-deploy:*'
+      one_click_filter_str = 'labels.mg-one-click-deploy:*'
+    else:
+      cli_filter_str = f'labels.mg-cli-deploy={cli_label_filter}'
+      if args.model is not None:
+        one_click_filter_str = (
+            f'labels.versioned-mg-one-click-deploy={one_click_filter}'
+        )
+      else:
+        one_click_filter_str = f'labels.mg-one-click-deploy={one_click_filter}'
+
+    with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
+      cli_endpoints = client.EndpointsClient(version=version).List(
+          region_ref, cli_filter_str + ' OR ' + one_click_filter_str
+      )
+      return cli_endpoints

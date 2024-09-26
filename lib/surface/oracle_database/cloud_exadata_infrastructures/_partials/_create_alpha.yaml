@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   hidden: true
   help_text:
     brief: Create a new ExadataInfrastructure.
@@ -35,6 +36,7 @@
         Identifier. The name of the Exadata Infrastructure resource with the format:
         projects/{project}/locations/{region}/cloudExadataInfrastructures/{cloud_exadata_infrastructure}
       is_positional: true
+      is_primary_resource: true
       request_id_field: cloudExadataInfrastructureId
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_exadata_infrastructure
       required: true
@@ -49,7 +51,7 @@
       required: false
       repeated: false
       help_text: |-
-        GCP location where Oracle Exadata is hosted.
+        Google Cloud Platform location where Oracle Exadata is hosted.
     - group:
         required: false
         help_text: |

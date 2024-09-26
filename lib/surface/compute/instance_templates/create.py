@@ -1122,7 +1122,7 @@ class Create(base.CreateCommand):
   _support_region_instance_template = True
   _support_subnet_region = False
   _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = False
+  _support_confidential_compute_type_tdx = True
   _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_size = True

@@ -40,8 +40,9 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine managed instance group resize request resource.
 
@@ -93,4 +94,73 @@ class Describe(base.DescribeCommand):
             resizeRequest=args.resize_request,
         ),
     )]
+    return client.MakeRequests(requests)[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a Compute Engine managed instance group resize request resource.
+
+  *{command}* describes a Compute Engine managed instance group resize request
+  resource.
+  """
+
+  detailed_help = DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser)
+    parser.add_argument(
+        '--resize-request',
+        metavar='RESIZE_REQUEST_NAME',
+        type=str,
+        required=True,
+        help="""The name of the resize request to describe.""")
+
+  def Run(self, args):
+    """Creates and issues an instanceGroupManagerResizeRequests.get request.
+
+    Args:
+      args: the argparse arguments that this command was invoked with.
+
+    Returns:
+      Detailed information about resize request.
+    """
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
+    igm_ref = resource_arg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=flags.GetDefaultScopeLister(client),
+    )
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      requests = [(
+          client.apitools_client.instanceGroupManagerResizeRequests,
+          'Get',
+          client.messages.ComputeInstanceGroupManagerResizeRequestsGetRequest(
+              project=igm_ref.project,
+              zone=igm_ref.zone,
+              instanceGroupManager=igm_ref.instanceGroupManager,
+              resizeRequest=args.resize_request,
+          ),
+      )]
+    elif igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      requests = [(
+          client.apitools_client.regionInstanceGroupManagerResizeRequests,
+          'Get',
+          client.messages.ComputeRegionInstanceGroupManagerResizeRequestsGetRequest(
+              project=igm_ref.project,
+              region=igm_ref.region,
+              instanceGroupManager=igm_ref.instanceGroupManager,
+              resizeRequest=args.resize_request,
+          ),
+      )]
+    else:
+      raise ValueError(
+          'Unknown reference type {0}'.format(igm_ref.Collection())
+      )
     return client.MakeRequests(requests)[0]

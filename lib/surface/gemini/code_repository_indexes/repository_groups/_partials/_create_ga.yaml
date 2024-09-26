@@ -17,7 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - GA
-  hidden: true
+  auto_generated: true
   help_text:
     brief: Create a repository group for a given code repository index instance.
     description: |

@@ -136,9 +136,11 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddLocationResourceArg(
         parser,
-        "The location for which to list triggers. This should be either "
+        'The location for which to list triggers. This should be either '
         "``global'' or one of the supported regions.",
-        required=False)
+        required=False,
+        allow_aggregation=True,
+    )
     flags.AddProjectResourceArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(triggers.GetTriggerURI)

@@ -103,16 +103,8 @@ class GetCredentials(gateway.GetCredentialsCommand):
     if args.use_client_side_generation:
       self.RunGetCredentials(membership_id, location, context_namespace)
     else:
-      # Use server-side generation by default, and fall back to client-side if
-      # needed. We catch all Exceptions because errors are being recorded and
-      # reported, and it would be difficult to ascertain at runtime whether an
-      # error is due to user misbehavior or programming error.
-      try:
-        self.RunServerSide(
-            membership_id,
-            location,
-            arg_namespace=context_namespace,
-        )
-      except Exception as e:  # pylint: disable=broad-exception-caught
-        gateway.RecordClientSideFallback(e)
-        self.RunGetCredentials(membership_id, location, context_namespace)
+      self.RunServerSide(
+          membership_id,
+          location,
+          arg_namespace=context_namespace,
+      )

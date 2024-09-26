@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
     brief: Update the configuration of a Memorystore instance.
     description: Update the configuration of a Memorystore instance.

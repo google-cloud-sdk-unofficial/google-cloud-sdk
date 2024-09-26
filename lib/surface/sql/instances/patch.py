@@ -83,13 +83,30 @@ def _PrintAndConfirmWarningMessage(args, database_version):
         'WARNING: This patch modifies database flag values, which may require '
         'your instance to be restarted. Check the list of supported flags - '
         '{} - to see if your instance will be restarted when this patch '
-        'is submitted.'.format(flag_docs_url))
+        'is submitted.'.format(flag_docs_url)
+    )
   else:
     if any([args.follow_gae_app, args.gce_zone]):
-      continue_msg = ('WARNING: This patch modifies the zone your instance '
-                      'is set to run in, which may require it to be moved. '
-                      'Submitting this patch will restart your instance '
-                      'if it is running in a different zone.')
+      continue_msg = (
+          'WARNING: This patch modifies the zone your instance '
+          'is set to run in, which may require it to be moved. '
+          'Submitting this patch will restart your instance '
+          'if it is running in a different zone.'
+      )
+
+  if 'time_zone' in args and args.time_zone is not None:
+    time_zone_warning_msg = (
+        'WARNING: This patch modifies the time zone for your instance which may'
+        ' cause inconsistencies in your data.'
+    )
+    log.warning(
+        'This patch modifies the time zone for your instance which may cause'
+        ' inconsistencies in your data.'
+    )
+    if continue_msg:
+      continue_msg = continue_msg + '\n' + time_zone_warning_msg
+    else:
+      continue_msg = time_zone_warning_msg
 
   if continue_msg and not console_io.PromptContinue(continue_msg):
     raise exceptions.CancelledError('canceled by the user.')
@@ -127,13 +144,22 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.passwordValidationPolicy')
   if args.IsKnownAndSpecified('clear_allowed_psc_projects'):
     cleared_fields.append(
-        'settings.ipConfiguration.pscConfig.allowedConsumerProjects')
+        'settings.ipConfiguration.pscConfig.allowedConsumerProjects'
+    )
+  if args.IsKnownAndSpecified('clear_psc_auto_connections'):
+    cleared_fields.append(
+        'settings.ipConfiguration.pscConfig.pscAutoConnections'
+    )
 
   log.status.write(
-      'The following message will be used for the patch API method.\n')
+      'The following message will be used for the patch API method.\n'
+  )
   log.status.write(
       encoding.MessageToJson(
-          WithoutKind(patch_instance), include_fields=cleared_fields) + '\n')
+          WithoutKind(patch_instance), include_fields=cleared_fields
+      )
+      + '\n'
+  )
 
   _PrintAndConfirmWarningMessage(args, original_instance.databaseVersion)
 
@@ -257,6 +283,7 @@ def AddBaseArgs(parser):
   flags.AddNetwork(parser)
   flags.AddMaintenanceVersion(parser)
   flags.AddSqlServerAudit(parser)
+  flags.AddSqlServerTimeZone(parser)
   flags.AddDeletionProtection(parser)
   flags.AddConnectorEnforcement(parser)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
@@ -298,9 +325,9 @@ def AddBetaArgs(parser):
   flags.AddStorageProvisionedThroughput(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddSqlServerTimeZone(parser, hidden=True)
+  pass
 
 
 def RunBasePatchCommand(args, release_track):

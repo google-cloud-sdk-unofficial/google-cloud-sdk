@@ -61,6 +61,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser)
     flags.AddAuthorizedExternalNetworks(parser)
+    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
@@ -114,7 +115,6 @@ class CreateSecondaryAlphaBeta(CreateSecondary):
   @staticmethod
   def Args(parser):
     super(CreateSecondaryAlphaBeta, CreateSecondaryAlphaBeta).Args(parser)
-    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

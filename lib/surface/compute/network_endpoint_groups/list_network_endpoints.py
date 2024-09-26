@@ -47,7 +47,8 @@ class ListNetworkEndpoints(base.ListCommand):
           networkEndpoint.instance,
           networkEndpoint.ipAddress,
           networkEndpoint.port,
-          networkEndpoint.fqdn
+          networkEndpoint.fqdn,
+          networkEndpoint.clientDestinationPort
         )"""
 
   @classmethod

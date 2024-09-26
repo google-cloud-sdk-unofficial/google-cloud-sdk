@@ -303,7 +303,7 @@ class Create(base.CreateCommand):
   _support_max_run_duration = True
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = False
+  _support_confidential_compute_type_tdx = True
   _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True

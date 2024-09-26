@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   hidden: true
   help_text:
     brief: List all repository group for a given code repository index instance.
@@ -32,6 +33,7 @@
     - help_text: |-
         Parent value for ListRepositoryGroupsRequest
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.gemini.v1alpha_resources:project_location_code_repository_index
       required: true
   request:

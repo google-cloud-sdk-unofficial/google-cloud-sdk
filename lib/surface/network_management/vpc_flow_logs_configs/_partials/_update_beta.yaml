@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
+  auto_generated: true
   help_text:
     brief: Updates one or more fields in an existing VPC Flow Logs configuration.
     description: Updates one or more fields in an existing VPC Flow Logs configuration.

@@ -28,17 +28,26 @@ from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
+def _add_common_args(parser):
+  """Adds common arguments to the parser."""
+  parser.add_argument(
+      'urls', nargs='*', help='Specifies URL of buckets to List.'
+  )
+  flags.add_additional_headers_flag(parser)
+  flags.add_raw_display_flag(parser)
+  flags.add_uri_support_to_list_commands(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """Lists Cloud Storage buckets."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
       List Cloud Storage buckets.
       """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
 
       List all Google Cloud Storage buckets in default project:
 
@@ -56,11 +65,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        'urls', nargs='*', help='Specifies URL of buckets to List.')
-    flags.add_additional_headers_flag(parser)
-    flags.add_raw_display_flag(parser)
-    flags.add_uri_support_to_list_commands(parser)
+    _add_common_args(parser)
 
   def Run(self, args):
     if args.urls:
@@ -69,7 +74,8 @@ class List(base.ListCommand):
         url = storage_url.storage_url_from_string(url_string)
         if not (url.is_provider() or url.is_bucket()):
           raise errors.InvalidUrlError(
-              'URL does not match buckets: {}'.format(url_string))
+              'URL does not match buckets: {}'.format(url_string)
+          )
         urls.append(url)
     else:
       urls = [storage_url.CloudUrl(storage_url.ProviderPrefix.GCS)]
@@ -85,3 +91,13 @@ class List(base.ListCommand):
             full_resource_formatter.BucketDisplayTitlesAndDefaults,
             display_raw_keys=args.raw,
         )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """Lists Cloud Storage buckets."""
+
+  @staticmethod
+  def Args(parser):
+    _add_common_args(parser)
+    flags.add_soft_deleted_flag(parser, hidden=True)

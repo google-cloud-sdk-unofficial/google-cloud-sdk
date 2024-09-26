@@ -17,18 +17,21 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
     brief: List connections
-    description: List connections
+    description: |
+      List connections.
     examples: |-
-      To list all connections, run:
+      To list all connections in location `us-central1` run:
 
-      $ {command}
+      $ {command} --location=us-central1
   arguments:
     params:
     - help_text: |-
         Parent value for ListConnectionsRequest
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location
       required: true
   request:

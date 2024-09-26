@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   hidden: true
   help_text:
     brief: List all ExadataInfrastructures.
@@ -31,6 +32,7 @@
         The parent value for CloudExadataInfrastructure in the following format:
         projects/{project}/locations/{location}.
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location
       required: true
   request:

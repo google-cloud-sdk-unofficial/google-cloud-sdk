@@ -17,19 +17,26 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: Create gitRepositoryLinks
-    description: Create a gitRepositoryLink
+    brief: Create a git repository link
+    description: |
+      Create a git repository link.
     examples: |-
-      To create the gitRepositoryLink, run:
+      To create a git repository link 'my-git-repository-link' in a connection `my-connection` in `us-central1` run:
 
-      $ {command}
+      $ {command} my-git-repository-link --clone-uri=https://github.com/my-org/my-repo.git --connection=my-connection --location=us-central1
+
+      Or run:
+
+      $ {command} projects/my-project/locations/us-central1/connections/my-connection/gitRepositoryLinks/my-git-repository-link --clone-uri=https://github.com/my-org/my-repo.git --location=us-central1
   arguments:
     params:
     - help_text: |-
         Identifier. Resource name of the repository, in the format
         `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
       is_positional: true
+      is_primary_resource: true
       request_id_field: gitRepositoryLinkId
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection_git_repository_link
       required: true
@@ -90,6 +97,7 @@
       type: bool
       help_text: |-
         If set, validate the request, but do not actually post it.
+      default: null
   request:
     api_version: v1
     collection:

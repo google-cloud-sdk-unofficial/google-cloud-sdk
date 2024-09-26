@@ -29,6 +29,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.core import log
 
 
 DETAILED_HELP = {
@@ -83,6 +84,7 @@ class List(base.ListCommand):
         help=(
             'Location to list insights for. If no location is specified,'
             ' insights for all supported locations are listed.'
+            ' Not specifying a location can add 15-20 seconds to the runtime.'
         ),
     )
     parser.add_argument(
@@ -94,6 +96,7 @@ class List(base.ListCommand):
             ' specified, insights for all supported insight types are listed.'
             ' Supported insight types can be found here: '
             'https://cloud.google.com/recommender/docs/insights/insight-types'
+            ' Not specifying an insight-type can add a minute to the runtime.'
         ),
     )
     parser.add_argument(
@@ -114,8 +117,8 @@ class List(base.ListCommand):
             projects. The maximum number of resources (organization,
             folders, projects, and descendant resources) that can be accessed at
             once with the `--recursive` flag is 100. For a larger
-            number of nested resources, use BigQuery Export. Use `--recursive`
-            to enable and `--no-recursive` to disable.
+            number of nested resources, use BigQuery Export. Using `--recursive`
+            can add 15-20 seconds per resource to the runtime.
             """),
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)
@@ -198,8 +201,10 @@ class List(base.ListCommand):
       asset_count += 1
       if asset_count > 100:
         raise exceptions.UnsupportedOperationError(
-            'The max number of assets to list insights is 100.  To list'
-            ' a larger number of assets, please use BigQuery Export.'
+            'The maximum number of resources (organizations, folders, projects,'
+            ' and descendant resources) that can be accessed to list'
+            ' insights is 100. To access'
+            ' a larger number of resources, use BigQuery Export.'
         )
 
     return self.resource_locations
@@ -216,6 +221,7 @@ class List(base.ListCommand):
     """
 
     # Collect Assets and Locations
+    log.status.Print('Collecting Resources... This may take some time...')
     if args.recursive:
       resource_locations = self.searchAllResources(args)
     elif args.location is None:
@@ -265,7 +271,14 @@ class List(base.ListCommand):
     """
     insights = []
     insights_client = insight.CreateClient(self.ReleaseTrack())
-    for parent_name in asset_insight_types:
+    resource_prev = None
+    location_prev = None
+    for resource, location, insight_type in asset_insight_types:
+      if resource != resource_prev or location != location_prev:
+        log.status.Print(f'Reading Insights for: {resource} {location}')
+      resource_prev = resource
+      location_prev = location
+      parent_name = '/'.join([resource, location, insight_type])
       new_insights = insights_client.List(
           parent_name, args.page_size
       )
@@ -299,11 +312,16 @@ class List(base.ListCommand):
     # collect insights for all insight types
     asset_insight_types = []
     for asset in resource_locations:
+      tokens = asset.split('/')
+      resource = '/'.join(tokens[:2])
+      location = '/'.join(tokens[2:4])
       if args.insight_type is not None:
-        asset_insight_types.append(f'{asset}/insightTypes/{args.insight_type}')
+        asset_insight_types.append(
+            (resource, location, f'insightTypes/{args.insight_type}')
+        )
       else:  # loop through all insight types
         asset_insight_types.extend([
-            f'{asset}/insightTypes/{name}'
+            (resource, location, f'insightTypes/{name}')
             for name in self.ListInsightTypes(args)
         ])
 

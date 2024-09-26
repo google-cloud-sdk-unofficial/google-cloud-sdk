@@ -30,13 +30,14 @@ NA = 'NA'
 
 DETAILED_HELP = {
     'EXAMPLES': """\
-   Print the status of the Config Management Feature:
+   Print the status of the Config Management feature:
 
     $ {command}
 
-    Name             Status  Last_Synced_Token   Sync_Branch  Last_Synced_Time  Hierarchy_Controller
-    managed-cluster  SYNCED  2945500b7f          acme         2020-03-23
-    11:12:31 -0700 PDT  INSTALLED
+    Name            | Status | Last_Synced_Token | Sync_Branch | Last_Synced_Time              | Policy_Controller | Hierarchy_Controller | Version | Upgrades | Synced_To_Fleet_Default
+    --------------- | ------ | ----------------- | ----------- | ----------------------------- | ----------------- | -------------------- | ------- | -------- | ----------------------------
+    managed-cluster | SYNCED | 2945500b7f        | acme        | 2020-03-23 11:12:31 -0700 PDT | NA                | NA                   | 1.18.3  | auto     | FLEET_DEFAULT_NOT_CONFIGURED
+
 
   View the status for the cluster named `managed-cluster-a`:
 
@@ -46,12 +47,12 @@ DETAILED_HELP = {
 
     $ {command} --filter="acm_status.name ~ managed-cluster.*"
 
-  List all clusters where current status is `SYNCED`:
+  List all clusters where current Config Sync `Status` is `SYNCED`:
 
     $ {command} --filter="acm_status.config_sync:SYNCED"
 
-  List all the clusters where sync_branch is `v1` and current Config Sync status
-  is not `SYNCED`:
+  List all the clusters where sync_branch is `v1` and current Config Sync
+  `Status` is not `SYNCED`:
 
     $ {command} --filter="acm_status.sync_branch:v1 AND -acm_status.config_sync:SYNCED"
   """,
@@ -61,8 +62,8 @@ DETAILED_HELP = {
 class ConfigmanagementFeatureState(object):
   """Feature state class stores ACM status."""
 
-  def __init__(self, clusterName):
-    self.name = clusterName
+  def __init__(self, cluster_name):
+    self.name = cluster_name
     self.config_sync = NA
     self.last_synced_token = NA
     self.last_synced = NA
@@ -71,6 +72,7 @@ class ConfigmanagementFeatureState(object):
     self.hierarchy_controller_state = NA
     self.version = NA
     self.upgrades = NA
+    self.synced_to_fleet_default = NA
 
   def update_sync_state(self, fs):
     """Update config_sync state for the membership that has ACM installed.
@@ -202,7 +204,18 @@ class ConfigmanagementFeatureState(object):
 
 
 class Status(feature_base.FeatureCommand, base.ListCommand):
-  """Print the status of all clusters with Config Management enabled."""
+  """Print the status of all clusters with Config Management enabled.
+
+  The `Synced_to_Fleet_Default` status indicates whether each membership's
+  configuration has been synced with the [fleet-default membership configuration
+  ](https://cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features).
+  `Synced_to_Fleet_Default` displays `FLEET_DEFAULT_NOT_CONFIGURED` when
+  fleet-default membership configuration is not enabled.
+  `Synced_to_Fleet_Default` for an individual membership may be `UNKNOWN` if
+  configuration has yet to be applied to this membership since enabling
+  fleet-default membership configuration.
+  See the `enable` and `apply` commands for more details.
+  """
 
   detailed_help = DETAILED_HELP
 
@@ -220,11 +233,12 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             policy_controller_state:label="Policy_Controller",
             hierarchy_controller_state:label="Hierarchy_Controller",
             version:label="Version",
-            upgrades:label="Upgrades"
+            upgrades:label="Upgrades",
+            synced_to_fleet_default:label="Synced_to_Fleet_Default"
       )' , acm_errors:format=list)
     """)
 
-  def Run(self, args):
+  def Run(self, _):
     memberships, unreachable = api_util.ListMembershipsFull()
     if unreachable:
       log.warning(
@@ -233,27 +247,31 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
       )
     if not memberships:
       return None
-    f = self.GetFeature()
+    self.f = self.GetFeature()
     acm_status = []
     acm_errors = []
 
-    feature_spec_memberships = {
+    self.feature_spec_memberships = {
         util.MembershipPartialName(m): s
-        for m, s in self.hubclient.ToPyDict(f.membershipSpecs).items()
+        for m, s in self.hubclient.ToPyDict(self.f.membershipSpecs).items()
         if s is not None and s.configmanagement is not None
     }
     feature_state_memberships = {
         util.MembershipPartialName(m): s
-        for m, s in self.hubclient.ToPyDict(f.membershipStates).items()
+        for m, s in self.hubclient.ToPyDict(self.f.membershipStates).items()
     }
     for name in memberships:
       name = util.MembershipPartialName(name)
       cluster = ConfigmanagementFeatureState(name)
+      cluster.synced_to_fleet_default = self.fleet_default_sync_status(name)
       if name not in feature_state_memberships:
-        if name in feature_spec_memberships:
+        if name in self.feature_spec_memberships:
           # (b/187846229) Show PENDING if feature spec is aware of
           # this membership name but feature state is not
-          cluster.update_pending_state(feature_spec_memberships[name], None)
+          cluster.update_pending_state(
+              self.feature_spec_memberships[name],
+              None
+          )
         acm_status.append(cluster)
         continue
       md = feature_state_memberships[name]
@@ -303,13 +321,27 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
                   name, fs.configSyncState.syncState.errors, acm_errors
               )
             cluster.update_hierarchy_controller_state(fs)
-            if name in feature_spec_memberships:
+            if name in self.feature_spec_memberships:
               cluster.update_pending_state(
-                  feature_spec_memberships[name].configmanagement,
+                  self.feature_spec_memberships[name].configmanagement,
                   fs.membershipSpec,
               )
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
+
+  def fleet_default_sync_status(self, membership):
+    if not self.f.fleetDefaultMemberConfig:
+      return 'FLEET_DEFAULT_NOT_CONFIGURED'
+    if (membership not in self.feature_spec_memberships or
+        self.feature_spec_memberships[membership].origin is None):
+      return 'UNKNOWN'
+    origin = self.feature_spec_memberships[membership].origin.type
+    if origin == self.messages.Origin.TypeValueValuesEnum.FLEET:
+      return 'YES'
+    if (origin == self.messages.Origin.TypeValueValuesEnum.USER or
+        origin == self.messages.Origin.TypeValueValuesEnum.FLEET_OUT_OF_SYNC):
+      return 'NO'
+    return 'UNKNOWN'
 
 
 def config_sync_state(state):

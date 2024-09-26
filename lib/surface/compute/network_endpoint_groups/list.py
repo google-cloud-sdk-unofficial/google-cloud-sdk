@@ -28,8 +28,6 @@ from googlecloudsdk.calliope import base
 class List(base.ListCommand):
   """Lists Compute Engine network endpoint groups."""
 
-  support_port_mapping_neg = False
-
   detailed_help = base_classes.GetMultiScopeListerHelp(
       'network endpoint groups',
       [
@@ -74,5 +72,3 @@ class List(base.ListCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
   """List a Google Compute Engine network endpoint group."""
-
-  support_port_mapping_neg = True

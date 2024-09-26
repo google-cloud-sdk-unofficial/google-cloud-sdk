@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class DbSystemShapesAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class DbSystemShapesBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class DbSystemShapesGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.UNCATEGORIZED_CATEGORY

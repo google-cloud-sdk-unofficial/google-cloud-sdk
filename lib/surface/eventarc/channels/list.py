@@ -52,6 +52,7 @@ table(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Eventarc channels."""
 
@@ -61,8 +62,11 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddLocationResourceArg(
         parser,
-        "Location for which to list channels. This should be one of the supported regions.",
-        required=False)
+        "Location for which to list channels. This should be one of the"
+        " supported regions.",
+        required=False,
+        allow_aggregation=True,
+    )
     flags.AddProjectResourceArg(parser)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(channels.GetChannelURI)

@@ -19,12 +19,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
+import json
 from typing import Any
 
 from googlecloudsdk.api_lib.scc.iac_remediation import findings
+from googlecloudsdk.api_lib.scc.iac_remediation import llm
+from googlecloudsdk.api_lib.scc.iac_remediation import prompt
+from googlecloudsdk.api_lib.scc.iac_remediation import terraform
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.iac_remediation import flags
+from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -38,9 +42,9 @@ class Create(base.CreateCommand):
       "EXAMPLES": """
           Sample usage:
 
-          $ {{command}} iac-remediation create --finding-org-id=123456789
+          $ {{command}} scc iac-remediation create --finding-org-id=123456789
           --finding-name=projects/123456789/sources/123456789/locations/global/findings/123456789
-          --tfstate-file-paths-list=/path/to/file1.tfstate,/path/to/file2.tfstate --llm-proj-id=my-proj""",
+          --tfstate-file-paths=/path/to/file1.tfstate,/path/to/file2.tfstate --project-id=my-proj""",
   }
 
   @staticmethod
@@ -56,5 +60,45 @@ class Create(base.CreateCommand):
     Args:
       args: Arguments for the command.
     """
+    # Replace the string with git function.
+    is_repo_flag, repo_root_dir = ""
+    if not is_repo_flag:
+      log.Print("Not a git repo.")
+      return
     resp = findings.MakeApiCall(args.finding_org_id, args.finding_name)
-    print(resp)
+    json_resp = json.loads(resp)
+    iam_bindings = findings.FetchIAMBinding(json_resp)
+    resource_name = findings.FetchResourceName(json_resp)
+    tfstate_json_list = terraform.fetch_tfstate_list(
+        args.tfstate_file_paths, repo_root_dir
+    )
+    if not tfstate_json_list:
+      log.Print("No TFState files found.")
+      return
+    tfstate_information = terraform.get_tfstate_information_per_member(
+        iam_bindings, tfstate_json_list, resource_name
+    )
+    if not tfstate_information:
+      for tfstate_json in tfstate_json_list:
+        if "google_project_iam_policy" in tfstate_json:
+          tfstate_information = "google_project_iam_policy"
+    tf_files = terraform.find_tf_files(repo_root_dir)
+    for member, role_data in iam_bindings.items():
+      tfstate_data = ""
+      if tfstate_information and member in tfstate_information:
+        tfstate_data = tfstate_information[member]
+      input_prompt = prompt.fetch_input_prompt(
+          tfstate_data,
+          role_data,
+          resource_name,
+          tf_files,
+      )
+      response = llm.MakeLLMCall(input_prompt, args.project_id)
+      response_dict = prompt.llm_response_parser(response)
+      check, validated_response = terraform.validate_tf_files(
+          response_dict
+      )
+      if not check:
+        log.Print("Invalid response from LLM.")
+      else:
+        log.Print(validated_response)

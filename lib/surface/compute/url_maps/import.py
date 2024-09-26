@@ -288,7 +288,7 @@ def _GetClearedFieldsForCustomErrorResponsePolicy(
 ):
   """Gets a list of fields cleared by the user for CustomErrorResponsePolicy."""
   cleared_fields = []
-  if not custom_error_response_policy.error_response_rule:
+  if not custom_error_response_policy.errorResponseRule:
     cleared_fields.append(field_prefix + 'errorResponseRule')
   else:
     cleared_fields = (
@@ -298,7 +298,7 @@ def _GetClearedFieldsForCustomErrorResponsePolicy(
             field_prefix + 'errorResponseRule.',
         )
     )
-  if not custom_error_response_policy.error_service:
+  if not custom_error_response_policy.errorService:
     cleared_fields.append(field_prefix + 'errorService')
   return cleared_fields
 

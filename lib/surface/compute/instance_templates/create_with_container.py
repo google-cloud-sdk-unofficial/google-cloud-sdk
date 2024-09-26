@@ -336,7 +336,7 @@ class CreateWithContainer(base.CreateCommand):
             messages=client.messages,
             args=args,
             support_confidential_compute_type=True,
-            support_confidential_compute_type_tdx=False))
+            support_confidential_compute_type_tdx=True))
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,

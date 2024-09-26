@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   hidden: true
   help_text:
     brief: Create a new AutonomousDatabase.
@@ -39,6 +40,7 @@
         Identifier. The name of the Autonomous Database resource in the following format:
         projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
       is_positional: true
+      is_primary_resource: true
       request_id_field: autonomousDatabaseId
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database
       required: true
@@ -228,7 +230,7 @@
           - arg_value: early
             enum_value: EARLY
             help_text: |-
-              An EARLY maintenance schedule patches the database before the
+              An EARLY maintenance schedule patches the database before
               the regular scheduled maintenance.
           - arg_value: regular
             enum_value: REGULAR
@@ -262,8 +264,9 @@
       - api_field: value
     - arg_name: network
       help_text: |-
-        The name of the VPC network used by the Autonomous Database.
-        Format: projects/{project}/global/networks/{network}
+        The name of the VPC network used by the Autonomous Database in the
+        following format:
+        projects/{project}/global/networks/{network}
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_global_network
@@ -285,11 +288,6 @@
           help_text: |-
             The name of the primary Autonomous Database that is used to create a Peer
             Autonomous Database from a source.
-            This field is only be used when a Peer Autonomous Database is
-            created and is in the following format:
-            projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
-            This field should be validated such that the Peer Autonomous Database does
-            not create a cycle with its Source Autonomous Database.
           is_positional: false
           is_primary_resource: false
           resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database

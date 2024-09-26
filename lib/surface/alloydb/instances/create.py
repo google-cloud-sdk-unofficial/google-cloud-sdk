@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser)
     flags.AddAuthorizedExternalNetworks(parser)
+    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
@@ -147,7 +148,6 @@ class CreateBeta(Create):
     flags.AddObservabilityConfigTrackActiveQueries(
         parser, show_negated_in_help=True
     )
-    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

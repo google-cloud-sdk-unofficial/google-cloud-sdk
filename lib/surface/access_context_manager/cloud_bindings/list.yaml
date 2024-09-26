@@ -9,10 +9,47 @@
 
           $ {command}
 
-        This command prints a list of gcpUserAccessBindings in a tabular form:
+        This command prints a list of Google Cloud user access bindings, `gcpUserAccessBindings`,
+        in YAML format. By default, the binding is printed in the following format:
 
-          NAME                                                  GROUP_KEY    ACCESS_LEVEL                                     DRY_RUN_ACCESS_LEVEL
-          organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N  a3dad        accessPolicies/9522/accessLevels/device_trusted  accessPolicies/9522/accessLevels/specific_location
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          groupKey: a3dad
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
+        Or
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          groupKey: a3dad
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+          scopedAccessSettings:
+          - activeSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/device_trusted
+            dryRunSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/specific_location
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  clientId: 123.apps.googleusercontent.com
+          - activeSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/device_trusted
+            dryRunSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/specific_location
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  name: Cloud Console
     ALPHA:
       examples: |
         To list cloud access bindings, run:
@@ -29,10 +66,6 @@
           - accessPolicies/9522/accessLevels/specific_location
           groupKey: a3dad
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
-          restrictedClientApplications:
-          - clientId: 123.apps.googleusercontent.com
-          - name: Cloud Console
-          - name: Google Cloud SDK
 
         Or
 
@@ -45,25 +78,25 @@
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
           scopedAccessSettings:
           - activeSettings:
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunSettings:
-          accessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          scope:
-          clientScope:
-          restrictedClientApplication:
-          clientId: 123.apps.googleusercontent.com
+              accessLevels:
+              - accessPolicies/9522/accessLevels/device_trusted
+            dryRunSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/specific_location
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  clientId: 123.apps.googleusercontent.com
           - activeSettings:
-          accessLevels:
-          - accessPolicies/9522/accessLevels/device_trusted
-          dryRunSettings:
-          accessLevels:
-          - accessPolicies/9522/accessLevels/specific_location
-          scope:
-          clientScope:
-          restrictedClientApplication:
-          name: Cloud Console
+              accessLevels:
+              - accessPolicies/9522/accessLevels/device_trusted
+            dryRunSettings:
+              accessLevels:
+              - accessPolicies/9522/accessLevels/specific_location
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  name: Cloud Console
 
         If filter is specified as
         `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
@@ -105,12 +138,6 @@
 
   output:
     GA:
-      format: |
-        table(
-            name,
-            groupKey:label=GROUP_KEY,
-            accessLevels.join(","):label=ACCESS_LEVEL,
-            dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
-        )
+      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, restrictedClientApplications, scopedAccessSettings)
     ALPHA:
       format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, reauthSettings, restrictedClientApplications, scopedAccessSettings)

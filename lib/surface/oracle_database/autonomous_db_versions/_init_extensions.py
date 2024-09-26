@@ -21,11 +21,14 @@ from googlecloudsdk.calliope import base
 
 class AutonomousDbVersionsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class AutonomousDbVersionsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
+  category = base.UNCATEGORIZED_CATEGORY
 
 
 class AutonomousDbVersionsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+  category = base.UNCATEGORIZED_CATEGORY

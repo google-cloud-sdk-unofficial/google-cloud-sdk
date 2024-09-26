@@ -30,10 +30,10 @@ from googlecloudsdk.core.console import console_io
 
 
 class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
-  """Upgrade the version of the Config Management Feature.
+  """Upgrade the version of the Config Management feature.
 
   Upgrade a specified membership to any supported version of the Config
-  Management Feature.
+  Management feature.
 
   ## EXAMPLES
 
@@ -68,7 +68,7 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
     if not self._validate_versions(membership, cluster_v, new_version):
       return
     console_io.PromptContinue(
-        'You are about to change the {} Feature for membership {} from version'
+        'You are about to change the {} feature for membership {} from version'
         ' "{}" to version "{}".'.format(
             self.feature.display_name, membership, cluster_v, new_version
         ),
@@ -107,7 +107,7 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
   def _validate_versions(self, membership, cluster_v, new_v):
     if cluster_v == new_v:
       log.status.Print(
-          'Membership {} already has version {} of the {} Feature installed.'
+          'Membership {} already has version {} of the {} feature installed.'
           .format(membership, cluster_v, self.feature.display_name)
       )
       return False

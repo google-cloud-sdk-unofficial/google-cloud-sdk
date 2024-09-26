@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.api_lib.container.fleet import util as api_util
@@ -27,6 +28,7 @@ from googlecloudsdk.command_lib.container.fleet import util
 from googlecloudsdk.command_lib.container.fleet.scopes import util as scopes_util
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.projects import util as projects_util
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -83,24 +85,58 @@ class ListAppOperatorBindings(base.ListCommand):
     scope_arg = args.CONCEPTS.scope.Parse()
     scope_id = scope_arg.Name()
     scope_path = scope_arg.RelativeName()
+    has_scope_rrb_permission = True
+    has_scope_iam_permission = True
+    has_project_iam_permission = True
 
     principal_to_roles = {}
 
-    scope_rrbs = fleetclient.ListScopeRBACRoleBindings(project, scope_id)
-    derive_scope_rrb_role(scope_rrbs, principal_to_roles)
+    try:
+      scope_rrbs = fleetclient.ListScopeRBACRoleBindings(project, scope_id)
+      derive_scope_rrb_role(scope_rrbs, principal_to_roles)
+    except apitools_exceptions.HttpForbiddenError:
+      has_scope_rrb_permission = False
+      log.warning(
+          'You do not have permission to check fleet scope RBAC role bindings.'
+          ' This results in incomplete role binding details in the list of app'
+          ' operators.'
+      )
 
-    scope_iam_policy = fleetclient.GetScopeIamPolicy(scope_path)
-    derive_scope_level_iam_role(scope_iam_policy, principal_to_roles)
+    try:
+      scope_iam_policy = fleetclient.GetScopeIamPolicy(scope_path)
+      derive_scope_level_iam_role(scope_iam_policy, principal_to_roles)
+    except apitools_exceptions.HttpForbiddenError:
+      has_scope_iam_permission = False
+      log.warning(
+          'You do not have permission to check fleet scope IAM role bindings.'
+          ' This results in incomplete role binding details in the list of app'
+          ' operators.'
+      )
 
-    project_iam_policy = projects_api.GetIamPolicy(project_ref)
-    condition = scopes_util.ScopeLogViewCondition(project, scope_id)
-    iam_util.ValidateConditionArgument(
-        condition, iam_util.CONDITION_FORMAT_EXCEPTION
+    try:
+      project_iam_policy = projects_api.GetIamPolicy(project_ref)
+      condition = scopes_util.ScopeLogViewCondition(project, scope_id)
+      iam_util.ValidateConditionArgument(
+          condition, iam_util.CONDITION_FORMAT_EXCEPTION
+      )
+      derive_log_view_access_role(
+          project_iam_policy, condition, principal_to_roles
+      )
+      find_project_level_iam_role(project_iam_policy, principal_to_roles)
+    except apitools_exceptions.HttpForbiddenError:
+      has_project_iam_permission = False
+      log.warning(
+          'You do not have permission to check project IAM role bindings. This'
+          ' results in incomplete role binding details in the list of app'
+          ' operators.'
+      )
+
+    finalize_roles(
+        principal_to_roles,
+        has_scope_rrb_permission,
+        has_scope_iam_permission,
+        has_project_iam_permission,
     )
-    derive_log_view_access_role(
-        project_iam_policy, condition, principal_to_roles
-    )
-    find_project_level_iam_role(project_iam_policy, principal_to_roles)
 
     bindings = []
     for iam_member in principal_to_roles:
@@ -119,9 +155,8 @@ def derive_scope_rrb_role(scope_rrbs, principal_to_roles):
     principal_to_roles[iam_member].scope_rrb_role = set_role(
         principal_to_roles[iam_member].scope_rrb_role, scope_rrb_role
     )
-    if ',' in principal_to_roles[iam_member].scope_rrb_role:
-      principal_to_roles[iam_member].overall_role = 'custom'
-    else:
+    if ',' not in principal_to_roles[iam_member].scope_rrb_role:
+      # The overall role can be set to a standard role for now.
       principal_to_roles[iam_member].overall_role = scope_rrb_role
 
 
@@ -141,9 +176,7 @@ def derive_scope_level_iam_role(scope_iam_policy, principal_to_roles):
             principal_to_roles[iam_member].overall_role = 'custom'
 
   for iam_member in principal_to_roles:
-    if principal_to_roles[
-        iam_member
-    ].overall_role != 'custom' and not scopes_util.RbacAndScopeIamRolesMatch(
+    if not scopes_util.RbacAndScopeIamRolesMatch(
         principal_to_roles[iam_member].scope_rrb_role,
         principal_to_roles[iam_member].scope_iam_role,
     ):
@@ -165,13 +198,10 @@ def derive_log_view_access_role(
     for iam_member in binding.members:
       if iam_member not in principal_to_roles:
         init_principal(principal_to_roles, iam_member)
-      principal_to_roles[iam_member].log_view_access = True
+      principal_to_roles[iam_member].log_view_access = 'granted'
 
   for iam_member in principal_to_roles:
-    if (
-        principal_to_roles[iam_member].overall_role != 'custom'
-        and not principal_to_roles[iam_member].log_view_access
-    ):
+    if principal_to_roles[iam_member].log_view_access != 'granted':
       principal_to_roles[iam_member].overall_role = 'custom'
 
 
@@ -201,19 +231,39 @@ def find_project_level_iam_role(project_iam_policy, principal_to_roles):
         principal_to_roles[iam_member].overall_role = 'custom'
 
 
+def finalize_roles(
+    principal_to_roles,
+    has_scope_rrb_permission,
+    has_scope_iam_permission,
+    has_project_iam_permission,
+):
+  """Finalize the roles in case of permission denied errors."""
+  for iam_member in principal_to_roles:
+    if not has_scope_rrb_permission:
+      principal_to_roles[iam_member].scope_rrb_role = 'permission denied'
+      principal_to_roles[iam_member].overall_role = 'unknown'
+    if not has_scope_iam_permission:
+      principal_to_roles[iam_member].scope_iam_role = 'permission denied'
+      principal_to_roles[iam_member].overall_role = 'unknown'
+    if not has_project_iam_permission:
+      principal_to_roles[iam_member].project_iam_role = 'permission denied'
+      principal_to_roles[iam_member].log_view_access = 'permission denied'
+      principal_to_roles[iam_member].overall_role = 'unknown'
+
+
 def init_principal(principal_to_roles, iam_member):
   principal_to_roles[iam_member] = scopes_util.AppOperatorBinding(
       principal=iam_member,
       overall_role='custom',
-      scope_rrb_role='unknown',
-      scope_iam_role='unknown',
-      project_iam_role='unknown',
-      log_view_access=False,
+      scope_rrb_role='not found',
+      scope_iam_role='not found',
+      project_iam_role='not found',
+      log_view_access='not found',
   )
 
 
 def set_role(existing_role, new_role):
-  if existing_role == 'unknown':
+  if existing_role == 'not found':
     return new_role
   if new_role in existing_role:
     return existing_role

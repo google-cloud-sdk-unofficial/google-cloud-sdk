@@ -59,9 +59,10 @@ def get_bucket_resource(
     ) from e
 
 
-class PerformanceTestType(enum.Enum):
+class TestType(enum.Enum):
   """Enum class for specifying performance test type for diagnostic tests."""
 
+  DIRECT_CONNECTIVITY = 'DIRECT_CONNECTIVITY'
   DOWNLOAD_THROUGHPUT = 'DOWNLOAD_THROUGHPUT'
   UPLOAD_THROUGHPUT = 'UPLOAD_THROUGHPUT'
   LATENCY = 'LATENCY'
@@ -107,7 +108,7 @@ class Diagnose(base.Command):
       The following command runs only UPLOAD_THROUGHPUT and DOWNLOAD_THROUGHPUT
       diagnostic tests:
 
-      $ {command} gs://my-bucket --test-type=[UPLOAD_THROUGHPUT,DOWNLOAD_THROUGHPUT]
+      $ {command} gs://my-bucket --test-type=UPLOAD_THROUGHPUT,DOWNLOAD_THROUGHPUT
 
       The following command runs the diagnostic tests using ``10'' objects of
       ``1MiB'' size each with ``10'' threads and ``10'' processes at max:
@@ -134,31 +135,25 @@ class Diagnose(base.Command):
     parser.add_argument(
         '--test-type',
         type=arg_parsers.ArgList(
-            choices=sorted([option.value for option in PerformanceTestType])
+            choices=sorted([option.value for option in TestType])
         ),
         metavar='TEST_TYPES',
         help="""
         Tests to run as part of this diagnosis. Following tests are supported:
 
+        DIRECT_CONNECTIVITY: Run a test upload over the Direct Connectivity
+        network path and run other diagnostics if the upload fails.
+
         DOWNLOAD_THROUGHPUT: Upload objects to the specified bucket and record
-        the number of bytes transfered per second.
+        the number of bytes transferred per second.
 
-        UPLOAD_THROUGHPUT: Download objects from the specified bucket and record
-        the number of bytes transfered per second.
+        UPLOAD_THROUGHPUT: Download objects from the specified bucket and
+        record the number of bytes transferred per second.
 
-        LATENCY: Writes the objects, retrieves its metadata, reads the objects
-        and records latency of each operation.
+        LATENCY: Write the objects, retrieve their metadata, read the objects,
+        and record latency of each operation.
         """,
         default=[],
-    )
-    parser.add_argument(
-        '--direct-connectivity',
-        action='store_true',
-        help=(
-            'Run Direct Connectivity diagnostic. This feature is experimental'
-            ' and may later be removed or merged with the --test-type flag.'
-        ),
-        hidden=True,
     )
     parser.add_argument(
         '--download-type',
@@ -189,7 +184,6 @@ class Diagnose(base.Command):
             'If the diagnostic supports writing logs, write the logs to this'
             ' file location.'
         ),
-        hidden=True,
     )
     parser.add_argument(
         '--upload-type',
@@ -302,9 +296,6 @@ class Diagnose(base.Command):
       self, args, url_object, tests_to_run
   ):
     """Runs test with system performance tracking."""
-    if not tests_to_run:
-      return []
-
     object_sizes = None
 
     if args.object_count:
@@ -324,7 +315,7 @@ class Diagnose(base.Command):
     with system_info.get_disk_io_stats_delta_diagnostic_result(
         system_info_provider, test_results
     ):
-      if PerformanceTestType.LATENCY.value in tests_to_run:
+      if TestType.LATENCY.value in tests_to_run:
         latency_diagnostic = latency_diagnostic_lib.LatencyDiagnostic(
             url_object,
             object_sizes,
@@ -332,7 +323,7 @@ class Diagnose(base.Command):
         latency_diagnostic.execute()
         test_results.append(latency_diagnostic.result)
 
-      if PerformanceTestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
+      if TestType.DOWNLOAD_THROUGHPUT.value in tests_to_run:
         download_type = download_throughput_diagnostic_lib.DownloadType(
             args.download_type
         )
@@ -348,7 +339,7 @@ class Diagnose(base.Command):
         download_throughput_diagnostic.execute()
         test_results.append(download_throughput_diagnostic.result)
 
-      if PerformanceTestType.UPLOAD_THROUGHPUT.value in tests_to_run:
+      if TestType.UPLOAD_THROUGHPUT.value in tests_to_run:
         upload_type = upload_throughput_diagnostic_lib.UploadType(
             args.upload_type
         )
@@ -373,9 +364,9 @@ class Diagnose(base.Command):
 
   def Run(self, args):
     default_tests = [
-        PerformanceTestType.DOWNLOAD_THROUGHPUT.value,
-        PerformanceTestType.LATENCY.value,
-        PerformanceTestType.UPLOAD_THROUGHPUT.value,
+        TestType.DOWNLOAD_THROUGHPUT.value,
+        TestType.LATENCY.value,
+        TestType.UPLOAD_THROUGHPUT.value,
     ]
 
     url_object = storage_url.storage_url_from_string(args.url)
@@ -393,16 +384,17 @@ class Diagnose(base.Command):
 
     if args.test_type:
       tests_to_run = args.test_type
-    elif args.direct_connectivity:
-      tests_to_run = []
     else:
       tests_to_run = default_tests
 
-    test_results = self._run_tests_with_performance_tracking(
-        args, url_object, tests_to_run
-    )
+    if tests_to_run == [TestType.DIRECT_CONNECTIVITY.value]:
+      test_results = []
+    else:
+      test_results = self._run_tests_with_performance_tracking(
+          args, url_object, tests_to_run
+      )
 
-    if args.direct_connectivity:
+    if TestType.DIRECT_CONNECTIVITY.value in tests_to_run:
       direct_connectivity = (
           direct_connectivity_diagnostic.DirectConnectivityDiagnostic(
               bucket_resource,

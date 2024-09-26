@@ -17,6 +17,7 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   hidden: true
   help_text:
     brief: Get details of a CloudVmCluster.
@@ -31,6 +32,7 @@
         The name of the Cloud VM Cluster in the following format:
         projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluster}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_vm_cluster
       required: true
   request:

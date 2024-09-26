@@ -17,18 +17,21 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
+  auto_generated: true
   help_text:
-    brief: Delete connections
-    description: Delete a connection
+    brief: Delete a single connection
+    description: |
+      Delete a single connection.
     examples: |-
-      To delete the connection, run:
+      To delete a connection `my-comection` in location `us-central1` run:
 
-      $ {command}
+      $ {command} my-connection --location=us-central1
   arguments:
     params:
     - help_text: |-
         Name of the resource
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection
       required: true
     - arg_name: request-id
@@ -56,6 +59,7 @@
       type: bool
       help_text: |-
         If set, validate the request, but do not actually post it.
+      default: null
     - arg_name: etag
       api_field: etag
       required: false

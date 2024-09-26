@@ -52,6 +52,7 @@ _FILTER = 'name:/providers/'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List event providers available in Eventarc."""
 
@@ -62,7 +63,9 @@ class List(base.ListCommand):
     flags.AddLocationResourceArg(
         parser,
         'The location in which to list event providers.',
-        required=False)
+        required=False,
+        allow_aggregation=True,
+    )
     flags.AddProjectResourceArg(parser)
     flags.AddProviderNameArg(parser)
     parser.display_info.AddFormat(_FORMAT)

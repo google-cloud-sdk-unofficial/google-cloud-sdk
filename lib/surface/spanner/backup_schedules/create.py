@@ -63,6 +63,9 @@ Supported backup types:
 
 `full-backup`
   A full backup stores the entire contents of the database at a given version time.
+
+`incremental-backup`
+  An incremental backup contains only the data that has changed since a previous backup.
 """),
         type=arg_parsers.ArgList(
             choices=backup_type_choices,

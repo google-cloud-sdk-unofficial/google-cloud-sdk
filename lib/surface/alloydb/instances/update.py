@@ -79,6 +79,7 @@ class Update(base.UpdateCommand):
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser)
     flags.AddAuthorizedExternalNetworks(parser)
+    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
@@ -147,7 +148,6 @@ class UpdateBeta(Update):
     flags.AddObservabilityConfigTrackActiveQueries(
         parser, show_negated_in_help=True
     )
-    flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(

@@ -134,6 +134,7 @@ def _Run(args, legacy_output=False):
   cloud_storage_ingestion_match_glob = getattr(
       args, 'cloud_storage_ingestion_match_glob', None
   )
+  ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
 
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
@@ -158,6 +159,7 @@ def _Run(args, legacy_output=False):
           cloud_storage_ingestion_text_delimiter=cloud_storage_ingestion_text_delimiter,
           cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
           cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
+          ingestion_log_severity=ingestion_log_severity,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -178,13 +180,15 @@ def _Run(args, legacy_output=False):
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
+def _Args(
+    parser, include_ingestion_from_cloud_storage_flags_and_log_severity=False
+):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
-    include_ingestion_from_cloud_storage_flags: Whether to include ingestion
-      from Cloud Storage flags
+    include_ingestion_from_cloud_storage_flags_and_log_severity: Whether to
+      include ingestion from Cloud Storage flags and log severity.
   """
 
   resource_args.AddResourceArgs(
@@ -195,7 +199,7 @@ def _Args(parser, include_ingestion_from_cloud_storage_flags=False):
   flags.AddIngestionDatasourceFlags(
       parser,
       is_update=False,
-      include_ingestion_from_cloud_storage_flags=include_ingestion_from_cloud_storage_flags,
+      include_ingestion_from_cloud_storage_flags_and_log_severity=include_ingestion_from_cloud_storage_flags_and_log_severity,
   )
 
   labels_util.AddCreateLabelsFlags(parser)
@@ -216,7 +220,10 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
+    _Args(
+        parser,
+        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+    )
 
   def Run(self, args):
     return _Run(args)
@@ -228,7 +235,10 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_from_cloud_storage_flags=False)
+    _Args(
+        parser,
+        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+    )
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
@@ -241,4 +251,6 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(parser, include_ingestion_from_cloud_storage_flags=True)
+    _Args(
+        parser, include_ingestion_from_cloud_storage_flags_and_log_severity=True
+    )

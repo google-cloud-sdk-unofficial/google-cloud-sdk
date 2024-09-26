@@ -39,6 +39,8 @@ DETAILED_HELP = {
         """,
 }
 
+CUSTOM_MIRRORING_SUPPORTED = [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -58,7 +60,7 @@ class CreateProfileGroup(base.CreateCommand):
         required=False,
         arg_aliases=['security-profile'],
     )
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() in CUSTOM_MIRRORING_SUPPORTED:
       spg_flags.AddSecurityProfileResource(
           parser, cls.ReleaseTrack(), 'custom-mirroring-profile', required=False
       )

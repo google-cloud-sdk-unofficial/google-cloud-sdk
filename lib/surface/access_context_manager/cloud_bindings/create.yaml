@@ -4,13 +4,27 @@
     brief: Create cloud access bindings for a specific group.
     GA:
       description: |
-        Create a new cloud access binding. The access level will be bound with the group. The access
-        level will be enforced when any user in the group tries to access the Google cloud console
-        or API.
+        Create a new cloud access binding. The access level will be globally bound with the group.
+
+        Allowlisted Applications can be specified to limit the scope of the cloud access binding
+        in the 'binding-file'. In such case, the access level specified in the yaml file will be
+        bound with the group and the allowlisted applications.
       examples: |
         To create a new cloud access binding, run:
 
           $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
+
+        To create a new cloud access binding for particular applications using a yaml file, run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --binding-file='binding.yaml'
+
+        To create a new global cloud access binding, and for particular applications
+        using a yaml file, run:
+
+          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890' \
+            --binding-file='binding.yaml'
 
         To create a new cloud access binding for the dry run access level, run:
 
@@ -89,8 +103,11 @@
       api_version: v1
       disable_resource_check: true
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessOrganization
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
+
   ALPHA:
     request:
       collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -108,7 +125,6 @@
     - api_field: gcpUserAccessBinding
       metavar: YAML_FILE
       arg_name: binding-file
-      release_tracks: [ALPHA]
       help_text: |
         Path to a file containing a Google Cloud Platform User Access Binding.
 
@@ -118,6 +134,8 @@
       hidden: true
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
+      GA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1
     - api_field: gcpUserAccessBinding.groupKey
       arg_name: group-key
       type: str
@@ -159,7 +177,6 @@
       hidden: true
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
-      release_tracks: [ALPHA]
       help_text: |
         The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
         least one hour or zero, and no more than twenty-four hours. Granularity is limited to
@@ -177,7 +194,6 @@
     - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
       hidden: true
       arg_name: reauth-method
-      release_tracks: [ALPHA]
       default: login
       help_text: |
         Specifies the security check a user must undergo once their session expires. Defaults to

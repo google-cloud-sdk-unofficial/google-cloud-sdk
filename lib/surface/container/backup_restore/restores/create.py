@@ -105,7 +105,7 @@ class Create(base.CreateCommand):
 
         For more information about examples and how to use this filter,
         please refer to the Backup for GKE documentation:
-        https://cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke.
+        https://cloud.google.com/kubernetes-engine/docs/add-on/backup-for-gke/how-to/fine-grained-restore.
         """,
     )
     labels_util.AddCreateLabelsFlags(parser)
