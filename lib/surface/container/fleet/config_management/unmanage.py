@@ -19,10 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet import resources
+from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 
 
-class Unmanage(base.UpdateCommand):
+class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
   """Remove the Config Management Feature Spec for the given membership.
 
   Remove the Config Management Feature Spec for the given membership. The
@@ -35,7 +39,8 @@ class Unmanage(base.UpdateCommand):
     $ {command} --membership=MEMBERSHIP_NAME
   """
 
-  feature_name = 'configmanagement'
+  feature_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
+  mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
 
   @classmethod
   def Args(cls, parser):
@@ -53,4 +58,12 @@ class Unmanage(base.UpdateCommand):
         membershipSpecs=self.hubclient.ToMembershipSpecs(specs)
     )
 
-    self.Update(['membership_specs'], patch)
+    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+      membershipfeature = convert.ToV2MembershipFeature(
+          membership_key,
+          self.mf_name,
+          self.messages.MembershipFeatureSpec(),
+      )
+      self.UpdateV2(membership_key, ['spec'], membershipfeature)
+    else:
+      self.Update(['membership_specs'], patch)

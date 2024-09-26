@@ -39,6 +39,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete a view.
   """

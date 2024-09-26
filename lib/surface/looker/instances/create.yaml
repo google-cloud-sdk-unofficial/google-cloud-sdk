@@ -150,7 +150,6 @@
     - group:
         required: false
         release_tracks: [GA]
-        hidden: true
         help_text: |
           Private Service Connect - Private Service Connect allows private consumption of services
           across VPC networks that belong to different groups, teams, projects, or organizations.
@@ -158,13 +157,11 @@
         - api_field: instance.pscEnabled
           arg_name: psc-enabled
           type: bool
-          hidden: true
           required: true
           help_text: |
             This specifies whether Private Service Connect (PSC) is enabled on the Looker instance.
         - api_field: instance.pscConfig.allowedVpcs
           arg_name: psc-allowed-vpcs
-          hidden: true
           help_text: |
             List of VPCs that are allowed ingress into the Looker instance.
     # Group for KMS Encryption config

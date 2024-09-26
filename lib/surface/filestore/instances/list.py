@@ -28,6 +28,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Filestore instances."""
@@ -102,7 +103,7 @@ class ListAlpha(List):
         'The location in which to list instances.')]).AddToParser(parser)
     instances_flags.AddLocationArg(parser)
     instances_flags.AddRegionArg(parser)
-    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT)
+    parser.display_info.AddFormat(instances_flags.INSTANCES_LIST_FORMAT_ALPHA)
 
     def UriFunc(resource):
       registry = resources.REGISTRY.Clone()

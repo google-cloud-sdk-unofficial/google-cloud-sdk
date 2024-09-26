@@ -41,7 +41,7 @@
         * `title [asc|desc]`, defaults to ascending if not specified.
       api_field: orderBy
     - arg_name: page-size
-      help_text: Maximum number of resources per page. No more than 1000.
+      help_text: Maximum number of resources per page. No more than 500.
       type: int
       api_field: pageSize
     - arg_name: limit

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class Redact(base.Command):

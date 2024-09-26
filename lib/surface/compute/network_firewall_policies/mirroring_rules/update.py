@@ -53,7 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddGlobalFirewallPolicy(parser)
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
-    flags.AddSecurityProfileGroup(parser)
+    flags.AddMirroringSecurityProfileGroup(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {

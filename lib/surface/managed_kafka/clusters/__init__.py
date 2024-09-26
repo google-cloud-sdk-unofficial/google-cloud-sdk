@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Apache Kafka for BigQuery clusters operations."""
+"""Managed Service for Apache Kafka clusters operations."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Clusters(base.Group):
-  """Administer Apache Kafka for BigQuery clusters."""
+  """Administer Managed Service for Apache Kafka clusters."""
   category = base.DATA_ANALYTICS_CATEGORY

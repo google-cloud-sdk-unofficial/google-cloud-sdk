@@ -67,7 +67,7 @@ class _Update(object):
     mj_flags.AddNoAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser)
-    mj_flags.AddDumpPathFlag(parser)
+    mj_flags.AddDumpGroupFlag(parser)
     mj_flags.AddConnectivityGroupFlag(parser, mj_flags.ApiType.UPDATE)
     flags.AddLabelsUpdateFlags(parser)
 

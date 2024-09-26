@@ -34,6 +34,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display information about a bucket."""
 

@@ -31,16 +31,17 @@
         The name of the policy binding to retrieve.
 
         Format:
-          `projects/{project_id}/locations/{location}/policyBindings/{policy_binding_id}`
-          `projects/{project_number}/locations/{location}/policyBindings/{policy_binding_id}`
-          `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
-          `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
+
+        * `projects/{project_id}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `projects/{project_number}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location_policy_binding
       required: true
   request:
     api_version: v3beta
     collection:
+    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
-    - iam.projects.locations.policyBindings

@@ -2,9 +2,9 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Create an Apache Kafka for BigQuery cluster.
+    Create a Managed Service for Apache Kafka cluster.
   description: |
-    Create an Apache Kafka for BigQuery cluster.
+    Create a Managed Service for Apache Kafka cluster.
 
   examples: |
     To create a cluster, run the following:

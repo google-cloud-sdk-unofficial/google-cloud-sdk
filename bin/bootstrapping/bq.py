@@ -47,6 +47,7 @@ def main():
   cmd_args = [arg for arg in argv[1:] if not arg.startswith('-')]
   use_google_auth = _GetGoogleAuthFlagValue(argv)
   use_google_auth_unspecified = use_google_auth is None
+  nouse_google_auth = not use_google_auth and not use_google_auth_unspecified
   args = []
   print_logging = False
   if len(cmd_args) == 1 and cmd_args[0] == 'info':
@@ -76,12 +77,10 @@ def main():
       if print_logging:
         print('Using a GCE service account')
       args = ['--use_gce_service_account']
-    elif os.path.isfile(adc_path):
+    elif os.path.isfile(adc_path) and nouse_google_auth:
       if print_logging:
         print('Using an ADC path')
       args = [
-          # TODO: b/293132460 - Only set --nouse_google_auth when user sets it,
-          # after the release of cl/643127296.
           '--nouse_google_auth',
           '--application_default_credential_file',
           adc_path,
@@ -89,23 +88,14 @@ def main():
           single_store_path,
       ]
     else:
-      if print_logging:
-        print(
-            'Falling back to p12 credentials. '
-            'WARNING these are being deprecated.'
-        )
       p12_key_path = config.Paths().LegacyCredentialsP12KeyPath(account)
       if os.path.isfile(p12_key_path):
-        if use_google_auth_unspecified:
-          # Unless explicitly disabled, use Google Auth by default since p12 key
-          # handling is deprecated in legacy auth libraries.
-          print(
-              'Using Google Auth since the P12 service account key format is'
-              ' detected. Note that the P12 key format has been depreacated in'
-              ' favor of the newer JSON key format.'
-          )
-          args = ['--use_google_auth']
-        else:
+        if nouse_google_auth:
+          if print_logging:
+            print(
+                'Falling back to p12 credentials. '
+                'WARNING these are being deprecated.'
+            )
           print(
               'Using the deprecated P12 service account key format with legacy'
               ' auth may introduce security vulnerabilities and will soon be'
@@ -122,9 +112,6 @@ def main():
               '--service_account_private_key_file',
               p12_key_path,
           ]
-      else:
-        # Don't have any credentials we can pass.
-        raise store.NoCredentialsForAccountException(account)
 
     use_client_cert = (
         os.getenv('GOOGLE_API_USE_CLIENT_CERTIFICATE', 'false').upper()

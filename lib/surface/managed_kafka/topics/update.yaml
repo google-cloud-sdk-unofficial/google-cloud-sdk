@@ -2,9 +2,9 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Update an Apache Kafka for BigQuery topic.
+    Update a Managed Service for Apache Kafka topic.
   description: |
-    Update an Apache Kafka for BigQuery topic.
+    Update a Managed Service for Apache Kafka topic.
 
   examples: |
     To update an attribute in a topic, such as the partitions, for a cluster named mycluster

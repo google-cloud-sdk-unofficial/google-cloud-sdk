@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Display information about a sink.
 

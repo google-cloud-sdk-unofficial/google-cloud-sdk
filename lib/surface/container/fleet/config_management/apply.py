@@ -23,6 +23,9 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import command
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as fleet_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
@@ -35,7 +38,7 @@ EXAMPLES = r"""
 
 
 @base.DefaultUniverseOnly
-class Apply(fleet_base.UpdateCommand, command.Common):
+class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
   """Update a Config Management Feature Spec.
 
   Update a user-specified config file to a ConfigManagement Custom Resource.
@@ -45,7 +48,8 @@ class Apply(fleet_base.UpdateCommand, command.Common):
 
   detailed_help = {'EXAMPLES': EXAMPLES}
 
-  feature_name = 'configmanagement'
+  feature_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
+  mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
 
   @classmethod
   def Args(cls, parser):
@@ -83,7 +87,16 @@ class Apply(fleet_base.UpdateCommand, command.Common):
             )
         })
     )
-    self.Update(['membership_specs'], patch)
+
+    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+      membershipfeature = convert.ToV2MembershipFeature(
+          membership, self.mf_name, self.messages.MembershipFeatureSpec(
+              configmanagement=cm
+          )
+      )
+      self.UpdateV2(membership, ['spec'], membershipfeature)
+    else:
+      self.Update(['membership_specs'], patch)
 
   def _get_backfill_version(self, membership):
     """Get the value the version field in FeatureSpec should be set to.

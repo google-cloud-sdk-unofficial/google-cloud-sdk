@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -86,7 +87,13 @@ class Create(base.CreateCommand):
   def Args(parser):
     """Register flags for this command."""
     parser.add_argument('sink_name', help='The name for the sink.')
-    parser.add_argument('destination', help='The destination for the sink.')
+    parser.add_argument(
+        'destination',
+        help=arg_parsers.UniverseHelpText(
+            default='The destination for the sink.',
+            universe_help='Some destination types are not supported\n.',
+        ),
+    )
     parser.add_argument(
         '--log-filter',
         required=False,

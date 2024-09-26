@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -55,8 +56,14 @@ class Update(base.UpdateCommand):
     parser.add_argument(
         'destination',
         nargs='?',
-        help=('A new destination for the sink. '
-              'If omitted, the sink\'s existing destination is unchanged.'))
+        help=arg_parsers.UniverseHelpText(
+            default=(
+                "A new destination for the sink. If omitted, the sink's"
+                ' existing destination is unchanged.'
+            ),
+            universe_help='Some destination types are not supported\n.',
+        ),
+    )
     parser.add_argument(
         '--log-filter',
         help=('A new filter expression for the sink. '

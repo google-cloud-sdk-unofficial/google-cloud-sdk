@@ -37,6 +37,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a view.
 

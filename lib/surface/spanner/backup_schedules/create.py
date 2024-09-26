@@ -52,9 +52,6 @@ class Create(base.CreateCommand):
     """
     resource_args.AddBackupScheduleResourceArg(parser, 'to create')
     backup_type_choices = ['full-backup', 'incremental-backup']
-    # TODO(b/351119519): Move 'incremental-backup' to visible choices before the
-    # launch of Cloud Incrementals.
-    backup_type_visible_choices = ['full-backup']
     parser.add_argument(
         '--backup-type',
         metavar='BACKUP_TYPE',
@@ -69,7 +66,6 @@ Supported backup types:
 """),
         type=arg_parsers.ArgList(
             choices=backup_type_choices,
-            visible_choices=backup_type_visible_choices,
             max_length=1,
         ),
     )

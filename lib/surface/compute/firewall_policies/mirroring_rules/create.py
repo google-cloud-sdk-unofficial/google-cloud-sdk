@@ -52,7 +52,7 @@ class Create(base.CreateCommand):
     flags.AddDirection(parser)
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
-    flags.AddSecurityProfileGroup(parser)
+    flags.AddMirroringSecurityProfileGroup(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)

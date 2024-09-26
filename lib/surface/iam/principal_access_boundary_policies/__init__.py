@@ -20,12 +20,18 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
 class PrincipalAccessBoundaryPoliciesALPHA(base.Group):
   """Manage PrincipalAccessBoundaryPolicy instances."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class PrincipalAccessBoundaryPoliciesBETA(base.Group):
+  """Manage PrincipalAccessBoundaryPolicy instances."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+class PrincipalAccessBoundaryPoliciesGA(base.Group):
   """Manage PrincipalAccessBoundaryPolicy instances."""

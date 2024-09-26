@@ -120,7 +120,7 @@ class _Create(object):
     mj_flags.AddNoAsyncFlag(parser)
     mj_flags.AddDisplayNameFlag(parser)
     mj_flags.AddTypeFlag(parser, required=True)
-    mj_flags.AddDumpPathFlag(parser)
+    mj_flags.AddDumpGroupFlag(parser)
     mj_flags.AddConnectivityGroupFlag(
         parser, mj_flags.ApiType.CREATE, required=True
     )

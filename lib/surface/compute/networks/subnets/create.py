@@ -54,6 +54,7 @@ def _AddArgs(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_custom_hardware_link,
     api_version,
 ):
   """Add subnetwork create arguments to parser."""
@@ -170,6 +171,11 @@ def _AddArgs(
     purpose_choices['AGGREGATE'] = (
         'Reserved for Aggregate Ranges used for aggregating '
         'private subnetworks.'
+    )
+
+  if include_custom_hardware_link:
+    purpose_choices['CUSTOM_HARDWARE_LINK'] = (
+        'Reserved for Custom Hardware Link.'
     )
 
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
@@ -325,6 +331,7 @@ def _CreateSubnetwork(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_custom_hardware_link,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -396,6 +403,11 @@ def _CreateSubnetwork(
           and subnetwork.purpose
           == messages.Subnetwork.PurposeValueValuesEnum.AGGREGATE
       )
+      or (
+          include_custom_hardware_link
+          and subnetwork.purpose
+          == messages.Subnetwork.PurposeValueValuesEnum.CUSTOM_HARDWARE_LINK
+      )
   ):
     # Clear unsupported fields in the subnet resource
     subnetwork.privateIpGoogleAccess = None
@@ -440,6 +452,7 @@ def _Run(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_custom_hardware_link,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -461,6 +474,7 @@ def _Run(
       include_aggregate_purpose,
       include_l2,
       include_external_ipv6_prefix,
+      include_custom_hardware_link
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -478,6 +492,7 @@ def _Run(
                                request)])
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a GA subnet."""
@@ -487,6 +502,7 @@ class Create(base.CreateCommand):
   _include_l2 = False
   _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
+  _include_custom_hardware_link = False
 
   detailed_help = _DetailedHelp()
 
@@ -498,6 +514,7 @@ class Create(base.CreateCommand):
         cls._include_aggregate_purpose,
         cls._include_l2,
         cls._include_external_ipv6_prefix,
+        cls._include_custom_hardware_link,
         cls._api_version,
     )
 
@@ -511,6 +528,7 @@ class Create(base.CreateCommand):
         self._include_aggregate_purpose,
         self._include_l2,
         self._include_external_ipv6_prefix,
+        self._include_custom_hardware_link,
     )
 
 
@@ -530,3 +548,4 @@ class CreateAlpha(CreateBeta):
   _include_l2 = True
   _include_external_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
+  _include_custom_hardware_link = True

@@ -22,8 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 class CmekSettings(base.Group):
   """Manages the customer-managed encryption key (CMEK) settings for the Cloud Logging Logs Router."""

@@ -64,6 +64,7 @@ def _Args(parser):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Updates a node pool in a running cluster."""
 
@@ -109,6 +110,8 @@ class Update(base.UpdateCommand):
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
     flags.AddContainerdConfigFlag(group)
+    flags.AddStoragePoolsFlag(
+        group, for_node_pool=True, for_create=False)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group, hidden=True)
@@ -154,6 +157,7 @@ class Update(base.UpdateCommand):
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
         containerd_config_from_file=args.containerd_config_from_file,
+        storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,
@@ -294,6 +298,8 @@ class UpdateBeta(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group)
+    flags.AddStoragePoolsFlag(
+        group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group, hidden=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -343,6 +349,7 @@ class UpdateBeta(Update):
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
+        storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,
@@ -414,6 +421,8 @@ class UpdateAlpha(Update):
     flags.AddWindowsOsVersionFlag(group)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddContainerdConfigFlag(group)
+    flags.AddStoragePoolsFlag(
+        group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group, hidden=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -463,6 +472,7 @@ class UpdateAlpha(Update):
         windows_os_version=args.windows_os_version,
         resource_manager_tags=args.resource_manager_tags,
         containerd_config_from_file=args.containerd_config_from_file,
+        storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
         machine_type=args.machine_type,

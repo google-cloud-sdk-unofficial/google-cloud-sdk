@@ -2,9 +2,9 @@ release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
-    Delete an Apache Kafka for BigQuery consumer group.
+    Delete a Managed Service for Apache Kafka consumer group.
   description: |
-    Delete an Apache Kafka for BigQuery consumer group.
+    Delete a Managed Service for Apache Kafka consumer group.
 
   examples: |
     To delete a consumer group in a cluster named mycluster located in us-central1,

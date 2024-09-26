@@ -66,7 +66,6 @@ class PerformanceTestType(enum.Enum):
   LATENCY = 'LATENCY'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Diagnose(base.Command):

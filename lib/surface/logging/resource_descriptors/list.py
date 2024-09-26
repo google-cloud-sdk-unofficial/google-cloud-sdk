@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List all available resource descriptors.
 

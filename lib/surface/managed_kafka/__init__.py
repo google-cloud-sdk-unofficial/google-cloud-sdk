@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The main command group for Apache Kafka for BigQuery."""
+"""The main command group for Managed Service for Apache Kafka."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,5 +23,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ApacheKafkaForBigQuery(base.Group):
-  """Administer Apache Kafka for BigQuery clusters, topics, and consumer groups."""
+  """Administer Managed Service for Apache Kafka clusters, topics, and consumer groups."""
   category = base.DATA_ANALYTICS_CATEGORY

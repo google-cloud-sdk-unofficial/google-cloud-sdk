@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Write(base.SilentCommand):
   """Write a log entry."""
 

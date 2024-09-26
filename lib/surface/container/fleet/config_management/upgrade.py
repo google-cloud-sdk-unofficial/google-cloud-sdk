@@ -22,11 +22,14 @@ from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Upgrade(base.UpdateCommand):
+class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
   """Upgrade the version of the Config Management Feature.
 
   Upgrade a specified membership to any supported version of the Config
@@ -39,7 +42,8 @@ class Upgrade(base.UpdateCommand):
     $ {command} --membership=MEMBERSHIP_NAME --version=VERSION
   """
 
-  feature_name = 'configmanagement'
+  feature_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
+  mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
 
   @classmethod
   def Args(cls, parser):
@@ -91,7 +95,14 @@ class Upgrade(base.UpdateCommand):
             {membership_key: patch}
         )
     )
-    self.Update(['membershipSpecs'], f)
+
+    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+      membershipfeature = convert.ToV2MembershipFeature(
+          membership_key, self.mf_name, patch
+      )
+      self.UpdateV2(membership_key, ['spec'], membershipfeature)
+    else:
+      self.Update(['membershipSpecs'], f)
 
   def _validate_versions(self, membership, cluster_v, new_v):
     if cluster_v == new_v:

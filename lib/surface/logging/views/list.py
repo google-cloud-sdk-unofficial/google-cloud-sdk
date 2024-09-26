@@ -35,6 +35,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the defined views."""
 

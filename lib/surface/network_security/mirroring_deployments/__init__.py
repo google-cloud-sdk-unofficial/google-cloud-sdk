@@ -23,12 +23,13 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class MirroingDeployments(base.Group):
-  """Manage Mirroing Deployment resources.
+class MirroringDeployments(base.Group):
+  """Manage Mirroring Deployment resources.
 
   This class provides commands for managing Mirroring Deployments.
 
   Attributes:
       category (str): The category under which this command group falls.
   """
+
   category = base.NETWORK_SECURITY_CATEGORY

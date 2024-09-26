@@ -21,18 +21,22 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Firestore(base.Group):
   """Manage your Cloud Firestore resources.
 
-   export -- Export data to Google Cloud Storage
+  export -- Export data to Google Cloud Storage
 
-   import -- Import data from Google Cloud Storage
+  import -- Import data from Google Cloud Storage
 
-   indexes -- Manage your Cloud Firestore indexes
+  bulk-delete -- Bulk delete documents from Cloud Firestore
 
-   operations -- Manage Long Running Operations for Cloud Firestore
+  indexes -- Manage your Cloud Firestore indexes
+
+  operations -- Manage Long Running Operations for Cloud Firestore
   """
 
   category = base.DATABASES_CATEGORY

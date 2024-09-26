@@ -21,8 +21,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 @base.Hidden
 class ModelArmorALPHA(base.Group):
   """Model Armor is a service offering LLM-agnostic security and AI safety measures to mitigate risks associated with large language models (LLMs)."""
-
   category = base.UNCATEGORIZED_CATEGORY

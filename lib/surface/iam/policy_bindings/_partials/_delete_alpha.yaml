@@ -32,10 +32,11 @@
         The name of the policy binding to delete.
 
         Format:
-          `projects/{project_id}/locations/{location}/policyBindings/{policy_binding_id}`
-          `projects/{project_number}/locations/{location}/policyBindings/{policy_binding_id}`
-          `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
-          `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
+
+        * `projects/{project_id}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `projects/{project_number}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
+        * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:folder_or_organization_or_project_location_policy_binding
       required: true
@@ -46,20 +47,12 @@
       help_text: |-
         The etag of the policy binding.
         If this is provided, it must match the server's etag.
-    - arg_name: validate-only
-      api_field: validateOnly
-      action: store_true
-      required: false
-      type: bool
-      help_text: |-
-        If set, validate the request and preview the deletion, but do not actually
-        post it.
   request:
     api_version: v3alpha
     collection:
+    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
-    - iam.projects.locations.policyBindings
   async:
     collection:
     - iam.folders.locations.operations
