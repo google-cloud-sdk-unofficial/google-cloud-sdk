@@ -29,6 +29,7 @@ from googlecloudsdk.core import resources
 EXECUTION_COLLECTION = 'workflowexecutions.projects.locations.workflows.executions'
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Run(base.DescribeCommand):
   """Execute a workflow and wait for the execution to complete."""
@@ -58,10 +59,14 @@ class Run(base.DescribeCommand):
     Run.CommonArgs(parser)
     flags.AddLoggingArg(parser)
     flags.AddDisableOverflowBufferArg(parser)
+    flags.AddExecutionHistoryLevelArg(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def CallLogLevel(self, args):
     return args.call_log_level
+
+  def ExecutionHistoryLevel(self, args):
+    return args.execution_history_level
 
   def Labels(self, args):
     return flags.ParseExecutionLabels(args)
@@ -79,6 +84,7 @@ class Run(base.DescribeCommand):
         workflow_ref,
         args.data,
         self.CallLogLevel(args),
+        self.ExecutionHistoryLevel(args),
         self.Labels(args),
         self.OverflowBufferingDisabled(args),
     )
@@ -112,6 +118,9 @@ class BetaRun(Run):
   def CallLogLevel(self, args):
     return args.call_log_level
 
+  def ExecutionHistoryLevel(self, args):
+    return None
+
   def Labels(self, args):
     return None
 
@@ -139,6 +148,9 @@ class AlphaRun(Run):
     Run.CommonArgs(parser)
 
   def CallLogLevel(self, args):
+    return None
+
+  def ExecutionHistoryLevel(self, args):
     return None
 
   def Labels(self, args):

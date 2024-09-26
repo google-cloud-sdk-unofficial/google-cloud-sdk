@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.workflows import hooks
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -61,7 +62,9 @@ class Deploy(base.CacheCommand):
     if cls.ReleaseTrack() is base.ReleaseTrack.GA:
       flags.AddKmsKeyFlags(parser)
       flags.AddWorkflowLoggingArg(parser)
+      flags.AddWorkflowExecutionHistoryLevelArg(parser)
       flags.AddUserEnvVarsFlags(parser)
+      flags.AddWorkflowTagsArg(parser)
 
   def Run(self, args):
     """Deploy a workflow."""

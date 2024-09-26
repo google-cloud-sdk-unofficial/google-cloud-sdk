@@ -117,17 +117,17 @@ class RestoreAlpha(RestoreBeta):
         help=textwrap.dedent("""\
             The encryption configuration of the restored database. If not specified, the same encryption settings as the backup will be used.
 
-              To restore to a CMEK-enabled database:
+            To restore to a CMEK-enabled database:
 
-                $ {command} --encryption-type=customer-managed-encryption --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
+              $ {command} --encryption-type=customer-managed-encryption --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
 
-              To restore to a Google-default-encrypted database:
+            To restore to a Google-default-encrypted database:
 
-                $ {command} --encryption-type=google-default-encryption
+              $ {command} --encryption-type=google-default-encryption
 
-              To restore to a database using the same encryption settings as the backup:
+            To restore to a database using the same encryption settings as the backup:
 
-                $ {command} --encryption-type=backup-encryption
+              $ {command} --encryption-type=backup-encryption
             """),
     )
     encryption_config.add_argument(
@@ -140,9 +140,7 @@ class RestoreAlpha(RestoreBeta):
             'customer-managed-encryption',
             'google-default-encryption',
         ],
-        help=textwrap.dedent("""\
-            The encryption type of the destination database.
-            """),
+        help='The encryption type of the destination database.',
     )
     flags.AddKmsKeyNameFlag(
         encryption_config,

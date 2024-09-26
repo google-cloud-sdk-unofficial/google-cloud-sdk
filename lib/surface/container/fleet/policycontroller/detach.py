@@ -19,11 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.policycontroller import command
 from googlecloudsdk.command_lib.container.fleet.policycontroller import flags
 
 
-class Detach(base.UpdateCommand, command.PocoCommand):
+class Detach(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
   """Detach Policy Controller Feature.
 
   Detaches Policy Controller. This will halt all administration of the Policy
@@ -43,6 +44,7 @@ class Detach(base.UpdateCommand, command.PocoCommand):
   """
 
   feature_name = 'policycontroller'
+  mf_name = 'policycontroller'
 
   @classmethod
   def Args(cls, parser):

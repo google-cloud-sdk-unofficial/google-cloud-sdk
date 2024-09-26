@@ -5,6 +5,7 @@ import collections
 import sys
 from typing import Any, Optional, Tuple, Type, Union
 from absl import app
+from utils import bq_error
 from pyglib import stringutil
 
 collections_abc = collections
@@ -357,7 +358,7 @@ def typecheck(  # pylint: disable=invalid-name
     # In code on the surface, taking user input, we throw a usage error.
     is_usage_error: bool = False,
 ) -> None:
-  """Ensure the obj is the correct type, or throw a TypeError."""
+  """Ensure the obj is the correct type, or throw a BigqueryTypeError."""
   if not isinstance(obj, types):
     if not message:
       if method:
@@ -367,4 +368,4 @@ def typecheck(  # pylint: disable=invalid-name
     if is_usage_error:
       raise app.UsageError(message)
     else:
-      raise TypeError(message)
+      raise bq_error.BigqueryTypeError(message)

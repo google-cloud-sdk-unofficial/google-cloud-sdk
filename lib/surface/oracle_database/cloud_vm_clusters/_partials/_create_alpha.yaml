@@ -183,27 +183,6 @@
           repeated: false
           help_text: |-
             Prefix for VM cluster host names.
-        - arg_name: properties-cidr
-          api_field: cloudVmCluster.properties.cidr
-          required: true
-          repeated: false
-          help_text: |-
-            Network settings. CIDR to use for cluster IP allocation.
-        - arg_name: properties-backup-subnet-cidr
-          api_field: cloudVmCluster.properties.backupSubnetCidr
-          required: true
-          repeated: false
-          help_text: |-
-            CIDR range of the backup subnet.
-        - arg_name: properties-network
-          api_field: cloudVmCluster.properties.network
-          required: true
-          repeated: false
-          help_text: |-
-            The name of the VPC network.
-            Format: projects/{project}/locations/global/networks/{network} or
-            projects/{project}/global/networks/{network}
-            https://google.aip.dev/122
         - group:
             required: false
             help_text: |-

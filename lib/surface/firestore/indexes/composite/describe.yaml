@@ -36,9 +36,6 @@
     #     fields.slice(:-1):format="table(fieldPath,order,arrayConfig)")
     # if we didn't care about the field config info showing up as columns in the existing row.
     #
-    # Note fields.slice(:-1) is hiding the special __name__ field returned by the API, since the
-    # user shouldn't need to worry about that.
-    #
     # TODO(b/120985936): Use an inline nested table when that's made possible
     format: "table[all-box](\
                name.basename(),\
@@ -46,7 +43,8 @@
                queryScope,\
                state,\
                apiScope,\
-               fields.slice(:-1).*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
-               fields.slice(:-1).*extract('order').*flatten().join('\n'):label=ORDER,\
-               fields.slice(:-1).*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG)"
+               fields.*extract('fieldPath').*flatten().join('\n'):label=FIELD_PATHS,\
+               fields.*extract('order').*flatten().join('\n'):label=ORDER,\
+               fields.*extract('arrayConfig').*flatten().join('\n'):label=ARRAY_CONFIG,\
+               fields.*extract('vectorConfig').*extract('dimension').*flatten().join('\n'):label=VECTOR_CONFIG)"
     release_tracks: [BETA, GA]
