@@ -19,6 +19,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
+from typing import Any
+
 from googlecloudsdk.api_lib.scc.iac_remediation import findings
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.iac_remediation import flags
@@ -36,14 +39,22 @@ class Create(base.CreateCommand):
           Sample usage:
 
           $ {{command}} iac-remediation create --finding-org-id=123456789
-          --finding-name=projects/123456789/sources/123456789/locations/global/findings/123456789""",
+          --finding-name=projects/123456789/sources/123456789/locations/global/findings/123456789
+          --tfstate-file-paths-list=/path/to/file1.tfstate,/path/to/file2.tfstate --llm-proj-id=my-proj""",
   }
 
   @staticmethod
   def Args(parser):
     flags.FINDING_ORG_ID_FLAG.AddToParser(parser)
     flags.FINDING_NAME_FLAG.AddToParser(parser)
+    flags.LLM_PROJ_ID_FLAG.AddToParser(parser)
+    flags.TFSTATE_FILE_PATHS_LIST_FLAG.AddToParser(parser)
 
-  def Run(self, args):
+  def Run(self, args: Any) -> None:
+    """Remediates a Security Command Center finding.
+
+    Args:
+      args: Arguments for the command.
+    """
     resp = findings.MakeApiCall(args.finding_org_id, args.finding_name)
     print(resp)

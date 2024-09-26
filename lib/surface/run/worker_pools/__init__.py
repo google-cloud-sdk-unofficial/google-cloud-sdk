@@ -43,14 +43,9 @@ class WorkerPools(base.Group):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
-    """Adds --region flag."""
-    flags.AddRegionArg(parser)
-
   def Filter(self, context, args):
     """Runs before command.Run and validates platform with passed args."""
-    # Ensures a platform is set on the run/platform property and
+    # Ensures a platform set on the run/platform property is 'managed' and
     # all other passed args are valid for this platform and release track.
     flags.ValidateManagedPlatform(args, self.ReleaseTrack(), flags.Product.RUN)
     return context

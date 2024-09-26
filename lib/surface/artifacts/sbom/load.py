@@ -21,11 +21,15 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.artifacts import endpoint_util
+from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import sbom_util
+from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Load(base.Command):
   """Upload an SBOM file and create a reference occurrence."""
@@ -109,6 +113,8 @@ class Load(base.Command):
         ),
     )
 
+    flags.GetOptionalAALocationFlag().AddToParser(parser)
+
   def Run(self, args):
     """Run the load command."""
     # Parse file and get the version.
@@ -167,14 +173,16 @@ class Load(base.Command):
               ' project {1} for occurrence.'
           ).format(args.uri, project_id)
       )
+    parent = util.GetParent(project_id, args.location)
     # Write reference occurrence.
-    occurrence_id = sbom_util.WriteReferenceOccurrence(
-        artifact=a,
-        project_id=project_id,
-        storage=remote_path,
-        sbom=s,
-        kms_key_version=args.kms_key_version,
-    )
+    with endpoint_util.WithRegion(args.location):
+      occurrence_id = sbom_util.WriteReferenceOccurrence(
+          artifact=a,
+          project_id=parent,
+          storage=remote_path,
+          sbom=s,
+          kms_key_version=args.kms_key_version,
+      )
     log.info('Wrote reference occurrence {0}.'.format(occurrence_id))
     log.status.Print(
         'Uploaded the SBOM file under the resource URI {}.'.format(

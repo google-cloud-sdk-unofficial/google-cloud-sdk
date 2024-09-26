@@ -2,12 +2,12 @@ release_tracks: [ALPHA]
 
 help_text:
   brief: |
-    Describe a Managed Flink deployment.
+    Describe a BigQuery Engine for Apache Flink deployment.
   description: |
-    Describe a Managed Flink deployment.
+    Describe a BigQuery Engine for Apache Flink deployment.
 
   examples: |
-    To describe a Managed Flink whose ID is mydeployment, run the following:
+    To describe a BigQuery Engine for Apache Flink whose ID is mydeployment, run the following:
 
       $ {command} mydeployment \
           --location=us-central1

@@ -95,6 +95,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableMultiNetworkingFlag(parser, hidden=True)
   flags.AddControlPlaneKeysFlags(parser)
   flags.AddAutoMonitoringScopeFlags(parser, hidden=True)
+  flags.AddClusterTierFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

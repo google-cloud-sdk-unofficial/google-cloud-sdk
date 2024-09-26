@@ -22,7 +22,11 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags
+
+REGIONAL_SNAPSHOT_COLLECTION = 'compute.regionSnapshots'
+DELETE = 'Delete'
 
 DETAILED_HELP = {
     'EXAMPLES':
@@ -43,6 +47,20 @@ DETAILED_HELP = {
 }
 
 
+def _GAArgs(parser):
+  """A helper function to build args for GA API version."""
+  Delete.SnapshotArg = flags.MakeSnapshotArg(plural=True)
+  Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
+
+
+def _AlphaArgs(parser):
+  """A helper function to build args for Alpha API version."""
+  Delete.SnapshotArg = flags.MakeSnapshotArgAlpha(plural=True)
+  Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Compute Engine snapshots.
 
@@ -53,25 +71,60 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    Delete.SnapshotArg = flags.MakeSnapshotArg(plural=True)
-    Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
+    _GAArgs(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_region=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     snapshot_refs = Delete.SnapshotArg.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+    )
 
     utils.PromptForDeletion(snapshot_refs)
-
     requests = []
     for snapshot_ref in snapshot_refs:
-      requests.append((client.apitools_client.snapshots, 'Delete',
-                       client.messages.ComputeSnapshotsDeleteRequest(
-                           project=snapshot_ref.project,
-                           snapshot=snapshot_ref.snapshot)))
+      if (
+          support_region
+          and snapshot_ref.Collection() == REGIONAL_SNAPSHOT_COLLECTION
+      ):
+        requests.append((
+            client.apitools_client.regionSnapshots,
+            DELETE,
+            client.messages.ComputeRegionSnapshotsDeleteRequest(
+                project=snapshot_ref.project,
+                snapshot=snapshot_ref.snapshot,
+                region=snapshot_ref.region,
+            ),
+        ))
+      else:
+        requests.append((
+            client.apitools_client.snapshots,
+            DELETE,
+            client.messages.ComputeSnapshotsDeleteRequest(
+                project=snapshot_ref.project, snapshot=snapshot_ref.snapshot
+            ),
+        ))
 
     return client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete Compute Engine snapshots."""
+
+  @staticmethod
+  def Args(parser):
+    _AlphaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )

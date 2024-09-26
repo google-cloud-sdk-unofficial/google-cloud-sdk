@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Get(base.Command):
   """Get the setting for an IAP resource."""
@@ -100,7 +100,7 @@ class Get(base.Command):
     return iap_setting_ref.GetIapSetting()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetAlpha(Get):
   """Get the setting for an IAP resource."""
 
@@ -114,4 +114,3 @@ class GetAlpha(Get):
     """
     iap_util.AddIapSettingArg(parser, use_forwarding_rule=True)
     base.URI_FLAG.RemoveFromParser(parser)
-

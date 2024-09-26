@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class FutureReservations(base.Group):
   """Manage Compute Engine future reservations."""
   category = base.COMPUTE_CATEGORY

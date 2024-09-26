@@ -14,18 +14,21 @@
 # limitations under the License.
 """Implements the command to list SBOM file references."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import endpoint_util
+from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import sbom_printer
 from googlecloudsdk.command_lib.artifacts import sbom_util
+from googlecloudsdk.command_lib.artifacts import util
 from googlecloudsdk.core.resource import resource_printer
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List SBOM file references."""
 
@@ -71,6 +74,7 @@ class List(base.ListCommand):
 
     base.SORT_BY_FLAG.SetDefault(parser, 'occ.create_time')
     base.URI_FLAG.RemoveFromParser(parser)
+    flags.GetOptionalAALocationFlag().AddToParser(parser)
     group = parser.add_group(mutex=True)
     group.add_argument(
         '--dependency',
@@ -107,4 +111,9 @@ class List(base.ListCommand):
     Returns:
       A list of SBOM references.
     """
-    return sbom_util.ListSbomReferences(args)
+    location = args.location
+    with endpoint_util.WithRegion(location):
+      if location is not None:
+        project = util.GetProject(args)
+        args.project = util.GetParent(project, args.location)
+      return sbom_util.ListSbomReferences(args)

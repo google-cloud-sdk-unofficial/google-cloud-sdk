@@ -28,8 +28,8 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListAutonomousDatabaseCharacterSetsRequest
-        Format: projects/{project}/locations/{location}
+        The parent value for the Autonomous Database in the following format:
+        projects/{project}/locations/{location}.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location
       required: true

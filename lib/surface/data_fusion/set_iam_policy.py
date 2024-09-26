@@ -44,8 +44,8 @@ class SetIamPolicy(base.Command):
 
   ## EXAMPLES
 
-  To set the policy for instance 'my-instance' in project 'my-project', location
-  in 'my-location', and zone in 'my-zone' run:
+  To set the policy for instance `my-instance` in project `my-project`, location
+  in `my-location`, and zone in `my-zone` run:
 
   $ {command} my-instance policy-file.yaml --project=my-project \
     --location=my-location

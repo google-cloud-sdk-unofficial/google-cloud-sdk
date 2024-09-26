@@ -65,7 +65,10 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       flags.AddSrcNetworkScope(parser)
       flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
@@ -207,7 +210,10 @@ class Update(base.UpdateCommand):
     else:
       new_priority = priority
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       if args.IsSpecified('src_network_scope'):
         if not args.src_network_scope:
           src_network_scope = (
@@ -241,7 +247,10 @@ class Update(base.UpdateCommand):
 
     # If need to construct a new matcher.
     if should_setup_match:
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          or self.ReleaseTrack() == base.ReleaseTrack.BETA
+      ):
         matcher = holder.client.messages.FirewallPolicyRuleMatcher(
             srcIpRanges=src_ip_ranges,
             destIpRanges=dest_ip_ranges,

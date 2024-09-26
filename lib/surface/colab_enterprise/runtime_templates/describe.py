@@ -29,7 +29,7 @@ _DETAILED_HELP = {
     'EXAMPLES': """
         To describe a runtime template with id 'my-runtime-template' in region 'us-central1', run:
 
-        $ {command} --my-runtime-template --region=us-central1
+        $ {command} my-runtime-template --region=us-central1
     """,
 }
 
@@ -37,7 +37,7 @@ _DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describes a runtime template."""
+  """Describe a runtime template."""
 
   @staticmethod
   def Args(parser):

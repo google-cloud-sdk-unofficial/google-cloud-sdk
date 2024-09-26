@@ -2,12 +2,12 @@ release_tracks: [ALPHA]
 
 help_text:
   brief: |
-    Delete a Managed Flink deployment.
+    Delete a BigQuery Engine for Apache Flink deployment.
   description: |
-    Delete a Managed Flink deployment.
+    Delete a BigQuery Engine for Apache Flink deployment.
 
   examples: |
-    To delete a Managed Flink whose ID is mydeployment, run the following:
+    To delete a BigQuery Engine for Apache Flink whose ID is mydeployment, run the following:
 
       $ {command} mydeployment \
           --location=us-central1

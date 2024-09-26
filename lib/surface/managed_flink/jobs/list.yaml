@@ -1,9 +1,9 @@
 release_tracks: [ALPHA]
 help_text:
-  brief: List all Managed Flink jobs in a given location.
-  description: List all Managed Flink jobs in a given location.
+  brief: List all BigQuery Engine for Apache Flink jobs in a given location.
+  description: List all BigQuery Engine for Apache Flink jobs in a given location.
   examples: |
-    To list all Managed Flink jobs in a given location, run:
+    To list all BigQuery Engine for Apache Flink jobs in a given location, run:
 
         $ {command} us-central1
 

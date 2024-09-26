@@ -51,6 +51,7 @@ class Create(base.Command):
   _support_stable_fleet = False
   _support_existing_reservation = True
   _support_custom_end_time = False
+  _support_reservation_sharing_policy = False
 
   detailed_help = {
       'EXAMPLES': '''
@@ -71,6 +72,7 @@ class Create(base.Command):
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
         support_custom_end_time=cls._support_custom_end_time,
+        support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
     )
 
   def _MakeCreateRequest(
@@ -180,6 +182,7 @@ class CreateBeta(Create):
   _support_stable_fleet = True
   _support_existing_reservation = True
   _support_custom_end_time = False
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -190,6 +193,7 @@ class CreateBeta(Create):
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
         support_custom_end_time=cls._support_custom_end_time,
+        support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
     )
 
 
@@ -201,6 +205,7 @@ class CreateAlpha(CreateBeta):
   _support_stable_fleet = True
   _support_existing_reservation = True
   _support_custom_end_time = True
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -209,7 +214,9 @@ class CreateAlpha(CreateBeta):
         parser, support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
-        support_custom_end_time=cls._support_custom_end_time)
+        support_custom_end_time=cls._support_custom_end_time,
+        support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
+    )
 
   def _MakeCreateRequest(
       self,

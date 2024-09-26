@@ -26,10 +26,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _CommonArgs(parser, release_track):
-  storagepools_flags.AddStoragePoolUpdateArgs(
-      parser, release_track=release_track
-  )
+def _CommonArgs(parser):
+  storagepools_flags.AddStoragePoolUpdateArgs(parser)
 
 
 @base.DefaultUniverseOnly
@@ -52,7 +50,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, Update._RELEASE_TRACK)
+    _CommonArgs(parser)
 
   def Run(self, args):
     """Update a Cloud NetApp Storage Pool in the current project."""
@@ -126,7 +124,7 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, UpdateBeta._RELEASE_TRACK)
+    _CommonArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -137,4 +135,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)
+    _CommonArgs(parser)

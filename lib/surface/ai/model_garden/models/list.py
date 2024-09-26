@@ -32,38 +32,24 @@ class List(base.Command):
     # will be fetched from the server.
     supported_models = [
         # Gemma 2
-        'google/gemma/gemma-2-2b-it',
-        'google/gemma/gemma-2-2b',
-        'google/gemma/gemma-2-9b-it',
-        'google/gemma/gemma-2-27b-it',
-        'google/gemma/gemma-2-9b',
-        'google/gemma/gemma-2-27b',
+        'google/gemma2/gemma-2-2b-it',
+        'google/gemma2/gemma-2-2b',
+        'google/gemma2/gemma-2-9b-it',
+        'google/gemma2/gemma-2-9b',
+        'google/gemma2/gemma-2-27b-it',
+        'google/gemma2/gemma-2-27b',
         # Gemma 1.1
         'google/gemma/gemma-1.1-2b-it',
         'google/gemma/gemma-1.1-7b-it',
         # Gemma
-        'google/gemma2/gemma-2b-it',
-        'google/gemma2/gemma-2b',
-        'google/gemma2/gemma-7b-it',
-        'google/gemma2/gemma-7b',
+        'google/gemma/gemma-2b-it',
+        'google/gemma/gemma-2b',
+        'google/gemma/gemma-7b-it',
+        'google/gemma/gemma-7b',
         # Code Gemma
         'google/codegemma/codegemma-2b',
+        'google/codegemma/codegemma-7b-it',
         'google/codegemma/codegemma-7b',
-        'google/codegemma/codegemma-2b-it',
-        # Llama 2
-        'meta/llama2/llama-2-7b-chat',
-        'meta/llama2/llama-2-7b',
-        'meta/llama2/llama-2-13b-chat',
-        'meta/llama2/llama-2-13b',
-        'meta/llama2/llama-2-70b-chat',
-        'meta/llama2/llama-2-70b',
-        # Llama 3
-        'meta/llama3/meta-llama-3-8b-instruct',
-        'meta/llama3/meta-llama-3-8b',
-        'meta/llama3/meta-llama-3-70b-instruct',
-        'meta/llama3/meta-llama-3-70b',
-        # Llama Guard
-        'meta/llama-guard/llama-guard-3-8bs',
         # Llama 3.1
         'meta/llama3_1/meta-llama-3.1-8b-instruct',
         'meta/llama3_1/meta-llama-3.1-8b',
@@ -71,6 +57,20 @@ class List(base.Command):
         'meta/llama3_1/meta-llama-3.1-70b',
         'meta/llama3_1/meta-llama-3.1-405b-instruct-fp8',
         'meta/llama3_1/meta-llama-3.1-405b-fp8',
+        # Llama 3
+        'meta/llama3/meta-llama-3-8b-instruct',
+        'meta/llama3/meta-llama-3-8b',
+        'meta/llama3/meta-llama-3-70b-instruct',
+        'meta/llama3/meta-llama-3-70b',
+        # Llama 2
+        'meta/llama2/llama-2-7b-chat',
+        'meta/llama2/llama-2-7b',
+        'meta/llama2/llama-2-13b-chat',
+        'meta/llama2/llama-2-13b',
+        'meta/llama2/llama-2-70b-chat',
+        'meta/llama2/llama-2-70b',
+        # Llama Guard
+        'meta/llama-guard/llama-guard-3-8b',
         # Mistral
         'mistral-ai/mistral/mistral-7b-instruct-v0.1',
         'mistral-ai/mistral/mistral-7b-v0.1',

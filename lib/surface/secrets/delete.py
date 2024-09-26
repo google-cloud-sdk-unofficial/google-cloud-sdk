@@ -36,13 +36,13 @@ class Delete(base.DeleteCommand):
 
   ## EXAMPLES
 
-  Delete a secret 'my-secret':
+  Delete a secret `my-secret`:
 
     $ {command} my-secret
 
-  Delete a secret 'my-secret' using an etag:
+  Delete a secret `my-secret` using an etag:
 
-    $ {command} my-secret --etag=\"123\"
+    $ {command} my-secret --etag=123
   """
 
   CONFIRM_DELETE_MESSAGE = (
@@ -55,7 +55,7 @@ class Delete(base.DeleteCommand):
         parser, purpose='to delete', positional=True, required=True
     )
     secrets_args.AddLocation(parser, purpose='to delete secret', hidden=False)
-    secrets_args.AddSecretEtag(parser)
+    secrets_args.AddSecretEtag(parser, action='deleted')
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
@@ -94,13 +94,13 @@ class DeleteBeta(Delete):
 
   ## EXAMPLES
 
-  Delete a secret 'my-secret':
+  Delete a secret `my-secret`:
 
     $ {command} my-secret
 
-  Delete a secret 'my-secret' using etag:
+  Delete a secret `my-secret` using etag:
 
-    $ {command} my-secret --etag=\"123\"
+    $ {command} my-secret --etag=123
   """
 
   @staticmethod
@@ -109,7 +109,7 @@ class DeleteBeta(Delete):
         parser, purpose='to delete', positional=True, required=True
     )
     secrets_args.AddLocation(parser, purpose='to delete secret', hidden=False)
-    secrets_args.AddSecretEtag(parser)
+    secrets_args.AddSecretEtag(parser, action='deleted')
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())

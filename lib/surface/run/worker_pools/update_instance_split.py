@@ -16,6 +16,9 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.Hidden
@@ -59,6 +62,16 @@ class AdjustInstanceSplit(base.Command):
 
   @classmethod
   def CommonArgs(cls, parser):
+    worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
+        'WORKER_POOL',
+        resource_args.GetWorkerPoolResourceSpec(prompt=True),
+        'WorkerPool to update instance split of.',
+        required=True,
+        prefixes=False,
+    )
+    concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
+        parser
+    )
     flags.AddAsyncFlag(parser)
     flags.AddUpdateInstanceSplitFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)

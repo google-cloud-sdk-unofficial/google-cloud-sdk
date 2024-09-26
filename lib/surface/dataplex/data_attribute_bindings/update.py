@@ -65,7 +65,7 @@ class Update(base.Command):
     parser.add_argument(
         '--etag',
         required=True,
-        help='etag value for particulat Data Attribute Binding resource.')
+        help='etag value of the Data Attribute Binding resource.')
     parser.add_argument(
         '--resource-attributes',
         metavar='ATTRIBUTES',

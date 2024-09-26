@@ -15,6 +15,9 @@
 """Command for listing available worker-pools."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.Hidden
@@ -33,6 +36,21 @@ class List(base.Command):
               $ {command}
           """,
   }
+
+  @classmethod
+  def CommonArgs(cls, parser):
+    region_presentation = presentation_specs.ResourcePresentationSpec(
+        '--region',
+        resource_args.GetRegionResourceSpec(),
+        'Region to list worker-pools in.',
+        required=True,
+        prefixes=False,
+    )
+    concept_parsers.ConceptParser([region_presentation]).AddToParser(parser)
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
 
   def Run(self, args):
     """List available worker-pools."""

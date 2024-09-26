@@ -27,11 +27,7 @@ from googlecloudsdk.command_lib.compute.instances import flags
 
 MODE_OPTIONS = {
     'ro': 'Read-only.',
-    'rw': (
-        'Read-write. It is an error to attach a disk in read-write mode to '
-        'more than one instance. For details on how to share persistent '
-        'disks between multiple instances, refer to https://cloud.google.com/'
-        'compute/docs/disks/add-persistent-disk#use_multi_instances'),
+    'rw': 'Read-write.',
 }
 
 PD_INTERFACE_OPTIONS = {
@@ -52,6 +48,9 @@ DETAILED_HELP = {
         [format and mount](https://cloud.google.com/compute/docs/disks/add-persistent-disk#formatting)
         the disk so that the operating system can use the available storage
         space.
+        You can attach an existing non-boot disk to more than one instance. For
+        more information, see
+        [Share a disk between VMs](compute/docs/disks/add-persistent-disk#use_multi_instances).
         """,
     'EXAMPLES': """
         To attach a disk named 'my-disk' as a boot disk to an instance named

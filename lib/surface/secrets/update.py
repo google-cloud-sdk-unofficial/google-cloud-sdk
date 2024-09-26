@@ -39,13 +39,13 @@ class Update(base.UpdateCommand):
 
       ## EXAMPLES
 
-      Update the label of a secret named 'my-secret'.
+      Update the label of a secret named `my-secret`.
 
         $ {command} my-secret --update-labels=foo=bar
 
       Update the label of a secret using an etag.
 
-        $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
+        $ {command} my-secret --update-labels=foo=bar --etag=123
 
       Update a secret to have a next-rotation-time:
 
@@ -104,7 +104,7 @@ class Update(base.UpdateCommand):
     alias = parser.add_group(mutex=True, help='Version Aliases')
     annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
-    secrets_args.AddSecretEtag(parser)
+    secrets_args.AddSecretEtag(parser, action='updated')
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
@@ -310,13 +310,13 @@ class UpdateBeta(Update):
 
   ## EXAMPLES
 
-  Update the label of a secret named 'my-secret'.
+      Update the label of a secret named `my-secret`.
 
     $ {command} my-secret --update-labels=foo=bar
 
   Update the label of a secret using etag.
 
-    $ {command} my-secret --update-labels=foo=bar --etag=\"123\"
+        $ {command} my-secret --update-labels=foo=bar --etag=123
 
   Update the expiration of a secret named 'my-secret' using a ttl.
 
@@ -369,7 +369,7 @@ class UpdateBeta(Update):
     alias = parser.add_group(mutex=True, help='Version Aliases')
     annotations = parser.add_group(mutex=True, help='Annotations')
     labels_util.AddUpdateLabelsFlags(parser)
-    secrets_args.AddSecretEtag(parser)
+    secrets_args.AddSecretEtag(parser, action='updated')
     secrets_args.AddUpdateExpirationGroup(parser)
     secrets_args.AddUpdateRotationGroup(parser)
     secrets_args.AddUpdateTopicsGroup(parser)

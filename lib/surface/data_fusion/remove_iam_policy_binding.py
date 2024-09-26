@@ -30,16 +30,16 @@ class RemoveIamPolicyBinding(base.Command):
 
   ## EXAMPLES
 
-  To set someone@example.com to have roles/datafusion.admin permission for
-  instance 'my-instance' in project 'my-project', location in 'my-location',
+  To set someone@example.com to have `roles/datafusion.admin` permission for
+  instance `my-instance` in project `my-project`, location in `my-location`,
   run:
 
-  $ {command} remove-iam-policy-binding my-instance --location=my-location \
+  $ {command} my-instance --location=my-location \
     --member=user:someone@example.com --role=roles/datafusion.admin
 
   To run the same command for a specific namespace on the instance, run:
 
-  $ {command} remove-iam-policy-binding my-instance --location=my-location \
+  $ {command} my-instance --location=my-location \
     --member=user:someone@example.com --role=roles/datafusion.admin \
     --namespace=my-namespace
   """

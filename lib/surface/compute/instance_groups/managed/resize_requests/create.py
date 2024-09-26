@@ -40,6 +40,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine managed instance group resize request."""
 
@@ -128,7 +129,9 @@ class CreateAlpha(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(parser)
+    instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
+        parser
+    )
     rr_flags.AddOutputFormat(parser, base.ReleaseTrack.ALPHA)
 
     parser.add_argument(
@@ -190,14 +193,11 @@ class CreateAlpha(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
-    default_scope = compute_scope.ScopeEnum.ZONE
-    scope_lister = flags.GetDefaultScopeLister(holder.client)
-    igm_ref = resource_arg.ResolveAsResource(
+    igm_ref = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.ResolveAsResource(
         args,
         holder.resources,
-        default_scope=default_scope,
-        scope_lister=scope_lister,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=flags.GetDefaultScopeLister(client),
     )
 
     if args.IsKnownAndSpecified('valid_until_duration'):
@@ -220,30 +220,37 @@ class CreateAlpha(base.CreateCommand):
       )
 
     if args.IsKnownAndSpecified('resize_by'):
-      resize_request = client.messages.InstanceGroupManagerResizeRequest(
-          name=args.resize_request,
-          queuingPolicy=queuing_policy,
-          requestedRunDuration=requested_run_duration,
-          resizeBy=args.resize_by,
-      )
+      resize_by = args.resize_by
     else:
-      resize_request = client.messages.InstanceGroupManagerResizeRequest(
-          name=args.resize_request,
-          queuingPolicy=queuing_policy,
-          requestedRunDuration=requested_run_duration,
-          resizeBy=args.count,
-      )
+      resize_by = args.count
 
-    request = (
-        client.messages.ComputeInstanceGroupManagerResizeRequestsInsertRequest(
-            instanceGroupManager=igm_ref.Name(),
-            instanceGroupManagerResizeRequest=resize_request,
-            project=igm_ref.project,
-            zone=igm_ref.zone,
-        )
+    resize_request = client.messages.InstanceGroupManagerResizeRequest(
+        name=args.resize_request,
+        resizeBy=resize_by,
+        queuingPolicy=queuing_policy,
+        requestedRunDuration=requested_run_duration,
     )
-    return client.MakeRequests([(
-        client.apitools_client.instanceGroupManagerResizeRequests,
-        'Insert',
-        request,
-    )])
+
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      return client.MakeRequests([(
+          client.apitools_client.instanceGroupManagerResizeRequests,
+          'Insert',
+          client.messages.ComputeInstanceGroupManagerResizeRequestsInsertRequest(
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagerResizeRequest=resize_request,
+              project=igm_ref.project,
+              zone=igm_ref.zone,
+          ),
+      )])
+    if igm_ref.Collection() == 'compute.regionInstanceGroupManagers':
+      return client.MakeRequests([(
+          client.apitools_client.regionInstanceGroupManagerResizeRequests,
+          'Insert',
+          client.messages.ComputeRegionInstanceGroupManagerResizeRequestsInsertRequest(
+              instanceGroupManager=igm_ref.Name(),
+              instanceGroupManagerResizeRequest=resize_request,
+              project=igm_ref.project,
+              region=igm_ref.region,
+          ),
+      )])
+    raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))

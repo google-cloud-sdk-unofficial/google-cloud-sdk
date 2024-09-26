@@ -30,7 +30,7 @@ _DETAILED_HELP = {
     'EXAMPLES': """
         To delete a runtime template with id 'my-runtime-template' in region 'us-central1', run:
 
-        $ {command} --my-runtime-template --region=us-central1
+        $ {command} my-runtime-template --region=us-central1
     """,
 }
 
@@ -38,7 +38,7 @@ _DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
-  """Deletes a runtime template."""
+  """Delete a runtime template."""
 
   @staticmethod
   def Args(parser):

@@ -36,13 +36,13 @@ class Disable(base.DeleteCommand):
 
   ## EXAMPLES
 
-  Disable version '123' of the secret named 'my-secret':
+  Disable version `123` of the secret named `my-secret`:
 
     $ {command} 123 --secret=my-secret
 
-  Disable version '123' of the secret named 'my-secret' using etag:
+  Disable version `123` of the secret named `my-secret` using etag:
 
-    $ {command} 123 --secret=my-secret --etag=\"123\"
+    $ {command} 123 --secret=my-secret --etag=123
   """
 
   @staticmethod
@@ -51,7 +51,7 @@ class Disable(base.DeleteCommand):
         parser, purpose='to disable', positional=True, required=True
     )
     secrets_args.AddLocation(parser, purpose='to disable', hidden=False)
-    secrets_args.AddVersionEtag(parser)
+    secrets_args.AddVersionEtag(parser, action='disabled')
 
   def Run(self, args):
     api_version = secrets_api.GetApiFromTrack(self.ReleaseTrack())
@@ -73,13 +73,13 @@ class DisableBeta(Disable):
 
   ## EXAMPLES
 
-  Disable version '123' of the secret named 'my-secret':
+  Disable version `123` of the secret named `my-secret`:
 
     $ {command} 123 --secret=my-secret
 
-  Disable version '123' of the secret named 'my-secret' using an etag:
+  Disable version `123` of the secret named `my-secret` using an etag:
 
-    $ {command} 123 --secret=my-secret --etag=\"123\"
+    $ {command} 123 --secret=my-secret --etag=123
   """
 
   @staticmethod
@@ -94,7 +94,7 @@ class DisableBeta(Disable):
         parser, purpose='to disable', positional=True, required=True
     )
     secrets_args.AddLocation(parser, purpose='to disable', hidden=False)
-    secrets_args.AddVersionEtag(parser)
+    secrets_args.AddVersionEtag(parser, action='disabled')
 
   def Run(self, args: parser_extensions.Namespace) -> secrets_api.Versions:
     """Run is called by calliope to implement the secret versions disable command.

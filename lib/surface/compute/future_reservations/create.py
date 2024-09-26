@@ -58,9 +58,9 @@ def _RunCreate(compute_api, args):
   return compute_api.client.MakeRequests([(service, 'Insert', create_request)])
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class CreateV1(base.CreateCommand):
+class CreateBeta(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_share_setting = True
   _support_location_hint = False
@@ -69,7 +69,7 @@ class CreateV1(base.CreateCommand):
   _support_planning_status = True
   _support_local_ssd_count = True
   _support_auto_delete = True
-  _support_require_specific_reservation = False
+  _suppport_require_specific_reservation = False
 
   @classmethod
   def Args(cls, parser):
@@ -84,42 +84,7 @@ class CreateV1(base.CreateCommand):
         support_instance_template=cls._support_instance_template,
         support_local_ssd_count=cls._support_local_ssd_count,
         support_auto_delete=cls._support_auto_delete,
-        support_require_specific_reservation=cls._support_require_specific_reservation,
-    )
-
-  def Run(self, args):
-    return _RunCreate(
-        base_classes.ComputeApiHolder(base.ReleaseTrack.GA), args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class CreateBeta(CreateV1):
-  """Create a Compute Engine reservation."""
-  _support_share_setting = True
-  _support_location_hint = False
-  _support_instance_template = True
-  _support_fleet = False
-  _support_planning_status = True
-  _support_local_ssd_count = True
-  _support_auto_delete = True
-  _support_require_specific_reservation = False
-
-  @classmethod
-  def Args(cls, parser):
-    resource_args.GetFutureReservationResourceArg().AddArgument(
-        parser, operation_type='create'
-    )
-    flags.AddCreateFlags(
-        parser,
-        support_share_setting=cls._support_share_setting,
-        support_location_hint=cls._support_location_hint,
-        support_fleet=cls._support_fleet,
-        support_planning_status=cls._support_planning_status,
-        support_instance_template=cls._support_instance_template,
-        support_local_ssd_count=cls._support_local_ssd_count,
-        support_auto_delete=cls._support_auto_delete,
-        support_require_specific_reservation=cls._support_require_specific_reservation,
+        support_require_specific_reservation=cls._suppport_require_specific_reservation,
     )
 
   def Run(self, args):
@@ -138,7 +103,7 @@ class CreateAlpha(CreateBeta):
   _support_planning_status = True
   _support_local_ssd_count = True
   _support_auto_delete = True
-  _support_require_specific_reservation = True
+  _suppport_require_specific_reservation = True
   _support_gsc = True
 
   @classmethod
@@ -154,7 +119,7 @@ class CreateAlpha(CreateBeta):
         support_instance_template=cls._support_instance_template,
         support_local_ssd_count=cls._support_local_ssd_count,
         support_auto_delete=cls._support_auto_delete,
-        support_require_specific_reservation=cls._support_require_specific_reservation,
+        support_require_specific_reservation=cls._suppport_require_specific_reservation,
         support_gsc=cls._support_gsc,
     )
 

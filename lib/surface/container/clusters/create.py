@@ -514,6 +514,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       disable_l4_lb_firewall_reconciliation=get_default(
           'disable_l4_lb_firewall_reconciliation'
       ),
+      tier=get_default('tier'),
   )
 
 
@@ -737,6 +738,7 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'tier': flags.AddClusterTierFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -917,6 +919,7 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'tier': flags.AddClusterTierFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1106,6 +1109,7 @@ flags_to_add = {
         'disableL4LbFirewallReconciliation': (
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
+        'tier': flags.AddClusterTierFlag,
     },
 }
 
@@ -1391,6 +1395,7 @@ class CreateBeta(Create):
     ops.disable_l4_lb_firewall_reconciliation = get_default(
         'disable_l4_lb_firewall_reconciliation'
     )
+    ops.tier = get_default('tier')
     return ops
 
 
@@ -1527,4 +1532,5 @@ class CreateAlpha(Create):
     ops.disable_l4_lb_firewall_reconciliation = get_default(
         'disable_l4_lb_firewall_reconciliation'
     )
+    ops.tier = get_default('tier')
     return ops

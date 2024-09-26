@@ -261,7 +261,7 @@ def AddBaseArgs(parser):
   flags.AddConnectorEnforcement(parser)
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=True)
   flags.AddThreadsPerCore(parser)
-  flags.AddEnableDataCache(parser, show_negated_in_help=False)
+  flags.AddEnableDataCache(parser)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
   psc_update_group = parser.add_mutually_exclusive_group()
   flags.AddAllowedPscProjects(psc_update_group)
@@ -294,6 +294,8 @@ def AddBetaArgs(parser):
       psc_update_auto_connections_group, hidden=True
   )
   flags.AddRetainBackupsOnDelete(parser)
+  flags.AddStorageProvisionedIops(parser)
+  flags.AddStorageProvisionedThroughput(parser)
 
 
 def AddAlphaArgs(parser):

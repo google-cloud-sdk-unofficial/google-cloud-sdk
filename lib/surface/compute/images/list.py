@@ -26,13 +26,18 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.compute.images import policy
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 
 
 def _PublicImageProjects():
   if properties.IsDefaultUniverse():
     return sorted(constants.PUBLIC_IMAGE_PROJECTS)
   else:
-    prefix = properties.VALUES.core.project.GetOrFail().split(':')[0]
+    prefix = (
+        universe_descriptor.UniverseDescriptor()
+        .Get(properties.GetUniverseDomain())
+        .project_prefix
+    )
     return [
         prefix + ':' + project
         for project in sorted(constants.BASE_PUBLIC_IMAGE_PROJECTS)
@@ -121,7 +126,8 @@ class List(base.ListCommand):
 
     def ParseProject(project):
       return holder.resources.Parse(
-          None, {'project': project}, collection='compute.projects')
+          None, {'project': project}, collection='compute.projects'
+      )
 
     if args.standard_images:
       for project in _PublicImageProjects():
@@ -144,8 +150,9 @@ class List(base.ListCommand):
 
     images = lister.Invoke(request_data, list_implementation)
 
-    return self.AugmentImagesStatus(holder.resources,
-                                    self._FilterDeprecated(args, images))
+    return self.AugmentImagesStatus(
+        holder.resources, self._FilterDeprecated(args, images)
+    )
 
   def _CheckForDeprecated(self, image):
     deprecated = False

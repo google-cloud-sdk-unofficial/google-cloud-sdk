@@ -32,7 +32,9 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 class Restart(base.SilentCommand):
   """Restarts an AlloyDB instance within a given cluster."""
 
@@ -56,10 +58,13 @@ class Restart(base.SilentCommand):
     flags.AddCluster(parser, False)
     flags.AddInstance(parser)
     flags.AddRegion(parser)
+    flags.AddNodeIds(parser)
 
   def ConstructRestartRequest(self, **kwargs):
     return instance_helper.ConstructRestartRequestFromArgs(
-        kwargs.get('alloydb_messages'), kwargs.get('project_ref')
+        kwargs.get('alloydb_messages'),
+        kwargs.get('project_ref'),
+        kwargs.get('args'),
     )
 
   def Run(self, args):
@@ -98,20 +103,3 @@ class Restart(base.SilentCommand):
           op_ref, 'Restarting instance', self.ReleaseTrack(), False
       )
     return op
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class RestartAlphaBeta(Restart):
-  """Restarts an AlloyDB instance within a given cluster."""
-
-  @staticmethod
-  def Args(parser):
-    super(RestartAlphaBeta, RestartAlphaBeta).Args(parser)
-    flags.AddNodeIds(parser)
-
-  def ConstructRestartRequest(self, **kwargs):
-    return instance_helper.ConstructRestartRequestFromArgsAlphaBeta(
-        kwargs.get('alloydb_messages'),
-        kwargs.get('project_ref'),
-        kwargs.get('args'),
-    )

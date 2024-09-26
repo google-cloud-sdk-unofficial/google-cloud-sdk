@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class AddIamPolicyBinding(base.Command):
   """Add IAM policy binding to an IAP IAM resource.
@@ -102,7 +102,7 @@ class AddIamPolicyBinding(base.Command):
     return iap_iam_ref.AddIamPolicyBinding(args.member, args.role, condition)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
   """Add IAM policy binding to an IAP IAM resource.
 

@@ -11,7 +11,7 @@
     brief: Describe a source given its display name or source id.
     description: Describe a source given its display name or source id.
     examples: |
-      Describe source with display name 'Security Scanner':
+      Describe source with display name `Security Scanner`:
 
         $ {command} 123456 --source-display-name="Security Scanner"
 
@@ -27,7 +27,7 @@
     - googlecloudsdk.command_lib.scc.sources.request_hooks:DescribeSourceReqHook
 
   arguments:
-    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendOrgArg
+    additional_arguments_hook: googlecloudsdk.command_lib.scc.hooks:AppendParentArg
 
     params:
     - group:

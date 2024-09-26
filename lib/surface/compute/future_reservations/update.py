@@ -28,10 +28,9 @@ from googlecloudsdk.command_lib.compute.future_reservations import flags as fr_f
 from googlecloudsdk.command_lib.compute.future_reservations import util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class UpdateV1(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update Compute Engine future reservations."""
 
   fr_arg = None
@@ -107,6 +106,7 @@ class UpdateV1(base.UpdateCommand):
           '--instance-termination-action',
           '--scheduling-type',
           '--enable-opportunistic-maintenance',
+          '--no-enable-opportunistic-maintenance',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update'
@@ -179,11 +179,11 @@ class UpdateV1(base.UpdateCommand):
     if args.IsKnownAndSpecified('deployment_type'):
       update_mask.append('deploymentType')
     if args.IsKnownAndSpecified('commitment_name'):
-      update_mask.append('commitmentName')
+      update_mask.append('commitmentInfo.commitmentName')
     if args.IsKnownAndSpecified('commitment_plan'):
-      update_mask.append('commitmentPlan')
+      update_mask.append('commitmentInfo.commitmentPlan')
     if args.IsKnownAndSpecified('previous_commitment_terms'):
-      update_mask.append('previousCommitmentTerms')
+      update_mask.append('commitmentInfo.previousCommitmentTerms')
     if args.IsKnownAndSpecified('instance_termination_action'):
       update_mask.append('instanceTerminationAction')
     if args.IsKnownAndSpecified('scheduling_type'):
@@ -224,41 +224,6 @@ class UpdateV1(base.UpdateCommand):
     if errors:
       utils.RaiseToolException(errors)
     return result
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(UpdateV1):
-  """Update Compute Engine future reservations."""
-
-  fr_arg = None
-
-  detailed_help = {'EXAMPLES': """
-        To update total count, start and end time of a Compute Engine future reservation in ``us-central1-a'', run:
-
-            $ {command} my-future-reservation --total-count=1000 --start-time=2021-11-10T07:00:00Z
-          --end-time=2021-12-10T07:00:00Z --zone=us-central1-a
-        """}
-
-  @classmethod
-  def Args(cls, parser):
-    cls.fr_arg = compute_flags.ResourceArgument(
-        resource_name='future reservation',
-        plural=False,
-        name='FUTURE_RESERVATION',
-        zonal_collection='compute.futureReservations',
-        zone_explanation=compute_flags.ZONE_PROPERTY_EXPLANATION,
-    )
-
-    cls.fr_arg.AddArgument(parser, operation_type='update')
-    fr_flags.AddUpdateFlags(
-        parser,
-        support_fleet=False,
-        support_planning_status=True,
-        support_local_ssd_count=True,
-        support_share_setting=True,
-        support_auto_delete=True,
-        support_require_specific_reservation=False,
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

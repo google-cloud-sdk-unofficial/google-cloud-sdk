@@ -59,8 +59,8 @@ class Export(base.SilentCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser)
     flags.AddDatabase(parser)
-    flags.AddGCSUri(parser)
-    flags.AddSelectQuery(parser)
+    flags.AddDestinationURI(parser)
+    flags.AddExportOptions(parser)
 
   def ConstructExportRequestFromArgs(
       self, alloydb_messages, cluster_ref, args

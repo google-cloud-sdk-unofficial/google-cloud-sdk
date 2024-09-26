@@ -18,8 +18,8 @@ from googlecloudsdk.calliope import base
 
 
 # We could have multiple tracks here, e.g.
-#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 class ImageImports(base.Group):
   r"""Imports images to Google Compute Engine from Google Cloud Storage.
 

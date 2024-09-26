@@ -49,7 +49,8 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         '--validate-only',
         action='store_true',
-        help='Use this flag to validate that the request will succeed before executing it.'
+        help='If specified, validate that the deletion will succeed without '
+        'deleting the instance config.',
     )
 
     parser.add_argument(

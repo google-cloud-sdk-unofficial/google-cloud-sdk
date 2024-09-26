@@ -30,10 +30,10 @@ class Delete(base.DeleteCommand):
 
   ## EXAMPLES
 
-  To delete operation 'my-operation' in project 'my-project' and location
-  'my-location', run:
+  To delete operation `my-operation` in project `my-project` and location
+  `my-location`, run:
 
-    $ {command} --project=my-project --location=my-location my-operation
+    $ {command} my-operation --project=my-project --location=my-location
   """
 
   @staticmethod

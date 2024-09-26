@@ -64,7 +64,7 @@ class Update(base.Command):
         hide_autoscaling_args=True,
         parser=parser,
     )
-    flags.Edition().AddToParser(parser)
+    flags.Edition(None, True).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -136,7 +136,7 @@ class BetaUpdate(base.Command):
         hide_autoscaling_args=False,
         parser=parser,
     )
-    flags.Edition().AddToParser(parser)
+    flags.Edition(None, True).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -214,7 +214,7 @@ class AlphaUpdate(base.Command):
     )
 
     flags.SsdCache().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
+    flags.Edition(None, True).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

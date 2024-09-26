@@ -82,7 +82,7 @@
       spec:
       - api_field: resource
         help_text: |-
-          The link to the CloudBuild/DeveloperConnect repository resource name or URL
+          The link to the DeveloperConnect repository resource name or URL
           to be indexed.
       - api_field: branchPattern
         help_text: |-

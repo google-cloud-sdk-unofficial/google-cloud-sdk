@@ -36,7 +36,7 @@
   arguments:
     params:
     - help_text: |
-        Identifier. The name of the Autonomous Database resource with the format:
+        Identifier. The name of the Autonomous Database resource in the following format:
         projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
       is_positional: true
       request_id_field: autonomousDatabaseId
@@ -48,25 +48,25 @@
       repeated: false
       help_text: |-
         The name of the Autonomous Database. The database name must be unique in
-        the tenancy. The name must begin with an alphabetic character and can
+        the project. The name must begin with a letter and can
         contain a maximum of 30 alphanumeric characters.
     - arg_name: display-name
       api_field: autonomousDatabase.displayName
       required: false
       repeated: false
       help_text: |-
-        User friendly name for the Autonomous Database. The name does not have to
-        be unique.
+        The display name for the Autonomous Database. The name does not have to
+        be unique within your project.
     - arg_name: admin-password
       api_field: autonomousDatabase.adminPassword
       required: false
       repeated: false
       help_text: |-
-        Password for the default ADMIN user.
+        The password for the default ADMIN user.
     - group:
         required: false
         help_text: |-
-          Various properties of AutonomousDatabase.
+          The properties of an Autonomous Database.
         params:
         - arg_name: properties-compute-count
           api_field: autonomousDatabase.properties.computeCount
@@ -74,7 +74,7 @@
           repeated: false
           type: float
           help_text: |-
-            The number of compute servers for the autonomous database.
+            The number of compute servers for the Autonomous Database.
         - arg_name: properties-cpu-core-count
           api_field: autonomousDatabase.properties.cpuCoreCount
           required: false
@@ -88,42 +88,42 @@
           repeated: false
           type: int
           help_text: |-
-            The quantity of data in the database, in terabytes.
+            The size of the data stored in the database, in terabytes.
         - arg_name: properties-data-storage-size-gb
           api_field: autonomousDatabase.properties.dataStorageSizeGb
           required: false
           repeated: false
           type: int
           help_text: |-
-            The quantity of data in the database, in gigabytes.
+            The size of the data stored in the database, in gigabytes.
         - arg_name: properties-db-workload
           api_field: autonomousDatabase.properties.dbWorkload
           required: true
           help_text: |-
-            The Autonomous Database workload type.
+            The workload type of the Autonomous Database.
           choices:
           - arg_value: oltp
             enum_value: OLTP
             help_text: |-
-              Autonomous Transaction Processing database
+              Autonomous Transaction Processing database.
           - arg_value: dw
             enum_value: DW
             help_text: |-
-              Autonomous Data Warehouse database
+              Autonomous Data Warehouse database.
           - arg_value: ajd
             enum_value: AJD
             help_text: |-
-              Autonomous JSON Database
+              Autonomous JSON Database.
           - arg_value: apex
             enum_value: APEX
             help_text: |-
               Autonomous Database with the Oracle APEX Application Development workload
-              type
+              type.
         - arg_name: properties-db-edition
           api_field: autonomousDatabase.properties.dbEdition
           required: false
           help_text: |-
-            The Oracle Database Edition that applies to the Autonomous databases.
+            The edition of the Autonomous Databases.
           choices:
           - arg_value: standard-edition
             enum_value: STANDARD_EDITION
@@ -138,40 +138,40 @@
           required: false
           repeated: false
           help_text: |-
-            The character set for the autonomous database. The default is AL32UTF8.
+            The character set for the Autonomous Database. The default is AL32UTF8.
         - arg_name: properties-n-character-set
           api_field: autonomousDatabase.properties.nCharacterSet
           required: false
           repeated: false
           help_text: |-
-            The national character set for the autonomous database. The default is
+            The national character set for the Autonomous Database. The default is
             AL16UTF16.
         - arg_name: properties-private-endpoint-ip
           api_field: autonomousDatabase.properties.privateEndpointIp
           required: false
           repeated: false
           help_text: |-
-            The private endpoint IP address for the resource.
+            The private endpoint IP address for the Autonomous Database.
         - arg_name: properties-private-endpoint-label
           api_field: autonomousDatabase.properties.privateEndpointLabel
           required: false
           repeated: false
           help_text: |-
-            The resource's private endpoint label.
+            The private endpoint label for the Autonomous Database.
         - arg_name: properties-db-version
           api_field: autonomousDatabase.properties.dbVersion
           required: false
           repeated: false
           help_text: |-
-            A valid Oracle Database version for Autonomous Database.
+            The Oracle Database version for the Autonomous Database.
         - arg_name: properties-is-auto-scaling-enabled
           api_field: autonomousDatabase.properties.isAutoScalingEnabled
           action: store_true
           required: false
           type: bool
           help_text: |-
-            Indicates if auto scaling is enabled for the Autonomous Database CPU core
-            count.
+            This field indicates if auto scaling is enabled for the Autonomous Database
+            CPU core count.
           default: null
         - arg_name: properties-is-storage-auto-scaling-enabled
           api_field: autonomousDatabase.properties.isStorageAutoScalingEnabled
@@ -179,13 +179,14 @@
           required: false
           type: bool
           help_text: |-
-            Indicates if auto scaling is enabled for the Autonomous Database storage.
+            This field indicates if auto scaling is enabled for the Autonomous Database
+            storage.
           default: null
         - arg_name: properties-license-type
           api_field: autonomousDatabase.properties.licenseType
           required: true
           help_text: |-
-            License type of the autonomous database
+            The license type used for the Autonomous Database.
           choices:
           - arg_value: license-included
             enum_value: LICENSE_INCLUDED
@@ -211,35 +212,35 @@
           required: false
           repeated: false
           help_text: |-
-            The OCI vault secret.
+            The ID of the Oracle Cloud Infrastructure vault secret.
         - arg_name: properties-vault-id
           api_field: autonomousDatabase.properties.vaultId
           required: false
           repeated: false
           help_text: |-
-            The vault id of the Oracle Cloud Infrastructure.
+            The ID of the Oracle Cloud Infrastructure vault.
         - arg_name: properties-maintenance-schedule-type
           api_field: autonomousDatabase.properties.maintenanceScheduleType
           required: false
           help_text: |-
-            The maintenance schedule type of the Autonomous Database Serverless.
+            The maintenance schedule of the Autonomous Database.
           choices:
           - arg_value: early
             enum_value: EARLY
             help_text: |-
-              An EARLY maintenance schedule follows a schedule applying patches prior
-              to the REGULAR schedule.
+              An EARLY maintenance schedule patches the database before the
+              the regular scheduled maintenance.
           - arg_value: regular
             enum_value: REGULAR
             help_text: |-
-              A REGULAR maintenance schedule follows the normal cycle
+              A REGULAR maintenance schedule follows the normal maintenance cycle.
         - arg_name: properties-mtls-connection-required
           api_field: autonomousDatabase.properties.mtlsConnectionRequired
           action: store_true
           required: false
           type: bool
           help_text: |-
-            Specifies if the Autonomous Database requires mTLS connections.
+            This field specifies if the Autonomous Database requires mTLS connections.
           default: null
         - arg_name: properties-backup-retention-period-days
           api_field: autonomousDatabase.properties.backupRetentionPeriodDays
@@ -247,20 +248,21 @@
           repeated: false
           type: int
           help_text: |-
-            The retention period in days for automatic backups. The default is 60 days.
-            The minimum value is 1 day and the maximum value is 60 days.
+            The retention period for the Autonomous Database. This field is specified
+            in days, can range from 1 day to 60 days, and has a default value of
+            60 days.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false
       repeated: true
       help_text: |-
-        labels or tags associated with the resource.
+        The labels or tags associated with the Autonomous Database.
       spec:
       - api_field: key
       - api_field: value
     - arg_name: network
       help_text: |-
-        The name of the VPC network.
+        The name of the VPC network used by the Autonomous Database.
         Format: projects/{project}/global/networks/{network}
       is_positional: false
       is_primary_resource: false
@@ -273,17 +275,18 @@
       required: true
       repeated: false
       help_text: |-
-        The subnet CIDR for the autonomous database.
+        The subnet CIDR range for the Autonmous Database.
     - group:
         required: false
         help_text: |-
-          The Source ADB config for the standby autonomous database.
+          The source configuration for the standby Autonomnous Database.
         params:
         - arg_name: source-config-autonomous-database
           help_text: |-
-            Primary Autonomous database name while creating an autonomous database with
-            a source. This field should only be used when a Peer Autonomous Database is
-            created Format:
+            The name of the primary Autonomous Database that is used to create a Peer
+            Autonomous Database from a source.
+            This field is only be used when a Peer Autonomous Database is
+            created and is in the following format:
             projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
             This field should be validated such that the Peer Autonomous Database does
             not create a cycle with its Source Autonomous Database.
@@ -299,25 +302,19 @@
           required: false
           type: bool
           help_text: |-
-            Specifies if replication of automatic backups is enabled in the data guard.
-            This field should only be used with autonomous_database field while
-            creating a Data Guard.
+            This field specifies if the replication of automatic backups is enabled
+            when creating a Data Guard.
           default: null
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
-
-        For example, consider a situation where you make an initial request and the
-        request times out. If you make the request again with the same request
-        ID, the server can check if original operation with the same request ID
-        was received, and if so, will ignore the second request. This prevents
-        clients from accidentally creating duplicate commitments.
+        An optional ID to identify the request. This value is used to identify
+        duplicate requests. If you make a request with the same request ID
+        and the original request is still in progress or completed, the server
+        ignores the second request. This prevents clients from
+        accidentally creating duplicate commitments.
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).

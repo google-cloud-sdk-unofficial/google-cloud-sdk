@@ -90,7 +90,7 @@ class Register(base.CreateCommand):
     flags.AddMonitoringConfig(parser, True)
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroups(parser)
-    flags.AddSecurityPosture(parser)
+    flags.AddWorkloadVulnerabilityScanning(parser)
 
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)
 

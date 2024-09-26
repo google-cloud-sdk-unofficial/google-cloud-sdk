@@ -67,7 +67,7 @@ class Update(base.Command):
     parser.add_argument(
         '--etag',
         required=False,
-        help='etag value for particular Data Attribute resource.')
+        help='etag value of the Data Attribute resource.')
     parser.add_argument(
         '--parent',
         required=False,

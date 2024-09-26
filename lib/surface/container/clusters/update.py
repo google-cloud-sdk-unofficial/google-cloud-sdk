@@ -411,6 +411,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
+    flags.AddClusterTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -528,6 +529,7 @@ class Update(base.UpdateCommand):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.tier = args.tier
     return opts
 
   def Run(self, args):
@@ -1045,6 +1047,7 @@ class UpdateBeta(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
+    flags.AddClusterTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1221,6 +1224,7 @@ class UpdateBeta(Update):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.tier = args.tier
     return opts
 
 
@@ -1353,6 +1357,7 @@ class UpdateAlpha(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
+    flags.AddClusterTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1525,4 +1530,5 @@ class UpdateAlpha(Update):
     opts.enable_l4_lb_firewall_reconciliation = (
         args.enable_l4_lb_firewall_reconciliation
     )
+    opts.tier = args.tier
     return opts

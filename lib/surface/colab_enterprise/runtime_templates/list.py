@@ -38,7 +38,7 @@ _DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
-  """Lists your runtime templates."""
+  """List your runtime templates."""
 
   @staticmethod
   def Args(parser):

@@ -23,8 +23,8 @@
         The Artifact Registry rule to create.
     params:
     - arg_name: action
+      required: true
       api_field: googleDevtoolsArtifactregistryV1Rule.action
-      default: ALLOW
       help_text: |
         The action the rule would make, can only be DENY or ALLOW.
       choices:
@@ -38,8 +38,6 @@
       choices:
       - arg_value: DOWNLOAD
         enum_value: DOWNLOAD
-      - arg_value: MUTABILITY_EXCEPTION
-        enum_value: MUTABILITY_EXCEPTION
       help_text: |
         The operation the rule applies to.
     - arg_name: package

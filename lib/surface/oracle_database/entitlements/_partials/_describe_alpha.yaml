@@ -28,8 +28,8 @@
   arguments:
     params:
     - help_text: |-
-        Name of the resource. Format
-        projects/{project}/locations/{location}/entitlements/{entitlement}
+        The name of the Entitlement in the following format:
+        projects/{project}/locations/{location}/entitlements/{entitlement}.
       is_positional: true
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_entitlement
       required: true

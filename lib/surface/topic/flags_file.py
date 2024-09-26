@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 # NOTE: If the name of this topic is modified, please make sure to update all
 # references to it in error messages and other help messages as there are no
 # tests to catch such changes.
+@base.UniverseCompatible
 class CommandConventions(base.TopicCommand):
   r"""--flags-file=YAML_FILE supplementary help.
 
@@ -49,7 +50,7 @@ class CommandConventions(base.TopicCommand):
   For example, this YAML file defines values for Boolean, integer, floating
   point, string, dictionary and list valued flags:
 
-  ```
+  ```yaml
       --boolean:
       --integer: 123
       --float: 456.789
@@ -77,7 +78,7 @@ class CommandConventions(base.TopicCommand):
 
   This example specifies the *--metadata* flag multiple times:
 
-  ```
+  ```yaml
       - --metadata: abc
         --integer: 123
       - --metadata: xyz
@@ -86,13 +87,13 @@ class CommandConventions(base.TopicCommand):
   Each *--flags-file* arg is replaced by its contents, so normal flag
   precedence applies. For example, given *flags-1.yaml*:
 
-  ```
+  ```yaml
       --zone: us-east2-a
   ```
 
   *flags-2.yaml*:
 
-  ```
+  ```yaml
       --verbosity: info
       --zone: us-central1-a
   ```

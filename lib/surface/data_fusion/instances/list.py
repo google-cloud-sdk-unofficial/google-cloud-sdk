@@ -30,7 +30,7 @@ class List(base.ListCommand):
 
   ## EXAMPLES
 
-  To list instances in project 'my-project' and location 'my-location', run:
+  To list instances in project `my-project` and location `my-location`, run:
 
     $ {command} --project=my-project --location=my-location
   """

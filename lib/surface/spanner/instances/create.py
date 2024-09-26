@@ -55,7 +55,18 @@ class Create(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
+    flags.Edition(
+        choices={
+            'STANDARD': 'Standard edition',
+            'ENTERPRISE': 'Enterprise edition',
+            'ENTERPRISE_PLUS': 'Enterprise Plus edition',
+            'EDITION_UNSPECIFIED': (
+                "Spanner's legacy pricing model. For more information, see the"
+                ' [Spanner editions overview]'
+                '(https://cloud.google.com/spanner/docs/editions-overview)'
+            ),
+        },
+    ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -127,7 +138,18 @@ class BetaCreate(base.CreateCommand):
     flags.Instance().AddToParser(parser)
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
+    flags.Edition(
+        choices={
+            'STANDARD': 'Standard edition',
+            'ENTERPRISE': 'Enterprise edition',
+            'ENTERPRISE_PLUS': 'Enterprise Plus edition',
+            'EDITION_UNSPECIFIED': (
+                'Spanner\'s legacy pricing model. For more information, see the'
+                ' [Spanner editions overview]'
+                '(https://cloud.google.com/spanner/docs/editions-overview)'
+            ),
+        },
+    ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -185,7 +207,18 @@ class AlphaCreate(Create):
     flags.Config().AddToParser(parser)
     flags.Description().AddToParser(parser)
     flags.SsdCache().AddToParser(parser)
-    flags.Edition().AddToParser(parser)
+    flags.Edition(
+        choices={
+            'STANDARD': 'Standard edition',
+            'ENTERPRISE': 'Enterprise edition',
+            'ENTERPRISE_PLUS': 'Enterprise Plus edition',
+            'EDITION_UNSPECIFIED': (
+                "Spanner's legacy pricing model. For more information, see the"
+                ' [Spanner editions overview]'
+                '(https://cloud.google.com/spanner/docs/editions-overview)'
+            ),
+        },
+    ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(

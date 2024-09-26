@@ -33,13 +33,13 @@ class Create(base.CreateCommand):
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (nam3) by adding a 'READ_ONLY' type replica in location 'us-east4', run:
+        To create a custom Cloud Spanner instance configuration based on an existing Google-managed configuration (`nam3`) by adding a `READ_ONLY` type replica in location `us-east4`, run:
 
           $ {command} custom-instance-config
             --clone-config=nam3
             --add-replicas=location=us-east4,type=READ_ONLY
 
-        To create a custom Cloud Spanner instance configuration based on another custom configuration (custom-instance-config) by adding a 'READ_ONLY' type replica in location 'us-east1' and removing a 'READ_ONLY' type replica in location 'us-east4', run:
+        To create a custom Cloud Spanner instance configuration based on another custom configuration (`custom-instance-config`) by adding a `READ_ONLY` type replica in location `us-east1` and removing a `READ_ONLY` type replica in location `us-east4`, run:
 
           $ {command} custom-instance-config1
             --clone-config=custom-instance-config
@@ -79,7 +79,8 @@ class Create(base.CreateCommand):
         '--validate-only',
         action='store_true',
         default=False,
-        help='Use this flag to validate that the request will succeed before executing it.'
+        help='If specified, validate that the creation will succeed without '
+        'creating the instance configuration.'
     )
 
     replica_help_text = """\

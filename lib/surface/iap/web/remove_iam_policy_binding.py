@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from an IAP IAM resource.
@@ -111,7 +111,7 @@ class RemoveIamPolicyBinding(base.Command):
                                               args.all)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBinding):
   """Remove IAM policy binding from an IAP IAM resource.
 

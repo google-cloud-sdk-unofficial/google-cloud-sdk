@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ _detailed_help = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -50,9 +51,12 @@ class UpdateProfileGroup(base.UpdateCommand):
   def Args(cls, parser):
     spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
     spg_flags.AddProfileGroupDescription(parser)
-    spg_flags.AddThreatPreventionProfileResource(
+    spg_flags.AddSecurityProfileResource(
         parser,
         cls.ReleaseTrack(),
+        'threat-prevention-profile',
+        required=False,
+        arg_aliases=['security-profile'],
     )
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)

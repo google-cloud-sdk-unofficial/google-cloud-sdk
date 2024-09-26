@@ -28,10 +28,10 @@ class Describe(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To describe instance 'my-instance' in project 'my-project' and location
-  'my-location', run:
+  To describe instance `my-instance` in project `my-project` and location
+  `my-location`, run:
 
-    $ {command} --project=my-project --location=my-location my-instance
+    $ {command} my-instance --project=my-project --location=my-location
   """
 
   @staticmethod

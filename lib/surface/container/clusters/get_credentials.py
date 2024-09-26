@@ -54,6 +54,7 @@ def _BaseRun(args, context):
   return cluster, cluster_ref
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetCredentials(base.Command):
   """Fetch credentials for a running cluster.
@@ -103,6 +104,7 @@ class GetCredentials(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     flags.AddGetCredentialsArgs(parser)
+    flags.AddDnsEndpointFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -118,6 +120,7 @@ class GetCredentials(base.Command):
     util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetCredentialsBeta(base.Command):
   """Fetch credentials for a running cluster.
@@ -181,6 +184,7 @@ class GetCredentialsBeta(base.Command):
                                args.dns_endpoint)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetCredentialsAlpha(base.Command):
   """Fetch credentials for a running cluster.

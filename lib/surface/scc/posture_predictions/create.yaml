@@ -5,9 +5,7 @@
     description: |
       Create a Cloud Security Command Center (SCC) posture prediction using AI.
 
-      LRO operation ID is printed as the standard output.
-    # TODO: b/355589333 - Add async support for create prediction
-    # Created posture prediction is returned as the response of the command.
+      Created posture prediction is returned as the response of the command.
 
     examples: |
       Create a BASIC posture prediction within parent `organizations/123/locations/global`(i.e. in organization `123`, location `global`):
@@ -54,8 +52,8 @@
       help_text: |
         Custom USER query string to create the prediction
 
-  # async: #TODO: b/355589333 - Add async support for create prediction
-  #   collection: securityposture.organizations.locations.operations
+  async:
+    collection: securityposture.organizations.locations.operations
 
   output:
     format: yaml

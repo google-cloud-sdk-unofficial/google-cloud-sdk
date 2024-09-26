@@ -53,7 +53,7 @@ class Update(base.UpdateCommand):
     flags.AddMonitoringConfig(parser)
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroupsForUpdate(parser)
-    flags.AddSecurityPosture(parser)
+    flags.AddWorkloadVulnerabilityScanning(parser)
 
     attached_flags.AddAdminUsersForUpdate(parser)
     attached_flags.AddPlatformVersion(parser, required=False)

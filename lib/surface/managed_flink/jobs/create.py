@@ -70,9 +70,9 @@ class Create(base.BinaryBackedCommand):
       """,
   }
 
-  def _JobSubmitResponseHandler(self, response, temp_dir, args):
+  def _JobSubmitResponseHandler(self, response, job_type, temp_dir, args):
     """Process results of BinaryOperation Execution."""
-    if response.stdout and args.show_output:
+    if response.stdout and (args.show_output or job_type == 'sql'):
       log.Print(response.stdout)
 
     if response.stderr:
@@ -191,6 +191,8 @@ class Create(base.BinaryBackedCommand):
     flags.AddElasticParallelismArgs(parser)
     flags.AddNetworkConfigArgs(parser)
     flags.AddJobArgsCollector(parser)
+    flags.AddPythonVirtualEnvArgument(parser)
+    flags.AddExtraArchivesArgument(parser)
 
   def Run(self, args):
     current_os = platforms.OperatingSystem.Current()
@@ -238,6 +240,27 @@ class Create(base.BinaryBackedCommand):
       )
     flink_backend.CheckStagingLocation(args.staging_location)
 
+    if not args.staging_location.startswith('gs://'):
+      raise exceptions.InvalidArgumentException(
+          'staging-location',
+          'Staging location must be of the form gs://<bucket>/<path>.',
+      )
+
+    # Validate the python virtualenv
+    if job_type == 'python':
+      if not args.python_venv:
+        raise exceptions.InvalidArgumentException(
+            'python-venv',
+            'Python virtualenv must be set if job type is python.',
+        )
+
+      if not args.python_venv.startswith('gs://'):
+        raise exceptions.InvalidArgumentException(
+            'python-venv',
+            'Python Virtualenv location must be of the form'
+            ' gs://<bucket>/<path>.',
+        )
+
     env = dict()
     env['CLOUDSDK_MANAGEDFLINK_JOB_TYPE'] = job_type
 
@@ -264,6 +287,8 @@ class Create(base.BinaryBackedCommand):
           main_class=args.main_class,
           extra_jars=args.extra_jars,
           extra_args=args.job_args,
+          extra_archives=args.archives,
+          python_venv=args.python_venv,
           env=flink_backend.GetEnvArgsForCommand(env),
       )
-      return self._JobSubmitResponseHandler(response, temp_dir, args)
+      return self._JobSubmitResponseHandler(response, job_type, temp_dir, args)

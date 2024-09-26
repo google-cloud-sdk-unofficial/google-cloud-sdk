@@ -63,7 +63,7 @@ class MarkActive(base.Command):
         '--etag',
         required=True,
         metavar='ETAG',
-        help='Etag of a recommendation')
+        help='Etag of the recommendation')
 
   def Run(self, args):
     """Run 'gcloud recommender recommendations mark-active'.

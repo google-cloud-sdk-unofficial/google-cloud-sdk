@@ -30,10 +30,10 @@ class Wait(base.SilentCommand):
 
   ## EXAMPLES
 
-  To wait for operation 'my-operation' in project 'my-project' and location
-  'my-location', run:
+  To wait for operation `my-operation` in project `my-project` and location
+  `my-location`, run:
 
-    $ {command} --project=my-project --location=my-location my-operation
+    $ {command} my-operation --project=my-project --location=my-location
   """
 
   WAIT_CEILING_MS = 60 * 20 * 1000

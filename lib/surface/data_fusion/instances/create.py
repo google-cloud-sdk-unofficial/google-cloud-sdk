@@ -45,10 +45,10 @@ class Create(base.Command):
 
   ## EXAMPLES
 
-  To create instance 'my-instance' in project 'my-project', location in
-  'my-location', and zone in 'my-zone' run:
+  To create instance `my-instance` in project `my-project`, location in
+  `my-location`, and zone in `my-zone` run:
 
-    $ {command} --project=my-project --location=my-location my-instance --zone=my-zone
+    $ {command} my-instance --project=my-project --location=my-location --zone=my-zone
   """
 
   @staticmethod

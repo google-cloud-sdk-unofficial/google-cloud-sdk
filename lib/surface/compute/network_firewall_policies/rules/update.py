@@ -282,7 +282,7 @@ class UpdateBeta(Update):
   *{command}* is used to update network firewall policy rules.
   """
 
-  support_network_scopes = False
+  support_network_scopes = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

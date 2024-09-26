@@ -29,7 +29,7 @@ _DETAILED_HELP = {
     'EXAMPLES': """
         To get the IAM policy for a runtime template with id `my-runtime-template` in region `us-central1`, run:
 
-        $ {command} get-iam-policy my-runtime-template --location=us-central1 \
+        $ {command} my-runtime-template --location=us-central1 \
             --member=user:someone@example.com --role=roles/aiplatform.notebookRuntimeUser
     """,
 }

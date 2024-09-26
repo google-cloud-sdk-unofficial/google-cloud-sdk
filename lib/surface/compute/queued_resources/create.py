@@ -81,7 +81,6 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
-  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -112,7 +111,6 @@ class Create(base.CreateCommand):
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
-        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -197,7 +195,6 @@ class Create(base.CreateCommand):
         self._support_custom_hostnames,
         self._support_specific_then_x,
         self._support_watchdog_timer,
-        self._support_turbo_mode,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args, holder, client, holder.resources, queued_resource_ref.project,

@@ -14,7 +14,11 @@
 # limitations under the License.
 """Command for obtaining details about a given worker-pool."""
 
+
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.Hidden
@@ -42,6 +46,23 @@ class Describe(base.Command):
               $ {command} <worker-pool-name> --format=export
           """,
   }
+
+  @staticmethod
+  def CommonArgs(parser):
+    worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
+        'WORKER_POOL',
+        resource_args.GetWorkerPoolResourceSpec(),
+        'WorkerPool to describe.',
+        required=True,
+        prefixes=False,
+    )
+    concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
+        parser
+    )
+
+  @staticmethod
+  def Args(parser):
+    Describe.CommonArgs(parser)
 
   def Run(self, args):
     """Obtain details about a given worker-pool."""

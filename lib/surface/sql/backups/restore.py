@@ -171,7 +171,7 @@ def AddInstanceSettingsArgs(parser):
   )
   flags.AddThreadsPerCore(parser, hidden=True)
   flags.AddCascadableReplica(parser, hidden=True)
-  flags.AddEnableDataCache(parser, show_negated_in_help=False, hidden=True)
+  flags.AddEnableDataCache(parser, hidden=True)
   flags.AddRecreateReplicasOnPrimaryCrash(parser, hidden=True)
   psc_setup_group = parser.add_group(hidden=True)
   flags.AddEnablePrivateServiceConnect(psc_setup_group, hidden=True)
@@ -221,6 +221,14 @@ class RestoreBackup(base.RestoreCommand):
         'argument must be specified when the backup instance is different '
         'from the restore instance. If it is not specified, the backup '
         'instance is considered the same as the restore instance.')
+    parser.add_argument(
+        '--backup-project',
+        help=(
+            'The project of the instance to which the backup belongs. If it'
+            ' isn\'t specified, backup and restore instances are in the same '
+            'project.'
+        ),
+    )
     base.ASYNC_FLAG.AddToParser(parser)
     AddInstanceSettingsArgs(parser)
 
@@ -285,6 +293,7 @@ class RestoreBackup(base.RestoreCommand):
                       restoreBackupContext=sql_messages.RestoreBackupContext(
                           backupRunId=backup_run_id,
                           instanceId=args.backup_instance,
+                          project=args.backup_project,
                       )
                   )
               ),

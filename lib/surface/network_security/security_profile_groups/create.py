@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
@@ -50,9 +51,17 @@ class CreateProfileGroup(base.CreateCommand):
   def Args(cls, parser):
     spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
     spg_flags.AddProfileGroupDescription(parser)
-    spg_flags.AddThreatPreventionProfileResource(
-        parser, cls.ReleaseTrack(), required=True
+    spg_flags.AddSecurityProfileResource(
+        parser,
+        cls.ReleaseTrack(),
+        'threat-prevention-profile',
+        required=False,
+        arg_aliases=['security-profile'],
     )
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      spg_flags.AddSecurityProfileResource(
+          parser, cls.ReleaseTrack(), 'custom-mirroring-profile', required=False
+      )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -60,16 +69,23 @@ class CreateProfileGroup(base.CreateCommand):
   def Run(self, args):
     client = spg_api.Client(self.ReleaseTrack())
     security_profile_group = args.CONCEPTS.security_profile_group.Parse()
-    security_profile = args.CONCEPTS.threat_prevention_profile.Parse()
+    threat_prevention_profile = args.CONCEPTS.threat_prevention_profile.Parse()
+    custom_mirroring_profile = (
+        args.CONCEPTS.custom_mirroring_profile.Parse()
+        if hasattr(args.CONCEPTS, 'custom_mirroring_profile')
+        else None
+    )
+
     description = args.description
     is_async = args.async_
     labels = labels_util.ParseCreateArgs(
         args, client.messages.SecurityProfileGroup.LabelsValue
     )
 
-    if args.location != 'global':
+    if security_profile_group.locationsId != 'global':
       raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
+          'Only `global` location is supported, but got: %s'
+          % security_profile_group.locationsId
       )
 
     response = client.CreateSecurityProfileGroup(
@@ -77,7 +93,12 @@ class CreateProfileGroup(base.CreateCommand):
         security_profile_group_id=security_profile_group.Name(),
         parent=security_profile_group.Parent().RelativeName(),
         description=description,
-        threat_prevention_profile=security_profile.RelativeName(),
+        threat_prevention_profile=threat_prevention_profile.RelativeName()
+        if threat_prevention_profile is not None
+        else None,
+        custom_mirroring_profile=custom_mirroring_profile.RelativeName()
+        if custom_mirroring_profile is not None
+        else None,
         labels=labels,
     )
 

@@ -28,8 +28,8 @@ class Get(base.ListCommand):
 
   ## EXAMPLES
 
-  To get IAM policy for instance 'my-instance' in project 'my-project' and
-  location 'my-location', run:
+  To get IAM policy for instance `my-instance` in project `my-project` and
+  location `my-location, run:
 
     $ {command} my-instance --project=my-project --location=my-location
 

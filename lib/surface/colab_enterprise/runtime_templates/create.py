@@ -46,7 +46,7 @@ _DETAILED_HELP = {
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  """Creates a runtime template."""
+  """Create a runtime template."""
 
   @staticmethod
   def Args(parser):

@@ -66,7 +66,6 @@
       default: true
     - arg_name: fips-enabled
       api_field: instance.fipsEnabled
-      release_tracks: [GA]
       type: bool
       help_text: |
         This specifies whether FIPS is enabled on the Looker instance.
@@ -117,7 +116,6 @@
     # Group for PSC
     - group:
         required: false
-        release_tracks: [GA]
         help_text: |
           Private Service Connect - Private Service Connect allows private consumption of services
           across VPC networks that belong to different groups, teams, projects, or organizations.

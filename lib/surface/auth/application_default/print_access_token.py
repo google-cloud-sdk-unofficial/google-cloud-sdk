@@ -40,6 +40,7 @@ import six
 _DEFAULT_TOKEN_LIFETIME_SECS = 3600  # 1 hour in seconds
 
 
+@base.UniverseCompatible
 class PrintAccessToken(base.Command):
   r"""Print an access token for your current Application Default Credentials.
 
@@ -193,6 +194,12 @@ class PrintAccessToken(base.Command):
         creds._delegates = delegates  # pylint: disable=protected-access
       if args.lifetime:
         creds._lifetime = args.lifetime  # pylint: disable=protected-access
+
+    # The token URI needs to be overridden in case
+    # context aware access is enabled.
+    # pylint: disable=protected-access
+    creds._token_uri = auth_util.GetTokenUri()
+    # pylint: enable=protected-access
 
     # Refresh the ADC cred.
     req = requests.GoogleAuthRequest()

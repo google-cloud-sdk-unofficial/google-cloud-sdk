@@ -54,15 +54,6 @@
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: request-ip-ranges
-      api_field: codeRepositoryIndex.requestIpRanges
-      action: store_true
-      required: false
-      type: bool
-      help_text: |-
-        Whether to request reservation of IP addresses from which the RAG index
-        service will attempt to access linked Git repositories
-      default: null
     - arg_name: kms-key
       api_field: codeRepositoryIndex.kmsKey
       required: false

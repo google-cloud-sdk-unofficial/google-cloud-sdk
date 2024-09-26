@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy for an IAP IAM resource.
@@ -113,7 +113,7 @@ class SetIamPolicy(base.Command):
     return iap_iam_ref.SetIamPolicy(args.policy_file)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicyAlpha(SetIamPolicy):
   """Set the IAM policy for an IAP IAM resource.
 

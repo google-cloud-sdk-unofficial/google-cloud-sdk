@@ -329,15 +329,24 @@ class Deploy(base.Command):
       # When it's new service, when users provide
       # --base-image, it implies automatic updates = True.
       return base_image != service_lib.DEFAULT_BASE_IMAGE
+    # TODO(b/365567914): Delete elif statement once the new annotations are in.
     if (
-        service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES
+        service_lib.RUN_FUNCTIONS_BUILD_ENABLE_AUTOMATIC_UPDATES
         in service.annotations
     ):
-      # When there is existing service, use the old value.
+      # When there is existing service, use the annotation value.
       # Because the annotation is sticky. Users need
       # to explicitly set --automatic-updates to change it.
       automatic_updates_annotation = service.annotations[
-          service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES
+          service_lib.RUN_FUNCTIONS_BUILD_ENABLE_AUTOMATIC_UPDATES
+      ]
+      return True if automatic_updates_annotation.lower() == 'true' else False
+    elif (
+        service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES_DEPRECATED
+        in service.annotations
+    ):
+      automatic_updates_annotation = service.annotations[
+          service_lib.RUN_FUNCTIONS_ENABLE_AUTOMATIC_UPDATES_DEPRECATED
       ]
       return True if automatic_updates_annotation.lower() == 'true' else False
     return automatic_updates

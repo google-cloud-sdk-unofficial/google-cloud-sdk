@@ -64,7 +64,10 @@ class Create(base.CreateCommand):
     flags.AddTlsInspect(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       flags.AddSrcNetworkScope(parser)
       flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
@@ -162,7 +165,10 @@ class Create(base.CreateCommand):
     if args.IsSpecified('disabled'):
       disabled = args.disabled
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       if args.IsSpecified('src_network_scope'):
         if not args.src_network_scope:
           src_network_scope = (
@@ -188,7 +194,10 @@ class Create(base.CreateCommand):
         layer4_configs, holder.client.messages
     )
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       matcher = holder.client.messages.FirewallPolicyRuleMatcher(
           srcIpRanges=src_ip_ranges,
           destIpRanges=dest_ip_ranges,

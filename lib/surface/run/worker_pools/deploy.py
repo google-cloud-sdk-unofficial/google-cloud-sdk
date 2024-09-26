@@ -16,6 +16,9 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 def ContainerArgGroup():
@@ -92,6 +95,16 @@ class Deploy(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddNoPromoteFlag(parser)
+    worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
+        'WORKER_POOL',
+        resource_args.GetWorkerPoolResourceSpec(prompt=True),
+        'WorkerPool to deploy to.',
+        required=True,
+        prefixes=False,
+    )
+    concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
+        parser
+    )
     container_args = ContainerArgGroup()
     container_args.AddToParser(parser)
 

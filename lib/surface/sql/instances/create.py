@@ -139,7 +139,7 @@ def AddBaseArgs(parser):
   flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
   flags.AddThreadsPerCore(parser)
   flags.AddCascadableReplica(parser)
-  flags.AddEnableDataCache(parser, show_negated_in_help=False)
+  flags.AddEnableDataCache(parser)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
   psc_setup_group = parser.add_group()
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
@@ -162,6 +162,8 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddServerCaMode(parser)
   flags.AddRetainBackupsOnDelete(parser)
+  flags.AddStorageProvisionedIops(parser)
+  flags.AddStorageProvisionedThroughput(parser)
 
 
 def AddAlphaArgs(unused_parser):

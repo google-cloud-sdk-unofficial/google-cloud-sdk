@@ -47,8 +47,7 @@
     - arg_name: exadata-infrastructure
       help_text: |
         The name of the Exadata Infrastructure resource on which VM cluster
-        resource is created.
-        Format:
+        resource is created, in the following format:
         projects/{project}/locations/{region}/cloudExadataInfrastuctures/{cloud_extradata_infrastructure}
       is_positional: false
       is_primary_resource: false
@@ -71,7 +70,7 @@
           api_field: cloudVmCluster.properties.licenseType
           required: true
           help_text: |-
-            License type of VM Cluster
+            License type of VM Cluster.
           choices:
           - arg_value: license-included
             enum_value: LICENSE_INCLUDED
@@ -86,7 +85,7 @@
           required: false
           repeated: false
           help_text: |-
-            Grid Infrastructure Version
+            Grid Infrastructure Version.
         - group:
             required: false
             help_text: |-
@@ -124,7 +123,7 @@
           repeated: false
           type: float
           help_text: |-
-            OCPU count per VM. Minimum is 0.1
+            OCPU count per VM. Minimum is 0.1.
         - arg_name: properties-memory-size-gb
           api_field: cloudVmCluster.properties.memorySizeGb
           required: false
@@ -138,7 +137,7 @@
           repeated: false
           type: int
           help_text: |-
-            Local storage per VM
+            Local storage per VM.
         - arg_name: properties-data-storage-size-tb
           api_field: cloudVmCluster.properties.dataStorageSizeTb
           required: false
@@ -150,7 +149,7 @@
           api_field: cloudVmCluster.properties.diskRedundancy
           required: false
           help_text: |-
-            The type of redundancy
+            The type of redundancy.
           choices:
           - arg_value: high
             enum_value: HIGH
@@ -174,7 +173,7 @@
           required: false
           type: bool
           help_text: |-
-            use local backup.
+            Use local backup.
           default: null
         - arg_name: properties-hostname-prefix
           api_field: cloudVmCluster.properties.hostnamePrefix
@@ -236,7 +235,7 @@
       required: false
       repeated: true
       help_text: |-
-        labels or tags associated with the resource.
+        Labels or tags associated with the VM Cluster.
       spec:
       - api_field: key
       - api_field: value
@@ -267,16 +266,11 @@
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
-
-        For example, consider a situation where you make an initial request and the
-        request times out. If you make the request again with the same request
-        ID, the server can check if original operation with the same request ID
-        was received, and if so, will ignore the second request. This prevents
-        clients from accidentally creating duplicate commitments.
+        An optional ID to identify the request. This value is used to identify
+        duplicate requests. If you make a request with the same request ID
+        and the original request is still in progress or completed, the server
+        ignores the second request. This prevents clients from
+        accidentally creating duplicate commitments.
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).

@@ -184,10 +184,10 @@
     # Group for PSC
     - group:
         required: false
-        release_tracks: [GA]
         help_text: |
-          Private Service Connect - Private Service Connect allows private consumption of services
-          across VPC networks that belong to different groups, teams, projects, or organizations.
+          Private Service Connect - Private Service Connect allows the Looker Instance to be
+          reached via a private connection from inside a VPC network, and for the Looker Instance
+          to connect to managed services via private connections.
         params:
         - group:
             mutex: true
@@ -206,7 +206,7 @@
             - api_field: instance.pscConfig.serviceAttachments
               arg_name: psc-service-attachment
               help_text: |
-                The service attachments asigned to the Private Service Connect (PSC) config.
+                Service attachments representing egress connections for the Looker instance.
                 This flag can be repeated.
                 (Example: --psc-service-attachment domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa" --psc-service-attachments domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa")
               type:
@@ -222,7 +222,7 @@
             - arg_name: clear-psc-service-attachments
               action: store_true
               help_text: |
-                Remove all service attachments from the PSC config of the instance.
+                Remove all allowed VPCs from the PSC config of the instance.
 
   request:
     ALPHA:
@@ -235,6 +235,8 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateDenyMaintenancePeriod
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePublicIPEnabled
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
     GA:
       api_version: v1
       modify_request_hooks:
