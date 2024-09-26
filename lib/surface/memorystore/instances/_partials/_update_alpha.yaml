@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: Update the configuration of a Memorystore instance.
     description: Update the configuration of a Memorystore instance.
@@ -166,8 +165,8 @@
               - arg_value: always
                 enum_value: ALWAYS
                 help_text: |-
-                  Fsync every time new commands are appended to the AOF. The best data
-                  loss protection at the cost of performance.
+                  Fsync every time new write commands are appended to the AOF. The best
+                  data loss protection at the cost of performance.
     - arg_name: engine-configs
       api_field: instance.engineConfigs
       required: false

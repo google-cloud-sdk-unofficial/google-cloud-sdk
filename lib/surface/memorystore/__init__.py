@@ -18,11 +18,18 @@
 """Manage Memorystore resources."""
 
 from googlecloudsdk.calliope import base
+from surface.memorystore import _init_extensions as extensions
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
-class MemorystoreALPHA(base.Group):
+@base.DefaultUniverseOnly
+class MemorystoreALPHA(extensions.MemorystoreALPHA, base.Group):
+  """Manage Memorystore resources."""
+  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class MemorystoreBETA(extensions.MemorystoreBETA, base.Group):
   """Manage Memorystore resources."""
   category = base.UNCATEGORIZED_CATEGORY

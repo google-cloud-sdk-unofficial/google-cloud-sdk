@@ -28,8 +28,10 @@ from googlecloudsdk.command_lib.compute.future_reservations import flags as fr_f
 from googlecloudsdk.command_lib.compute.future_reservations import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(base.UpdateCommand):
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class UpdateV1(base.UpdateCommand):
   """Update Compute Engine future reservations."""
 
   fr_arg = None
@@ -97,6 +99,14 @@ class UpdateBeta(base.UpdateCommand):
           '--auto-created-reservations-duration',
           '--require-specific-reservation',
           '--no-require-specific-reservation',
+          '--reservation-name',
+          '--deployment-type',
+          '--commitment-name',
+          '--commitment-plan',
+          '--previous-commitment-terms',
+          '--instance-termination-action',
+          '--scheduling-type',
+          '--enable-opportunistic-maintenance',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update'
@@ -164,6 +174,23 @@ class UpdateBeta(base.UpdateCommand):
     if args.IsSpecified('auto_created_reservations_duration'):
       update_mask.append('autoCreatedReservationsDuration')
 
+    if args.IsKnownAndSpecified('reservation_name'):
+      update_mask.append('reservationName')
+    if args.IsKnownAndSpecified('deployment_type'):
+      update_mask.append('deploymentType')
+    if args.IsKnownAndSpecified('commitment_name'):
+      update_mask.append('commitmentName')
+    if args.IsKnownAndSpecified('commitment_plan'):
+      update_mask.append('commitmentPlan')
+    if args.IsKnownAndSpecified('previous_commitment_terms'):
+      update_mask.append('previousCommitmentTerms')
+    if args.IsKnownAndSpecified('instance_termination_action'):
+      update_mask.append('instanceTerminationAction')
+    if args.IsKnownAndSpecified('scheduling_type'):
+      update_mask.append('schedulingType')
+    if args.IsKnownAndSpecified('enable_opportunistic_maintenance'):
+      update_mask.append('enableOpportunisticMaintenance')
+
     require_specific_reservation = getattr(
         args, 'require_specific_reservation', None
     )
@@ -199,6 +226,41 @@ class UpdateBeta(base.UpdateCommand):
     return result
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateV1):
+  """Update Compute Engine future reservations."""
+
+  fr_arg = None
+
+  detailed_help = {'EXAMPLES': """
+        To update total count, start and end time of a Compute Engine future reservation in ``us-central1-a'', run:
+
+            $ {command} my-future-reservation --total-count=1000 --start-time=2021-11-10T07:00:00Z
+          --end-time=2021-12-10T07:00:00Z --zone=us-central1-a
+        """}
+
+  @classmethod
+  def Args(cls, parser):
+    cls.fr_arg = compute_flags.ResourceArgument(
+        resource_name='future reservation',
+        plural=False,
+        name='FUTURE_RESERVATION',
+        zonal_collection='compute.futureReservations',
+        zone_explanation=compute_flags.ZONE_PROPERTY_EXPLANATION,
+    )
+
+    cls.fr_arg.AddArgument(parser, operation_type='update')
+    fr_flags.AddUpdateFlags(
+        parser,
+        support_fleet=False,
+        support_planning_status=True,
+        support_local_ssd_count=True,
+        support_share_setting=True,
+        support_auto_delete=True,
+        support_require_specific_reservation=False,
+    )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update Compute Engine future reservations."""
@@ -231,4 +293,5 @@ class UpdateAlpha(UpdateBeta):
         support_share_setting=True,
         support_auto_delete=True,
         support_require_specific_reservation=True,
+        support_gsc=True,
     )

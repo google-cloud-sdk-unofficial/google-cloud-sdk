@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.artifacts.vulnerabilities import GetLatestScan
 from googlecloudsdk.api_lib.artifacts.vulnerabilities import GetVulnerabilities
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.artifacts import endpoint_util
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import format_util
 
@@ -44,6 +45,7 @@ DEFAULT_LIST_FORMAT = """\
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Command for listing vulnerabilities. To see all fields, use --format=json.
   """
@@ -60,16 +62,21 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     flags.GetListURIArg().AddToParser(parser)
+    flags.GetOptionalAALocationFlag().AddToParser(parser)
     flags.GetVulnerabilitiesOccurrenceFilterFlag().AddToParser(parser)
     parser.display_info.AddFlatten(['occurrence.vulnerability.packageIssue'])
     return
 
   def Run(self, args):
+    location = args.location
     occurrence_filter = args.occurrence_filter
     resource, project = self.replaceTags(args.URI)
-    latest_scan = GetLatestScan(project, resource)
+    with endpoint_util.WithRegion(location):
+      if location is not None:
+        project = '{}/locations/{}'.format(project, location)
+      latest_scan = GetLatestScan(project, resource)
+      occurrences = GetVulnerabilities(project, resource, occurrence_filter)
     self.setTitle(args, latest_scan)
-    occurrences = GetVulnerabilities(project, resource, occurrence_filter)
     occurrences = list(occurrences)
     results = []
     if len(occurrences) < 1:

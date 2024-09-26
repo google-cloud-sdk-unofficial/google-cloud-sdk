@@ -90,7 +90,8 @@
         the session lifetime, a new login creates a new session with a fresh lifetime. When a
         session expires, the user is asked to reauthenticate in accordance with reauth-method.
 
-        Setting --reauth-method when --session-length is empty raises an error.
+        Setting --reauth-method when --session-length is empty raises an error. Cannot set
+        --session-length on restricted client applications; please use scoped access settings.
     - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
       hidden: true
       arg_name: reauth-method

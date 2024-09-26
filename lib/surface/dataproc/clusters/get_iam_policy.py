@@ -20,12 +20,15 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import iam_helpers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a cluster.
 
@@ -52,6 +55,12 @@ class GetIamPolicy(base.ListCommand):
 
     cluster_ref = args.CONCEPTS.cluster.Parse()
     request = messages.DataprocProjectsRegionsClustersGetIamPolicyRequest(
-        resource=cluster_ref.RelativeName())
+        resource=cluster_ref.RelativeName(),
+        getIamPolicyRequest=messages.GetIamPolicyRequest(
+            options=messages.GetPolicyOptions(
+                requestedPolicyVersion=iam_helpers.MAX_LIBRARY_IAM_SUPPORTED_VERSION
+            )
+        ),
+    )
 
     return dataproc.client.projects_regions_clusters.GetIamPolicy(request)

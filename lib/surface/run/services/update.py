@@ -54,13 +54,16 @@ Container Flags
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
 
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
+
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.BaseImageArg())
+    group.AddArgument(flags.StartupProbeFlag())
+    group.AddArgument(flags.LivenessProbeFlag())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
     group.AddArgument(flags.GpuFlag(hidden=False))
 
   return group
@@ -87,8 +90,8 @@ class Update(base.Command):
       ' `--connectivity`, `--image`'
   )
 
-  @staticmethod
-  def CommonArgs(parser):
+  @classmethod
+  def CommonArgs(cls, parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddBinAuthzPolicyFlags(managed_group)
@@ -107,7 +110,7 @@ class Update(base.Command):
     flags.AddVpcConnectorArgs(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
-
+    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
@@ -263,14 +266,13 @@ class BetaUpdate(Update):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser)
+    cls.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(managed_group, hidden=False)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -283,7 +285,7 @@ class AlphaUpdate(BetaUpdate):
 
   @classmethod
   def Args(cls, parser):
-    Update.CommonArgs(parser)
+    cls.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -297,7 +299,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddServiceMaxInstancesFlag(managed_group)
     flags.AddScalingModeFlag(managed_group)
     flags.AddMaxSurgeFlag(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
+    flags.AddMaxUnavailableFlag(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

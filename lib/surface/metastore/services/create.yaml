@@ -444,7 +444,20 @@
               api_field: service.scheduledBackup.backupLocation
               help_text: |
                 Set the Cloud Storage URI to store the scheduled backups of the metastore service.
+    - arg_name: tags
+      hidden: true
+      api_field: service.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     labels:
       api_field: service.labels
+
   async:
     collection: metastore.projects.locations.operations

@@ -71,12 +71,12 @@ Container Flags
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddArgument(flags.GpuFlag(hidden=False))
+  group.AddArgument(flags.AddVolumeMountFlag())
+  group.AddArgument(flags.RemoveVolumeMountFlag())
+  group.AddArgument(flags.ClearVolumeMountsFlag())
 
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+    group.AddArgument(flags.GpuFlag(hidden=False))
     group.AddArgument(flags.AddCommandAndFunctionFlag())
     group.AddArgument(flags.BaseImageArg())
     group.AddArgument(flags.AutomaticUpdatesFlag())
@@ -85,6 +85,9 @@ Container Flags
     group.AddArgument(flags.MutexBuildEnvVarsFlags())
   else:
     group.AddArgument(flags.CommandFlag())
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.StartupProbeFlag())
+    group.AddArgument(flags.LivenessProbeFlag())
 
   return group
 
@@ -114,8 +117,8 @@ class Deploy(base.Command):
           """,
   }
 
-  @staticmethod
-  def CommonArgs(parser):
+  @classmethod
+  def CommonArgs(cls, parser):
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddAllowUnauthenticatedFlag(managed_group)
@@ -136,6 +139,7 @@ class Deploy(base.Command):
     flags.AddVpcConnectorArgs(managed_group)
     flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
     flags.RemoveContainersFlag().AddToParser(managed_group)
+    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -169,7 +173,7 @@ class Deploy(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser)
+    cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -774,14 +778,13 @@ class BetaDeploy(Deploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser)
+    cls.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddServiceMinInstancesFlag(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(managed_group, hidden=False)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -794,7 +797,7 @@ class AlphaDeploy(BetaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser)
+    cls.CommonArgs(parser)
 
     # Flags specific to managed CR
     managed_group = flags.GetManagedArgGroup(parser)
@@ -807,7 +810,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddServiceMaxInstancesFlag(managed_group)
     flags.AddScalingModeFlag(managed_group)
     flags.AddMaxSurgeFlag(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
+    flags.AddMaxUnavailableFlag(managed_group)
     flags.AddRegionsArg(managed_group)
     flags.AddDomainArg(managed_group)
     flags.AddGpuTypeFlag(managed_group)

@@ -208,6 +208,12 @@ class Login(base.Command):
           auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_ID)
       properties.VALUES.auth.client_secret.Set(
           auth_util.DEFAULT_CREDENTIALS_DEFAULT_CLIENT_SECRET)
+      if auth_util.CLOUD_PLATFORM_SCOPE not in scopes:
+        raise c_exc.InvalidArgumentException(
+            '--scopes',
+            '{} scope is required but not requested. Please include it in the'
+            ' --scopes flag.'.format(auth_util.CLOUD_PLATFORM_SCOPE),
+        )
       creds = auth_util.DoInstalledAppBrowserFlowGoogleAuth(
           scopes,
           client_id_file=args.client_id_file,

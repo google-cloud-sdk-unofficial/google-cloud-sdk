@@ -27,7 +27,7 @@
 
   request:
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1alpha2
     collection: looker.projects.locations.instances.backups
 
   output:

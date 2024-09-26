@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):

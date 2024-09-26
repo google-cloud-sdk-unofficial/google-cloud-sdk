@@ -56,6 +56,18 @@
           `BACKEND` is specified as `METASTORE_TYPE:METASTORE_NAME` where `METASTORE_TYPE` is the type of backend metastore and
           `METASTORE_NAME` is the relative resource name of the metastore. If only the name of the metastore is specified (e.g. `dpms1`),
           project and location will be inferred from the project and location used to create the federation.
+    - arg_name: tags
+      hidden: true
+      api_field: federation.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     labels:
       api_field: federation.labels
 

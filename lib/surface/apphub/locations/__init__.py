@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class LocationsGA(base.Group):
@@ -31,7 +30,6 @@ class LocationsGA(base.Group):
   """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class LocationsAlpha(base.Group):

@@ -19,10 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import iam_helpers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
+@base.DefaultUniverseOnly
 class GetIamPolicy(base.Command):
   """Get IAM policy for an autoscaling policy.
 
@@ -48,8 +50,16 @@ class GetIamPolicy(base.Command):
 
     policy_ref = args.CONCEPTS.autoscaling_policy.Parse()
     # pylint: disable=line-too-long
-    request = messages.DataprocProjectsRegionsAutoscalingPoliciesGetIamPolicyRequest(
-        resource=policy_ref.RelativeName())
+    request = (
+        messages.DataprocProjectsRegionsAutoscalingPoliciesGetIamPolicyRequest(
+            resource=policy_ref.RelativeName(),
+            getIamPolicyRequest=messages.GetIamPolicyRequest(
+                options=messages.GetPolicyOptions(
+                    requestedPolicyVersion=iam_helpers.MAX_LIBRARY_IAM_SUPPORTED_VERSION
+                )
+            ),
+        )
+    )
     # pylint: enable=line-too-long
 
     return dataproc.client.projects_regions_autoscalingPolicies.GetIamPolicy(

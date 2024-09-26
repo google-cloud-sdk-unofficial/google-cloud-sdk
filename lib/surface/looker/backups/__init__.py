@@ -17,8 +17,10 @@
 
 from googlecloudsdk.calliope import base
 
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Backups(base.Group):
   """Manage Looker instances.
 

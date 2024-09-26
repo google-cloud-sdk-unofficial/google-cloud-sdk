@@ -17,7 +17,6 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - ALPHA
-  hidden: true
   help_text:
     brief: List all Memorystore instances in a specified project and location.
     description: List all Memorystore instances in a specified project and location.

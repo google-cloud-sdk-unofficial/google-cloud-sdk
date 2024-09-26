@@ -1,11 +1,12 @@
-release_tracks: [ALPHA]
-hidden: true
+release_tracks: [ALPHA, BETA, GA]
 
 help_text:
   brief: |
-    Reschedule maintenance window for a Redis cluster instance.
+    Reschedule maintenance window for a Memorystore for
+        Redis Cluster instance.
   description: |
-    Reschedule maintenance window for a Redis cluster instance.
+    Reschedule maintenance window for a Memorystore for
+        Redis Cluster instance.
   examples: |
     To reschedule maintenance window for an instance with the name 'my-redis-cluster' in region
     'us-central-1' with immediate, run:

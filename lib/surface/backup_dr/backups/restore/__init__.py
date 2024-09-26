@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Restore(base.Group):
   """Manage restore operations for resources."""

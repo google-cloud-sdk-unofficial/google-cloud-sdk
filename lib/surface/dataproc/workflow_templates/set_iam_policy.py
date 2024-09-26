@@ -20,11 +20,13 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import iam_helpers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set IAM policy for a workflow template.
 
@@ -46,6 +48,7 @@ class SetIamPolicy(base.Command):
     msgs = dataproc.messages
 
     policy = iam_util.ParsePolicyFile(args.policy_file, msgs.Policy)
+    policy.version = iam_helpers.MAX_LIBRARY_IAM_SUPPORTED_VERSION
     set_iam_policy_request = msgs.SetIamPolicyRequest(policy=policy)
 
     template_ref = args.CONCEPTS.template.Parse()

@@ -20,13 +20,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
+from googlecloudsdk.api_lib.dataproc import iam_helpers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a cluster.
 
@@ -57,6 +60,7 @@ class SetIamPolicy(base.Command):
     messages = dataproc.messages
 
     policy = iam_util.ParsePolicyFile(args.policy_file, messages.Policy)
+    policy.version = iam_helpers.MAX_LIBRARY_IAM_SUPPORTED_VERSION
     set_iam_policy_request = messages.SetIamPolicyRequest(policy=policy)
 
     cluster_ref = args.CONCEPTS.cluster.Parse()

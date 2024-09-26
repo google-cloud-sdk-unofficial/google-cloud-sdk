@@ -17,7 +17,7 @@
 
   request:
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1alpha2
     GA:
       api_version: v1
     collection: looker.projects.locations

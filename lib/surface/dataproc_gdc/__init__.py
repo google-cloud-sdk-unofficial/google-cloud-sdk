@@ -21,7 +21,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class DataprocGdcALPHA(base.Group):
   """Manage Dataproc Gdc resources."""
   category = base.UNCATEGORIZED_CATEGORY

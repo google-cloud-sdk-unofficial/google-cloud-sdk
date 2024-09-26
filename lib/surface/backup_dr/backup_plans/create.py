@@ -30,7 +30,6 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Create(base.CreateCommand):
   """Creates a new Backup Plan."""
 

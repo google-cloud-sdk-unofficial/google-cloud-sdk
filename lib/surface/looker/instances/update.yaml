@@ -24,15 +24,8 @@
         to update.
     params:
     # Public Enabled Flags
-    - arg_name: enable-public-ip
-      api_field: instance.enablePublicIp
-      release_tracks: [ALPHA]
-      type: bool
-      help_text: |
-        This specifies whether public IP is enabled on the Looker instance.
     - arg_name: public-ip-enabled
       api_field: instance.publicIpEnabled
-      release_tracks: [GA]
       type: bool
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
@@ -73,7 +66,7 @@
           arg_name: maintenance-window-time
           required: true
           ALPHA:
-            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1Alpha1
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1Alpha
           GA:
             processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayMainWindowV1
           help_text: |
@@ -97,7 +90,7 @@
           GA:
             processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
           ALPHA:
-            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha
           help_text: |
                 Start date of the deny maintenance period in format: YYYY-MM-DD
         - api_field: instance.denyMaintenancePeriod.endDate
@@ -106,7 +99,7 @@
           GA:
             processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1
           ALPHA:
-            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha1
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseToDateTypeV1Alpha
           help_text: |
                 End date of the deny maintenance period in format: YYYY-MM-DD
         - api_field: instance.denyMaintenancePeriod.time
@@ -115,7 +108,7 @@
           GA:
             processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1
           ALPHA:
-            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1Alpha1
+            processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayDenyPeriodV1Alpha
           help_text: |
                 Time in UTC when the period starts and ends.  A valid time of day must be
                 specified in 24hr format (ex: 13:00, 17:30, 23:45).
@@ -161,24 +154,15 @@
           users, distributed across Viewer, Standard, and Developer.
         params:
         - arg_name: add-viewer-users
-          GA:
-            api_field: instance.userMetadata.additionalViewerUserCount
-          ALPHA:
-            api_field: instance.users.additionalViewerUsers
+          api_field: instance.userMetadata.additionalViewerUserCount
           help_text: |
             Number of additional Viewer Users to allocate to the Looker Instance.
         - arg_name: add-standard-users
-          GA:
-            api_field: instance.userMetadata.additionalStandardUserCount
-          ALPHA:
-            api_field: instance.users.additionalStandardUsers
+          api_field: instance.userMetadata.additionalStandardUserCount
           help_text: |
             Number of additional Standard Users to allocate to the Looker Instance.
         - arg_name: add-developer-users
-          GA:
-            api_field: instance.userMetadata.additionalDeveloperUserCount
-          ALPHA:
-            api_field: instance.users.additionalDeveloperUsers
+          api_field: instance.userMetadata.additionalDeveloperUserCount
           help_text: |
             Number of additional Developer Users to allocate to the Looker Instance.
     # Group for Custom Domain
@@ -242,14 +226,14 @@
 
   request:
     ALPHA:
-      api_version: v1alpha1
+      api_version: v1alpha2
       modify_request_hooks:
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateOauthClient
       - googlecloudsdk.command_lib.looker.instances_update_util:ModifyAllowedEmailDomains
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateMaintenanceWindow
-      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateUsersAlpha
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateUserMetadata
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateDenyMaintenancePeriod
-      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateEnablePublicIpAlpha
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePublicIPEnabled
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
     GA:
       api_version: v1

@@ -26,10 +26,13 @@ from googlecloudsdk.command_lib.dataproc_gdc.spark_applications import basecreat
 from googlecloudsdk.command_lib.util.args import labels_util
 
 DATAPROCGDC_API_NAME = 'dataprocgdc'
-DATAPROCGDC_API_VERSION = 'v1alpha1'
+VERSION_MAP = {
+    base.ReleaseTrack.ALPHA: 'v1alpha1',
+    base.ReleaseTrack.GA: 'v1',
+}
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
   """Create a Dataproc GDC Spark SQL application.
@@ -80,7 +83,8 @@ class SparkSql(baseSparkApplication.BaseGDCSparkApplicationCommand):
     )
 
   def Run(self, args):
-    messages = apis.GetMessagesModule('dataprocgdc', 'v1alpha1')
+    api_version = VERSION_MAP.get(self.ReleaseTrack())
+    messages = apis.GetMessagesModule(DATAPROCGDC_API_NAME, api_version)
     application_ref = args.CONCEPTS.application.Parse()
     application_environment_ref = args.CONCEPTS.application_environment.Parse()
     service_instance_ref = args.CONCEPTS.instance.Parse()

@@ -31,11 +31,6 @@
     - arg_name: async
       type: bool
       help_text: Return immediately, without waiting for the operation in progress to complete.
-    - api_field: membership.description
-      release_tracks: [BETA]
-      hidden: true
-      arg_name: description
-      help_text: Update description of the membership resource.
     - api_field: membership.externalId
       hidden: true
       arg_name: external-id

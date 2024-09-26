@@ -29,8 +29,6 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class CreateAlpha(base.DeleteCommand):

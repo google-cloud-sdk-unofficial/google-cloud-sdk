@@ -104,9 +104,7 @@ To update an instance schedule resource policy with specified parameters:
   $ {command} NAME \
     --region=REGION
     --timezone=UTC \
-    --vm-start-schedule="* 7 * * *" \
-    --vm-stop-schedule="* 17 * * *" \
-    --initiation-date=2025-05-01T00:00:00.000-07:00 \
-    --end-date=2027-05-01T00:00:00.000-07:00
+    --vm-start-schedule="0 7 * * *" \
+    --vm-stop-schedule="0 17 * * *"
 """,
 }

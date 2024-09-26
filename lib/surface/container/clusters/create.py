@@ -510,6 +510,9 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       gkeops_etcd_backup_encryption_key=get_default(
           'gkeops_etcd_backup_encryption_key'
       ),
+      disable_l4_lb_firewall_reconciliation=get_default(
+          'disable_l4_lb_firewall_reconciliation'
+      ),
   )
 
 
@@ -723,10 +726,13 @@ flags_to_add = {
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
         'enableDnsAccess': flags.AddEnableDNSAccessFlag,
+        'disableL4LbFirewallReconciliation': (
+            flags.AddDisableL4LbFirewallReconciliationFlag
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -897,10 +903,13 @@ flags_to_add = {
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
         'enableDnsAccess': flags.AddEnableDNSAccessFlag,
+        'disableL4LbFirewallReconciliation': (
+            flags.AddDisableL4LbFirewallReconciliationFlag
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1080,10 +1089,13 @@ flags_to_add = {
         'enableRayClusterMonitoring': flags.AddEnableRayClusterMonitoring,
         'userManagedKeysConfig': flags.AddControlPlaneKeysFlags,
         'insecureRBACBinding': lambda p: flags.AddInsecureRBACBindingFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'cpDiskEncryptionKey': flags.AddCPDiskEncryptionKeyFlag,
         'enableDnsAccess': flags.AddEnableDNSAccessFlag,
+        'disableL4LbFirewallReconciliation': (
+            flags.AddDisableL4LbFirewallReconciliationFlag
+        ),
     },
 }
 
@@ -1365,6 +1377,9 @@ class CreateBeta(Create):
     )
     ops.enable_dns_access = get_default('enable_dns_access')
     ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
+    ops.disable_l4_lb_firewall_reconciliation = get_default(
+        'disable_l4_lb_firewall_reconciliation'
+    )
     return ops
 
 
@@ -1497,4 +1512,7 @@ class CreateAlpha(Create):
     )
     ops.enable_dns_access = get_default('enable_dns_access')
     ops.cp_disk_encryption_key = get_default('cp_disk_encryption_key')
+    ops.disable_l4_lb_firewall_reconciliation = get_default(
+        'disable_l4_lb_firewall_reconciliation'
+    )
     return ops

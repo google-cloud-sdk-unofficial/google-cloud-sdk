@@ -53,6 +53,7 @@ def _ValidateConnectAgentCredentialFlags(args):
         'must be specified for Connect agent authentication.')
 
 
+@base.DefaultUniverseOnly
 class Register(base.CreateCommand):
   r"""Register a cluster with a fleet.
 
@@ -466,11 +467,9 @@ class Register(base.CreateCommand):
       # Attempt to create a membership.
       already_exists = False
 
-      obj = None
       # For backward compatiblity, check if a membership was previously created
       # using the cluster uuid.
       parent = api_util.ParentRef(project, location)
-      membership_id = uuid
       resource_name = api_util.MembershipRef(project, location, uuid)
       obj = self._CheckMembershipWithUUID(resource_name, args.MEMBERSHIP_NAME)
 
@@ -487,7 +486,7 @@ class Register(base.CreateCommand):
         try:
           self._VerifyClusterExclusivity(kube_client, parent, membership_id)
           obj = api_util.CreateMembership(project, args.MEMBERSHIP_NAME,
-                                          args.MEMBERSHIP_NAME, location,
+                                          None, location,
                                           gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(), issuer_url,
                                           private_keyset_json,
@@ -694,7 +693,6 @@ class Register(base.CreateCommand):
   def _RegisterGKE(self, gke_cluster_resource_link, gke_cluster_uri, project,
                    location, args):
     """Register a GKE cluster without installing Connect agent."""
-    obj = None
     issuer_url = None
     if args.enable_workload_identity:
       issuer_url = gke_cluster_uri
@@ -702,7 +700,6 @@ class Register(base.CreateCommand):
       obj = api_util.CreateMembership(
           project=project,
           membership_id=args.MEMBERSHIP_NAME,
-          description=args.MEMBERSHIP_NAME,
           location=location,
           gke_cluster_self_link=gke_cluster_resource_link,
           external_id=None,

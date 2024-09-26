@@ -57,6 +57,7 @@ auto_flags = [
     'secretManagerConfig',
     'enableCiliumClusterwideNetworkPolicy',
     'cpDiskEncryptionKey',
+    'disableL4LbFirewallReconciliation',
 ]
 
 # Change default flag values in create-auto
@@ -89,8 +90,9 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableRayOperatorFlag(parser, hidden=False)
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
-  flags.AddInsecureRBACBindingFlags(parser, hidden=True)
+  flags.AddInsecureRBACBindingFlags(parser, hidden=False)
   flags.AddEnableMultiNetworkingFlag(parser, hidden=True)
+  flags.AddControlPlaneKeysFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

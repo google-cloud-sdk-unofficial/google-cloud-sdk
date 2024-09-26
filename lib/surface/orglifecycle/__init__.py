@@ -20,7 +20,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OrglifecycleALPHA(base.Group):
@@ -28,7 +28,7 @@ class OrglifecycleALPHA(base.Group):
   category = base.UNCATEGORIZED_CATEGORY
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class OrglifecycleGA(base.Group):

@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
@@ -43,7 +44,7 @@ class Patch(base.UpdateCommand):
     """
     flags.AddBackupName(parser)
     update_group = parser.add_group(required=True, hidden=True)
-    flags.AddFinalbackupDescription(update_group)
+    flags.AddBackupDescription(update_group)
     expiration_group = update_group.add_mutually_exclusive_group(
         required=False, hidden=True
     )
@@ -84,8 +85,8 @@ class Patch(base.UpdateCommand):
           '%Y-%m-%dT%H:%M:%S.%fZ')
       update_mask = 'expiry_time'
 
-    if args.final_backup_description is not None:
-      patch_backup.description = args.final_backup_description
+    if args.backup_description is not None:
+      patch_backup.description = args.backup_description
       if update_mask is not None:
         update_mask = update_mask + ','
       update_mask = (update_mask if update_mask else '') + 'description'

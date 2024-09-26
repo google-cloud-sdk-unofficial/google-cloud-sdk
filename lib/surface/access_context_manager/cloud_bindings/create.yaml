@@ -23,16 +23,17 @@
         - a group and the restricted client application
         - a specific service account or all service accounts in a specified project.
 
-        If a group key is specified, the access level is enforced at the organization level for
+        If a group key is specified, the access level is globally enforced for
         all context-aware access group members, as specified in the binding.
         If a restricted client application is also specified, then the enforcement applies only to
         the specified application, and not to the entire organization.
+        If the restricted client application is specified, then --binding-file cannot be set.
         If a service account is specified, then the enforcement applies only to the specified
         service account.
         If a service account project is specified, then the enforcement applies to all the service
         accounts belongs to the specified project.
       examples: |
-        To create a new cloud access binding at the organization level, run:
+        To create a new global cloud access binding, run:
 
           $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc
 
@@ -43,7 +44,19 @@
             --restricted-client-application-names='Google Cloud SDK, Cloud Console' \
             --restricted-client-application-client-ids='123456789.apps.googleusercontent.com'
 
-        To create a new cloud access binding for the dry run access level at the organization level,
+        To create a new cloud access binding for particular applications using a yaml file, run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --binding-file='binding.yaml'
+
+        To create a new global cloud access binding, and for particular applications
+        using a yaml file, run:
+
+          $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890' \
+            --binding-file='binding.yaml'
+
+        To create a new global cloud access binding for the dry run access level,
         run:
 
           $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
@@ -84,6 +97,7 @@
       api_version: v1alpha
       disable_resource_check: true
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessOrganization
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessRestrictedClientApplicationsAlpha
@@ -91,6 +105,19 @@
 
   arguments:
     params:
+    - api_field: gcpUserAccessBinding
+      metavar: YAML_FILE
+      arg_name: binding-file
+      release_tracks: [ALPHA]
+      help_text: |
+        Path to a file containing a Google Cloud Platform User Access Binding.
+
+        This file contains a YAML-compliant object representing
+        a GcpUserAccessBinding described in the API reference.
+      repeated: false
+      hidden: true
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
     - api_field: gcpUserAccessBinding.groupKey
       arg_name: group-key
       type: str
@@ -145,7 +172,8 @@
         the session lifetime, a new login creates a new session with a fresh lifetime. When a
         session expires, the user is asked to reauthenticate in accordance with reauth-method.
 
-        Setting --reauth-method when --session-length is empty raises an error.
+        Setting --reauth-method when --session-length is empty raises an error. Cannot set
+        --session-length on restricted client applications; please use scoped access settings.
     - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
       hidden: true
       arg_name: reauth-method

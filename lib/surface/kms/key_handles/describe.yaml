@@ -1,0 +1,18 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Get metadata for a key handle.
+    description: Get metadata for a key handle.
+    examples: |
+     The following command gets metadata for a key handle named `my-key-handle` in the locations
+     `us-central1`.
+
+      $ {command} my-key-handle --location=us-central1
+
+  request:
+    collection: cloudkms.projects.locations.keyHandles
+
+  arguments:
+    resource:
+      help_text: The key handle to get metadata for.
+      spec: !REF googlecloudsdk.command_lib.kms.resources:key_handle

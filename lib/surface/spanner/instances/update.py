@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
@@ -96,6 +97,7 @@ class Update(base.Command):
     instance_operations.Await(op, 'Updating instance')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdate(base.Command):
   """Update a Cloud Spanner instance."""
@@ -165,6 +167,7 @@ class BetaUpdate(base.Command):
     instance_operations.Await(op, 'Updating instance')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(base.Command):
   """Update a Cloud Spanner instance with ALPHA features."""
@@ -202,6 +205,8 @@ class AlphaUpdate(base.Command):
         require_all_autoscaling_args=False,
         hide_autoscaling_args=False,
         parser=parser,
+        add_asymmetric_option_flag=True,
+        asymmetric_options_group=True,
     )
 
     flags.SsdCache().AddToParser(parser)
@@ -230,6 +235,8 @@ class AlphaUpdate(base.Command):
         autoscaling_max_processing_units=args.autoscaling_max_processing_units,
         autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
+        asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        clear_asymmetric_autoscaling_options=args.clear_asymmetric_autoscaling_option,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         ssd_cache_id=args.ssd_cache,

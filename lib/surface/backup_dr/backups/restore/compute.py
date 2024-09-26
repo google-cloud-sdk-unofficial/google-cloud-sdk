@@ -32,7 +32,6 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Compute(base.Command):
   """Restores a Compute Engine VM Backup."""
 

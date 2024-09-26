@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "List network profiles."
+    description: "List network profiles."
+    examples: |
+       The following command lists all network profiles:
+
+        $ {command}
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.networkProfiles
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the network profiles to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+  output:
+    format: |
+      table(
+        name,
+        description)

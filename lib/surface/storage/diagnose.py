@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.diagnose import direct_connectivity_diagnostic
 from googlecloudsdk.command_lib.storage.diagnose import download_throughput_diagnostic as download_throughput_diagnostic_lib
 from googlecloudsdk.command_lib.storage.diagnose import export_util
 from googlecloudsdk.command_lib.storage.diagnose import latency_diagnostic as latency_diagnostic_lib
@@ -151,6 +152,15 @@ class Diagnose(base.Command):
         default=[],
     )
     parser.add_argument(
+        '--direct-connectivity',
+        action='store_true',
+        help=(
+            'Run Direct Connectivity diagnostic. This feature is experimental'
+            ' and may later be removed or merged with the --test-type flag.'
+        ),
+        hidden=True,
+    )
+    parser.add_argument(
         '--download-type',
         choices=sorted([
             option.value
@@ -172,6 +182,14 @@ class Diagnose(base.Command):
         FILE: Download objects as files. Parallelism can be controlled via
         `--process-count` and `--thread-count` flags.
         """,
+    )
+    parser.add_argument(
+        '--logs-path',
+        help=(
+            'If the diagnostic supports writing logs, write the logs to this'
+            ' file location.'
+        ),
+        hidden=True,
     )
     parser.add_argument(
         '--upload-type',
@@ -280,15 +298,12 @@ class Diagnose(base.Command):
                                   )
                                   """)
 
-  def Run(self, args):
-    default_tests = [
-        PerformanceTestType.DOWNLOAD_THROUGHPUT.value,
-        PerformanceTestType.LATENCY.value,
-        PerformanceTestType.UPLOAD_THROUGHPUT.value,
-    ]
-
-    url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+  def _run_tests_with_performance_tracking(
+      self, args, url_object, tests_to_run
+  ):
+    """Runs test with system performance tracking."""
+    if not tests_to_run:
+      return []
 
     object_sizes = None
 
@@ -304,20 +319,8 @@ class Diagnose(base.Command):
       elif args.object_size:
         object_sizes = [args.object_size] * args.object_count
 
-    bucket_resource = get_bucket_resource(url_object)
-
-    log.status.Print(
-        f'Using {bucket_resource.name} bucket for the diagnostic tests.'
-    )
-    log.status.Print(f'Bucket location : {bucket_resource.location}')
-    log.status.Print(
-        f'Bucket storage class : {bucket_resource.default_storage_class}'
-    )
-
-    tests_to_run = args.test_type or default_tests
     system_info_provider = system_info.get_system_info_provider()
     test_results = []
-
     with system_info.get_disk_io_stats_delta_diagnostic_result(
         system_info_provider, test_results
     ):
@@ -366,6 +369,48 @@ class Diagnose(base.Command):
       test_results.append(
           system_info.get_system_info_diagnostic_result(system_info_provider)
       )
+      return test_results
+
+  def Run(self, args):
+    default_tests = [
+        PerformanceTestType.DOWNLOAD_THROUGHPUT.value,
+        PerformanceTestType.LATENCY.value,
+        PerformanceTestType.UPLOAD_THROUGHPUT.value,
+    ]
+
+    url_object = storage_url.storage_url_from_string(args.url)
+    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
+
+    bucket_resource = get_bucket_resource(url_object)
+
+    log.status.Print(
+        f'Using {bucket_resource.name} bucket for the diagnostic tests.'
+    )
+    log.status.Print(f'Bucket location : {bucket_resource.location}')
+    log.status.Print(
+        f'Bucket storage class : {bucket_resource.default_storage_class}'
+    )
+
+    if args.test_type:
+      tests_to_run = args.test_type
+    elif args.direct_connectivity:
+      tests_to_run = []
+    else:
+      tests_to_run = default_tests
+
+    test_results = self._run_tests_with_performance_tracking(
+        args, url_object, tests_to_run
+    )
+
+    if args.direct_connectivity:
+      direct_connectivity = (
+          direct_connectivity_diagnostic.DirectConnectivityDiagnostic(
+              url_object,
+              logs_path=args.logs_path,
+          )
+      )
+      direct_connectivity.execute()
+      test_results.append(direct_connectivity.result)
 
     if args.export:
       log.status.Print('Exporting diagnostic bundle...')

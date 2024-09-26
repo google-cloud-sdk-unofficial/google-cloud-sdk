@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Get certificate authority details of a Memorystore instance.
     description: Get certificate authority details of a Memorystore instance.
@@ -18,6 +17,9 @@
       resource_spec: !REF googlecloudsdk.command_lib.memorystore.resources:instance
       required: true
   request:
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection: memorystore.projects.locations.instances
     method: getCertificateAuthority

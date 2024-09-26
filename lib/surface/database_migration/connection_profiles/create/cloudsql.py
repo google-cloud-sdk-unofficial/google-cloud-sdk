@@ -110,7 +110,7 @@ class CloudSQLAlpha(_CloudSQL, base.Command):
   @staticmethod
   def Args(parser):
     _CloudSQL.Args(parser)
-    cs_flags.AddDatabaseVersionFlag(parser, support_minor_version=False)
+    cs_flags.AddDatabaseVersionFlag(parser, support_new_versions=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -122,7 +122,7 @@ class CloudSQLGA(_CloudSQL, base.Command):
   @staticmethod
   def Args(parser):
     _CloudSQL.Args(parser)
-    cs_flags.AddDatabaseVersionFlag(parser, support_minor_version=True)
+    cs_flags.AddDatabaseVersionFlag(parser, support_new_versions=True)
     resource_args.AddCmekResourceArgs(parser)
     cs_flags.AddAllocatedIpRangeFlag(parser)
     cs_flags.AddEditionFlag(parser)

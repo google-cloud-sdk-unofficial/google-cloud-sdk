@@ -20,7 +20,7 @@
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ManagedOrganizationsALPHA(base.Group):
@@ -31,7 +31,7 @@ class ManagedOrganizationsALPHA(base.Group):
   """
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ManagedOrganizationsGA(base.Group):

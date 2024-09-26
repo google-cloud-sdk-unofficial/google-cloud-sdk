@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: Describe a Dataproc GDC spark application
     description: Describe a Dataproc GDC spark application

@@ -399,12 +399,15 @@ class Update(base.UpdateCommand):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddSecretManagerEnableFlag(group)
-    flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
     flags.AddEnableDNSAccessFlag(group)
+    flags.AddDisableL4LbFirewallReconciliationFlag(
+        group, hidden=True, is_update=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -522,6 +525,12 @@ class Update(base.UpdateCommand):
     )
     opts.enable_private_nodes = args.enable_private_nodes
     opts.enable_dns_access = args.enable_dns_access
+    opts.disable_l4_lb_firewall_reconciliation = (
+        args.disable_l4_lb_firewall_reconciliation
+    )
+    opts.enable_l4_lb_firewall_reconciliation = (
+        args.enable_l4_lb_firewall_reconciliation
+    )
     return opts
 
   def Run(self, args):
@@ -1027,12 +1036,15 @@ class UpdateBeta(Update):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
-    flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
     flags.AddEnableDNSAccessFlag(group)
+    flags.AddDisableL4LbFirewallReconciliationFlag(
+        group, hidden=True, is_update=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1209,6 +1221,12 @@ class UpdateBeta(Update):
     )
     opts.enable_private_nodes = args.enable_private_nodes
     opts.enable_dns_access = args.enable_dns_access
+    opts.disable_l4_lb_firewall_reconciliation = (
+        args.disable_l4_lb_firewall_reconciliation
+    )
+    opts.enable_l4_lb_firewall_reconciliation = (
+        args.enable_l4_lb_firewall_reconciliation
+    )
     return opts
 
 
@@ -1329,12 +1347,15 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
-    flags.AddInsecureRBACBindingFlags(group, hidden=True)
+    flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
     flags.AddEnableDNSAccessFlag(group)
+    flags.AddDisableL4LbFirewallReconciliationFlag(
+        group, hidden=True, is_update=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1506,4 +1527,10 @@ class UpdateAlpha(Update):
     )
     opts.enable_private_nodes = args.enable_private_nodes
     opts.enable_dns_access = args.enable_dns_access
+    opts.disable_l4_lb_firewall_reconciliation = (
+        args.disable_l4_lb_firewall_reconciliation
+    )
+    opts.enable_l4_lb_firewall_reconciliation = (
+        args.enable_l4_lb_firewall_reconciliation
+    )
     return opts

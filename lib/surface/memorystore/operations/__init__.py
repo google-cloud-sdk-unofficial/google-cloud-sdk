@@ -19,6 +19,11 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class OperationsALPHA(base.Group):
+  """Manage Memorystore operations."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class OperationsBETA(base.Group):
   """Manage Memorystore operations."""

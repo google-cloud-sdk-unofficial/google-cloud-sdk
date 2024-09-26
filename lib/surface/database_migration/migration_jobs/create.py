@@ -89,17 +89,16 @@ DETAILED_HELP_GA = {
             --source=cp1 --destination=cp2 --conversion-workspace=cw
 
         To create a continuous SQL Server to SQL Server homogeneous migration
-        job:
+        job with differential backup enabled:
             $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
             --source=cp1 --destination=cp2
-            --sqlserver-backup-file-pattern=pattern
+            --sqlserver-diff-backup
             --sqlserver-databases=db1,db2,db3
 
         To create a continuous SQL Server to SQL Server homogeneous migration
         job with encrypted databases:
             $ {command} my-migration-job --region=us-central1 --type=CONTINUOUS
             --source=cp1 --destination=cp2
-            --sqlserver-backup-file-pattern=pattern
             --sqlserver-databases=db1,db2,db3
             --sqlserver-encrypted-databases=PATH/TO/ENCRYPTION/SETTINGS
         """,

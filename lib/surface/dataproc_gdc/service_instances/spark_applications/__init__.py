@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class SparkApplications(base.Group):
   """Manage Dataproc GDC Spark Applications."""
 

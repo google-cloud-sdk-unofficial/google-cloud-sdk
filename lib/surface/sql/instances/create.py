@@ -160,6 +160,7 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddServerCaMode(parser)
+  flags.AddPscAutoConnections(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -313,6 +314,13 @@ def RunBaseCreateCommand(args, release_track):
   ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
         '`--allowed-psc-projects` requires `--enable-private-service-connect`'
+    )
+
+  if args.IsKnownAndSpecified(
+      'psc_auto_connections'
+  ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
+    raise sql_exceptions.ArgumentError(
+        '`--psc-auto-connections` requires `--enable-private-service-connect`'
     )
 
   if args.database_flags is not None and any([

@@ -113,7 +113,7 @@ class Create(base.CreateCommand):
         '--set-as-default',
         action='store_true',
         default=False,
-        help='Set newly created project as [core.project] property.')
+        help='Set newly created project as [core/project] property.')
     flags.TagsFlag().AddToParser(parser)
     flags.OrganizationIdFlag('to use as a parent').AddToParser(parser)
     flags.FolderIdFlag('to use as a parent').AddToParser(parser)
@@ -126,13 +126,13 @@ class Create(base.CreateCommand):
     if not project_id and args.name:
       candidate = command_lib_util.IdFromName(args.name)
       if candidate and console_io.PromptContinue(
-          'No project id provided.',
-          'Use [{}] as project id'.format(candidate),
+          'No project ID provided.',
+          'Use [{}] as project ID'.format(candidate),
           throw_if_unattended=True):
         project_id = candidate
     if not project_id:
       raise exceptions.RequiredArgumentException(
-          'PROJECT_ID', 'an id or a name must be provided for the new project')
+          'PROJECT_ID', 'an ID or a name must be provided for the new project')
     project_ref = command_lib_util.ParseProject(project_id)
     labels = labels_util.ParseCreateArgs(
         args, projects_util.GetMessages().Project.LabelsValue)

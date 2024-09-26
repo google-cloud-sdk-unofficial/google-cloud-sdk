@@ -183,7 +183,6 @@
           Redis explicitly calls fsync for every write command.
     - arg_name: maintenance-window-day
       api_field: cluster.maintenancePolicy.weeklyMaintenanceWindow.day
-      release_tracks: [ALPHA]
       choices:
       - arg_value: monday
         enum_value: MONDAY
@@ -199,13 +198,10 @@
         enum_value: SATURDAY
       - arg_value: sunday
         enum_value: SUNDAY
-      hidden: true
       help_text: |
-          The day of week when the window starts, e.g. `sunday`.
+          Day of week when the window starts, e.g. `sunday`.
     - arg_name: maintenance-window-hour
       api_field: cluster.maintenancePolicy.weeklyMaintenanceWindow.startTime.hours
-      release_tracks: [ALPHA]
-      hidden: true
       help_text: |
         Hour of day (`0` to `23`) for the start of maintenance window, in UTC time zone.
       processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField

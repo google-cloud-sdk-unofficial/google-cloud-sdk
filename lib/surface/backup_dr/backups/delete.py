@@ -30,7 +30,6 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(base.DeleteCommand):
   """Delete the specified Backup."""

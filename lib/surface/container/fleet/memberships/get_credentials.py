@@ -100,7 +100,9 @@ class GetCredentials(gateway.GetCredentialsCommand):
       # Use server-side generation by default, and fall back to client-side if
       # needed.
       try:
-        self.RunServerSide(membership_id, location, args.force_use_agent)
+        self.RunServerSide(
+            membership_id, location, force_use_agent=args.force_use_agent
+        )
       except Exception as e:  # pylint: disable=broad-exception-caught
         gateway.RecordClientSideFallback(e)
         self.RunGetCredentials(membership_id, location)

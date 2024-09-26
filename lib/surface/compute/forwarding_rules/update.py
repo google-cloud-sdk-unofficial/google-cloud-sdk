@@ -278,7 +278,7 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine forwarding rule."""
 
   _support_network_tier = False
-  _support_external_migration = False
+  _support_external_migration = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

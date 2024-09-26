@@ -38,6 +38,8 @@
       choices:
       - arg_value: DOWNLOAD
         enum_value: DOWNLOAD
+      - arg_value: MUTABILITY_EXCEPTION
+        enum_value: MUTABILITY_EXCEPTION
       help_text: |
         The operation the rule applies to.
     - arg_name: package

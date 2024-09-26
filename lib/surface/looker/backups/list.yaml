@@ -19,7 +19,7 @@
         The instance of the backups to display.
 
   request:
-    api_version: v1alpha1
+    api_version: v1alpha2
     collection: looker.projects.locations.instances.backups
 
   response:

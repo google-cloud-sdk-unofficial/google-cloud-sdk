@@ -79,6 +79,7 @@ Container Flags
   return group
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(base.Command):
   """Create or update a Cloud Run job."""
@@ -99,8 +100,8 @@ class Deploy(base.Command):
           """,
   }
 
-  @staticmethod
-  def CommonArgs(parser, add_container_args=True):
+  @classmethod
+  def CommonArgs(cls, parser, add_container_args=True):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
@@ -128,12 +129,18 @@ class Deploy(base.Command):
       flags.AddSourceAndImageFlags(
           parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
       )
+      group = base.ArgumentGroup()
+      group.AddArgument(flags.AddVolumeMountFlag())
+      group.AddArgument(flags.RemoveVolumeMountFlag())
+      group.AddArgument(flags.ClearVolumeMountsFlag())
+      group.AddToParser(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
     flags.AddGeneralAnnotationFlags(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
@@ -360,13 +367,7 @@ class BetaDeploy(Deploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser)
-    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    group = base.ArgumentGroup()
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddToParser(parser)
+    cls.CommonArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -375,8 +376,7 @@ class AlphaDeploy(BetaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    Deploy.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser, add_container_args=False)
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)
-    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.RemoveContainersFlag().AddToParser(parser)

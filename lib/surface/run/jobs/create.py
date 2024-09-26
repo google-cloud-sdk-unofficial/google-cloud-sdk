@@ -66,6 +66,7 @@ Container Flags
   return group
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Cloud Run job."""
@@ -86,8 +87,8 @@ class Create(base.Command):
           """,
   }
 
-  @staticmethod
-  def CommonArgs(parser, add_container_args=True):
+  @classmethod
+  def CommonArgs(cls, parser, add_container_args=True):
     # Flags not specific to any platform
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
@@ -104,6 +105,12 @@ class Create(base.Command):
       flags.AddMemoryFlag(parser)
       flags.AddMutexEnvVarsFlagsForCreate(parser)
       flags.AddSetSecretsFlag(parser)
+      group = base.ArgumentGroup()
+      group.AddArgument(flags.AddVolumeMountFlag())
+      group.AddArgument(flags.RemoveVolumeMountFlag())
+      group.AddArgument(flags.ClearVolumeMountsFlag())
+      group.AddToParser(parser)
+
     flags.AddLabelsFlag(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
@@ -120,6 +127,7 @@ class Create(base.Command):
     flags.AddCmekKeyFlag(parser, with_clear=False)
     flags.AddSandboxArg(parser, hidden=True)
     flags.AddGeneralAnnotationFlags(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)
@@ -238,13 +246,7 @@ class BetaCreate(Create):
 
   @classmethod
   def Args(cls, parser):
-    Create.CommonArgs(parser)
-    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    group = base.ArgumentGroup()
-    group.AddArgument(flags.AddVolumeMountFlag())
-    group.AddArgument(flags.RemoveVolumeMountFlag())
-    group.AddArgument(flags.ClearVolumeMountsFlag())
-    group.AddToParser(parser)
+    cls.CommonArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -253,8 +255,7 @@ class AlphaCreate(BetaCreate):
 
   @classmethod
   def Args(cls, parser):
-    Create.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser, add_container_args=False)
     flags.AddRuntimeFlag(parser)
-    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     container_args = ContainerArgGroup()
     container_parser.AddContainerFlags(parser, container_args)

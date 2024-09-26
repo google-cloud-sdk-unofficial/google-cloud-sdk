@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.command_lib.backupdr import util as command_util
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(base.DescribeCommand):
