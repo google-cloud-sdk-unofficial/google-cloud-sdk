@@ -43,10 +43,16 @@
           $ {command} --binding=my-binding-id  \
             --restricted-client-application-client-ids='123.apps.googleusercontent.com'  \
             --restricted-client-application-names='Cloud Console, Google Cloud SDK'
+
+          Or
+
+          $ {command} --binding=my-binding-id --binding-file='binding.yaml'
+
     request:
       collection: accesscontextmanager.organizations.gcpUserAccessBindings
       api_version: v1alpha
       modify_request_hooks:
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessRestrictedClientApplicationsAlpha
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
@@ -59,6 +65,21 @@
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:cloud-access-binding
       is_positional: false
     params:
+    - api_field: gcpUserAccessBinding
+      metavar: YAML_FILE
+      arg_name: binding-file
+      release_tracks: [ALPHA]
+      help_text: |
+        Path to a file containing a Google Cloud Platform User Access Binding.
+
+        This file contains a YAML-compliant object representing
+        a GcpUserAccessBinding described in the API reference.
+
+        The file content replaces the corresponding fields in the existing binding.
+      repeated: false
+      hidden: true
+      ALPHA:
+        processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
     - api_field: gcpUserAccessBinding.accessLevels
       arg_name: level
       type: str

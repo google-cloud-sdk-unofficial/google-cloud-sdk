@@ -18,10 +18,11 @@
 """Manage Oracle Database resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class OracleDatabaseALPHA(base.Group):
+class OracleDatabaseALPHA(extensions.OracleDatabaseALPHA, base.Group):
   """Manage Oracle Database resources."""
   category = base.UNCATEGORIZED_CATEGORY

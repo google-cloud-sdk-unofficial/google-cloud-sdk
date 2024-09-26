@@ -23,13 +23,13 @@
     description: Create a new AutonomousDatabase.
     examples: |-
       To create AutonomousDatabase with id `my-instance` in the location `us-east4` with display-name `my instance`,
-      network `projects/my-project/us-east4/global/networks/default`, location `us-east4`, database `testadb`,
-      admin-password `123Abpassdord`, properties-compute-count `2`, properties-db-version `19c`,
+      network `projects/my-project/locations/global/networks/default`, location `us-east4`, database `testadb`,
+      admin-password `123Abpassdord`, cidr `12.2.0.0/24`, properties-compute-count `2`, properties-db-version `19c`,
       properties-license-type `LICENSE_INCLUDED`, properties-db-workload `DW`.
       run:
 
       $ {command} my-instance --location=us-east4 --display-name="my instance" \
-       --network=projects/my-project/us-east4/global/networks/default \
+       --network=projects/my-project/locations/global/networks/default --cidr=12.2.0.0/24 \
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
@@ -58,12 +58,6 @@
       help_text: |-
         User friendly name for the Autonomous Database. The name does not have to
         be unique.
-    - arg_name: zone
-      api_field: autonomousDatabase.zone
-      required: false
-      repeated: false
-      help_text: |-
-        Zone where the DB resides.
     - arg_name: admin-password
       api_field: autonomousDatabase.adminPassword
       required: false
@@ -133,12 +127,6 @@
             enum_value: ENTERPRISE_EDITION
             help_text: |-
               Enterprise Database Edition
-        - arg_name: properties-allowlisted-ips
-          api_field: autonomousDatabase.properties.allowlistedIps
-          required: false
-          repeated: true
-          help_text: |-
-            The client IP access control list (ACL).
         - arg_name: properties-character-set
           api_field: autonomousDatabase.properties.characterSet
           required: false
@@ -170,14 +158,6 @@
           repeated: false
           help_text: |-
             A valid Oracle Database version for Autonomous Database.
-        - arg_name: properties-is-access-control-enabled
-          api_field: autonomousDatabase.properties.isAccessControlEnabled
-          action: store_true
-          required: false
-          type: bool
-          help_text: |-
-            Indicates if the database-level access control is enabled.
-          default: null
         - arg_name: properties-is-auto-scaling-enabled
           api_field: autonomousDatabase.properties.isAutoScalingEnabled
           action: store_true
@@ -247,6 +227,28 @@
             enum_value: REGULAR
             help_text: |-
               A REGULAR maintenance schedule follows the normal cycle
+        - arg_name: properties-mtls-connection-required
+          api_field: autonomousDatabase.properties.mtlsConnectionRequired
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Specifies if the Autonomous Database requires mTLS connections.
+          default: null
+        - arg_name: properties-hostname-prefix
+          api_field: autonomousDatabase.properties.hostnamePrefix
+          required: false
+          repeated: false
+          help_text: |-
+            Prefix for autonomous database host names.
+        - arg_name: properties-backup-retention-period-days
+          api_field: autonomousDatabase.properties.backupRetentionPeriodDays
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            The retention period in days for automatic backups. The default is 60 days.
+            The minimum value is 1 day and the maximum value is 60 days.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false
@@ -271,6 +273,35 @@
       repeated: false
       help_text: |-
         The subnet CIDR for the autonomous database.
+    - group:
+        required: false
+        help_text: |-
+          The Source ADB config for the standby autonomous database.
+        params:
+        - arg_name: source-config-autonomous-database
+          help_text: |-
+            Primary Autonomous database name while creating an autonomous database with
+            a source. This field should only be used when a Peer Autonomous Database is
+            created Format:
+            projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
+            This field should be validated such that the Peer Autonomous Database does
+            not create a cycle with its Source Autonomous Database.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database
+          resource_method_params:
+            autonomousDatabase.sourceConfig.autonomousDatabase: '{__relative_name__}'
+          required: false
+        - arg_name: source-config-automatic-backups-replication-enabled
+          api_field: autonomousDatabase.sourceConfig.automaticBackupsReplicationEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Specifies if replication of automatic backups is enabled in the data guard.
+            This field should only be used with autonomous_database field while
+            creating a Data Guard.
+          default: null
     - arg_name: request-id
       api_field: requestId
       required: false

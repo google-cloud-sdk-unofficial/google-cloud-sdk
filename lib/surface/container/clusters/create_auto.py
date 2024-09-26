@@ -58,6 +58,7 @@ auto_flags = [
     'enableCiliumClusterwideNetworkPolicy',
     'cpDiskEncryptionKey',
     'disableL4LbFirewallReconciliation',
+    'hpaprofile',
 ]
 
 # Change default flag values in create-auto

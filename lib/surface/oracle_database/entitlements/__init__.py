@@ -18,9 +18,10 @@
 """Manage Entitlement resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.entitlements import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class EntitlementsALPHA(base.Group):
+class EntitlementsALPHA(extensions.EntitlementsALPHA, base.Group):
   """Manage Entitlement resources."""

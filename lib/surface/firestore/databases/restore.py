@@ -29,7 +29,8 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class RestoreBeta(base.Command):
   """Restores a Cloud Firestore database from a backup.
 
@@ -40,6 +41,14 @@ class RestoreBeta(base.Command):
       $ {command}
       --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
       --destination-database=DATABASE_ID
+
+  To restore to a CMEK-enabled database.
+
+      $ {command}
+      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
+      --destination-database=DATABASE_ID
+      --encryption-type=customer-managed-encryption
+      --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
   """
 
   @classmethod
@@ -76,42 +85,6 @@ class RestoreBeta(base.Command):
             $ {command} --destination-database=testdb
             """),
     )
-
-  def Run(self, args):
-    project = properties.VALUES.core.project.Get(required=True)
-    return databases.RestoreDatabase(
-        project,
-        args.source_backup,
-        args.destination_database,
-        None,
-    )
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RestoreAlpha(RestoreBeta):
-  """Restores a Cloud Firestore database from a backup.
-
-  ## EXAMPLES
-
-  To restore a database from a backup.
-
-      $ {command}
-      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
-      --destination-database=DATABASE_ID
-
-  To restore to a CMEK-enabled database.
-
-      $ {command}
-      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
-      --destination-database=DATABASE_ID
-      --encryption-type=customer-managed-encryption
-      --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    super(RestoreAlpha, cls).Args(parser)
     flags.AddEncryptionConfigGroup(parser, 'backup')
 
   def Run(self, args):

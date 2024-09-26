@@ -18,9 +18,10 @@
 """Manage Db Node resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.cloud_vm_clusters.db_nodes import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbNodesALPHA(base.Group):
+class DbNodesALPHA(extensions.DbNodesALPHA, base.Group):
   """Manage Db Node resources."""

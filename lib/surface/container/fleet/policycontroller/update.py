@@ -71,7 +71,7 @@ class Update(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
     parser = flags.PocoFlagParser(args, self.messages)
     specs = self.path_specs(args)
     updated_specs = {path: self.update(s, parser) for path, s in specs.items()}
-    return self.update_specs(updated_specs)
+    return self.update_specs(updated_specs, parser.use_default_cfg())
 
   def feature_cache(self, refresh: bool = False):
     """Gets and caches the current feature for this object."""

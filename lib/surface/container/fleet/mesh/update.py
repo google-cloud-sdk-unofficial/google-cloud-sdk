@@ -364,7 +364,15 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
     )
 
   def Run(self, args):
-    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+    # If the user is using the fleet default config, we will still use the v1
+    # Feature API for the update.
+    use_fleet_default_config = (
+        hasattr(args, 'origin')
+        and args.origin == 'fleet'
+    )
+    if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
+        self.Project(), self.ReleaseTrack()
+    ):
       _RunUpdateV2(self, args)
     else:
       _RunUpdate(self, args)

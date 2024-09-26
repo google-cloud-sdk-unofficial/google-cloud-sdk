@@ -18,9 +18,12 @@
 """Manage Cloud Exadata Infrastructure resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.cloud_exadata_infrastructures import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class CloudExadataInfrastructuresALPHA(base.Group):
+class CloudExadataInfrastructuresALPHA(
+    extensions.CloudExadataInfrastructuresALPHA, base.Group
+):
   """Manage Cloud Exadata Infrastructure resources."""

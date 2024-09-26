@@ -18,9 +18,10 @@
 """Manage Db System Shape resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.db_system_shapes import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbSystemShapesALPHA(base.Group):
+class DbSystemShapesALPHA(extensions.DbSystemShapesALPHA, base.Group):
   """Manage Db System Shape resources."""

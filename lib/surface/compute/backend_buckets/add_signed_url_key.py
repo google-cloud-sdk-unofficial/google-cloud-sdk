@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 class AddSignedUrlKey(base.UpdateCommand):
   """Add Cloud CDN Signed URL key to a backend bucket.
 

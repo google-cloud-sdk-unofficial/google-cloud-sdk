@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
 
 
+@base.UniverseCompatible
 class Remove(base.SilentCommand):
   """Remove one or more installed components.
 
@@ -54,15 +55,8 @@ class Remove(base.SilentCommand):
         metavar='COMPONENT_ID',
         nargs='+',
         help='The IDs of the components to be removed.')
-    parser.add_argument(
-        '--allow-no-backup',
-        required=False,
-        action='store_true',
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
 
   def Run(self, args):
     """Runs the list command."""
     update_manager = util.GetUpdateManager(args)
-    update_manager.Remove(
-        args.component_ids, allow_no_backup=args.allow_no_backup)
+    update_manager.Remove(args.component_ids)

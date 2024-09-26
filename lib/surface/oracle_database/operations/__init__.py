@@ -18,9 +18,10 @@
 """Manage Operation resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.operations import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class OperationsALPHA(base.Group):
+class OperationsALPHA(extensions.OperationsALPHA, base.Group):
   """Manage Operation resources."""

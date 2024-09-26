@@ -80,7 +80,8 @@ class List(base.ListCommand):
             error.errors[0].code.yesno(no="-"):label=ERROR,
             state:label=STATE,
             instance,
-            type
+            type,
+            instanceDeletionTime.iso(undefined='-'):label=INSTANCE_DELETION_TIME
           )""")
       return list_pager.YieldFromList(
           sql_client.backups,

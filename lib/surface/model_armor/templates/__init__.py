@@ -18,9 +18,10 @@
 """Manage Template resources."""
 
 from googlecloudsdk.calliope import base
+from surface.model_armor.templates import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class TemplatesALPHA(base.Group):
+class TemplatesALPHA(extensions.TemplatesALPHA, base.Group):
   """Manage Template resources."""

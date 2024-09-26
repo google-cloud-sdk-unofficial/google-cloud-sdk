@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.components import util
 
 
+@base.UniverseCompatible
 class Install(base.SilentCommand):
   """Install one or more Google Cloud CLI components.
 
@@ -71,12 +72,6 @@ class Install(base.SilentCommand):
         nargs='+',
         help='The IDs of the components to be installed.')
     parser.add_argument(
-        '--allow-no-backup',
-        required=False,
-        action='store_true',
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
-    parser.add_argument(
         '--compile-python',
         required=False,
         hidden=True,
@@ -87,5 +82,4 @@ class Install(base.SilentCommand):
   def Run(self, args):
     """Runs the list command."""
     update_manager = util.GetUpdateManager(args)
-    update_manager.Install(
-        args.component_ids, allow_no_backup=args.allow_no_backup)
+    update_manager.Install(args.component_ids)

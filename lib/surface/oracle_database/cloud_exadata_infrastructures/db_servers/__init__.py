@@ -18,9 +18,10 @@
 """Manage Db Server resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.cloud_exadata_infrastructures.db_servers import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbServersALPHA(base.Group):
+class DbServersALPHA(extensions.DbServersALPHA, base.Group):
   """Manage Db Server resources."""

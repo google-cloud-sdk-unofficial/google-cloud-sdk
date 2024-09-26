@@ -31,6 +31,7 @@ from googlecloudsdk.core.util.prompt_helper import OptInPrompter
 # This command is silent as does not produce any resource output.
 # In fact it should not run any display code, as the installation has changed
 # and current run state is invalid in relation to new installation.
+@base.UniverseCompatible
 class Update(base.SilentCommand):
   """Update all of your installed components to the latest version.
 
@@ -88,12 +89,6 @@ class Update(base.SilentCommand):
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
     parser.add_argument(
-        '--allow-no-backup',
-        required=False,
-        action='store_true',
-        hidden=True,
-        help='THIS ARGUMENT NEEDS HELP TEXT.')
-    parser.add_argument(
         '--compile-python',
         required=False,
         hidden=True,
@@ -117,11 +112,8 @@ class Update(base.SilentCommand):
           throw_if_unattended=False,
           cancel_on_no=False)
       if install:
-        update_manager.Install(
-            args.component_ids, allow_no_backup=args.allow_no_backup)
+        update_manager.Install(args.component_ids)
         return
 
     log.status.Print('Beginning update. This process may take several minutes.')
-    update_manager.Update(
-        args.component_ids, allow_no_backup=args.allow_no_backup,
-        version=args.version)
+    update_manager.Update(args.component_ids, version=args.version)

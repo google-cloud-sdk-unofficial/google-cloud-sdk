@@ -46,6 +46,7 @@ def _Args(
     support_region_instance_template=False,
     support_specific_then_x_affinity=False,
     support_disk_labels=False,
+    support_ipv6_only=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -64,7 +65,12 @@ def _Args(
     instances_flags.AddLocalSsdArgs(parser)
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddContainerMountDiskFlag(parser)
-  instances_flags.AddAddressArgs(parser, instances=False, containers=True)
+  instances_flags.AddAddressArgs(
+      parser,
+      instances=False,
+      containers=True,
+      support_ipv6_only=support_ipv6_only,
+  )
   instances_flags.AddMachineTypeArgs(parser)
   deprecate_maintenance_policy = release_track in [base.ReleaseTrack.ALPHA]
   instances_flags.AddMaintenancePolicyArgs(parser, deprecate_maintenance_policy)
@@ -84,7 +90,7 @@ def _Args(
   instances_flags.AddIPv6PrefixLengthArgs(parser)
   labels_util.AddCreateLabelsFlags(parser)
   instances_flags.AddPrivateNetworkIpArgs(parser)
-  instances_flags.AddStackTypeArgs(parser)
+  instances_flags.AddStackTypeArgs(parser, support_ipv6_only)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddInternalIPv6AddressArgs(parser)
   instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
@@ -507,6 +513,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
 
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
+  _support_ipv6_only = True
 
   @staticmethod
   def Args(parser):
@@ -518,6 +525,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_region_instance_template=True,
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
+        support_ipv6_only=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

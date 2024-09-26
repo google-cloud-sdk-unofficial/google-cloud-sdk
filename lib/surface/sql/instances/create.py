@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Creates a new Cloud SQL instance."""
-
+# TODO(b/362481808): remove python2-isms.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -161,6 +161,7 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddServerCaMode(parser)
   flags.AddPscAutoConnections(parser, hidden=True)
+  flags.AddRetainBackupsOnDelete(parser)
 
 
 def AddAlphaArgs(unused_parser):

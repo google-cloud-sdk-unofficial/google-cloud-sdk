@@ -60,6 +60,7 @@ class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
 
     if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
       membershipfeature = convert.ToV2MembershipFeature(
+          self,
           membership_key,
           self.mf_name,
           self.messages.MembershipFeatureSpec(),

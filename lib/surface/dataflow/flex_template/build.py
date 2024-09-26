@@ -251,15 +251,17 @@ def _CommonArgs(parser):
       '--flex-template-base-image',
       help=(
           'Flex template base image to be used while building the container'
-          ' image. Allowed choices are JAVA8, JAVA11, JAVA17 or gcr.io path of'
-          ' the specific version of the base image. For JAVA8, JAVA11 and'
-          ' JAVA17 option, we use the latest base image version to build the'
-          ' container. You can also provide a specific version from this link '
+          ' image. Allowed choices are JAVA8, JAVA11, JAVA17, JAVA21 or gcr.io'
+          ' path of the specific version of the base image. For JAVA8, JAVA11,'
+          ' JAVA17 and JAVA21 option, we use the latest base image version to'
+          ' build the container. You can also provide a specific version from'
+          ' this link '
           ' https://gcr.io/dataflow-templates-base/'
       ),
       type=arg_parsers.RegexpValidator(
-          r'^JAVA11$|^JAVA17$|^JAVA8$|^PYTHON3$|^GO$|^gcr.io/.*',
-          "Must be JAVA11, JAVA17, JAVA8, PYTHON3, GO, or begin with 'gcr.io/'",
+          r'^JAVA11$|^JAVA17$|^JAVA21$|^JAVA8$|^PYTHON3$|^GO$|^gcr.io/.*',
+          'Must be JAVA11, JAVA17, JAVA21, JAVA8, PYTHON3, GO, or begin with'
+          " 'gcr.io/'",
       ),
       required=True,
   )
@@ -328,6 +330,7 @@ def _CommonRun(args):
       args.image_repository_password_secret_id, args.image_repository_cert_path)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Build(base.Command):
   """Builds a flex template file from the specified parameters."""

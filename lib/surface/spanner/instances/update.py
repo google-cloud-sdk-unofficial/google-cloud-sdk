@@ -64,6 +64,7 @@ class Update(base.Command):
         hide_autoscaling_args=True,
         parser=parser,
     )
+    flags.Edition().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -91,6 +92,7 @@ class Update(base.Command):
         autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
+        edition=args.edition,
     )
     if args.async_:
       return op
@@ -134,6 +136,7 @@ class BetaUpdate(base.Command):
         hide_autoscaling_args=False,
         parser=parser,
     )
+    flags.Edition().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -161,6 +164,7 @@ class BetaUpdate(base.Command):
         autoscaling_storage_target=args.autoscaling_storage_target,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
+        edition=args.edition,
     )
     if args.async_:
       return op
@@ -210,6 +214,7 @@ class AlphaUpdate(base.Command):
     )
 
     flags.SsdCache().AddToParser(parser)
+    flags.Edition().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -240,6 +245,7 @@ class AlphaUpdate(base.Command):
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         ssd_cache_id=args.ssd_cache,
+        edition=args.edition,
     )
     if args.async_:
       return op

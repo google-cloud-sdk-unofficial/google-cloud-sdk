@@ -23,8 +23,10 @@ from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe an Artifact Registry container image.
 
@@ -36,14 +38,14 @@ class Describe(base.DescribeCommand):
   This command can fail for the following reasons:
     * The repository format is invalid.
     * The specified image does not exist.
-    * The active account does not have permission to view images.
+    * The active account does not have permission to run the command
+    (`roles/artifactregistry.reader`, `roles/containeranalysis.admin` and
+    `roles/serviceusage.serviceUsageViewer`).
   """
 
   detailed_help = {
-      "DESCRIPTION":
-          "{description}",
-      "EXAMPLES":
-          """\
+      "DESCRIPTION": "{description}",
+      "EXAMPLES": """\
     To describe an image digest `abcxyz` under image `busy-box`:
 
         $ {command} us-west1-docker.pkg.dev/my-project/my-repository/busy-box@sha256:abcxyz

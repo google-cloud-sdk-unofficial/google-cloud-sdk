@@ -463,13 +463,6 @@ class Update(base.UpdateCommand):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
-    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
-      console_io.PromptContinue(
-          message='All the node-pools in the cluster need to be re-created '
-          'by the user to start using Cloud DNS for DNS lookups. It is '
-          'highly recommended to complete this step shortly after '
-          'enabling Cloud DNS.',
-          cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_private_endpoint = args.enable_private_endpoint
@@ -1134,13 +1127,6 @@ class UpdateBeta(Update):
     opts.cluster_dns_domain = args.cluster_dns_domain
     opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
     opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
-    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
-      console_io.PromptContinue(
-          message='All the node-pools in the cluster need to be re-created '
-          'by the user to start using Cloud DNS for DNS lookups. It is '
-          'highly recommended to complete this step shortly after '
-          'enabling Cloud DNS.',
-          cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs
@@ -1442,12 +1428,6 @@ class UpdateAlpha(Update):
     opts.cluster_dns_domain = args.cluster_dns_domain
     opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
     opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
-    if opts.cluster_dns and opts.cluster_dns.lower() == 'clouddns':
-      console_io.PromptContinue(
-          message='All the node-pools in the cluster need to be re-created by '
-          'the user to start using Cloud DNS for DNS lookups. It is highly '
-          'recommended to complete this step shortly after enabling Cloud DNS.',
-          cancel_on_no=True)
     opts.enable_service_externalips = args.enable_service_externalips
     opts.security_group = args.security_group
     opts.enable_gcfs = args.enable_gcfs

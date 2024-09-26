@@ -18,9 +18,10 @@
 """Manage Autonomous Database resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.autonomous_databases import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDatabasesALPHA(base.Group):
+class AutonomousDatabasesALPHA(extensions.AutonomousDatabasesALPHA, base.Group):
   """Manage Autonomous Database resources."""

@@ -18,9 +18,10 @@
 """Manage Cloud Vm Cluster resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.cloud_vm_clusters import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class CloudVmClustersALPHA(base.Group):
+class CloudVmClustersALPHA(extensions.CloudVmClustersALPHA, base.Group):
   """Manage Cloud Vm Cluster resources."""

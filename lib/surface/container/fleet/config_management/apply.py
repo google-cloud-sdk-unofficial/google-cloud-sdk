@@ -88,11 +88,16 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
         })
     )
 
-    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+    use_fleet_default_config = (
+        hasattr(args, 'origin')
+        and args.origin is not None
+    )
+    if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
+        self.Project(), self.ReleaseTrack()
+    ):
       membershipfeature = convert.ToV2MembershipFeature(
-          membership, self.mf_name, self.messages.MembershipFeatureSpec(
-              configmanagement=cm
-          )
+          self, membership, self.mf_name,
+          self.messages.MembershipFeatureSpec(configmanagement=cm),
       )
       self.UpdateV2(membership, ['spec'], membershipfeature)
     else:

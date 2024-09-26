@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 class SignUrl(base.Command):
   """Sign specified URL for use with Cloud CDN Signed URLs.
 
@@ -106,7 +107,12 @@ class SignUrl(base.Command):
       Signed URL. The 'validationResponseCode' key in the dictionary maps to
       the response code obtained for the HEAD request issued to the Signed URL.
     """
-    key_value = files.ReadBinaryFileContents(args.key_file).rstrip()
+    # Add padding to solve the "Incorrect padding" error. It's fine to add
+    # more padding than it requires because it will ignore extraneous
+    # padding.
+    key_value = (
+        files.ReadBinaryFileContents(args.key_file).rstrip() + '==='.encode()
+    )
     result = {}
     result['signedUrl'] = sign_url_utils.SignUrl(args.url, args.key_name,
                                                  key_value, args.expires_in)

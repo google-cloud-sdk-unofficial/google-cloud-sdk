@@ -69,9 +69,13 @@ class List(base.ListCommand):
       'EXAMPLES':
           """
 
-      List all objects in bucket ``my-bucket'':
+      List all objects in bucket ``my-bucket'' within current directory level:
 
         $ {command} gs://my-bucket
+
+      List all objects across nested directories using wildcards (https://cloud.google.com/storage/docs/wildcards):
+
+        $ {command} gs://my-bucket/**
 
       List all objects in bucket beginning with ``o'':
 

@@ -18,9 +18,12 @@
 """Manage Autonomous Db Version resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.autonomous_db_versions import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDbVersionsALPHA(base.Group):
+class AutonomousDbVersionsALPHA(
+    extensions.AutonomousDbVersionsALPHA, base.Group
+):
   """Manage Autonomous Db Version resources."""

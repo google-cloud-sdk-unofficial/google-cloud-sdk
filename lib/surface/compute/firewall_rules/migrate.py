@@ -640,7 +640,7 @@ class Migrate(base.CreateCommand):
     )
     force = getattr(args, 'force', False)
     keep_target_service_accounts = getattr(
-        args, 'skip-migrate-target-service-accounts-to-tags', False
+        args, 'skip_migrate_target_service_accounts_to_tags', False
     )
 
     # In the export tag mode, the tag mapping file must be provided
@@ -795,7 +795,8 @@ class Migrate(base.CreateCommand):
     tag_mapping = dict()
     if tag_mapping_file_name:
       tag_mapping = _ReadTagMapping(tag_mapping_file_name)
-      if not tag_mapping:
+      if tag_mapping is None:
+        log.status.Print('Stop processing, missing tag mapping file...')
         return
 
     # Sort VPC Firewalls by priorities. If two Firewalls have the same priority

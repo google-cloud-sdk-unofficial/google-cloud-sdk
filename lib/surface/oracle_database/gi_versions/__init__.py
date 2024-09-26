@@ -18,9 +18,10 @@
 """Manage Gi Version resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.gi_versions import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class GiVersionsALPHA(base.Group):
+class GiVersionsALPHA(extensions.GiVersionsALPHA, base.Group):
   """Manage Gi Version resources."""

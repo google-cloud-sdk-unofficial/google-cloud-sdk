@@ -267,7 +267,7 @@ the Google Cloud Platform.
   )
 
   verb = 'update' if update else 'install'
-  execute_arg_list = ['--quiet', 'components', verb, '--allow-no-backup']
+  execute_arg_list = ['--quiet', 'components', verb]
   if not compile_python:
     execute_arg_list.append('--no-compile-python')
   else:

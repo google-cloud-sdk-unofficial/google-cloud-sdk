@@ -34,6 +34,37 @@
           - name: Cloud Console
           - name: Google Cloud SDK
 
+        Or
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          groupKey: a3dad
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+          scopedAccessSettings:
+          - activeSettings:
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunSettings:
+          accessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          scope:
+          clientScope:
+          restrictedClientApplication:
+          clientId: 123.apps.googleusercontent.com
+          - activeSettings:
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunSettings:
+          accessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          scope:
+          clientScope:
+          restrictedClientApplication:
+          name: Cloud Console
+
         If filter is specified as
         `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
         the output is printed in the following format:
@@ -82,4 +113,4 @@
             dryRunAccessLevels.join(","):label=DRY_RUN_ACCESS_LEVEL
         )
     ALPHA:
-      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, reauthSettings, restrictedClientApplications)
+      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, reauthSettings, restrictedClientApplications, scopedAccessSettings)

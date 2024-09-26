@@ -134,7 +134,9 @@ class Create(base.CreateCommand):
         backup_config=backup_config,
         large_capacity=large_capacity,
         multiple_endpoints=multiple_endpoints,
-        tiering_policy=args.tiering_policy)
+        tiering_policy=args.tiering_policy,
+        hybrid_replication_parameters=args.hybrid_replication_parameters,
+    )
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
       command = 'gcloud {} netapp volumes list'.format(

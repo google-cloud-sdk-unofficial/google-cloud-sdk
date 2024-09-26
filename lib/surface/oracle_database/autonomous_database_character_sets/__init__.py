@@ -18,9 +18,12 @@
 """Manage Autonomous Database Character Set resources."""
 
 from googlecloudsdk.calliope import base
+from surface.oracle_database.autonomous_database_character_sets import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDatabaseCharacterSetsALPHA(base.Group):
+class AutonomousDatabaseCharacterSetsALPHA(
+    extensions.AutonomousDatabaseCharacterSetsALPHA, base.Group
+):
   """Manage Autonomous Database Character Set resources."""

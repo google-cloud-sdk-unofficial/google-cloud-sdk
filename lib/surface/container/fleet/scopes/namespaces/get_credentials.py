@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import textwrap
 
+from googlecloudsdk.api_lib.container.fleet import util as fleet_util
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
@@ -74,14 +75,44 @@ class GetCredentials(gateway.GetCredentialsCommand):
             `gcloud container fleet memberships get-credentials`.
             """),
     )
+    parser.add_argument(
+        '--use-client-side-generation',
+        action='store_true',
+        required=False,
+        hidden=True,
+        help=textwrap.dedent("""\
+          Generate the kubeconfig locally rather than generating it using an API
+          call.
+        """),
+    )
 
   def Run(self, args):
-    context_namespace = None
     if args.set_namespace_in_config:
       context_namespace = args.NAMESPACE
+    else:
+      context_namespace = None
+
     if args.membership:
-      membership = args.membership
+      membership_id = args.membership
+      location = args.membership_location or 'global'
     else:
       membership = resources.PromptForMembership()
-    location = args.membership_location or 'global'
-    self.RunGetCredentials(membership, location, context_namespace)
+      membership_id = fleet_util.MembershipShortname(membership)
+      location = fleet_util.MembershipLocation(membership)
+
+    if args.use_client_side_generation:
+      self.RunGetCredentials(membership_id, location, context_namespace)
+    else:
+      # Use server-side generation by default, and fall back to client-side if
+      # needed. We catch all Exceptions because errors are being recorded and
+      # reported, and it would be difficult to ascertain at runtime whether an
+      # error is due to user misbehavior or programming error.
+      try:
+        self.RunServerSide(
+            membership_id,
+            location,
+            arg_namespace=context_namespace,
+        )
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        gateway.RecordClientSideFallback(e)
+        self.RunGetCredentials(membership_id, location, context_namespace)

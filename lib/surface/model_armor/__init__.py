@@ -18,11 +18,11 @@
 """Manages Model Armor resources."""
 
 from googlecloudsdk.calliope import base
+from surface.model_armor import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.DefaultUniverseOnly
 @base.Hidden
-class ModelArmorALPHA(base.Group):
+class ModelArmorALPHA(extensions.ModelArmorALPHA, base.Group):
   """Model Armor is a service offering LLM-agnostic security and AI safety measures to mitigate risks associated with large language models (LLMs)."""
   category = base.UNCATEGORIZED_CATEGORY

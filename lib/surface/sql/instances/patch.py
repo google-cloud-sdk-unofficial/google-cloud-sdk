@@ -293,6 +293,7 @@ def AddBetaArgs(parser):
   flags.AddClearPscAutoConnections(
       psc_update_auto_connections_group, hidden=True
   )
+  flags.AddRetainBackupsOnDelete(parser)
 
 
 def AddAlphaArgs(parser):

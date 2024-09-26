@@ -156,6 +156,28 @@
                 enum_value: DISABLED
                 help_text: |-
                   Enabled
+            - arg_name: pi-and-jailbreak-filter-settings-confidence-level
+              api_field: template.filterConfig.piAndJailbreakFilterSettings.confidenceLevel
+              required: false
+              help_text: |-
+                Confidence level for this filter.
+                Confidence level is used to determine the threshold for the filter. If
+                detection confidence is equal to or greater than the specified level, a
+                positive match is reported. Confidence level will only be used if the
+                filter is enabled.
+              choices:
+              - arg_value: low-and-above
+                enum_value: LOW_AND_ABOVE
+                help_text: |-
+                  Highest chance of a false positive.
+              - arg_value: medium-and-above
+                enum_value: MEDIUM_AND_ABOVE
+                help_text: |-
+                  Some chance of false positives.
+              - arg_value: high
+                enum_value: HIGH
+                help_text: |-
+                  Low chance of false positives.
         - group:
             required: false
             help_text: |-
