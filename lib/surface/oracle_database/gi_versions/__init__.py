@@ -23,5 +23,5 @@ from surface.oracle_database.gi_versions import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class GiVersionsALPHA(extensions.GiVersionsALPHA, base.Group):
+class GiVersionsAlpha(extensions.GiVersionsAlpha):
   """Manage Gi Version resources."""

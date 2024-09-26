@@ -74,6 +74,7 @@ class Delete(base.DeleteCommand):
           kind='runtime template',
           asynchronous=util.GetAsyncConfig(args),
           message='Waiting for runtime template to be deleted...',
+          resource=args.CONCEPTS.runtime_template.Parse().RelativeName(),
       )
 
 

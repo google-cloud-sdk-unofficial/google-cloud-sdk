@@ -21,13 +21,11 @@ from googlecloudsdk.calliope import base
 from surface.memorystore.instances import _init_extensions as extensions
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InstancesALPHA(extensions.InstancesALPHA, base.Group):
+class InstancesAlpha(extensions.InstancesAlpha):
   """Manage Instance resources."""
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class InstancesBETA(extensions.InstancesBETA, base.Group):
+class InstancesBeta(extensions.InstancesBeta):
   """Manage Instance resources."""

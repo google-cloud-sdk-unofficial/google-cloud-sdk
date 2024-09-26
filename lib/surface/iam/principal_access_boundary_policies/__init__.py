@@ -18,20 +18,27 @@
 """Manage PrincipalAccessBoundaryPolicy instances."""
 
 from googlecloudsdk.calliope import base
+from surface.iam.principal_access_boundary_policies import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class PrincipalAccessBoundaryPoliciesALPHA(base.Group):
+class PrincipalAccessBoundaryPoliciesAlpha(
+    extensions.PrincipalAccessBoundaryPoliciesAlpha
+):
   """Manage PrincipalAccessBoundaryPolicy instances."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PrincipalAccessBoundaryPoliciesBETA(base.Group):
+class PrincipalAccessBoundaryPoliciesBeta(
+    extensions.PrincipalAccessBoundaryPoliciesBeta
+):
   """Manage PrincipalAccessBoundaryPolicy instances."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class PrincipalAccessBoundaryPoliciesGA(base.Group):
+class PrincipalAccessBoundaryPoliciesGa(
+    extensions.PrincipalAccessBoundaryPoliciesGa
+):
   """Manage PrincipalAccessBoundaryPolicy instances."""

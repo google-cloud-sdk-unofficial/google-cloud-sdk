@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Switch a Regional Cloud NetApp SO Storage Pool zone."""
+"""Switch a Regional Cloud NetApp Flex Storage Pool zone."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,14 +24,16 @@ from googlecloudsdk.command_lib.netapp.storage_pools import flags as storagepool
 from googlecloudsdk.core import log
 
 
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA
+)
 class Switch(base.Command):
-  """Switch a Regional Cloud NetApp SO Storage Pool zone."""
+  """Switch a Regional Cloud NetApp Flex Storage Pool zone."""
 
   detailed_help = {
       'DESCRIPTION': """\
-          Switch a Regional Cloud NetApp SO Storage Pool zone.
+          Switch a Regional Cloud NetApp Flex Storage Pool zone.
           """,
       'EXAMPLES': """\
           The following command switches zone of a Storage Pool named NAME using the required arguments:
@@ -49,7 +51,7 @@ class Switch(base.Command):
     storagepools_flags.AddStoragePoolSwitchArg(parser)
 
   def Run(self, args):
-    """Switch a Regional Cloud NetApp SO Storage Pool zone in the current project."""
+    """Switch a Regional Cloud NetApp Flex Storage Pool zone in the current project."""
     storagepool_ref = args.CONCEPTS.storage_pool.Parse()
 
     client = storagepools_client.StoragePoolsClient(self.ReleaseTrack())

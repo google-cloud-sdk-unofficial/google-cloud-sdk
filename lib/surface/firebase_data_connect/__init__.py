@@ -18,10 +18,10 @@
 """Manage Firebase Data Connect resources."""
 
 from googlecloudsdk.calliope import base
+from surface.firebase_data_connect import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class FirebaseDataConnectALPHA(base.Group):
+class FirebaseDataConnectAlpha(extensions.FirebaseDataConnectAlpha):
   """Manage Firebase Data Connect resources."""
-  category = base.UNCATEGORIZED_CATEGORY

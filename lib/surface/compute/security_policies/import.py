@@ -33,14 +33,14 @@ from googlecloudsdk.core.util import files
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UnicodeIsSupported
 class Import(base.SilentCommand):
   """Import security policy configs into your project.
 
-  *{command}* imports a security policy to update an existing policy. The
-  command does not support updating rules for the policy. To create a new policy
-  from a file please use the create command instead.
+  *{command}* imports a security policy to update an existing policy. To create
+  a new policy from a file please use the create command instead.
 
   ## EXAMPLES
 
@@ -105,14 +105,14 @@ class Import(base.SilentCommand):
     log.status.Print(msg)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UnicodeIsSupported
 class ImportBeta(base.SilentCommand):
   """Import security policy configs into your project.
 
-  *{command}* imports a security policy to update an existing policy. The
-  command does not support updating rules for the policy. To create a new policy
-  from a file please use the create command instead.
+  *{command}* imports a security policy to update an existing policy. To create
+  a new policy from a file please use the create command instead.
 
   ## EXAMPLES
 
@@ -177,14 +177,14 @@ class ImportBeta(base.SilentCommand):
     log.status.Print(msg)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UnicodeIsSupported
 class ImportAlpha(base.SilentCommand):
   """Import security policy configs into your project.
 
-  *{command}* imports a security policy to update an existing policy. The
-  command does not support updating rules for the policy. To create a new policy
-  from a file please use the create command instead.
+  *{command}* imports a security policy to update an existing policy. To create
+  a new policy from a file please use the create command instead.
 
   ## EXAMPLES
 

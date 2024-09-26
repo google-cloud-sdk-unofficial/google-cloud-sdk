@@ -39,6 +39,7 @@ DEFAULT_LIST_FORMAT = """\
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List repositories in the specified project.
 
@@ -55,6 +56,46 @@ class List(base.ListCommand):
     The following command lists a maximum of five repositories:
 
         $ {command} --limit=5
+
+      To list repositories with name as `my_repo`:
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/my_repo"'
+
+      To list repositories with a given partial name, use `*` to match any character in name:
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/*repo"'
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/my_*"'
+
+      To list files that have annotations:
+
+          $ {command} --filter=annotations:*
+
+      To list repositories with annotations pair as [annotation_key: annotation_value]
+
+          $ {command} --filter='annotations.annotation_key:annotation_value'
+
+      To list repositories with annotations containing key as `my_key`:
+
+          $ {command} --filter='annotations.my_key'
+
+          If the key or value contains special characters, such as `my.key` or `my.value`, backtick("`") is required:
+
+          $ {command} --filter='annotations.`my.key`'
+
+          $ {command} --filter='annotations.`my.key`:`my.value`'
+
+      To list repositories with given partial annotation key or value, use `*` to match any character:
+
+          $ {command} --filter='annotations.*key:`*.value`'
+
+      To list repositories ordered by create_time:
+
+          $ {command} --sort-by=create_time
+
+      To list repositories ordered by update_time reversely:
+
+          $ {command}--sort-by=~update_time
     """,
   }
 
@@ -72,6 +113,6 @@ class List(base.ListCommand):
         command invocation.
 
     Returns:
-      A list of Docker images.
+      A list of Repositories.
     """
     return util.ListRepositories(args)

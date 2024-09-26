@@ -207,7 +207,6 @@
       processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField
     - arg_name: cross-cluster-replication-role
       api_field: cluster.crossClusterReplicationConfig.clusterRole
-      hidden: true
       help_text: |
         The role of the cluster in cross cluster replication.
       choices:
@@ -217,7 +216,6 @@
          Create a secondary cluster.
     - arg_name: primary-cluster
       api_field: cluster.crossClusterReplicationConfig.primaryCluster.cluster
-      hidden: true
       help_text: |
         The primary cluster that the secondary cluster will replicate from. It must use the format:
         projects/PROJECT_ID/locations/REGION/clusters/CLUSTER_ID. It must refer to an existing cluster. Otherwise, the create operation fails.

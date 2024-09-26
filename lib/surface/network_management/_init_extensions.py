@@ -19,7 +19,7 @@
 from googlecloudsdk.calliope import base
 
 
-class NetworkManagementALPHA:
+class NetworkManagementAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
   category = base.NETWORKING_CATEGORY
 
@@ -29,7 +29,7 @@ class NetworkManagementALPHA:
     del context, args
 
 
-class NetworkManagementBETA:
+class NetworkManagementBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
   category = base.NETWORKING_CATEGORY
 
@@ -39,7 +39,7 @@ class NetworkManagementBETA:
     del context, args
 
 
-class NetworkManagementGA:
+class NetworkManagementGa(base.Group):
   """Optional no-auto-generated code for GA."""
   category = base.NETWORKING_CATEGORY
 

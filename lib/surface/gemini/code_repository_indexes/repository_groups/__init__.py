@@ -23,11 +23,11 @@ from surface.gemini.code_repository_indexes.repository_groups import _init_exten
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class RepositoryGroupsALPHA(extensions.RepositoryGroupsALPHA, base.Group):
+class RepositoryGroupsAlpha(extensions.RepositoryGroupsAlpha):
   """Manage Repository Group resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class RepositoryGroupsGA(extensions.RepositoryGroupsGA, base.Group):
+class RepositoryGroupsGa(extensions.RepositoryGroupsGa):
   """Manage Repository Group resources."""

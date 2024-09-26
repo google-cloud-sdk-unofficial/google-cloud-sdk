@@ -121,20 +121,7 @@ class Create(base.Command):
             ' for Cloud Storage using the JSON API.'
         ),
     )
-
-    parser.add_argument(
-        '--placement',
-        metavar='REGION',
-        type=arg_parsers.ArgList(
-            min_length=2, max_length=2, custom_delim_char=','
-        ),
-        help=(
-            'A comma-separated list of exactly 2 regions that form the custom'
-            ' dual-region. Only regions within the same continent are or will'
-            ' ever be valid. Invalid location pairs (such as mixed-continent,'
-            ' or with unsupported regions) will return an error.'
-        ),
-    )
+    flags.add_placement_flag(parser)
     parser.add_argument(
         '--soft-delete-duration',
         type=arg_parsers.Duration(),

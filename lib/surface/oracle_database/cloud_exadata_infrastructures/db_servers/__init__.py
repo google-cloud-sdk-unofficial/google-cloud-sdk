@@ -23,5 +23,5 @@ from surface.oracle_database.cloud_exadata_infrastructures.db_servers import _in
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbServersALPHA(extensions.DbServersALPHA, base.Group):
+class DbServersAlpha(extensions.DbServersAlpha):
   """Manage Db Server resources."""

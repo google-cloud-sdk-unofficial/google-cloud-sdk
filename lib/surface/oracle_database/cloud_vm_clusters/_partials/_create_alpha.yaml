@@ -37,21 +37,19 @@
        --properties-cpu-core-count=4
   arguments:
     params:
-    - help_text: |-
+    - help_text: |
         Identifier. The name of the VM Cluster resource with the format:
         projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
-        https://google.aip.dev/122
       is_positional: true
       request_id_field: cloudVmClusterId
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_vm_cluster
       required: true
     - arg_name: exadata-infrastructure
-      help_text: |-
+      help_text: |
         The name of the Exadata Infrastructure resource on which VM cluster
         resource is created.
         Format:
         projects/{project}/locations/{region}/cloudExadataInfrastuctures/{cloud_extradata_infrastructure}
-        https://google.aip.dev/122
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_exadata_infrastructure
@@ -66,7 +64,7 @@
         User friendly name for this resource.
     - group:
         required: false
-        help_text: |-
+        help_text: |
           Various properties and settings associated with Exadata VM cluster.
         params:
         - arg_name: properties-license-type
@@ -255,14 +253,15 @@
       help_text: |-
         CIDR range of the backup subnet.
     - arg_name: network
-      api_field: cloudVmCluster.network
-      required: true
-      repeated: false
       help_text: |-
         The name of the VPC network.
-        Format: projects/{project}/locations/global/networks/{network} or
-        projects/{project}/global/networks/{network}
-        https://google.aip.dev/122
+        Format: projects/{project}/global/networks/{network}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_global_network
+      resource_method_params:
+        cloudVmCluster.network: '{__relative_name__}'
+      required: true
     - arg_name: request-id
       api_field: requestId
       required: false

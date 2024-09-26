@@ -69,13 +69,8 @@ class Create(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.StoragePool.LabelsValue)
     capacity_in_gib = args.capacity >> 30
-
-    zone = None
-    replica_zone = None
-    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
-        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      zone = args.zone
-      replica_zone = args.replica_zone
+    zone = args.zone
+    replica_zone = args.replica_zone
 
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),

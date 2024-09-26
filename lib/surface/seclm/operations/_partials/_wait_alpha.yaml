@@ -33,7 +33,7 @@
       resource_spec: !REF googlecloudsdk.command_lib.seclm.default_resources:project_location_operation
       required: true
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - seclm.projects.locations.operations
   async:

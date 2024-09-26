@@ -131,12 +131,62 @@
                     The Service Directory service name.
                     Format:
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
-            - arg_name: github-enterprise-config-ssl-ca
-              api_field: connection.githubEnterpriseConfig.sslCa
+            - arg_name: github-enterprise-config-ssl-ca-certificate
+              api_field: connection.githubEnterpriseConfig.sslCaCertificate
               required: false
               repeated: false
               help_text: |-
                 SSL certificate to use for requests to GitHub Enterprise.
+        - group:
+            required: false
+            help_text: |-
+              Configuration for connections to gitlab.com.
+            params:
+            - arg_name: gitlab-config-webhook-secret-version
+              help_text: |-
+                SecretManager resource containing the webhook secret of a GitLab project,
+                formatted as `projects/*/secrets/*/versions/*`. This is used to validate
+                webhooks.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_method_params:
+                connection.gitlabConfig.webhookSecretSecretVersion: '{__relative_name__}'
+              required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: gitlab-config-read-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: gitlab-config-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.gitlabConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
     - help_text: |-
         Identifier. The resource name of the connection, in the format
         `projects/{project}/locations/{location}/connections/{connection_id}`.

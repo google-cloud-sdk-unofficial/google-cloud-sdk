@@ -22,14 +22,10 @@ from surface.memorystore import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.DefaultUniverseOnly
-class MemorystoreALPHA(extensions.MemorystoreALPHA, base.Group):
+class MemorystoreAlpha(extensions.MemorystoreAlpha):
   """Manage Memorystore resources."""
-  category = base.UNCATEGORIZED_CATEGORY
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class MemorystoreBETA(extensions.MemorystoreBETA, base.Group):
+class MemorystoreBeta(extensions.MemorystoreBeta):
   """Manage Memorystore resources."""
-  category = base.UNCATEGORIZED_CATEGORY

@@ -17,14 +17,17 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
-    brief: Create vpcFlowLogsConfigs
-    description: Create a vpcFlowLogsConfig
+    brief: Creates a new VPC Flow Logs configuration in the specified project.
+    description: Creates a new VPC Flow Logs configuration in the specified project.
     examples: |-
-      To create the vpcFlowLogsConfig, run:
+      To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a VLAN attachment for Cloud Interconnect, run:
 
-      $ {command}
+      $ {command} my-config --location=global --interconnect-attachment="projects/{project_id}/regions/{region}/interconnectAttachments/{interconnect_attachment_id}"
+
+      To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a Cloud VPN tunnel, run:
+
+      $ {command} my-config --location=global --vpn-tunnel="projects/{project_id}/regions/{region}/vpnTunnels/{vpn_tunnel_id}"
   arguments:
     params:
     - group:

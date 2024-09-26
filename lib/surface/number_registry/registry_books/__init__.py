@@ -18,9 +18,10 @@
 """Manage registry book resources."""
 
 from googlecloudsdk.calliope import base
+from surface.number_registry.registry_books import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RegistryBooksALPHA(base.Group):
+@base.Hidden
+class RegistryBooksAlpha(extensions.RegistryBooksAlpha):
   """Manage registry book resources."""

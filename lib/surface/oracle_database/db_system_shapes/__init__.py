@@ -23,5 +23,5 @@ from surface.oracle_database.db_system_shapes import _init_extensions as extensi
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbSystemShapesALPHA(extensions.DbSystemShapesALPHA, base.Group):
+class DbSystemShapesAlpha(extensions.DbSystemShapesAlpha):
   """Manage Db System Shape resources."""

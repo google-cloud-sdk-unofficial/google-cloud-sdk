@@ -1,6 +1,4 @@
 - release_tracks: [GA]
-  hidden: true
-
   help_text:
     brief: |
       Update annotations on an Artifact Registry package version.

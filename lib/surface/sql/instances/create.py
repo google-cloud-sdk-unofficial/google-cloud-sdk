@@ -147,6 +147,7 @@ def AddBaseArgs(parser):
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
   flags.AddEnableDataplexIntegration(parser)
+  flags.AddPscAutoConnections(parser, hidden=True)
   # (--
   # LINT.ThenChange(../backups/restore.py:instance_settings)
   # --)
@@ -160,7 +161,6 @@ def AddBetaArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddServerCaMode(parser)
-  flags.AddPscAutoConnections(parser, hidden=True)
   flags.AddRetainBackupsOnDelete(parser)
 
 

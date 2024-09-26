@@ -64,6 +64,13 @@
       help_text: |
         This specifies whether public IP is enabled on the Looker instance.
       default: true
+    - arg_name: fips-enabled
+      api_field: instance.fipsEnabled
+      release_tracks: [GA]
+      type: bool
+      help_text: |
+        This specifies whether FIPS is enabled on the Looker instance.
+      default: false
     # Required Flags - OAuth
     - api_field: instance.oauthConfig.clientId
       arg_name: oauth-client-id

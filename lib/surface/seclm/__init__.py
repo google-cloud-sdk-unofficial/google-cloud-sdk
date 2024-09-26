@@ -18,9 +18,11 @@
 """Manage and Query SecLM Workbench resources."""
 
 from googlecloudsdk.calliope import base
+from surface.seclm import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SeclmALPHA(base.Group):
+@base.Hidden
+@base.UniverseCompatible
+class SeclmAlpha(extensions.SeclmAlpha):
   """Service to manage SecLM Workbench resources."""

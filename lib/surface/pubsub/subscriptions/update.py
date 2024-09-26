@@ -236,7 +236,6 @@ class Update(base.UpdateCommand):
     return result
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub subscription."""
@@ -250,5 +249,4 @@ class UpdateBeta(Update):
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
-    flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
     return super(UpdateBeta, self).Run(args, enable_push_to_cps=True)

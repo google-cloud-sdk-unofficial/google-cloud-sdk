@@ -57,7 +57,7 @@ def _Run(args):
   return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Seek(base.Command):
   """Resets a subscription's backlog to a point in time or to a given snapshot."""
 
@@ -67,13 +67,4 @@ class Seek(base.Command):
     flags.AddSeekFlags(parser)
 
   def Run(self, args):
-    return _Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class SeekBeta(Seek):
-  """Resets a subscription's backlog to a point in time or to a given snapshot."""
-
-  def Run(self, args):
-    flags.ValidateSubscriptionArgsUseUniverseSupportedFeatures(args)
     return _Run(args)

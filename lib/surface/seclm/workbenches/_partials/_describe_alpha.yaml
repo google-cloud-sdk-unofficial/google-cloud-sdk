@@ -33,9 +33,9 @@
     - help_text: |-
         Name of the resource.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1alpha_resources:project_location_workbench
+      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1_resources:project_location_workbench
       required: true
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - seclm.projects.locations.workbenches

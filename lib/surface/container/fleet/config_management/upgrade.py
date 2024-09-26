@@ -96,7 +96,7 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
         )
     )
 
-    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+    if mf_util.UseMembershipFeatureV2(self.ReleaseTrack()):
       membershipfeature = convert.ToV2MembershipFeature(
           self, membership_key, self.mf_name, patch
       )

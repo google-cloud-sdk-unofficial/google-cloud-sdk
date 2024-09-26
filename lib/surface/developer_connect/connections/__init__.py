@@ -18,8 +18,9 @@
 """Manage Connection resources."""
 
 from googlecloudsdk.calliope import base
+from surface.developer_connect.connections import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ConnectionsALPHA(base.Group):
+class ConnectionsAlpha(extensions.ConnectionsAlpha):
   """Manage Connection resources."""

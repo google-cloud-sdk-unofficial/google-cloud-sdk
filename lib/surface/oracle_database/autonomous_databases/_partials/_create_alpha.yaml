@@ -35,10 +35,9 @@
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
   arguments:
     params:
-    - help_text: |-
+    - help_text: |
         Identifier. The name of the Autonomous Database resource with the format:
         projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
-        https://google.aip.dev/122
       is_positional: true
       request_id_field: autonomousDatabaseId
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database
@@ -87,9 +86,16 @@
           api_field: autonomousDatabase.properties.dataStorageSizeTb
           required: false
           repeated: false
-          type: float
+          type: int
           help_text: |-
             The quantity of data in the database, in terabytes.
+        - arg_name: properties-data-storage-size-gb
+          api_field: autonomousDatabase.properties.dataStorageSizeGb
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            The quantity of data in the database, in gigabytes.
         - arg_name: properties-db-workload
           api_field: autonomousDatabase.properties.dbWorkload
           required: true
@@ -235,12 +241,6 @@
           help_text: |-
             Specifies if the Autonomous Database requires mTLS connections.
           default: null
-        - arg_name: properties-hostname-prefix
-          api_field: autonomousDatabase.properties.hostnamePrefix
-          required: false
-          repeated: false
-          help_text: |-
-            Prefix for autonomous database host names.
         - arg_name: properties-backup-retention-period-days
           api_field: autonomousDatabase.properties.backupRetentionPeriodDays
           required: false
@@ -259,14 +259,15 @@
       - api_field: key
       - api_field: value
     - arg_name: network
-      api_field: autonomousDatabase.network
-      required: true
-      repeated: false
       help_text: |-
         The name of the VPC network.
-        Format: projects/{project}/locations/global/networks/{network} or
-        projects/{project}/global/networks/{network}
-        https://google.aip.dev/122
+        Format: projects/{project}/global/networks/{network}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_global_network
+      resource_method_params:
+        autonomousDatabase.network: '{__relative_name__}'
+      required: true
     - arg_name: cidr
       api_field: autonomousDatabase.cidr
       required: true

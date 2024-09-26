@@ -52,6 +52,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a VMware Engine private cloud."""
 
@@ -141,6 +142,17 @@ class Create(base.CreateCommand):
         private cloud.
         """,
     )
+    parser.add_argument(
+        '--service-subnet',
+        required=False,
+        hidden=True,
+        action='append',
+        help="""\
+        A non-overlapping CIDR range and prefix length for the service subnets.
+        The service subnets are used for appliance or service deployment, such as storage,
+        backup, disaster recovery, and media streaming.
+        """,
+    )
     flags.AddAutoscalingSettingsFlagsToParser(parser)
 
   def Run(self, args):
@@ -178,6 +190,7 @@ class Create(base.CreateCommand):
         preferred_zone=args.preferred_zone,
         secondary_zone=args.secondary_zone,
         autoscaling_settings=autoscaling_settings,
+        service_subnet=args.service_subnet,
     )
     if is_async:
       log.CreatedResource(operation.name, kind='private cloud', is_async=True)

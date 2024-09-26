@@ -22,15 +22,15 @@ from surface.network_management import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NetworkManagementALPHA(extensions.NetworkManagementALPHA, base.Group):
+class NetworkManagementAlpha(extensions.NetworkManagementAlpha):
   """Manage Network Management resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class NetworkManagementBETA(extensions.NetworkManagementBETA, base.Group):
+class NetworkManagementBeta(extensions.NetworkManagementBeta):
   """Manage Network Management resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class NetworkManagementGA(extensions.NetworkManagementGA, base.Group):
+class NetworkManagementGa(extensions.NetworkManagementGa):
   """Manage Network Management resources."""

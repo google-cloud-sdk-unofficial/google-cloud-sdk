@@ -23,7 +23,7 @@ from surface.oracle_database.cloud_exadata_infrastructures import _init_extensio
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class CloudExadataInfrastructuresALPHA(
-    extensions.CloudExadataInfrastructuresALPHA, base.Group
+class CloudExadataInfrastructuresAlpha(
+    extensions.CloudExadataInfrastructuresAlpha
 ):
   """Manage Cloud Exadata Infrastructure resources."""

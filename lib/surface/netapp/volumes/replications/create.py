@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Volume Replication."""
@@ -53,6 +54,7 @@ class Create(base.CreateCommand):
     replications_flags.AddReplicationVolumeArg(parser)
     replications_flags.AddReplicationReplicationScheduleArg(parser)
     replications_flags.AddReplicationDestinationVolumeParametersArg(parser)
+    replications_flags.AddReplicationClusterLocationArg(parser)
     flags.AddResourceAsyncFlag(parser)
     flags.AddResourceDescriptionArg(parser, 'Replication')
     labels_util.AddCreateLabelsFlags(parser)
@@ -78,6 +80,7 @@ class Create(base.CreateCommand):
         labels=labels,
         replication_schedule=replication_schedule_enum,
         destination_volume_parameters=args.destination_volume_parameters,
+        cluster_location=args.cluster_location,
     )
     result = client.CreateReplication(
         replication_ref, volume_ref, args.async_, replication

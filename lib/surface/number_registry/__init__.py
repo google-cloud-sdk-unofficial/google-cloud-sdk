@@ -18,10 +18,10 @@
 """Manage cloud number registry resources."""
 
 from googlecloudsdk.calliope import base
+from surface.number_registry import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NumberRegistryALPHA(base.Group):
+@base.Hidden
+class NumberRegistryAlpha(extensions.NumberRegistryAlpha):
   """Manage cloud number registry resources."""
-  category = base.UNCATEGORIZED_CATEGORY

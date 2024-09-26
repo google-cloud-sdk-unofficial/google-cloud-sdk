@@ -18,19 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.pubsub import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Snapshots(base.Group):
   """Manage Cloud Pub/Sub snapshots."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SnapshotsBeta(Snapshots):
-  """Manage Cloud Pub/Sub snapshots."""
-
-  def Filter(self, context, args):
-    flags.ValidateIsDefaultUniverse('snapshots')

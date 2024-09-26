@@ -18,8 +18,9 @@
 """Manage Git Repository Link resources."""
 
 from googlecloudsdk.calliope import base
+from surface.developer_connect.connections.git_repository_links import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GitRepositoryLinksALPHA(base.Group):
+class GitRepositoryLinksAlpha(extensions.GitRepositoryLinksAlpha):
   """Manage Git Repository Link resources."""

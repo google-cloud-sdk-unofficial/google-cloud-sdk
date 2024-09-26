@@ -45,13 +45,12 @@
       - api_field: value
     - arg_name: request-ip-ranges
       api_field: codeRepositoryIndex.requestIpRanges
-      action: store_true
+      action: store_true_false
       required: false
       type: bool
       help_text: |-
         Whether to request reservation of IP addresses from which the RAG index
         service will attempt to access linked Git repositories
-      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

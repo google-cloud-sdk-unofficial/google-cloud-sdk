@@ -58,7 +58,7 @@ class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
         membershipSpecs=self.hubclient.ToMembershipSpecs(specs)
     )
 
-    if mf_util.UseMembershipFeatureV2(self.Project(), self.ReleaseTrack()):
+    if mf_util.UseMembershipFeatureV2(self.ReleaseTrack()):
       membershipfeature = convert.ToV2MembershipFeature(
           self,
           membership_key,

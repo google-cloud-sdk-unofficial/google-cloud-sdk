@@ -23,5 +23,5 @@ from surface.oracle_database.operations import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class OperationsALPHA(extensions.OperationsALPHA, base.Group):
+class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""

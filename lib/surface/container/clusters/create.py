@@ -291,6 +291,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       ),
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
       enable_managed_prometheus=get_default('enable_managed_prometheus'),
+      auto_monitoring_scope=get_default('auto_monitoring_scope'),
       enable_master_authorized_networks=get_default(
           'enable_master_authorized_networks'
       ),
@@ -641,6 +642,9 @@ flags_to_add = {
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
         ),
+        'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
+            p, hidden=True
+        ),
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
         'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
         'maxnodes': flags.AddMaxNodesPerPool,
@@ -802,6 +806,9 @@ flags_to_add = {
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
+        ),
+        'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
+            p, hidden=True
         ),
         'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
@@ -991,6 +998,9 @@ flags_to_add = {
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
+        ),
+        'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
+            p, hidden=True
         ),
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals': AddMasterSignalsFlag,
@@ -1328,6 +1338,7 @@ class CreateBeta(Create):
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(
@@ -1464,6 +1475,7 @@ class CreateAlpha(Create):
         get_default('cross_connect_subnetworks')
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(

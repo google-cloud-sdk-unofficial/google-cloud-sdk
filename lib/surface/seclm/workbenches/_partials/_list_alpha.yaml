@@ -33,10 +33,10 @@
     - help_text: |-
         Parent value for ListWorkbenchesRequest.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1alpha_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1_resources:project_location
       required: true
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - seclm.projects.locations.workbenches
   response:

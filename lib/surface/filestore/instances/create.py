@@ -101,6 +101,7 @@ class Create(base.CreateCommand):
     except KeyError as err:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(err))
+
     instance = client.ParseFilestoreConfig(
         tier=tier,
         description=args.description,
@@ -112,7 +113,9 @@ class Create(base.CreateCommand):
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
-        source_instance=args.source_instance)
+        source_instance=args.source_instance,
+        deletion_protection_enabled=args.deletion_protection,
+        deletion_protection_reason=args.deletion_protection_reason)
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:
       command = properties.VALUES.metrics.command_name.Get().split('.')
@@ -210,6 +213,7 @@ class CreateBeta(Create):
     except KeyError as err:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(err))
+
     instance = client.ParseFilestoreConfig(
         tier=tier,
         protocol=protocol,
@@ -223,7 +227,9 @@ class CreateBeta(Create):
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
         managed_ad=managed_ad,
-        source_instance=source_instance)
+        source_instance=source_instance,
+        deletion_protection_enabled=args.deletion_protection,
+        deletion_protection_reason=args.deletion_protection_reason)
 
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:

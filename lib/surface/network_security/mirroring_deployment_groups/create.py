@@ -75,6 +75,7 @@ class Create(base.CreateCommand):
     client = api.Client(self.ReleaseTrack())
 
     deployment_group = args.CONCEPTS.mirroring_deployment_group.Parse()
+    network = args.CONCEPTS.network.Parse()
     labels = labels_util.ParseCreateArgs(
         args, client.messages.MirroringDeploymentGroup.LabelsValue
     )
@@ -87,7 +88,7 @@ class Create(base.CreateCommand):
     operation = client.CreateDeploymentGroup(
         deployment_group_id=deployment_group.Name(),
         parent=deployment_group.Parent().RelativeName(),
-        network=args.network,
+        network=network.RelativeName(),
         labels=labels,
     )
     # Return the in-progress operation if async is requested.

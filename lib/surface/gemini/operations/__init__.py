@@ -23,11 +23,11 @@ from surface.gemini.operations import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class OperationsALPHA(extensions.OperationsALPHA, base.Group):
+class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class OperationsGA(extensions.OperationsGA, base.Group):
+class OperationsGa(extensions.OperationsGa):
   """Manage Operation resources."""

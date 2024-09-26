@@ -338,6 +338,9 @@ class Update(base.UpdateCommand):
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
+    flags.AddAutoMonitoringScopeFlags(
+        group_logging_monitoring_config, hidden=True
+    )
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
@@ -481,6 +484,7 @@ class Update(base.UpdateCommand):
     opts.gateway_api = args.gateway_api
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
+    opts.auto_monitoring_scope = args.auto_monitoring_scope
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
     opts.enable_k8s_beta_apis = args.enable_kubernetes_unstable_apis
@@ -933,6 +937,9 @@ class UpdateBeta(Update):
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
+    flags.AddAutoMonitoringScopeFlags(
+        group_logging_monitoring_config, hidden=True
+    )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1114,6 +1121,7 @@ class UpdateBeta(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
+    opts.auto_monitoring_scope = args.auto_monitoring_scope
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:
@@ -1236,6 +1244,9 @@ class UpdateAlpha(Update):
     flags.AddLoggingFlag(group_logging_monitoring_config)
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
+    flags.AddAutoMonitoringScopeFlags(
+        group_logging_monitoring_config, hidden=True
+    )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1415,6 +1426,7 @@ class UpdateAlpha(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
+    opts.auto_monitoring_scope = args.auto_monitoring_scope
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:

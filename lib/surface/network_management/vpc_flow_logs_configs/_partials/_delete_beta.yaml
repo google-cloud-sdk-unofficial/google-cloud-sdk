@@ -17,14 +17,13 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
-    brief: Delete vpcFlowLogsConfigs
-    description: Delete a vpcFlowLogsConfig
+    brief: Deletes the specified VPC Flow Logs configuration.
+    description: Deletes the specified VPC Flow Logs configuration.
     examples: |-
-      To delete the vpcFlowLogsConfig, run:
+      To delete a VPC Flow Logs configuration `my-config`, run:
 
-      $ {command}
+      $ {command} my-config --location=global
   arguments:
     params:
     - help_text: |-

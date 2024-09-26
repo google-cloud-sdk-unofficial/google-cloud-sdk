@@ -33,7 +33,7 @@
     - help_text: |-
         Name of the resource.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1alpha_resources:project_location_workbench
+      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1_resources:project_location_workbench
       required: true
     - arg_name: request-id
       api_field: requestId
@@ -54,7 +54,7 @@
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - seclm.projects.locations.workbenches
   async:

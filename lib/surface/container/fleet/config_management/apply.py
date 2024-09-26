@@ -93,7 +93,7 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
         and args.origin is not None
     )
     if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
-        self.Project(), self.ReleaseTrack()
+        self.ReleaseTrack()
     ):
       membershipfeature = convert.ToV2MembershipFeature(
           self, membership, self.mf_name,

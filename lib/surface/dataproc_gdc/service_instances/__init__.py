@@ -18,12 +18,18 @@
 """Manage Service Instance resources."""
 
 from googlecloudsdk.calliope import base
+from surface.dataproc_gdc.service_instances import _init_extensions as extensions
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-class ServiceInstancesALPHA(base.Group):
+class ServiceInstancesAlpha(extensions.ServiceInstancesAlpha):
   """Manage Service Instance resources."""
 
-  category = base.DATA_ANALYTICS_CATEGORY
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+@base.DefaultUniverseOnly
+class ServiceInstancesGA(extensions.ServiceInstancesGa):
+  """Manage Service Instance resources."""

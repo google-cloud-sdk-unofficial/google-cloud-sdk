@@ -23,7 +23,5 @@ from surface.oracle_database.autonomous_db_versions import _init_extensions as e
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDbVersionsALPHA(
-    extensions.AutonomousDbVersionsALPHA, base.Group
-):
+class AutonomousDbVersionsAlpha(extensions.AutonomousDbVersionsAlpha):
   """Manage Autonomous Db Version resources."""

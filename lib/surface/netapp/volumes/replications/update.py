@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Cloud NetApp Volume Replication."""
@@ -41,7 +42,7 @@ class Update(base.UpdateCommand):
       'EXAMPLES': """\
           The following command updates a Replication named NAME and its specified parameters:
 
-              $ {command} NAME --location=us-central1 --volume=vol1 --replication-schedule=EVERY_5_MINUTES --description="new description"
+              $ {command} NAME --location=us-central1 --volume=vol1 --replication-schedule=EVERY_5_MINUTES --description="new description" --cluster-location= us-central1
           """,
   }
 
@@ -55,6 +56,7 @@ class Update(base.UpdateCommand):
     replications_flags.AddReplicationReplicationScheduleArg(
         parser, required=False
     )
+    replications_flags.AddReplicationClusterLocationArg(parser)
     flags.AddResourceAsyncFlag(parser)
     flags.AddResourceDescriptionArg(parser, 'Replication')
     labels_util.AddUpdateLabelsFlags(parser)
@@ -84,6 +86,7 @@ class Update(base.UpdateCommand):
     replication = client.ParseUpdatedReplicationConfig(
         original_replication, description=args.description, labels=labels,
         replication_schedule=replication_schedule_enum,
+        cluster_location=args.cluster_location,
     )
 
     updated_fields = []
@@ -99,8 +102,11 @@ class Update(base.UpdateCommand):
       updated_fields.append('labels')
     if args.IsSpecified('replication_schedule'):
       updated_fields.append('replication_schedule')
-    update_mask = ','.join(updated_fields)
 
+    if args.IsSpecified('cluster_location'):
+      updated_fields.append('cluster_location')
+
+    update_mask = ','.join(updated_fields)
     result = client.UpdateReplication(
         replication_ref, replication, update_mask, args.async_
     )

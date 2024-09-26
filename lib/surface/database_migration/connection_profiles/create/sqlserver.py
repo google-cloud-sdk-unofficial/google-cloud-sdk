@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import create_helper
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import sqlserver_flags
+from googlecloudsdk.core.console import console_io
 
 DETAILED_HELP = {
     'DESCRIPTION': (
@@ -45,6 +46,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class _SQLServer(base.Command):
   """Create a Database Migration Service connection profile for SQL Server."""
 
@@ -78,6 +80,9 @@ class _SQLServer(base.Command):
     """
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
     parent_ref = connection_profile_ref.Parent().RelativeName()
+
+    if args.prompt_for_password:
+      args.password = console_io.PromptPassword('Please Enter Password: ')
 
     helper = create_helper.CreateHelper()
     return helper.create(

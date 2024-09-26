@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 help_text:
   brief: Create a Managed Flink deployment.
   description: Create a Managed Flink deployment.

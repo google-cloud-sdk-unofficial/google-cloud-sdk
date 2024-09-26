@@ -19,8 +19,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import file_util
 from googlecloudsdk.command_lib.artifacts import flags
-from googlecloudsdk.command_lib.artifacts import util
 
 DEFAULT_LIST_FORMAT = """\
     table(
@@ -28,10 +28,12 @@ DEFAULT_LIST_FORMAT = """\
       createTime.date(tz=LOCAL),
       updateTime.date(tz=LOCAL),
       sizeBytes.size(zero='0',precision=3,units_out=M):label="SIZE (MB)",
-      owner:label=OWNER
+      owner:label=OWNER,
+      annotations
     )"""
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Artifact Registry files.
 
@@ -45,25 +47,66 @@ class List(base.ListCommand):
           '{description}',
       'EXAMPLES':
           """\
-      To list files in the current project under repository `my-repo` in `us-central1`:
+      To list files in the current project under repository `my-repo` in `us`:
 
-          $ {command} --repository=my-repo --location=us-central1
+          $ {command} --repository=my-repo --location=us
 
       The following command lists a maximum of five files:
 
-          $ {command} --repository=my-repo --location=us-central1 --limit=5
+          $ {command} --repository=my-repo --location=us --limit=5
 
-      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package`:
+      To list files in the current project under repository `my-repo` in `us` owned by package `my-package`:
 
-          $ {command} --repository=my-repo --location=us-central1 --package=my-package
+          $ {command} --repository=my-repo --location=us --package=my-package
 
-      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package` and version `1.0.0`:
+      To list files in the current project under repository `my-repo` in `us` owned by package `my-package` and version `1.0.0`:
 
-          $ {command} --repository=my-repo --location=us-central1 --package=my-package --version=1.0.0
+          $ {command} --repository=my-repo --location=us --package=my-package --version=1.0.0
 
-      To list files in the current project under repository `my-repo` in `us-central1` owned by package `my-package` and tag name `my-tag`:
+      To list files in the current project under repository `my-repo` in `us` owned by package `my-package` and tag name `my-tag`:
 
-          $ {command} --repository=my-repo --location=us-central1 --package=my-package --tag=my-tag
+          $ {command} --repository=my-repo --location=us --package=my-package --tag=my-tag
+
+      To list files with name as `my-file`:
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/my-repo/files/my-file"'
+
+      To list files with a given partial name, use `*` to match any character in name:
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/my-repo/files/*file"'
+
+          $ {command} --filter='name="projects/my-project/locations/us/repositories/my-repo/files/my-*"'
+
+      To list files that have annotations:
+
+          $ {command} --filter=annotations:*
+
+      To list files with annotations pair as [annotation_key: annotation_value]
+
+          $ {command} --filter='annotations.annotation_key:annotation_value'
+
+      To list files with annotations containing key as `my_key`:
+
+          $ {command} --filter='annotations.my_key'
+
+          If the key or value contains special characters, such as `my.key` and `my.value`, backtick("`") is required:
+
+          $ {command} --filter='annotations.`my.key`'
+
+          $ {command} --filter='annotations.`my.key`:`my.value`'
+
+      To list files with given partial annotation key or value, use `*` to match any character:
+
+          $ {command} --filter='annotations.*key:`*.value`'
+
+      To list files in the current project under repository `my-repo` in `us`, ordering by create_time:
+
+          $ {command} --repository=my-repo --location=us --sort-by=create_time
+
+      To list files in the current project under repository `my-repo` in `us`, ordering by update_time reversely:
+
+          $ {command} --repository=my-repo --location=us --sort-by=~update_time
+
       """,
   }
 
@@ -99,4 +142,4 @@ class List(base.ListCommand):
       A list of files.
     """
 
-    return util.ListFiles(args)
+    return file_util.ListFiles(args)

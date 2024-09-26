@@ -23,5 +23,5 @@ from surface.oracle_database.cloud_vm_clusters import _init_extensions as extens
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class CloudVmClustersALPHA(extensions.CloudVmClustersALPHA, base.Group):
+class CloudVmClustersAlpha(extensions.CloudVmClustersAlpha):
   """Manage Cloud Vm Cluster resources."""

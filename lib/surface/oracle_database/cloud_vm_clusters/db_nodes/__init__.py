@@ -23,5 +23,5 @@ from surface.oracle_database.cloud_vm_clusters.db_nodes import _init_extensions 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class DbNodesALPHA(extensions.DbNodesALPHA, base.Group):
+class DbNodesAlpha(extensions.DbNodesAlpha):
   """Manage Db Node resources."""

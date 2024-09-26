@@ -285,7 +285,6 @@ class UpdateBeta(Update):
     _Args(parser, include_ingestion_from_cloud_storage_flags=False)
 
   def Run(self, args):
-    flags.ValidateTopicArgsUseUniverseSupportedFeatures(args)
     return _Run(args)
 
 

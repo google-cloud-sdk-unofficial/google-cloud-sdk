@@ -18,9 +18,10 @@
 """Manage Policy Porter resources."""
 
 from googlecloudsdk.calliope import base
+from surface.iam.policy_porters import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class PolicyPortersALPHA(base.Group):
+class PolicyPortersAlpha(extensions.PolicyPortersAlpha):
   """Manage Policy Porter resources."""

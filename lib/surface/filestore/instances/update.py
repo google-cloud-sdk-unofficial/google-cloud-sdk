@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.filestore.instances import dp_util
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
@@ -59,6 +60,7 @@ class Update(base.CreateCommand):
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    dp_util.ValidateDeletionProtectionUpdateArgs(args)
     orig_instance = client.GetInstance(instance_ref)
 
     try:
@@ -87,7 +89,9 @@ class Update(base.CreateCommand):
           file_share=args.file_share,
           performance=args.performance,
           clear_performance=args.clear_performance,
-          clear_nfs_export_options=args.clear_nfs_export_options)
+          clear_nfs_export_options=args.clear_nfs_export_options,
+          deletion_protection_enabled=args.deletion_protection,
+          deletion_protection_reason=args.deletion_protection_reason)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))
@@ -102,6 +106,7 @@ class Update(base.CreateCommand):
       updated_fields.append('fileShares')
     if args.IsSpecified('performance') or args.IsSpecified('clear_performance'):
       updated_fields.append('performanceConfig')
+    updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateInstance(instance_ref, instance, update_mask,
@@ -216,6 +221,7 @@ class UpdateBeta(Update):
     instance_ref = args.CONCEPTS.instance.Parse()
     client = filestore_client.FilestoreClient(self._API_VERSION)
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
+    dp_util.ValidateDeletionProtectionUpdateArgs(args)
     orig_instance = client.GetInstance(instance_ref)
 
     try:
@@ -245,7 +251,9 @@ class UpdateBeta(Update):
           clear_performance=args.clear_performance,
           managed_ad=args.managed_ad,
           disconnect_managed_ad=args.disconnect_managed_ad,
-          clear_nfs_export_options=args.clear_nfs_export_options)
+          clear_nfs_export_options=args.clear_nfs_export_options,
+          deletion_protection_enabled=args.deletion_protection,
+          deletion_protection_reason=args.deletion_protection_reason)
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException('--file-share',
                                                 six.text_type(e))
@@ -264,6 +272,8 @@ class UpdateBeta(Update):
         'disconnect_managed_ad'
     ):
       updated_fields.append('directoryServices')
+
+    updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateInstance(instance_ref, instance, update_mask,

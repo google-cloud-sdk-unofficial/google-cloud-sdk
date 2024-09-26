@@ -19,12 +19,13 @@
   - ALPHA
   hidden: true
   help_text:
-    brief: List translations
-    description: List translations
+    brief: Lists translations.
+    description: |
+      List PolicyPorter translation resources.
     examples: |-
-      To list all translations, run:
+      To list policyporter translations, run:
 
-      $ {command}
+      $ {command} --policy-porter=my-policy-porter --location=global --project=my-project
   arguments:
     params:
     - help_text: |-

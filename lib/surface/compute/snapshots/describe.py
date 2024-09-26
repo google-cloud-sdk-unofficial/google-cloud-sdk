@@ -21,31 +21,76 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags
 
 
+def _GAArgs(parser):
+  """Set Args based on Release Track."""
+  Describe.SnapshotArg = flags.MakeSnapshotArg()
+  Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
+
+
+def _AlphaArgs(parser):
+  Describe.SnapshotArg = flags.MakeSnapshotArgAlpha()
+  Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine snapshot."""
 
   @staticmethod
   def Args(parser):
-    Describe.SnapshotArg = flags.MakeSnapshotArg()
-    Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
+    _GAArgs(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_region=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
+    messages = client.messages
 
     snapshot_ref = Describe.SnapshotArg.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+    )
 
-    request = client.messages.ComputeSnapshotsGetRequest(
-        **snapshot_ref.AsDict())
+    if (
+        support_region
+        and snapshot_ref.Collection() == 'compute.regionSnapshots'
+    ):
 
-    return client.MakeRequests([(client.apitools_client.snapshots, 'Get',
-                                 request)])[0]
+      request = messages.ComputeRegionSnapshotsGetRequest(
+          **snapshot_ref.AsDict(),
+      )
+
+      return client.MakeRequests(
+          [(client.apitools_client.regionSnapshots, 'Get', request)]
+      )[0]
+
+    request = messages.ComputeSnapshotsGetRequest(**snapshot_ref.AsDict())
+    return client.MakeRequests(
+        [(client.apitools_client.snapshots, 'Get', request)]
+    )[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+
+  @staticmethod
+  def Args(parser):
+    _AlphaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )
 
 
 Describe.detailed_help = {

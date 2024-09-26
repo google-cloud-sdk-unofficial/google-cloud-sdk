@@ -99,6 +99,7 @@ OVERRIDE_FLAGS_SET = (
     'disk_encryption_key_keyring',
     'disk_encryption_key_location',
     'disk_encryption_key_project',
+    'psc_auto_connections',
 )
 
 
@@ -175,6 +176,7 @@ def AddInstanceSettingsArgs(parser):
   psc_setup_group = parser.add_group(hidden=True)
   flags.AddEnablePrivateServiceConnect(psc_setup_group, hidden=True)
   flags.AddAllowedPscProjects(psc_setup_group, hidden=True)
+  flags.AddPscAutoConnections(parser, hidden=True)
   flags.AddSslMode(parser, hidden=True)
   flags.AddEnableGoogleMLIntegration(parser, hidden=True)
   flags.AddEnableDataplexIntegration(parser, hidden=True)

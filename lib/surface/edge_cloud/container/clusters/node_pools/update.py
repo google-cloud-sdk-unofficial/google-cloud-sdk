@@ -43,6 +43,7 @@ _API_REFERENCE_ = """
 _LRO_MAXIMUM_TIMEOUT_ = 68400000  # 19 hours
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates an Edge Container node pool."""
@@ -122,6 +123,7 @@ class Update(base.UpdateCommand):
     return print_warning.PrintWarning(op, None)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Updates an Edge Container node pool."""
@@ -133,3 +135,5 @@ class UpdateAlpha(Update):
         API=util.VERSION_MAP.get(track)
     )
     Update.Args(parser)
+    container_flags.AddLocalDiskKMSKey(parser)
+    container_flags.AddUseGoogleManagedKey(parser)

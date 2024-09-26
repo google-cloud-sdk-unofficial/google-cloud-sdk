@@ -18,19 +18,18 @@
 """Manage Org Lifecycle resources."""
 
 from googlecloudsdk.calliope import base
+from surface.orglifecycle import _init_extensions as extensions
 
 
-@base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OrglifecycleALPHA(base.Group):
-  """Manage Org Lifecycle resources."""
-  category = base.UNCATEGORIZED_CATEGORY
-
-
-@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class OrglifecycleGA(base.Group):
+@base.UniverseCompatible
+class OrglifecycleAlpha(extensions.OrglifecycleAlpha):
   """Manage Org Lifecycle resources."""
-  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+@base.UniverseCompatible
+class OrglifecycleGa(extensions.OrglifecycleGa):
+  """Manage Org Lifecycle resources."""

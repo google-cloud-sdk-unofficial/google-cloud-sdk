@@ -18,12 +18,13 @@
 """Manage ManagedOrganization resources."""
 
 from googlecloudsdk.calliope import base
+from surface.orglifecycle.managed_organizations import _init_extensions as extensions
 
 
-@base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ManagedOrganizationsALPHA(base.Group):
+@base.Hidden
+@base.UniverseCompatible
+class ManagedOrganizationsAlpha(extensions.ManagedOrganizationsAlpha):
   """Manage ManagedOrganization resources.
 
   This allows resellers to manage Cloud Resource Manager organizations
@@ -31,10 +32,10 @@ class ManagedOrganizationsALPHA(base.Group):
   """
 
 
-@base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class ManagedOrganizationsGA(base.Group):
+@base.Hidden
+@base.UniverseCompatible
+class ManagedOrganizationsGa(extensions.ManagedOrganizationsGa):
   """Manage ManagedOrganization resources.
 
   This allows resellers to manage Cloud Resource Manager organizations

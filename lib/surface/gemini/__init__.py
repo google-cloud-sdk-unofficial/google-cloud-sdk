@@ -23,11 +23,11 @@ from surface.gemini import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class GeminiALPHA(extensions.GeminiALPHA, base.Group):
+class GeminiAlpha(extensions.GeminiAlpha):
   """Manage code repository index resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class GeminiGA(extensions.GeminiGA, base.Group):
+class GeminiGa(extensions.GeminiGa):
   """Manage code repository index resources."""

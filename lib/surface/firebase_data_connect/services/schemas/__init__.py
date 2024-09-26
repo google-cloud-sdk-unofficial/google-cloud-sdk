@@ -18,9 +18,10 @@
 """Manage Schema resources."""
 
 from googlecloudsdk.calliope import base
+from surface.firebase_data_connect.services.schemas import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class SchemasALPHA(base.Group):
+class SchemasAlpha(extensions.SchemasAlpha):
   """Manage Schema resources."""

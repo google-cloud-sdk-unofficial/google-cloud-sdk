@@ -40,19 +40,13 @@ _LEARN_ABOUT_GEN_DIFFS = (
     '\nhttps://cloud.google.com/functions/docs/concepts/version-comparison'
 )
 
-_RECENT_DEFAULT_CHANGE = (
-    'This function will be deployed as a 2nd gen function. This is a'
-    ' recent change in the default behavior for newly created functions.'
-    f'\n{_HOW_TO_DISABLE_CHANGE}\n{_LEARN_ABOUT_GEN_DIFFS}'
-)
 
-_UPCOMING_CHANGE_WARNING = (
-    'In a future Cloud SDK release, new functions will be deployed as 2nd gen '
+_NEW_CHANGE_WARNING = (
+    'As of this Cloud SDK release, new functions will be deployed as 2nd gen '
     ' functions by default. This is equivalent to currently deploying new '
     ' with the --gen2 flag. Existing 1st gen functions will not be impacted'
-    ' and will continue to deploy as 1st gen functions.\nYou can preview this'
-    ' behavior in beta. Alternatively,'
-    f' {_HOW_TO_DISABLE_CHANGE[0].lower() + _HOW_TO_DISABLE_CHANGE[1:]}\n'
+    ' and will continue to deploy as 1st gen functions.\n'
+    f'{_HOW_TO_DISABLE_CHANGE}\n'
     f'{_LEARN_ABOUT_GEN_DIFFS}'
 )
 
@@ -141,16 +135,12 @@ class Deploy(util.FunctionResourceCommand, base.Command):
     _CommonArgs(parser, base.ReleaseTrack.GA)
 
   def _RunV1(self, args):
-    if not flags.ShouldUseGen1():
-      # For all gen 1 deploys (even updates, per PM input) that don't explicitly
-      # set --no-gen2, warn about upcoming gen 1 default changes
-      log.status.Print(_UPCOMING_CHANGE_WARNING)
     return command_v1.Run(args, track=self.ReleaseTrack())
 
   def _RunV2(self, args):
     if not self._v2_function and not flags.ShouldUseGen2():
       # Gen2 function creation without an explicit generation specification.
-      log.status.Print(_RECENT_DEFAULT_CHANGE)
+      log.status.Print(_NEW_CHANGE_WARNING)
     return command_v2.Run(args, self.ReleaseTrack())
 
 

@@ -405,7 +405,7 @@ class Diagnose(base.Command):
     if args.direct_connectivity:
       direct_connectivity = (
           direct_connectivity_diagnostic.DirectConnectivityDiagnostic(
-              url_object,
+              bucket_resource,
               logs_path=args.logs_path,
           )
       )

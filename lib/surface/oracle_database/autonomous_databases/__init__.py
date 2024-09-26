@@ -23,5 +23,5 @@ from surface.oracle_database.autonomous_databases import _init_extensions as ext
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDatabasesALPHA(extensions.AutonomousDatabasesALPHA, base.Group):
+class AutonomousDatabasesAlpha(extensions.AutonomousDatabasesAlpha):
   """Manage Autonomous Database resources."""

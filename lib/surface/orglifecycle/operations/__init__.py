@@ -18,17 +18,18 @@
 """Manage Operation resources."""
 
 from googlecloudsdk.calliope import base
+from surface.orglifecycle.operations import _init_extensions as extensions
 
 
-@base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OperationsALPHA(base.Group):
+@base.Hidden
+@base.UniverseCompatible
+class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""
 
 
-@base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class OperationsGA(base.Group):
+@base.Hidden
+@base.UniverseCompatible
+class OperationsGa(extensions.OperationsGa):
   """Manage Operation resources."""

@@ -836,7 +836,7 @@ class CreateBeta(Create):
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = True
-  _support_turbo_mode = False
+  _support_turbo_mode = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.

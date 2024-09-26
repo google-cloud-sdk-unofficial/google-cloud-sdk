@@ -422,6 +422,7 @@ class CreateBeta(Create):
   _support_specific_then_x_affinity = True
   _support_watchdog_timer = False
   _support_per_interface_stack_type = False
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -449,6 +450,7 @@ class CreateBeta(Create):
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     cls.AddSourceInstanceTemplate(parser)
 

@@ -1261,6 +1261,7 @@ class CreateBeta(Create):
   _support_vlan_nic = False
   _support_watchdog_timer = False
   _support_disk_labels = True
+  _support_turbo_mode = True
 
   @classmethod
   def Args(cls, parser):
@@ -1287,6 +1288,7 @@ class CreateBeta(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_turbo_mode=cls._support_turbo_mode,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1339,6 +1341,7 @@ class CreateBeta(Create):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
+        support_turbo_mode=self._support_turbo_mode,
     )
 
 

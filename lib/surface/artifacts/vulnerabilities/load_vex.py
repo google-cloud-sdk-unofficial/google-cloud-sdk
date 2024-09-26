@@ -24,6 +24,8 @@ from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.artifacts import endpoint_util
+from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests as ar_requests
 from googlecloudsdk.command_lib.artifacts import vex_util
 from googlecloudsdk.core import properties
@@ -77,12 +79,14 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
         required=False,
         help='The parent project to load security advisory into.',
     )
+    flags.GetOptionalAALocationFlag().AddToParser(parser)
     return
 
   def Run(self, args):
     """Run the generic artifact upload command."""
-    self.ca_client = apis.GetClientInstance('containeranalysis', 'v1')
-    self.ca_messages = self.ca_client.MESSAGES_MODULE
+    with endpoint_util.WithRegion(args.location):
+      self.ca_client = apis.GetClientInstance('containeranalysis', 'v1')
+      self.ca_messages = self.ca_client.MESSAGES_MODULE
     uri = args.uri
     uri = vex_util.RemoveHTTPS(uri)
     if docker_util.IsARDockerImage(uri):
@@ -109,18 +113,17 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
 
     project = args.project or image_project
     filename = args.source
-    notes, generic_uri = vex_util.ParseVexFile(
-        filename, image_uri, version_uri
-    )
-    self.writeNotes(notes, project, generic_uri)
+    notes, generic_uri = vex_util.ParseVexFile(filename, image_uri, version_uri)
+    self.writeNotes(notes, project, generic_uri, args.location)
     return
 
-  def writeNotes(self, notes, project, uri):
+  def writeNotes(self, notes, project, uri, location):
     notes_to_create = []
     notes_to_update = []
+    parent = self.parent(project, location)
     for note in notes:
       get_request = self.ca_messages.ContaineranalysisProjectsNotesGetRequest(
-          name='projects/{}/notes/{}'.format(project, note.key)
+          name='{}/notes/{}'.format(parent, note.key)
       )
       try:
         self.ca_client.projects_notes.Get(get_request)
@@ -131,15 +134,15 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
         notes_to_update.append(note)
       else:
         notes_to_create.append(note)
-    self.batchWriteNotes(notes_to_create, project)
-    self.updateNotes(notes_to_update, project)
+    self.batchWriteNotes(notes_to_create, project, location)
+    self.updateNotes(notes_to_update, project, location)
 
     # Delete notes that are not in the uploaded file (deleteNotes looks at which
     # notes are stored in the db but not in the uploaded file and deletes
     # those).
-    self.deleteNotes(notes, project, uri)
+    self.deleteNotes(notes, project, uri, location)
 
-  def batchWriteNotes(self, notes, project):
+  def batchWriteNotes(self, notes, project, location):
     # Helper function to validate the artifacts/max_notes_per_batch_request
     # hidden flag. The value must be an integer between 1 and 1000.
     def validate_max_notes_per_batch_request(note_limit_str):
@@ -187,28 +190,29 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
       )
       request = (
           self.ca_messages.ContaineranalysisProjectsNotesBatchCreateRequest(
-              parent='projects/{}'.format(project),
+              parent=self.parent(project, location),
               batchCreateNotesRequest=batch_request,
           )
       )
       self.ca_client.projects_notes.BatchCreate(request)
 
-  def updateNotes(self, notes, project):
+  def updateNotes(self, notes, project, location):
     if not notes:
       return
+    parent = self.parent(project, location)
     for note in notes:
       patch_request = (
           self.ca_messages.ContaineranalysisProjectsNotesPatchRequest(
-              name='projects/{}/notes/{}'.format(project, note.key),
+              name='{}/notes/{}'.format(parent, note.key),
               note=note.value,
           )
       )
       self.ca_client.projects_notes.Patch(patch_request)
 
-  def deleteNotes(self, file_notes, project, uri):
+  def deleteNotes(self, file_notes, project, uri, location):
     list_request = self.ca_messages.ContaineranalysisProjectsNotesListRequest(
         filter='vulnerability_assessment.product.generic_uri="{}"'.format(uri),
-        parent='projects/{}'.format(project),
+        parent=self.parent(project, location),
     )
     db_notes = list_pager.YieldFromList(
         service=self.ca_client.projects_notes,
@@ -237,3 +241,8 @@ To load a CSAF security advisory file given an artifact with a tag and a file on
             )
         )
         self.ca_client.projects_notes.Delete(delete_request)
+
+  def parent(self, project, location):
+    if location is not None:
+      return 'projects/{}/locations/{}'.format(project, location)
+    return 'projects/{}'.format(project)

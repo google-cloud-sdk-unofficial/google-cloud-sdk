@@ -18,9 +18,10 @@
 """Manage Service resources."""
 
 from googlecloudsdk.calliope import base
+from surface.firebase_data_connect.services import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class ServicesALPHA(base.Group):
+class ServicesAlpha(extensions.ServicesAlpha):
   """Manage Service resources."""

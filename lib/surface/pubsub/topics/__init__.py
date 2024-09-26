@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Topics(base.Group):
   """Manage Cloud Pub/Sub topics."""
   pass

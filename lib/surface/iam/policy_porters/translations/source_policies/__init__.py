@@ -18,9 +18,10 @@
 """Manage Source Policy resources."""
 
 from googlecloudsdk.calliope import base
+from surface.iam.policy_porters.translations.source_policies import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class SourcePoliciesALPHA(base.Group):
+class SourcePoliciesAlpha(extensions.SourcePoliciesAlpha):
   """Manage Source Policy resources."""

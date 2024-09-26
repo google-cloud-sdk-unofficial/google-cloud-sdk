@@ -222,7 +222,6 @@ class Create(base.CreateCommand):
     return _Run(args)
 
 
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub topics."""
@@ -233,7 +232,6 @@ class CreateBeta(Create):
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    flags.ValidateTopicArgsUseUniverseSupportedFeatures(args)
     return _Run(args, legacy_output=legacy_output)
 
 

@@ -18,15 +18,16 @@
 """Manage Parallelstore instance resources."""
 
 from googlecloudsdk.calliope import base
+from surface.parallelstore.instances import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InstancesALPHA(base.Group):
+@base.Hidden
+class InstancesAlpha(extensions.InstancesAlpha):
   """Manage Parallelstore instance resources."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class InstancesBETA(base.Group):
+@base.Hidden
+class InstancesBeta(extensions.InstancesBeta):
   """Manage Parallelstore instance resources."""

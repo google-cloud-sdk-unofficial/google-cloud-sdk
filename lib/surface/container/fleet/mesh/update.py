@@ -371,7 +371,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
         and args.origin == 'fleet'
     )
     if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
-        self.Project(), self.ReleaseTrack()
+        self.ReleaseTrack()
     ):
       _RunUpdateV2(self, args)
     else:

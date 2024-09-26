@@ -18,11 +18,18 @@
 """Manage Dataproc Gdc resources."""
 
 from googlecloudsdk.calliope import base
+from surface.dataproc_gdc import _init_extensions as extensions
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-class DataprocGdcALPHA(base.Group):
+class DataprocGdcAlpha(extensions.DataprocGdcAlpha):
   """Manage Dataproc Gdc resources."""
-  category = base.UNCATEGORIZED_CATEGORY
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
+@base.DefaultUniverseOnly
+class DataprocGdcGa(extensions.DataprocGdcGa):
+  """Manage Dataproc Gdc resources."""

@@ -18,9 +18,10 @@
 """Manage registry node resources."""
 
 from googlecloudsdk.calliope import base
+from surface.number_registry.registry_books.registry_nodes import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RegistryNodesALPHA(base.Group):
+@base.Hidden
+class RegistryNodesAlpha(extensions.RegistryNodesAlpha):
   """Manage registry node resources."""

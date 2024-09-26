@@ -60,6 +60,7 @@
         If set to true, any RepositoryGroups from this CodeRepositoryIndex will
         also be deleted. (Otherwise, the request will only work if the
         CodeRepositoryIndex has no RepositoryGroups.)
+      default: null
   request:
     api_version: v1alpha
     collection:

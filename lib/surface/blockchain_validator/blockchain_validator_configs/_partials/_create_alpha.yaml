@@ -90,6 +90,7 @@
                   type: bool
                   help_text: |-
                     Enable use of the external block building services (MEV).
+                  default: null
             - group:
                 mutex: true
                 help_text: |-
@@ -171,6 +172,7 @@
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
+              is_primary_resource: false
               resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_or_project_secret
               resource_method_params:
                 blockchainValidatorConfig.seedPhraseReference.seedPhraseSecret: '{__relative_name__}'
@@ -178,11 +180,11 @@
             - arg_name: seed-phrase-reference-export
               api_field: blockchainValidatorConfig.seedPhraseReference.exportSeedPhrase
               action: store_true
-              default: null
               required: false
               type: bool
               help_text: |-
                 True to export the seed phrase to Secret Manager.
+              default: null
         - group:
             required: false
             help_text: |-
@@ -193,6 +195,7 @@
               help_text: |-
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
+              is_primary_resource: false
               resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_or_project_secret
               resource_method_params:
                 blockchainValidatorConfig.existingSeedPhraseReference.seedPhraseSecret: '{__relative_name__}'
@@ -226,7 +229,7 @@
       - api_field: value
     - arg_name: validation-work-enabled
       api_field: blockchainValidatorConfig.validationWorkEnabled
-      action: store_true
+      action: store_true_false
       required: true
       type: bool
       help_text: |-
@@ -266,6 +269,24 @@
         enum_value: EXISTING_SEED_PHRASE_REFERENCE
         help_text: |-
           Derive voting keys from existing seed material.
+    - arg_name: request-id
+      api_field: requestId
+      required: false
+      repeated: false
+      help_text: |-
+        An optional request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server will know to ignore
+        the request if it has already been completed. The server will guarantee
+        that for at least 60 minutes since the first request.
+
+        For example, consider a situation where you make an initial request and the
+        request times out. If you make the request again with the same request
+        ID, the server can check if original operation with the same request ID
+        was received, and if so, will ignore the second request. This prevents
+        clients from accidentally creating duplicate commitments.
+
+        The request ID must be a valid UUID with the exception that zero UUID is
+        not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1
     collection:

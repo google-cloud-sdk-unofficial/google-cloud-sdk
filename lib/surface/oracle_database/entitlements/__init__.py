@@ -23,5 +23,5 @@ from surface.oracle_database.entitlements import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class EntitlementsALPHA(extensions.EntitlementsALPHA, base.Group):
+class EntitlementsAlpha(extensions.EntitlementsAlpha):
   """Manage Entitlement resources."""

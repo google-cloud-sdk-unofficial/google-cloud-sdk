@@ -18,9 +18,10 @@
 """Manage historical event resources."""
 
 from googlecloudsdk.calliope import base
+from surface.number_registry.registry_books.historical_events import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class HistoricalEventsALPHA(base.Group):
+@base.Hidden
+class HistoricalEventsAlpha(extensions.HistoricalEventsAlpha):
   """Manage historical event resources."""

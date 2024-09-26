@@ -23,7 +23,7 @@ from surface.oracle_database.autonomous_database_character_sets import _init_ext
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class AutonomousDatabaseCharacterSetsALPHA(
-    extensions.AutonomousDatabaseCharacterSetsALPHA, base.Group
+class AutonomousDatabaseCharacterSetsAlpha(
+    extensions.AutonomousDatabaseCharacterSetsAlpha
 ):
   """Manage Autonomous Database Character Set resources."""

@@ -25,19 +25,18 @@ from googlecloudsdk.command_lib.run import streaming
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.BinaryBackedCommand):
   """Tail logs for Cloud Run jobs."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {command} tails log-entries for a particular
           Cloud Run job in real time.  The log entries are formatted for
           consumption in a terminal.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To tail log entries for a Cloud Run job, run:
 
             $ {command} my-job

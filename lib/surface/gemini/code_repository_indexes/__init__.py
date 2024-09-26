@@ -23,13 +23,11 @@ from surface.gemini.code_repository_indexes import _init_extensions as extension
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class CodeRepositoryIndexesALPHA(
-    extensions.CodeRepositoryIndexesALPHA, base.Group
-):
+class CodeRepositoryIndexesAlpha(extensions.CodeRepositoryIndexesAlpha):
   """Manage Code Repository Index resources."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class CodeRepositoryIndexesGA(extensions.CodeRepositoryIndexesGA, base.Group):
+class CodeRepositoryIndexesGa(extensions.CodeRepositoryIndexesGa):
   """Manage Code Repository Index resources."""

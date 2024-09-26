@@ -52,12 +52,11 @@
         params:
         - arg_name: deletion-protection-enabled
           api_field: instance.deletionProtectionEnabled
-          action: store_true
+          action: store_true_false
           required: false
           type: bool
           help_text: |
             If set to true deletion of the instance will fail.
-          default: null
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}

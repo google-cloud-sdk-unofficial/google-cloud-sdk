@@ -24,13 +24,15 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Logs(base.Group):
   """Read logs for Cloud Run jobs."""
 
   detailed_help = {
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
         To tail logs executions for a job, run:
 
           $ {command} tail my-job

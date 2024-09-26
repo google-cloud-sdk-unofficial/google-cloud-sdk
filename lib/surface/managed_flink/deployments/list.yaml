@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 help_text:
   brief: List all Managed Flink deployments in a given location.
   description: List all Managed Flink deployments in a given location.

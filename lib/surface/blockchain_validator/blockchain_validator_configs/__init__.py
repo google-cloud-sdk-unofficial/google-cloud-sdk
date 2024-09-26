@@ -18,8 +18,11 @@
 """Manage blockchain validator configurations."""
 
 from googlecloudsdk.calliope import base
+from surface.blockchain_validator.blockchain_validator_configs import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class BlockchainValidatorConfigsALPHA(base.Group):
+class BlockchainValidatorConfigsAlpha(
+    extensions.BlockchainValidatorConfigsAlpha
+):
   """Manage blockchain validator configurations."""

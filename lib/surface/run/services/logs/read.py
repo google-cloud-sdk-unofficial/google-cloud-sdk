@@ -27,20 +27,21 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Read(base.Command):
   """Read logs for a Cloud Run service."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """\
+      'DESCRIPTION': """\
           {command} reads log entries. Log entries matching *--log-filter* are
           returned according to the specified --order.
           If the log entries come from multiple logs, then entries from
           different logs might be intermingled in the results.
           """,
-      'EXAMPLES':
-          """\
+      'EXAMPLES': """\
           To read log entries from for a Cloud Run Service, run:
 
             $ {command} my-service

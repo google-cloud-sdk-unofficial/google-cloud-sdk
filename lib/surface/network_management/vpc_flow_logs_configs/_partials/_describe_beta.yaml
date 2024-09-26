@@ -17,14 +17,13 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
-    brief: Describe vpcFlowLogsConfigs
-    description: Describe a vpcFlowLogsConfig
+    brief: Describe the details of a specific VPC Flow Logs configuration.
+    description: Describes the details of a specific VPC Flow Logs configuration.
     examples: |-
-      To describe the vpcFlowLogsConfig, run:
+      To get the details of a VPC Flow Logs configuration `my-config`, run:
 
-      $ {command}
+      $ {command} my-config --location=global
   arguments:
     params:
     - help_text: |-

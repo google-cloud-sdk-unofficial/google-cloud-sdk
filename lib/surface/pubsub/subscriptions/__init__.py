@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Subscriptions(base.Group):
   """Manage Cloud Pub/Sub subscriptions."""
   pass

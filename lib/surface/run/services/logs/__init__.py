@@ -22,15 +22,18 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import platforms
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Logs(base.Group):
   """Read logs for Cloud Run services."""
 
   def _CheckPlatform(self):
     if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
       raise exceptions.PlatformError(
-          'This command group only supports reading logs for '
-          'Cloud Run.')
+          'This command group only supports reading logs for Cloud Run.'
+      )
 
   def Filter(self, context, args):
     self._CheckPlatform()

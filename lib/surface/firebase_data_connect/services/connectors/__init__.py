@@ -18,9 +18,10 @@
 """Manage Connector resources."""
 
 from googlecloudsdk.calliope import base
+from surface.firebase_data_connect.services.connectors import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class ConnectorsALPHA(base.Group):
+class ConnectorsAlpha(extensions.ConnectorsAlpha):
   """Manage Connector resources."""

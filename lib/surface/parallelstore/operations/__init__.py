@@ -18,15 +18,16 @@
 """Manage Operation resources."""
 
 from googlecloudsdk.calliope import base
+from surface.parallelstore.operations import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OperationsALPHA(base.Group):
+@base.Hidden
+class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class OperationsBETA(base.Group):
+@base.Hidden
+class OperationsBeta(extensions.OperationsBeta):
   """Manage Operation resources."""

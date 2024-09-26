@@ -18,13 +18,13 @@
 """Manage blockchain validator configuration."""
 
 from googlecloudsdk.calliope import base
+from surface.blockchain_validator import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class BlockchainValidatorALPHA(base.Group):
+class BlockchainValidatorAlpha(extensions.BlockchainValidatorAlpha):
   """Manage blockchain validator configurations.
 
   Configurations can be deployed to blockchain nodes running under
   Blockchain Node Engine.
   """
-  category = base.UNCATEGORIZED_CATEGORY

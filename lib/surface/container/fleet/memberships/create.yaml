@@ -34,11 +34,6 @@
       help_text: The cluster membership to create.
       spec: !REF googlecloudsdk.command_lib.container.fleet.resources:membership
     params:
-    - api_field: membership.description
-      release_tracks: [BETA]
-      arg_name: description
-      hidden: true
-      help_text: Description of the membership resource.
     - api_field: membership.externalId
       arg_name: external-id
       help_text:  External-id of the membership resource.

@@ -14,15 +14,17 @@
 # limitations under the License.
 """Implements the command to export SBOM files."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import endpoint_util
+from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import sbom_util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.Command):
   """Export SBOM files to Google Cloud Storage."""
@@ -55,6 +57,7 @@ class Export(base.Command):
             ' the current gcloud user to verify the redirection status.'
         ),
     )
+    flags.GetOptionalAALocationFlag().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -63,4 +66,6 @@ class Export(base.Command):
       args: An argparse namespace. All the arguments that were provided to this
         command invocation.
     """
-    sbom_util.ExportSbom(args)
+    location = args.location
+    with endpoint_util.WithRegion(location):
+      sbom_util.ExportSbom(args)

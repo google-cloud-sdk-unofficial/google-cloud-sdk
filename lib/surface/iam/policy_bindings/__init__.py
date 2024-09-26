@@ -18,20 +18,21 @@
 """Manage PolicyBinding instances."""
 
 from googlecloudsdk.calliope import base
+from surface.iam.policy_bindings import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class PolicyBindingsALPHA(base.Group):
+class PolicyBindingsAlpha(extensions.PolicyBindingsAlpha):
   """Manage PolicyBinding instances."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class PolicyBindingsBETA(base.Group):
+class PolicyBindingsBeta(extensions.PolicyBindingsBeta):
   """Manage PolicyBinding instances."""
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
-class PolicyBindingsGA(base.Group):
+class PolicyBindingsGa(extensions.PolicyBindingsGa):
   """Manage PolicyBinding instances."""

@@ -18,9 +18,9 @@
 """Manage Developer Connect resources."""
 
 from googlecloudsdk.calliope import base
+from surface.developer_connect import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeveloperConnectALPHA(base.Group):
+class DeveloperConnectAlpha(extensions.DeveloperConnectAlpha):
   """Manage Developer Connect resources."""
-  category = base.UNCATEGORIZED_CATEGORY

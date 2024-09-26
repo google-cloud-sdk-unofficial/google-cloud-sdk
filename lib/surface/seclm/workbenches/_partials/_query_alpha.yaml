@@ -36,14 +36,8 @@
     - help_text: |-
         Name of the resource.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1alpha_resources:project_location_workbench
+      resource_spec: !REF googlecloudsdk.command_lib.seclm.v1_resources:project_location_workbench
       required: true
-    - arg_name: query
-      api_field: workbenchQueryRequest.query
-      required: true
-      repeated: false
-      help_text: |
-        The query from user.
     - arg_name: contents
       api_field: workbenchQueryRequest.contents
       required: false
@@ -85,7 +79,7 @@
         help_text: |-
           Controls the probability threshold at which harm is blocked.
   request:
-    api_version: v1alpha
+    api_version: v1
     collection:
     - seclm.projects.locations.workbenches
     method: query

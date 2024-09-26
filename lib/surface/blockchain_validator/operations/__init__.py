@@ -18,8 +18,9 @@
 """Manage Operation resources."""
 
 from googlecloudsdk.calliope import base
+from surface.blockchain_validator.operations import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class OperationsALPHA(base.Group):
+class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""

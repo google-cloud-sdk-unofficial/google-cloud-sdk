@@ -94,6 +94,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddInsecureRBACBindingFlags(parser, hidden=False)
   flags.AddEnableMultiNetworkingFlag(parser, hidden=True)
   flags.AddControlPlaneKeysFlags(parser)
+  flags.AddAutoMonitoringScopeFlags(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

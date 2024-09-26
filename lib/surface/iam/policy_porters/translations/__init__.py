@@ -18,9 +18,10 @@
 """Manage Translation resources."""
 
 from googlecloudsdk.calliope import base
+from surface.iam.policy_porters.translations import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class TranslationsALPHA(base.Group):
+class TranslationsAlpha(extensions.TranslationsAlpha):
   """Manage Translation resources."""

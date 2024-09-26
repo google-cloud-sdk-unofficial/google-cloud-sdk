@@ -17,14 +17,17 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
-    brief: List vpcFlowLogsConfigs
-    description: List vpcFlowLogsConfigs
+    brief: List all VPC Flow Logs configurations in the project.
+    description: Lists all VPC Flow Logs configurations in the project.
     examples: |-
-      To list all vpcFlowLogsConfigs, run:
+      To list all the VPC Flow Logs configurations within the project, run:
 
-      $ {command}
+      $ {command} --location=global
+
+      To list all the VPC Flow Logs configurations within the project with state 'ENABLED', run:
+
+      $ {command} --location=global --filter="state:ENABLED"
   arguments:
     params:
     - help_text: |-

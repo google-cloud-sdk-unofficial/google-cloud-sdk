@@ -17,14 +17,13 @@
 # AUTOGEN_CLI_VERSION: HEAD
 - release_tracks:
   - BETA
-  hidden: true
   help_text:
-    brief: Update vpcFlowLogsConfigs
-    description: Update a vpcFlowLogsConfig
+    brief: Updates one or more fields in an existing VPC Flow Logs configuration.
+    description: Updates one or more fields in an existing VPC Flow Logs configuration.
     examples: |-
-      To update the vpcFlowLogsConfig, run:
+      To update the state field to be 'DISABLED' in the VPC Flow Logs configuration `my-config`, run:
 
-      $ {command}
+      $ {command} my-config --location=global --state=DISABLED
   arguments:
     params:
     - group:

@@ -19,12 +19,14 @@
   - ALPHA
   hidden: true
   help_text:
-    brief: Describe translatedPolicies
-    description: Describe a translatedPolicy
+    brief: Describes translated policies.
+    description: |
+      Describes the translated policy.
     examples: |-
-      To describe the translatedPolicy, run:
+      To export translated policies, run:
 
-      $ {command}
+      $ {command} my-translated-policy --translation=my-translation \
+        --policy-porter=my-policy-porter --location=global --project=my-project
   arguments:
     params:
     - help_text: |-

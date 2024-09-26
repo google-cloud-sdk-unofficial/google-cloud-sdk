@@ -486,8 +486,7 @@ class Register(base.CreateCommand):
         try:
           self._VerifyClusterExclusivity(kube_client, parent, membership_id)
           obj = api_util.CreateMembership(project, args.MEMBERSHIP_NAME,
-                                          None, location,
-                                          gke_cluster_self_link, uuid,
+                                          location, gke_cluster_self_link, uuid,
                                           self.ReleaseTrack(), issuer_url,
                                           private_keyset_json,
                                           api_server_version)

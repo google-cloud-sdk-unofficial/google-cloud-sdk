@@ -44,3 +44,4 @@ kustomize: unavailable
 config-connector: google-cloud-sdk-config-connector
 terraform-tools: google-cloud-sdk-terraform-tools
 bundled-python3-unix: google-cloud-sdk-bundled-python3
+managed-flink-client: unavailable

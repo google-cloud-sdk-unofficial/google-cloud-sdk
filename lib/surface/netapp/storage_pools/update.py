@@ -69,13 +69,8 @@ class Update(base.UpdateCommand):
     else:
       labels = None
 
-    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
-        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      zone = args.zone
-      replica_zone = args.replica_zone
-    else:
-      zone = None
-      replica_zone = None
+    zone = args.zone
+    replica_zone = args.replica_zone
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
@@ -102,12 +97,11 @@ class Update(base.UpdateCommand):
       updated_fields.append('labels')
     if args.IsSpecified('allow_auto_tiering'):
       updated_fields.append('allowAutoTiering')
-    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
-        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      if args.IsSpecified('zone'):
-        updated_fields.append('zone')
-      if args.IsSpecified('replica_zone'):
-        updated_fields.append('replicaZone')
+    if args.IsSpecified('zone'):
+      updated_fields.append('zone')
+    if args.IsSpecified('replica_zone'):
+      updated_fields.append('replicaZone')
+
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateStoragePool(

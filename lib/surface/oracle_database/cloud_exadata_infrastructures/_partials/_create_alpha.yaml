@@ -31,10 +31,9 @@
        --properties-shape=Exadata.FOO --properties-compute-count=2 --properties-storage-count=3
   arguments:
     params:
-    - help_text: |-
+    - help_text: |
         Identifier. The name of the CloudExadataInfrastructure resource with the format:
         projects/{project}/locations/{region}/cloudExadataInfrastructures/{cloud_exadata_infrastructure}
-        https://google.aip.dev/122
       is_positional: true
       request_id_field: cloudExadataInfrastructureId
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_exadata_infrastructure
@@ -45,12 +44,12 @@
       repeated: false
       help_text: |-
         User friendly name for this resource.
-    - arg_name: zone
-      api_field: cloudExadataInfrastructure.zone
+    - arg_name: gcp-oracle-zone
+      api_field: cloudExadataInfrastructure.gcpOracleZone
       required: false
       repeated: false
       help_text: |-
-        zone where this infra resides.
+        GCP location where Oracle Exadata is hosted.
     - group:
         required: false
         help_text: |

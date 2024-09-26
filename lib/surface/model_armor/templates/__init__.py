@@ -23,5 +23,5 @@ from surface.model_armor.templates import _init_extensions as extensions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
-class TemplatesALPHA(extensions.TemplatesALPHA, base.Group):
+class TemplatesAlpha(extensions.TemplatesAlpha):
   """Manage Template resources."""

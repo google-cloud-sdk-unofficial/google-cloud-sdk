@@ -62,6 +62,7 @@
       help_text: |-
         Whether to request reservation of IP addresses from which the RAG index
         service will attempt to access linked Git repositories
+      default: null
     - arg_name: kms-key
       api_field: codeRepositoryIndex.kmsKey
       required: false

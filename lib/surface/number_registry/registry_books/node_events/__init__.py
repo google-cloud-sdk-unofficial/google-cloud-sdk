@@ -18,9 +18,10 @@
 """Manage node event resources."""
 
 from googlecloudsdk.calliope import base
+from surface.number_registry.registry_books.node_events import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class NodeEventsALPHA(base.Group):
+@base.Hidden
+class NodeEventsAlpha(extensions.NodeEventsAlpha):
   """Manage node event resources."""

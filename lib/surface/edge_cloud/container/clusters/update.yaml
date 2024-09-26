@@ -21,6 +21,8 @@
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:RemoveMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:ClearMaintenanceWindow
     - googlecloudsdk.command_lib.edge_cloud.container.max_unavailable:ClearMaxUnavailable
+    - googlecloudsdk.command_lib.edge_cloud.container.kms:UseGoogleManagedKey
+    - googlecloudsdk.command_lib.edge_cloud.container.kms:UpdateKmsKey
 
   arguments:
     resource:
@@ -115,6 +117,18 @@
             upgrade stage size, inclusively. If unset, the worker node upgrade parallelism defaults
             to the upgrade stage size. This value does not affect the control plane node upgrade
             parallelism.
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - arg_name: use-google-managed-key
+          action: store_true
+          help_text: |
+            If set, use Google managed key for the cluster control plane nodes encryption.
+        - arg_name: control-plane-kms-key
+          repeated: false
+          help_text: |
+            If set, use the specified KMS key for the cluster control plane nodes encryption.
 
   response:
     modify_response_hooks:

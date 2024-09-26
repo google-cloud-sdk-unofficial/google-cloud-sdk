@@ -18,9 +18,10 @@
 """Manage Application Environment resources."""
 
 from googlecloudsdk.calliope import base
+from surface.dataproc_gdc.service_instances.application_environments import _init_extensions as extensions
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ApplicationEnvironmentsALPHA(base.Group):
+@base.Hidden
+class ApplicationEnvironmentsAlpha(extensions.ApplicationEnvironmentsAlpha):
   """Manage Application Environment resources."""

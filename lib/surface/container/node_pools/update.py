@@ -78,6 +78,13 @@ class Update(base.UpdateCommand):
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
+    flags.AddAcceleratorArgs(
+        group,
+        enable_gpu_partition=True,
+        enable_gpu_sharing=True,
+        enable_gpu_driver_installation=True,
+        hidden=False,
+    )
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
     flags.AddNodePoolAutoprovisioningFlag(autoscaling_group, hidden=False)
@@ -256,7 +263,7 @@ class UpdateBeta(Update):
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
         enable_gpu_driver_installation=True,
-        hidden=True,
+        hidden=False,
     )
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)
@@ -379,7 +386,7 @@ class UpdateAlpha(Update):
         enable_gpu_partition=True,
         enable_gpu_sharing=True,
         enable_gpu_driver_installation=True,
-        hidden=True,
+        hidden=False,
     )
 
     autoscaling_group = flags.AddClusterAutoscalingFlags(group)

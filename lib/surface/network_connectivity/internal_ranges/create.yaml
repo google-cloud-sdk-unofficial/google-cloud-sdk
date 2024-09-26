@@ -96,6 +96,12 @@
           Ranges created with EXTERNAL_TO_VPC cannot be associated with cloud resources and are
           meant to block out address ranges for various use cases, like for example, usage on-prem,
           with dynamic route announcements via interconnect.
+      - arg_value: for-migration
+        release_tracks: [ALPHA]
+        enum_value: FOR_MIGRATION
+        help_text: |
+          Ranges created with FOR_MIGRATION are used as locks for migrating subnetworks between
+          peered VPC networks.
       default: for-vpc
     - arg_name: peering
       api_field: internalRange.peering
@@ -138,6 +144,29 @@
         enum_value: OVERLAP_EXISTING_SUBNET_RANGE
         help_text: |
           Allows for creation of internal ranges that overlap with existing subnets.
+    - group:
+        release_tracks: [ALPHA]
+        help_text: |
+          Endpoints of a for-migration internal range. This is only applicable when --usage is set
+          to for-migration.
+          Both MIGRATION_SOURCE and MIGRATION_TARGET must either belong to the same VPC or their
+          VPCs must be peered (they may then even belong to different projects).
+          MIGRATION_SOURCE must belong to the VPC network specifed by the --network flag.
+          MIGRATION_TARGET may name a subnetwork which does not exist yet; it must be a valid
+          resource path, and parent resources (network and project) and their locations must exist.
+        params:
+        - arg_name: migration-source
+          required: true
+          api_field: internalRange.migration.source
+          help_text: |
+            The migration source subnetwork (of a for-migration internal range) resource URI or
+            resource ID.
+        - arg_name: migration-target
+          required: true
+          api_field: internalRange.migration.target
+          help_text: |
+            The migration target subnetwork (of a for-migration internal range) resource URI or
+            resource ID.
 
   async:
     collection: networkconnectivity.projects.locations.operations
@@ -145,6 +174,8 @@
   request: &request
     ALPHA:
       api_version: v1alpha1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ValidateMigration
     GA:
       api_version: v1
     collection: networkconnectivity.projects.locations.internalRanges
