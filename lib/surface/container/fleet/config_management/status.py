@@ -41,20 +41,20 @@ DETAILED_HELP = {
 
   View the status for the cluster named `managed-cluster-a`:
 
-    $ {command} --filter="acm_status.name:managed-cluster-a"
+    $ {command} --flatten=acm_status --filter="acm_status.name:managed-cluster-a"
 
   Use a regular expression to list status for multiple clusters:
 
-    $ {command} --filter="acm_status.name ~ managed-cluster.*"
+    $ {command} --flatten=acm_status --filter="acm_status.name ~ managed-cluster.*"
 
   List all clusters where current Config Sync `Status` is `SYNCED`:
 
-    $ {command} --filter="acm_status.config_sync:SYNCED"
+    $ {command} --flatten=acm_status --filter="acm_status.config_sync:SYNCED"
 
   List all the clusters where sync_branch is `v1` and current Config Sync
   `Status` is not `SYNCED`:
 
-    $ {command} --filter="acm_status.sync_branch:v1 AND -acm_status.config_sync:SYNCED"
+    $ {command} --flatten=acm_status --filter="acm_status.sync_branch:v1 AND -acm_status.config_sync:SYNCED"
   """,
 }
 
@@ -164,10 +164,11 @@ class ConfigmanagementFeatureState(object):
     else:
       self.hierarchy_controller_state = 'ERROR'
 
-  def update_pending_state(self, feature_spec_mc, feature_state_mc):
-    """Update config sync and policy controller with the pending state.
+  def update_pending_state(self, api, feature_spec_mc, feature_state_mc):
+    """Update Config Management component states if spec does not match state.
 
     Args:
+      api: GKE Hub API
       feature_spec_mc: MembershipConfig
       feature_state_mc: MembershipConfig
     """
@@ -194,11 +195,15 @@ class ConfigmanagementFeatureState(object):
         and feature_state_pending
     ):
       self.policy_controller_state = 'PENDING'
+    hc_semantic_copy = (
+        lambda hc_spec: hc_spec if hc_spec is not None
+        else api.ConfigManagementHierarchyControllerConfig()
+    )
     if (
         self.hierarchy_controller_state.__str__() != 'ERROR'
         and feature_state_pending
-        or feature_spec_mc.hierarchyController
-        != feature_state_mc.hierarchyController
+        or hc_semantic_copy(feature_spec_mc.hierarchyController)
+        != hc_semantic_copy(feature_state_mc.hierarchyController)
     ):
       self.hierarchy_controller_state = 'PENDING'
 
@@ -260,6 +265,7 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
         util.MembershipPartialName(m): s
         for m, s in self.hubclient.ToPyDict(self.f.membershipStates).items()
     }
+    # TODO(b/298461043): Refactor this method so it is more readable.
     for name in memberships:
       name = util.MembershipPartialName(name)
       cluster = ConfigmanagementFeatureState(name)
@@ -269,6 +275,7 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
           # (b/187846229) Show PENDING if feature spec is aware of
           # this membership name but feature state is not
           cluster.update_pending_state(
+              self.messages,
               self.feature_spec_memberships[name],
               None
           )
@@ -323,6 +330,7 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             cluster.update_hierarchy_controller_state(fs)
             if name in self.feature_spec_memberships:
               cluster.update_pending_state(
+                  self.messages,
                   self.feature_spec_memberships[name].configmanagement,
                   fs.membershipSpec,
               )

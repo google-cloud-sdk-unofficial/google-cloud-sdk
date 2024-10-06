@@ -47,7 +47,7 @@ class Create(base.CreateCommand):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --performance=PERFORMANCE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -141,7 +141,7 @@ class CreateBeta(Create):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --performance=PERFORMANCE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {

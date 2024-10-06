@@ -122,9 +122,16 @@
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:valid_until_time
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:internal_ips
       release_tracks: [GA]
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
-    - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization
+    - group:
+        mutex: true
+        params:
+        - group:
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_project
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_folder
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation_host_organization
+        - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:reservation
+          release_tracks: [ALPHA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:network
       release_tracks: [GA]
     - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:subnetwork

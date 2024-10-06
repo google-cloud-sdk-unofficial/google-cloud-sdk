@@ -54,15 +54,21 @@ def AddBaseArgs(parser):
   flags.AddSwitchoverDbTimeout(parser)
 
 
-def RunBaseSwitchoverCommand(args):
+def RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False):
   """Switches over a Cloud SQL instance to one of its replicas.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
+    is_postgres_switchover_enabled: bool, Whether the Postgres switchover
+      feature is enabled.
 
   Returns:
     A dict object representing the operations resource describing the
     switchover operation if the switchover was successful.
+
+  Raises:
+    exceptions.OperationError: If the switchover operation is not supported for
+    the instance.
   """
   client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
   sql_client = client.sql_client
@@ -81,11 +87,11 @@ def RunBaseSwitchoverCommand(args):
       )
   )
 
-  if not instances.InstancesV1Beta4.IsSqlServerDatabaseVersion(
+  is_postgres = instances.InstancesV1Beta4.IsPostgresDatabaseVersion(
       instance_resource.databaseVersion
-  ) and not instances.InstancesV1Beta4.IsMysqlDatabaseVersion(
-      instance_resource.databaseVersion
-  ):
+  )
+
+  if is_postgres and not is_postgres_switchover_enabled:
     raise exceptions.OperationError(
         'Switchover operation is currently supported for Cloud SQL for SQL'
         ' Server and MySQL instances only'
@@ -140,9 +146,7 @@ def RunBaseSwitchoverCommand(args):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Switchover(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.
 
@@ -153,15 +157,62 @@ class Switchover(base.Command):
   detailed_help = DETAILED_HELP
 
   def Run(self, args):
-    return RunBaseSwitchoverCommand(args)
+    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False)
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    AddBaseArgs(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SwitchoverBeta(base.Command):
+  """Switches over a Cloud SQL instance to one of its replicas.
+
+  Switches over a Cloud SQL instance to one of its replicas.
+  """
+
+  detailed_help = DETAILED_HELP
+
+  def Run(self, args):
+    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=True)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    AddBaseArgs(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SwitchoverAlpha(base.Command):
+  """Switches over a Cloud SQL instance to one of its replicas.
+
+  Switches over a Cloud SQL instance to one of its replicas.
+  """
+
+  detailed_help = DETAILED_HELP
+
+  def Run(self, args):
+    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=True)
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     AddBaseArgs(parser)

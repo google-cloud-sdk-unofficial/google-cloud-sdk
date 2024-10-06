@@ -42,6 +42,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class AlloyDB(base.Command):
   """Create a Database Migration Service connection profile for AlloyDB."""
 
@@ -67,6 +68,9 @@ class AlloyDB(base.Command):
     ad_flags.AddDatabaseFlagsFlag(parser)
     ad_flags.AddPrimaryLabelsFlag(parser)
     ad_flags.AddDatabaseVersionFlag(parser)
+    ad_flags.AddEnablePublicIpFlag(parser)
+    ad_flags.AddEnableOutboundPublicIpFlag(parser)
+    ad_flags.AddAuthorizedNetworkCidrRangesFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

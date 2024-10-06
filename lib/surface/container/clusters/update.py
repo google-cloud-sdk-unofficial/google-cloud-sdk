@@ -412,6 +412,7 @@ class Update(base.UpdateCommand):
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
+    flags.AddAutoprovisioningCgroupModeFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -871,6 +872,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'autoprovisioning_cgroup_mode', None) is not None:
+      try:
+        op_ref = adapter.ModifyAutoprovisioningCgroupMode(
+            cluster_ref,
+            args.autoprovisioning_cgroup_mode,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -1048,6 +1057,7 @@ class UpdateBeta(Update):
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
+    flags.AddAutoprovisioningCgroupModeFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1358,6 +1368,7 @@ class UpdateAlpha(Update):
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
+    flags.AddAutoprovisioningCgroupModeFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)

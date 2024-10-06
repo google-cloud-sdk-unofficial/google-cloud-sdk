@@ -19,12 +19,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import hashlib
+import os
 
 from apitools.base.py import transfer
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.command_lib.artifacts import util
@@ -107,26 +109,26 @@ class Create(base.Command):
     client = requests.GetClient()
     messages = client.MESSAGES_MODULE
     attachment_ref = args.CONCEPTS.attachment.Parse()
-    target_ref = resources.REGISTRY.ParseRelativeName(
-        args.target,
-        'artifactregistry.projects.locations.repositories.packages.versions',
-    )
-    if target_ref.projectsId != attachment_ref.projectsId:
+    docker_version = docker_util.ParseDockerVersionStr(args.target)
+    if docker_version.image.docker_repo.project != attachment_ref.projectsId:
       raise ar_exceptions.InvalidInputValueError(
           'Attachment {} must be in the same project as target {}.'.format(
-              attachment_ref.RelativeName(), target_ref.RelativeName()
+              attachment_ref.RelativeName(), docker_version.GetVersionName()
           )
       )
-    if target_ref.locationsId != attachment_ref.locationsId:
+    loc = docker_util.RemoveEndpointPrefix(
+        docker_version.image.docker_repo.location
+    )
+    if loc != attachment_ref.locationsId:
       raise ar_exceptions.InvalidInputValueError(
           'Attachment {} must be in the same location as target {}.'.format(
-              attachment_ref.RelativeName(), target_ref.RelativeName()
+              attachment_ref.RelativeName(), docker_version.GetVersionName()
           )
       )
-    if target_ref.repositoriesId != attachment_ref.repositoriesId:
+    if docker_version.image.docker_repo.repo != attachment_ref.repositoriesId:
       raise ar_exceptions.InvalidInputValueError(
           'Attachment {} must be in the same repository as target {}.'.format(
-              attachment_ref.RelativeName(), target_ref.RelativeName()
+              attachment_ref.RelativeName(), docker_version.GetVersionName()
           )
       )
 
@@ -139,7 +141,7 @@ class Create(base.Command):
 
     create_request = messages.ArtifactregistryProjectsLocationsRepositoriesAttachmentsCreateRequest(
         attachment=messages.Attachment(
-            target=target_ref.RelativeName(),
+            target=docker_version.GetVersionName(),
             type=args.attachment_type,
             attachmentNamespace=args.attachment_namespace,
             files=file_names,
@@ -208,7 +210,32 @@ class Create(base.Command):
         digest = self.computeSha256OfFile(file_path)
         repo_relative_name = repo_ref.RelativeName()
         result_file_name = f'{repo_relative_name}/files/{digest}'
+
+    # Try to update the file with file_name annotation.
+    if result_file_name:
+      self.update_file_name_annotation(
+          result_file_name, os.path.basename(file_path), client, messages
+      )
     return result_file_name
+
+  def update_file_name_annotation(
+      self, file_resource_name, file_name, client, messages
+  ):
+    update_request = messages.ArtifactregistryProjectsLocationsRepositoriesFilesPatchRequest(
+        name=file_resource_name,
+        googleDevtoolsArtifactregistryV1File=messages.GoogleDevtoolsArtifactregistryV1File(
+            annotations=messages.GoogleDevtoolsArtifactregistryV1File.AnnotationsValue(
+                additionalProperties=[
+                    messages.GoogleDevtoolsArtifactregistryV1File.AnnotationsValue.AdditionalProperty(
+                        key='artifactregistry.googleapis.com/file_name',
+                        value=file_name,
+                    )
+                ]
+            )
+        ),
+        updateMask='annotations',
+    )
+    client.projects_locations_repositories_files.Patch(update_request)
 
   def computeSha256OfFile(self, file_path):
     sha256 = hashlib.sha256()

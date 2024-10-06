@@ -113,7 +113,34 @@ class SetIamPolicy(base.Command):
     return iap_iam_ref.SetIamPolicy(args.policy_file)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetIamPolicyBeta(SetIamPolicy):
+  """Set the IAM policy for an IAP IAM resource.
+
+  This command replaces the existing IAM policy for an IAP IAM resource, given
+  a file encoded in JSON or YAML that contains the IAM policy. If the given
+  policy file specifies an "etag" value, then the replacement will succeed only
+  if the policy already in place matches that etag. (An etag obtained via
+  $ {parent_command} get-iam-policy will prevent the replacement if
+  the policy for the resource has been subsequently updated.) A policy
+  file that does not contain an etag value will replace any existing policy for
+  the resource.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+          to capture some information, but behaves like an ArgumentParser.
+    """
+    iap_util.AddIapIamResourceArgs(parser, is_beta=True)
+    iap_util.AddIAMPolicyFileArg(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicyAlpha(SetIamPolicy):
   """Set the IAM policy for an IAP IAM resource.
 
@@ -135,6 +162,6 @@ class SetIamPolicyAlpha(SetIamPolicy):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapIamResourceArgs(parser, use_forwarding_rule=True)
+    iap_util.AddIapIamResourceArgs(parser, is_alpha=True)
     iap_util.AddIAMPolicyFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)

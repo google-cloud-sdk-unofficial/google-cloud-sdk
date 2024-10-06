@@ -196,6 +196,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_image_streaming=args.enable_image_streaming,
       spot=args.spot,
       enable_confidential_nodes=args.enable_confidential_nodes,
+      enable_confidential_storage=args.enable_confidential_storage,
       enable_blue_green_upgrade=args.enable_blue_green_upgrade,
       enable_surge_upgrade=args.enable_surge_upgrade,
       node_pool_soak_duration=args.node_pool_soak_duration,
@@ -274,6 +275,7 @@ class Create(base.CreateCommand):
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)
     flags.AddSecondaryBootDisksArgs(parser)
+    flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -452,7 +454,6 @@ class CreateBeta(Create):
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.secondary_boot_disks = args.secondary_boot_disk
-    ops.enable_confidential_storage = args.enable_confidential_storage
     ops.storage_pools = args.storage_pools
     return ops
 
@@ -504,7 +505,6 @@ class CreateAlpha(Create):
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
-    ops.enable_confidential_storage = args.enable_confidential_storage
     ops.storage_pools = args.storage_pools
     return ops
 

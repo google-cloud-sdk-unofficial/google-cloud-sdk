@@ -23,10 +23,13 @@ import json
 from typing import Any
 
 from googlecloudsdk.api_lib.scc.iac_remediation import findings
+from googlecloudsdk.api_lib.scc.iac_remediation import git
 from googlecloudsdk.api_lib.scc.iac_remediation import llm
 from googlecloudsdk.api_lib.scc.iac_remediation import prompt
+from googlecloudsdk.api_lib.scc.iac_remediation import pull_requests
 from googlecloudsdk.api_lib.scc.iac_remediation import terraform
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc.iac_remediation import errors
 from googlecloudsdk.command_lib.scc.iac_remediation import flags
 from googlecloudsdk.core import log
 
@@ -44,7 +47,8 @@ class Create(base.CreateCommand):
 
           $ {{command}} scc iac-remediation create --finding-org-id=123456789
           --finding-name=projects/123456789/sources/123456789/locations/global/findings/123456789
-          --tfstate-file-paths=/path/to/file1.tfstate,/path/to/file2.tfstate --project-id=my-proj""",
+          --tfstate-file-paths=/path/to/file1.tfstate,/path/to/file2.tfstate --project-id=my-proj
+          --git-config-path=/path/to/config.yaml""",
   }
 
   @staticmethod
@@ -53,6 +57,7 @@ class Create(base.CreateCommand):
     flags.FINDING_NAME_FLAG.AddToParser(parser)
     flags.LLM_PROJ_ID_FLAG.AddToParser(parser)
     flags.TFSTATE_FILE_PATHS_LIST_FLAG.AddToParser(parser)
+    flags.GIT_CONFIG_FILE_PATH_FLAG.AddToParser(parser)
 
   def Run(self, args: Any) -> None:
     """Remediates a Security Command Center finding.
@@ -60,11 +65,13 @@ class Create(base.CreateCommand):
     Args:
       args: Arguments for the command.
     """
-    # Replace the string with git function.
-    is_repo_flag, repo_root_dir = ""
-    if not is_repo_flag:
-      log.Print("Not a git repo.")
-      return
+    git_flag, repo_root_dir = git.is_git_repo()
+    if not git_flag:  # Throw error if command is invoked from a non-git repo
+      raise errors.GitRepoNotFoundError()
+    git.validate_git_config(args.git_config_path)
+    git_config_data = args.git_config_path
+    log.Print(git_config_data)
+    log.Print("repo_root_dir: ", repo_root_dir)
     resp = findings.MakeApiCall(args.finding_org_id, args.finding_name)
     json_resp = json.loads(resp)
     iam_bindings = findings.FetchIAMBinding(json_resp)
@@ -83,6 +90,7 @@ class Create(base.CreateCommand):
         if "google_project_iam_policy" in tfstate_json:
           tfstate_information = "google_project_iam_policy"
     tf_files = terraform.find_tf_files(repo_root_dir)
+    original_files_content = terraform.read_original_files_content(tf_files)
     for member, role_data in iam_bindings.items():
       tfstate_data = ""
       if tfstate_information and member in tfstate_information:
@@ -92,13 +100,30 @@ class Create(base.CreateCommand):
           role_data,
           resource_name,
           tf_files,
+          member,
       )
       response = llm.MakeLLMCall(input_prompt, args.project_id)
       response_dict = prompt.llm_response_parser(response)
-      check, validated_response = terraform.validate_tf_files(
-          response_dict
-      )
+      check, response = terraform.validate_tf_files(response_dict)
       if not check:
-        log.Print("Invalid response from LLM.")
+        terraform.update_tf_files(original_files_content)
+        raise errors.InvalidLLMResponseError(response)
       else:
-        log.Print(validated_response)
+        log.Print(response)
+        git.push_commit(
+            response_dict,
+            pull_requests.CreateCommitMessage(resp, member),
+            git_config_data["remote"],
+            git_config_data["branch-prefix"]
+            + findings.ParseName(args.finding_name),
+        )
+        terraform.update_tf_files(response_dict)
+    git.raise_pr(
+        pull_requests.CreatePRMessage(resp),
+        pull_requests.CreatePRMessage(resp),
+        git_config_data["remote"],
+        git_config_data["branch-prefix"]
+        + findings.ParseName(args.finding_name),
+        git_config_data["main-branch-name"],
+    )
+    terraform.update_tf_files(original_files_content)

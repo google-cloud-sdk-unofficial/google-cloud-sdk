@@ -32,16 +32,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete a job."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
           {description}
           """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
           To delete a job:
 
               $ {command} job-name
@@ -55,8 +54,11 @@ class Delete(base.Command):
         resource_args.GetJobResourceSpec(),
         'Job to delete.',
         required=True,
-        prefixes=False)
-    flags.AddAsyncFlag(parser, default_async_for_cluster=True, is_job=True)
+        prefixes=False,
+    )
+    flags.AddAsyncFlag(
+        parser, default_async_for_cluster=True, is_managed_only=True
+    )
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -66,7 +68,8 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete a job."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     job_ref = args.CONCEPTS.job.Parse()
     with serverless_operations.Connect(conn_context) as client:
       message = 'Job [{}] will be deleted.'.format(job_ref.jobsId)

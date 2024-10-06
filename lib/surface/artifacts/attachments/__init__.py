@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class Attachments(base.Group):
   """Manage Artifact Registry attachments.

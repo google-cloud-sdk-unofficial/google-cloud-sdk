@@ -14,8 +14,11 @@
 # limitations under the License.
 """Command for listing available worker-pools."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
@@ -54,4 +57,17 @@ class List(base.Command):
 
   def Run(self, args):
     """List available worker-pools."""
-    raise NotImplementedError
+
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.region.Parse().locationsId
+      return region + '-' + endpoint
+
+    region_ref = args.CONCEPTS.region.Parse()
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    response = worker_pools_client.ListWorkerPools(region_ref)
+    return commands.SortByName(response.worker_pools)

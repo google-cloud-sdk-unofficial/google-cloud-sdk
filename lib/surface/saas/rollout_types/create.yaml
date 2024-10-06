@@ -1,0 +1,70 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Create a Rollout Type
+    description: Create a Rollout Type
+    examples: |-
+      To create the Rollout Type, run:
+
+      $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The resource name (full URI of the resource) following the standard naming
+        scheme:
+
+          "projects/{project}/locations/{location}/rolloutTypes/{rollout_type_id}"
+      is_positional: true
+      request_id_field: rolloutTypeId
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:rollout_type
+      required: true
+    - arg_name: unit-kind
+      help_text: |-
+        Unit Kind that this rollout type corresponds to. Rollouts stemming from this
+        rollout type will target the units of this unit kind. In other words, this
+        defines the population of target units to be upgraded by rollouts.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:unit_kind
+      resource_method_params:
+        rolloutType.unitKind: '{__relative_name__}'
+      required: true
+    - group:
+        required: false
+        help_text: |-
+          The strategy to use for executing rollouts (initially a small set of
+          predefined strategies are used but possible to expand on settings and
+          introduction of custom defined strategies in future).
+        params:
+        - arg_name: rollout-strategy-type
+          api_field: rolloutType.rolloutStrategy.type
+          required: true
+          repeated: false
+          help_text: |-
+            The name of a predefined strategy to be used by rollouts.
+        - arg_name: maintenance-policy-enforcement
+          api_field: rolloutType.rolloutStrategy.maintenancePolicyEnforcement
+          required: false
+          help_text: |-
+            Value among strict (enforcing maintenance policy and only looking at Units
+            with maintenance policy), ignore (ignoring maintenance policy) and skip
+            (skipping Units with maintenance policy)
+          choices:
+          - arg_value: maintenance-policy-enforcement-strict
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_STRICT
+            help_text: |-
+              Enforce maintenance policy and only look at Units with maintenance policy.
+          - arg_value: maintenance-policy-enforcement-ignored
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_IGNORED
+            help_text: |-
+              Ignore maintenance policy.
+          - arg_value: maintenance-policy-enforcement-skipped
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_SKIPPED
+            help_text: |-
+              Skip Units with maintenance policy.
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.rolloutTypes
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations

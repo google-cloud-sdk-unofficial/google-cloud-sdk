@@ -35,48 +35,17 @@
 
   # TODO: b/366267197 - Remove the alpha and beta track overrides once the GA release is available.
   output:
-    ALPHA:
-      format: |
-        table(
-          name.basename(): label=BACKUP,
-          database.basename(): label=SOURCE_DATABASE,
-          versionTime: label=VERSION_TIME,
-          createTime: label=CREATION_TIME,
-          expireTime: label=EXPIRATION_TIME,
-          state: label=STATE,
-          backupSchedules.join(", "): label=BACKUP_SCHEDULES,
-          encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
-          sizeBytes: label=BACKUP_SIZE_IN_BYTES,
-          exclusiveSizeBytes: label=EXCLUSIVE_SIZE_IN_BYTES,
-          oldestVersionTime: label=OLDEST_VERSION_TIME,
-          referencingDatabases: label=IN_USE_BY
+    format: |
+      table(
+        name.basename(): label=BACKUP,
+        database.basename(): label=SOURCE_DATABASE,
+        versionTime: label=VERSION_TIME,
+        createTime: label=CREATION_TIME,
+        expireTime: label=EXPIRATION_TIME,
+        state: label=STATE,
+        backupSchedules.join(", "): label=BACKUP_SCHEDULES,
+        encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
+        sizeBytes: label=BACKUP_SIZE_BYTES,
+        exclusiveSizeBytes: label=EXCLUSIVE_SIZE_BYTES,
+        oldestVersionTime: label=OLDEST_VERSION_TIME
         )
-    BETA:
-      format: |
-        table(
-          name.basename(): label=BACKUP,
-          database.basename(): label=SOURCE_DATABASE,
-          versionTime: label=VERSION_TIME,
-          createTime: label=CREATION_TIME,
-          expireTime: label=EXPIRATION_TIME,
-          state: label=STATE,
-          backupSchedules.join(", "): label=BACKUP_SCHEDULES,
-          encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
-          sizeBytes: label=BACKUP_SIZE_IN_BYTES,
-          exclusiveSizeBytes: label=EXCLUSIVE_SIZE_IN_BYTES,
-          oldestVersionTime: label=OLDEST_VERSION_TIME,
-          referencingDatabases: label=IN_USE_BY
-          )
-    GA:
-      format: |
-        table(
-          name.basename(): label=BACKUP,
-          database.basename(): label=SOURCE_DATABASE,
-          versionTime: label=VERSION_TIME,
-          createTime: label=CREATION_TIME,
-          expireTime: label=EXPIRATION_TIME,
-          state: label=STATE,
-          encryptionInfo.encryptionType: label=ENCRYPTION_TYPE,
-          sizeBytes: label=BACKUP_SIZE_IN_BYTES,
-          referencingDatabases: label=IN_USE_BY
-          )

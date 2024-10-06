@@ -1,0 +1,48 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Create a Saas Type
+    description: Create a Saas Type
+    examples: |-
+      To create a new Saas Type, run:
+
+      $ {command} my-saas-type --locations=name=us-central2 --locations=name=europe-west1
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The resource name (full URI of the resource) following the standard naming
+        scheme:
+
+          "projects/{project}/locations/{location}/saasTypes/{saasType}"
+      is_positional: true
+      request_id_field: saasTypeId
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:saas_type
+      required: true
+    - arg_name: locations
+      api_field: saasType.locations
+      required: false
+      repeated: true
+      help_text: |-
+        List of locations that the service is available in. Rollout refers to the
+        list to generate a rollout plan.
+      spec:
+      - api_field: name
+        help_text: |-
+          Name of location.
+    - arg_name: labels
+      api_field: saasType.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+        similar to Kubernetes resource labels.
+      spec:
+      - api_field: key
+      - api_field: value
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.saasTypes
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations

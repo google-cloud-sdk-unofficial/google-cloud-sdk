@@ -84,6 +84,7 @@ def _Run(args, holder, url_map_arg):
       client.MakeRequests(requests=requests))
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ListCacheInvalidations(base.ListCommand):
   """List Cloud CDN cache invalidations for a URL map."""
@@ -114,11 +115,13 @@ class ListCacheInvalidations(base.ListCommand):
     return _Run(args, holder, self.URL_MAP_ARG)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListCacheInvalidationsBeta(ListCacheInvalidations):
   pass
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListCacheInvalidationsAlpha(ListCacheInvalidationsBeta):
   pass

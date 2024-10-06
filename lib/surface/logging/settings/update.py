@@ -80,7 +80,7 @@ class Update(base.Command):
   To enable analytics for the log buckets under an organization, run:
 
     $ {command} --organization=[ORGANIZATION_ID] --disable-default-sink=false
-    --analytics-mode=enabled
+    --analytics-mode=required
   """
 
   @staticmethod
@@ -119,13 +119,11 @@ class Update(base.Command):
         '--analytics-mode',
         required=False,
         hidden=True,
-        choices=['enabled', 'disabled', 'unspecified'],
+        choices=['required', 'optional', 'unspecified'],
         help=arg_parsers.UniverseHelpText(
             default=(
-                'Update the analytics mode for ```_Default``` bucket and'
-                ' ```_Required``` bucket. Note: It only applies to the newly'
-                ' created buckets and will not affect the buckets created'
-                ' before.'
+                'Update the analytics mode for newly-created project buckets. '
+                'Changing this setting does not modify any existing buckets.'
             ),
             universe_help='This is not available.\n',
         ),
@@ -183,13 +181,13 @@ class Update(base.Command):
 
     if args.IsSpecified('analytics_mode'):
       update_mask.append('analytics_mode')
-      if args.analytics_mode == 'enabled':
+      if args.analytics_mode == 'required':
         settings['analyticsMode'] = (
-            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_ENABLED
+            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_REQUIRED
         )
-      elif args.analytics_mode == 'disabled':
+      elif args.analytics_mode == 'optional':
         settings['analyticsMode'] = (
-            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_DISABLED
+            util.GetMessages().Settings.AnalyticsModeValueValuesEnum.ANALYTICS_OPTIONAL
         )
       else:
         settings['analyticsMode'] = (

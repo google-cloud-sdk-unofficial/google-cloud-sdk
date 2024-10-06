@@ -136,6 +136,7 @@ def _Run(args, holder, url_map_arg):
   return resources
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class InvalidateCdnCache(base.SilentCommand):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
@@ -154,11 +155,13 @@ class InvalidateCdnCache(base.SilentCommand):
     return _Run(args, holder, self.URL_MAP_ARG)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InvalidateCdnCacheBeta(InvalidateCdnCache):
   pass
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InvalidateCdnCacheAlpha(InvalidateCdnCacheBeta):
   pass

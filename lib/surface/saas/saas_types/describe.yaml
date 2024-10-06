@@ -1,0 +1,20 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Describe a Saas Type
+    description: Describe a Saas Type
+    examples: |-
+      To describe the Saas Type, run:
+
+      $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        The resource name of the resource within a service.
+      is_positional: true
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:saas_type
+      required: true
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.saasTypes

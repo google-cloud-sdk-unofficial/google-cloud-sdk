@@ -31,16 +31,15 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete an execution."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
           {description}
           """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
           To delete an execution:
 
               $ {command} my-execution
@@ -54,8 +53,11 @@ class Delete(base.Command):
         resource_args.GetExecutionResourceSpec(),
         'Execution to delete.',
         required=True,
-        prefixes=False)
-    flags.AddAsyncFlag(parser, default_async_for_cluster=True, is_job=True)
+        prefixes=False,
+    )
+    flags.AddAsyncFlag(
+        parser, default_async_for_cluster=True, is_managed_only=True
+    )
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -65,13 +67,15 @@ class Delete(base.Command):
   def Run(self, args):
     """Delete an execution."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     ex_ref = args.CONCEPTS.execution.Parse()
 
     console_io.PromptContinue(
         message='Execution [{}] will be deleted.'.format(ex_ref.executionsId),
         throw_if_unattended=True,
-        cancel_on_no=True)
+        cancel_on_no=True,
+    )
 
     with serverless_operations.Connect(conn_context) as client:
       deletion.Delete(

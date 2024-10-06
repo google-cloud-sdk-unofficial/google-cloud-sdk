@@ -126,12 +126,12 @@
       metavar: YAML_FILE
       arg_name: binding-file
       help_text: |
-        Path to a file containing a Google Cloud Platform User Access Binding.
+        Path to the file that contains a Google Cloud Platform user access binding.
 
         This file contains a YAML-compliant object representing
-        a GcpUserAccessBinding described in the API reference.
+        a GcpUserAccessBinding (as described in the API reference) containing ScopedAccessSettings only.
+        No other binding fields are allowed.
       repeated: false
-      hidden: true
       ALPHA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ParseGcpUserAccessBindingFromBindingFile:api_version=v1alpha
       GA:

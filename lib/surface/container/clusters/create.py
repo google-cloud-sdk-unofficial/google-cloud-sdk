@@ -170,10 +170,6 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
   """Parses the flags provided with the cluster creation command."""
   flags.MungeBasicAuthFlags(args)
 
-  enable_ip_alias = get_default('enable_ip_alias')
-  if hasattr(args, 'enable_ip_alias'):
-    flags.WarnForUnspecifiedIpAllocationPolicy(args)
-
   flags.WarnForUnspecifiedKubeletReadonlyPort()
 
   flags.WarnForEnablingBetaAPIs(args)
@@ -282,7 +278,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       logging=get_default('logging'),
       monitoring=get_default('monitoring'),
       enable_l4_ilb_subsetting=get_default('enable_l4_ilb_subsetting'),
-      enable_ip_alias=enable_ip_alias,
+      enable_ip_alias=get_default('enable_ip_alias'),
       enable_intra_node_visibility=get_default('enable_intra_node_visibility'),
       enable_kubernetes_alpha=get_default('enable_kubernetes_alpha'),
       alpha_cluster_feature_gates=get_default('alpha_cluster_feature_gates'),
@@ -615,6 +611,7 @@ flags_to_add = {
         ),
         'clusterversion': flags.AddClusterVersionFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
+        'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,

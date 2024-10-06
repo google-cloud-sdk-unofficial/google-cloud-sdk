@@ -97,6 +97,10 @@ def _RunUpdateV2(cmd, args):
         control_plane_v2 = (
             cmd.messages_v2.ServiceMeshSpec.ControlPlaneValueValuesEnum(
                 'AUTOMATIC'))
+      elif args.control_plane == 'unspecified':
+        control_plane_v2 = (
+            cmd.messages_v2.ServiceMeshSpec.ControlPlaneValueValuesEnum(
+                'CONTROL_PLANE_MANAGEMENT_UNSPECIFIED'))
       patch_v2.servicemesh.controlPlane = control_plane_v2
 
     if hasattr(args, 'config_api') and args.config_api is not None:
@@ -217,6 +221,12 @@ def _RunUpdate(cmd, args):
         control_plane = (
             cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
                 'AUTOMATIC'
+            )
+        )
+      elif args.control_plane == 'unspecified':
+        control_plane = (
+            cmd.messages.ServiceMeshMembershipSpec.ControlPlaneValueValuesEnum(
+                'CONTROL_PLANE_MANAGEMENT_UNSPECIFIED'
             )
         )
       patch.mesh.controlPlane = control_plane
@@ -350,7 +360,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
     )
     membership_controlplane_group.add_argument(
         '--control-plane',
-        choices=['automatic', 'manual'],
+        choices=['automatic', 'manual', 'unspecified'],
         help='Control plane management to update to.',
         action=actions.DeprecationAction(
             '--control-plane',
@@ -436,7 +446,7 @@ class UpdateGA(features_base.UpdateCommand):
     )
     membership_configs_group.add_argument(
         '--control-plane',
-        choices=['automatic', 'manual'],
+        choices=['automatic', 'manual', 'unspecified'],
         help='Control plane management to update to.',
         action=actions.DeprecationAction(
             '--control-plane',

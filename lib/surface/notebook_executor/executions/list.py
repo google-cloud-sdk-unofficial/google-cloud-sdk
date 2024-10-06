@@ -43,7 +43,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddListRuntimeTemplatesFlags(parser)
+    flags.AddListExecutionsFlags(parser)
     parser.display_info.AddFormat("""
         table(name.segment(-1):label=ID,
         displayName,

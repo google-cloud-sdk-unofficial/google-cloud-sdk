@@ -362,3 +362,5 @@
   async:
     collection:
     - developerconnect.projects.locations.operations
+  output:
+    format: csv[no-heading,separator="\\n"](installationState.stage,installationState.message,installationState.actionUri)

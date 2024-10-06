@@ -14,18 +14,26 @@
 # limitations under the License.
 """Command for deleting a worker-pool."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
-  """Delete a worker."""
+  """Delete a worker-pool."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -50,7 +58,7 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
-    flags.AddAsyncFlag(parser, default_async_for_cluster=True)
+    flags.AddAsyncFlag(parser, is_managed_only=True)
 
   @staticmethod
   def Args(parser):
@@ -58,4 +66,30 @@ class Delete(base.Command):
 
   def Run(self, args):
     """Delete a worker-pool."""
-    raise NotImplementedError
+
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.worker_pool.Parse().locationsId
+      return region + '-' + endpoint
+
+    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
+    flags.ValidateResource(worker_pool_ref)
+    console_io.PromptContinue(
+        message='WorkerPool [{worker_pool}] will be deleted.'.format(
+            worker_pool=worker_pool_ref.workerPoolsId
+        ),
+        throw_if_unattended=True,
+        cancel_on_no=True,
+    )
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    response = worker_pools_client.DeleteWorkerPool(worker_pool_ref)
+    if not response:
+      raise exceptions.ArgumentError(
+          'Cannot find WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+      )
+    # TODO(b/366576967): Support wait operation in sync mode.
+    return response.operation

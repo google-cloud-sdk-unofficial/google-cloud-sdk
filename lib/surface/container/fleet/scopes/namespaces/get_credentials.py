@@ -75,6 +75,7 @@ class GetCredentials(gateway.GetCredentialsCommand):
             `gcloud container fleet memberships get-credentials`.
             """),
     )
+    # TODO(b/368039642): Remove once we're sure server-side generation is stable
     parser.add_argument(
         '--use-client-side-generation',
         action='store_true',

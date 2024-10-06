@@ -17,12 +17,11 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # TODO(b/352606759): Make visible after e2e tests are ready.
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class RuntimeTemplates(base.Group):
+class Executions(base.Group):
   """Notebook Executor Executions command group.
 
   For more information about executions, see
-  {LINK DOC HERE}
+  https://cloud.google.com/colab/docs/schedule-notebook-run.
   """

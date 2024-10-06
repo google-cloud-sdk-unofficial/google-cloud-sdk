@@ -160,6 +160,7 @@ class CreateBeta(Create):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     flags.AddEnforcedRetention(parser)
+    flags.GetTagsArg(parser)
 
   def ConstructResourceFromArgs(
       self, alloydb_messages, cluster_ref, backup_ref, args
@@ -169,6 +170,8 @@ class CreateBeta(Create):
     )
     if args.enforced_retention:
       backup_resource.enforcedRetention = True
+    backup_resource.tags = flags.GetTagsFromArgs(
+        args, alloydb_messages.Backup.TagsValue)
     return backup_resource
 
 

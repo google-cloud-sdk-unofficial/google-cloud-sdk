@@ -1,0 +1,100 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Create a Rollout
+    description: Create a Rollout
+    examples: |-
+      To create the Rollout, run:
+
+      $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The resource name (full URI of the resource) following the standard naming
+        scheme:
+
+          "projects/{project}/locations/{location}/rollout/{rollout_id}"
+      is_positional: true
+      request_id_field: rolloutId
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:rollout
+      required: true
+    - arg_name: rollout-type
+      help_text: |-
+        Name of the RolloutType this rollout is stemming from and adhering to.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:rollout_type
+      resource_method_params:
+        rollout.rolloutType: '{__relative_name__}'
+      required: true
+    - arg_name: release
+      help_text: |-
+        Name of the Release that gets rolled out to target Units.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:release
+      resource_method_params:
+        rollout.release: '{__relative_name__}'
+      required: true
+    - group:
+        required: false
+        help_text: |-
+          The strategy to use for executing rollouts (initially a small set of
+          predefined strategies are used but possible to expand on settings and
+          introduction of custom defined strategies in future).
+        params:
+        - arg_name: rollout-strategy-type
+          api_field: rollout.rolloutStrategy.type
+          required: true
+          repeated: false
+          help_text: |-
+            The name of a canned (predefined)  strategy to be used by rollouts.
+        - arg_name: maintenance-policy-enforcement
+          api_field: rollout.rolloutStrategy.maintenancePolicyEnforcement
+          required: false
+          help_text: |-
+            Value among strict (enforcing maintenance policy and only looking at Units
+            with maintenance policy), ignore (ignoring maintenance policy) and skip
+            (skipping Units with maintenance policy)
+          choices:
+          - arg_value: maintenance-policy-enforcement-strict
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_STRICT
+            help_text: |-
+              Enforce maintenance policy and only look at Units with maintenance policy.
+          - arg_value: maintenance-policy-enforcement-ignored
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_IGNORED
+            help_text: |-
+              Ignore maintenance policy.
+          - arg_value: maintenance-policy-enforcement-skipped
+            enum_value: MAINTENANCE_POLICY_ENFORCEMENT_SKIPPED
+            help_text: |-
+              Skip Units with maintenance policy.
+    - arg_name: pause
+      api_field: rollout.pause
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Specifies whether the rollout should pause and pause the execution or not.
+    - arg_name: cancel
+      api_field: rollout.cancel
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Specifies whether the rollout should be canceled or not. Once set to true,
+        it can't be reverted back to false. Cancellation while best-effort is a
+        terminal state.
+    - arg_name: activity-reason
+      api_field: rollout.activityReason
+      required: false
+      repeated: false
+      help_text: |-
+        When performing a specific activity like pause/resume/cancel, users can
+        choose to provide the activity reason which can be populated into the given
+        activity.
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.rollouts
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations

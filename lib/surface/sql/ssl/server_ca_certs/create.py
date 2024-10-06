@@ -84,7 +84,10 @@ class _BaseAddCert(object):
     return next_server_ca
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class AddCert(_BaseAddCert, base.CreateCommand):
   """Create a server CA cert for a Cloud SQL instance."""
   pass

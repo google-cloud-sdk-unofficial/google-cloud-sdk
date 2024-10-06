@@ -24,6 +24,7 @@ import json
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.docker import credential_utils as cred_utils
 from googlecloudsdk.core.util import files as file_utils
@@ -35,6 +36,7 @@ class ConfigureDockerError(exceptions.Error):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class ConfigureDocker(base.Command):
   # pylint: disable=line-too-long
   r"""Register `gcloud` as a Docker credential helper.
@@ -141,8 +143,14 @@ class ConfigureDocker(base.Command):
     # Use the value from the argument, otherwise the default list.
     if args.registries:
       log.status.Print('Adding credentials for: {0}'.format(args.registries))
-      registries = filter(self.CheckValidRegistry, args.registries.split(','))
-      new_helpers = cred_utils.GetGcloudCredentialHelperConfig(registries)
+      registries_list = args.registries.split(',')
+      if properties.VALUES.artifacts.allow_unrecongized_registry.GetBool():
+        new_helpers = cred_utils.GetGcloudCredentialHelperConfig(
+            registries_list
+        )
+      else:
+        registries = filter(self.CheckValidRegistry, registries_list)
+        new_helpers = cred_utils.GetGcloudCredentialHelperConfig(registries)
     else:
       # If include-artifact-registry is set, add all GCR and AR repos, otherwise
       # just GCR repos.

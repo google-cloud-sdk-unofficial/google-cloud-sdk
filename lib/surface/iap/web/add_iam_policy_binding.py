@@ -102,7 +102,30 @@ class AddIamPolicyBinding(base.Command):
     return iap_iam_ref.AddIamPolicyBinding(args.member, args.role, condition)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddIamPolicyBindingBeta(AddIamPolicyBinding):
+  """Add IAM policy binding to an IAP IAM resource.
+
+  Adds a policy binding to the IAM policy of an IAP IAM resource. One binding
+  consists of a member, a role, and an optional condition.
+  See $ {parent_command} get-iam-policy for examples of how to specify an IAP
+  IAM resource.
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+          to capture some information, but behaves like an ArgumentParser.
+    """
+    iap_util.AddIapIamResourceArgs(parser, is_beta=True)
+    iap_util.AddAddIamPolicyBindingArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
   """Add IAM policy binding to an IAP IAM resource.
 
@@ -120,6 +143,6 @@ class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapIamResourceArgs(parser, use_forwarding_rule=True)
+    iap_util.AddIapIamResourceArgs(parser, is_alpha=True)
     iap_util.AddAddIamPolicyBindingArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)

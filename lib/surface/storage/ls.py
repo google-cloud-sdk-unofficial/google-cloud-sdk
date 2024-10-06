@@ -208,12 +208,13 @@ class Ls(base.Command):
     # --all-versions flag.
     if soft_deleted and all_versions:
       log.warning(
-          'The --soft-deleted flag and --all-versions flag cannot be used'
-          ' together.'
+          'The --all-versions flag has no effect when used with the'
+          ' --soft-deleted flag. When --soft-deleted is used, all'
+          ' soft-deleted versions of the resource are returned.'
       )
     # When listing buckets, only --soft-deleted flag is allowed.
     if buckets and all_versions:
-      log.warning('--all-versions flag cannot be applied for listing buckets.')
+      log.warning('The --all-versions flag has no effect when listing buckets.')
 
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
 
@@ -256,6 +257,7 @@ class Ls(base.Command):
         readable_sizes=args.readable_sizes,
         recursion_flag=args.recursive,
         use_gsutil_style=use_gsutil_style,
+        soft_deleted_buckets=getattr(args, 'soft_deleted', False),
     ).list_urls()
 
     if found_non_default_provider and args.full:

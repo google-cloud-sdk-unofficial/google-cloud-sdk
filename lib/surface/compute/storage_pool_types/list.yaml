@@ -23,6 +23,8 @@
 
     collection: compute.storagePoolTypes
     method: aggregatedList
+    static_fields:
+      returnPartialSuccess: true
 
   arguments:
     resource:

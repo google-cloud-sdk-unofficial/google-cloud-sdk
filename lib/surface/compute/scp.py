@@ -49,6 +49,8 @@ In order to set up a successful transfer, follow these guidelines:
     from the same virtual machine.
 *   When the destination of your transfer is remote instead, all sources must
     be local.
+*   When the destination is Windows Server, the source must be using a similar
+    SSH version.
 
 Under the covers, *scp(1)* is used to facilitate the transfer.
 
@@ -108,6 +110,7 @@ the `--region` and `--network` flags:
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Scp(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 

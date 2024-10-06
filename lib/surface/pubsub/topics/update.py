@@ -204,9 +204,14 @@ def _Run(args):
   cloud_storage_ingestion_bucket = getattr(
       args, 'cloud_storage_ingestion_bucket', None
   )
-  cloud_storage_ingestion_input_format = getattr(
+  cloud_storage_ingestion_input_format_list = getattr(
       args, 'cloud_storage_ingestion_input_format', None
   )
+  cloud_storage_ingestion_input_format = None
+  if cloud_storage_ingestion_input_format_list:
+    cloud_storage_ingestion_input_format = (
+        cloud_storage_ingestion_input_format_list[0]
+    )
   cloud_storage_ingestion_text_delimiter = getattr(
       args, 'cloud_storage_ingestion_text_delimiter', None
   )

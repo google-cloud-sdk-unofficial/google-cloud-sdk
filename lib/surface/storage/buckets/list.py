@@ -85,6 +85,7 @@ class List(base.ListCommand):
           url.url_string,
           fields_scope=cloud_api.FieldsScope.FULL,
           get_bucket_metadata=True,
+          soft_deleted_buckets=getattr(args, 'soft_deleted', False),
       ):
         yield resource_util.get_display_dict_for_resource(
             bucket,

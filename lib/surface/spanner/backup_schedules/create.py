@@ -27,7 +27,9 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner backup schedule."""
 
@@ -35,7 +37,7 @@ class Create(base.CreateCommand):
       'EXAMPLES': textwrap.dedent("""\
         To create a Cloud Spanner backup schedule, run:
 
-          $ {command} backup-schedule-id --instance=instance-id --database=database-id --cron="0 2 * * *" --retention-duration=2w
+          $ {command} backup-schedule-id --instance=instance-id --database=database-id --cron="0 2 * * *" --retention-duration=2w --backup-type=full-backup
         """),
   }
 

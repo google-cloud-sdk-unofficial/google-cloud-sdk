@@ -35,12 +35,10 @@ class Cancel(base.Command):
   """Cancel an execution."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
           {description}
           """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
           To cancel an execution:
 
               $ {command} my-execution
@@ -54,8 +52,11 @@ class Cancel(base.Command):
         resource_args.GetExecutionResourceSpec(),
         'Execution to cancel.',
         required=True,
-        prefixes=False)
-    flags.AddAsyncFlag(parser, default_async_for_cluster=True, is_job=True)
+        prefixes=False,
+    )
+    flags.AddAsyncFlag(
+        parser, default_async_for_cluster=True, is_managed_only=True
+    )
     concept_parsers.ConceptParser([execution_presentation]).AddToParser(parser)
 
   @staticmethod
@@ -65,7 +66,8 @@ class Cancel(base.Command):
   def Run(self, args):
     """Cancel an execution."""
     conn_context = connection_context.GetConnectionContext(
-        args, flags.Product.RUN, self.ReleaseTrack())
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
     ex_ref = args.CONCEPTS.execution.Parse()
 
     console_io.PromptContinue(

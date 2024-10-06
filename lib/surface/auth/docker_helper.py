@@ -24,6 +24,7 @@ import sys
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import store as c_store
@@ -34,6 +35,7 @@ TOKEN_MIN_LIFETIME = '3300s'  # 55 minutes
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DockerHelper(base.Command):
   """A Docker credential helper to provide access to GCR repositories."""
@@ -72,10 +74,11 @@ class DockerHelper(base.Command):
 
       c_store.RefreshIfExpireWithinWindow(cred, window=TOKEN_MIN_LIFETIME)
       url = sys.stdin.read().strip()
-      if (url.replace('https://', '',
-                      1) not in credential_utils.SupportedRegistries()):
-        raise exceptions.Error(
-            'Repository url [{url}] is not supported'.format(url=url))
+      if not properties.VALUES.artifacts.allow_unrecongized_registry.GetBool():
+        if (url.replace('https://', '',
+                        1) not in credential_utils.SupportedRegistries()):
+          raise exceptions.Error(
+              'Repository url [{url}] is not supported'.format(url=url))
       # Putting an actual username in the response doesn't work. Docker will
       # then prompt for a password instead of using the access token.
       token = (

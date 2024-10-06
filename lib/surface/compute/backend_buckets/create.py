@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a backend bucket.
 
@@ -36,6 +37,7 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
+  _support_load_balancing_scheme = False
 
   @classmethod
   def Args(cls, parser):
@@ -51,6 +53,8 @@ class Create(base.CreateCommand):
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
     backend_buckets_flags.AddCompressionMode(parser)
+    if cls._support_load_balancing_scheme:
+      backend_buckets_flags.AddLoadBalancingScheme(parser)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -81,6 +85,16 @@ class Create(base.CreateCommand):
           client.messages.BackendBucket.CompressionModeValueValuesEnum(
               args.compression_mode))
 
+    if (
+        self._support_load_balancing_scheme
+        and args.load_balancing_scheme is not None
+    ):
+      backend_bucket.loadBalancingScheme = (
+          client.messages.BackendBucket.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme
+          )
+      )
+
     return backend_bucket
 
   def Run(self, args):
@@ -99,11 +113,25 @@ class Create(base.CreateCommand):
                                  'Insert', request)])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateAlphaBeta(Create):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class CreateBeta(Create):
   """Create a backend bucket.
 
   *{command}* is used to create backend buckets. Backend buckets
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class CreateAlpha(CreateBeta):
+  """Create a backend bucket.
+
+  *{command}* is used to create backend buckets. Backend buckets
+  define Google Cloud Storage buckets that can serve content. URL
+  maps define which requests are sent to which backend buckets.
+  """
+
+  _support_load_balancing_scheme = True

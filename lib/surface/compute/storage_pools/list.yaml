@@ -50,6 +50,8 @@
 
     collection: compute.storagePools
     method: aggregatedList
+    static_fields:
+      returnPartialSuccess: true
 
   arguments:
     resource:

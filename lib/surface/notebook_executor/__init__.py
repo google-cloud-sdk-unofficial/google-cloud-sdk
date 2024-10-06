@@ -17,10 +17,9 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # TODO(b/352606759): Make visible after e2e tests are ready.
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ColabEnterprise(base.Group):
+class NotebookExecutor(base.Group):
   """Notebook Executor Command Group."""
 
   category = base.AI_AND_MACHINE_LEARNING_CATEGORY

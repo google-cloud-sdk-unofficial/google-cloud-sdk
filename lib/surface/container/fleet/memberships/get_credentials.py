@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import util as fleet_util
-from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import gateway
 from googlecloudsdk.command_lib.container.fleet import resources
 
@@ -69,6 +68,7 @@ class GetCredentials(gateway.GetCredentialsCommand):
         positional=True,
     )
 
+    # TODO(b/368039642): Remove once we're sure server-side generation is stable
     parser.add_argument(
         '--use-client-side-generation',
         action='store_true',
@@ -97,22 +97,7 @@ class GetCredentials(gateway.GetCredentialsCommand):
 
     if args.use_client_side_generation:
       self.RunGetCredentials(membership_id, location)
-    elif (
-        self.ReleaseTrack() is base.ReleaseTrack.ALPHA
-        or self.ReleaseTrack() is base.ReleaseTrack.BETA
-    ):
+    else:
       self.RunServerSide(
           membership_id, location, force_use_agent=args.force_use_agent
       )
-    else:
-      # Use server-side generation by default, and fall back to client-side if
-      # needed. We catch all Exceptions because errors are being recorded and
-      # reported, and it would be difficult to ascertain at runtime whether an
-      # error is due to user misbehavior or programming error.
-      try:
-        self.RunServerSide(
-            membership_id, location, force_use_agent=args.force_use_agent
-        )
-      except Exception as e:  # pylint: disable=broad-exception-caught
-        gateway.RecordClientSideFallback(e)
-        self.RunGetCredentials(membership_id, location)

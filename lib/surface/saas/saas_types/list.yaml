@@ -1,0 +1,23 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: List Saas Types
+    description: List Saas Types
+    examples: |-
+      To list all Saas Types, run:
+
+      $ {command}
+  arguments:
+    params:
+    - arg_name: parent
+      help_text: |-
+        The parent of the saas type.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:project_location
+      required: true
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.saasTypes
+  response:
+    id_field: name

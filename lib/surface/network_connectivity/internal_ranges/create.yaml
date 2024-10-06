@@ -145,7 +145,6 @@
         help_text: |
           Allows for creation of internal ranges that overlap with existing subnets.
     - group:
-        release_tracks: [ALPHA]
         help_text: |
           Endpoints of a for-migration internal range. This is only applicable when --usage is set
           to for-migration.
@@ -178,5 +177,7 @@
       - googlecloudsdk.command_lib.network_connectivity.util:ValidateMigration
     GA:
       api_version: v1
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.network_connectivity.util:ValidateMigration
     collection: networkconnectivity.projects.locations.internalRanges
     method: create

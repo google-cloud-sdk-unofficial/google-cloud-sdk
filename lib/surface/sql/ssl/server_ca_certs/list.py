@@ -60,7 +60,10 @@ class _BaseList(object):
     return iter(result.certs)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.UniverseCompatible
 class List(_BaseList, base.ListCommand):
   """List all server CA certs for a Cloud SQL instance."""
   pass

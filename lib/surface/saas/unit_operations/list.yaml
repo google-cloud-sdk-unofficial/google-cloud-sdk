@@ -1,0 +1,23 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: List Unit Operations
+    description: List Unit Operations
+    examples: |-
+      To list all Unit Operations, run:
+
+      $ {command}
+  arguments:
+    params:
+    - arg_name: parent
+      help_text: |-
+        The parent of the unit operation.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:project_location
+      required: true
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.unitOperations
+  response:
+    id_field: name

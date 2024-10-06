@@ -101,7 +101,24 @@ class Set(base.Command):
     return iap_setting_ref.SetIapSetting(args.setting_file)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SetBeta(Set):
+  """Set the setting for an IAP resource."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command.
+
+    Args:
+      parser: An argparse.ArgumentParser-like object. It is mocked out in order
+        to capture some information, but behaves like an ArgumentParser.
+    """
+    iap_util.AddIapSettingArg(parser, is_beta=True)
+    iap_util.AddIapSettingFileArg(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(Set):
 
   """Set the setting for an IAP resource."""
@@ -114,6 +131,6 @@ class SetAlpha(Set):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapSettingArg(parser, use_forwarding_rule=True)
+    iap_util.AddIapSettingArg(parser, is_alpha=True)
     iap_util.AddIapSettingFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)

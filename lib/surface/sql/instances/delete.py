@@ -82,9 +82,39 @@ class Delete(base.Command):
         collection='sql.instances',
     )
 
-    if not console_io.PromptContinue(
-        'All of the instance data will be lost when the instance is deleted.'
+    try:
+      instance_resource = sql_client.instances.Get(
+          sql_messages.SqlInstancesGetRequest(
+              project=instance_ref.project, instance=instance_ref.instance
+          )
+      )
+    except exceptions.HttpError as error:
+      instance_resource = None
+      # We do not want to raise an error here to be consistent with the
+      # previous behavior. The Get and Delete have different IAM auth
+      # permissions. GET requires READ, and DELETE requires WRITE.
+      log.debug(
+          'Ignoring the error to get instance resource : %s',
+          six.text_type(error),
+      )
+
+    if (
+        instance_resource is not None
+        and instance_resource.settings.retainBackupsOnDelete
     ):
+      prompt = (
+          'All of the instance data will be lost except the existing backups'
+          ' when the instance is deleted.'
+      )
+    else:
+      # TODO(b/361801536): Update the message to a link that points to public
+      # doc about how to retain the automated and ondemand backups.
+      # As the feature is not yet public, we do not have a link right now.
+      prompt = (
+          'All of the instance data will be lost when the instance is deleted.'
+      )
+
+    if not console_io.PromptContinue(prompt):
       return None
 
     expiry_time = None

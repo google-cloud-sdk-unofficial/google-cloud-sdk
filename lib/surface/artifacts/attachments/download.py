@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import attachment_util
 from googlecloudsdk.command_lib.artifacts import download_util
 from googlecloudsdk.command_lib.artifacts import flags
+from googlecloudsdk.command_lib.artifacts import requests
 from googlecloudsdk.core import log
 from six.moves.urllib.parse import unquote
 
@@ -57,9 +58,14 @@ class Download(base.Command):
     Args:
       parser: An argparse.ArgumentParser.
     """
-    flags.GetRequiredAttachmentFlag().AddToParser(parser)
+    flags.GetOptionalAttachmentFlag().AddToParser(parser)
     flags.GetChunkSize().AddToParser(parser)
-
+    parser.add_argument(
+        '--oci-version-name',
+        metavar='OCI_VERSION_NAME',
+        required=False,
+        help='The version name of the OCI artifact to download.',
+    )
     parser.add_argument(
         '--destination',
         metavar='DESTINATION',
@@ -80,7 +86,7 @@ class Download(base.Command):
           'Destination is not a directory: ' + args.destination
       )
     # Get the attachment.
-    attachment = attachment_util.GetAttachment(args)
+    attachment = attachment_util.GetAttachmentToDownload(args)
     self.download_files(args, attachment.files)
 
   def download_files(self, args, files):
@@ -91,7 +97,8 @@ class Download(base.Command):
       # ...files/sha256:123 -> 123
       # ...files/sha256:pkg%2Fv1.0 -> pkg/v1.0
       file_id = os.path.basename(file)
-      file_name = unquote(file_id.rsplit(':', 1)[1])
+      default_file_name = unquote(file_id.rsplit(':', 1)[1])
+      file_name = self.get_file_name(file, default_file_name)
       final_path = os.path.join(args.destination, file_name)
       download_util.Download(
           final_path,
@@ -103,3 +110,19 @@ class Download(base.Command):
       log.status.Print(
           'Successfully downloaded the file to {}'.format(args.destination)
       )
+
+  def get_file_name(self, file, default_file_name):
+    client = requests.GetClient()
+    messages = requests.GetMessages()
+    request = (
+        messages.ArtifactregistryProjectsLocationsRepositoriesFilesGetRequest(
+            name=file
+        )
+    )
+    resp = client.projects_locations_repositories_files.Get(request)
+    if resp.annotations is not None:
+      for e in resp.annotations.additionalProperties:
+        if e.key == 'artifactregistry.googleapis.com/file_name':
+          return e.value
+
+    return default_file_name

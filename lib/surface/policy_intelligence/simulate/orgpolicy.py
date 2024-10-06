@@ -32,23 +32,41 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = {
     'brief':
         """\
-      Preview of Violations Service for OrgPolicy Simulator.
+      Understand how changes to organization policies could affect your
+      resources.
         """,
     'DESCRIPTION':
         """\
-      Preview of Violations Service for OrgPolicy Simulator.
+      Understand how changes to organization policies could affect your
+      resources.
         """,
     'EXAMPLES':
         """\
-      Simulate changes to Organization Policies:, run:
+      To simulate changes to custom constraints defined in
+      `./custom-constraint.json`, run:
 
         $ {command}
         --organization=ORGANIZATION_ID
-        --policy policy.json
-        --custom-constraint custom-constraint.json
+        --custom-constraints=custom-constraint.json
 
-      See https://cloud.google.com/iam for more information about Org Policy Simulator.
-      The official Org Policy Simulator document will be released soon.
+      To simulate changes to organization policies defined in `./policy.json`,
+      run:
+
+        $ {command}
+        --organization=ORGANIZATION_ID
+        --policies=policy.json
+
+      To simulate changes to both custom constraints defined in
+      `./custom-constraint.json` and organization policies defined in
+      `./policy.json`, run:
+
+        $ {command}
+        --organization=ORGANIZATION_ID
+        --policies=policy.json
+        --custom-constraints=custom-constraint.json
+
+      See https://cloud.google.com/policy-intelligence/docs/test-organization-policies
+      for more information about Policy Simulator for Organization Policy.
 
       """
 }
@@ -67,11 +85,9 @@ def _ArgsParse(parser):
       type=arg_parsers.ArgList(),
       metavar='POLICIES',
       action=arg_parsers.UpdateAction,
-      help="""Path to the JSON or YAML file that contains the Org Policy to simulate.
-      Multiple Policies can be simulated by providing multiple, comma-separated paths.
-      E.g. --policies=p1.json,p2.json.
-      The format of policy can be found and created by `gcloud org-policies set-policy`.
-      See https://cloud.google.com/sdk/gcloud/reference/org-policies/set-policy for more details.
+      help="""Path to the JSON or YAML file that contains the organization
+      policy to simulate. Multiple policies can be simulated by providing
+      multiple, comma-separated paths. For example: `--policies=p1.json,p2.json`
       """)
 
   parser.add_argument(
@@ -79,17 +95,18 @@ def _ArgsParse(parser):
       type=arg_parsers.ArgList(),
       metavar='CUSTOM_CONSTRAINTS',
       action=arg_parsers.UpdateAction,
-      help="""Path to the JSON or YAML file that contains the Custom Constraints to simulate.
-      Multiple Custom Constraints can be simulated by providing multiple, comma-separated paths.
-      e.g., --custom-constraints=constraint1.json,constraint2.json.
+      help="""Path to the JSON or YAML file that contains the custom constraints
+      to simulate. Multiple custom constraints can be simulated by providing
+      multiple, comma-separated paths. For example:
+      `--custom-constraints=constraint1.json,constraint2.json`
       """)
 
 
 def _Run(args, version):
-  """Run the workflow for the OrgPolicy simulator."""
+  """Run the workflow for Policy Simulator for Organization Policy."""
   if not args.policies and not args.custom_constraints:
     raise exceptions.ConflictingArgumentsException(
-        'Must specify either --policies or --custom-constraints or both.')
+        'Must specify either `--policies`, `--custom-constraints`, or both.')
   op_api = orgpolicy_simulator.OrgPolicySimulatorApi(
       version)
 
@@ -172,8 +189,9 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class SimulateAlpha(base.Command):
-  """Simulate the Org Policies."""
+  """Simulate changes to organization policies."""
 
   detailed_help = _DETAILED_HELP
 
@@ -187,8 +205,9 @@ class SimulateAlpha(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class SimulateBeta(base.Command):
-  """Simulate the Org Policies."""
+  """Simulate changes to organization policies."""
 
   detailed_help = _DETAILED_HELP
 
@@ -202,9 +221,10 @@ class SimulateBeta(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 @base.Hidden
 class SimulateGA(base.Command):
-  """Simulate the Org Policies."""
+  """Simulate changes to organization policies."""
 
   detailed_help = _DETAILED_HELP
 

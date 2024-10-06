@@ -1,0 +1,143 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Create a Unit
+    description: Create a Unit
+    examples: |-
+      To create the Unit, run:
+
+      $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The resource name (full URI of the resource) following the standard naming
+        scheme:
+
+          "projects/{project}/locations/{location}/units/{unit}"
+      is_positional: true
+      request_id_field: unitId
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:unit
+      required: true
+    - arg_name: unit-kind
+      help_text: |-
+        Reference to the UnitKind this Unit belongs to (required and immutable once
+        created).
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:unit_kind
+      resource_method_params:
+        unit.unitKind: '{__relative_name__}'
+      required: false
+    - arg_name: target-release
+      help_text: |-
+        Reference to the Release object to use for the Unit. (optional).
+        If not specified, UnitKind's defaultRelease will be used.
+
+        This can only be changed if it is the same as current_release
+        (i.e. there is no ongoing upgrade), otherwise it will fail validation.
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:release
+      resource_method_params:
+        unit.targetRelease: '{__relative_name__}'
+      required: false
+    - arg_name: tenant
+      api_field: unit.tenant
+      required: false
+      repeated: false
+      help_text: |-
+        Reference to the Saas Tenant resource this unit belongs to. This for
+        example informs the maintenance policies to use for scheduling future
+        updates on a unit. (optional and immutable once created)
+    - arg_name: target-input-variables
+      api_field: unit.targetInputVariables
+      required: false
+      repeated: true
+      help_text: |-
+        Indicates the target input variables specified by the customer. Maximum 100.
+      spec:
+      - api_field: variable
+        help_text: |-
+          Name of the variable from actuation configs.
+      - api_field: type
+        help_text: |-
+          Name of a supported variable type. Supported types are string, int, bool.
+      - api_field: value
+        help_text: |-
+          String encoded value for the variable.
+    - group:
+        required: false
+        help_text: |-
+          Captures requested directives for performing future maintenance on the
+          unit. This includes a request for the unit to skip maintenance for a period
+          of time and remain pinned to its current release as well as controls for
+          postponing maintenance scheduled in future.
+        params:
+        - arg_name: maintenance-pinned-until-time
+          api_field: unit.maintenance.pinnedUntilTime
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDateTime
+          processor: googlecloudsdk.core.util.times:FormatDateTime
+          help_text: |-
+            If present, it fixes the release on the unit until the given time; i.e.
+            changes to the release field will be rejected. Rollouts should and will
+            also respect this by not requesting an upgrade in the first place.
+        - arg_name: maintenance-reschedule-after-time
+          api_field: unit.maintenance.rescheduleAfterTime
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDateTime
+          processor: googlecloudsdk.core.util.times:FormatDateTime
+          help_text: |-
+            If set, designates that the next maintenance (producer specified) should
+            be scheduled after a given time. This can be used in cases where the
+            initial scheduled maintenance needs to be postponed to a later date for
+            example due to not being ready for an upgrade.
+    - arg_name: operation-mode
+      api_field: unit.operationMode
+      required: false
+      help_text: |-
+        A set of operation modes of how the unit can be run.
+      choices:
+      - arg_value: operation-mode-manual
+        enum_value: OPERATION_MODE_MANUAL
+        help_text: |-
+          In manual mode, changes to Unit will have no effect until a corresponding
+          operation is created.
+      - arg_value: operation-mode-automatic
+        enum_value: OPERATION_MODE_AUTOMATIC
+        help_text: |-
+          In automatic mode, deployments will automatically create unit operations
+          to reflect changes reconcilled on unit.
+    - group:
+        required: false
+        help_text: |-
+          Blueprints are OCI Images that contain all of the artifacts needed to
+          provision a unit. Metadata such as, type of the engine used to actuate the
+          blueprint (e.g. terraform, helm etc) and version will come from the image
+          manifest. If the hostname is omitted, it will be assumed to be the regional
+          path to Artifact Registry (eg. us-east1-docker.pkg.dev).
+        params:
+        - arg_name: blueprint-package
+          api_field: unit.blueprint.package
+          required: false
+          repeated: false
+          help_text: |-
+            URI to a blueprint used by the Unit (required unless unitKind or release is
+            set).
+    - arg_name: labels
+      api_field: unit.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+        similar to Kubernetes resource labels.
+      spec:
+      - api_field: key
+      - api_field: value
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.units
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations

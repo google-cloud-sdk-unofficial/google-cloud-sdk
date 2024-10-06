@@ -52,6 +52,14 @@
       choices:
       - arg_value: OS_POLICY_ASSIGNMENT_V1
         help_text: OS policy assignment v1.
+    - arg_name: state
+      help_text: State of the policy orchestrator.
+      default: ACTIVE
+      choices:
+      - arg_value: ACTIVE
+        help_text: Policy orchestrator is active.
+      - arg_value: STOPPED
+        help_text: Policy orchestrator is stopped.
     - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
     - arg_name: include-projects
       help_text: Applies policy to selected projects only.

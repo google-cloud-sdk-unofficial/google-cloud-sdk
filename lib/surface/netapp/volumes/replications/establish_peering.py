@@ -40,7 +40,7 @@ class EstablishPeering(base.Command):
       'EXAMPLES': """\
           The following command establishes peering for Hybrid replication named NAME using the arguments specified:
 
-              $ {command} NAME --peer-cluster-name=peer-cluster-name1 --peer-svm-name=peer-svm-name1 --peer-ip-addresses=1.1.1.1,2.2.2.2
+              $ {command} NAME --volume=volume1 --peer-cluster-name=peer-cluster-name1 --peer-svm-name=peer-svm-name1 --peer-volume-name=peer-volume-name1 --peer-ip-addresses=1.1.1.1,2.2.2.2
           """,
   }
 
@@ -54,6 +54,7 @@ class EstablishPeering(base.Command):
     ]).AddToParser(parser)
     replications_flags.AddReplicationPeerClusterNameArg(parser)
     replications_flags.AddReplicationPeerSvmNameArg(parser)
+    replications_flags.AddReplicationPeerVolumeNameArg(parser)
     replications_flags.AddReplicationPeerIpAddressesArg(parser)
     replications_flags.AddReplicationVolumeArg(parser)
     flags.AddResourceAsyncFlag(parser)
@@ -70,6 +71,7 @@ class EstablishPeering(base.Command):
         client.ParseEstablishPeeringRequestConfig(
             args.peer_cluster_name,
             args.peer_svm_name,
+            args.peer_volume_name,
             args.peer_ip_addresses,
         )
     )

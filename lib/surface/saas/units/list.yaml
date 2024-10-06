@@ -1,0 +1,23 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: List Units
+    description: List Units
+    examples: |-
+      To list all Units, run:
+
+      $ {command}
+  arguments:
+    params:
+    - arg_name: parent
+      help_text: |-
+        Parent value for ListUnitsRequest
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:project_location
+      required: true
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.units
+  response:
+    id_field: name
