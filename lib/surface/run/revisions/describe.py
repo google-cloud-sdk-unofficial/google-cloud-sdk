@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Obtain details about revisions."""
 

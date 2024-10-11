@@ -219,6 +219,7 @@ class AlphaCreate(Create):
             ),
         },
     ).AddToParser(parser)
+    flags.DefaultBackupScheduleType().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -260,6 +261,7 @@ class AlphaCreate(Create):
         expire_behavior,
         args.ssd_cache,
         args.edition,
+        args.default_backup_schedule_type,
     )
     if args.async_:
       return op

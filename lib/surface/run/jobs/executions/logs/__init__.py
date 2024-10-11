@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Logs(base.Group):
   """Read logs for Cloud Run jobs executions."""

@@ -343,7 +343,7 @@ def RunBaseCreateCommand(args, release_track):
     can_infer_tier = (
         args.tier
         and command_util.DoesEnterprisePlusReplicaInferTierForDatabaseType(
-            sql_messages, args.database_version
+            args.database_version
         )
     )
     if not (args.IsSpecified('tier') or can_infer_tier):

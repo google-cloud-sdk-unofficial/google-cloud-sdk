@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Lists Cloud Run Integration Types."""
 
@@ -56,6 +56,8 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """List integration types."""
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     release_track = self.ReleaseTrack()
     with run_apps_operations.Connect(args, release_track) as client:
       # Output is sorted by the integration name to guarantee the same ordering

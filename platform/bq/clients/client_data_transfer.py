@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-"""The BigQuery CLI dataset client library."""
+"""The BigQuery CLI data transfer client library."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import logging
-from typing import Dict, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional
 
 
 
@@ -35,15 +36,59 @@ class TransferScheduleArgs:
       start_time: Optional[str] = None,
       end_time: Optional[str] = None,
       disable_auto_scheduling: Optional[bool] = False,
+      event_driven_schedule: Optional[str] = None,
   ):
     self.schedule = schedule
     self.start_time = start_time
     self.end_time = end_time
     self.disable_auto_scheduling = disable_auto_scheduling
+    self.event_driven_schedule = event_driven_schedule
+
+  def ToScheduleOptionsV2Payload(
+      self, options_to_copy: Optional[Dict[str, Any]] = None
+  ) -> Dict[str, Any]:
+    """Returns a dictionary of schedule options v2.
+
+    Args:
+      options_to_copy: Existing options to copy from.
+
+    Returns:
+      A dictionary of schedule options v2 expected by the
+      bigquery.transfers.create and bigquery.transfers.update API methods.
+
+    Raises:
+      bq_error.BigqueryError: If shedule options conflict.
+    """
+    self._ValidateScheduleOptions()
+
+    options = {}
+    if self.event_driven_schedule:
+      options['eventDrivenSchedule'] = self._ProcessEventDrivenSchedule(
+          self.event_driven_schedule
+      )
+    elif self.disable_auto_scheduling:
+      options['manualSchedule'] = {}
+    else:
+      options['timeBasedSchedule'] = {}
+      if options_to_copy and 'timeBasedSchedule' in options_to_copy:
+        options['timeBasedSchedule'] = dict(
+            options_to_copy['timeBasedSchedule']
+        )
+      if self.schedule:
+        options['timeBasedSchedule']['schedule'] = self.schedule
+      if self.start_time:
+        options['timeBasedSchedule']['startTime'] = self._TimeOrInfitity(
+            self.start_time
+        )
+      if self.end_time:
+        options['timeBasedSchedule']['endTime'] = self._TimeOrInfitity(
+            self.end_time
+        )
+    return options
 
   def ToScheduleOptionsPayload(
       self, options_to_copy: Optional[Dict[str, str]] = None
-  ):
+  ) -> Dict[str, Any]:
     """Returns a dictionary of schedule options.
 
     Args:
@@ -69,6 +114,57 @@ class TransferScheduleArgs:
   def _TimeOrInfitity(self, time_str: str):
     """Returns None to indicate Inifinity, if time_str is an empty string."""
     return time_str or None
+
+  def _ValidateScheduleOptions(self):
+    """Validates schedule options.
+
+    Raises:
+      bq_error.BigqueryError: If the given schedule options conflict.
+    """
+    is_time_based_schedule = any(
+        [self.schedule, self.start_time, self.end_time]
+    )
+    is_event_driven_schedule = self.event_driven_schedule is not None
+    if (
+        sum([
+            self.disable_auto_scheduling,
+            is_time_based_schedule,
+            is_event_driven_schedule,
+        ])
+    ) > 1:
+      raise bq_error.BigqueryError(
+          'The provided scheduling options conflict. Please specify one of'
+          ' no_auto_scheduling, time-based schedule or event-driven schedule.'
+      )
+
+  def _ProcessEventDrivenSchedule(
+      self,
+      event_driven_schedule: str,
+  ) -> Dict[str, str]:
+    """Processes the event_driven_schedule given in JSON format.
+
+    Args:
+      event_driven_schedule: The user specified event driven schedule. This
+        should be in JSON format given as a string. Ex:
+        --event_driven_schedule='{"pubsub_subscription":"subscription"}'.
+
+    Returns:
+      parsed_event_driven_schedule: The parsed event driven schedule.
+
+    Raises:
+      bq_error.BigqueryError: If there is an error with the given params.
+    """
+    try:
+      parsed_event_driven_schedule = json.loads(event_driven_schedule)
+    except Exception as e:
+      raise bq_error.BigqueryError(
+          'Event driven schedule should be specified in JSON format.'
+      ) from e
+    if 'pubsub_subscription' not in parsed_event_driven_schedule:
+      raise bq_error.BigqueryError(
+          'Must specify pubsub_subscription in --event_driven_schedule.'
+      )
+    return parsed_event_driven_schedule
 
 
 def GetTransferConfig(transfer_client: discovery.Resource, transfer_id: str):
@@ -419,12 +515,8 @@ def UpdateTransferConfig(
   project_reference = 'projects/' + (
       bq_client_utils.GetProjectReference(id_fallbacks=id_fallbacks).projectId
   )
-  current_config = (
-      transfer_client.projects()
-      .locations()
-      .transferConfigs()
-      .get(name=reference.transferConfigName)
-      .execute()
+  current_config = GetTransferConfig(
+      transfer_client, reference.transferConfigName
   )
   update_mask = []
   update_items = {}
@@ -466,15 +558,12 @@ def UpdateTransferConfig(
     update_mask.append('transfer_config.data_refresh_window_days')
 
   if schedule_args:
-    if schedule_args.schedule is not None:
-      # update schedule if a custom string was provided
-      update_items['schedule'] = schedule_args.schedule
-      update_mask.append('transfer_config.schedule')
-
-    update_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload(
-        options_to_copy=current_config.get('scheduleOptions')
+    update_items['scheduleOptionsV2'] = (
+        schedule_args.ToScheduleOptionsV2Payload(
+            current_config.get('scheduleOptionsV2')
+        )
     )
-    update_mask.append('transfer_config.scheduleOptions')
+    update_mask.append('transfer_config.scheduleOptionsV2')
 
   if notification_pubsub_topic:
     update_items['notification_pubsub_topic'] = notification_pubsub_topic
@@ -589,9 +678,9 @@ def CreateTransferConfig(
     parent = reference + '/locations/-'
 
   if schedule_args:
-    if schedule_args.schedule is not None:
-      create_items['schedule'] = schedule_args.schedule
-    create_items['scheduleOptions'] = schedule_args.ToScheduleOptionsPayload()
+    create_items['scheduleOptionsV2'] = (
+        schedule_args.ToScheduleOptionsV2Payload()
+    )
 
   if notification_pubsub_topic:
     create_items['notification_pubsub_topic'] = notification_pubsub_topic

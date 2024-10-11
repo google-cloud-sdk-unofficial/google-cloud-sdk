@@ -22,6 +22,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 
 
+@base.UniverseCompatible
 class Revisions(base.Group):
   """View and manage your Cloud Run revisions.
 

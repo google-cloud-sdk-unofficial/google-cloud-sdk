@@ -332,6 +332,9 @@ class Show(bigquery_command.BigqueryCmd):
     if reference is None:
       raise app.UsageError('Must provide an identifier for show.')
 
+    if isinstance(reference, DatasetReference) and not object_info:
+      pass
+
     if object_info is None:
       object_info = client.GetObjectInfo(reference)
     bq_frontend_utils.PrintObjectInfo(

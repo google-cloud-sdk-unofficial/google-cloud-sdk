@@ -8,6 +8,22 @@ help_text:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
       --retention-period=7d
+
+    To update the hot-to-standard time of backup 'BACKUP_NAME' to '2019-03-31T10:49:41Z', run:
+
+      $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
+      --hot-to-standard-time=2019-03-31T10:49:41Z
+
+    To update the hot-to-standard time of backup 'BACKUP_NAME' to 7 days from now, run:
+
+      $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
+      --hot-to-standard-time=+P7d
+
+    To clear the hot-to-standard time of backup 'BACKUP_NAME', run:
+
+      $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
+      --hot-to-standard-time=''
+
 request:
   collection: bigtableadmin.projects.instances.clusters.backups
   modify_request_hooks:
@@ -40,5 +56,3 @@ arguments:
       Time at which a hot backup will be converted to a standard backup; must be at least 24 hours
       from backup creation time. Only applies for hot backups. See `$ gcloud topic datetimes` for
       information on date/time formats. See `$ gcloud bigtable backups describe` for creation time.
-    release_tracks: ALPHA
-    hidden: true  # TODO: b/337328220 - Unhide for GA.

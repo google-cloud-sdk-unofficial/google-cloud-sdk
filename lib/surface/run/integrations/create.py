@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
@@ -28,6 +29,7 @@ from googlecloudsdk.command_lib.runapps import exceptions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Cloud Run Integration."""
 
@@ -62,7 +64,8 @@ class Create(base.Command):
 
   def Run(self, args):
     """Creates a Cloud Run Integration."""
-
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     integration_type = args.type
     service = args.service
     input_name = args.name

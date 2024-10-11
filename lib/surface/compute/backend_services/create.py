@@ -475,7 +475,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
-  _support_stateful_affinity = False
+  _support_stateful_affinity = True
 
   @classmethod
   def Args(cls, parser):

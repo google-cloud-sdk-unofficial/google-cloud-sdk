@@ -26,6 +26,7 @@ import bq_flags
 import bq_utils
 from clients import bigquery_http
 from clients import utils as bq_client_utils
+from clients import wait_printer
 from discovery_documents import discovery_document_cache
 from discovery_documents import discovery_document_loader
 from utils import bq_api_utils
@@ -69,8 +70,8 @@ class BigqueryClient:
       trace: Optional[str] = None,
       sync: bool = True,
       wait_printer_factory: Optional[
-          Callable[[], bq_client_utils.TransitionWaitPrinter]
-      ] = bq_client_utils.TransitionWaitPrinter,
+          Callable[[], wait_printer.TransitionWaitPrinter]
+      ] = wait_printer.TransitionWaitPrinter,
       job_id_generator: bq_client_utils.JobIdGenerator = bq_client_utils.JobIdGeneratorIncrementing(
           bq_client_utils.JobIdGeneratorRandom()
       ),
@@ -139,7 +140,6 @@ class BigqueryClient:
     self._iam_policy_apiclient = None
     default_flag_values = {
         'iam_policy_discovery_document': _DEFAULT,
-        'connection_service_path': None,
     }
     for flagname, default in default_flag_values.items():
       if not hasattr(self, flagname):
@@ -205,11 +205,11 @@ class BigqueryClient:
 
   def GetDiscoveryUrl(self, service: Service, api_version: str) -> str:
     """Returns the url to the discovery document for bigquery."""
-    discovery_url = ''
+    discovery_url = None  # pylint:disable=unused-variable
     if not discovery_url:
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
           bq_api_utils.get_tpc_root_url_from_flags(
-              service=service, inputted_flags=bq_flags, local_params=self
+              service=service, inputted_flags=bq_flags
           ),
           api_version=api_version,
       )
@@ -259,7 +259,10 @@ class BigqueryClient:
         )
       return google_auth_httplib2.AuthorizedHttp(credentials, http=http)
     return credentials.authorize(http)
-    # LINT.ThenChange(//depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_lib.py:http_authorization)
+    # LINT.ThenChange(
+    #     //depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_lib.py:http_authorization,
+    #     //depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_util.py:http_authorization,
+    # )
 
   def BuildApiClient(
       self,
@@ -275,7 +278,10 @@ class BigqueryClient:
     bigquery_model = bigquery_http.BigqueryModel(
         trace=self.trace,
         quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            self.quota_project_id, self.use_google_auth, self.credentials
+            quota_project_id=self.quota_project_id,
+            project_id=self.project_id,
+            use_google_auth=self.use_google_auth,
+            credentials=self.credentials,
         ),
     )
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
@@ -286,14 +292,16 @@ class BigqueryClient:
     if self.discovery_document != _DEFAULT:
       discovery_document = self.discovery_document
       logging.info(
-          'Skipping local discovery document load since discovery_document has'
-          ' a value: %s',
+          'Skipping local "%s" discovery document load since discovery_document'
+          ' has a value: %s',
+          service,
           discovery_document,
       )
     elif discovery_url is not None:
       logging.info(
-          'Skipping local discovery document load since discovery_url has'
-          ' a value'
+          'Skipping the local "%s" discovery document load since discovery_url'
+          ' has a value',
+          service,
       )
     else:
       # Load the local api description if one exists and is supported.
@@ -304,10 +312,14 @@ class BigqueryClient:
             )
         )
       except FileNotFoundError as e:
-        logging.warning('Failed to load discovery doc from local files: %s', e)
+        logging.warning(
+            'Failed to load the "%s" discovery doc from local files: %s',
+            service,
+            e,
+        )
 
     if discovery_document is not None:
-      logging.info('Discovery doc is already loaded')
+      logging.info('The "%s" discovery doc is already loaded', service)
     else:
       # Attempt to retrieve discovery doc with retry logic for transient,
       # retry-able errors.
@@ -328,7 +340,11 @@ class BigqueryClient:
             discovery_url = self.GetDiscoveryUrl(
                 service=service, api_version=self.api_version
             )
-          logging.info('Requesting discovery document from %s', discovery_url)
+          logging.info(
+              'Requesting "%s" discovery document from %s',
+              service,
+              discovery_url,
+          )
           if headers:
             response_metadata, discovery_document = http.request(
                 discovery_url, headers=headers
@@ -397,47 +413,14 @@ class BigqueryClient:
       )
     except Exception:
       logging.error(
-          'Error building from discovery document: %s', discovery_document
+          'Error building from the "%s" discovery document: %s',
+          service,
+          discovery_document,
       )
       raise
 
 
     return built_client
-
-  def BuildIAMPolicyApiClient(self) -> discovery.Resource:
-    """Builds and returns IAM policy API client from discovery document."""
-    http = self.GetAuthorizedHttp(self.credentials, self.GetHttp())
-    bigquery_model = bigquery_http.BigqueryModel(
-        trace=self.trace,
-        quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            self.quota_project_id, self.use_google_auth, self.credentials
-        ),
-    )
-    bq_request_builder = bigquery_http.BigqueryHttp.Factory(
-        bigquery_model,
-        self.use_google_auth,
-    )
-    try:
-      iam_pol_doc = discovery_document_loader.load_local_discovery_doc(
-          discovery_document_loader.DISCOVERY_NEXT_IAM_POLICY
-      )
-      iam_pol_doc = self.OverrideEndpoint(
-          discovery_document=iam_pol_doc, service=Service.BQ_IAM
-      )
-    except (bq_error.BigqueryClientError, FileNotFoundError) as e:
-      logging.warning('Failed to load discovery doc from local files: %s', e)
-      raise
-
-    try:
-      return discovery.build_from_document(
-          iam_pol_doc,
-          http=http,
-          model=bigquery_model,
-          requestBuilder=bq_request_builder,
-      )
-    except Exception:
-      logging.error('Error building from iam policy document: %s', iam_pol_doc)
-      raise
 
   @property
   def apiclient(self) -> discovery.Resource:
@@ -471,7 +454,9 @@ class BigqueryClient:
   def GetIAMPolicyApiClient(self) -> discovery.Resource:
     """Return the apiclient attached to self."""
     if self._iam_policy_apiclient is None:
-      self._iam_policy_apiclient = self.BuildIAMPolicyApiClient()
+      self._iam_policy_apiclient = self.BuildApiClient(
+          service=Service.BQ_IAM,
+      )
     return self._iam_policy_apiclient
 
   def GetInsertApiClient(self) -> discovery.Resource:
@@ -492,7 +477,7 @@ class BigqueryClient:
       logging.info('Using the cached Transfer API client')
     else:
       path = transferserver_address or bq_api_utils.get_tpc_root_url_from_flags(
-          service=Service.DTS, inputted_flags=bq_flags, local_params=self
+          service=Service.DTS, inputted_flags=bq_flags
       )
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
           path, api_version='v1'
@@ -515,7 +500,6 @@ class BigqueryClient:
           or bq_api_utils.get_tpc_root_url_from_flags(
               service=Service.RESERVATIONS,
               inputted_flags=bq_flags,
-              local_params=self,
           )
       )
       reservation_version = 'v1'
@@ -541,7 +525,6 @@ class BigqueryClient:
           or bq_api_utils.get_tpc_root_url_from_flags(
               service=Service.CONNECTIONS,
               inputted_flags=bq_flags,
-              local_params=self,
           )
       )
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
@@ -583,7 +566,7 @@ class BigqueryClient:
 
     if is_prod:
       discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(
-          service=service, inputted_flags=bq_flags, local_params=self
+          service=service, inputted_flags=bq_flags
       )
 
 

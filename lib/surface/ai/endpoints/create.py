@@ -42,6 +42,7 @@ def _AddArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetEndpointNetworkArg().AddToParser(parser)
   flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
+  flags.GetGdceZoneArg().AddToParser(parser)
   flags.AddRequestResponseLoggingConfigGroupArgs(parser)
 
 
@@ -77,6 +78,7 @@ def _Run(args, version):
           network=args.network,
           endpoint_id=args.endpoint_id,
           encryption_kms_key_name=args.encryption_kms_key_name,
+          gdce_zone=args.gdce_zone,
           request_response_logging_table=args.request_response_logging_table,
           request_response_logging_rate=args.request_response_logging_rate)
     response_msg = operations_util.WaitForOpMaybe(
@@ -90,6 +92,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class CreateGa(base.CreateCommand):
   """Create a new Vertex AI endpoint.
 

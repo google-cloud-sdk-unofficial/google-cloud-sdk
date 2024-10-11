@@ -18,6 +18,7 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
+from frontend import utils_formatting
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -106,6 +107,9 @@ class Extract(bigquery_command.BigqueryCmd):
         short_name='m',
         flag_values=fv,
     )
+    self.reservation_id_for_a_job_flag = (
+        frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -134,6 +138,8 @@ class Extract(bigquery_command.BigqueryCmd):
     }
     if bq_flags.LOCATION.value:
       kwds['location'] = bq_flags.LOCATION.value
+    if self.reservation_id_for_a_job_flag.present:
+      kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value
 
     if self.m:
       reference = bq_client_utils.GetModelReference(
@@ -160,6 +166,6 @@ class Extract(bigquery_command.BigqueryCmd):
     )
     if bq_flags.SYNCHRONOUS_MODE.value:
       # If we are here, the job succeeded, but print warnings if any.
-      frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
+      frontend_utils.PrintJobMessages(utils_formatting.format_job_info(job))
     else:
       self.PrintJobStartInfo(job)

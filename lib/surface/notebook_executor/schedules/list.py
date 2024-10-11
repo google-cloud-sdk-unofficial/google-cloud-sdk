@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Lists your project's Notebook Executor schedules in a given region.
+        List your project's Notebook Executor schedules in a given region.
     """,
     'EXAMPLES': """
         To list your schedules in region `us-central1`, run:

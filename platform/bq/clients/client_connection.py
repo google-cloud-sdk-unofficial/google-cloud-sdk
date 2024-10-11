@@ -13,7 +13,6 @@ from typing import Any, Dict, List, Mapping, Optional
 from googleapiclient import discovery
 import inflection
 
-from clients import utils as bq_client_utils
 from utils import bq_api_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -106,7 +105,7 @@ def CreateConnection(
   if kms_key_name:
     connection['kmsKeyName'] = kms_key_name
 
-  property_name = bq_client_utils.CONNECTION_TYPE_TO_PROPERTY_MAP.get(
+  property_name = bq_processor_utils.CONNECTION_TYPE_TO_PROPERTY_MAP.get(
       connection_type
   )
   if property_name:

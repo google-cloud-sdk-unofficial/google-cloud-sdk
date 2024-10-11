@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.DefaultUniverseOnly
 class Rules(base.Group):
   """Manage Artifact Registry rules.
 

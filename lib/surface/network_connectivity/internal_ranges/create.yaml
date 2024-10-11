@@ -97,7 +97,6 @@
           meant to block out address ranges for various use cases, like for example, usage on-prem,
           with dynamic route announcements via interconnect.
       - arg_value: for-migration
-        release_tracks: [ALPHA]
         enum_value: FOR_MIGRATION
         help_text: |
           Ranges created with FOR_MIGRATION are used as locks for migrating subnetworks between

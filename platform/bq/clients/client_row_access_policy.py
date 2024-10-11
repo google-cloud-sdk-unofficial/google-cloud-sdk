@@ -19,6 +19,93 @@ from utils import bq_id_utils
 _FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
 
 
+def create_row_access_policy(
+    bqclient: bigquery_client.BigqueryClient,
+    policy_reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference',
+    grantees: List[str],
+    filter_predicate: str,
+):
+  """Create a row access policy on the given table reference.
+
+  Arguments:
+   bqclient: BigQuery client to use for the request.
+   policy_reference: Reference to the row access policy to create.
+   grantees: Users or groups that can access rows protected by the row access
+     policy.
+   filter_predicate: A SQL boolean expression that needs to be true for a row to
+     be included in the result.
+
+  Returns:
+    rowAccessPolicy: The created row access policy defined in
+    google3/google/cloud/bigquery/v2/row_access_policy.proto;l=235;rcl=642795091
+  """
+  row_access_policy = {
+      'rowAccessPolicyReference': {
+          'projectId': policy_reference.projectId,
+          'datasetId': policy_reference.datasetId,
+          'tableId': policy_reference.tableId,
+          'policyId': policy_reference.policyId,
+      },
+      'filterPredicate': filter_predicate,
+      'grantees': grantees,
+  }
+  return (
+      bqclient.GetRowAccessPoliciesApiClient()
+      .rowAccessPolicies()
+      .insert(
+          projectId=policy_reference.projectId,
+          datasetId=policy_reference.datasetId,
+          tableId=policy_reference.tableId,
+          body=row_access_policy,
+      )
+      .execute()
+  )
+
+
+def update_row_access_policy(
+    bqclient: bigquery_client.BigqueryClient,
+    policy_reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference',
+    grantees: List[str],
+    filter_predicate: str,
+):
+  """Update a row access policy on the given table reference.
+
+  Arguments:
+   bqclient: BigQuery client to use for the request.
+   policy_reference: Reference to the row access policy to update.
+   grantees: Users or groups that can access rows protected by the row access
+     policy.
+   filter_predicate: A SQL boolean expression that needs to be true for a row to
+     be included in the result.
+
+  Returns:
+    rowAccessPolicy: The updated row access policy defined in
+    google3/google/cloud/bigquery/v2/row_access_policy.proto;l=235;rcl=642795091
+  """
+  row_access_policy = {
+      'rowAccessPolicyReference': {
+          'projectId': policy_reference.projectId,
+          'datasetId': policy_reference.datasetId,
+          'tableId': policy_reference.tableId,
+          'policyId': policy_reference.policyId,
+      },
+      'filterPredicate': filter_predicate,
+      'grantees': grantees,
+  }
+  return (
+      bqclient.GetRowAccessPoliciesApiClient()
+      .rowAccessPolicies()
+      .update(
+          projectId=policy_reference.projectId,
+          datasetId=policy_reference.datasetId,
+          tableId=policy_reference.tableId,
+          policyId=policy_reference.policyId,
+          body=row_access_policy,
+      )
+      .execute()
+  )
+
+
 def _list_row_access_policies(
     bqclient: bigquery_client.BigqueryClient,
     table_reference: 'bq_id_utils.ApiClientHelper.TableReference',

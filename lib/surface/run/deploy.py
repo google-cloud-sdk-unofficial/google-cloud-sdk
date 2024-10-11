@@ -141,6 +141,7 @@ class Deploy(base.Command):
     flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddInvokerIamCheckFlag(managed_group)
 
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
@@ -534,6 +535,19 @@ class Deploy(base.Command):
   def _GetRequiredApis(self, args):
     return [api_enabler.get_run_api()]
 
+  def _DisplaySuccessMessage(self, service, args):
+    if args.async_:
+      pretty_print.Success(
+          'Service [{{bold}}{serv}{{reset}}] is deploying '
+          'asynchronously.'.format(serv=service.name)
+      )
+    else:
+      pretty_print.Success(
+          messages_util.GetSuccessMessageForSynchronousDeploy(
+              service, args.no_traffic
+          )
+      )
+
   def Run(self, args):
     """Deploy a container to Cloud Run."""
     platform = flags.GetAndValidatePlatform(
@@ -661,17 +675,7 @@ class Deploy(base.Command):
             enable_automatic_updates=enable_automatic_updates,
         )
 
-      if args.async_:
-        pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is deploying '
-            'asynchronously.'.format(serv=service.name)
-        )
-      else:
-        pretty_print.Success(
-            messages_util.GetSuccessMessageForSynchronousDeploy(
-                service, args.no_traffic
-            )
-        )
+      self._DisplaySuccessMessage(service, args)
       return service
 
 
@@ -795,37 +799,10 @@ class BetaDeploy(Deploy):
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddGpuTypeFlag(managed_group, hidden=False)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
-    container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDeploy(BetaDeploy):
-  """Create or update a Cloud Run service."""
-
-  @classmethod
-  def Args(cls, parser):
-    cls.CommonArgs(parser)
-
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddDeployHealthCheckFlag(managed_group)
-    flags.AddDefaultUrlFlag(managed_group)
-    flags.AddIapFlag(managed_group)
-    flags.AddInvokerIamCheckFlag(managed_group)
-    flags.AddRuntimeFlag(managed_group)
-    flags.AddServiceMaxInstancesFlag(managed_group)
-    flags.AddScalingModeFlag(managed_group)
-    flags.AddMaxSurgeFlag(managed_group)
-    flags.AddMaxUnavailableFlag(managed_group)
     flags.AddRegionsArg(managed_group)
-    flags.AddDomainArg(managed_group)
-    flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
-    flags.AddDelegateBuildsFlag(managed_group)
 
   def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     if self.__is_multi_region:
@@ -847,6 +824,16 @@ class AlphaDeploy(BetaDeploy):
     if self.__is_multi_region:
       return self.__is_multi_region.split(',')
     return None
+
+  def _DisplaySuccessMessage(self, service, args):
+    if not self.__is_multi_region or args.async_:
+      return super()._DisplaySuccessMessage(service, args)
+
+    pretty_print.Success(
+        messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
+            service, self._GetAllowUnauthRegions(args)
+        )
+    )
 
   def _ConnectionContext(self, args):
     """Returns the connection context with is_multiregion set."""
@@ -889,7 +876,7 @@ class AlphaDeploy(BetaDeploy):
           has_latest,
       )
     deployment_stages = stages.ServiceStages(
-        include_iam_policy_set=allow_unauth,
+        include_iam_policy_set=allow_unauth is not None,
         include_route=False,
         include_build=bool(build_from_source),
         include_create_repo=False,
@@ -908,6 +895,56 @@ class AlphaDeploy(BetaDeploy):
         ),
         suppress_output=args.async_,
     )
+
+  def Run(self, args):
+    """Deploy a container to Cloud Run."""
+    # If this is a multi-region Service, we will use the global endpoint
+    # for all operations, and append a regions annotation to the Service.
+    self.__is_multi_region = flags.GetMultiRegion(args)
+    return super().Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(BetaDeploy):
+  """Create or update a Cloud Run service."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+
+    # Flags specific to managed CR
+    managed_group = flags.GetManagedArgGroup(parser)
+    flags.AddDeployHealthCheckFlag(managed_group)
+    flags.AddDefaultUrlFlag(managed_group)
+    flags.AddIapFlag(managed_group)
+    flags.AddRuntimeFlag(managed_group)
+    flags.AddServiceMaxInstancesFlag(managed_group)
+    flags.AddScalingModeFlag(managed_group)
+    flags.AddMaxSurgeFlag(managed_group)
+    flags.AddMaxUnavailableFlag(managed_group)
+    flags.AddRegionsArg(managed_group)
+    flags.AddDomainArg(managed_group)
+    flags.AddGpuTypeFlag(managed_group)
+    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
+    flags.AddDelegateBuildsFlag(managed_group)
+
+  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
+    if self.__is_multi_region:
+      allow_unauth = flags.GetAllowUnauthenticated(
+          args,
+          operations,
+          service_ref,
+          not service_exists,
+          region_override=self.__is_multi_region.split(',')[0],
+      )
+      # Avoid failure removing a policy binding for a service that
+      # doesn't exist.
+      if not service_exists and not allow_unauth:
+        return None
+      return allow_unauth
+    return super().GetAllowUnauth(args, operations, service_ref, service_exists)
 
   def _MaybeGetDomain(self, args):
     if self.__is_multi_region and flags.FlagIsExplicitlySet(args, 'domain'):
@@ -946,7 +983,7 @@ class AlphaDeploy(BetaDeploy):
       if stacks_client.MaybeGetIntegrationGeneric('custom-domains', 'router'):
         stacks_client.UpdateIntegration('custom-domains', params)
         pretty_print.Success(
-            'Sucessfully updated mapping {svc} to domain {domain}',
+            'Successfully updated mapping {svc} to domain {domain}',
             svc=service_name,
             domain=domain_name,
         )
@@ -957,7 +994,7 @@ class AlphaDeploy(BetaDeploy):
             None,
         )
         pretty_print.Success(
-            'Sucessfully created mapping {svc} to domain {domain}',
+            'Successfully created mapping {svc} to domain {domain}',
             svc=service_name,
             domain=domain_name,
         )
@@ -968,7 +1005,7 @@ class AlphaDeploy(BetaDeploy):
     # for all operations, and append a regions annotation to the Service.
     self.__is_multi_region = flags.GetMultiRegion(args)
     service = super().Run(args)
-    # TODO(b/331844226) - integrate Cloud Run and Integrations stages.
+    # TODO(b/364446529) - Remove from gcloud alpha.
     self._MaybeCreateDomainIntegration(service, args)
     return service
 

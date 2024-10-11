@@ -2,8 +2,7 @@
 """Utilities to load Google Auth credentials from gcloud."""
 
 import logging
-import os
-import subprocess
+import subprocess  # pylint: disable=unused-import
 from typing import Iterator, List, Optional
 
 from google.oauth2 import credentials as google_oauth2
@@ -11,8 +10,10 @@ from google.oauth2 import credentials as google_oauth2
 import bq_auth_flags
 import bq_flags
 import bq_utils
+from gcloud_wrapper import gcloud_runner
 from utils import bq_error
-from pyglib import resources
+
+ERROR_TEXT_PRODUCED_IF_GCLOUD_NOT_FOUND = "No such file or directory: 'gcloud'"
 
 
 def LoadCredential() -> google_oauth2.Credentials:
@@ -27,18 +28,6 @@ def LoadCredential() -> google_oauth2.Credentials:
           bq_auth_flags.QUOTA_PROJECT_ID.value, bq_flags.PROJECT_ID.value
       ),
   )
-
-
-def _GetGcloudPath() -> str:
-  """Returns the string to use to call gcloud."""
-  if 'nt' == os.name:
-    binary = 'gcloud.cmd'
-  else:
-    binary = 'gcloud'
-  if bq_utils.IS_TPC_BINARY:
-    binary = resources.GetResourceFilename('google3/cloud/sdk/gcloud/' + binary)
-  logging.info('Found gcloud path: %s', binary)
-  return binary
 
 
 def _GetAccessTokenAndPrintOutput() -> Optional[str]:
@@ -82,7 +71,7 @@ def _GetTokenFromGcloudAndPrintOtherOutput(cmd: List[str]) -> Optional[str]:
       )
   except Exception as e:  # pylint: disable=broad-exception-caught
     single_line_error_msg = str(e).replace('\n', '')
-    if "No such file or directory: 'gcloud'" in single_line_error_msg:
+    if ERROR_TEXT_PRODUCED_IF_GCLOUD_NOT_FOUND in single_line_error_msg:
       raise bq_error.BigqueryError(
           "'gcloud' not found but is required for authentication. To install,"
           ' follow these instructions:'
@@ -95,22 +84,18 @@ def _GetTokenFromGcloudAndPrintOtherOutput(cmd: List[str]) -> Optional[str]:
 
 def _RunGcloudCommand(cmd: List[str]) -> Iterator[str]:
   """Runs the given gcloud command, yields the output, and returns the final status code."""
-  popen = subprocess.Popen(
-      [_GetGcloudPath()] + cmd,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-      universal_newlines=True,
-  )
+  stderr = subprocess.STDOUT  # pylint:disable=unused-variable
+  proc = gcloud_runner.run_gcloud_command(cmd, stderr=stderr)
   error_msgs = []
-  if popen.stdout:
-    for stdout_line in iter(popen.stdout.readline, ''):
+  if proc.stdout:
+    for stdout_line in iter(proc.stdout.readline, ''):
       line = str(stdout_line).strip()
       if line.startswith('ERROR:') or error_msgs:
         error_msgs.append(line)
       else:
         yield line
-    popen.stdout.close()
-  return_code = popen.wait()
+    proc.stdout.close()
+  return_code = proc.wait()
   if return_code:
     raise bq_error.BigqueryError('\n'.join(error_msgs))
 

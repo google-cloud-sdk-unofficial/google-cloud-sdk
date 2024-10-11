@@ -132,6 +132,7 @@ class Update(base.UpdateCommand):
     flags.ValidateSurgeUpgradeSettings(args)
 
     return api_adapter.UpdateNodePoolOptions(
+        accelerators=args.accelerator,
         enable_autorepair=args.enable_autorepair,
         enable_autoupgrade=args.enable_autoupgrade,
         enable_autoscaling=args.enable_autoscaling,

@@ -20,6 +20,7 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
+from frontend import utils_formatting
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -397,6 +398,9 @@ class Load(bigquery_command.BigqueryCmd):
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
+    self.reservation_id_for_a_job_flag = (
+        frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -575,10 +579,12 @@ class Load(bigquery_command.BigqueryCmd):
         )
       if parquet_options:
         opts['parquet_options'] = parquet_options
+    if self.reservation_id_for_a_job_flag.present:
+      opts['reservation_id'] = self.reservation_id_for_a_job_flag.value
     job = client_job.Load(
         client, table_reference, source, schema=schema, **opts
     )
     if bq_flags.SYNCHRONOUS_MODE.value:
-      frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
+      frontend_utils.PrintJobMessages(utils_formatting.format_job_info(job))
     else:
       self.PrintJobStartInfo(job)

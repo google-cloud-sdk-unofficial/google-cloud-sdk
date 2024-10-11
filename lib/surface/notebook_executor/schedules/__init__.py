@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden  # TODO(b/344629412): Make visible after e2e tests are ready.
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Schedules(base.Group):

@@ -19,6 +19,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
@@ -126,11 +127,11 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
 
     destination_dataset = destination_table.GetDatasetReference()
 
-    bq_client_utils.ConfigureFormatter(
+    utils_formatting.configure_formatter(
         formatter, bq_id_utils.ApiClientHelper.TableReference
     )
     results = map(
-        bq_client_utils.FormatTableInfo,
+        utils_formatting.format_table_info,
         client.ListTables(source_dataset, max_results=1000 * 1000),
     )
 

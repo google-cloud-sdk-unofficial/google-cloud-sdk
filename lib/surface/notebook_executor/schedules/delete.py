@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Deletes a notebook executor schedule.
+        Delete a notebook executor schedule.
     """,
     'EXAMPLES': """
         To delete a schedule with id `my-schedule`, in region `us-central1`, run:

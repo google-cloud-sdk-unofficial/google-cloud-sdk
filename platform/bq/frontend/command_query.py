@@ -28,6 +28,7 @@ from pyglib import appcommands
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
 from pyglib import stringutil
@@ -369,6 +370,9 @@ class Query(bigquery_command.BigqueryCmd):
         'Whether to run the query as continuous query',
         flag_values=fv,
     )
+    self.reservation_id_for_a_job_flag = (
+        frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, *args) -> Optional[int]:
@@ -571,6 +575,8 @@ class Query(bigquery_command.BigqueryCmd):
       )
     if self.create_session:
       kwds['create_session'] = self.create_session
+    if self.reservation_id_for_a_job_flag.present:
+      kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -786,7 +792,7 @@ class Query(bigquery_command.BigqueryCmd):
   def PrintNonScriptQueryJobResults(
       self, client: bigquery_client_extended.BigqueryClientExtended, job
   ) -> None:
-    printable_job_info = bq_client_utils.FormatJobInfo(job)
+    printable_job_info = utils_formatting.format_job_info(job)
     is_assert_job = job['statistics']['query']['statementType'] == 'ASSERT'
     if (
         not bq_client_utils.IsFailedJob(job)

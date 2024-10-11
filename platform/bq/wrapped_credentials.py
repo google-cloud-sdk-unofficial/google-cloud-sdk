@@ -18,7 +18,7 @@ from google.auth import external_account_authorized_user
 from google.auth import identity_pool
 from google.auth import pluggable
 from google.auth.transport import requests
-import oauth2client_4_0
+import oauth2client_4_0.client
 
 import bq_utils
 from utils import bq_error

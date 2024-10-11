@@ -379,14 +379,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         frontend_utils.PrintPageToken(response)
     elif self.reservation_assignment:
       try:
-        if bq_flags.API_VERSION.value == 'v1beta1':
-          object_type = (
-              bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference
-          )
-        else:
-          object_type = (
-              bq_id_utils.ApiClientHelper.ReservationAssignmentReference
-          )
+        object_type = bq_id_utils.ApiClientHelper.ReservationAssignmentReference
         reference = bq_client_utils.GetReservationReference(
             id_fallbacks=client,
             identifier=identifier if identifier else '-',
@@ -436,10 +429,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         )
     elif self.reservation:
       response = None
-      if bq_flags.API_VERSION.value == 'v1beta1':
-        object_type = bq_id_utils.ApiClientHelper.BetaReservationReference
-      else:
-        object_type = bq_id_utils.ApiClientHelper.ReservationReference
+      object_type = bq_id_utils.ApiClientHelper.ReservationReference
       reference = bq_client_utils.GetReservationReference(
           id_fallbacks=client,
           identifier=identifier,

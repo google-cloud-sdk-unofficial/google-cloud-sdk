@@ -32,14 +32,29 @@ def define_parquet_map_target_type(
   )
 
 
-def define_reservation_for_a_job(
+def define_reservation_id_for_a_job(
     flag_values: flags.FlagValues,
 ) -> flags.FlagHolder[Optional[str]]:
   return flags.DEFINE_string(
-      'reservation',
+      'reservation_id',
       None,
-      'Whether to execute the job using the provided reservation. Reservation'
-      ' should be in the format of'
-      ' projects/{project}/locations/{location}/reservations/{reservation}',
+      'Reservation ID used when executing the job. Reservation should be in the'
+      'format of project_id:reservation_id, project_id:location.reservation_id,'
+      'or reservation_id',
+      flag_values=flag_values,
+  )
+
+
+def define_event_driven_schedule(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'event_driven_schedule',
+      None,
+      'Event driven schedule in json format. Example:'
+      ' --event_driven_schedule=\'{"pubsub_subscription":'
+      ' "projects/project-id/subscriptions/subscription-id"}\'. This flag'
+      ' should not be used with --schedule, --no_auto_scheduling,'
+      ' --schedule_start_time or --schedule_end_time.',
       flag_values=flag_values,
   )

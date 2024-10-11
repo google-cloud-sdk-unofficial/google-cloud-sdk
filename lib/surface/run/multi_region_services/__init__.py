@@ -22,17 +22,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 
 DETAILED_HELP = {
-    'brief': 'Manage your Cloud Run Multi-region applications.',
+    'brief': 'Manage your Cloud Run multi-region services.',
     'DESCRIPTION': """
         The gcloud run multi-region-services command group lets you deploy container images
         to Google Cloud Run across multiple regions at once.
         """,
     'EXAMPLES': """
-        To create a new multi-regional service, you can use the create command:
-        $ {command} create <service-name>
-          --image <image_name>
-          --regions <region-list>
-          --labels KEY=VALUE,KEY2=VALUE2
         To deploy your container, use the `gcloud run multi-region-services deploy` command:
 
           $ {command} deploy <service-name> --image <image_name> --regions [region-list]
@@ -42,8 +37,8 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiRegionServices(base.Group):
   """Manage your Cloud Run resources."""
 

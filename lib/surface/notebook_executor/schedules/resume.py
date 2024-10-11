@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Resumes a notebook executor schedule.
+        Resume a notebook executor schedule.
     """,
     'EXAMPLES': """
         To resume a paused schedule with id `my-schedule`, in region `us-central1`, run:

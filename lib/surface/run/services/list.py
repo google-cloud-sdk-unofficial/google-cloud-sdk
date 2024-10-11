@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(commands.List):
   """List available services."""

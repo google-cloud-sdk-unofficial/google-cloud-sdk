@@ -32,7 +32,13 @@ from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.util import text
 from six.moves import zip
 
+# During delete, graceful shutdown can take up to 60 minutes to complete, we
+# are setting timeout to `70` minutes to give some space for delete operation
+# to complete gracefully
+_TIMEOUT_IN_SEC = 60 * 70
 
+
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Compute Engine managed instance group."""
 
@@ -169,7 +175,7 @@ class Delete(base.DeleteCommand):
         autotick=False,
     ) as tracker:
       resources += holder.client.MakeRequests(
-          requests, errors, progress_tracker=tracker
+          requests, errors, progress_tracker=tracker, timeout=_TIMEOUT_IN_SEC
       )
     if errors:
       utils.RaiseToolException(errors)

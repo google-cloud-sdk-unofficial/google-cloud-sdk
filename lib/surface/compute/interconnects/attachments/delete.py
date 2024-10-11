@@ -28,10 +28,11 @@ from googlecloudsdk.command_lib.compute.interconnects import flags as interconne
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
-  """Delete interconnects.
+  """Delete Compute Engine interconnect attachments.
 
-  *{command}* deletes Compute Engine interconnect attachment.
+  *{command}* deletes Compute Engine interconnect attachments.
   """
 
   INTERCONNECT_ATTACHMENT_ARG = None

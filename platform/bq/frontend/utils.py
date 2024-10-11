@@ -9,6 +9,7 @@ import collections
 import datetime
 import functools
 import json
+import logging
 import os
 import re
 import sys
@@ -21,6 +22,8 @@ import yaml
 import table_formatter
 import bq_utils
 from clients import utils as bq_client_utils
+from frontend import utils_formatting
+from utils import bq_consts
 from utils import bq_error
 from utils import bq_id_utils
 from pyglib import stringutil
@@ -94,11 +97,70 @@ def ValidateAtMostOneSelected(*args: Any) -> bool:
   return count > 1
 
 
+def ValidateAtMostOneSelectedAllowsDefault(*args: Any) -> bool:
+  """Validates that at most one of the argument flags is selected.
+
+    if the arg exists but the value is the default value,
+    then it won't be counted. This is uself when users want to clear the
+    value while setting another value. For example, 'update --arg1=0 --arg2=100'
+    when arg1 and arg2 shouldn't coexist.
+
+  Args:
+    *args: Each flag to be tested parsed in as a separate arg.
+
+  Returns:
+    True if more than 1 flag was selected, False if 1 or 0 were selected.
+  """
+  count = 0
+  for arg in args:
+    if arg and type(arg)() != arg:
+      count += 1
+  return count > 1
+
+
 def GetFormatterFromFlags(secondary_format='sparse'):
   if FLAGS['format'].present:
     return table_formatter.GetFormatter(FLAGS.format)
   else:
     return table_formatter.GetFormatter(secondary_format)
+
+
+def ProcessSource(description: str, source: str) -> Tuple[Any, Any]:
+  """Process "source" parameter used for bq update and bq mk command.
+
+  Args:
+    description: Description of the dataset.
+    source: source file path attached by "--source" parameter.
+
+  Returns:
+    new description if the source file updates the description, otherwise return
+    the original description.
+    acl if the source file updates the acl, otherwise return None.
+  """
+  acl = None
+  if source is None:
+    return (description, acl)
+  if not os.path.exists(source):
+    raise app.UsageError('Source file not found: %s' % (source,))
+  if not os.path.isfile(source):
+    raise app.UsageError('Source path is not a file: %s' % (source,))
+  with open(source) as f:
+    try:
+      payload = json.load(f)
+      if 'description' in payload:
+        description = payload['description']
+        logging.debug(
+            'Both source file and description flag exist, using the value in'
+            ' the source file.'
+        )
+      if 'access' in payload:
+        acl = payload['access']
+    except ValueError as e:
+      raise app.UsageError(
+          'Error decoding JSON schema from file %s: %s' % (source, e)
+      )
+
+  return (description, acl)
 
 
 def PrintDryRunInfo(job):
@@ -748,7 +810,7 @@ def PrintPageToken(page_token):
     page_token: The dictionary mapping of pageToken with string 'nextPageToken'.
   """
   formatter = GetFormatterFromFlags(secondary_format='pretty')
-  bq_client_utils.ConfigureFormatter(
+  utils_formatting.configure_formatter(
       formatter, bq_id_utils.ApiClientHelper.NextPageTokenReference
   )
   formatter.AddDict(page_token)
@@ -1093,6 +1155,30 @@ def PrintJobMessages(printable_job_info):
                 stringutil.ensure_str(table_id),
             )
         )
+        if 'Default Connection Stats' in printable_job_info:
+          default_connection_stats = printable_job_info[
+              'Default Connection Stats'
+          ]
+          location_id = job_ref['location']
+          if 'provisioned' in default_connection_stats:
+            if printable_job_info['Statement Type'] == 'CREATE_MODEL':
+              target_type = 'model'
+            else:
+              target_type = 'table'
+            print(
+                'Default connection created for %s [%s] in project [%s] in'
+                ' region [%s]\n'
+                % (
+                    stringutil.ensure_str(target_type),
+                    stringutil.ensure_str(table_id),
+                    stringutil.ensure_str(project_id),
+                    stringutil.ensure_str(location_id),
+                )
+            )
+          if 'permissionUpdated' in default_connection_stats:
+            print(
+                'Your IAM policy has been updated for the default connection\n'
+            )
   elif 'DDL Target Routine' in printable_job_info:
     ddl_target_routine = printable_job_info['DDL Target Routine']
     project_id = ddl_target_routine.get('projectId')
@@ -1136,8 +1222,11 @@ def PrintJobMessages(printable_job_info):
 
 
 def PrintObjectInfo(
-    object_info, reference, custom_format, print_reference=True
-):
+    object_info,
+    reference: bq_id_utils.ApiClientHelper.Reference,
+    custom_format: bq_consts.CustomPrintFormat,
+    print_reference: bool = True,
+) -> None:
   """Prints the object with various formats."""
   # The JSON formats are handled separately so that they don't print
   # the record as a list of one record.
@@ -1149,13 +1238,15 @@ def PrintObjectInfo(
     bq_utils.PrintFormattedJsonObject(object_info)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
     formatter = GetFormatterFromFlags()
-    bq_client_utils.ConfigureFormatter(
+    utils_formatting.configure_formatter(
         formatter,
         type(reference),
         print_format=custom_format,
         object_info=object_info,
     )
-    object_info = bq_client_utils.FormatInfoByType(object_info, type(reference))
+    object_info = utils_formatting.format_info_by_type(
+        object_info, type(reference)
+    )
     if object_info:
       formatter.AddDict(object_info)
     if reference.typename and print_reference:
@@ -1178,13 +1269,13 @@ def PrintObjectsArray(object_infos, objects_type):
     if not object_infos:
       return
     formatter = GetFormatterFromFlags()
-    bq_client_utils.ConfigureFormatter(
+    utils_formatting.configure_formatter(
         formatter, objects_type, print_format='list'
     )
     formatted_infos = list(
         map(
             functools.partial(
-                bq_client_utils.FormatInfoByType,
+                utils_formatting.format_info_by_type,
                 object_type=objects_type,
             ),
             object_infos,

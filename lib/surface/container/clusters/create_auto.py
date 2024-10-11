@@ -59,6 +59,8 @@ auto_flags = [
     'cpDiskEncryptionKey',
     'disableL4LbFirewallReconciliation',
     'hpaprofile',
+    'enableIpAccess',
+    'enableAuthorizedNetworksOnPrivateEndpoint',
 ]
 
 # Change default flag values in create-auto

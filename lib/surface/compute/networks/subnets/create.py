@@ -56,6 +56,7 @@ def _AddArgs(
     include_external_ipv6_prefix,
     include_custom_hardware_link,
     api_version,
+    include_ip_collection,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -305,6 +306,9 @@ def _AddArgs(
         For example, `--external-ipv6-prefix 2600:1901:0:0:0:0:0:0/64`
         """))
 
+  if include_ip_collection:
+    flags.IpCollectionArgument().AddArgument(parser)
+
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
   return arg_utils.ChoiceEnumMapper(
@@ -332,6 +336,7 @@ def _CreateSubnetwork(
     include_l2,
     include_external_ipv6_prefix,
     include_custom_hardware_link,
+    ip_collection_ref,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -442,6 +447,9 @@ def _CreateSubnetwork(
     if args.external_ipv6_prefix:
       subnetwork.externalIpv6Prefix = args.external_ipv6_prefix
 
+  if ip_collection_ref:
+    subnetwork.ipCollection = ip_collection_ref.SelfLink()
+
   return subnetwork
 
 
@@ -453,6 +461,7 @@ def _Run(
     include_l2,
     include_external_ipv6_prefix,
     include_custom_hardware_link,
+    include_ip_collection,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -464,6 +473,10 @@ def _Run(
       args,
       holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
+  ip_collection_ref = None
+  if include_ip_collection and args.ip_collection:
+    ip_collection_ref = flags.IpCollectionArgument().ResolveAsResource(
+        args, holder.resources)
 
   subnetwork = _CreateSubnetwork(
       client.messages,
@@ -474,7 +487,8 @@ def _Run(
       include_aggregate_purpose,
       include_l2,
       include_external_ipv6_prefix,
-      include_custom_hardware_link
+      include_custom_hardware_link,
+      ip_collection_ref,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -503,6 +517,7 @@ class Create(base.CreateCommand):
   _include_external_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
+  _include_ip_collection = False
 
   detailed_help = _DetailedHelp()
 
@@ -516,6 +531,7 @@ class Create(base.CreateCommand):
         cls._include_external_ipv6_prefix,
         cls._include_custom_hardware_link,
         cls._api_version,
+        cls._include_ip_collection,
     )
 
   def Run(self, args):
@@ -529,6 +545,7 @@ class Create(base.CreateCommand):
         self._include_l2,
         self._include_external_ipv6_prefix,
         self._include_custom_hardware_link,
+        self._include_ip_collection,
     )
 
 
@@ -537,6 +554,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_ip_collection = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -549,3 +567,4 @@ class CreateAlpha(CreateBeta):
   _include_external_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
+  _include_ip_collection = True

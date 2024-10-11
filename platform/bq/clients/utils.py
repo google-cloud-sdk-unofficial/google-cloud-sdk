@@ -23,9 +23,8 @@ from typing import Dict, List, NamedTuple, Optional, Tuple, Union
 
 
 from absl import flags
-import googleapiclient
-import httplib2
 
+import bq_flags
 from utils import bq_api_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -194,33 +193,6 @@ def MaybePrintManualInstructionsForConnection(connection, flag_format=None):
               connection['azure'].get('application'),
           )
       )
-
-
-def _OverwriteCurrentLine(s: str, previous_token=None) -> int:
-  """Print string over the current terminal line, and stay on that line.
-
-  The full width of any previous output (by the token) will be wiped clean.
-  If multiple callers call this at the same time, it would be bad.
-
-  Args:
-    s: string to print.  May not contain newlines.
-    previous_token: token returned from previous call, or None on first call.
-
-  Returns:
-    a token to pass into your next call to this function.
-  """
-  # Tricks in use:
-  # carriage return \r brings the printhead back to the start of the line.
-  # sys.stdout.write() does not add a newline.
-
-  # Erase any previous, in case new string is shorter.
-  if previous_token is not None:
-    sys.stderr.write('\r' + (' ' * previous_token))
-  # Put new string.
-  sys.stderr.write('\r' + s)
-  # Display.
-  sys.stderr.flush()
-  return len(s)
 
 
 def _FormatLabels(labels: Dict[str, str]) -> str:
@@ -531,7 +503,7 @@ def _ParseReservationAssignmentIdentifier(
   return (project_id, location, reservation_id, reservation_assignment_id)
 
 
-def _ParseReservationAssignmentPath(
+def ParseReservationAssignmentPath(
     path: str,
 ) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
   """Parses the reservation assignment path string into its components.
@@ -610,7 +582,7 @@ def _ParseConnectionIdentifier(
   return (project_id, location, connection_id)
 
 
-def _ParseConnectionPath(
+def ParseConnectionPath(
     path: str,
 ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
   """Parses the connection path string into its components.
@@ -1085,6 +1057,33 @@ def GetTableReference(
     ) from e
 
 
+def GetRowAccessPolicyReference(
+    id_fallbacks: NamedTuple(
+        'IDS',
+        [
+            ('project_id', Optional[str]),
+            ('dataset_id', Optional[str]),
+        ],
+    ),
+    table_identifier: str = '',
+    policy_id: str = '',
+) -> bq_id_utils.ApiClientHelper.RowAccessPolicyReference:
+  """Determine a RowAccessPolicyReference from an identifier and fallbacks."""
+  try:
+    table_reference = GetTableReference(id_fallbacks, table_identifier)
+    return bq_id_utils.ApiClientHelper.RowAccessPolicyReference.Create(
+        projectId=table_reference.projectId,
+        datasetId=table_reference.datasetId,
+        tableId=table_reference.tableId,
+        policyId=policy_id,
+    )
+  except ValueError as e:
+    raise bq_error.BigqueryError(
+        'Cannot determine row access policy described by %s and %s'
+        % (table_identifier, policy_id)
+    ) from e
+
+
 def GetModelReference(
     id_fallbacks: NamedTuple(
         'IDS',
@@ -1263,12 +1262,6 @@ def GetReservationReference(
   reservation_id = reservation_id or default_reservation_id
   if not reservation_id:
     raise bq_error.BigqueryError('Reservation name not specified.')
-  elif (
-      id_fallbacks.api_version == 'v1beta1'
-  ):
-    return bq_id_utils.ApiClientHelper.BetaReservationReference(
-        projectId=project_id, location=location, reservationId=reservation_id
-    )
   else:
     return bq_id_utils.ApiClientHelper.ReservationReference(
         projectId=project_id, location=location, reservationId=reservation_id
@@ -1360,7 +1353,7 @@ def GetReservationAssignmentReference(
     )
   elif path is not None:
     (project_id, location, reservation_id, reservation_assignment_id) = (
-        _ParseReservationAssignmentPath(path)
+        ParseReservationAssignmentPath(path)
     )
   else:
     raise bq_error.BigqueryError('Either identifier or path must be specified.')
@@ -1374,24 +1367,12 @@ def GetReservationAssignmentReference(
   reservation_assignment_id = (
       reservation_assignment_id or default_reservation_assignment_id
   )
-  if (
-      id_fallbacks.api_version == 'v1beta1'
-  ):
-    return (
-        bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference.Create(
-            projectId=project_id,
-            location=location,
-            reservationId=reservation_id,
-            reservationAssignmentId=reservation_assignment_id,
-        )
-    )
-  else:
-    return bq_id_utils.ApiClientHelper.ReservationAssignmentReference.Create(
-        projectId=project_id,
-        location=location,
-        reservationId=reservation_id,
-        reservationAssignmentId=reservation_assignment_id,
-    )
+  return bq_id_utils.ApiClientHelper.ReservationAssignmentReference.Create(
+      projectId=project_id,
+      location=location,
+      reservationId=reservation_id,
+      reservationAssignmentId=reservation_assignment_id,
+  )
 
 
 def GetConnectionReference(
@@ -1413,7 +1394,7 @@ def GetConnectionReference(
         identifier
     )
   elif path is not None:
-    (project_id, location, connection_id) = _ParseConnectionPath(path)
+    (project_id, location, connection_id) = ParseConnectionPath(path)
   project_id = project_id or id_fallbacks.project_id
   if not project_id:
     raise bq_error.BigqueryError('Project id not specified.')
@@ -1643,7 +1624,7 @@ def ConfigureFormatter(
   elif reference_type == bq_id_utils.ApiClientHelper.EncryptionServiceAccount:
     formatter.AddColumns(list(object_info.keys()))
   elif reference_type == bq_id_utils.ApiClientHelper.ReservationReference:
-    formatter.AddColumns((
+    shared_columns = (
         'name',
         'slotCapacity',
         'targetJobConcurrency',
@@ -1652,19 +1633,22 @@ def ConfigureFormatter(
         'updateTime',
         'multiRegionAuxiliary',
         'edition',
-        'autoscaleMaxSlots',
-        'autoscaleCurrentSlots',
-    ))
-  elif reference_type == bq_id_utils.ApiClientHelper.BetaReservationReference:
-    formatter.AddColumns((
-        'name',
-        'slotCapacity',
-        'targetJobConcurrency',
-        'ignoreIdleSlots',
-        'creationTime',
-        'updateTime',
-        'multiRegionAuxiliary',
-    ))
+    )
+    final_columns = None
+    if bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS in bq_flags.ALPHA.value:
+      final_columns = (
+          *shared_columns,
+          'autoscaleCurrentSlots',
+          'maxSlots',
+          'scalingMode',
+      )
+    if not final_columns:
+      final_columns = (
+          *shared_columns,
+          'autoscaleMaxSlots',
+          'autoscaleCurrentSlots',
+      )
+    formatter.AddColumns(final_columns)
   elif (
       reference_type == bq_id_utils.ApiClientHelper.CapacityCommitmentReference
   ):
@@ -1680,11 +1664,6 @@ def ConfigureFormatter(
         'edition',
         'isFlatRate',
     ))
-  elif (
-      reference_type
-      == bq_id_utils.ApiClientHelper.BetaReservationAssignmentReference
-  ):
-    formatter.AddColumns(('name', 'jobType', 'assignee', 'priority'))
   elif (
       reference_type
       == bq_id_utils.ApiClientHelper.ReservationAssignmentReference
@@ -1739,69 +1718,6 @@ def RaiseIfJobError(job):
         session_id=bq_processor_utils.GetSessionId(job),
     )
   return job
-
-
-def GetJobTypeName(job_info):
-  """Helper for job printing code."""
-  job_names = set(('extract', 'load', 'query', 'copy'))
-  try:
-    return (
-        set(job_info.get('configuration', {}).keys())
-        .intersection(job_names)
-        .pop()
-    )
-  except KeyError:
-    return None
-
-
-def ProcessSources(source_string):
-  """Take a source string and return a list of URIs.
-
-  The list will consist of either a single local filename, which
-  we check exists and is a file, or a list of gs:// uris.
-
-  Args:
-    source_string: A comma-separated list of URIs.
-
-  Returns:
-    List of one or more valid URIs, as strings.
-
-  Raises:
-    bq_error.BigqueryClientError: if no valid list of sources can be
-      determined.
-  """
-  sources = [source.strip() for source in source_string.split(',')]
-  gs_uris = [
-      source
-      for source in sources
-      if source.startswith(bq_processor_utils.GCS_SCHEME_PREFIX)
-  ]
-  if not sources:
-    raise bq_error.BigqueryClientError('No sources specified')
-  if gs_uris:
-    if len(gs_uris) != len(sources):
-      raise bq_error.BigqueryClientError(
-          'All URIs must begin with "{}" if any do.'.format(
-              bq_processor_utils.GCS_SCHEME_PREFIX
-          )
-      )
-    return sources
-  else:
-    source = sources[0]
-    if len(sources) > 1:
-      raise bq_error.BigqueryClientError(
-          'Local upload currently supports only one file, found %d'
-          % (len(sources),)
-      )
-    if not os.path.exists(source):
-      raise bq_error.BigqueryClientError(
-          'Source file not found: %s' % (source,)
-      )
-    if not os.path.isfile(source):
-      raise bq_error.BigqueryClientError(
-          'Source path is not a file: %s' % (source,)
-      )
-  return sources
 
 
 def ReadSchema(schema: str) -> List[str]:
@@ -1924,7 +1840,7 @@ def FormatJobInfo(job_info):
   result.update(dict(reference))
   stats = result.get('statistics', {})
 
-  result['Job Type'] = GetJobTypeName(result)
+  result['Job Type'] = bq_processor_utils.GetJobTypeName(result)
 
   result['State'] = result['status']['state']
   if 'user_email' in result:
@@ -1978,6 +1894,10 @@ def FormatJobInfo(job_info):
     result['Statement Type'] = query_stats['statementType']
     if query_stats['statementType'] == 'ASSERT':
       result['Assertion'] = True
+  if 'defaultConnectionStats' in query_stats:
+    result['Default Connection Stats'] = dict(
+        query_stats['defaultConnectionStats']
+    )
   return result
 
 
@@ -2419,7 +2339,10 @@ def FormatTransferRunInfo(transfer_run_info):
   return result
 
 
-def FormatReservationInfo(reservation, reference_type):
+def FormatReservationInfo(
+    reservation,
+    reference_type,  # pylint: disable=unused-argument Cleanup is error prone.
+):
   """Prepare a reservation for printing.
 
   Arguments:
@@ -2509,7 +2432,7 @@ def FormatReservationAssignmentInfo(reservation_assignment):
   for key, value in reservation_assignment.items():
     if key == 'name':
       project_id, location, reservation_id, reservation_assignment_id = (
-          _ParseReservationAssignmentPath(value)
+          ParseReservationAssignmentPath(value)
       )
       reference = (
           bq_id_utils.ApiClientHelper.ReservationAssignmentReference.Create(
@@ -2537,7 +2460,7 @@ def FormatConnectionInfo(connection):
   result = {}
   for key, value in connection.items():
     if key == 'name':
-      project_id, location, connection_id = _ParseConnectionPath(value)
+      project_id, location, connection_id = ParseConnectionPath(value)
       reference = bq_id_utils.ApiClientHelper.ConnectionReference.Create(
           projectId=project_id, location=location, connectionId=connection_id
       )
@@ -2570,115 +2493,3 @@ def NormalizeProjectReference(
           'Project reference or a default project is required'
       ) from e
   return reference
-
-
-def ExecuteInChunksWithProgress(request):
-  """Run an apiclient request with a resumable upload, showing progress.
-
-  Args:
-    request: an apiclient request having a media_body that is a
-      MediaFileUpload(resumable=True).
-
-  Returns:
-    The result of executing the request, if it succeeds.
-
-  Raises:
-    BigQueryError: on a non-retriable error or too many retriable errors.
-  """
-  result = None
-  retriable_errors = 0
-  output_token = None
-  status = None
-  while result is None:
-    try:
-      status, result = request.next_chunk()
-    except googleapiclient.errors.HttpError as e:
-      logging.error(
-          'HTTP Error %d during resumable media upload', e.resp.status
-      )
-      # Log response headers, which contain debug info for GFEs.
-      for key, value in e.resp.items():
-        logging.info('  %s: %s', key, value)
-      if e.resp.status in [502, 503, 504]:
-        sleep_sec = 2**retriable_errors
-        retriable_errors += 1
-        if retriable_errors > 3:
-          raise
-        print('Error %d, retry #%d' % (e.resp.status, retriable_errors))
-        time.sleep(sleep_sec)
-        # Go around and try again.
-      else:
-        RaiseErrorFromHttpError(e)
-    except (httplib2.HttpLib2Error, IOError) as e:
-      RaiseErrorFromNonHttpError(e)
-    if status:
-      output_token = _OverwriteCurrentLine(
-          'Uploaded %d%%... ' % int(status.progress() * 100), output_token
-      )
-  _OverwriteCurrentLine('Upload complete.', output_token)
-  sys.stderr.write('\n')
-  return result
-
-
-class WaitPrinter:
-  """Base class that defines the WaitPrinter interface."""
-
-  def Print(self, job_id, wait_time, status):
-    """Prints status for the current job we are waiting on.
-
-    Args:
-      job_id: the identifier for this job.
-      wait_time: the number of seconds we have been waiting so far.
-      status: the status of the job we are waiting for.
-    """
-    raise NotImplementedError('Subclass must implement Print')
-
-  def Done(self):
-    """Waiting is done and no more Print calls will be made.
-
-    This function should handle the case of Print not being called.
-    """
-    raise NotImplementedError('Subclass must implement Done')
-
-
-class WaitPrinterHelper(WaitPrinter):
-  """A Done implementation that prints based off a property."""
-
-  print_on_done = False
-
-  def Done(self):
-    if self.print_on_done:
-      sys.stderr.write('\n')
-
-
-class QuietWaitPrinter(WaitPrinterHelper):
-  """A WaitPrinter that prints nothing."""
-
-  def Print(self, unused_job_id, unused_wait_time, unused_status):
-    pass
-
-
-class VerboseWaitPrinter(WaitPrinterHelper):
-  """A WaitPrinter that prints every update."""
-
-  def __init__(self):
-    self.output_token = None
-
-  def Print(self, job_id, wait_time, status):
-    self.print_on_done = True
-    self.output_token = _OverwriteCurrentLine(
-        'Waiting on %s ... (%ds) Current status: %-7s'
-        % (job_id, wait_time, status),
-        self.output_token,
-    )
-
-
-class TransitionWaitPrinter(VerboseWaitPrinter):
-  """A WaitPrinter that only prints status change updates."""
-
-  _previous_status = None
-
-  def Print(self, job_id, wait_time, status):
-    if status != self._previous_status:
-      self._previous_status = status
-      super(TransitionWaitPrinter, self).Print(job_id, wait_time, status)

@@ -38,7 +38,11 @@ class Cancel(base.Command):
     parser.add_argument(
         '--force',
         action='store_true',
-        help='Forcibly cancels a Dataflow job, leaking any VMs the Dataflow job created. Regular cancel must have been attempted at least 30 minutes ago for a job to be force cancelled.',
+        help=(
+            'Forcibly cancels a Dataflow job. Regular cancel must have been'
+            ' attempted at least 30 minutes prior for a job to be force'
+            ' cancelled.'
+        ),
     )
 
   def Run(self, args):

@@ -25,14 +25,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.Hidden
+@base.UniverseCompatible
 class GetLocations(base.Command):
-  """Get all the replicas locations for a cloud spanner instance."""
+  """Get the location of every replica in a Cloud Spanner instance."""
 
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-        To get all replicas locations of a Cloud Spanner instance in this project, run:
+        To get the location of every replica in a Cloud Spanner instance in this project, run:
 
           $ {command} my-instance-id
         """),

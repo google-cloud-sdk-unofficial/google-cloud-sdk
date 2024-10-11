@@ -57,11 +57,6 @@
               --display-name="Security Group"  \
               --description="Description of Security Group"
 
-        To create a new POSIX group:
-
-          $ {command} eng-discuss@example.com \
-              --organization="example.com" \
-              --posix-group=name=eng,gid=1005
     ALPHA:
       examples: |
         To quickly create a new Google Groups discussion group with default settings:
@@ -82,12 +77,6 @@
               --group-type="security" \
               --display-name="Security Group"  \
               --description="Description of Security Group"
-
-        To create a new POSIX group:
-
-          $ {command} eng-discuss@example.com \
-              --organization="example.com" \
-              --posix-group=name=eng,gid=1005
 
   arguments:
     params:
@@ -182,6 +171,7 @@
     - arg_name: posix-group
       release_tracks: [ALPHA, BETA]
       api_field: group.posixGroups
+      hidden: true
       type:
         arg_dict:
           flatten: false
@@ -201,6 +191,11 @@
         For example, use '--posix-group=gid=1005,name=eng' to add a single
         group, or '--posix-group=gid=1005,name=eng
         --posix-group=gid=1006,name=docs' to add multiple groups.
+
+        Caution: POSIX groups are deprecated. As of September 26, 2024, you can
+        no longer create new POSIX groups. For more information, see [POSIX
+        groups
+        deprecation](https://cloud.google.com/identity/docs/deprecations/posix-groups).
 
   request:
     collection: cloudidentity.groups

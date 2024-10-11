@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Flags for calling BigQuery."""
 
+import enum
 import os
 from typing import Optional
 
@@ -8,6 +9,24 @@ from typing import Optional
 
 from absl import flags
 
+
+
+class AlphaFeatures(enum.Enum):
+  """Enum for the different alpha features."""
+
+
+  # A value is always needed in this enum so this is included as a noop.
+  NONE = 'none'
+  # TODO(b/359641434): Remove once the launch is complete - around 2025-Q1.
+  RESERVATION_MAX_SLOTS = 'reservation_max_slots'
+
+
+ALPHA = flags.DEFINE_multi_enum_class(
+    'alpha',
+    {},
+    AlphaFeatures,
+    'Naming an alpha feature with this flag will cause it be used.',
+)
 
 APILOG = flags.DEFINE_string(
     'apilog',
@@ -18,9 +37,10 @@ APILOG = flags.DEFINE_string(
         ' direct to stdout.'
     ),
 )
+
 API: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'api',
-    'https://www.googleapis.com',
+    'https://bigquery.googleapis.com',
     'API endpoint to talk to.'
 )
 
@@ -28,6 +48,12 @@ UNIVERSE_DOMAIN: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'universe_domain',
     None,
     'The universe domain to use in TPC domains.',
+)
+
+REQUEST_REASON: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
+    'request_reason',
+    None,
+    'A reason for making the request intended to be recorded in audit logging.',
 )
 
 API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')

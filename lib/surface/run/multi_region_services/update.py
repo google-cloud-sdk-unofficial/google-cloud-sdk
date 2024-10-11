@@ -23,9 +23,9 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import update
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiRegionUpdate(update.Update):
-  """Update environment variables and other configuration settings in Multi-Region Services."""
+  """Update environment variables, add/remove regions, and other configuration settings in Multi-Region Services."""
 
   @classmethod
   def Args(cls, parser):

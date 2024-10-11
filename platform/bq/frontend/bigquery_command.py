@@ -17,6 +17,7 @@ import bq_auth_flags
 import bq_flags
 import bq_utils
 from utils import bq_error
+from utils import bq_error_utils
 from utils import bq_logging
 from utils import bq_processor_utils
 from pyglib import appcommands
@@ -278,7 +279,7 @@ class BigqueryCmd(NewCmd):
     # pylint: disable=broad-exception-caught
     except BaseException as e:
       # pylint: enable=broad-exception-caught
-      return bq_utils.ProcessError(e, name=self._command_name)
+      return bq_error_utils.process_error(e, name=self._command_name)
     return return_value
 
   def PrintJobStartInfo(self, job):

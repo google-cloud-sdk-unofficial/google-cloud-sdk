@@ -25,6 +25,7 @@ import bq_auth_flags
 import bq_utils
 import wrapped_credentials
 from utils import bq_error
+from utils import bq_error_utils
 
 
 FLAGS = flags.FLAGS
@@ -165,7 +166,7 @@ class CachedCredentialLoader(CredentialLoader):
     return creds
 
   def _RaiseCredentialsCorrupt(self, e: 'BaseException') -> None:
-    bq_utils.ProcessError(
+    bq_error_utils.process_error(
         e,
         name='GetCredentialsFromFlags',
         message_prefix=(
@@ -309,7 +310,9 @@ def _GetCredentialsLoaderFromFlags() -> (
     logging.info('Loading credentials using oauth_access_token')
     return AccessTokenCredentialLoader(access_token=FLAGS.oauth_access_token)
   if FLAGS.service_account:
-    logging.info('Loading credentials using service_account')
+    logging.info(
+        'Loading credentials using service_account: %s', {FLAGS.service_account}
+    )
     if not FLAGS.service_account_credential_file:
       raise app.UsageError(
           'The flag --service_account_credential_file must be specified '

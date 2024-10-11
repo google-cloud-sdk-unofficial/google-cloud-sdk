@@ -614,7 +614,7 @@ class UpdateGA(base.UpdateCommand):
   _support_advanced_load_balancing = True
   _support_ip_address_selection_policy = False
   _support_external_managed_migration = False
-  _support_stateful_affinity = False
+  _support_stateful_affinity = True
 
   @classmethod
   def Args(cls, parser):

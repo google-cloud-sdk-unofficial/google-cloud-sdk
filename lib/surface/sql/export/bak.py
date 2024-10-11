@@ -30,8 +30,10 @@ from googlecloudsdk.command_lib.sql import export_util
 from googlecloudsdk.command_lib.sql import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Bak(base.Command):
   """Export data from a Cloud SQL instance to a BAK file.
 
@@ -67,6 +69,8 @@ class Bak(base.Command):
     flags.AddBakExportStripedArgument(parser)
     flags.AddBakExportBakTypeArgument(parser)
     flags.AddBakExportDifferentialBaseArgument(parser)
+    flags.AddBakExportLogStartTimeArgument(parser)
+    flags.AddBakExportLogEndTimeArgument(parser)
 
   def Run(self, args):
     """Runs the command to export the Cloud SQL instance."""

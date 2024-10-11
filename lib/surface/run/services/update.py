@@ -33,6 +33,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.UniverseCompatible
 def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container update args."""
 
@@ -112,6 +113,7 @@ class Update(base.Command):
     flags.RemoveContainersFlag().AddToParser(managed_group)
     flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
     flags.AddServiceMinInstancesFlag(managed_group)
+    flags.AddInvokerIamCheckFlag(managed_group)
     # Flags specific to connecting to a cluster
     cluster_group = flags.GetClusterArgGroup(parser)
     flags.AddEndpointVisibilityEnum(cluster_group)
@@ -292,7 +294,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddDeployHealthCheckFlag(managed_group)
     flags.AddDefaultUrlFlag(managed_group)
     flags.AddIapFlag(managed_group)
-    flags.AddInvokerIamCheckFlag(managed_group)
     flags.AddRuntimeFlag(managed_group)
     flags.AddDescriptionFlag(managed_group)
     flags.AddServiceMaxInstancesFlag(managed_group)

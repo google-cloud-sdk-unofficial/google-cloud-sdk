@@ -261,27 +261,6 @@
           help_text: |-
             The shape of the Exadata Infrastructure. The shape determines the
             amount of CPU, storage, and memory resources allocated to the instance.
-        - arg_name: properties-cpu-count
-          api_field: cloudExadataInfrastructure.properties.cpuCount
-          required: false
-          repeated: false
-          type: int
-          help_text: |-
-            The number of enabled CPU cores.
-        - arg_name: properties-memory-size-gb
-          api_field: cloudExadataInfrastructure.properties.memorySizeGb
-          required: false
-          repeated: false
-          type: int
-          help_text: |-
-            The memory allocated in GBs.
-        - arg_name: properties-db-node-storage-size-gb
-          api_field: cloudExadataInfrastructure.properties.dbNodeStorageSizeGb
-          required: false
-          repeated: false
-          type: int
-          help_text: |-
-            The local node storage allocated in GBs.
         - arg_name: properties-customer-contacts
           api_field: cloudExadataInfrastructure.properties.customerContacts
           required: false

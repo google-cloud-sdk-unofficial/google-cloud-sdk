@@ -5,10 +5,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
-import os
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 
@@ -24,11 +22,15 @@ from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
+from clients import client_row_access_policy
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_flags
+from frontend import utils_formatting
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -63,6 +65,39 @@ class Update(bigquery_command.BigqueryCmd):
         False,
         'Updates a model with this model ID.',
         short_name='m',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
+        'row_access_policy',
+        None,
+        'Updates a row access policy.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'policy_id',
+        None,
+        'Policy ID used to update row access policy for.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'target_table',
+        None,
+        'The table to update the row access policy for.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'grantees',
+        None,
+        'Comma separated list of iam_member users or groups that specifies the'
+        ' initial members that the row-level access policy should be created'
+        ' with.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'filter_predicate',
+        None,
+        'A SQL boolean expression that represents the rows defined by this row'
+        ' access policy.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -217,6 +252,33 @@ class Update(bigquery_command.BigqueryCmd):
         'when setting this.',
         flag_values=fv,
     )
+    flags.DEFINE_integer(
+        'max_slots',
+        None,
+        'The overall max slots for the reservation. It needs to be specified '
+        'together with --scaling_mode. It cannot be used together '
+        'with --autoscale_max_slots. It is a private preview feature.',
+        flag_values=fv,
+    )
+    flags.DEFINE_enum(
+        'scaling_mode',
+        None,
+        [
+            'SCALING_MODE_UNSPECIFIED',
+            'AUTOSCALE_ONLY',
+            'IDLE_SLOTS_ONLY',
+            'ALL_SLOTS',
+        ],
+        'The scaling mode for the reservation. Available only for reservations '
+        'enrolled in the Max Slots Preview. It needs to be specified together '
+        'with --max_slots. It cannot be used together with '
+        '--autoscale_max_slots. Options include:'
+        '\n SCALING_MODE_UNSPECIFIED'
+        '\n AUTOSCALE_ONLY'
+        '\n IDLE_SLOTS_ONLY'
+        '\n ALL_SLOTS',
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'transfer_config',
         False,
@@ -298,6 +360,9 @@ class Update(bigquery_command.BigqueryCmd):
         'Disables automatic scheduling of data transfer runs for this '
         'configuration.',
         flag_values=fv,
+    )
+    self.event_driven_schedule_flag = (
+        frontend_flags.define_event_driven_schedule(flag_values=fv)
     )
     flags.DEFINE_string(
         'service_account_name',
@@ -505,9 +570,9 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_enum(
         'connection_type',
         None,
-        bq_client_utils.CONNECTION_TYPES,
+        bq_processor_utils.CONNECTION_TYPES,
         'Connection type. Valid values:\n '
-        + '\n '.join(bq_client_utils.CONNECTION_TYPES),
+        + '\n '.join(bq_processor_utils.CONNECTION_TYPES),
         flag_values=fv,
     )
     flags.DEFINE_string(
@@ -625,6 +690,15 @@ class Update(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
+  def printSuccessMessage(self, object_name: str, reference: Any):
+    print(
+        "%s '%s' successfully updated."
+        % (
+            object_name,
+            reference,
+        )
+    )
+
   def RunWithArgs(
       self, identifier: str = '', schema: str = ''
   ) -> Optional[int]:
@@ -661,6 +735,10 @@ class Update(bigquery_command.BigqueryCmd):
           proj:US.old_reservation.assignment_id
       bq update --connection_credential='{"username":"u", "password":"p"}'
         --location=US --project_id=my-project existing_connection
+      bq update --row_access_policy --policy_id=existing_policy
+      --target_table='existing_dataset.existing_table'
+      --grantees='user:user1@google.com,group:group1@google.com'
+      --filter_predicate='Region="US"'
     """
     client = bq_cached_client.Client.Get()
     if self.d and self.t:
@@ -684,6 +762,25 @@ class Update(bigquery_command.BigqueryCmd):
       reference = bq_client_utils.GetTableReference(
           id_fallbacks=client, identifier=identifier
       )
+    elif self.row_access_policy:
+      reference = bq_client_utils.GetRowAccessPolicyReference(
+          id_fallbacks=client,
+          table_identifier=self.target_table,
+          policy_id=self.policy_id,
+      )
+      try:
+        client_row_access_policy.update_row_access_policy(
+            bqclient=client,
+            policy_reference=reference,
+            grantees=self.grantees.split(','),
+            filter_predicate=self.filter_predicate,
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to update row access policy '%s' on '%s': %s"
+            % (self.policy_id, self.target_table, e)
+        )
+      self.printSuccessMessage('Row access policy', self.policy_id)
     elif self.reservation:
       try:
         if (
@@ -703,6 +800,10 @@ class Update(bigquery_command.BigqueryCmd):
           )
           print(object_info)
         else:
+          if self.max_slots is not None or self.scaling_mode is not None:
+            utils_flags.fail_if_not_using_alpha_feature(
+                bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
+            )
           reference = bq_client_utils.GetReservationReference(
               id_fallbacks=client,
               identifier=identifier,
@@ -726,6 +827,8 @@ class Update(bigquery_command.BigqueryCmd):
               ignore_idle_slots=ignore_idle_arg,
               target_job_concurrency=concurrency,
               autoscale_max_slots=self.autoscale_max_slots,
+              max_slots=self.max_slots,
+              scaling_mode=self.scaling_mode,
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'
@@ -892,7 +995,7 @@ class Update(bigquery_command.BigqueryCmd):
             kms_key_name=self.kms_key_name,
             connector_configuration=self.connector_configuration,
         )
-        bq_client_utils.MaybePrintManualInstructionsForConnection(
+        utils_formatting.maybe_print_manual_instructions_for_connection(
             updated_connection
         )
 
@@ -961,7 +1064,7 @@ class Update(bigquery_command.BigqueryCmd):
           tags_to_remove=tags_to_remove,
           clear_all_tags=self.clear_all_tags,
       )
-      print("Dataset '%s' successfully updated." % (reference,))
+      self.printSuccessMessage('Dataset', reference)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       object_name = 'Table'
       if self.view:
@@ -1063,13 +1166,7 @@ class Update(bigquery_command.BigqueryCmd):
           clear_all_tags=self.clear_all_tags,
       )
 
-      print(
-          "%s '%s' successfully updated."
-          % (
-              object_name,
-              reference,
-          )
-      )
+      self.printSuccessMessage(object_name, reference)
     elif isinstance(
         reference, bq_id_utils.ApiClientHelper.TransferConfigReference
     ):
@@ -1098,11 +1195,17 @@ class Update(bigquery_command.BigqueryCmd):
                 current_config['dataSourceId'],
                 client.GetTransferV1ApiClient(),
             )
+        self.event_driven_schedule = (
+            self.event_driven_schedule_flag.value
+            if self.event_driven_schedule_flag.present
+            else None
+        )
         schedule_args = client_data_transfer.TransferScheduleArgs(
             schedule=self.schedule,
             start_time=self.schedule_start_time,
             end_time=self.schedule_end_time,
             disable_auto_scheduling=self.no_auto_scheduling,
+            event_driven_schedule=self.event_driven_schedule,
         )
         client_data_transfer.UpdateTransferConfig(
             transfer_client=client.GetTransferV1ApiClient(),
@@ -1119,9 +1222,7 @@ class Update(bigquery_command.BigqueryCmd):
             notification_pubsub_topic=self.notification_pubsub_topic,
             schedule_args=schedule_args,
         )
-        print(
-            "Transfer configuration '%s' successfully updated." % (reference,)
-        )
+        self.printSuccessMessage('Transfer configuration', reference)
       else:
         raise bq_error.BigqueryNotFoundError(
             'Not found: %r' % (reference,), {'reason': 'notFound'}, []
@@ -1141,7 +1242,7 @@ class Update(bigquery_command.BigqueryCmd):
           vertex_ai_model_id=self.vertex_ai_model_id,
           etag=self.etag,
       )
-      print("Model '%s' successfully updated." % (reference))
+      self.printSuccessMessage('Model', reference)
 
 
 def _UpdateDataset(
@@ -1193,23 +1294,7 @@ def _UpdateDataset(
   Raises:
     UsageError: when incorrect usage or invalid args are used.
   """
-  acl = None
-  if source is not None:
-    if not os.path.exists(source):
-      raise app.UsageError('Source file not found: %s' % (source,))
-    if not os.path.isfile(source):
-      raise app.UsageError('Source path is not a file: %s' % (source,))
-    with open(source) as f:
-      try:
-        payload = json.load(f)
-        if payload.__contains__('description'):
-          description = payload['description']
-        if payload.__contains__('access'):
-          acl = payload['access']
-      except ValueError as e:
-        raise app.UsageError(
-            'Error decoding JSON schema from file %s: %s' % (source, e)
-        )
+  description, acl = frontend_utils.ProcessSource(description, source)
   client_dataset.UpdateDataset(
       apiclient=client.apiclient,
       reference=reference,

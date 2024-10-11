@@ -67,6 +67,7 @@ class Create(base.CreateCommand):
     fleet_package = utils.UpsertFleetPackageName(
         fleet_package, fully_qualified_name
     )
+    fleet_package = utils.FixFleetPackagePathForCloudBuild(fleet_package)
 
     return client.Create(
         fleet_package=fleet_package, fleet_package_id=args.name, parent=parent

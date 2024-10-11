@@ -29,8 +29,8 @@ import six
 DETAILED_HELP = {
     'brief': 'Create a Compute Engine instant snapshot',
     'DESCRIPTION': """\
-    *{command}* creates an instant snapshot of persistent disk. Instant snapshots are useful for
-    backing up persistent disk data.
+    *{command}* creates an instant snapshot of a disk. Instant snapshots are useful for
+    backing up the disk data.
     """,
     'EXAMPLES': """\
     To create an instant snapshot 'my-instant-snap' from a disk 'my-disk' in zone 'us-east1-a', run:
@@ -56,6 +56,7 @@ def _CommonArgs(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Compute Engine instant snapshot."""
 

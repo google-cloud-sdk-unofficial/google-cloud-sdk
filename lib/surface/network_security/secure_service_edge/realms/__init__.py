@@ -21,8 +21,21 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command group is deprecated. Please use `gcloud alpha '
+        'network-security secure-access-connect realms` instead.'
+    ),
+    error=(
+        'This command group has been removed. Please use `gcloud alpha '
+        'network-security secure-access-connect realms` instead.'
+    ),
+)
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Realms(base.Group):
   """Manage Secure Service Edge realms."""
+
   category = base.NETWORK_SECURITY_CATEGORY

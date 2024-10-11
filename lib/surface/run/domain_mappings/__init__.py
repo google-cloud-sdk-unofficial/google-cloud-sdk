@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DomainMappings(base.Group):
   """View and manage your Cloud Run for Anthos domain mappings.

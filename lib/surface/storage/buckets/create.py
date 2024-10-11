@@ -143,7 +143,8 @@ class Create(base.Command):
       parser.add_argument(
           '--enable-hierarchical-namespace',
           action='store_true',
-          help='Enable heirarchical namepsace for the bucket',
+          help='Enable hierarchical namespace for the bucket. To use this'
+               ' flag, you must also use --uniform-bucket-level-access',
       )
       flags.add_ip_filter_file_flag(parser)
 

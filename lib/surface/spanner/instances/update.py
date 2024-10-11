@@ -215,6 +215,7 @@ class AlphaUpdate(base.Command):
 
     flags.SsdCache().AddToParser(parser)
     flags.Edition(None, True).AddToParser(parser)
+    flags.DefaultBackupScheduleType().AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -246,6 +247,7 @@ class AlphaUpdate(base.Command):
         expire_behavior=expire_behavior,
         ssd_cache_id=args.ssd_cache,
         edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
     )
     if args.async_:
       return op

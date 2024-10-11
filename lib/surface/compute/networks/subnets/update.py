@@ -46,6 +46,7 @@ def _DetailedHelp():
   }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Updates properties of an existing Compute Engine subnetwork."""
@@ -54,6 +55,7 @@ class Update(base.UpdateCommand):
   _include_external_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
+  _include_ip_collection = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -65,6 +67,9 @@ class Update(base.UpdateCommand):
     """
     cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
     cls.SUBNETWORK_ARG.AddArgument(parser, operation_type='update')
+
+    if cls._include_ip_collection:
+      flags.IpCollectionArgument().AddArgument(parser, operation_type='update')
 
     flags.AddUpdateArgs(
         parser,
@@ -117,6 +122,12 @@ class Update(base.UpdateCommand):
 
     external_ipv6_prefix = getattr(args, 'external_ipv6_prefix', None)
 
+    ip_collection = None
+    if self._include_ip_collection and args.ip_collection:
+      ip_collection = flags.IpCollectionArgument().ResolveAsResource(
+          args, holder.resources
+      ).SelfLink()
+
     return subnets_utils.MakeSubnetworkUpdateRequest(
         client,
         subnet_ref,
@@ -138,6 +149,7 @@ class Update(base.UpdateCommand):
         stack_type=stack_type,
         ipv6_access_type=ipv6_access_type,
         external_ipv6_prefix=external_ipv6_prefix,
+        ip_collection=ip_collection,
     )
 
 
@@ -148,6 +160,7 @@ class UpdateBeta(Update):
   _include_external_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_ip_collection = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -158,3 +171,4 @@ class UpdateAlpha(UpdateBeta):
   _include_external_ipv6_prefix = True
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
+  _include_ip_collection = True

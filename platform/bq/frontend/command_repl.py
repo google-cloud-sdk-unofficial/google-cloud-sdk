@@ -13,12 +13,12 @@ from typing import List, Optional
 
 from absl import flags
 
-from pyglib import appcommands
-
-import bq_utils
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from pyglib import appcommands
+
+from utils import bq_error_utils
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -135,7 +135,7 @@ class CommandLoop(cmd.Cmd):
       return True
     except BaseException as e:
       name = line.split(' ')[0]
-      bq_utils.ProcessError(e, name=name)
+      bq_error_utils.process_error(e, name=name)
       self._last_return_code = 1
     return False
 

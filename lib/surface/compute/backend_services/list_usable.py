@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import properties
@@ -48,6 +49,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 class ListUsable(base.ListCommand):
   """List usable backend services."""
 
@@ -68,6 +70,11 @@ class ListUsable(base.ListCommand):
             args
         )
     )
+
+    if not resource_scope:
+      raise compute_exceptions.ArgumentError(
+          "Either --global or --region must be specified."
+      )
 
     if resource_scope.scope_enum == compute_scope.ScopeEnum.GLOBAL:
       request = messages.ComputeBackendServicesListUsableRequest(

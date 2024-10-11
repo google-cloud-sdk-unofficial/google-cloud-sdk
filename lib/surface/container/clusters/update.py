@@ -102,6 +102,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
@@ -157,6 +158,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
@@ -209,6 +211,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.GCSFUSECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
+                    api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
@@ -318,8 +321,6 @@ class Update(base.UpdateCommand):
     _AddMutuallyExclusiveArgs(group, base.ReleaseTrack.GA)
     flags.AddNodeLocationsFlag(group_locations)
     flags.AddClusterAutoscalingFlags(parser, group)
-    flags.AddMasterAuthorizedNetworksFlags(
-        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)
@@ -357,7 +358,6 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
     flags.AddEnableShieldedNodesFlags(group)
-    flags.AddMasterGlobalAccessFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
     flags.AddNotificationConfigFlag(group)
     flags.AddDisableAutopilotFlag(group)
@@ -372,8 +372,6 @@ class Update(base.UpdateCommand):
         group, release_track=base.ReleaseTrack.GA, hidden=False
     )
     flags.AddEnableServiceExternalIPs(group)
-    flags.AddEnablePrivateEndpoint(group)
-    flags.AddEnableGoogleCloudAccess(group)
     flags.AddLoggingVariantFlag(group)
     group_add_pod_ipv4_ranges = group.add_group(hidden=False)
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
@@ -406,13 +404,22 @@ class Update(base.UpdateCommand):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
-    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
-    flags.AddEnableDNSAccessFlag(group)
+    flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    group_for_control_plane_endpoints = group.add_group()
+    flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
+    flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
+    flags.AddMasterGlobalAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnablePrivateEndpoint(group_for_control_plane_endpoints)
+    flags.AddEnableGoogleCloudAccess(group_for_control_plane_endpoints)
+    flags.AddAauthorizedNetworksOnPrivateEndpointFlag(
+        group_for_control_plane_endpoints
+    )
+    flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -531,6 +538,10 @@ class Update(base.UpdateCommand):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.tier = args.tier
+    opts.enable_ip_access = args.enable_ip_access
+    opts.enable_authorized_networks_on_private_endpoint = (
+        args.enable_authorized_networks_on_private_endpoint
+    )
     return opts
 
   def Run(self, args):
@@ -812,14 +823,6 @@ to completion."""
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
-    elif getattr(args, 'enable_google_cloud_access', None) is not None:
-      try:
-        op_ref = adapter.ModifyGoogleCloudAccess(
-            cluster_ref, cluster.masterAuthorizedNetworksConfig,
-            args.enable_google_cloud_access)
-      except apitools_exceptions.HttpError as error:
-        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-
     elif getattr(args, 'complete_convert_to_autopilot', None) is not None:
       try:
         op_ref = adapter.CompleteConvertToAutopilot(cluster_ref)
@@ -955,8 +958,6 @@ class UpdateBeta(Update):
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
     flags.AddEnableMasterSignalsFlags(group)
-    flags.AddMasterAuthorizedNetworksFlags(
-        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)
@@ -988,7 +989,6 @@ class UpdateBeta(Update):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
-    flags.AddMasterGlobalAccessFlag(group)
     flags.AddDisableDefaultSnatFlag(group, for_cluster_create=False)
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1beta1', group, hidden=False)
@@ -1013,8 +1013,6 @@ class UpdateBeta(Update):
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
-    flags.AddEnablePrivateEndpoint(group)
-    flags.AddEnableGoogleCloudAccess(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
     flags.AddStackTypeFlag(group)
     flags.AddLoggingVariantFlag(group)
@@ -1051,13 +1049,23 @@ class UpdateBeta(Update):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
-    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
-    flags.AddEnableDNSAccessFlag(group)
+    flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    group_for_control_plane_endpoints = group.add_group()
+    flags.AddMasterAuthorizedNetworksFlags(
+        group_for_control_plane_endpoints)
+    flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
+    flags.AddMasterGlobalAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnablePrivateEndpoint(group_for_control_plane_endpoints)
+    flags.AddEnableGoogleCloudAccess(group_for_control_plane_endpoints)
+    flags.AddAauthorizedNetworksOnPrivateEndpointFlag(
+        group_for_control_plane_endpoints
+    )
+    flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1235,6 +1243,10 @@ class UpdateBeta(Update):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.tier = args.tier
+    opts.enable_ip_access = args.enable_ip_access
+    opts.enable_authorized_networks_on_private_endpoint = (
+        args.enable_authorized_networks_on_private_endpoint
+    )
     return opts
 
 
@@ -1265,8 +1277,6 @@ class UpdateAlpha(Update):
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
     flags.AddEnableMasterSignalsFlags(group)
-    flags.AddMasterAuthorizedNetworksFlags(
-        parser, enable_group_for_update=group)
     flags.AddEnableLegacyAuthorizationFlag(group)
     flags.AddStartIpRotationFlag(group)
     flags.AddStartCredentialRotationFlag(group)
@@ -1301,7 +1311,6 @@ class UpdateAlpha(Update):
     flags.AddReleaseChannelFlag(group, is_update=True, hidden=False)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddTpuFlags(group, enable_tpu_service_networking=True)
-    flags.AddMasterGlobalAccessFlag(group)
     flags.AddNotificationConfigFlag(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1alpha1', group, hidden=False)
     flags.AddKubernetesObjectsExportConfig(group)
@@ -1325,8 +1334,6 @@ class UpdateAlpha(Update):
     flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
-    flags.AddEnablePrivateEndpoint(group)
-    flags.AddEnableGoogleCloudAccess(group)
     flags.AddStackTypeFlag(group)
     flags.AddGatewayFlags(group, hidden=False)
     flags.AddLoggingVariantFlag(group)
@@ -1362,13 +1369,23 @@ class UpdateAlpha(Update):
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
-    flags.AddClusterEnablePrivateNodesFlag(group, hidden=True)
-    flags.AddEnableDNSAccessFlag(group)
+    flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(
         group, hidden=True, is_update=True
     )
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    group_for_control_plane_endpoints = group.add_group()
+    flags.AddMasterAuthorizedNetworksFlags(
+        group_for_control_plane_endpoints)
+    flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
+    flags.AddMasterGlobalAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnablePrivateEndpoint(group_for_control_plane_endpoints)
+    flags.AddEnableGoogleCloudAccess(group_for_control_plane_endpoints)
+    flags.AddAauthorizedNetworksOnPrivateEndpointFlag(
+        group_for_control_plane_endpoints
+    )
+    flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1542,4 +1559,8 @@ class UpdateAlpha(Update):
         args.enable_l4_lb_firewall_reconciliation
     )
     opts.tier = args.tier
+    opts.enable_ip_access = args.enable_ip_access
+    opts.enable_authorized_networks_on_private_endpoint = (
+        args.enable_authorized_networks_on_private_endpoint
+    )
     return opts

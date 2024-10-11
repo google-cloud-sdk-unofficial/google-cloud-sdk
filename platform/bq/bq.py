@@ -62,6 +62,7 @@ from frontend import command_truncate
 from frontend import command_undelete
 from frontend import command_update
 from frontend import utils as frontend_utils
+from utils import bq_gcloud_utils
 
 flags.adopt_module_key_flags(bq_flags)
 

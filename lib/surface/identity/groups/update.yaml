@@ -31,11 +31,6 @@
               --display-name="New Engineer Discuss"  \
               --description="Group for engineering discussions"
 
-        To create a POSIX group from an existing Google Group:
-
-          $ {command} eng-discuss@foo.com \
-              --add-posix-group=name=eng,gid=1005
-
         To remove POSIX information from a Google Group:
 
           $ {command} eng-discuss@foo.com \
@@ -47,11 +42,6 @@
           $ {command} eng-discuss@foo.com  \
               --display-name="New Engineer Discuss"  \
               --description="Group for engineering discussions"
-
-        To create a POSIX group from an existing Google Group:
-
-          $ {command} eng-discuss@foo.com \
-              --add-posix-group=name=eng,gid=1005
 
         To remove POSIX information from a Google Group:
 
@@ -94,6 +84,7 @@
         params:
         - arg_name: add-posix-group
           api_field: group.posixGroups
+          hidden: true
           type:
             arg_dict:
               flatten: false
@@ -112,6 +103,12 @@
             For example, use '--add-posix-group=gid=1005,name=eng'
             to add a single group, or '--add-posix-group=gid=1005,name=eng
             --add-posix-group=gid=1006,name=docs' to add multiple groups.
+
+            Caution: POSIX groups are deprecated. As of September 26, 2024, you
+            can no longer create new POSIX groups. For more information, see
+            [POSIX groups
+            deprecation](https://cloud.google.com/identity/docs/deprecations/posix-groups).
+
         - arg_name: remove-posix-groups
           type: "googlecloudsdk.calliope.arg_parsers:ArgList:"
           metavar: POSIX_GROUP

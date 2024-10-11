@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.firestore import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
@@ -50,6 +51,13 @@ class BulkDelete(base.Command):
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
+    message = (
+        'You are about to bulk delete data from namespace ids:{} and'
+        ' collection ids: {}'.format(args.namespace_ids, args.collection_ids)
+    )
+    console_io.PromptContinue(
+        message=message, throw_if_unattended=True, cancel_on_no=True
+    )
 
     response = bulk_delete.BulkDelete(
         project,

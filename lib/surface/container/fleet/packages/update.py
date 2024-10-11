@@ -80,6 +80,7 @@ class Update(base.UpdateCommand):
     fleet_package = utils.UpsertFleetPackageName(
         fleet_package, fully_qualified_name
     )
+    fleet_package = utils.FixFleetPackagePathForCloudBuild(fleet_package)
 
     return client.Update(
         fleet_package=fleet_package,

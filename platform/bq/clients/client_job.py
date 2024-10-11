@@ -19,9 +19,11 @@ import uuid
 from absl import flags
 from googleapiclient import http as http_request
 
+import bq_flags
 from clients import bigquery_client
 from clients import table_reader as bq_table_reader
 from clients import utils as bq_client_utils
+from clients import wait_printer
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
@@ -401,7 +403,7 @@ def StartJob(
       body=job_request, media_body=media_upload, projectId=project_id
   )
   if upload_file and resumable:
-    result = bq_client_utils.ExecuteInChunksWithProgress(request)
+    result = wait_printer.execute_in_chunks_with_progress(request)
   else:
     result = request.execute()
   return result
@@ -424,6 +426,7 @@ def _StartQueryRpc(
     use_legacy_sql: Optional[bool] = None,
     location: Optional[str] = None,
     connection_properties=None,
+    reservation_id: Optional[str] = None,
     create_session: Optional[bool] = None,
     query_parameters=None,
     positional_parameter_mode=None,
@@ -461,6 +464,12 @@ def _StartQueryRpc(
       the query, presented as a list of key/value pairs. A key of "time_zone"
       indicates that the query will be run with the default timezone
       corresponding to the value.
+    job_creation_mode: Optional. An option for job creation. The valid values
+      are JOB_CREATION_REQUIRED and JOB_CREATION_OPTIONAL.
+    reservation_id: Optional. An option to set the reservation to use when
+      execute the job. Reservation should be in the format of
+      "project_id:reservation_id", "project_id:location.reservation_id", or
+      "reservation_id".
     create_session: Optional. True to create a session for the query.
     query_parameters: parameter values for use_legacy_sql=False queries.
     positional_parameter_mode: If true, set the parameter mode to POSITIONAL
@@ -495,6 +504,15 @@ def _StartQueryRpc(
   if request_id is None and flags.FLAGS.jobs_query_use_request_id:
     request_id = str(uuid.uuid4())
 
+  reservation_path = None
+  if reservation_id is not None:
+    reference = bq_client_utils.GetReservationReference(
+        id_fallbacks=bqclient,
+        identifier=reservation_id,
+        default_location=bq_flags.LOCATION.value,
+    )
+    reservation_path = reference.path()
+
   bq_processor_utils.ApplyParameters(
       request,
       preserve_nulls=preserve_nulls,
@@ -505,6 +523,7 @@ def _StartQueryRpc(
       max_results=max_results,
       use_legacy_sql=use_legacy_sql,
       min_completion_ratio=min_completion_ratio,
+      reservation=reservation_path,
       location=location,
       create_session=create_session,
       query_parameters=query_parameters,
@@ -703,7 +722,7 @@ def WaitJob(
     status: str = 'DONE',  # Should be an enum
     wait: int = sys.maxsize,
     wait_printer_factory: Optional[
-        Callable[[], bq_client_utils.TransitionWaitPrinter]
+        Callable[[], wait_printer.TransitionWaitPrinter]
     ] = None,
 ):
   """Poll for a job to run until it reaches the requested status.
@@ -751,7 +770,7 @@ def WaitJob(
       current_status = job['status']['state']
       in_error_state = False
       if done:
-        printer.Print(job_reference.jobId, current_wait, current_status)
+        printer.print(job_reference.jobId, current_wait, current_status)
         break
     except bq_error.BigqueryCommunicationError as e:
       # Communication errors while waiting on a job are okay.
@@ -769,14 +788,14 @@ def WaitJob(
     # For every second we're polling, update the message to the user.
     for _ in range(next(waits)):
       current_wait = time.time() - start_time
-      printer.Print(job_reference.jobId, current_wait, current_status)
+      printer.print(job_reference.jobId, current_wait, current_status)
       time.sleep(1)
   else:
     raise StopIteration(
         'Wait timed out. Operation not finished, in state %s'
         % (current_status,)
     )
-  printer.Done()
+  printer.done()
   return job
 
 
@@ -856,13 +875,14 @@ def RunQueryRpc(
     wait: int = sys.maxsize,
     min_completion_ratio: Optional[float] = None,
     wait_printer_factory: Optional[
-        Callable[[], bq_client_utils.WaitPrinter]
+        Callable[[], wait_printer.WaitPrinter]
     ] = None,
     max_single_wait: Optional[int] = None,
     external_table_definitions_json=None,
     udf_resources=None,
     location: Optional[str] = None,
     connection_properties=None,
+    reservation_id: Optional[str] = None,
     **kwds,
 ):
   """Executes the given query using the rpc-style query api.
@@ -896,6 +916,10 @@ def RunQueryRpc(
       the query, presented as a list of key/value pairs. A key of "time_zone"
       indicates that the query will be run with the default timezone
       corresponding to the value.
+    reservation_id: Optional. An option to set the reservation to use when
+      execute the job. Reservation should be in the format of
+      "project_id:reservation_id", "project_id:location.reservation_id", or
+      "reservation_id".
     **kwds: Passed directly to ExecuteSyncQuery.
 
   Raises:
@@ -966,6 +990,7 @@ def RunQueryRpc(
             udf_resources=udf_resources,
             location=location,
             connection_properties=connection_properties,
+            reservation_id=reservation_id,
             **kwds,
         )
         if dry_run:
@@ -987,7 +1012,7 @@ def RunQueryRpc(
       else:
         # The query/getQueryResults methods do not return the job state,
         # so we just print 'RUNNING' while we are actively waiting.
-        printer.Print(job_reference.jobId, elapsed_time, 'RUNNING')
+        printer.print(job_reference.jobId, elapsed_time, 'RUNNING')
         result = GetQueryResults(
             bqclient,
             job_reference.jobId,
@@ -1052,6 +1077,7 @@ def Query(
     create_session: Optional[bool] = None,
     connection_properties=None,
     continuous=None,
+    reservation_id: Optional[str] = None,
     **kwds,
 ):
   # pylint: disable=g-doc-args
@@ -1110,6 +1136,10 @@ def Query(
     job_timeout_ms: Optional. How long to let the job run.
     continuous: Optional. Whether the query should be executed as continuous
       query.
+    reservation_id: Optional. An option to set the reservation to use when
+      execute the job. Reservation should be in the format of
+      "project_id:reservation_id", "project_id:location.reservation_id", or
+      "reservation_id".
     **kwds: Passed on to ExecuteJob.
 
   Raises:
@@ -1170,11 +1200,20 @@ def Query(
       query_config, connection_properties=connection_properties
   )
   request = {'query': query_config}
+  reservation_path = None
+  if reservation_id is not None:
+    reference = bq_client_utils.GetReservationReference(
+        id_fallbacks=bqclient,
+        identifier=reservation_id,
+        default_location=bq_flags.LOCATION.value,
+    )
+    reservation_path = reference.path()
   bq_processor_utils.ApplyParameters(
       request,
       dry_run=dry_run,
       labels=labels,
       job_timeout_ms=job_timeout_ms,
+      reservation=reservation_path,
   )
   return ExecuteJob(bqclient, request, **kwds)
 
@@ -1214,6 +1253,7 @@ def Load(
     thrift_options=None,
     parquet_options=None,
     connection_properties=None,
+    reservation_id: Optional[str] = None,
     copy_files_only: Optional[bool] = None,
     **kwds,
 ):
@@ -1314,6 +1354,10 @@ def Load(
     parquet_options: Options for configuring parquet files load, only applicable
       if `source_format` is 'PARQUET'.
     connection_properties: Optional. ConnectionProperties for load job.
+    reservation_id: Optional. An option to set the reservation to use when
+      execute the job. Reservation should be in the format of
+      "project_id:reservation_id", "project_id:location.reservation_id", or
+      "reservation_id".
     copy_files_only: Optional. True to configures the load job to only copy
       files to the destination BigLake managed table, without reading file
       content and writing them to new files.
@@ -1326,7 +1370,7 @@ def Load(
       destination_table_reference, bq_id_utils.ApiClientHelper.TableReference
   )
   load_config = {'destinationTable': dict(destination_table_reference)}
-  sources = bq_client_utils.ProcessSources(source)
+  sources = bq_processor_utils.ProcessSources(source)
   if sources[0].startswith(bq_processor_utils.GCS_SCHEME_PREFIX):
     load_config['sourceUris'] = sources
     upload_file = None
@@ -1351,6 +1395,9 @@ def Load(
     load_config['destinationEncryptionConfiguration'] = (
         destination_encryption_configuration
     )
+
+
+
   bq_processor_utils.ApplyParameters(
       load_config,
       create_disposition=create_disposition,
@@ -1379,6 +1426,13 @@ def Load(
       parquet_options=parquet_options,
   )
   configuration = {'load': load_config}
+  if reservation_id is not None:
+    reference = bq_client_utils.GetReservationReference(
+        id_fallbacks=bqclient,
+        identifier=reservation_id,
+        default_location=bq_flags.LOCATION.value,
+    )
+    configuration['reservation'] = reference.path()
   return ExecuteJob(
       bqclient, configuration=configuration, upload_file=upload_file, **kwds
   )
@@ -1397,6 +1451,7 @@ def Extract(
     add_serving_default_signature=None,
     compression: Optional[str] = None,  # Actually an enum.
     use_avro_logical_types: Optional[bool] = None,
+    reservation_id: Optional[str] = None,
     **kwds,
 ):
   """Extract the given table from BigQuery.
@@ -1421,6 +1476,10 @@ def Extract(
       Possible values include "GZIP" and "NONE". The default value is NONE.
     use_avro_logical_types: Optional. Whether to use avro logical types for
       applicable column types on extract jobs.
+    reservation_id: Optional. An option to set the reservation to use when
+      execute the job. Reservation should be in the format of
+      "project_id:reservation_id", "project_id:location.reservation_id", or
+      "reservation_id".
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -1467,4 +1526,11 @@ def Extract(
       use_avro_logical_types=use_avro_logical_types,
   )
   configuration = {'extract': extract_config}
+  if reservation_id is not None:
+    reference = bq_client_utils.GetReservationReference(
+        id_fallbacks=bqclient,
+        identifier=reservation_id,
+        default_location=bq_flags.LOCATION.value,
+    )
+    configuration['reservation'] = reference.path()
   return ExecuteJob(bqclient, configuration=configuration, **kwds)

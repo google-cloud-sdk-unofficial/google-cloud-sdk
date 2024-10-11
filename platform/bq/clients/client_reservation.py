@@ -5,22 +5,25 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from typing import Any, Dict, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional, Tuple
 
 
 
 from clients import utils as bq_client_utils
+from frontend import utils as frontend_utils
 from utils import bq_error
 
 
 def GetBodyForCreateReservation(
-    api_version: str,
+    api_version: str,  # pylint: disable=unused-argument Cleanup is error prone.
     slots: int,
     ignore_idle_slots: bool,
     edition,
     target_job_concurrency: Optional[int],
     multi_region_auxiliary: Optional[bool],
     autoscale_max_slots: Optional[int] = None,
+    max_slots: Optional[int] = None,
+    scaling_mode: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Return the request body for CreateReservation.
 
@@ -34,13 +37,14 @@ def GetBodyForCreateReservation(
     multi_region_auxiliary: Whether this reservation is for the auxiliary
       region.
     autoscale_max_slots: Number of slots to be scaled when needed.
+    max_slots: The overall max slots for the reservation.
+    scaling_mode: The scaling mode for the reservation.
 
   Returns:
     Reservation object that was created.
 
   Raises:
-    bq_error.BigqueryError: if autoscale_max_slots is used with other
-      version.
+    bq_error.BigqueryError: if requirements for parameters are not met.
   """
   reservation = {}
   reservation['slot_capacity'] = slots
@@ -54,9 +58,25 @@ def GetBodyForCreateReservation(
     reservation['autoscale'] = {}
     reservation['autoscale']['max_slots'] = autoscale_max_slots
 
-
   if edition is not None:
     reservation['edition'] = edition
+
+  if frontend_utils.ValidateAtMostOneSelected(max_slots, autoscale_max_slots):
+    raise bq_error.BigqueryError(
+        'max_slots and autoscale_max_slots cannot be set at the same time.'
+    )
+  # make sure max_slots and scaling_mode are set at the same time.
+  if (max_slots is not None and scaling_mode is None) or (
+      max_slots is None and scaling_mode is not None
+  ):
+    raise bq_error.BigqueryError(
+        'max_slots and scaling_mode must be set at the same time.'
+    )
+
+  if max_slots is not None:
+    reservation['max_slots'] = max_slots
+  if scaling_mode is not None:
+    reservation['scaling_mode'] = scaling_mode
 
   return reservation
 
@@ -71,6 +91,8 @@ def CreateReservation(
     target_job_concurrency: Optional[int],
     multi_region_auxiliary: Optional[bool],
     autoscale_max_slots: Optional[int] = None,
+    max_slots: Optional[int] = None,
+    scaling_mode: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Create a reservation with the given reservation reference.
 
@@ -86,6 +108,8 @@ def CreateReservation(
     multi_region_auxiliary: Whether this reservation is for the auxiliary
       region.
     autoscale_max_slots: Number of slots to be scaled when needed.
+    max_slots: The overall max slots for the reservation.
+    scaling_mode: The scaling mode for the reservation.
 
   Returns:
     Reservation object that was created.
@@ -102,6 +126,8 @@ def CreateReservation(
       target_job_concurrency,
       multi_region_auxiliary,
       autoscale_max_slots,
+      max_slots,
+      scaling_mode,
   )
   parent = 'projects/%s/locations/%s' % (
       reference.projectId,
@@ -247,12 +273,14 @@ def UpdateBiReservation(client, reference, reservation_size: str):
 
 
 def GetParamsForUpdateReservation(
-    api_version: str,
-    slots,
-    ignore_idle_slots,
+    api_version: str,  # pylint: disable=unused-argument Cleanup is error prone.
+    slots: int,
+    ignore_idle_slots: bool,
     target_job_concurrency: Optional[int],
-    autoscale_max_slots,
-):
+    autoscale_max_slots: Optional[int] = None,
+    max_slots: Optional[int] = None,
+    scaling_mode: Optional[str] = None,
+) -> Tuple[Dict[str, Any], str]:
   """Return the request body and update mask for UpdateReservation.
 
   Arguments:
@@ -262,13 +290,14 @@ def GetParamsForUpdateReservation(
       other reservations.
     target_job_concurrency: Job concurrency target.
     autoscale_max_slots: Number of slots to be scaled when needed.
+    max_slots: The overall max slots for the reservation.
+    scaling_mode: The scaling mode for the reservation.
 
   Returns:
     Reservation object that was updated.
 
   Raises:
-    bq_error.BigqueryError: if autoscale_max_slots is used with other
-      version.
+    bq_error.BigqueryError: if parameters are incompatible.
   """
   reservation = {}
   update_mask = ''
@@ -293,6 +322,35 @@ def GetParamsForUpdateReservation(
       # Disable autoscale.
       update_mask += 'autoscale,'
 
+  if frontend_utils.ValidateAtMostOneSelectedAllowsDefault(
+      max_slots, autoscale_max_slots
+  ):
+    raise bq_error.BigqueryError(
+        'max_slots and autoscale_max_slots cannot be set at the same time.'
+    )
+
+  # Not we don't need to perform the following check for creation,
+  # because there we check the co-existence of max_slots and scaling_mode, so
+  # we just need to make sure max_slots and autoscale_max_slots doesn't occur
+  # at the same time.
+  if (scaling_mode is not None and autoscale_max_slots is not None) and (
+      scaling_mode != 'SCALING_MODE_UNSPECIFIED' and autoscale_max_slots != 0
+  ):
+    raise bq_error.BigqueryError(
+        'scaling_mode and autoscale_max_slots cannot be set at the same time.'
+    )
+
+  # Note: for update we don't require max_slots and scaling_mode being changed
+  # set at the same time.
+  # Although backend should make sure them to work together.
+
+  if max_slots is not None:
+    reservation['max_slots'] = max_slots
+    update_mask += 'max_slots,'
+  if scaling_mode is not None:
+    reservation['scaling_mode'] = scaling_mode
+    update_mask += 'scaling_mode,'
+
   return reservation, update_mask
 
 
@@ -303,7 +361,9 @@ def UpdateReservation(
     slots,
     ignore_idle_slots,
     target_job_concurrency: Optional[int],
-    autoscale_max_slots,
+    autoscale_max_slots: Optional[int] = None,
+    max_slots: Optional[int] = None,
+    scaling_mode: Optional[str] = None,
 ):
   """Updates a reservation with the given reservation reference.
 
@@ -316,6 +376,8 @@ def UpdateReservation(
       other reservations.
     target_job_concurrency: Job concurrency target.
     autoscale_max_slots: Number of slots to be scaled when needed.
+    max_slots: The overall max slots for the reservation.
+    scaling_mode: The scaling mode for the reservation.
 
   Returns:
     Reservation object that was updated.
@@ -330,6 +392,8 @@ def UpdateReservation(
       ignore_idle_slots,
       target_job_concurrency,
       autoscale_max_slots,
+      max_slots,
+      scaling_mode,
   )
   return (
       client.projects()

@@ -33,7 +33,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListAppOperatorBindings(base.ListCommand):
   """List app operator principals corresponding to a fleet scope and their roles based on project-level IAM bindings, fleet scope-level IAM bindings, and fleet scope RBAC role bindings.
 

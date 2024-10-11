@@ -23,6 +23,16 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.pubsub import resource_args
 
 
+def _FormatRequiresDelimiterEscaping(output_format):
+  return (
+      output_format is None
+      or output_format.startswith('yaml')
+      or output_format.startswith('default')
+  )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Pub/Sub topic."""
 
@@ -35,3 +45,30 @@ class Describe(base.DescribeCommand):
     topic_ref = args.CONCEPTS.topic.Parse()
 
     return client.Get(topic_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+class DescribeBeta(Describe):
+  """Describes a Cloud Pub/Sub topic."""
+
+  def Run(self, args):
+    client = topics.TopicsClient()
+    topic_ref = args.CONCEPTS.topic.Parse()
+    topic_result = client.Get(topic_ref)
+    if (not _FormatRequiresDelimiterEscaping(args.format)):
+      return topic_result
+
+    # Ensure that the newline character is displayed correctly when used as the
+    # delimiter for ingestion from Cloud Storage.
+    ingestion_settings = topic_result.ingestionDataSourceSettings
+    if (
+        ingestion_settings
+        and ingestion_settings.cloudStorage
+        and ingestion_settings.cloudStorage.textFormat
+        and ingestion_settings.cloudStorage.textFormat.delimiter == '\n'
+    ):
+      topic_result.ingestionDataSourceSettings.cloudStorage.textFormat.delimiter = (
+          '\\n'
+      )
+
+    return topic_result

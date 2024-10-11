@@ -23,30 +23,77 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 
 
+def _GAArgs(parser):
+  """Set Args for GA."""
+  parser.display_info.AddFormat("""\
+      table(
+        name,
+        diskSizeGb,
+        sourceDisk.scope():label=SRC_DISK,
+        status
+      )""")
+  lister.AddBaseListerArgs(parser)
+
+
+def _AlphaArgs(parser):
+  """Set Args based on Release Track."""
+  parser.display_info.AddFormat("""\
+      table(
+        name,
+        diskSizeGb,
+        sourceDisk.scope():label=SRC_DISK,
+        status
+      )""")
+  lister.AddMultiScopeListerFlags(parser, global_=True, regional=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine snapshots."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat("""\
-        table(
-          name,
-          diskSizeGb,
-          sourceDisk.scope():label=SRC_DISK,
-          status
-        )""")
-    lister.AddBaseListerArgs(parser)
+    _GAArgs(parser)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_region=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+    if support_region:
+      request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-    list_implementation = lister.GlobalLister(
-        client, client.apitools_client.snapshots)
+      list_implementation = lister.MultiScopeLister(
+          client,
+          global_service=client.apitools_client.snapshots,
+          regional_service=client.apitools_client.regionSnapshots,
+          aggregation_service=client.apitools_client.snapshots,
+      )
 
-    return lister.Invoke(request_data, list_implementation)
+      return lister.Invoke(request_data, list_implementation)
+    else:
+      request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
+
+      list_implementation = lister.GlobalLister(
+          client, client.apitools_client.snapshots
+      )
+
+      return lister.Invoke(request_data, list_implementation)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('snapshots')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine snapshots."""
+
+  @classmethod
+  def Args(cls, parser):
+    _AlphaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_region=True)

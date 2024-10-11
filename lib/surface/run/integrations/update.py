@@ -21,14 +21,14 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update a Cloud Run Integration."""
 
@@ -61,6 +61,8 @@ class Update(base.Command):
   def Run(self, args):
     """Update a Cloud Run Integration."""
 
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     add_service = args.add_service
     remove_service = args.remove_service
     integration_name = args.name

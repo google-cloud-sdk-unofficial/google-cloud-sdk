@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import pretty_print
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import messages_util
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
@@ -28,6 +29,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class Delete(base.Command):
   """Delete a Cloud Run Integration and its associated resources."""
 
@@ -55,6 +57,8 @@ class Delete(base.Command):
 
   def Run(self, args):
     """Delete a Cloud Run Integration."""
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     integration_name = args.name
     release_track = self.ReleaseTrack()
 

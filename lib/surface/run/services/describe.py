@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)

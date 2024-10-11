@@ -78,6 +78,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddAcceleratorFields(parser)
     workstations_flags.AddVmTags(parser)
     workstations_flags.AddAllowedPortsFlag(parser)
+    workstations_flags.AddMaxUsableWorkstationsCount(parser)
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddDisallowUnauthenticatedCorsPreflightRequestsToggleFlag(
           parser

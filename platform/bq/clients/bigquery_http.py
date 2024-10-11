@@ -20,6 +20,7 @@ from googleapiclient import http as http_request
 from googleapiclient import model
 import httplib2
 
+import bq_flags
 import bq_utils
 from clients import utils as bq_client_utils
 
@@ -139,6 +140,9 @@ class BigqueryModel(model.JsonModel):
 
     if self.quota_project_id:
       headers['x-goog-user-project'] = self.quota_project_id
+
+    if bq_flags.REQUEST_REASON.value:
+      headers['x-goog-request-reason'] = bq_flags.REQUEST_REASON.value
 
     return super().request(headers, path_params, query_params, body_value)
 

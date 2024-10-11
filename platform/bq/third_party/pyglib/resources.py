@@ -1073,8 +1073,9 @@ def _DeriveRootPathFromThisFile(
 
   Args:
     this_filename: The complete path to this file (resources.py).
+
   Returns:
-    The a tuple of the root path and READONLY root path of this Piper client,
+    A tuple of the root path and READONLY root path of this Piper client,
     assuming it is a client at all.  Callers should test their presence on the
     filesystem before using them.
   """

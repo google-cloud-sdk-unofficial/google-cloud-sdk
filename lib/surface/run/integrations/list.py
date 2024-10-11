@@ -21,13 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Cloud Run Integrations."""
 
@@ -80,6 +80,8 @@ class List(base.ListCommand):
       The reason this is not a list is because the printer will only recieve
       one entry at a time and cannot easily format all entries into a table.
     """
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     _SetFormat(args)
     integration_type = args.type
     service_name = args.service

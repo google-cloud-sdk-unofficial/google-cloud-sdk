@@ -50,6 +50,7 @@ _API_REFERENCE_ = """
 _LRO_MAXIMUM_TIMEOUT_ = 68400000  # 19 hours
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an Edge Container node pool."""
@@ -67,6 +68,7 @@ class Create(base.CreateCommand):
     resource_args.AddNodePoolResourceArg(parser, 'to create')
     container_flags.AddNodeCount(parser)
     container_flags.AddNodeLocation(parser)
+    container_flags.AddNodeStorageSchema(parser)
     container_flags.AddMachineFilter(parser)
     container_flags.AddLocalDiskKMSKey(parser)
     container_flags.AddLROMaximumTimeout(parser)
@@ -133,4 +135,3 @@ class CreateAlpha(Create):
         API=util.VERSION_MAP.get(track)
     )
     Create.Args(parser)
-    container_flags.AddNodeStorageSchema(parser)

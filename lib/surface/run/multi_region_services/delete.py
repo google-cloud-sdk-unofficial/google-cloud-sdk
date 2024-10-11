@@ -22,9 +22,9 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import delete
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiRegionReplace(delete.Delete):
-  """Create or Update multi-region service from YAML."""
+  """Deletes a multi-region service."""
 
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(

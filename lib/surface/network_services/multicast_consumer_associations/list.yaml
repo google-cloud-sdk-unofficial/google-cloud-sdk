@@ -5,7 +5,7 @@ help_text:
   description: |
     List all multicast consumer associations in the specified location of the current project.
   examples: |
-    To list multicast groups in the current project and location, run:
+    To list multicast consumer associations in the current project and location, run:
 
       $ {command} --location=zone
 request: &request

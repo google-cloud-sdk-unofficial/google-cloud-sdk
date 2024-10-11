@@ -181,7 +181,6 @@ class List(base.ListCommand):
     client = client_util.AssetSearchClient(client_util.DEFAULT_API_VERSION)
     resources = list(client.SearchAllResources(args))
     self.resource_locations = []
-    asset_count = 0
 
     for r in resources:
       parent_resource = f'{self.read(args.scope)}/locations/{r.location}'
@@ -200,8 +199,7 @@ class List(base.ListCommand):
         args.scope = self.read(r.folders)
         resources.extend(client.SearchAllResources(args))
 
-      asset_count += 1
-      if asset_count > 100:
+      if len(self.resource_locations) > 100:
         raise exceptions.UnsupportedOperationError(
             'The maximum number of resources (organizations, folders, projects,'
             ' and descendant resources) that can be accessed to list'

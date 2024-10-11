@@ -511,6 +511,10 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
           'disable_l4_lb_firewall_reconciliation'
       ),
       tier=get_default('tier'),
+      enable_ip_access=get_default('enable_ip_access'),
+      enable_authorized_networks_on_private_endpoint=get_default(
+          'enable_authorized_networks_on_private_endpoint'
+      ),
   )
 
 
@@ -736,6 +740,10 @@ flags_to_add = {
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
         'tier': flags.AddClusterTierFlag,
+        'enableIpAccess': flags.AddEnableIPAccessFlag,
+        'enableAuthorizedNetworksOnPrivateEndpoint': (
+            flags.AddAauthorizedNetworksOnPrivateEndpointFlag
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -917,6 +925,10 @@ flags_to_add = {
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
         'tier': flags.AddClusterTierFlag,
+        'enableIpAccess': flags.AddEnableIPAccessFlag,
+        'enableAuthorizedNetworksOnPrivateEndpoint': (
+            flags.AddAauthorizedNetworksOnPrivateEndpointFlag
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1107,6 +1119,10 @@ flags_to_add = {
             flags.AddDisableL4LbFirewallReconciliationFlag
         ),
         'tier': flags.AddClusterTierFlag,
+        'enableIpAccess': flags.AddEnableIPAccessFlag,
+        'enableAuthorizedNetworksOnPrivateEndpoint': (
+            flags.AddAauthorizedNetworksOnPrivateEndpointFlag
+        ),
     },
 }
 

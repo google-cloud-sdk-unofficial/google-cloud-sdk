@@ -25,7 +25,7 @@ from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Pauses a notebook executor schedule.
+        Pause a notebook executor schedule.
     """,
     'EXAMPLES': """
         To pause a schedule with id `my-schedule`, in region `us-central1`, run:

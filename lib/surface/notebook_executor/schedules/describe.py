@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Describes a notebook executor schedule.
+        Describe a notebook executor schedule.
     """,
     'EXAMPLES': """
         To describe a schedule with id `my-schedule` in region `us-central1`, run:

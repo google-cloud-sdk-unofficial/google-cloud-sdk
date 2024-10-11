@@ -12,9 +12,32 @@ from utils import bq_error
 Service = bq_consts.Service
 
 
+_GDU_DOMAIN = 'googleapis.com'
+
+
+def _get_service_name_from_enum(service: Service) -> str:
+  """Returns the service name for the given service enum."""
+  if service is Service.BIGQUERY:
+    return 'bigquery'
+  elif service is Service.CONNECTIONS:
+    return 'bigqueryconnection'
+  elif service is Service.RESERVATIONS:
+    return 'bigqueryreservation'
+  elif service is Service.DTS:
+    return 'bigquerydatatransfer'
+  elif service is Service.ANALYTICS_HUB:
+    return 'analyticshub'
+  elif service is Service.BIGLAKE:
+    return 'biglake'
+  elif service is Service.BQ_IAM:
+    return 'bigquery'
+  else:
+    raise ValueError(f'Unsupported service: {service}')
+
+
 def _get_tpc_service_endpoint_hostname(
-    service: Service = Service.BIGQUERY,
-    universe_domain: str = 'googleapis.com',
+    service_enum: Service = Service.BIGQUERY,
+    universe_domain: str = _GDU_DOMAIN,
     region: Optional[str] = None,
     is_mtls: bool = False,
     is_rep: bool = False,
@@ -25,13 +48,15 @@ def _get_tpc_service_endpoint_hostname(
   logging.info(
       'Building a root URL for the %s service in the "%s" universe for region'
       ' "%s" %s mTLS, %s REP, and %s LEP',
-      service,
+      service_enum,
       universe_domain,
       region,
       'with' if is_mtls else 'without',
       'with' if is_rep else 'without',
       'with' if is_lep else 'without',
   )
+
+  service = _get_service_name_from_enum(service_enum)
 
   # These are taken from here:
   # https://docs.google.com/document/d/1c0l65oyQ_iUvhOSHXKF9SWPS7WIu4VZYuXiPFn3zDx8
@@ -72,13 +97,6 @@ def get_tpc_root_url_from_flags(
             ('MTLS', flags.FlagHolder[bool]),
         ],
     ),
-    local_params: Optional[
-        NamedTuple(
-            'LocalParams',
-            [
-            ],
-        )
-    ] = None,
 ) -> str:
   """Takes BQ CLI flags to build a root URL to make requests to.
 
@@ -166,10 +184,10 @@ def get_tpc_root_url_from_flags(
   if inputted_flags.UNIVERSE_DOMAIN.value:
     universe_domain = inputted_flags.UNIVERSE_DOMAIN.value
   else:
-    universe_domain = 'googleapis.com'
+    universe_domain = _GDU_DOMAIN
 
   hostname = _get_tpc_service_endpoint_hostname(
-      service=service,
+      service_enum=service,
       universe_domain=universe_domain,
       region=region,
       is_mtls=inputted_flags.MTLS.value,
@@ -218,3 +236,7 @@ def parse_discovery_doc(
   raise ValueError(
       f'Unsupported discovery document type: {type(discovery_document)}'
   )
+
+
+def is_gdu(universe_domain: str) -> bool:
+  return universe_domain == _GDU_DOMAIN

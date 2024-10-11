@@ -19,18 +19,19 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.app import yaml_parsing
+from googlecloudsdk.api_lib.datastore import constants
 from googlecloudsdk.api_lib.datastore import index_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.command_lib.datastore import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
 
@@ -54,12 +55,8 @@ Any indexes in your index file that do not exist will be created.
   }
 
   @staticmethod
-  def Args(parser):
-    """Get arguments for this command.
-
-    Args:
-      parser: argparse.ArgumentParser, the parser for this command.
-    """
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
+    """Get arguments for this command."""
     flags.AddIndexFileFlag(parser)
     parser.add_argument(
         '--database',
@@ -74,12 +71,12 @@ Any indexes in your index file that do not exist will be created.
         type=str,
     )
 
-  def Run(self, args):
+  def Run(self, args) -> None:
     return self.CreateIndexes(
         index_file=args.index_file, database=args.database
     )
 
-  def CreateIndexes(self, index_file, database=None):
+  def CreateIndexes(self, index_file: str, database: str = None) -> None:
     project = properties.VALUES.core.project.Get(required=True)
     info = yaml_parsing.ConfigYamlInfo.FromFile(index_file)
     if not info or info.name != yaml_parsing.ConfigYamlInfo.INDEX:
@@ -105,3 +102,16 @@ Any indexes in your index file that do not exist will be created.
       index_api.CreateMissingIndexes(
           project_id=project, index_definitions=info.parsed
       )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPI(Create):
+  """Create Cloud Datastore indexes with Firestore API."""
+
+  def Run(self, args) -> None:
+    # Default to '(default)' if unset to trigger the Firestore Admin API.
+    database_id = (
+        constants.DEFAULT_NAMESPACE if not args.database else args.database
+    )
+    return self.CreateIndexes(index_file=args.index_file, database=database_id)

@@ -18,6 +18,8 @@ from clients import client_job
 from clients import client_project
 from clients import table_reader as bq_table_reader
 from clients import utils as bq_client_utils
+from clients import wait_printer
+from frontend import utils_formatting
 from utils import bq_api_utils
 from utils import bq_error
 from utils import bq_id_utils

@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.runapps import exceptions
@@ -27,6 +28,7 @@ from googlecloudsdk.command_lib.runapps import exceptions
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Deploy(base.Command):
   """Create or update application resources from a YAML specification."""
 
@@ -58,6 +60,8 @@ class Deploy(base.Command):
   def Run(self, args):
     """Create or Update application from YAML."""
 
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     file_content = args.FILE
     self._ValidateAppConfigFile(file_content)
 

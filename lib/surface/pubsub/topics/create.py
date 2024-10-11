@@ -133,11 +133,35 @@ def _Run(args, legacy_output=False):
   cloud_storage_ingestion_text_delimiter = getattr(
       args, 'cloud_storage_ingestion_text_delimiter', None
   )
+  if cloud_storage_ingestion_text_delimiter:
+    # Interprets special characters representations (i.e., "\n") as their
+    # expected characters (i.e., newline).
+    cloud_storage_ingestion_text_delimiter = (
+        cloud_storage_ingestion_text_delimiter.encode('utf-8').decode(
+            'unicode-escape'
+        )
+    )
   cloud_storage_ingestion_minimum_object_create_time = getattr(
       args, 'cloud_storage_ingestion_minimum_object_create_time', None
   )
   cloud_storage_ingestion_match_glob = getattr(
       args, 'cloud_storage_ingestion_match_glob', None
+  )
+
+  azure_event_hubs_ingestion_namespace = getattr(
+      args, 'azure_event_hubs_ingestion_namespace', None
+  )
+  azure_event_hubs_ingestion_event_hub = getattr(
+      args, 'azure_event_hubs_ingestion_event_hub', None
+  )
+  azure_event_hubs_ingestion_client_id = getattr(
+      args, 'azure_event_hubs_ingestion_client_id', None
+  )
+  azure_event_hubs_ingestion_tenant_id = getattr(
+      args, 'azure_event_hubs_ingestion_tenant_id', None
+  )
+  azure_event_hubs_ingestion_service_account = getattr(
+      args, 'azure_event_hubs_ingestion_service_account', None
   )
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
 
@@ -164,6 +188,11 @@ def _Run(args, legacy_output=False):
           cloud_storage_ingestion_text_delimiter=cloud_storage_ingestion_text_delimiter,
           cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
           cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
+          azure_event_hubs_ingestion_namespace=azure_event_hubs_ingestion_namespace,
+          azure_event_hubs_ingestion_event_hub=azure_event_hubs_ingestion_event_hub,
+          azure_event_hubs_ingestion_client_id=azure_event_hubs_ingestion_client_id,
+          azure_event_hubs_ingestion_tenant_id=azure_event_hubs_ingestion_tenant_id,
+          azure_event_hubs_ingestion_service_account=azure_event_hubs_ingestion_service_account,
           ingestion_log_severity=ingestion_log_severity,
       )
     except api_ex.HttpError as error:
@@ -186,14 +215,15 @@ def _Run(args, legacy_output=False):
 
 
 def _Args(
-    parser, include_ingestion_from_cloud_storage_flags_and_log_severity=False
+    parser,
+    include_ingestion_from_azure_event_hubs_flags=False,
 ):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
-    include_ingestion_from_cloud_storage_flags_and_log_severity: Whether to
-      include ingestion from Cloud Storage flags and log severity.
+    include_ingestion_from_azure_event_hubs_flags: Whether to include ingestion
+      from Azure Event Hubs flags and log severity.
   """
 
   resource_args.AddResourceArgs(
@@ -204,7 +234,7 @@ def _Args(
   flags.AddIngestionDatasourceFlags(
       parser,
       is_update=False,
-      include_ingestion_from_cloud_storage_flags_and_log_severity=include_ingestion_from_cloud_storage_flags_and_log_severity,
+      include_ingestion_from_azure_event_hubs_flags=include_ingestion_from_azure_event_hubs_flags,
   )
 
   labels_util.AddCreateLabelsFlags(parser)
@@ -227,7 +257,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+        include_ingestion_from_azure_event_hubs_flags=False,
     )
 
   def Run(self, args):
@@ -242,7 +272,7 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_cloud_storage_flags_and_log_severity=False,
+        include_ingestion_from_azure_event_hubs_flags=False,
     )
 
   def Run(self, args):
@@ -257,5 +287,6 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     _Args(
-        parser, include_ingestion_from_cloud_storage_flags_and_log_severity=True
+        parser,
+        include_ingestion_from_azure_event_hubs_flags=True,
     )

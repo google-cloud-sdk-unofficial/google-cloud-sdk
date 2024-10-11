@@ -36,7 +36,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddAppOperatorBinding(base.CreateCommand):
   """Add project-level and fleet scope-level IAM bindings and create a fleet scope RBAC role binding for an app operator principal.
 

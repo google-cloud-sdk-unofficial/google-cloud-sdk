@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run.integrations import types_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run.integrations import deprecation_util
 from googlecloudsdk.command_lib.run.integrations import flags
 from googlecloudsdk.command_lib.run.integrations import integration_printer
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations
@@ -27,9 +28,8 @@ from googlecloudsdk.command_lib.run.integrations.formatters import base as fb
 from googlecloudsdk.core.resource import resource_printer
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Cloud Run Integration."""
 
@@ -64,6 +64,8 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Describe an integration type."""
+    deprecation_util.CheckIfEndOfSaleApplies()
+    deprecation_util.DeprecationNotice()
     release_track = self.ReleaseTrack()
     name = args.name
     with run_apps_operations.Connect(args, release_track) as client:

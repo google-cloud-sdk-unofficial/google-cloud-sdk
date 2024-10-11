@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class Executions(base.Group):
   """View and manage your Cloud Run jobs executions.
 

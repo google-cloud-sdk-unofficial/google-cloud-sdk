@@ -39,6 +39,7 @@ from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class AdjustTraffic(base.Command):
   """Adjust the traffic assignments for a Cloud Run service."""

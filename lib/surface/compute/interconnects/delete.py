@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Compute Engine interconnects.
 

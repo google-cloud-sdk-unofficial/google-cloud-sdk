@@ -36,7 +36,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveAppOperatorBinding(base.DeleteCommand):
   """Remove project-level and fleet scope-level IAM bindings and delete a fleet scope RBAC role binding for an app operator principal.
 

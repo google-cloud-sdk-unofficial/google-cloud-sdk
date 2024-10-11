@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import replace
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiRegionReplace(replace.Replace):
   """Create or Update multi-region service from YAML."""
 

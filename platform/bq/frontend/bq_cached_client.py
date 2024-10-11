@@ -17,9 +17,10 @@ import bq_utils
 import credential_loader
 from auth import main_credential_loader
 from clients import bigquery_client_extended
-from clients import utils as bq_client_utils
+from clients import wait_printer
 from frontend import utils as bq_frontend_utils
-from utils import bq_error
+from utils import bq_api_utils
+from utils import bq_gcloud_utils
 from utils import bq_logging
 
 
@@ -28,13 +29,13 @@ FLAGS = flags.FLAGS
 
 
 
-def _GetWaitPrinterFactoryFromFlags():
+def _GetWaitPrinterFactoryFromFlags() -> Type[wait_printer.WaitPrinter]:
   """Returns the default wait_printer_factory to use while waiting for jobs."""
   if bq_flags.QUIET.value:
-    return bq_client_utils.QuietWaitPrinter
+    return wait_printer.QuietWaitPrinter
   if bq_flags.HEADLESS.value:
-    return bq_client_utils.TransitionWaitPrinter
-  return bq_client_utils.VerboseWaitPrinter
+    return wait_printer.TransitionWaitPrinter
+  return wait_printer.VerboseWaitPrinter
 
 
 class Client(object):
@@ -60,14 +61,16 @@ class Client(object):
     if config_logging:
       bq_logging.ConfigureLogging(bq_flags.APILOG.value)
     # Gcloud config currently gets processed twice.
-    bq_utils.ProcessGcloudConfig(flag_values=FLAGS)
+    bq_gcloud_utils.process_config(flag_values=FLAGS)
 
     if (
         bq_flags.UNIVERSE_DOMAIN.present
+        and not bq_api_utils.is_gdu(bq_flags.UNIVERSE_DOMAIN.value)
         and not bq_auth_flags.USE_GOOGLE_AUTH.value
     ):
       raise app.UsageError(
-          'Attempting to use TPC without setting `use_google_auth`.'
+          'Attempting to use a non-GDU universe domain without setting'
+          ' `use_google_auth`. Please set `use_google_auth` to True.'
       )
 
     if bq_flags.HTTPLIB2_DEBUGLEVEL.value:
@@ -87,6 +90,7 @@ class Client(object):
         'api',
         'api_version',
         'quota_project_id',
+        'request_reason',
     )
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)
@@ -170,12 +174,19 @@ class Client(object):
   @classmethod
   def Get(cls) -> bigquery_client_extended.BigqueryClientExtended:
     """Return a BigqueryClient initialized from flags."""
-    logging.debug('In Client.Get')
     cache_key = Client._GetClientCacheKey()
-    if cache_key not in cls.client_cache:
+    if cache_key in cls.client_cache:
+      logging.info(
+          'Using a cached client with previous auth and discovery docs from the'
+          ' cache_key: %s',
+          cache_key,
+      )
+    else:
       try:
         cls.client_cache[cache_key] = Client.Create()
+        logging.info('Successfully created a new client.')
       except ValueError as e:
+        logging.info('Failed to create a new client.')
         # Convert constructor parameter errors into flag usage errors.
         raise app.UsageError(e)
 
@@ -209,14 +220,6 @@ class Factory:
         cls._TABLE_PRINTER = bq_frontend_utils.TablePrinter()
       return cls._TABLE_PRINTER
 
-    @classmethod
-    def SetTablePrinter(cls, printer: bq_frontend_utils.TablePrinter) -> None:
-      if not isinstance(printer, bq_frontend_utils.TablePrinter):
-        raise bq_error.BigqueryTypeError(
-            'Printer must be an instance of TablePrinter.'
-        )
-      cls._TABLE_PRINTER = printer
-
   @classmethod
   def GetBigqueryClientFactory(
       cls,
@@ -226,14 +229,3 @@ class Factory:
           bigquery_client_extended.BigqueryClientExtended
       )
     return cls._BIGQUERY_CLIENT_FACTORY
-
-  @classmethod
-  def SetBigqueryClientFactory(
-      cls,
-      factory: Type[bigquery_client_extended.BigqueryClientExtended],
-  ) -> None:
-    if not issubclass(factory, bigquery_client_extended.BigqueryClientExtended):
-      raise bq_error.BigqueryTypeError(
-          'Factory must be subclass of BigqueryClient.'
-      )
-    cls._BIGQUERY_CLIENT_FACTORY = factory

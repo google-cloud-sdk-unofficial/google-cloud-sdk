@@ -278,9 +278,6 @@ class ApiClientHelper:
     def path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._path_str % dict(self)
 
-  class BetaReservationReference(ReservationReference):
-    """Reference for v1beta1 reservation service."""
-
   class CapacityCommitmentReference(Reference):
     """Helper class to provide a reference to capacity commitment."""
 
@@ -318,9 +315,6 @@ class ApiClientHelper:
 
     def reservation_path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._reservation_format_str % dict(self)
-
-  class BetaReservationAssignmentReference(ReservationAssignmentReference):
-    """Reference for v1beta1 reservation service."""
 
   class BiReservationReference(Reference):
     """Helper class to provide a reference to bi reservation."""

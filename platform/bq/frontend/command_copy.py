@@ -21,6 +21,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
 
@@ -308,4 +309,4 @@ class Copy(bigquery_command.BigqueryCmd):
           % (plurality, source_references_str, operation, dest_reference)
       )
       # If we are here, the job succeeded, but print warnings if any.
-      frontend_utils.PrintJobMessages(bq_client_utils.FormatJobInfo(job))
+      frontend_utils.PrintJobMessages(utils_formatting.format_job_info(job))

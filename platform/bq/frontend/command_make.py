@@ -21,12 +21,15 @@ from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
+from clients import client_row_access_policy
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_flags
+from frontend import utils_formatting
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -191,6 +194,9 @@ class Make(bigquery_command.BigqueryCmd):
         'Disables automatic scheduling of data transfer runs for this '
         'configuration.',
         flag_values=fv,
+    )
+    self.event_driven_schedule_flag = (
+        frontend_flags.define_event_driven_schedule(flag_values=fv)
     )
     flags.DEFINE_string(
         'schema',
@@ -400,6 +406,39 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_boolean(
+        'row_access_policy',
+        None,
+        'Creates a row access policy.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'policy_id',
+        None,
+        'Policy ID used to create row access policy for.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'target_table',
+        None,
+        'The table to create the row access policy for.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'grantees',
+        None,
+        'Comma separated list of iam_member users or groups that specifies the'
+        ' initial members that the row-level access policy should be created'
+        ' with.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'filter_predicate',
+        None,
+        'A SQL boolean expression that represents the rows defined by this row'
+        ' access policy.',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
         'reservation',
         None,
         'Creates a reservation described by this identifier. ',
@@ -594,15 +633,40 @@ class Make(bigquery_command.BigqueryCmd):
         '\n STANDARD cannot be used together with --capacity_commitment.',
         flag_values=fv,
     )
+    flags.DEFINE_integer(
+        'max_slots',
+        None,
+        'The overall max slots for the reservation. It needs to be specified '
+        'together with --scaling_mode. It cannot be used together '
+        'with --autoscale_max_slots. It is a private preview feature.',
+        flag_values=fv,
+    )
+    flags.DEFINE_enum(
+        'scaling_mode',
+        None,
+        [
+            'AUTOSCALE_ONLY',
+            'IDLE_SLOTS_ONLY',
+            'ALL_SLOTS',
+        ],
+        'The scaling mode for the reservation. Available only for reservations '
+        'enrolled in the Max Slots Preview. It needs to be specified together '
+        'with --max_slots. It cannot be used together with '
+        '--autoscale_max_slots. Options include:'
+        '\n AUTOSCALE_ONLY'
+        '\n IDLE_SLOTS_ONLY'
+        '\n ALL_SLOTS',
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv
     )
     flags.DEFINE_enum(
         'connection_type',
         None,
-        bq_client_utils.CONNECTION_TYPES,
+        bq_processor_utils.CONNECTION_TYPES,
         'Connection type. Valid values:\n '
-        + '\n '.join(bq_client_utils.CONNECTION_TYPES),
+        + '\n '.join(bq_processor_utils.CONNECTION_TYPES),
         flag_values=fv,
     )
     flags.DEFINE_string(
@@ -778,6 +842,15 @@ class Make(bigquery_command.BigqueryCmd):
     )
     self._ProcessCommandRc(fv)
 
+  def printSuccessMessage(self, object_name: str, reference: str):
+    print(
+        "%s '%s' successfully created."
+        % (
+            object_name,
+            reference,
+        )
+    )
+
   def RunWithArgs(
       self, identifier: str = '', schema: str = ''
   ) -> Optional[int]:
@@ -821,6 +894,10 @@ class Make(bigquery_command.BigqueryCmd):
         "database" : "db", "type" : "MYSQL" }'
         --connection_credential='{"username":"u", "password":"p"}'
         --project_id=proj --location=us --display_name=name new_connection
+      bq mk --row_access_policy --policy_id=new_policy
+      --target_table='existing_dataset.existing_table'
+      --grantees='user:user1@google.com,group:group1@google.com'
+      --filter_predicate='Region="US"'
     """
 
     client = bq_cached_client.Client.Get()
@@ -846,6 +923,25 @@ class Make(bigquery_command.BigqueryCmd):
       reference = bq_client_utils.GetTableReference(
           id_fallbacks=client, identifier=identifier
       )
+    elif self.row_access_policy:
+      reference = bq_client_utils.GetRowAccessPolicyReference(
+          id_fallbacks=client,
+          table_identifier=self.target_table,
+          policy_id=self.policy_id,
+      )
+      try:
+        client_row_access_policy.create_row_access_policy(
+            bqclient=client,
+            policy_reference=reference,
+            grantees=self.grantees.split(','),
+            filter_predicate=self.filter_predicate,
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to create row access policy '%s' on '%s': %s"
+            % (self.policy_id, self.target_table, e)
+        )
+      self.printSuccessMessage('Row access policy', self.policy_id)
     elif self.reservation:
       object_info = None
       reference = bq_client_utils.GetReservationReference(
@@ -854,6 +950,10 @@ class Make(bigquery_command.BigqueryCmd):
           default_location=bq_flags.LOCATION.value,
       )
       try:
+        if self.max_slots is not None or self.scaling_mode is not None:
+          utils_flags.fail_if_not_using_alpha_feature(
+              bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
+          )
         ignore_idle_arg = self.ignore_idle_slots
         if ignore_idle_arg is None:
           ignore_idle_arg = not self.use_idle_slots
@@ -874,6 +974,8 @@ class Make(bigquery_command.BigqueryCmd):
             target_job_concurrency=concurrency,
             multi_region_auxiliary=self.multi_region_auxiliary,
             autoscale_max_slots=self.autoscale_max_slots,
+            max_slots=self.max_slots,
+            scaling_mode=self.scaling_mode,
         )
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -955,11 +1057,17 @@ class Make(bigquery_command.BigqueryCmd):
             reference, self.data_source, transfer_client
         )
       location = self.data_location or bq_flags.LOCATION.value
+      self.event_driven_schedule = (
+          self.event_driven_schedule_flag.value
+          if self.event_driven_schedule_flag.present
+          else None
+      )
       schedule_args = client_data_transfer.TransferScheduleArgs(
           schedule=self.schedule,
           start_time=self.schedule_start_time,
           end_time=self.schedule_end_time,
           disable_auto_scheduling=self.no_auto_scheduling,
+          event_driven_schedule=self.event_driven_schedule,
       )
       transfer_name = client_data_transfer.CreateTransferConfig(
           transfer_client=client.GetTransferV1ApiClient(),
@@ -976,7 +1084,7 @@ class Make(bigquery_command.BigqueryCmd):
           schedule_args=schedule_args,
           location=location,
       )
-      print("Transfer configuration '%s' successfully created." % transfer_name)
+      self.printSuccessMessage('Transfer configuration', transfer_name)
     elif self.transfer_run:
       formatter = frontend_utils.GetFormatterFromFlags()
       formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
@@ -998,7 +1106,7 @@ class Make(bigquery_command.BigqueryCmd):
         )
       results = list(
           map(
-              bq_client_utils.FormatTransferRunInfo,
+              utils_formatting.format_transfer_run_info,
               client_data_transfer.StartManualTransferRuns(
                   transfer_client=client.GetTransferV1ApiClient(),
                   reference=reference,
@@ -1008,7 +1116,7 @@ class Make(bigquery_command.BigqueryCmd):
               ),
           )
       )
-      bq_client_utils.ConfigureFormatter(
+      utils_formatting.configure_formatter(
           formatter,
           bq_id_utils.ApiClientHelper.TransferRunReference,
           print_format='make',
@@ -1083,7 +1191,7 @@ class Make(bigquery_command.BigqueryCmd):
             id_fallbacks=client, path=created_connection['name']
         )
         print('Connection %s successfully created' % reference)
-        bq_client_utils.MaybePrintManualInstructionsForConnection(
+        utils_formatting.maybe_print_manual_instructions_for_connection(
             created_connection, flag_format=bq_flags.FORMAT.value
         )
     elif self.d or not identifier:
@@ -1179,7 +1287,7 @@ class Make(bigquery_command.BigqueryCmd):
           storage_billing_model=self.storage_billing_model,
           resource_tags=resource_tags,
       )
-      print("Dataset '%s' successfully created." % (reference,))
+      self.printSuccessMessage('Dataset', reference)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       if self.source_dataset:
         raise app.UsageError('Cannot specify --source_dataset for a table.')
@@ -1321,10 +1429,4 @@ class Make(bigquery_command.BigqueryCmd):
           table_constraints=table_constraints,
           resource_tags=resource_tags,
       )
-      print(
-          "%s '%s' successfully created."
-          % (
-              object_name,
-              reference,
-          )
-      )
+      self.printSuccessMessage(object_name, reference)

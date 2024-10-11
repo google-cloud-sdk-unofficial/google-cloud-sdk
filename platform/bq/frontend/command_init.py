@@ -15,10 +15,10 @@ import bq_auth_flags
 import bq_flags
 import bq_utils
 from clients import client_project
-from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_formatting
 from utils import bq_id_utils
 from utils import bq_logging
 from utils import bq_processor_utils
@@ -142,11 +142,11 @@ class Init(bigquery_command.BigqueryCmd):
         print('List of projects:')
         formatter = frontend_utils.GetFormatterFromFlags()
         formatter.AddColumn('#')
-        bq_client_utils.ConfigureFormatter(
+        utils_formatting.configure_formatter(
             formatter, bq_id_utils.ApiClientHelper.ProjectReference
         )
         for index, project in enumerate(projects):
-          result = bq_client_utils.FormatProjectInfo(project)
+          result = utils_formatting.format_project_info(project)
           result.update({'#': index + 1})
           formatter.AddDict(result)
         formatter.Print()
