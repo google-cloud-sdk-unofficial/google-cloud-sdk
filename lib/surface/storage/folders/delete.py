@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete folders."""
 

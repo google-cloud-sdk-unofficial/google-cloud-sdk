@@ -143,7 +143,7 @@ def main():
   )
 
   if print_logging:
-    print('Complete gcloud args:', args)
+    print('Args passed from gcloud:', args)
 
   bootstrapping.ExecutePythonTool('platform/bq', 'bq.py', *args)
 

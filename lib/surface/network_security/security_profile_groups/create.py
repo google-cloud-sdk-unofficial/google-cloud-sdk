@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """
 
           Create a new Security Profile Group with the given name.
@@ -39,7 +39,11 @@ DETAILED_HELP = {
         """,
 }
 
-CUSTOM_MIRRORING_SUPPORTED = [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+_CUSTOM_MIRRORING_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
+_CUSTOM_INTERCEPT_SUPPORTED = (base.ReleaseTrack.ALPHA,)
 
 
 @base.DefaultUniverseOnly
@@ -60,9 +64,13 @@ class CreateProfileGroup(base.CreateCommand):
         required=False,
         arg_aliases=['security-profile'],
     )
-    if cls.ReleaseTrack() in CUSTOM_MIRRORING_SUPPORTED:
+    if cls.ReleaseTrack() in _CUSTOM_MIRRORING_SUPPORTED:
       spg_flags.AddSecurityProfileResource(
           parser, cls.ReleaseTrack(), 'custom-mirroring-profile', required=False
+      )
+    if cls.ReleaseTrack() in _CUSTOM_INTERCEPT_SUPPORTED:
+      spg_flags.AddSecurityProfileResource(
+          parser, cls.ReleaseTrack(), 'custom-intercept-profile', required=False
       )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -70,11 +78,17 @@ class CreateProfileGroup(base.CreateCommand):
 
   def Run(self, args):
     client = spg_api.Client(self.ReleaseTrack())
+    self.ValidateCompatibleProfiles(args)
     security_profile_group = args.CONCEPTS.security_profile_group.Parse()
     threat_prevention_profile = args.CONCEPTS.threat_prevention_profile.Parse()
     custom_mirroring_profile = (
         args.CONCEPTS.custom_mirroring_profile.Parse()
         if hasattr(args.CONCEPTS, 'custom_mirroring_profile')
+        else None
+    )
+    custom_intercept_profile = (
+        args.CONCEPTS.custom_intercept_profile.Parse()
+        if hasattr(args.CONCEPTS, 'custom_intercept_profile')
         else None
     )
 
@@ -101,6 +115,9 @@ class CreateProfileGroup(base.CreateCommand):
         custom_mirroring_profile=custom_mirroring_profile.RelativeName()
         if custom_mirroring_profile is not None
         else None,
+        custom_intercept_profile=custom_intercept_profile.RelativeName()
+        if custom_intercept_profile is not None
+        else None,
         labels=labels,
     )
 
@@ -122,5 +139,31 @@ class CreateProfileGroup(base.CreateCommand):
         has_result=True,
     )
 
+  # TODO: b/353974844 - remove hasattr checks once custom_mirroring and
+  # custom_intercept profiles are fully rolled out to v1.
+  def ValidateCompatibleProfiles(self, args):
+    profiles = []
+    if args.CONCEPTS.threat_prevention_profile.Parse() is not None:
+      profiles.append('threat-prevention-profile')
+    if (
+        hasattr(args.CONCEPTS, 'custom_mirroring_profile')
+        and args.CONCEPTS.custom_mirroring_profile.Parse() is not None
+    ):
+      profiles.append('custom-mirroring-profile')
+    if (
+        hasattr(args.CONCEPTS, 'custom_intercept_profile')
+        and args.CONCEPTS.custom_intercept_profile.Parse() is not None
+    ):
+      profiles.append('custom-intercept-profile')
 
-CreateProfileGroup.detailed_help = DETAILED_HELP
+    # TODO: b/349673860 - when adding domain_filter profile, expand the check
+    # here to allow TPP+DF.
+    if len(profiles) > 1:
+      raise core_exceptions.Error(
+          'Only one of the following profiles can be specified at the same'
+          ' time: %s'
+          % ', '.join(profiles)
+      )
+
+
+CreateProfileGroup.detailed_help = _DETAILED_HELP

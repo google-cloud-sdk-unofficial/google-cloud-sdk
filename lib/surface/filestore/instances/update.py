@@ -113,8 +113,8 @@ class Update(base.CreateCommand):
                                    args.async_)
     if args.async_:
       log.status.Print(
-          'To check the status of the operation, run `gcloud {} filestore '
-          'operations describe {}`'.format(self._API_VERSION, result.name))
+          'To check the status of the operation, run `gcloud filestore '
+          'operations describe {}`'.format(result.name))
     return result
 
 
@@ -189,8 +189,8 @@ class UpdateAlpha(Update):
                                    args.async_)
     if args.async_:
       log.status.Print(
-          'To check the status of the operation, run `gcloud {} filestore '
-          'operations describe {}`'.format(self._API_VERSION, result.name))
+          'To check the status of the operation, run `gcloud alpha filestore '
+          'operations describe {}`'.format(result.name))
     return result
 
 
@@ -280,8 +280,8 @@ class UpdateBeta(Update):
                                    args.async_)
     if args.async_:
       log.status.Print(
-          'To check the status of the operation, run `gcloud {} filestore '
-          'operations describe {}`'.format(self._API_VERSION, result.name))
+          'To check the status of the operation, run `gcloud beta filestore '
+          'operations describe {}`'.format(result.name))
     return result
 
 

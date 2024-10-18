@@ -48,7 +48,7 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
           `my-application` in location `us-central1` running on a service
           instance `my-instance`, run:
 
-          $ {command} my-application --instance=my-instance
+          $ {command} my-application --service-instance=my-instance
           --location=us-central1 --project=test-project
 
           """}
@@ -65,7 +65,7 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
         help='The HCFS URI of the jar file that contains the main class.',
     )
     parser.add_argument(
-        '--main_class',
+        '--main-class',
         help=(
             'The name of the driver main class. The jar file that contains'
             'the class must be in the classpath or specified in jar_file_uris'
@@ -101,7 +101,7 @@ class Spark(baseSparkApplication.BaseGDCSparkApplicationCommand):
     messages = apis.GetMessagesModule(DATAPROCGDC_API_NAME, api_version)
     application_ref = args.CONCEPTS.application.Parse()
     application_environment_ref = args.CONCEPTS.application_environment.Parse()
-    service_instance_ref = args.CONCEPTS.instance.Parse()
+    service_instance_ref = args.CONCEPTS.service_instance.Parse()
 
     if args.annotations:
       annotations = encoding.DictToAdditionalPropertyMessage(

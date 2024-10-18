@@ -74,7 +74,7 @@ class DockerHelper(base.Command):
 
       c_store.RefreshIfExpireWithinWindow(cred, window=TOKEN_MIN_LIFETIME)
       url = sys.stdin.read().strip()
-      if not properties.VALUES.artifacts.allow_unrecongized_registry.GetBool():
+      if not properties.VALUES.artifacts.allow_unrecognized_registry.GetBool():
         if (url.replace('https://', '',
                         1) not in credential_utils.SupportedRegistries()):
           raise exceptions.Error(

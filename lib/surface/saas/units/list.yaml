@@ -8,13 +8,10 @@
 
       $ {command}
   arguments:
-    params:
-    - arg_name: parent
+    resource:
       help_text: |-
         Parent value for ListUnitsRequest
-      is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.saas.resources:project_location
-      required: true
+      spec: !REF googlecloudsdk.command_lib.saas.resources:project_location_with_default
   request:
     api_version: v1alpha1
     collection:

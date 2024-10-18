@@ -20,12 +20,14 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags as snap_flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -69,9 +71,14 @@ def _BetaArgs(parser):
 def _AlphaArgs(parser):
   _GAArgs(parser)
   snap_flags.AddMaxRetentionDays(parser)
+  snap_flags.AddScopeArg(parser)
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'snapshot', region_fallthrough=True
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create snapshots of Google Compute Engine persistent disks."""
 
@@ -86,21 +93,40 @@ class Create(base.CreateCommand):
       self,
       args,
       support_max_retention_days=False,
+      support_scope_arg=False,
+      support_kms=False,
   ):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
-    snap_ref = holder.resources.Parse(
-        args.name,
-        params={
-            'project': properties.VALUES.core.project.GetOrFail,
-        },
-        collection='compute.snapshots',
-    )
 
-    snapshot_message = messages.Snapshot(
-        name=snap_ref.Name(), description=args.description
-    )
+    if support_scope_arg and args.region:
+      snap_ref = holder.resources.Parse(
+          args.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'region': args.region,
+          },
+          collection='compute.regionSnapshots',
+      )
+      snapshot_message = messages.Snapshot(
+          name=snap_ref.Name(),
+          description=args.description,
+          region=snap_ref.region,
+      )
+    else:
+      snap_ref = holder.resources.Parse(
+          args.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+          },
+          collection='compute.snapshots',
+      )
+      snapshot_message = messages.Snapshot(
+          name=snap_ref.Name(),
+          description=args.description,
+      )
+
     # This feature is only exposed in alpha/beta
     allow_rsa_encrypted = self.ReleaseTrack() in [
         base.ReleaseTrack.ALPHA,
@@ -138,6 +164,12 @@ class Create(base.CreateCommand):
           csek_keys, snap_ref, client
       )
       snapshot_message.snapshotEncryptionKey = snap_key_or_none
+    if support_kms and args.kms_key:
+      kms_key_or_none = kms_utils.MaybeGetKmsKey(
+          args, messages, snapshot_message.snapshotEncryptionKey
+      )
+      if kms_key_or_none:
+        snapshot_message.snapshotEncryptionKey = kms_key_or_none
     if hasattr(args, 'labels') and args.IsSpecified('labels'):
       snapshot_message.labels = labels_util.ParseCreateArgs(
           args, messages.Snapshot.LabelsValue
@@ -174,15 +206,32 @@ class Create(base.CreateCommand):
     if support_max_retention_days and args.IsSpecified('max_retention_days'):
       snapshot_message.maxRetentionDays = int(args.max_retention_days)
 
-    request = messages.ComputeSnapshotsInsertRequest(
-        snapshot=snapshot_message, project=snap_ref.project
-    )
-    result = client.snapshots.Insert(request)
-    operation_ref = resources.REGISTRY.Parse(
-        result.name,
-        params={'project': snap_ref.project},
-        collection='compute.globalOperations',
-    )
+    if support_scope_arg and args.region:
+      request = messages.ComputeRegionSnapshotsInsertRequest(
+          snapshot=snapshot_message,
+          project=snap_ref.project,
+          region=snap_ref.region,
+      )
+      result = client.regionSnapshots.Insert(request)
+      operation_ref = resources.REGISTRY.Parse(
+          result.name,
+          params={
+              'project': snap_ref.project,
+              'region': snap_ref.region,
+          },
+          collection='compute.regionOperations',
+      )
+    else:
+      request = messages.ComputeSnapshotsInsertRequest(
+          snapshot=snapshot_message,
+          project=snap_ref.project,
+      )
+      result = client.snapshots.Insert(request)
+      operation_ref = resources.REGISTRY.Parse(
+          result.name,
+          params={'project': snap_ref.project},
+          collection='compute.globalOperations',
+      )
     if args.async_:
       log.UpdatedResource(
           operation_ref,
@@ -194,7 +243,10 @@ class Create(base.CreateCommand):
           ),
       )
       return result
-    operation_poller = poller.Poller(client.snapshots, snap_ref)
+    if support_scope_arg and args.region:
+      operation_poller = poller.Poller(client.regionSnapshots, snap_ref)
+    else:
+      operation_poller = poller.Poller(client.snapshots, snap_ref)
     return waiter.WaitFor(
         operation_poller,
         operation_ref,
@@ -224,6 +276,8 @@ class CreateAlpha(Create):
     return self._Run(
         args,
         support_max_retention_days=True,
+        support_scope_arg=True,
+        support_kms=True,
     )
 
 

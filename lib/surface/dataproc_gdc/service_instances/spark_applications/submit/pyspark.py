@@ -48,7 +48,7 @@ class PySpark(baseSparkApplication.BaseGDCSparkApplicationCommand):
           `my-application` in location `us-central1` running on a service
           instance `my-instance`, run:
 
-          $ {command} my-application --instance=my-instance
+          $ {command} my-application --service-instance=my-instance
           --location=us-central1 --project=test-project
 
           """}
@@ -114,7 +114,7 @@ class PySpark(baseSparkApplication.BaseGDCSparkApplicationCommand):
     messages = apis.GetMessagesModule(DATAPROCGDC_API_NAME, api_version)
     application_ref = args.CONCEPTS.application.Parse()
     application_environment_ref = args.CONCEPTS.application_environment.Parse()
-    service_instance_ref = args.CONCEPTS.instance.Parse()
+    service_instance_ref = args.CONCEPTS.service_instance.Parse()
 
     if args.annotations:
       annotations = encoding.DictToAdditionalPropertyMessage(

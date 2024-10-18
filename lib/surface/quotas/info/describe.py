@@ -61,4 +61,10 @@ class Describe(base.DescribeCommand):
     Returns:
       The requested QuotaInfo for specified container and service.
     """
-    return quota_info.GetQuotaInfo(args)
+    return quota_info.GetQuotaInfo(
+        args.project,
+        args.folder,
+        args.organization,
+        args.service,
+        args.QUOTA_ID,
+    )

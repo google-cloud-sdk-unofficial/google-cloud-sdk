@@ -22,6 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.DefaultUniverseOnly
 class LinkedProducerVpcNetworkSpokes(base.Group):
   """Manage Producer VPC spokes."""

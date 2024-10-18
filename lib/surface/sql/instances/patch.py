@@ -313,13 +313,9 @@ def AddBetaArgs(parser):
   flags.AddEnablePrivateServiceConnect(
       parser, show_negated_in_help=True, hidden=True
   )
-  psc_update_auto_connections_group = parser.add_mutually_exclusive_group(
-      hidden=True
-  )
-  flags.AddPscAutoConnections(psc_update_auto_connections_group, hidden=True)
-  flags.AddClearPscAutoConnections(
-      psc_update_auto_connections_group, hidden=True
-  )
+  psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
+  flags.AddPscAutoConnections(psc_update_auto_connections_group)
+  flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
   flags.AddRetainBackupsOnDelete(parser)
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)

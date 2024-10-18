@@ -144,7 +144,7 @@ class ConfigureDocker(base.Command):
     if args.registries:
       log.status.Print('Adding credentials for: {0}'.format(args.registries))
       registries_list = args.registries.split(',')
-      if properties.VALUES.artifacts.allow_unrecongized_registry.GetBool():
+      if properties.VALUES.artifacts.allow_unrecognized_registry.GetBool():
         new_helpers = cred_utils.GetGcloudCredentialHelperConfig(
             registries_list
         )

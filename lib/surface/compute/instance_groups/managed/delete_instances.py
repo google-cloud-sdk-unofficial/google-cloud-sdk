@@ -45,6 +45,7 @@ def _AddCommonDeleteInstancesArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class DeleteInstances(base.Command):
   """Delete instances managed by managed instance group."""
 
@@ -79,6 +80,11 @@ class DeleteInstances(base.Command):
       raise ValueError('Unknown reference type {0}'.format(
           igm_ref.Collection()))
 
+    skip_instances_on_validation_error = (
+        args.IsSpecified('skip_instances_on_validation_error')
+        and args.skip_instances_on_validation_error
+    )
+
     return instance_groups_utils.SendInstancesRequestsAndPostProcessOutputs(
         api_holder=holder,
         method_name='DeleteInstances',
@@ -86,7 +92,8 @@ class DeleteInstances(base.Command):
         instances_holder_field=instances_holder_field,
         igm_ref=igm_ref,
         instances=args.instances,
-        per_instance_status_enabled=True)
+        per_instance_status_enabled=True,
+        skip_instances_on_validation_error=skip_instances_on_validation_error)
 
   def _CreateZonalIgmDeleteInstancesRequest(self, messages, igm_ref, args):
     request = messages.ComputeInstanceGroupManagersDeleteInstancesRequest(

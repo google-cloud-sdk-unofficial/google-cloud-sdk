@@ -137,7 +137,7 @@ def _RunUpdateV2(cmd, args):
     )
 
     # Create new service mesh feature spec.
-    member_config = utils.ParseFleetDefaultMemberConfig(
+    member_config = utils.ParseFleetDefaultMemberConfigV2(
         loaded_config, cmd.messages
     )
     f.fleetDefaultMemberConfig = (
@@ -389,7 +389,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class UpdateGA(features_base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 

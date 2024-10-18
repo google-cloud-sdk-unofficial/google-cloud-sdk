@@ -319,6 +319,7 @@ class Create(base.CreateCommand):
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = False
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -345,6 +346,7 @@ class Create(base.CreateCommand):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -832,6 +834,7 @@ class CreateBeta(Create):
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = True
+  _support_ipv6_only = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -874,6 +877,7 @@ class CreateBeta(Create):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()

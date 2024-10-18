@@ -316,12 +316,11 @@ def _add_alpha_args(parser):
   Returns:
     buckets update flag group
   """
-  ip_filter = parser.add_mutually_exclusive_group(hidden=True)
+  ip_filter = parser.add_mutually_exclusive_group()
   ip_filter.add_argument(
       '--clear-ip-filter',
       action='store_true',
       help='Disables and clears IP filter configuration of the bucket.',
-      hidden=True
   )
   flags.add_ip_filter_file_flag(ip_filter)
 

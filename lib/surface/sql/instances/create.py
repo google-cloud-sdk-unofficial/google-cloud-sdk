@@ -147,7 +147,7 @@ def AddBaseArgs(parser):
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
   flags.AddEnableDataplexIntegration(parser)
-  flags.AddPscAutoConnections(parser, hidden=True)
+  flags.AddPscAutoConnections(parser)
   # (--
   # LINT.ThenChange(../backups/restore.py:instance_settings)
   # --)

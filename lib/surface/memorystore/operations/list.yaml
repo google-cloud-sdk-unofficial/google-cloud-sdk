@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: List Memorystore operations.
     description: List Memorystore operations.
@@ -17,6 +17,10 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: memorystore.projects.locations.operations
   response:
     id_field: name
+  GA:
+    hidden: true

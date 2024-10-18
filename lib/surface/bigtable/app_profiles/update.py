@@ -53,10 +53,6 @@ class UpdateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --priority=PRIORITY_LOW
 
-          To update an app profile to enable Data Boost which bills usage to the host project, run:
-
-            $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
-
           """),
   }
 
@@ -96,8 +92,6 @@ class UpdateAppProfile(base.CreateCommand):
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
         priority=args.priority,
-        data_boost=args.data_boost,
-        data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,
     )
 
@@ -176,7 +170,7 @@ class UpdateAppProfileBeta(UpdateAppProfile):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(required=False)
-        .AddIsolation()
+        .AddIsolation(allow_data_boost=True)
         .AddForce('update')
         .AddAsync()
     )
@@ -226,7 +220,7 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
             allow_failover_radius=True,
             allow_row_affinity=True,
         )
-        .AddIsolation()
+        .AddIsolation(allow_data_boost=True)
         .AddForce('update')
         .AddAsync()
     )

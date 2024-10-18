@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: Get certificate authority details of a Memorystore instance.
     description: Get certificate authority details of a Memorystore instance.
@@ -21,5 +21,9 @@
       api_version: v1alpha
     BETA:
       api_version: v1beta
+    GA:
+      api_version: v1
     collection: memorystore.projects.locations.instances
     method: getCertificateAuthority
+  GA:
+    hidden: true

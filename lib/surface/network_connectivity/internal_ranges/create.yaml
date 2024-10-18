@@ -101,6 +101,7 @@
         help_text: |
           Ranges created with FOR_MIGRATION are used as locks for migrating subnetworks between
           peered VPC networks.
+          This value is for internal use.
       default: for-vpc
     - arg_name: peering
       api_field: internalRange.peering
@@ -159,12 +160,14 @@
           help_text: |
             The migration source subnetwork (of a for-migration internal range) resource URI or
             resource ID.
+            This value is for internal use.
         - arg_name: migration-target
           required: true
           api_field: internalRange.migration.target
           help_text: |
             The migration target subnetwork (of a for-migration internal range) resource URI or
             resource ID.
+            This value is for internal use.
 
   async:
     collection: networkconnectivity.projects.locations.operations

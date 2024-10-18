@@ -77,9 +77,8 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_unspecified_protocol,
       support_advanced_load_balancing,
-      support_ip_address_selection_policy,
       support_external_managed_migration,
-      support_stateful_affinity,
+      support_custom_metrics,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -125,10 +124,10 @@ class UpdateHelper(object):
     flags.AddCacheKeyExtendedCachingArgs(parser)
     flags.AddSessionAffinity(
         parser,
-        support_stateful_affinity=support_stateful_affinity,
+        support_stateful_affinity=True,
         support_client_only=support_client_only,
     )
-    flags.AddAffinityCookie(parser)
+    flags.AddAffinityCookie(parser, support_stateful_affinity=True)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
     if support_subsetting:
@@ -152,7 +151,6 @@ class UpdateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service', update_command=True)
 
     flags.AddConnectionTrackingPolicy(parser)
-
     flags.AddCompressionMode(parser)
 
     if support_advanced_load_balancing:
@@ -160,37 +158,33 @@ class UpdateHelper(object):
           parser, required=False, is_update=True)
 
     flags.AddServiceBindings(parser, required=False, is_update=True)
-
     flags.AddLocalityLbPolicy(parser)
-
-    if support_ip_address_selection_policy:
-      flags.AddIpAddressSelectionPolicy(parser)
+    flags.AddIpAddressSelectionPolicy(parser)
 
     if support_external_managed_migration:
       flags.AddExternalMigration(parser)
+
+    if support_custom_metrics:
+      flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
 
   def __init__(
       self,
       support_failover,
       support_subsetting,
       support_subsetting_subset_size,
-      support_ip_address_selection_policy,
       support_external_managed_migration=False,
       support_advanced_load_balancing=False,
-      support_stateful_affinity=False,
+      support_custom_metrics=False,
       release_track=None,
   ):
     self._support_failover = support_failover
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_ip_address_selection_policy = (
-        support_ip_address_selection_policy
-    )
     self._support_external_managed_migration = (
         support_external_managed_migration
     )
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_stateful_affinity = support_stateful_affinity
+    self._support_custom_metrics = support_custom_metrics
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -255,10 +249,9 @@ class UpdateHelper(object):
       replacement.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
               args.session_affinity))
-      if self._support_stateful_affinity:
-        # strongSessionAffinityCookie only usable with STRONG_COOKIE_AFFINITY.
-        if args.session_affinity != 'STRONG_COOKIE_AFFINITY':
-          cleared_fields.append('strongSessionAffinityCookie')
+      # strongSessionAffinityCookie only usable with STRONG_COOKIE_AFFINITY.
+      if args.session_affinity != 'STRONG_COOKIE_AFFINITY':
+        cleared_fields.append('strongSessionAffinityCookie')
 
     backend_services_utils.ApplyAffinityCookieArgs(client, args, replacement)
 
@@ -327,10 +320,9 @@ class UpdateHelper(object):
       replacement.serviceBindings = []
       cleared_fields.append('serviceBindings')
 
-    if self._support_ip_address_selection_policy:
-      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
-          client, args, replacement
-      )
+    backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+        client, args, replacement
+    )
     if self._support_external_managed_migration:
       if args.external_managed_migration_state is not None:
         replacement.externalManagedMigrationState = client.messages.BackendService.ExternalManagedMigrationStateValueValuesEnum(
@@ -351,6 +343,14 @@ class UpdateHelper(object):
                 args.load_balancing_scheme
             )
         )
+    if self._support_custom_metrics:
+      if args.custom_metrics:
+        replacement.customMetrics = args.custom_metrics
+      if args.custom_metrics_file:
+        replacement.customMetrics = args.custom_metrics_file
+      if args.clear_custom_metrics:
+        replacement.customMetrics = []
+
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -429,9 +429,7 @@ class UpdateHelper(object):
         args.IsSpecified('service_bindings'),
         args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy'),
-        args.IsSpecified('ip_address_selection_policy')
-        if self._support_ip_address_selection_policy
-        else False,
+        args.IsSpecified('ip_address_selection_policy'),
         args.IsSpecified('external_managed_migration_state')
         if self._support_external_managed_migration
         else False,
@@ -443,6 +441,15 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('load_balancing_scheme')
         if self._support_external_managed_migration
+        else False,
+        args.IsSpecified('custom_metrics')
+        if self._support_custom_metrics
+        else False,
+        args.IsSpecified('custom_metrics_file')
+        if self._support_custom_metrics
+        else False,
+        args.IsSpecified('clear_custom_metrics')
+        if self._support_custom_metrics
         else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
@@ -612,9 +619,8 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = False
   _support_external_managed_migration = False
-  _support_stateful_affinity = True
+  _support_custom_metrics = False
 
   @classmethod
   def Args(cls, parser):
@@ -626,13 +632,10 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_unspecified_protocol=cls._support_unspecified_protocol,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_ip_address_selection_policy=(
-            cls._support_ip_address_selection_policy
-        ),
         support_external_managed_migration=(
             cls._support_external_managed_migration
         ),
-        support_stateful_affinity=cls._support_stateful_affinity,
+        support_custom_metrics=cls._support_custom_metrics,
     )
 
   def Run(self, args):
@@ -642,10 +645,9 @@ class UpdateGA(base.UpdateCommand):
         self._support_failover,
         self._support_subsetting,
         self._support_subsetting_subset_size,
-        self._support_ip_address_selection_policy,
         self._support_external_managed_migration,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_stateful_affinity=self._support_stateful_affinity,
+        support_custom_metrics=self._support_custom_metrics,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -662,9 +664,8 @@ class UpdateBeta(UpdateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = True
   _support_external_managed_migration = True
-  _support_stateful_affinity = True
+  _support_custom_metrics = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -679,6 +680,5 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = True
   _support_external_managed_migration = True
-  _support_stateful_affinity = True
+  _support_custom_metrics = True

@@ -1136,6 +1136,7 @@ class Create(base.CreateCommand):
   _support_vlan_nic = False
   _support_watchdog_timer = False
   _support_disk_labels = False
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -1161,6 +1162,7 @@ class Create(base.CreateCommand):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1254,6 +1256,7 @@ class CreateBeta(Create):
   _support_vlan_nic = False
   _support_watchdog_timer = False
   _support_disk_labels = True
+  _support_ipv6_only = True
 
   @classmethod
   def Args(cls, parser):
@@ -1280,6 +1283,7 @@ class CreateBeta(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_ipv6_only=cls._support_ipv6_only,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

@@ -20,15 +20,15 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import public_delegated_prefixes
+from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Creates a Compute Engine public delegated prefix.
@@ -41,10 +41,15 @@ class Create(base.CreateCommand):
       --range=120.120.10.128/27 --global
   """
 
+  _api_version = compute_api.COMPUTE_GA_API_VERSION
+  _include_subnetwork_creation_mode = False
+
   @classmethod
   def Args(cls, parser):
     flags.MakePublicDelegatedPrefixesArg().AddArgument(parser)
-    flags.AddCreatePdpArgsToParser(parser)
+    flags.AddCreatePdpArgsToParser(
+        parser, cls._include_subnetwork_creation_mode
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -58,10 +63,9 @@ class Create(base.CreateCommand):
     )
 
     if args.mode:
-      input_mode = (
-          holder.client.messages.PublicDelegatedPrefix.ModeValueValuesEnum(
-              args.mode
-          )
+      input_mode = arg_utils.ChoiceToEnum(
+          args.mode,
+          holder.client.messages.PublicDelegatedPrefix.ModeValueValuesEnum,
       )
     else:
       input_mode = None
@@ -84,3 +88,35 @@ class Create(base.CreateCommand):
     )
     log.CreatedResource(pdp_ref.Name(), 'public delegated prefix')
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Creates a Compute Engine public delegated prefix.
+
+  ## EXAMPLES
+
+  To create a public delegated prefix:
+
+    $ {command} my-public-delegated-prefix --public-advertised-prefix=my-pap \
+      --range=120.120.10.128/27 --global
+  """
+
+  _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_subnetwork_creation_mode = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  r"""Creates a Compute Engine public delegated prefix.
+
+  ## EXAMPLES
+
+  To create a public delegated prefix:
+
+    $ {command} my-public-delegated-prefix --public-advertised-prefix=my-pap \
+      --range=120.120.10.128/27 --global
+  """
+
+  _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
+  _include_subnetwork_creation_mode = True

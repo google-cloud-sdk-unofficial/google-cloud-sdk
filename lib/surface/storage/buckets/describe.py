@@ -31,17 +31,33 @@ from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
+def _add_common_args(parser):
+  """Adds common arguments to the parser."""
+  parser.add_argument('url', help='Specifies URL of bucket to describe.')
+  flags.add_additional_headers_flag(parser)
+  flags.add_raw_display_flag(parser)
+  gsutil_json_printer.GsutilJsonPrinter.Register()
+
+
+def _validate_url_does_not_contain_wildcards(url):
+  if wildcard_iterator.contains_wildcard(url):
+    raise errors.InvalidUrlError(
+        'Describe does not accept wildcards because it returns a single'
+        ' resource. Please use the `ls` or `buckets list` command for'
+        ' retrieving multiple resources.'
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describes Cloud Storage buckets."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
+      'DESCRIPTION': """
       Describe a Cloud Storage bucket.
       """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
 
       Describe a Google Cloud Storage bucket named "my-bucket":
 
@@ -55,21 +71,46 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument('url', help='Specifies URL of bucket to describe.')
-    flags.add_additional_headers_flag(parser)
-    flags.add_raw_display_flag(parser)
-    gsutil_json_printer.GsutilJsonPrinter.Register()
+    _add_common_args(parser)
 
   def Run(self, args):
-    if wildcard_iterator.contains_wildcard(args.url):
-      raise errors.InvalidUrlError(
-          'Describe does not accept wildcards because it returns a single'
-          ' resource. Please use the `ls` or `buckets list` command for'
-          ' retrieving multiple resources.')
+    _validate_url_does_not_contain_wildcards(args.url)
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_bucket(args.command_path, url)
     bucket_resource = api_factory.get_api(url.scheme).get_bucket(
-        url.bucket_name, fields_scope=cloud_api.FieldsScope.FULL)
+        url.bucket_name,
+        fields_scope=cloud_api.FieldsScope.FULL,
+    )
+
+    return resource_util.get_display_dict_for_resource(
+        bucket_resource,
+        full_resource_formatter.BucketDisplayTitlesAndDefaults,
+        display_raw_keys=args.raw,
+    )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describes Cloud Storage buckets."""
+
+  @staticmethod
+  def Args(parser):
+    _add_common_args(parser)
+    flags.add_soft_deleted_flag(parser, hidden=True)
+
+  def Run(self, args):
+    _validate_url_does_not_contain_wildcards(args.url)
+    url = storage_url.storage_url_from_string(
+        args.url, is_bucket_gen_parsing_allowed=True
+    )
+    errors_util.raise_error_if_not_bucket(args.command_path, url)
+    bucket_resource = api_factory.get_api(url.scheme).get_bucket(
+        url.bucket_name,
+        generation=int(url.generation) if url.generation else None,
+        fields_scope=cloud_api.FieldsScope.FULL,
+        soft_deleted=getattr(args, 'soft_deleted', False),
+    )
 
     return resource_util.get_display_dict_for_resource(
         bucket_resource,

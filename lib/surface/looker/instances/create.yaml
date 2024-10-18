@@ -9,14 +9,14 @@
       This command can fail for the following reasons:
         * An instance with the same name already exists.
         * The active account does not have permission to create instances.
-        * --async flag is not passed
+        * `--async` flag is not passed
     examples: |
       To create a basic tier instance with the name `my-looker-instance` in region `us-central-1`
-      with an edition of "LOOKER_CORE_STANDARD", run:
+      with an edition of `LOOKER_CORE_STANDARD`, run:
 
-        $ {command} my-looker-instance --region=us-central1 --edition="core-standard" --oauth-client-id='looker' --oauth-client-secret='looker'  --async
+        $ {command} my-looker-instance --region=us-central1 --edition="core-standard" --oauth-client-id='looker' --oauth-client-secret='looker' --async
 
-      Note: It is *recommended* that the *--async* argument is provided when creating
+      Note: It is *recommended* that the `--async` argument is provided when creating
       a Looker instance.
 
   arguments:
@@ -171,9 +171,7 @@
           - arg_value: sunday
             enum_value: SUNDAY
           help_text: |
-            Day of week for maintenance window, in UTC time zone. To
-            set the *maintenance-window-day* attribute:
-            * provide the argument *--maintenance-window-day* on the command line.
+            Day of week for maintenance window, in UTC time zone.
         - api_field: instance.maintenanceWindow.startTime
           arg_name: maintenance-window-time
           required: true
@@ -184,8 +182,7 @@
           help_text: |
             Hour of day for maintenance window, in UTC time zone. A valid time of day must be
             specified in 24hr format (ex: 13:00, 17:30, 23:45). Maintenance will be scheduled
-            within 60 minutes. To set the maintenance-window-time* attribute:
-            * provide the argument *--maintenance-window-time* on the command line.
+            within 60 minutes.
     # Group for Deny Maintanence period
     - group:
         required: false
@@ -224,6 +221,30 @@
           help_text: |
                 Time in UTC when the period starts and ends.  A valid time of day must be
                 specified in 24hr format (ex: 13:00, 17:30, 23:45).
+    # Group for Gemini AI
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Gemini AI - Gemini AI is a powerful AI model that can be used to answer questions,
+          generate content, and perform a variety of other tasks.
+        params:
+        - api_field: instance.geminiEnabled
+          arg_name: gemini-enabled
+          type: bool
+          required: true
+          help_text: |
+            This specifies whether Gemini AI is enabled on the Looker instance.
+        - api_field: instance.geminiAiConfig.trustedTester
+          arg_name: gemini-preview-tester-enabled
+          type: bool
+          help_text: |
+            This specifies whether user opts in for Gemini AI public preview for the Looker instance.
+        - api_field: instance.geminiAiConfig.promptLogging
+          arg_name: gemini-prompt-log-enabled
+          type: bool
+          help_text: |
+            This specifies whether Gemini AI prompt logging is enabled for the Looker instance.
 
   async:
     collection: looker.projects.locations.operations

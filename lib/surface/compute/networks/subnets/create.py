@@ -215,12 +215,10 @@ def _AddArgs(
       'IPV4_IPV6': (
           'New VMs in this subnet can have both IPv4 and IPv6 addresses'
       ),
+      'IPV6_ONLY': (
+          'New VMs in this subnet will only be assigned IPv6 addresses'
+      )
   }
-
-  if api_version == compute_api.COMPUTE_ALPHA_API_VERSION:
-    stack_type_choices['IPV6_ONLY'] = (
-        'New VMs in this subnet will only be assigned IPv6 addresses'
-    )
 
   parser.add_argument(
       '--stack-type',

@@ -23,6 +23,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Enable(base.Command):
   """Enable Cloud Identity-Aware Proxy (Cloud IAP) on an IAP resource.
 
@@ -45,15 +47,17 @@ class Enable(base.Command):
   """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_region = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapResourceArgs(parser)
+    iap_util.AddIapResourceArgs(parser, use_region_arg=cls._support_region)
     iap_util.AddOauthClientArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -67,5 +71,19 @@ class Enable(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    iap_ref = iap_util.ParseIapResource(self.ReleaseTrack(), args)
+    iap_ref = iap_util.ParseIapResource(
+        self.ReleaseTrack(), args, self._support_region
+    )
     return iap_ref.Enable(args.oauth2_client_id, args.oauth2_client_secret)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EnableAlpha(Enable):
+  """Enable Cloud Identity-Aware Proxy (Cloud IAP) on an IAP resource.
+
+  This command enables Cloud Identity-Aware Proxy on an IAP resource. OAuth 2.0
+  credentials must be set, or must have been previously set, to enable IAP.
+  """
+
+  _support_region = True
+

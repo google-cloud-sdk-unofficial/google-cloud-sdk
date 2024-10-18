@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe hierarchical namesapace bucket folders."""
 

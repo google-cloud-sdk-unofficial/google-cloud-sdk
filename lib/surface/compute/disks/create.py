@@ -82,7 +82,7 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser):
+def _SourceArgs(parser, support_source_snapshot_region):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -115,8 +115,12 @@ def _SourceArgs(parser):
         version of an image is needed.
         """)
   image_utils.AddImageFamilyScopeFlag(source_parent_group)
-
-  disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
+  if support_source_snapshot_region:
+    disks_flags.SOURCE_SNAPSHOT_ARG_ALPHA.AddArgument(
+        parser, mutex_group=source_group
+    )
+  else:
+    disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
   disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
@@ -133,6 +137,7 @@ def _CommonArgs(
     vss_erase_enabled=False,
     support_pd_interface=False,
     support_user_licenses=False,
+    support_source_snapshot_region=False,
 ):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -189,7 +194,7 @@ def _CommonArgs(
             'be added onto the created disks to indicate the licensing and '
             'billing policies.'))
 
-  _SourceArgs(parser)
+  _SourceArgs(parser, support_source_snapshot_region)
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
@@ -363,9 +368,21 @@ class Create(base.Command):
     region_resource_fetcher.WarnForRegionalCreation(
         (ref for ref in disk_refs if ref.Collection() == 'compute.regionDisks'))
 
-  def GetSnapshotUri(self, args, compute_holder):
-    snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
-        args, compute_holder.resources)
+  def GetSnapshotUri(
+      self, args, compute_holder, support_source_snapshot_region
+  ):
+    if not support_source_snapshot_region:
+      snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG.ResolveAsResource(
+          args,
+          compute_holder.resources,
+      )
+    else:
+      snapshot_ref = disks_flags.SOURCE_SNAPSHOT_ARG_ALPHA.ResolveAsResource(
+          args,
+          compute_holder.resources,
+          scope_lister=flags.GetDefaultScopeLister(compute_holder.client),
+          default_scope=compute_scope.ScopeEnum.GLOBAL,
+      )
     if snapshot_ref:
       return snapshot_ref.SelfLink()
     return None
@@ -483,6 +500,7 @@ class Create(base.Command):
       support_pd_interface=False,
       support_user_licenses=False,
       support_enable_confidential_compute=True,
+      support_source_snapshot_region=False,
   ):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -500,7 +518,9 @@ class Create(base.Command):
     self.WarnAboutScopeDeprecationsAndMaintenance(disk_refs, client)
     project_to_source_image = self.GetProjectToSourceImageDict(
         args, disk_refs, compute_holder, from_image)
-    snapshot_uri = self.GetSnapshotUri(args, compute_holder)
+    snapshot_uri = self.GetSnapshotUri(
+        args, compute_holder, support_source_snapshot_region
+    )
 
     labels = self.GetLabels(args, client)
 
@@ -717,6 +737,7 @@ class CreateAlpha(CreateBeta):
         vss_erase_enabled=True,
         support_pd_interface=True,
         support_user_licenses=True,
+        support_source_snapshot_region=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -735,6 +756,7 @@ class CreateAlpha(CreateBeta):
         support_pd_interface=True,
         support_user_licenses=True,
         support_enable_confidential_compute=True,
+        support_source_snapshot_region=True,
     )
 
 

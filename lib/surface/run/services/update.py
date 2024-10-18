@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -238,6 +239,7 @@ class Update(base.Command):
                 flags.FlagIsExplicitlySet(args, 'revision_suffix')
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
+            is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
         )
 
       if args.async_:
@@ -302,6 +304,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddMaxUnavailableFlag(managed_group)
     flags.AddGpuTypeFlag(managed_group)
     flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
+    flags.IDENTITY_FLAG.AddToParser(managed_group)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

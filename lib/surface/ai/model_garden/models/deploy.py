@@ -172,6 +172,14 @@ class Deploy(base.Command):
         )
 
       deploy_config = model_garden_utils.GetDeployConfig(args, publisher_model)
+      model_garden_utils.CheckAcceleratorQuota(
+          args,
+          machine_type=deploy_config.dedicatedResources.machineSpec.machineType,
+          accelerator_type=str(
+              deploy_config.dedicatedResources.machineSpec.acceleratorType
+          ),
+          accelerator_count=deploy_config.dedicatedResources.machineSpec.acceleratorCount,
+      )
       # Clear the aiplatform URI value so that new values can be set.
       properties.VALUES.api_endpoint_overrides.aiplatform.Set(None)
 

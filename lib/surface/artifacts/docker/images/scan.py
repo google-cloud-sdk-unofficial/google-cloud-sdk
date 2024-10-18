@@ -50,6 +50,7 @@ UNKNOWN_EXTRACTION_ERROR_TEMPLATE = (
     'Extraction failed: unknown error (exit code: {exit_code})')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ScanBeta(base.Command):
   """Perform a vulnerability scan on a container image.
@@ -98,6 +99,7 @@ class ScanBeta(base.Command):
     flags.GetOnDemandScanningLocationFlag().AddToParser(parser)
     flags.GetAdditionalPackageTypesFlag().AddToParser(parser)
     flags.GetExperimentalPackageTypesFlag().AddToParser(parser)
+    flags.GetSkipPackageTypesFlag().AddToParser(parser)
     flags.GetVerboseErrorsFlag().AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -165,6 +167,7 @@ class ScanBeta(base.Command):
           fake_extraction=args.fake_extraction,
           additional_package_types=args.additional_package_types,
           experimental_package_types=args.experimental_package_types,
+          skip_package_types=args.skip_package_types,
           verbose_errors=args.verbose_errors,
       )
       if operation_result.exit_code:
@@ -277,9 +280,17 @@ class Command(binary_operations.BinaryBackedOperation):
   def __init__(self, **kwargs):
     super(Command, self).__init__(binary='local-extract', **kwargs)
 
-  def _ParseArgsForCommand(self, resource_uri, remote, fake_extraction,
-                           additional_package_types, experimental_package_types,
-                           verbose_errors, **kwargs):
+  def _ParseArgsForCommand(
+      self,
+      resource_uri,
+      remote,
+      fake_extraction,
+      additional_package_types,
+      experimental_package_types,
+      skip_package_types,
+      verbose_errors,
+      **kwargs
+  ):
     args = [
         '--resource_uri=' + resource_uri,
         '--remote=' + six.text_type(remote),
@@ -288,9 +299,12 @@ class Command(binary_operations.BinaryBackedOperation):
         # the local-extract binary, provide a list of all flags to --undefok
         # which were introduced after the first launch. In this way, new
         # versions of the command can invoke old versions of the binary.
-        '--undefok=' + ','.join([
+        '--undefok='
+        + ','.join([
             'additional_package_types',
+            'skip_package_types',
             'verbose_errors',
+            'use_scalibr',
         ]),
     ]
 
@@ -304,7 +318,14 @@ class Command(binary_operations.BinaryBackedOperation):
       args.append('--additional_package_types=' +
                   six.text_type(','.join(package_types)))
 
+    if skip_package_types:
+      args.append(
+          '--skip_package_types=' + six.text_type(','.join(skip_package_types))
+      )
+
     if verbose_errors:
       args.append('--verbose_errors=' + six.text_type(verbose_errors))
+
+    args.append('--use_scalibr')
 
     return args

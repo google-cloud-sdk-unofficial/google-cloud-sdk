@@ -35,6 +35,7 @@ from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.printers import traffic_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 from googlecloudsdk.core.resource import resource_printer
 
@@ -141,6 +142,7 @@ class AdjustTraffic(base.Command):
               changes,
               tracker,
               args.async_,
+              properties.VALUES.core.verbosity.Get() == 'debug',
           )
       except:
         serv = client.GetService(service_ref)

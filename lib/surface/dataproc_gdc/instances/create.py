@@ -184,7 +184,7 @@ class Create(base.CreateCommand):
 
 def GetInstanceResourcePresentationSpec():
   instance_data = yaml_data.ResourceYAMLData.FromPath(
-      'dataproc_gdc.service_instance'
+      'dataproc_gdc.instance'
   )
   resource_spec = concepts.ResourceSpec.FromYaml(instance_data.GetData())
   return presentation_specs.ResourcePresentationSpec(

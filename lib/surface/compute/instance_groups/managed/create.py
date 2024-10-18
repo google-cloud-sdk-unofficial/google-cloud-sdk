@@ -484,13 +484,22 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    managed_flags.AddTargetSizePolicyModeFlag(parser)
 
-  def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
-                                  holder):
-    instance_group_manager = super(CreateAlpha,
-                                   self)._CreateInstanceGroupManager(
-                                       args, group_ref, template_ref, client,
-                                       holder)
+  def _CreateInstanceGroupManager(
+      self, args, group_ref, template_ref, client, holder
+  ):
+    instance_group_manager = super(
+        CreateAlpha, self
+    )._CreateInstanceGroupManager(args, group_ref, template_ref, client, holder)
+
+    if args.IsKnownAndSpecified('target_size_policy_mode'):
+      instance_group_manager.targetSizePolicy = (
+          managed_instance_groups_utils.CreateTargetSizePolicy(
+              client.messages, args.target_size_policy_mode
+          )
+      )
+
     return instance_group_manager
 
 CreateAlpha.detailed_help = CreateGA.detailed_help

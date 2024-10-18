@@ -29,7 +29,6 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List folders."""
 

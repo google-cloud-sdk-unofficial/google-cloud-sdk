@@ -51,6 +51,16 @@
       type: str
       help_text: |
         Domain used by Workstations for HTTP ingress.
+    - arg_name: tags
+      api_field: workstationCluster.tags
+      metavar: KEY=VALUE
+      hidden: true
+      type: "googlecloudsdk.calliope.arg_parsers:ArgDict:"
+      help_text: |
+        Tag keys/values directly bound to this resource.
+        For example:
+         "123/environment=production"
+         "123/costCenter=marketing"
 
   request:
     GA:

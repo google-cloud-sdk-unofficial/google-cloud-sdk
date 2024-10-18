@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-class Enable(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Disable(base.Command):
   """Disable Cloud Identity-Aware Proxy (Cloud IAP) on an IAP resource.
 
   This command disables Cloud Identity-Aware Proxy on an IAP resource. Disabling
@@ -42,15 +44,17 @@ class Enable(base.Command):
   """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_region = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapResourceArgs(parser)
+    iap_util.AddIapResourceArgs(parser, use_region_arg=cls._support_region)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
@@ -58,10 +62,23 @@ class Enable(base.Command):
 
     Args:
       args: an argparse namespace. All the arguments that were provided to this
-          command invocation.
+        command invocation.
 
     Returns:
       The specified function with its description and configured filter.
     """
-    iap_ref = iap_util.ParseIapResource(self.ReleaseTrack(), args)
+    iap_ref = iap_util.ParseIapResource(
+        self.ReleaseTrack(), args, self._support_region
+    )
     return iap_ref.Disable()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DisableAlpha(Disable):
+  """Disable Cloud Identity-Aware Proxy (Cloud IAP) on an IAP resource.
+
+  This command disables Cloud Identity-Aware Proxy on an IAP resource. Disabling
+  IAP does not clear the OAuth 2.0 credentials.
+  """
+
+  _support_region = True

@@ -32,24 +32,12 @@ def _FormatRequiresDelimiterEscaping(output_format):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describes a Cloud Pub/Sub topic."""
 
   @staticmethod
   def Args(parser):
     resource_args.AddTopicResourceArg(parser, 'to describe.')
-
-  def Run(self, args):
-    client = topics.TopicsClient()
-    topic_ref = args.CONCEPTS.topic.Parse()
-
-    return client.Get(topic_ref)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class DescribeBeta(Describe):
-  """Describes a Cloud Pub/Sub topic."""
 
   def Run(self, args):
     client = topics.TopicsClient()

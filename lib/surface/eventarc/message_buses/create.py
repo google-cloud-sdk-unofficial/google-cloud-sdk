@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
             message_bus_ref.locationsId,
         )
     )
+    client.RaiseErrorIfMessageBusExists(message_bus_ref.projectsId)
     operation = client.Create(
         message_bus_ref,
         client.BuildMessageBus(

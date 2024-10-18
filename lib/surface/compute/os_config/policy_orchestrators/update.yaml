@@ -1,0 +1,63 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Update a policy orchestrator
+    description: |
+      Update a policy orchestrator.
+      ## EXAMPLES
+
+      To update an policy orchestrator `my-orchestrator` in folder `123456` with config file
+      `/path/to/file/config.yaml`, run:
+
+        $ {command} my-orchestrator --folder=123456 --policy-file=/path/to/file/config.yaml
+
+      To update an policy orchestrator `my-orchestrator` in folder `123456` with state STOPPED, run:
+
+        $ {command} my-orchestrator --folder=123456 --state=stopped
+
+  request:
+    collection: osconfig.folders.locations.global.policyOrchestrators
+    method: patch
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyUpdateRequest
+    ALPHA:
+      api_version: v2alpha
+
+  async:
+    collection: osconfig.folders.locations.operations
+    ALPHA:
+      api_version: v2alpha
+
+  arguments:
+    resource:
+      help_text: Policy orchestrator to update.
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:policy_orchestrator
+    params:
+    - arg_name: action
+      help_text: Action to be taken on policy.
+      choices:
+      - arg_value: UPSERT
+        help_text: Create or update a policy. `policy-file` must be specified.
+      - arg_value: DELETE
+        help_text: Delete a policy with a given name. `policy-id` must be specified.
+    - arg_name: policy-id
+      help_text: Policy id. Must be specified for `DELETE` action.
+    - arg_name: state
+      help_text: State of the policy orchestrator.
+      choices:
+      - arg_value: ACTIVE
+        help_text: Policy orchestrator is active.
+      - arg_value: STOPPED
+        help_text: Policy orchestrator is stopped.
+    - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
+    - group:
+        help_text: |
+            Projects to include in the policy orchestrator.
+            If `include-projects` is set, `clear-projects` must not be set.
+        mutex: true
+        params:
+        - arg_name: include-projects
+          help_text: Applies policy to selected projects only.
+        - arg_name: clear-projects
+          help_text: Clears included projects from policy orchestrato selectors.
+          type: bool

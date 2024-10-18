@@ -139,13 +139,17 @@ class Create(base.Command):
     flags.add_enable_per_object_retention_flag(parser)
     flags.add_recovery_point_objective_flag(parser)
 
+    parser.add_argument(
+        '--enable-hierarchical-namespace',
+        action='store_true',
+        default=None,
+        help=(
+            'Enable hierarchical namespace for the bucket. To use this'
+            ' flag, you must also use --uniform-bucket-level-access'
+        ),
+    )
+
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.add_argument(
-          '--enable-hierarchical-namespace',
-          action='store_true',
-          help='Enable hierarchical namespace for the bucket. To use this'
-               ' flag, you must also use --uniform-bucket-level-access',
-      )
       flags.add_ip_filter_file_flag(parser)
 
   def Run(self, args):

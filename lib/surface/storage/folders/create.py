@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create folders for hierarchical namespace bucket."""
 

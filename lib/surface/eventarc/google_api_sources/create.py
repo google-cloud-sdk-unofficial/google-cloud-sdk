@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
             google_api_source_ref.locationsId,
         )
     )
+    client.RaiseErrorIfGoogleApiSourceExists(google_api_source_ref.projectsId)
     operation = client.Create(
         google_api_source_ref,
         client.BuildGoogleApiSource(

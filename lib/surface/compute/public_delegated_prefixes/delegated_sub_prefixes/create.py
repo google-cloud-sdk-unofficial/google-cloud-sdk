@@ -20,34 +20,39 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import public_delegated_prefixes
+from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.public_delegated_prefixes import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+DETAILED_HELP = {
+    'EXAMPLES':
+        """\
+        To create a delegated sub prefix for a global public delegated prefix:
+
+          $ {command} my-sub-prefix --range=120.120.10.128/28 --public-delegated-prefix=my-pdp --global-public-delegated-prefix
+
+        To create a delegated sub prefix for a regional public delegated prefix:
+
+          $ {command} my-sub-prefix --range=120.120.10.128/30 --create-addresses --public-delegated-prefix=my-pdp --public-delegated-prefix-region=us-east1
+        """
+}
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Create(base.UpdateCommand):
   r"""Creates a Compute Engine delegated sub prefix."""
-  DETAILED_HELP = {
-      'EXAMPLES':
-          """\
-          To create a delegated sub prefix for a global public delegated prefix:
 
-            $ {command} my-sub-prefix --range=120.120.10.128/28 --public-delegated-prefix=my-pdp --global-public-delegated-prefix
-
-          To create a delegated sub prefix for a regional public delegated prefix:
-
-            $ {command} my-sub-prefix --range=120.120.10.128/30 --create-addresses --public-delegated-prefix=my-pdp --public-delegated-prefix-region=us-east1
-          """
-  }
   detailed_help = DETAILED_HELP
+  _api_version = compute_api.COMPUTE_GA_API_VERSION
+  _include_subnetwork_creation_mode = False
 
-  @staticmethod
-  def Args(parser):
-    flags.AddCreateSubPrefixArgs(parser)
+  @classmethod
+  def Args(cls, parser):
+    flags.AddCreateSubPrefixArgs(parser, cls._include_subnetwork_creation_mode)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -62,10 +67,10 @@ class Create(base.UpdateCommand):
 
     pdp_client = public_delegated_prefixes.PublicDelegatedPrefixesClient(
         client, messages, resources)
-
     if args.mode:
-      input_mode = holder.client.messages.PublicDelegatedPrefixPublicDelegatedSubPrefix.ModeValueValuesEnum(
-          args.mode
+      input_mode = arg_utils.ChoiceToEnum(
+          args.mode,
+          holder.client.messages.PublicDelegatedPrefixPublicDelegatedSubPrefix.ModeValueValuesEnum,
       )
     else:
       input_mode = None
@@ -82,3 +87,19 @@ class Create(base.UpdateCommand):
         if args.allocatable_prefix_length
         else None,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  r"""Creates a Compute Engine delegated sub prefix."""
+
+  _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_subnetwork_creation_mode = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  r"""Creates a Compute Engine delegated sub prefix."""
+
+  _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
+  _include_subnetwork_creation_mode = True

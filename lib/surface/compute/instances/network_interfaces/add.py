@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.instances.network_interfaces import flags as network_interfaces_flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Add(base.UpdateCommand):
   r"""Add a Compute Engine virtual machine network interface.
@@ -48,6 +49,7 @@ class Add(base.UpdateCommand):
     network_interfaces_flags.AddPrivateNetworkIpArg(
         parser, add_network_interface=True
     )
+    network_interfaces_flags.AddNetworkAttachmentArg(parser)
     network_interfaces_flags.AddAliasesArg(parser, add_network_interface=True)
     network_interfaces_flags.AddStackTypeArg(parser)
     network_interfaces_flags.AddNetworkTierArg(parser)
@@ -82,6 +84,7 @@ class Add(base.UpdateCommand):
         project=instance_ref.project,
         location=instance_ref.zone,
         scope=compute_scopes.ScopeEnum.ZONE,
+        network_attachment=getattr(args, 'network_attachment', None),
         parent_nic_name=getattr(args, 'parent_nic_name', None),
         vlan=getattr(args, 'vlan', None),
         private_network_ip=getattr(args, 'private_network_ip', None),

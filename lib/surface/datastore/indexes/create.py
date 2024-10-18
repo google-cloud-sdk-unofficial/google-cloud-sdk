@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
 
@@ -50,7 +50,7 @@ Any indexes in your index file that do not exist will be created.
             $ {command} ~/myapp/index.yaml
 
           Detailed information about index configuration can be found at the
-          [index.yaml reference](https://cloud.google.com/appengine/docs/standard/python/config/indexref).
+          [index.yaml reference](https://cloud.google.com/datastore/docs/tools/indexconfig).
           """,
   }
 
@@ -105,7 +105,7 @@ Any indexes in your index file that do not exist will be created.
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateFirestoreAPI(Create):
   """Create Cloud Datastore indexes with Firestore API."""
 

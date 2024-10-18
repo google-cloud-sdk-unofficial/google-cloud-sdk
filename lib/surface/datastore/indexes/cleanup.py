@@ -31,7 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cleanup(base.Command):
   """Cleanup Cloud Datastore indexes."""
 
@@ -125,7 +125,7 @@ removed.
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CleanupFirestoreApi(Cleanup):
   """Create Cloud Datastore indexes with Firestore API."""
 

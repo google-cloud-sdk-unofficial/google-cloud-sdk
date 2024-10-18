@@ -98,8 +98,7 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
-      support_ip_address_selection_policy,
-      support_stateful_affinity,
+      support_custom_metrics,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -127,10 +126,10 @@ class CreateHelper(object):
     flags.AddEnableCdn(parser)
     flags.AddSessionAffinity(
         parser,
-        support_stateful_affinity=support_stateful_affinity,
+        support_stateful_affinity=True,
         support_client_only=support_client_only,
     )
-    flags.AddAffinityCookie(parser)
+    flags.AddAffinityCookie(parser, support_stateful_affinity=True)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
@@ -166,11 +165,10 @@ class CreateHelper(object):
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
 
     flags.AddConnectionTrackingPolicy(parser)
-
     flags.AddCompressionMode(parser)
-
-    if support_ip_address_selection_policy:
-      flags.AddIpAddressSelectionPolicy(parser)
+    flags.AddIpAddressSelectionPolicy(parser)
+    if support_custom_metrics:
+      flags.AddBackendServiceCustomMetrics(parser)
 
   def __init__(
       self,
@@ -179,17 +177,15 @@ class CreateHelper(object):
       support_subsetting,
       support_subsetting_subset_size,
       support_advanced_load_balancing,
-      support_ip_address_selection_policy,
       release_track,
+      support_custom_metrics,
   ):
     self._support_failover = support_failover
     self._support_multinic = support_multinic
     self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_advanced_load_balancing = support_advanced_load_balancing
-    self._support_ip_address_selection_policy = (
-        support_ip_address_selection_policy
-    )
+    self._support_custom_metrics = support_custom_metrics
     self._release_track = release_track
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -279,10 +275,12 @@ class CreateHelper(object):
         backend_service,
     )
 
-    if self._support_ip_address_selection_policy:
-      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
-          client, args, backend_service
-      )
+    backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+        client, args, backend_service
+    )
+
+    if self._support_custom_metrics:
+      backend_services_utils.ApplyCustomMetrics(args, backend_service)
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
@@ -382,10 +380,9 @@ class CreateHelper(object):
         backend_service,
     )
 
-    if self._support_ip_address_selection_policy:
-      backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
-          client, args, backend_service
-      )
+    backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
+        client, args, backend_service
+    )
 
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
@@ -474,8 +471,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting = True
   _support_subsetting_subset_size = False
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = False
-  _support_stateful_affinity = True
+  _support_custom_metrics = False
 
   @classmethod
   def Args(cls, parser):
@@ -488,10 +484,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_advanced_load_balancing=cls._support_advanced_load_balancing,
-        support_ip_address_selection_policy=(
-            cls._support_ip_address_selection_policy
-        ),
-        support_stateful_affinity=cls._support_stateful_affinity,
+        support_custom_metrics=cls._support_custom_metrics,
     )
 
   def Run(self, args):
@@ -504,9 +497,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_advanced_load_balancing=self._support_advanced_load_balancing,
-        support_ip_address_selection_policy=(
-            self._support_ip_address_selection_policy
-        ),
+        support_custom_metrics=self._support_custom_metrics,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -535,8 +526,7 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = True
-  _support_stateful_affinity = True
+  _support_custom_metrics = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -562,5 +552,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_ip_address_selection_policy = True
-  _support_stateful_affinity = True
+  _support_custom_metrics = True

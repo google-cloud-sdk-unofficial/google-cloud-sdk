@@ -15,4 +15,4 @@
     resource:
       help_text: |
         The Dataproc GDC service instance to describe.
-      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:service_instance
+      spec: !REF googlecloudsdk.command_lib.dataproc_gdc.resources:instance

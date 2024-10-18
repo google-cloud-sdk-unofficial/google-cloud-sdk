@@ -257,7 +257,7 @@ class Ls(base.Command):
         readable_sizes=args.readable_sizes,
         recursion_flag=args.recursive,
         use_gsutil_style=use_gsutil_style,
-        soft_deleted_buckets=getattr(args, 'soft_deleted', False),
+        soft_deleted_buckets=buckets and soft_deleted,
     ).list_urls()
 
     if found_non_default_provider and args.full:
