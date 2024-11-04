@@ -164,6 +164,13 @@ def AddBetaArgs(parser):
   flags.AddRetainBackupsOnDelete(parser)
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
+  flags.AddEnableConnectionPooling(parser)
+  flags.AddConnectionPoolingPoolMode(parser)
+  flags.AddConnectionPoolingPoolSize(parser)
+  flags.AddConnectionPoolingMaxClientConnections(parser)
+  flags.AddConnectionPoolingClientIdleTimeout(parser)
+  flags.AddConnectionPoolingServerIdleTimeout(parser)
+  flags.AddConnectionPoolingQueryWaitTimeout(parser)
 
 
 def AddAlphaArgs(unused_parser):

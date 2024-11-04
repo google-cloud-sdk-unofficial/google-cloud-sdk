@@ -4,9 +4,14 @@
     brief: Create a new Service Connection Policy.
     description: Create a new Service Connection Policy with the given name.
     examples: |
-      Create a Service Connection Policy with name ``my-service-conn-policy'' for network ``projects/my-project/global/networks/net1'' and service class ``my-service-class-ad32fa4b'' in region ``us-central1''.
+      Create a Service Connection Policy with name ``my-service-conn-policy''
+      for network ``projects/my-project/global/networks/net1''
+      and service class ``my-service-class-ad32fa4b'' in region ``us-central1''
+      using subnet projects/my-project/regions/us-central1/subnetworks/subnet1
+      subject to custom-resource-hierarchy-levels that allows
+      connections from Google-managed producer instances in projects/my-project.
 
-        $ {command} my-service-conn-policy --network="projects/my-project/global/networks/net1" --service-class=my-service-class-ad32fa4b --region=us-central1
+        $ {command} my-service-conn-policy --network="projects/my-project/global/networks/net1" --service-class=my-service-class-ad32fa4b --region=us-central1 --subnets=projects/my-project/regions/us-central1/subnetworks/subnet1 --psc-connection-limit=100 --producer-instance-location=custom-resource-hierarchy-levels --allowed-google-producers-resource-hierarchy-level=projects/my-project
 
   arguments:
     params:
@@ -52,6 +57,20 @@
           type: int
           api_field: serviceConnectionPolicy.pscConfig.limit
           help_text: Max number of PSC connections for this policy.
+        - arg_name: producer-instance-location
+          api_field: serviceConnectionPolicy.pscConfig.producerInstanceLocation
+          help_text: Option that determines where the producer instances can be located for which connections can be created in the network controlled by this policy.
+          choices:
+          - arg_value: none
+            enum_value:  PRODUCER_INSTANCE_LOCATION_UNSPECIFIED
+            help_text: The producer instance must be within the same project as this connection policy.
+          - arg_value: custom-resource-hierarchy-levels
+            enum_value:  CUSTOM_RESOURCE_HIERARCHY_LEVELS
+            help_text: The producer instance must be located in one of the values provided in the allowed-google-producers-resource-hierarchy-level flag.
+        - arg_name: allowed-google-producers-resource-hierarchy-level
+          api_field: serviceConnectionPolicy.pscConfig.allowedGoogleProducersResourceHierarchyLevel
+          repeated: true
+          help_text: List of projects, folders, or orgs where the producer instance can be located in the form "projects/123456789", folders/123456789", or "organizations/123456789".
 
   async:
     collection: networkconnectivity.projects.locations.operations

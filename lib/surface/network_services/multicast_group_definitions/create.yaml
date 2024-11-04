@@ -25,6 +25,10 @@ arguments:
     api_field: multicastGroupDefinition.multicastDomain
     help_text: The multicast domain to be used.
     required: true
+  - arg_name: consumer-accept-list
+    repeated: true
+    api_field: multicastGroupDefinition.consumerAcceptList
+    help_text: An optional list of consumer projects that can use this multicast group definition.
   - arg_name: description
     api_field: multicastGroupDefinition.description
     help_text: The description for the multicast group definition.

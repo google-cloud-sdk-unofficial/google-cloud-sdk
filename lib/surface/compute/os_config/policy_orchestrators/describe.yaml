@@ -11,7 +11,10 @@
         $ {command} my-orchestrator
 
   request:
-    collection: osconfig.folders.locations.global.policyOrchestrators
+    collection:
+    - osconfig.projects.locations.global.policyOrchestrators
+    - osconfig.folders.locations.global.policyOrchestrators
+    - osconfig.organizations.locations.global.policyOrchestrators
     ALPHA:
       api_version: v2alpha
 

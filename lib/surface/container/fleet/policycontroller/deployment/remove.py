@@ -147,7 +147,6 @@ class Remove(base.UpdateCommand, mf_base.UpdateCommand, command.PocoCommand):
     )
 
     # Convert back to a list of additionalProperties.
-    # TODO(b/290215626) If empty, ensure it's removed from proto.
     dcv = protos.set_additional_properties(
         self.messages.PolicyControllerHubConfig.DeploymentConfigsValue(), cfgs
     )

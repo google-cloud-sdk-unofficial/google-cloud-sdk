@@ -58,18 +58,34 @@ class Update(base.Command):
 
     labels = None
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
-    if labels_diff.MayHaveUpdates():
-      original_spoke = client.Get(spoke_ref)
-      labels_update = labels_diff.Apply(client.messages.Spoke.LabelsValue,
-                                        original_spoke.labels)
-      if labels_update.needs_update:
-        labels = labels_update.labels
-        update_mask.append('labels')
 
-    # Construct a spoke message with only the updated fields
-    spoke = client.messages.Spoke(description=description, labels=labels)
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      if labels_diff.MayHaveUpdates():
+        original_spoke = client.Get(spoke_ref)
+        labels_update = labels_diff.Apply(
+            client.messages.GoogleCloudNetworkconnectivityV1betaSpoke.LabelsValue,
+            original_spoke.labels,
+        )
+        if labels_update.needs_update:
+          labels = labels_update.labels
+          update_mask.append('labels')
 
-    op_ref = client.UpdateSpoke(spoke_ref, spoke, update_mask)
+      spoke = client.messages.GoogleCloudNetworkconnectivityV1betaSpoke(
+          description=description, labels=labels
+      )
+      op_ref = client.UpdateSpokeBeta(spoke_ref, spoke, update_mask)
+    else:
+      if labels_diff.MayHaveUpdates():
+        original_spoke = client.Get(spoke_ref)
+        labels_update = labels_diff.Apply(client.messages.Spoke.LabelsValue,
+                                          original_spoke.labels)
+        if labels_update.needs_update:
+          labels = labels_update.labels
+          update_mask.append('labels')
+
+       # Construct a spoke message with only the updated fields
+      spoke = client.messages.Spoke(description=description, labels=labels)
+      op_ref = client.UpdateSpoke(spoke_ref, spoke, update_mask)
 
     log.status.Print('Update request issued for: [{}]'.format(spoke_ref.Name()))
 

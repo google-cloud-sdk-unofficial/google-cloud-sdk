@@ -106,6 +106,18 @@ class Convert(base.RestoreCommand):
         )
         or result
     )
+    # delete the original disk
+    result = self._DeleteDisk(disk_ref) or result
+
+    # recreate the original disk with the new disk as source
+    result = self._CloneDisk(disk_ref.Name(), restored_disk_ref) or result
+
+    # delete the restored disk because the original disk is recreated
+    result = self._DeleteDisk(restored_disk_ref) or result
+
+    # delete the snapshot because the disk is recreated
+    result = self._DeleteSnapshot(snapshot_ref) or result
+
     return result
 
   def _InsertSnapshot(self, disk_ref, snapshot_name):
@@ -126,6 +138,23 @@ class Convert(base.RestoreCommand):
         poller.Poller(self.client.snapshots),
         operation_ref,
         'Creating snapshot {0}...'.format(snapshot_name),
+        max_wait_ms=None,
+    )
+
+  def _DeleteSnapshot(self, snapshot_ref):
+    request = self.messages.ComputeSnapshotsDeleteRequest(
+        snapshot=snapshot_ref.Name(),
+        project=snapshot_ref.project,
+    )
+    operation = self.client.snapshots.Delete(request)
+    operation_ref = self.holder.resources.Parse(
+        operation.selfLink,
+        collection='compute.globalOperations',
+    )
+    return waiter.WaitFor(
+        poller.DeletePoller(self.client.snapshots),
+        operation_ref,
+        'Deleting snapshot {0}...'.format(snapshot_ref.Name()),
         max_wait_ms=None,
     )
 
@@ -172,3 +201,44 @@ class Convert(base.RestoreCommand):
     return '{0}-{1}'.format(
         name_generator.GenerateRandomName(), resource_ref.Name()
     )[:64]
+
+  def _DeleteDisk(self, disk_ref):
+    request = self.messages.ComputeDisksDeleteRequest(
+        disk=disk_ref.Name(),
+        project=disk_ref.project,
+        zone=disk_ref.zone,
+    )
+    operation = self.client.disks.Delete(request)
+    operation_ref = self.holder.resources.Parse(
+        operation.selfLink,
+        collection='compute.zoneOperations',
+    )
+    return waiter.WaitFor(
+        poller.DeletePoller(self.client.disks),
+        operation_ref,
+        'Deleting disk {0}...'.format(disk_ref.Name()),
+        max_wait_ms=None,
+    )
+
+  def _CloneDisk(self, original_disk_name, restored_disk_ref):
+    disk = self.messages.Disk(
+        name=original_disk_name,
+        sourceDisk=restored_disk_ref.SelfLink(),
+    )
+    request = self.messages.ComputeDisksInsertRequest(
+        disk=disk,
+        project=restored_disk_ref.project,
+        zone=restored_disk_ref.zone,
+    )
+    operation = self.client.disks.Insert(request)
+    operation_ref = self.holder.resources.Parse(
+        operation.selfLink,
+        collection='compute.zoneOperations',
+    )
+    operation_poller = poller.Poller(self.client.disks)
+    return waiter.WaitFor(
+        operation_poller,
+        operation_ref,
+        'Recreating disk {0}...'.format(original_disk_name),
+        max_wait_ms=None,
+    )

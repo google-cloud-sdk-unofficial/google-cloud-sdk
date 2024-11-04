@@ -23,6 +23,5 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Pipelines(base.Group):
   """Manage Eventarc pipelines."""

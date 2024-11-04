@@ -815,7 +815,7 @@ flags_to_add = {
             p, for_create=True
         ),
         'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
@@ -1012,7 +1012,7 @@ flags_to_add = {
             p, for_create=True
         ),
         'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
         'mastersignals': AddMasterSignalsFlag,

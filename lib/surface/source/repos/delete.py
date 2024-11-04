@@ -25,8 +25,10 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a cloud source repository.
 

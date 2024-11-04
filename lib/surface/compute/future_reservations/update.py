@@ -103,7 +103,6 @@ class UpdateBeta(base.UpdateCommand):
           '--commitment-name',
           '--commitment-plan',
           '--previous-commitment-terms',
-          '--instance-termination-action',
           '--scheduling-type',
           '--enable-opportunistic-maintenance',
           '--no-enable-opportunistic-maintenance',
@@ -184,8 +183,6 @@ class UpdateBeta(base.UpdateCommand):
       update_mask.append('commitmentInfo.commitmentPlan')
     if args.IsKnownAndSpecified('previous_commitment_terms'):
       update_mask.append('commitmentInfo.previousCommitmentTerms')
-    if args.IsKnownAndSpecified('instance_termination_action'):
-      update_mask.append('instanceTerminationAction')
     if args.IsKnownAndSpecified('scheduling_type'):
       update_mask.append('schedulingType')
     if args.IsKnownAndSpecified('enable_opportunistic_maintenance'):

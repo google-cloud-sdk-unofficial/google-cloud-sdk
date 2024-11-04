@@ -39,6 +39,13 @@ _DETAILED_HELP = {
 }
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=('This command is deprecated. '
+             'Please use `gcloud beta colab runtimes create` instead.'),
+    error=('This command has been removed. '
+           'Please use `gcloud beta colab runtimes create` instead.'),
+)
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
@@ -47,7 +54,7 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddAssignRuntimeFlags(parser)
+    flags.AddCreateRuntimeFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""

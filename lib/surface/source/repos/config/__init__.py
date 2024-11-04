@@ -22,5 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class Config(base.Group):
   """Manage Cloud Source repo configurations."""

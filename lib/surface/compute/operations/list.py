@@ -27,6 +27,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+def _AllowPartialError():
+  return properties.VALUES.compute.allow_partial_error.GetBool()
+
+
 def AddFlags(parser, is_ga):
   """Helper function for adding flags dependant on the release track."""
   parser.display_info.AddFormat("""\
@@ -65,6 +69,7 @@ def AddFlags(parser, is_ga):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine operations."""
 
@@ -99,6 +104,7 @@ class List(base.ListCommand):
                'AggregatedList')(
                    filter=request_data.filter,
                    maxResults=request_data.max_results,
+                   returnPartialSuccess=True,
                    project=list(request_data.scope_set)[0].project)))
     else:
       if getattr(args, 'global'):
@@ -182,7 +188,10 @@ class List(base.ListCommand):
             errors=errors))
 
     if errors:
-      utils.RaiseToolException(errors)
+      if _AllowPartialError():
+        utils.WarnIfPartialRequestFail(errors)
+      else:
+        utils.RaiseToolException(errors)
 
     return results
 

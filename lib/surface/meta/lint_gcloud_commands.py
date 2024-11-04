@@ -21,13 +21,17 @@ from __future__ import unicode_literals
 import argparse
 import copy
 import json
+import os
 import re
 import shlex
 from typing import collections
 
 from googlecloudsdk import gcloud_main
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as gcloud_exceptions
+from googlecloudsdk.command_lib.meta import generate_argument_spec
 from googlecloudsdk.core import log
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 import six
 
@@ -56,7 +60,10 @@ def _read_commands_from_file(commands_file):
 def _separate_command_arguments(command_string: str):
   """Move all flag arguments to back."""
   # Split arguments
-  command_arguments = shlex.split(command_string)
+  if os.name == 'nt':
+    command_arguments = shlex.split(command_string, posix=False)
+  else:
+    command_arguments = shlex.split(command_string)
   # Move any flag arguments to end of command.
   flag_args = [arg for arg in command_arguments if arg.startswith('--')]
   command_args = [arg for arg in command_arguments if not arg.startswith('--')]
@@ -97,7 +104,6 @@ def _extract_gcloud_commands(text):
       A list of extracted code snippets.
   """
   text = bytes(text, 'utf-8').decode('unicode_escape')
-  # print(text)
   fenced_pattern = r'```(?:[\w ]+\n)?(.*?)```'
   indented_pattern = (  # 3-8 indented spaces as arbitray nums
       r'(?: {3-8}|\t)(.*?)(?:\n\S|\n$)'
@@ -121,26 +127,32 @@ def _extract_gcloud_commands(text):
   return code_snippets
 
 
-def _get_command_no_args(command_arguments):
-  """Returns the command string without any arguments."""
+def _get_command_node(command_arguments):
+  """Returns the command node for the given command arguments."""
   cli = gcloud_main.CreateCLI([])
-  # Remove "gcloud" from command arguments.
   command_arguments = command_arguments[1:]
   current_command_node = cli._TopElement()  # pylint: disable=protected-access
-  command_no_args = ['gcloud']
   for argument in command_arguments:
-    # If this hits, we've found a command group with a flag passed.
-    # e.g. gcloud compute --help
     if argument.startswith('--'):
       break
-    # Attempt to load next section of command path.
-    current_command_node = current_command_node.LoadSubElement(argument)
-    # If not a valid section of command path, fail validation.
-    if not current_command_node:
+    child_command_node = current_command_node.LoadSubElement(argument)
+    if not child_command_node:
       break
-    else:
-      command_no_args.append(argument)
-  return ' '.join(command_no_args)
+    current_command_node = child_command_node
+  return current_command_node
+
+
+def _get_command_no_args(command_node):
+  """Returns the command string without any arguments."""
+  return ' '.join(command_node.ai.command_name)
+
+
+def _get_command_args_tree(command_node):
+  """Returns the command string without any arguments."""
+  argument_tree = generate_argument_spec.GenerateArgumentSpecifications(
+      command_node
+  )
+  return argument_tree
 
 
 @base.UniverseCompatible
@@ -267,7 +279,15 @@ class GenerateCommand(base.Command):
       command_arguments.append('--project=myproject')
     try:
       command_node._parser.parse_args(command_arguments, raise_error=True)  # pylint: disable=protected-access
+    except (
+        files.MissingFileError,
+        gcloud_exceptions.BadFileException,
+        yaml.FileLoadError,
+    ):
+      pass
     except argparse.ArgumentError as e:
+      if 'No such file or directory' in str(e):
+        return True
       self._store_validation_results(
           False,
           command_string,
@@ -289,9 +309,13 @@ class GenerateCommand(base.Command):
     """Store information related to the command validation."""
     validation_output = copy.deepcopy(_PARSING_OUTPUT_TEMPLATE)
     validation_output['command_string'] = command_string
-    validation_output['command_string_no_args'] = _get_command_no_args(
+    command_node = _get_command_node(
         _separate_command_arguments(command_string)
     )
+    validation_output['command_string_no_args'] = _get_command_no_args(
+        command_node
+    )
+    validation_output['args_structure'] = _get_command_args_tree(command_node)
     validation_output['command_args'] = (
         sorted(command_args) if command_args else None
     )

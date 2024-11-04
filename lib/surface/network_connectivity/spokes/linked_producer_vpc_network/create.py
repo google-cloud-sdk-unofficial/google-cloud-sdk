@@ -49,7 +49,7 @@ class Create(base.Command):
         parser, hide_exclude_export_ranges_flag=False
     )
     flags.AddIncludeExportRangesFlag(
-        parser, hide_include_export_ranges_flag=True
+        parser, hide_include_export_ranges_flag=False
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -59,23 +59,44 @@ class Create(base.Command):
     )
 
     spoke_ref = args.CONCEPTS.spoke.Parse()
-    labels = labels_util.ParseCreateArgs(
-        args, client.messages.Spoke.LabelsValue
-    )
-    spoke = client.messages.Spoke(
-        hub=args.hub,
-        group=args.group,
-        linkedProducerVpcNetwork=client.messages.LinkedProducerVpcNetwork(
-            network=args.network,
-            peering=args.peering,
-            excludeExportRanges=args.exclude_export_ranges,
-            includeExportRanges=args.include_export_ranges,
-        ),
-        description=args.description,
-        labels=labels,
-    )
 
-    op_ref = client.CreateSpoke(spoke_ref, spoke)
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      labels = labels_util.ParseCreateArgs(
+          args,
+          client.messages.GoogleCloudNetworkconnectivityV1betaSpoke.LabelsValue,
+      )
+
+      spoke = client.messages.GoogleCloudNetworkconnectivityV1betaSpoke(
+          hub=args.hub,
+          group=args.group,
+          linkedProducerVpcNetwork=client.messages.GoogleCloudNetworkconnectivityV1betaLinkedProducerVpcNetwork(
+              network=args.network,
+              peering=args.peering,
+              excludeExportRanges=args.exclude_export_ranges,
+              includeExportRanges=args.include_export_ranges,
+          ),
+          description=args.description,
+          labels=labels,
+      )
+      op_ref = client.CreateSpokeBeta(spoke_ref, spoke)
+    else:
+      labels = labels_util.ParseCreateArgs(
+          args, client.messages.Spoke.LabelsValue
+      )
+
+      spoke = client.messages.Spoke(
+          hub=args.hub,
+          group=args.group,
+          linkedProducerVpcNetwork=client.messages.LinkedProducerVpcNetwork(
+              network=args.network,
+              peering=args.peering,
+              excludeExportRanges=args.exclude_export_ranges,
+              includeExportRanges=args.include_export_ranges,
+          ),
+          description=args.description,
+          labels=labels,
+      )
+      op_ref = client.CreateSpoke(spoke_ref, spoke)
 
     log.status.Print('Create request issued for: [{}]'.format(spoke_ref.Name()))
 

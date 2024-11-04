@@ -84,6 +84,7 @@ class Create(base.CreateCommand):
         ),
     )
     flags.AddCluster(parser, False)
+    flags.AddTags(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'backup',
@@ -100,6 +101,8 @@ class Create(base.CreateCommand):
     backup_resource.name = backup_ref.RelativeName()
     backup_resource.type = _ParseBackupType(alloydb_messages, 'ON_DEMAND')
     backup_resource.clusterName = cluster_ref.RelativeName()
+    backup_resource.tags = flags.GetTagsFromArgs(
+        args, alloydb_messages.Backup.TagsValue)
     kms_key = flags.GetAndValidateKmsKeyName(args)
     if kms_key:
       encryption_config = alloydb_messages.EncryptionConfig()
@@ -160,7 +163,6 @@ class CreateBeta(Create):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     flags.AddEnforcedRetention(parser)
-    flags.GetTagsArg(parser)
 
   def ConstructResourceFromArgs(
       self, alloydb_messages, cluster_ref, backup_ref, args
@@ -170,8 +172,6 @@ class CreateBeta(Create):
     )
     if args.enforced_retention:
       backup_resource.enforcedRetention = True
-    backup_resource.tags = flags.GetTagsFromArgs(
-        args, alloydb_messages.Backup.TagsValue)
     return backup_resource
 
 

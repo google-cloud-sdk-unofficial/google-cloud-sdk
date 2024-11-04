@@ -90,6 +90,7 @@ class CreateAlpha(base.DeleteCommand):
     flags.AddDescription(parser)
     flags.AddEffectiveTime(parser)
     flags.AddLabels(parser)
+    flags.AddBackupVaultAccessRestrictionEnumFlag(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -112,6 +113,7 @@ class CreateAlpha(base.DeleteCommand):
         args, client.messages.BackupVault.LabelsValue
     )
     no_async = args.no_async
+    access_restriction = args.access_restriction
 
     try:
       operation = client.Create(
@@ -120,6 +122,7 @@ class CreateAlpha(base.DeleteCommand):
           description,
           labels,
           effective_time,
+          access_restriction,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

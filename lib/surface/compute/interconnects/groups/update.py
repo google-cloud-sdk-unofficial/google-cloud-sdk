@@ -21,25 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.groups import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.interconnects.groups import flags
 from googlecloudsdk.core import properties
-
-DETAILED_HELP = {
-    'DESCRIPTION': """\
-        *{command}* is used to create interconnect groups. An interconnect group
-        represents a set of redundant interconnects between Google and the
-        customer.
-
-        For an example, refer to the *EXAMPLES* section below.
-        """,
-    # pylint: disable=line-too-long
-    'EXAMPLES': """\
-        To create an interconnect group capable of PRODUCTION_NON_CRITICAL, run:
-
-          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_NON_CRITICAL --description="Example interconnect group"
-        """,
-    # pylint: enable=line-too-long
-}
 
 
 @base.UniverseCompatible
@@ -58,24 +42,35 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_GROUP_ARG = flags.InterconnectGroupArgument(plural=False)
     cls.INTERCONNECT_GROUP_ARG.AddArgument(parser, operation_type='update')
     flags.AddDescription(parser)
-    flags.AddIntendedTopologyCapabilityForAddOrUpdateGroup(parser)
+    flags.AddIntendedTopologyCapabilityForUpdate(parser)
+    flags.GetMemberInterconnectsForUpdate(parser)
 
   def Collection(self):
     return 'compute.interconnectGroups'
 
   def Run(self, args):
+    if (
+        args.description is None
+        and args.intended_topology_capability is None
+        and not args.interconnects
+    ):
+      raise exceptions.MinimumArgumentException(
+          ['--description', '--intended-topology-capability', '--interconnects']
+      )
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.INTERCONNECT_GROUP_ARG.ResolveAsResource(args, holder.resources)
     project = properties.VALUES.core.project.GetOrFail()
     interconnect_group = client.InterconnectGroup(
-        ref, project, compute_client=holder.client
+        ref, project, compute_client=holder.client, resources=holder.resources
     )
-    messages = holder.client.messages
-    topology_capability = flags.GetTopologyCapability(
-        messages, args.intended_topology_capability
-    )
+    topology_capability = None
+    if args.intended_topology_capability is not None:
+      topology_capability = flags.GetTopologyCapability(
+          holder.client.messages, args.intended_topology_capability
+      )
 
     return interconnect_group.Patch(
         description=args.description,
         topology_capability=topology_capability,
+        interconnects=args.interconnects,
     )

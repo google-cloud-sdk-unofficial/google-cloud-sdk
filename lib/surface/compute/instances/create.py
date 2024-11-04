@@ -110,7 +110,6 @@ def _CommonArgs(
     support_network_queue_count=False,
     support_instance_kms=False,
     support_max_run_duration=False,
-    support_network_attachments=False,
     support_local_ssd_recovery_timeout=True,
     support_local_ssd_size=False,
     support_vlan_nic=False,
@@ -146,7 +145,6 @@ def _CommonArgs(
       support_subinterface=support_subinterface,
       instance_create=True,
       support_network_queue_count=support_network_queue_count,
-      support_network_attachments=support_network_attachments,
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
       support_igmp_query=support_igmp_query)
@@ -304,7 +302,6 @@ class Create(base.CreateCommand):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True
   _support_local_ssd_size = True
@@ -335,7 +332,6 @@ class Create(base.CreateCommand):
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
         supports_erase_vss=cls._support_erase_vss,
-        support_network_attachments=cls._support_network_attachments,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
@@ -820,7 +816,6 @@ class CreateBeta(Create):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = False
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = False
@@ -866,7 +861,6 @@ class CreateBeta(Create):
         support_numa_node_count=cls._support_numa_node_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
-        support_network_attachments=cls._support_network_attachments,
         support_network_queue_count=cls._support_network_queue_count,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
@@ -934,7 +928,6 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_assignment = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
@@ -968,7 +961,6 @@ class CreateAlpha(CreateBeta):
         support_network_queue_count=cls._support_network_queue_count,
         support_instance_kms=cls._support_instance_kms,
         support_max_run_duration=cls._support_max_run_duration,
-        support_network_attachments=cls._support_network_attachments,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_vlan_nic=cls._support_vlan_nic,

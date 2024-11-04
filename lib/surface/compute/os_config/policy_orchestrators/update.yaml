@@ -16,7 +16,10 @@
         $ {command} my-orchestrator --folder=123456 --state=stopped
 
   request:
-    collection: osconfig.folders.locations.global.policyOrchestrators
+    collection:
+    - osconfig.projects.locations.global.policyOrchestrators
+    - osconfig.folders.locations.global.policyOrchestrators
+    - osconfig.organizations.locations.global.policyOrchestrators
     method: patch
     modify_request_hooks:
     - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyUpdateRequest
@@ -24,7 +27,10 @@
       api_version: v2alpha
 
   async:
-    collection: osconfig.folders.locations.operations
+    collection:
+    - osconfig.projects.locations.operations
+    - osconfig.folders.locations.operations
+    - osconfig.organizations.locations.operations
     ALPHA:
       api_version: v2alpha
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command sub-group for Secure Service Edge gateway endpoints."""
+"""Command group for Dataplex Glossary services."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -21,21 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Deprecate(
-    is_removed=True,
-    warning=(
-        'This command group is deprecated. Please use `gcloud alpha '
-        'network-security secure-access-connect attachments` instead.'
-    ),
-    error=(
-        'This command group has been removed. Please use `gcloud alpha '
-        'network-security secure-access-connect attachments` instead.'
-    ),
-)
-@base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Gateways(base.Group):
-  """Manage Secure Service Edge gateways."""
+@base.Hidden
+@base.DefaultUniverseOnly
+class Glossaries(base.Group):
+  """Manage Dataplex glossaries.
 
-  category = base.NETWORK_SECURITY_CATEGORY
+  A Glossary represents a collection of Categories and Terms.
+  """
+
+  category = base.DATA_ANALYTICS_CATEGORY

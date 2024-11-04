@@ -24,8 +24,10 @@ from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.command_lib.source import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+@base.DefaultUniverseOnly
 class Update(base.Command):
   r"""Update the configuration of a Cloud Source Repository.
 
@@ -34,7 +36,9 @@ class Update(base.Command):
   To associate a Cloud Pub/Sub topic to receive repository update notifications,
   run:
 
-    $ {command} --add-topic=TOPIC_NAME --service-account=SERVICE_ACCOUNT_EMAIL \
+    $ {command} REPO_NAME \
+        --add-topic=TOPIC_NAME \
+        --service-account=SERVICE_ACCOUNT_EMAIL \
         --message-format=json
   """
 

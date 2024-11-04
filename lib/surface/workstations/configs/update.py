@@ -66,6 +66,9 @@ class Update(base.UpdateCommand):
     workstations_flags.AddEnableAuditAgent(parser, use_default=False)
     workstations_flags.AddEnableConfidentialCompute(parser, use_default=False)
     workstations_flags.AddEnableNestedVirtualization(parser, use_default=False)
+    workstations_flags.AddGrantWorkstationAdminRoleOnCreate(
+        parser, use_default=False
+    )
     workstations_flags.AddDisableSSHToVM(parser)
     workstations_flags.AddBootDiskSize(parser, use_default=False)
     workstations_flags.AddContainerImageField(parser, use_default=False)

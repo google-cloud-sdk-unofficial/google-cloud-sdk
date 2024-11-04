@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.storage import management_hub_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.core import log
 
 
 # TODO: b/369949089 - Remove default universe flag after checking the
@@ -45,14 +46,17 @@ class Disable(base.Command):
     client = management_hub_api.ManagementHubApi()
 
     if args.sub_folder:
-      return client.disable_sub_folder_management_hub(
-          args.sub_folder
-      )
+      management_hub = client.disable_sub_folder_management_hub(args.sub_folder)
     elif args.project:
-      return client.disable_project_management_hub(
-          args.project
-      )
-    elif args.organization:
-      return client.disable_organization_management_hub(
+      management_hub = client.disable_project_management_hub(args.project)
+    else:
+      management_hub = client.disable_organization_management_hub(
           args.organization
       )
+
+    log.status.Print(
+        'Successfully disabled management hub plan for {}.\n'.format(
+            management_hub.name
+        )
+    )
+    return management_hub

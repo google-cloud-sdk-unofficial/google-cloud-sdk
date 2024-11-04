@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.source import flags
 from googlecloudsdk.command_lib.source import util
 
 
+@base.DefaultUniverseOnly
 class Update(base.Command):
   r"""Update the Cloud Source Repositories configuration of the current project.
 

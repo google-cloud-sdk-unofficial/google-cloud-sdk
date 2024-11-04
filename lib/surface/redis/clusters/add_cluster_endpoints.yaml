@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: |
       Add more cluster endpoints.
@@ -8,7 +7,7 @@
 
       To add one cluster endpoint to an existing Redis cluster, two PSC connections MUST be added as a pair: one for the Redis cluster's discovery service attachment and the other for the additional service attachment.
 
-      Multiple cluster endpoints COULD be added/removed simultaneously.
+      Multiple cluster endpoints COULD be added simultaneously.
 
       This command can fail for the following reasons:
         * The cluster specified does not exist.
@@ -55,7 +54,11 @@
   request:
     ALPHA:
       api_version: v1alpha1
-      modify_request_hooks:
-      - googlecloudsdk.command_lib.redis.psc_update_util:UpdateClusterEndpoints
+    BETA:
+      api_version: v1beta1
+    GA:
+      api_version: v1
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.psc_update_util:UpdateClusterEndpoints
     collection: redis.projects.locations.clusters
     method: patch

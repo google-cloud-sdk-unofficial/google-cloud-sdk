@@ -69,6 +69,8 @@
             - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_count
               required: true
             - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:node_prefix
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.queued_resources.flags:workload_type
+              release_tracks: [ALPHA]
     - group:
         help_text: Specify a chip-based or core-based TPU node.
         required: true

@@ -61,7 +61,6 @@ def _CommonArgs(
     support_max_run_duration=False,
     support_region_instance_template=False,
     support_subnet_region=False,
-    support_network_attachments=False,
     support_replica_zones=True,
     support_local_ssd_recovery_timeout=False,
     support_network_queue_count=False,
@@ -93,7 +92,6 @@ def _CommonArgs(
   instances_flags.AddAddressArgs(
       parser,
       instances=False,
-      support_network_attachments=support_network_attachments,
       support_network_queue_count=support_network_queue_count,
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
@@ -1123,7 +1121,6 @@ class Create(base.CreateCommand):
   _support_subnet_region = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_size = True
   _support_network_queue_count = True
@@ -1152,7 +1149,6 @@ class Create(base.CreateCommand):
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
         support_subnet_region=cls._support_subnet_region,
-        support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_size=cls._support_local_ssd_size,
         support_network_queue_count=cls._support_network_queue_count,
@@ -1242,7 +1238,6 @@ class CreateBeta(Create):
   _support_subnet_region = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = False
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
@@ -1273,7 +1268,6 @@ class CreateBeta(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
         support_subnet_region=cls._support_subnet_region,
-        support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,
@@ -1367,7 +1361,6 @@ class CreateAlpha(Create):
   _support_subnet_region = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
-  _support_network_attachments = True
   _support_replica_zones = True
   _support_local_ssd_recovery_timeout = True
   _support_network_queue_count = True
@@ -1399,7 +1392,6 @@ class CreateAlpha(Create):
         support_max_run_duration=cls._support_max_run_duration,
         support_region_instance_template=cls._support_region_instance_template,
         support_subnet_region=cls._support_subnet_region,
-        support_network_attachments=cls._support_network_attachments,
         support_replica_zones=cls._support_replica_zones,
         support_local_ssd_recovery_timeout=cls._support_local_ssd_recovery_timeout,
         support_network_queue_count=cls._support_network_queue_count,

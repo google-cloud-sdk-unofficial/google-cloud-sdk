@@ -40,7 +40,6 @@
     - arg_name: canary-reads
       metavar: PERCENT
       type: int
-      hidden: true
       help_text: "Send only a percent of reads to Artifact Registry. The rest of reads and all writes are sent to Container Registry."
     - arg_name: max-threads
       type: int

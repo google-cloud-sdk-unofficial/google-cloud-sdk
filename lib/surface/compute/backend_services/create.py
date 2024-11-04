@@ -526,7 +526,7 @@ class CreateBeta(CreateGA):
   _support_subsetting = True
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
-  _support_custom_metrics = False
+  _support_custom_metrics = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

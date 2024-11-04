@@ -93,7 +93,9 @@ class Register(base.CreateCommand):
 
   Rerunning this command against the same cluster with the same MEMBERSHIP_NAME
   and target fleet is successful, and will upgrade the Connect agent if it is
-  supposed to be installed and a newer version is avaible.
+  supposed to be installed and a newer version is available. Rerunning with
+  `--enable-workload-identity` ensures that Workload Identity is enabled on the
+  cluster.
 
   ## EXAMPLES
 
@@ -355,8 +357,6 @@ class Register(base.CreateCommand):
     elif hub_util.LocationFromGKEArgs(args):
       location = hub_util.LocationFromGKEArgs(args)
 
-    # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
-    # not get installed. And Kubernetes Client is not needed.
     gke_cluster_resource_link, gke_cluster_uri = gke_util.GetGKEClusterResoureLinkAndURI(
         gke_uri=args.GetValue('gke_uri'),
         gke_cluster=args.GetValue('gke_cluster'))
@@ -370,9 +370,13 @@ class Register(base.CreateCommand):
           'For GKE clusters,  "manifest-output-file" should be specified'
           ' together with "install-connect-agent".  '
       )
+
+    # Register GKE cluster with simple Add-to-Hub API call. Connect agent will
+    # not get installed. And Kubernetes Client is not needed.
     if gke_cluster_resource_link and not args.GetValue('install_connect_agent'):
-      return self._RegisterGKE(gke_cluster_resource_link, gke_cluster_uri,
-                               project, location, args)
+      return self._RegisterGKEWithoutConnectAgent(
+          gke_cluster_resource_link, gke_cluster_uri, project, location, args
+      )
 
     # Register non-GKE cluster, or GKE with --install-connect-agent.
     # It will require a kube client.
@@ -689,8 +693,9 @@ class Register(base.CreateCommand):
                                                membership_ref)
     kube_client.ApplyMembership(res.crdManifest, res.crManifest)
 
-  def _RegisterGKE(self, gke_cluster_resource_link, gke_cluster_uri, project,
-                   location, args):
+  def _RegisterGKEWithoutConnectAgent(
+      self, gke_cluster_resource_link, gke_cluster_uri, project, location, args
+  ):
     """Register a GKE cluster without installing Connect agent."""
     issuer_url = None
     if args.enable_workload_identity:
@@ -706,8 +711,8 @@ class Register(base.CreateCommand):
           issuer_url=issuer_url,
           oidc_jwks=None,
           api_server_version=None)
-    except apitools_exceptions.HttpConflictError as e:
-      error = core_api_exceptions.HttpErrorPayload(e)
+    except apitools_exceptions.HttpConflictError as create_exc:
+      error = core_api_exceptions.HttpErrorPayload(create_exc)
       if error.status_description != 'ALREADY_EXISTS':
         # If the error is not due to the object already existing, re-raise.
         raise
@@ -716,8 +721,30 @@ class Register(base.CreateCommand):
       obj = api_util.GetMembership(resource_name, self.ReleaseTrack())
       if obj.endpoint.gkeCluster.resourceLink == gke_cluster_resource_link:
         log.status.Print(
-            'Membership [{}] already registered with the cluster [{}] in the Fleet.'
-            .format(resource_name, obj.endpoint.gkeCluster.resourceLink))
+            'Membership [{}] already registered with the cluster [{}] in the'
+            ' Fleet.'.format(
+                resource_name, obj.endpoint.gkeCluster.resourceLink
+            )
+        )
+        if issuer_url:
+          # Update the membership if there is no issuer or the issuer has
+          # changed.
+          if not obj.authority or (obj.authority.issuer != issuer_url):
+            try:
+              api_util.UpdateMembership(
+                  name=resource_name,
+                  membership=obj,
+                  update_mask='authority',
+                  issuer_url=issuer_url,
+                  oidc_jwks=None,
+                  release_track=self.ReleaseTrack())
+              log.status.Print(
+                  'Enabled Workload Identity for the cluster [{}]'.format(
+                      obj.endpoint.gkeCluster.resourceLink))
+            except Exception as update_exc:
+              raise exceptions.Error(
+                  'Error in updating the membership [{}]: {}'.format(
+                      resource_name, update_exc))
       else:
         raise exceptions.Error(
             'membership [{}] already exists in the Fleet '

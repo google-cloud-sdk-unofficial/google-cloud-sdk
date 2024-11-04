@@ -115,6 +115,7 @@ def _Args(
     parser,
     include_ingestion_from_azure_event_hubs_flags=False,
     include_ingestion_from_aws_msk_flags=False,
+    include_ingestion_from_confluent_cloud_flags=False,
 ):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
@@ -139,6 +140,7 @@ def _Args(
       is_update=True,
       include_ingestion_from_azure_event_hubs_flags=include_ingestion_from_azure_event_hubs_flags,
       include_ingestion_from_aws_msk_flags=include_ingestion_from_aws_msk_flags,
+      include_ingestion_from_confluent_cloud_flags=include_ingestion_from_confluent_cloud_flags,
   )
 
 
@@ -226,6 +228,9 @@ def _Run(args):
   cloud_storage_ingestion_match_glob = getattr(
       args, 'cloud_storage_ingestion_match_glob', None
   )
+  azure_event_hubs_ingestion_resource_group = getattr(
+      args, 'azure_event_hubs_ingestion_resource_group', None
+  )
   azure_event_hubs_ingestion_namespace = getattr(
       args, 'azure_event_hubs_ingestion_namespace', None
   )
@@ -237,6 +242,9 @@ def _Run(args):
   )
   azure_event_hubs_ingestion_tenant_id = getattr(
       args, 'azure_event_hubs_ingestion_tenant_id', None
+  )
+  azure_event_hubs_ingestion_subscription_id = getattr(
+      args, 'azure_event_hubs_ingestion_subscription_id', None
   )
   azure_event_hubs_ingestion_service_account = getattr(
       args, 'azure_event_hubs_ingestion_service_account', None
@@ -250,6 +258,21 @@ def _Run(args):
   )
   aws_msk_ingestion_service_account = getattr(
       args, 'aws_msk_ingestion_service_account', None
+  )
+  confluent_cloud_ingestion_bootstrap_server = getattr(
+      args, 'confluent_cloud_ingestion_bootstrap_server', None
+  )
+  confluent_cloud_ingestion_cluster_id = getattr(
+      args, 'confluent_cloud_ingestion_cluster_id', None
+  )
+  confluent_cloud_ingestion_topic = getattr(
+      args, 'confluent_cloud_ingestion_topic', None
+  )
+  confluent_cloud_ingestion_identity_pool_id = getattr(
+      args, 'confluent_cloud_ingestion_identity_pool_id', None
+  )
+  confluent_cloud_ingestion_service_account = getattr(
+      args, 'confluent_cloud_ingestion_service_account', None
   )
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
   clear_ingestion_data_source_settings = getattr(
@@ -280,15 +303,22 @@ def _Run(args):
         cloud_storage_ingestion_text_delimiter=cloud_storage_ingestion_text_delimiter,
         cloud_storage_ingestion_minimum_object_create_time=cloud_storage_ingestion_minimum_object_create_time,
         cloud_storage_ingestion_match_glob=cloud_storage_ingestion_match_glob,
+        azure_event_hubs_ingestion_resource_group=azure_event_hubs_ingestion_resource_group,
         azure_event_hubs_ingestion_namespace=azure_event_hubs_ingestion_namespace,
         azure_event_hubs_ingestion_event_hub=azure_event_hubs_ingestion_event_hub,
         azure_event_hubs_ingestion_client_id=azure_event_hubs_ingestion_client_id,
         azure_event_hubs_ingestion_tenant_id=azure_event_hubs_ingestion_tenant_id,
+        azure_event_hubs_ingestion_subscription_id=azure_event_hubs_ingestion_subscription_id,
         azure_event_hubs_ingestion_service_account=azure_event_hubs_ingestion_service_account,
         aws_msk_ingestion_cluster_arn=aws_msk_ingestion_cluster_arn,
         aws_msk_ingestion_topic=aws_msk_ingestion_topic,
         aws_msk_ingestion_aws_role_arn=aws_msk_ingestion_aws_role_arn,
         aws_msk_ingestion_service_account=aws_msk_ingestion_service_account,
+        confluent_cloud_ingestion_bootstrap_server=confluent_cloud_ingestion_bootstrap_server,
+        confluent_cloud_ingestion_cluster_id=confluent_cloud_ingestion_cluster_id,
+        confluent_cloud_ingestion_topic=confluent_cloud_ingestion_topic,
+        confluent_cloud_ingestion_identity_pool_id=confluent_cloud_ingestion_identity_pool_id,
+        confluent_cloud_ingestion_service_account=confluent_cloud_ingestion_service_account,
         clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
         ingestion_log_severity=ingestion_log_severity,
     )
@@ -322,6 +352,7 @@ class Update(base.UpdateCommand):
         parser,
         include_ingestion_from_azure_event_hubs_flags=False,
         include_ingestion_from_aws_msk_flags=False,
+        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -338,6 +369,7 @@ class UpdateBeta(Update):
         parser,
         include_ingestion_from_azure_event_hubs_flags=False,
         include_ingestion_from_aws_msk_flags=False,
+        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -354,4 +386,5 @@ class UpdateAlpha(UpdateBeta):
         parser,
         include_ingestion_from_azure_event_hubs_flags=True,
         include_ingestion_from_aws_msk_flags=True,
+        include_ingestion_from_confluent_cloud_flags=True,
     )

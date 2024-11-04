@@ -22,5 +22,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class Details(base.Group):
   """Retrieve details of inventory reports."""

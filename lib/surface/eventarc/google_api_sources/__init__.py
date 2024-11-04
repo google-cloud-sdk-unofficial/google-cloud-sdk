@@ -23,6 +23,5 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class GoogleApiSources(base.Group):
   """Manage Eventarc Google API sources."""

@@ -71,6 +71,7 @@
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
       is_positional: true
+      is_primary_resource: true
       request_id_field: instanceId
       resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1alpha_resources:project_location_instance
       required: true
@@ -113,7 +114,7 @@
           Server-managed encryption is used for in-transit encryption.
     - arg_name: shard-count
       api_field: instance.shardCount
-      required: true
+      required: false
       repeated: false
       type: int
       help_text: |-
@@ -272,7 +273,8 @@
       api_field: instance.pscAutoConnections
       required: true
       repeated: true
-      help_text: |-
+      help_text: |2-
+
         User inputs and resource details of the auto-created PSC connections.
       spec:
       - api_field: projectId
@@ -283,6 +285,20 @@
         help_text: |-
           The consumer network where the IP address resides, in the form of
           projects/{project_id}/global/networks/{network_id}.
+    - arg_name: mode
+      api_field: instance.mode
+      required: false
+      help_text: |-
+        The mode config for the instance.
+      choices:
+      - arg_value: standalone
+        enum_value: STANDALONE
+        help_text: |-
+          Instance is in standalone mode.
+      - arg_value: cluster
+        enum_value: CLUSTER
+        help_text: |-
+          Instance is in cluster mode.
     - arg_name: request-id
       api_field: requestId
       required: false

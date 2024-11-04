@@ -665,7 +665,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_advanced_load_balancing = True
   _support_external_managed_migration = True
-  _support_custom_metrics = False
+  _support_custom_metrics = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

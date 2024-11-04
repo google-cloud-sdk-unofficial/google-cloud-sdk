@@ -952,7 +952,7 @@ class UpdateBeta(Update):
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddAutoMonitoringScopeFlags(
-        group_logging_monitoring_config, hidden=True
+        group_logging_monitoring_config, hidden=False
     )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
@@ -1271,7 +1271,7 @@ class UpdateAlpha(Update):
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddAutoMonitoringScopeFlags(
-        group_logging_monitoring_config, hidden=True
+        group_logging_monitoring_config, hidden=False
     )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)

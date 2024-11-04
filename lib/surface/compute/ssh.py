@@ -361,8 +361,13 @@ class Ssh(base.Command):
                                      host_keys_to_add=host_keys)
 
     if oslogin_state.third_party_user or oslogin_state.require_certificates:
-      # Use the region if present; fall back to parsing region from zone.
-      region = args.region if args.region else args.zone[:args.zone.rindex('-')]
+      # Use the region if present in arguments.
+      region = args.region
+      if not region:
+        # If region is not present in arguments, fallback to parse region
+        # from derived instance reference.
+        region = instance_ref.zone[: instance_ref.zone.rindex('-')]
+
       cert_file = ssh.CertFileFromRegion(region)
 
     extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, instance_address,

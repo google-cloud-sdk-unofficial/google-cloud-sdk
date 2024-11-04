@@ -14,8 +14,10 @@
 # limitations under the License.
 """Implementation of update command for updating management hub."""
 
+from googlecloudsdk.api_lib.storage import management_hub_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.core import log
 
 
 # TODO: b/369949089 - Remove default universe flag after checking the
@@ -48,13 +50,30 @@ class Update(base.Command):
           inheriting existing management hub plan from the hierarchical parent
           resource.,\n
             ${command} --project=my-project --inherit-from-parent
+
+          To clear included locations from the project management hub, Use the
+          following command.,\n
+            ${command} --project=my-project --include-locations=
+
+          To clear excluded bucket ids from the project management hub and to
+          replace existing excluded bucket ids regexes, Use the following
+          command.,\n
+            ${command} --project=my-project --exclude-bucket-id-regexes="test1*","test2*" --exclude-bucket-ids=""
+
+          Alternatively, use the following command to do same operation since
+          the absense of cloud storage bucket filter flags will be considered
+          as empty list,\n
+            ${command} --project=my-project --exclude-bucket-id-regexes="test1*","test2*"
       """,
   }
 
   @classmethod
   def Args(cls, parser):
+    parser.SetSortArgs(False)
     flags.add_management_hub_level_flags(parser)
-    update_group = parser.add_group(category='UPDATE', mutex=True)
+    update_group = parser.add_group(
+        category='UPDATE', mutex=True, required=True
+    )
     update_group.add_argument(
         '--inherit-from-parent',
         action='store_true',
@@ -64,5 +83,50 @@ class Update(base.Command):
     flags.add_management_hub_filter_flags(filters)
 
   def Run(self, args):
-    # TODO: b/367267286 - Implementation of update command
-    raise NotImplementedError
+
+    if args.project:
+      management_hub = (
+          management_hub_api.ManagementHubApi().update_project_management_hub(
+              args.project,
+              inherit_from_parent=args.inherit_from_parent,
+              include_locations=args.include_locations,
+              exclude_locations=args.exclude_locations,
+              include_bucket_ids=args.include_bucket_ids,
+              exclude_bucket_ids=args.exclude_bucket_ids,
+              include_bucket_id_regexes=args.include_bucket_id_regexes,
+              exclude_bucket_id_regexes=args.exclude_bucket_id_regexes,
+          )
+      )
+    elif args.sub_folder:
+      management_hub = (
+          management_hub_api.ManagementHubApi().update_sub_folder_management_hub(
+              args.sub_folder,
+              inherit_from_parent=args.inherit_from_parent,
+              include_locations=args.include_locations,
+              exclude_locations=args.exclude_locations,
+              include_bucket_ids=args.include_bucket_ids,
+              exclude_bucket_ids=args.exclude_bucket_ids,
+              include_bucket_id_regexes=args.include_bucket_id_regexes,
+              exclude_bucket_id_regexes=args.exclude_bucket_id_regexes,
+          )
+      )
+    else:
+      management_hub = (
+          management_hub_api.ManagementHubApi().update_organization_management_hub(
+              args.organization,
+              inherit_from_parent=args.inherit_from_parent,
+              include_locations=args.include_locations,
+              exclude_locations=args.exclude_locations,
+              include_bucket_ids=args.include_bucket_ids,
+              exclude_bucket_ids=args.exclude_bucket_ids,
+              include_bucket_id_regexes=args.include_bucket_id_regexes,
+              exclude_bucket_id_regexes=args.exclude_bucket_id_regexes,
+          )
+      )
+
+    log.status.Print(
+        'Successfully updated management hub plan for {}.\n'.format(
+            management_hub.name
+        )
+    )
+    return management_hub

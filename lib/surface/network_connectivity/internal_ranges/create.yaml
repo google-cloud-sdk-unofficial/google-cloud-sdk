@@ -168,6 +168,13 @@
             The migration target subnetwork (of a for-migration internal range) resource URI or
             resource ID.
             This value is for internal use.
+    - arg_name: immutable
+      release_tracks: [ALPHA]
+      api_field: internalRange.immutable
+      help_text: |
+        Mark the internal range as immutable. Then only non-semantic fields like description and
+        labels could be modified after creation.
+      type: bool
 
   async:
     collection: networkconnectivity.projects.locations.operations

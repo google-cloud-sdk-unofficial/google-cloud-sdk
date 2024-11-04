@@ -46,6 +46,7 @@ class ListNetworkEndpoints(base.ListCommand):
         table(
           networkEndpoint.instance,
           networkEndpoint.ipAddress,
+          networkEndpoint.ipv6Address,
           networkEndpoint.port,
           networkEndpoint.fqdn
         )"""

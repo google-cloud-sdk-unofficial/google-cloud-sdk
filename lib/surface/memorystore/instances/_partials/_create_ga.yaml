@@ -115,7 +115,7 @@
           Server-managed encryption is used for in-transit encryption.
     - arg_name: shard-count
       api_field: instance.shardCount
-      required: true
+      required: false
       repeated: false
       type: int
       help_text: |-
@@ -286,6 +286,20 @@
         help_text: |-
           The consumer network where the IP address resides, in the form of
           projects/{project_id}/global/networks/{network_id}.
+    - arg_name: mode
+      api_field: instance.mode
+      required: false
+      help_text: |-
+        The mode config for the instance.
+      choices:
+      - arg_value: standalone
+        enum_value: STANDALONE
+        help_text: |-
+          Instance is in standalone mode.
+      - arg_value: cluster
+        enum_value: CLUSTER
+        help_text: |-
+          Instance is in cluster mode.
     - arg_name: request-id
       api_field: requestId
       required: false

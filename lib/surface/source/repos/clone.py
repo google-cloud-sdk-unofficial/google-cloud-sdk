@@ -27,6 +27,7 @@ from googlecloudsdk.core.credentials import store as c_store
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class CloneGA(base.Command):
   """Clone a cloud source repository."""
 

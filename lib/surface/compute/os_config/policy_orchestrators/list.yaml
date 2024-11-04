@@ -12,7 +12,10 @@
         $ {command} --folder 123456
 
   request:
-    collection: osconfig.folders.locations.global.policyOrchestrators
+    collection:
+    - osconfig.projects.locations.global.policyOrchestrators
+    - osconfig.folders.locations.global.policyOrchestrators
+    - osconfig.organizations.locations.global.policyOrchestrators
     modify_request_hooks:
     - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyListRequest
     ALPHA:
@@ -24,7 +27,7 @@
   arguments:
     resource:
       help_text: Folder to list policy orchestrators from.
-      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:folder
+      spec: !REF googlecloudsdk.command_lib.compute.os_config.resources:project_folder_organization
 
   output:
     format: |

@@ -36,8 +36,10 @@ _LINK_FORMAT = ('\nenable at: '
 _BILLING_URL = 'https://cloud.google.com/source-repositories/docs/pricing'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a cloud source repository.
 

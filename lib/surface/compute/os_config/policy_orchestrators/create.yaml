@@ -19,7 +19,10 @@
             --action delete --policy-id my-policy
 
   request:
-    collection: osconfig.folders.locations.global.policyOrchestrators
+    collection:
+    - osconfig.projects.locations.global.policyOrchestrators
+    - osconfig.folders.locations.global.policyOrchestrators
+    - osconfig.organizations.locations.global.policyOrchestrators
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyCreateRequest
@@ -27,7 +30,10 @@
       api_version: v2alpha
 
   async:
-    collection: osconfig.folders.locations.operations
+    collection:
+    - osconfig.projects.locations.operations
+    - osconfig.folders.locations.operations
+    - osconfig.organizations.locations.operations
     ALPHA:
       api_version: v2alpha
 

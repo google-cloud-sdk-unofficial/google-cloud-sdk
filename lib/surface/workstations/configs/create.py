@@ -73,6 +73,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddEnableAuditAgent(parser)
     workstations_flags.AddEnableConfidentialCompute(parser)
     workstations_flags.AddEnableNestedVirtualization(parser)
+    workstations_flags.AddGrantWorkstationAdminRoleOnCreate(parser)
     workstations_flags.AddBootDiskSize(parser)
     workstations_flags.AddPdDiskType(parser)
     workstations_flags.AddPdDiskSize(parser)

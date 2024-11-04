@@ -246,7 +246,7 @@ class UpdateBackendBeta(UpdateBackend):
 
   # Allow --preference flag to be set when updating the backend.
   support_preference = True
-  support_custom_metrics = False
+  support_custom_metrics = True
 
   @classmethod
   def Args(cls, parser):
@@ -258,6 +258,7 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
+    backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _ValidateArgs(self, args):
     """Overrides."""

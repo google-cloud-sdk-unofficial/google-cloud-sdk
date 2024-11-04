@@ -34,9 +34,15 @@ DETAILED_HELP = {
         """,
     # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To create an interconnect group capable of PRODUCTION_NON_CRITICAL, run:
+        To create an interconnect group capable of PRODUCTION_CRITICAL, run:
 
-          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_NON_CRITICAL --description="Example interconnect group"
+          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_CRITICAL --description="Example interconnect group"
+
+        It is easy to add members to an existing interconnect group after creation using the *add-members* command.
+
+        To create an interconnect group capable of PRODUCTION_NON_CRITICAL, with two members at creation time, run:
+
+          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_NON_CRITICAL --interconnects=interconnect-1,interconnect-2
         """,
     # pylint: enable=line-too-long
 }
@@ -58,7 +64,8 @@ class Create(base.CreateCommand):
     cls.INTERCONNECT_GROUP_ARG = flags.InterconnectGroupArgument(plural=False)
     cls.INTERCONNECT_GROUP_ARG.AddArgument(parser, operation_type='create')
     flags.AddDescription(parser)
-    flags.AddIntendedTopologyCapabilityForAddOrUpdateGroup(parser)
+    flags.AddIntendedTopologyCapabilityForCreate(parser)
+    flags.GetMemberInterconnectsForCreate(parser)
 
   def Collection(self):
     return 'compute.interconnectGroups'
@@ -68,16 +75,16 @@ class Create(base.CreateCommand):
     ref = self.INTERCONNECT_GROUP_ARG.ResolveAsResource(args, holder.resources)
     project = properties.VALUES.core.project.GetOrFail()
     interconnect_group = client.InterconnectGroup(
-        ref, project, compute_client=holder.client
+        ref, project, compute_client=holder.client, resources=holder.resources
     )
-    messages = holder.client.messages
     topology_capability = flags.GetTopologyCapability(
-        messages, args.intended_topology_capability
+        holder.client.messages, args.intended_topology_capability
     )
 
     return interconnect_group.Create(
         description=args.description,
         topology_capability=topology_capability,
+        interconnects=args.interconnects,
     )
 
 

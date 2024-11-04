@@ -27,19 +27,34 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List interconnects."""
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""
-        table(
-          name,
-          location.basename(),
-          operationalStatus,
-          adminEnabled
-        )
-    """)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            location.basename(),
+            operationalStatus,
+            adminEnabled,
+            interconnectGroups.join(sep="\n")
+          )
+      """)
+    else:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            location.basename(),
+            operationalStatus,
+            adminEnabled
+          )
+      """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

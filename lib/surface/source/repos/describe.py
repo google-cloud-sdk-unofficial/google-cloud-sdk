@@ -22,8 +22,10 @@ from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a cloud source repository.
 

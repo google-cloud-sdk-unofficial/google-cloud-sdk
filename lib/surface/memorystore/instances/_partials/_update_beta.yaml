@@ -62,6 +62,7 @@
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1beta_resources:project_location_instance
       required: true
     - arg_name: labels

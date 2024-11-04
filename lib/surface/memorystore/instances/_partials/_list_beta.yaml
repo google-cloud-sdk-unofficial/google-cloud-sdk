@@ -31,6 +31,7 @@
         The parent to list instances from.
         Format: projects/{project}/locations/{location}
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1beta_resources:project_location
       required: true
   request:

@@ -24,9 +24,10 @@ from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import properties
 
 
-def _ArgsCommon(cls, parser, support_labels=False):
+def _ArgsCommon(cls, parser, support_labels=False, support_groups=False):
   """Shared arguments for update commands."""
   cls.INTERCONNECT_ARG = flags.InterconnectArgument()
   cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='update')
@@ -39,8 +40,11 @@ def _ArgsCommon(cls, parser, support_labels=False):
   flags.AddRequestedLinkCountForUpdate(parser)
   if support_labels:
     labels_util.AddUpdateLabelsFlags(parser)
+  if support_groups:
+    flags.AddInterconnectGroups(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect.
@@ -57,7 +61,7 @@ class Update(base.UpdateCommand):
   def Collection(self):
     return 'compute.interconnects'
 
-  def _DoRun(self, args, support_labels=False):
+  def _DoRun(self, args, support_labels=False, support_groups=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.INTERCONNECT_ARG.ResolveAsResource(args, holder.resources)
     interconnect = client.Interconnect(ref, compute_client=holder.client)
@@ -74,6 +78,18 @@ class Update(base.UpdateCommand):
         if labels is not None:
           label_fingerprint = old_interconnect.labelFingerprint
 
+    group_refs = []
+    if support_groups and args.groups:
+      project = properties.VALUES.core.project.GetOrFail()
+      group_refs = [
+          holder.resources.Create(
+              'compute.interconnectGroups',
+              interconnectGroup=group,
+              project=project,
+          ).SelfLink()
+          for group in args.groups
+      ]
+
     return interconnect.Patch(
         description=args.description,
         interconnect_type=None,
@@ -83,13 +99,18 @@ class Update(base.UpdateCommand):
         noc_contact_email=args.noc_contact_email,
         location=None,
         labels=labels,
-        label_fingerprint=label_fingerprint)
+        label_fingerprint=label_fingerprint,
+        macsec_enabled=None,
+        macsec=None,
+        groups=group_refs,
+    )
 
   def Run(self, args):
     self._DoRun(args)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateLabels(Update):
   """Update a Compute Engine interconnect.
 
@@ -99,7 +120,24 @@ class UpdateLabels(Update):
 
   @classmethod
   def Args(cls, parser):
-    _ArgsCommon(cls, parser, support_labels=True)
+    _ArgsCommon(cls, parser, support_labels=True, support_groups=False)
 
   def Run(self, args):
-    self._DoRun(args, support_labels=True)
+    self._DoRun(args, support_labels=True, support_groups=False)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateLabelsAndGroups(UpdateLabels):
+  """Update a Compute Engine interconnect.
+
+  *{command}* is used to update interconnects. An interconnect represents a
+  single specific connection between Google and the customer.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    _ArgsCommon(cls, parser, support_labels=True, support_groups=True)
+
+  def Run(self, args):
+    self._DoRun(args, support_labels=True, support_groups=True)

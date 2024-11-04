@@ -47,9 +47,14 @@ class DeleteAlpha(base.DeleteCommand):
         $ {command} BACKUP_VAULT --location=MY_LOCATION
 
         To override restrictions against the deletion of a backup vault ``BACKUP_VAULT''
-        in location ``MY_LOCATION'', run:
+        containing inactive datasources in location ``MY_LOCATION'', run:
 
-        $ {command} BACKUP_VAULT --location=MY_LOCATION --force-delete
+        $ {command} BACKUP_VAULT --location=MY_LOCATION --ignore-inactive-datasources
+
+        To override restrictions against the deletion of a backup vault ``BACKUP_VAULT''
+        containing backup plan references in location ``MY_LOCATION'', run:
+
+        $ {command} BACKUP_VAULT --location=MY_LOCATION --ignore-backup-plan-references
         """,
   }
 
@@ -67,7 +72,8 @@ class DeleteAlpha(base.DeleteCommand):
         ' [here](https://cloud.google.com/backup-disaster-recovery/docs/configuration/decommission).',
     )
     flags.AddNoAsyncFlag(parser)
-    flags.AddForceDeleteFlag(parser)
+    flags.AddIgnoreInactiveDatasourcesFlag(parser)
+    flags.AddIgnoreBackupPlanReferencesFlag(parser)
     flags.AddAllowMissing(parser, 'backup vault')
 
   def Run(self, args):
@@ -94,7 +100,10 @@ class DeleteAlpha(base.DeleteCommand):
 
     try:
       operation = client.Delete(
-          backup_vault, args.force_delete, args.allow_missing
+          backup_vault,
+          ignore_inactive_datasources=args.ignore_inactive_datasources,
+          ignore_backup_plan_references=args.ignore_backup_plan_references,
+          allow_missing=args.allow_missing,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

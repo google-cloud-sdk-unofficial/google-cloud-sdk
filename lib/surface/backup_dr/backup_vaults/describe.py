@@ -49,6 +49,7 @@ class DescribeAlpha(base.DescribeCommand):
         description,
         createTime,
         updateTime,
+        accessRestriction,
         deletable,
         state,
         totalStoredBytes,

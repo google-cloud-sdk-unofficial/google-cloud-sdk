@@ -273,6 +273,7 @@ class AddBackendBeta(AddBackend):
   """
 
   # Allow --preference flag to be set when updating the backend.
+  support_custom_metrics = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
