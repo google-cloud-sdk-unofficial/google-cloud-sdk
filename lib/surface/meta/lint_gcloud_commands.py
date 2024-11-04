@@ -76,7 +76,7 @@ def _add_equals_to_flags(command):
   return modified_command
 
 
-def _formalize_gcloud_command(command_str):
+def formalize_gcloud_command(command_str):
   command_str = _add_equals_to_flags(command_str)
   command_str = (
       command_str.replace('--project=PROJECT ', '--project=my-project ')
@@ -116,7 +116,7 @@ def _extract_gcloud_commands(text):
     for cmd in command_str.split('gcloud '):
       cmd_new_lines = cmd.split('\n')
       if len(cmd_new_lines) >= 1 and cmd_new_lines[0].strip():
-        command_str = _formalize_gcloud_command(cmd_new_lines[0].strip())
+        command_str = formalize_gcloud_command(cmd_new_lines[0].strip())
         code_snippets.append(f'gcloud {command_str}')
   return code_snippets
 
@@ -150,10 +150,13 @@ class GenerateCommand(base.Command):
   The command YAML file is generated in the --output-dir directory.
   """
 
+  _INDEXED_VALIDATION_RESULTS = collections.OrderedDict()
   _VALIDATION_RESULTS = []
+  index_results = False
 
   def _validate_command(self, command_string):
     """Validate a single command."""
+    command_string = formalize_gcloud_command(command_string)
     command_arguments = _separate_command_arguments(command_string)
     command_success, command_node, flag_arguments = (
         self._validate_command_prefix(command_arguments, command_string)
@@ -171,7 +174,16 @@ class GenerateCommand(base.Command):
     """Validate multiple commands given in a file."""
     commands = _read_commands_from_file(commands_file)
     for command in commands:
-      self._validate_command(command)
+      try:
+        self._validate_command(command)
+      except Exception as e:  # pylint: disable=broad-except
+        self._store_validation_results(
+            False,
+            command,
+            None,
+            f'Command could not be validated: {e}',
+            'CommandValidationError',
+        )
 
   def _validate_commands_from_text(self, commands_text_file):
     """Validate multiple commands given in a text string."""
@@ -280,17 +292,28 @@ class GenerateCommand(base.Command):
     validation_output['command_string_no_args'] = _get_command_no_args(
         _separate_command_arguments(command_string)
     )
-    validation_output['command_args'] = sorted(command_args)
+    validation_output['command_args'] = (
+        sorted(command_args) if command_args else None
+    )
     validation_output['success'] = success
     validation_output['error_message'] = error_message
     validation_output['error_type'] = error_type
-    self._VALIDATION_RESULTS.append(
-        collections.OrderedDict(sorted(validation_output.items()))
+    sorted_validation_output = collections.OrderedDict(
+        sorted(validation_output.items())
     )
+    if self.index_results:
+      self._INDEXED_VALIDATION_RESULTS[command_string] = (
+          sorted_validation_output
+      )
+    else:
+      self._VALIDATION_RESULTS.append(sorted_validation_output)
 
   def _log_validation_results(self):
     """Output collected validation results."""
-    log.out.Print(json.dumps(self._VALIDATION_RESULTS))
+    if self.index_results:
+      log.out.Print(json.dumps(self._INDEXED_VALIDATION_RESULTS))
+    else:
+      log.out.Print(json.dumps(self._VALIDATION_RESULTS))
 
   @staticmethod
   def Args(parser):
@@ -311,8 +334,15 @@ class GenerateCommand(base.Command):
             ' blocks.'
         ),
     )
+    parser.add_argument(
+        '--index',
+        action='store_true',
+        help='Output results in a dictionary indexed by command string.',
+    )
 
   def Run(self, args):
+    if args.index:
+      self.index_results = True
     if args.IsSpecified('command_string'):
       self._validate_command(args.command_string)
     elif args.IsSpecified('commands_text_file'):

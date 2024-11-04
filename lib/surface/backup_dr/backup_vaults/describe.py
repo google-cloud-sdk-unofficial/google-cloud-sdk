@@ -84,3 +84,10 @@ class DescribeAlpha(base.DescribeCommand):
         command_util.TransformEnforcedRetention(bv_details)
     )
     return bv_details
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Describe(DescribeAlpha):
+  """Show the metadata for a Backup and DR backup vault."""

@@ -94,7 +94,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
   flags.AddInsecureRBACBindingFlags(parser, hidden=False)
-  flags.AddEnableMultiNetworkingFlag(parser, hidden=True)
+  flags.AddEnableMultiNetworkingFlag(parser, hidden=False)
   flags.AddControlPlaneKeysFlags(parser)
   flags.AddAutoMonitoringScopeFlags(parser, hidden=True)
   flags.AddClusterTierFlag(parser)

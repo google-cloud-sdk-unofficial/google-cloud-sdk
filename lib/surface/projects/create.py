@@ -99,21 +99,33 @@ class Create(base.CreateCommand):
         type=type_,
         nargs='?',
         help='ID for the project you want to create.\n\n{0}'.format(
-            ID_DESCRIPTION))
+            ID_DESCRIPTION
+        ),
+    )
     parser.add_argument(
         '--name',
-        help='Name for the project you want to create. '
-        'If not specified, will use project id as name.')
+        help=(
+            'Name for the project you want to create. '
+            'If not specified, will use project id as name.'
+        ),
+    )
     parser.add_argument(
         '--enable-cloud-apis',
         action='store_true',
-        default=True,
-        help='Enable `cloudapis.googleapis.com` during creation.')
+        default=True
+        if properties.VALUES.core.universe_domain.Get() == 'googleapis.com'
+        else False,
+        help=arg_parsers.UniverseHelpText(
+            default='Enable `cloudapis.googleapis.com` during creation.',
+            universe_help='This is not available.\n',
+        ),
+    )
     parser.add_argument(
         '--set-as-default',
         action='store_true',
         default=False,
-        help='Set newly created project as [core/project] property.')
+        help='Set newly created project as [core/project] property.',
+    )
     flags.TagsFlag().AddToParser(parser)
     flags.OrganizationIdFlag('to use as a parent').AddToParser(parser)
     flags.FolderIdFlag('to use as a parent').AddToParser(parser)

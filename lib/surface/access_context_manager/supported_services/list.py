@@ -23,8 +23,8 @@ from googlecloudsdk.api_lib.accesscontextmanager import supported_services
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
 class ListGA(base.ListCommand):
   """Lists all [VPC Service Controls supported services].
 

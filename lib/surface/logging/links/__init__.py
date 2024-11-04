@@ -32,3 +32,5 @@ class Links(base.Group):
   Commands for managing linked datasets. A linked BigQuery dataset contains log
   data for the linked dataset's parent log bucket.
   """
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

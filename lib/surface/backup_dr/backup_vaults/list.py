@@ -77,3 +77,10 @@ class ListAlpha(base.ListCommand):
     parent_ref = args.CONCEPTS.location.Parse()
     client = BackupVaultsClient()
     return client.List(parent_ref)
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(ListAlpha):
+  """List Backup and DR backup vaults."""

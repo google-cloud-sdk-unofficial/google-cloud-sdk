@@ -32,7 +32,7 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Compute(base.Command):
+class ComputeAlpha(base.Command):
   """Restores a Compute Engine VM Backup."""
 
   detailed_help = {
@@ -250,3 +250,10 @@ class Compute(base.Command):
         ),
         has_result=False,
     )
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Compute(ComputeAlpha):
+  """Restores a Compute Engine VM Backup."""

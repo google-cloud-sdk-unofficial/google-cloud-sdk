@@ -57,7 +57,7 @@ class Delete(base.Command):
         prefixes=False,
     )
     flags.AddAsyncFlag(
-        parser, default_async_for_cluster=True, is_managed_only=True
+        parser, default_async_for_cluster=True
     )
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
 

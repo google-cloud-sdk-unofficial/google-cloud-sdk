@@ -18,9 +18,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute import disks_util
+from googlecloudsdk.api_lib.compute import name_generator
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
+from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 
 
@@ -48,4 +55,120 @@ class Convert(base.RestoreCommand):
     disks_flags.AddKeepOldDiskArgs(parser)
 
   def Run(self, args):
-    return None
+    self.holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    self.client = self.holder.client.apitools_client
+    self.messages = self.holder.client.messages
+
+    disk_ref = self._DISK_ARG.ResolveAsResource(
+        args,
+        self.holder.resources,
+        scope_lister=flags.GetDefaultScopeLister(self.holder.client),
+    )
+
+    if disk_ref.Collection() == 'compute.regionDisks':
+      raise exceptions.InvalidArgumentException(
+          '--region',
+          'Regional disks are not supported for this command.'
+      )
+
+    # make sure disk is not attached to any instances
+    disk_info = disks_util.GetDiskInfo(disk_ref, self.client, self.messages)
+    original_disk = disk_info.GetDiskResource()
+    if original_disk.users:
+      raise exceptions.ToolException(
+          'Disk is attached to instances. Please Detach the disk before'
+          ' converting.'
+      )
+    # create a snapshot of the disk
+    snapshot_name = self._GenerateName(disk_ref)
+    result = self._InsertSnapshot(disk_ref, snapshot_name)
+    snapshot_ref = self.holder.resources.Parse(
+        snapshot_name,
+        params={'project': disk_ref.project},
+        collection='compute.snapshots',
+    )
+    # create a new disk from the snapshot with target disk type
+    restored_disk_name = args.target_disk_name or self._GenerateName(disk_ref)
+    restored_disk_ref = self.holder.resources.Parse(
+        restored_disk_name,
+        params={'project': disk_ref.project,
+                'zone': disk_ref.zone},
+        collection='compute.disks',
+    )
+    result = (
+        self._RestoreDiskFromSnapshot(
+            restored_disk_ref,
+            snapshot_ref,
+            args.target_disk_type,
+            original_disk.sizeGb,
+            provisioned_throughput=args.provisioned_throughput,
+            provisioned_iops=args.provisioned_iops,
+        )
+        or result
+    )
+    return result
+
+  def _InsertSnapshot(self, disk_ref, snapshot_name):
+    request = self.messages.ComputeSnapshotsInsertRequest(
+        project=disk_ref.project,
+        snapshot=self.messages.Snapshot(
+            name=snapshot_name,
+            sourceDisk=disk_ref.SelfLink(),
+            snapshotType=self.messages.Snapshot.SnapshotTypeValueValuesEnum.STANDARD,
+        ),
+    )
+    operation = self.client.snapshots.Insert(request)
+    operation_ref = self.holder.resources.Parse(
+        operation.selfLink,
+        collection='compute.globalOperations',
+    )
+    return waiter.WaitFor(
+        poller.Poller(self.client.snapshots),
+        operation_ref,
+        'Creating snapshot {0}...'.format(snapshot_name),
+        max_wait_ms=None,
+    )
+
+  def _RestoreDiskFromSnapshot(
+      self,
+      restored_disk_ref,
+      snapshot_ref,
+      disk_type,
+      size_gb,
+      provisioned_throughput=None,
+      provisioned_iops=None,
+  ):
+    disk = self.messages.Disk(
+        name=restored_disk_ref.Name(),
+        type=disks_util.GetDiskTypeUri(
+            disk_type, restored_disk_ref, self.holder
+        ),
+        sizeGb=size_gb,
+        sourceSnapshot=snapshot_ref.SelfLink(),
+    )
+    if provisioned_throughput:
+      disk.provisionedThroughput = provisioned_throughput
+    if provisioned_iops:
+      disk.provisionedIops = provisioned_iops
+
+    request = self.messages.ComputeDisksInsertRequest(
+        disk=disk,
+        project=restored_disk_ref.project,
+        zone=restored_disk_ref.zone,
+    )
+    operation = self.client.disks.Insert(request)
+    operation_ref = self.holder.resources.Parse(
+        operation.selfLink,
+        collection='compute.zoneOperations',
+    )
+    return waiter.WaitFor(
+        poller.Poller(self.client.disks),
+        operation_ref,
+        'Restoring disk {0}...'.format(restored_disk_ref.Name()),
+        max_wait_ms=None,
+    )
+
+  def _GenerateName(self, resource_ref):
+    return '{0}-{1}'.format(
+        name_generator.GenerateRandomName(), resource_ref.Name()
+    )[:64]

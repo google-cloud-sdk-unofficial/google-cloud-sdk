@@ -26,15 +26,14 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.Command):
   """Create a new batch operation job."""
 
   detailed_help = {
       "DESCRIPTION": """
-      Create a batch job, allowing you to perform operations such as deletion,
-      updating metadata, and more on billions of objects in a
+      Create a batch operation job, allowing you to perform operations
+      such as deletion, updating metadata, and more on objects in a
       serverless manner.
       """,
       "EXAMPLES": """

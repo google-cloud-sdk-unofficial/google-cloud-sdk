@@ -14,6 +14,7 @@
 # limitations under the License.
 """Implementation of disable command for disabling management hub."""
 
+from googlecloudsdk.api_lib.storage import management_hub_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 
@@ -41,5 +42,17 @@ class Disable(base.Command):
     flags.add_management_hub_level_flags(parser)
 
   def Run(self, args):
-    # TODO: b/367267331 - Implementation of disable command
-    raise NotImplementedError
+    client = management_hub_api.ManagementHubApi()
+
+    if args.sub_folder:
+      return client.disable_sub_folder_management_hub(
+          args.sub_folder
+      )
+    elif args.project:
+      return client.disable_project_management_hub(
+          args.project
+      )
+    elif args.organization:
+      return client.disable_organization_management_hub(
+          args.organization
+      )

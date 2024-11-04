@@ -33,6 +33,19 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+def _AddArgsGa(parser):
+  flags.GetDisplayNameArg('endpoint').AddToParser(parser)
+  flags.AddRegionResourceArg(
+      parser, 'to create endpoint', prompt_func=region_util.PromptForOpRegion)
+  flags.GetDescriptionArg('endpoint').AddToParser(parser)
+  flags.GetUserSpecifiedIdArg('endpoint').AddToParser(parser)
+  labels_util.AddCreateLabelsFlags(parser)
+  flags.GetEndpointNetworkArg().AddToParser(parser)
+  flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
+  flags.GetHiddenGdceZoneArg().AddToParser(parser)
+  flags.AddRequestResponseLoggingConfigGroupArgs(parser)
+
+
 def _AddArgs(parser):
   flags.GetDisplayNameArg('endpoint').AddToParser(parser)
   flags.AddRegionResourceArg(
@@ -107,14 +120,14 @@ class CreateGa(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _AddArgs(parser)
+    _AddArgsGa(parser)
 
   def Run(self, args):
     return _Run(args, constants.GA_VERSION)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateBeta(CreateGa):
+class CreateBeta(base.CreateCommand):
   """Create a new Vertex AI endpoint.
 
   ## EXAMPLES
@@ -125,6 +138,10 @@ class CreateBeta(CreateGa):
     $ {command} --project=example --region=us-central1
     --display-name=my_endpoint
   """
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser)
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

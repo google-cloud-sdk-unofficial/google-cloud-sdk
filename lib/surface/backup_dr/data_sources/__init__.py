@@ -23,5 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DataSources(base.Group):
+class DataSourcesAlpha(base.Group):
+  """View Backup and DR data sources."""
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DataSources(DataSourcesAlpha):
   """View Backup and DR data sources."""

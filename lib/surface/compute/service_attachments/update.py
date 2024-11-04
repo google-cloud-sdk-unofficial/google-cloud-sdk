@@ -59,20 +59,15 @@ class UpdateHelper(object):
   SERVICE_ATTACHMENT_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder, support_propagated_connection_limit):
+  def __init__(self, holder):
     self._holder = holder
-    self._support_propagated_connection_limit = (
-        support_propagated_connection_limit
-    )
 
   @classmethod
-  def Args(cls, parser, support_propagated_connection_limit):
+  def Args(cls, parser):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
-      support_propagated_connection_limit: whether propagated_connection_limit
-        is supported.
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='update')
@@ -86,8 +81,7 @@ class UpdateHelper(object):
     flags.AddReconcileConnectionsForUpdate(parser)
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
-    if support_propagated_connection_limit:
-      flags.AddPropagatedConnectionLimit(parser)
+    flags.AddPropagatedConnectionLimit(parser)
 
   def _GetProjectOrNetwork(self, consumer_limit):
     if consumer_limit.projectIdOrNum is not None:
@@ -182,9 +176,7 @@ class UpdateHelper(object):
         replacement.reconcileConnections = args.reconcile_connections
         is_updated = True
 
-    if self._support_propagated_connection_limit and args.IsSpecified(
-        'propagated_connection_limit'
-    ):
+    if args.IsSpecified('propagated_connection_limit'):
       if (
           args.propagated_connection_limit
           != old_resource.propagatedConnectionLimit
@@ -215,30 +207,27 @@ class UpdateHelper(object):
           [self._GetPatchRequest(client, service_attachment_ref, replacement)])
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser, cls._support_propagated_connection_limit)
+    UpdateHelper.Args(parser)
 
   def Run(self, args):
     """Issue a service attachment PATCH request."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return UpdateHelper(holder, self._support_propagated_connection_limit).Run(
-        args
-    )
+    return UpdateHelper(holder).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = True
   detailed_help = _DetailedHelp()
 
 
@@ -246,5 +235,4 @@ class UpdateBeta(Update):
 class UpdateAlpha(Update):
   """Update a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = True
   detailed_help = _DetailedHelp()

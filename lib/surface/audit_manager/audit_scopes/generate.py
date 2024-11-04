@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.audit_manager import audit_scopes
+from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
 from googlecloudsdk.command_lib.audit_manager import flags
@@ -32,9 +33,9 @@ _DETAILED_HELP = {
     'DESCRIPTION': 'Generate a new Audit Scope.',
     'EXAMPLES': """ \
         To generate an Audit Scope in the `us-central1` region,
-        for a project with ID `123` for compliance standard `fedramp_moderate` in `odf` format, run:
+        for a project with ID `123` for compliance framework `fedramp_moderate` in `odf` format, run:
 
-          $ {command} --project="123" --location="us-central1" --compliance-standard="fedramp_moderate" --report-format="odf" --output-directory="scopes/currentyear" --output-file-name="auditreport"
+          $ {command} --project="123" --location="us-central1" --compliance-framework="fedramp_moderate" --report-format="odf" --output-directory="scopes/currentyear" --output-file-name="auditreport"
         """,
 }
 
@@ -42,19 +43,20 @@ _SCOPE_REPORT_CONTENTS = 'scopeReportContents'
 _FILE_EXTENSION = '.ods'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class Generate(base.CreateCommand):
   """Generate Audit Scope."""
 
   detailed_help = _DETAILED_HELP
+  api_version = constants.ApiVersion.V1
 
   @staticmethod
   def Args(parser):
-    flags.AddProjectOrFolderFlags(
-        parser, 'for which to generate audit scope'
-    )
+    flags.AddProjectOrFolderFlags(parser, 'for which to generate audit scope')
     flags.AddLocationFlag(parser, 'the scope should be generated')
-    flags.AddComplianceStandardFlag(parser)
+    flags.AddComplianceFrameworkFlag(parser)
     flags.AddScopeReportFormatFlag(parser)
     flags.AddOutputDirectoryFormatFlag(parser)
     flags.AddOutputFileNameFormatFlag(parser)
@@ -70,11 +72,11 @@ class Generate(base.CreateCommand):
     )
     scope += '/locations/{location}'.format(location=args.location)
 
-    client = audit_scopes.AuditScopesClient()
+    client = audit_scopes.AuditScopesClient(api_version=self.api_version)
     try:
       response = client.Generate(
           scope,
-          args.compliance_standard,
+          args.compliance_framework,
           report_format=args.report_format,
           is_parent_folder=is_parent_folder,
       )
@@ -106,12 +108,19 @@ class Generate(base.CreateCommand):
       core_exceptions.reraise(exc)
 
   # TODO: b/324031367 - Add type annotations to all the methods.
-  def SaveReport(
-      self, response, output_directory, output_file_name
-  ):
+  def SaveReport(self, response, output_directory, output_file_name):
     """Save the generated scope."""
     is_empty_directory_path = output_directory == ''
     directory_path = '' if is_empty_directory_path else output_directory + '/'
     file_path = directory_path + output_file_name + _FILE_EXTENSION
     content_bytes = response.scopeReportContents
     files.WriteBinaryFileContents(file_path, content_bytes, overwrite=False)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Visible
+class GenerateAlpha(Generate):
+  """Generate Audit Scope."""
+
+  api_version = constants.ApiVersion.V1_ALPHA

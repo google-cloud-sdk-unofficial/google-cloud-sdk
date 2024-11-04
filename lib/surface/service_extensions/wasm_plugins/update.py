@@ -145,6 +145,12 @@ class Update(base.UpdateCommand):
           '--async',
           'If --async flag is set, --image and --config flags can\'t be used.',
       )
+    # --main-version="" is not allowed.
+    if args.IsSpecified('main_version') and not args.main_version:
+      raise calliope_exceptions.RequiredArgumentException(
+          '--main-version',
+          'Flag --main-version cannot be empty.',
+      )
     if not update_wasm_plugin_and_create_version:
       if (
           GetPluginConfigData(args) is not None

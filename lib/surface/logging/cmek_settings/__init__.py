@@ -29,3 +29,5 @@ from googlecloudsdk.calliope import base
 )
 class CmekSettings(base.Group):
   """Manages the customer-managed encryption key (CMEK) settings for the Cloud Logging Logs Router."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

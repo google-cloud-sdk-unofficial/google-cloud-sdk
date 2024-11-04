@@ -25,14 +25,13 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete a batch-operations job."""
 
   detailed_help = {
       "DESCRIPTION": """
-      Delete the batch-operations job.
+      Delete the batch operation job.
       """,
       "EXAMPLES": """
       To delete a batch job with the name `my-job` in location `us-central1`:

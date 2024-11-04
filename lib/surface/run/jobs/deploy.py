@@ -114,7 +114,7 @@ class Deploy(base.Command):
     flags.AddTasksFlag(parser)
     flags.AddMaxRetriesFlag(parser)
     flags.AddTaskTimeoutFlags(parser)
-    flags.AddServiceAccountFlag(parser, managed_only=True)
+    flags.AddServiceAccountFlag(parser)
     flags.AddSetCloudSQLFlag(parser)
     flags.AddVpcConnectorArg(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
@@ -123,7 +123,7 @@ class Deploy(base.Command):
       flags.AddMutexEnvVarsFlags(parser)
       flags.AddSetSecretsFlag(parser)
       flags.AddMemoryFlag(parser)
-      flags.AddCpuFlag(parser, managed_only=True)
+      flags.AddCpuFlag(parser)
       flags.AddCommandFlag(parser)
       flags.AddArgsFlag(parser)
       flags.AddSourceAndImageFlags(

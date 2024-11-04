@@ -31,7 +31,9 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
 
@@ -58,25 +60,27 @@ Any indexes in your index file that do not exist will be created.
   def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     """Get arguments for this command."""
     flags.AddIndexFileFlag(parser)
-    parser.add_argument(
-        '--database',
-        help="""\
-        The database to operate on. If not specified, the CLI refers the
-        `(default)` database by default.
-
-        For example, to operate on database `testdb`:
-
-          $ {command} --database='testdb'
-        """,
-        type=str,
-    )
+    flags.AddDatabaseIdFlag(parser)
 
   def Run(self, args) -> None:
-    return self.CreateIndexes(
-        index_file=args.index_file, database=args.database
+    """Create missing indexes as defined in the index.yaml file."""
+    # Default to '(default)' if unset.
+    database_id = (
+        args.database if args.database else constants.DEFAULT_NAMESPACE
     )
+    self.CreateIndexes(index_file=args.index_file, database=database_id)
 
-  def CreateIndexes(self, index_file: str, database: str = None) -> None:
+  def CreateIndexes(self, index_file: str, database: str) -> None:
+    """Cleates missing indexes via the Firestore Admin API.
+
+    Lists the database's existing indexes, and then compares them against the
+    indexes that are defined in the given index.yaml file. Any discrepancies
+    against the index.yaml file are created.
+
+    Args:
+      index_file: The users definition of their desired indexes.
+      database: The database within the project we are operating on.
+    """
     project = properties.VALUES.core.project.Get(required=True)
     info = yaml_parsing.ConfigYamlInfo.FromFile(index_file)
     if not info or info.name != yaml_parsing.ConfigYamlInfo.INDEX:
@@ -90,28 +94,8 @@ Any indexes in your index file that do not exist will be created.
         default=True, throw_if_unattended=False, cancel_on_no=True
     )
 
-    if database:
-      # Use Firestore Admin for non (default) database.
-      index_api.CreateMissingIndexesViaFirestoreApi(
-          project_id=project,
-          database_id=database,
-          index_definitions=info.parsed,
-      )
-    else:
-      # Use Datastore Admin for the (default) database.
-      index_api.CreateMissingIndexes(
-          project_id=project, index_definitions=info.parsed
-      )
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPI(Create):
-  """Create Cloud Datastore indexes with Firestore API."""
-
-  def Run(self, args) -> None:
-    # Default to '(default)' if unset to trigger the Firestore Admin API.
-    database_id = (
-        constants.DEFAULT_NAMESPACE if not args.database else args.database
+    index_api.CreateMissingIndexesViaFirestoreApi(
+        project_id=project,
+        database_id=database,
+        index_definitions=info.parsed,
     )
-    return self.CreateIndexes(index_file=args.index_file, database=database_id)

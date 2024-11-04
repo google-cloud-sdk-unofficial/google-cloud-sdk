@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.essential_contacts import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Compute(base.ListCommand):
   r"""Compute the essential contacts that are subscribed to the specified notification categories for a resource.
 

@@ -32,6 +32,7 @@
     - help_text: |-
         The name of the service to retrieve, in the format projects/{project}/locations/{location}/services/{service}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service
       required: true
   request:

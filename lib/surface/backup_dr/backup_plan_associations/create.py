@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+class CreateAlpha(base.CreateCommand):
   """Create a new backup plan association."""
 
   detailed_help = {
@@ -73,9 +73,12 @@ class Create(base.CreateCommand):
     backup_plan_association = args.CONCEPTS.backup_plan_association.Parse()
     backup_plan = args.CONCEPTS.backup_plan.Parse()
     resource = args.resource
+    resource_type = args.resource_type
 
     try:
-      operation = client.Create(backup_plan_association, backup_plan, resource)
+      operation = client.Create(
+          backup_plan_association, backup_plan, resource, resource_type
+      )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
     if is_async:
@@ -101,3 +104,11 @@ class Create(base.CreateCommand):
     )
 
     return resource
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Create(CreateAlpha):
+  """Create a new backup plan association."""
+

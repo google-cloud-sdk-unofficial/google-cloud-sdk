@@ -142,3 +142,10 @@ class CreateAlpha(base.DeleteCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Create(CreateAlpha):
+  """Create a Backup and DR backup vault."""

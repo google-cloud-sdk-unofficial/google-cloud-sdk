@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.api_lib.audit_manager import operations
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
@@ -37,11 +38,14 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe Audit operation."""
 
   detailed_help = _DETAILED_HELP
+  api_version = constants.ApiVersion.V1
 
   @staticmethod
   def Args(parser):
@@ -56,10 +60,19 @@ class Describe(base.DescribeCommand):
         == 'auditmanager.folders.locations.operationDetails'
     )
 
-    client = operations.OperationsClient()
+    client = operations.OperationsClient(api_version=self.api_version)
 
     try:
       return client.Get(resource.RelativeName(), is_folder_parent)
     except apitools_exceptions.HttpError as error:
       exc = exception_utils.AuditManagerError(error)
       core_exceptions.reraise(exc)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Visible
+class DescribeAlpha(Describe):
+  """Describe Audit operation."""
+
+  api_version = constants.ApiVersion.V1_ALPHA

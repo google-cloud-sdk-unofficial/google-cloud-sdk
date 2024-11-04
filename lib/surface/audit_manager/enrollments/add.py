@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.api_lib.audit_manager import enrollments
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
@@ -38,11 +39,13 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class Add(base.CreateCommand):
   """Enroll a new scope."""
 
   detailed_help = _DETAILED_HELP
+  api_version = constants.ApiVersion.V1
 
   @staticmethod
   def Args(parser):
@@ -61,7 +64,8 @@ class Add(base.CreateCommand):
 
     scope += '/locations/global'
 
-    client = enrollments.EnrollmentsClient()
+    client = enrollments.EnrollmentsClient(api_version=self.api_version)
+
     try:
       return client.Add(
           scope,
@@ -88,3 +92,12 @@ class Add(base.CreateCommand):
         )
 
       core_exceptions.reraise(exc)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Visible
+class AddAlpha(Add):
+  """Enroll a new scope."""
+
+  api_version = constants.ApiVersion.V1_ALPHA

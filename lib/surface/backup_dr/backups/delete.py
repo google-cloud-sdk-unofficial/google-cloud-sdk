@@ -103,3 +103,10 @@ class DeleteAlpha(base.DeleteCommand):
     log.DeletedResource(backup.RelativeName(), kind='backup')
 
     return response
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(DeleteAlpha):
+  """Delete the specified Backup."""

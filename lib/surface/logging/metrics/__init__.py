@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Metrics(base.Group):
   """Manages logs-based metrics."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

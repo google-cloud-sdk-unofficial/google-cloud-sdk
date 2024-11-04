@@ -22,12 +22,17 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.UniverseCompatible
 class SnapshotSettings(base.Group):
   """Describe and update Compute Engine snapshot settings."""
 
 
 SnapshotSettings.category = base.DISKS_CATEGORY
+SnapshotSettings.detailed_help = {
+    'brief': 'Describe and update Compute Engine snapshot settings.',
+    'DESCRIPTION': """\
+      Describe and update Compute Engine snapshot settings.
+      """,
+}

@@ -73,13 +73,19 @@ class RemoveRoutePolicyTerm(base.DeleteCommand):
 
     term = route_policy_utils.FindPolicyTermOrRaise(route_policy, args.priority)
     route_policy.terms.remove(term)
+    # Cleared list fields need to be explicitly identified for Patch API.
+    cleared_fields = []
+    if not route_policy.terms:
+      cleared_fields.append('terms')
 
     request = (
         service,
-        'UpdateRoutePolicy',
-        messages.ComputeRoutersUpdateRoutePolicyRequest(
+        'PatchRoutePolicy',
+        messages.ComputeRoutersPatchRoutePolicyRequest(
             **router_ref.AsDict(),
             routePolicy=route_policy,
         ),
     )
-    return client.MakeRequests([request])[0]
+    with client.apitools_client.IncludeFields(cleared_fields):
+      result = client.MakeRequests([request])
+    return result

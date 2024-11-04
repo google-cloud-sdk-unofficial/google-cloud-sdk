@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.essential_contacts import util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List essential contacts for a resource.
 

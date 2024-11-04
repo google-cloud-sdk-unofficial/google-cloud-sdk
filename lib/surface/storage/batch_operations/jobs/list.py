@@ -23,14 +23,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List batch-operations jobs."""
 
   detailed_help = {
       "DESCRIPTION": """
-      List batch-operations jobs.
+      List batch operation jobs.
       """,
       "EXAMPLES": """
       To list all batch jobs in all locations:
@@ -62,7 +61,6 @@ class List(base.ListCommand):
         "--location",
         type=str,
         help="The location of the batch jobs.",
-        hidden=True,
     )
     parser.display_info.AddFormat("""
       table(

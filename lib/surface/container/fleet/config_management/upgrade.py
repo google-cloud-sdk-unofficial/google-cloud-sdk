@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
@@ -90,19 +89,11 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
     patch.configmanagement.version = new_version
 
     membership_key = membership
-    f = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(
-            {membership_key: patch}
-        )
-    )
 
-    if mf_util.UseMembershipFeatureV2(self.ReleaseTrack()):
-      membershipfeature = convert.ToV2MembershipFeature(
-          self, membership_key, self.mf_name, patch
-      )
-      self.UpdateV2(membership_key, ['spec'], membershipfeature)
-    else:
-      self.Update(['membershipSpecs'], f)
+    membershipfeature = convert.ToV2MembershipFeature(
+        self, membership_key, self.mf_name, patch
+    )
+    self.UpdateV2(membership_key, ['spec'], membershipfeature)
 
   def _validate_versions(self, membership, cluster_v, new_v):
     if cluster_v == new_v:

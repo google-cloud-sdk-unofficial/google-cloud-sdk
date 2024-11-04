@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Settings(base.Group):
   """Manages the org settings for the Cloud Logging Logs Router."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

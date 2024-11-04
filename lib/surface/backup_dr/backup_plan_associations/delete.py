@@ -110,3 +110,10 @@ class DeleteAlpha(base.DeleteCommand):
     )
 
     return response
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(DeleteAlpha):
+  """Delete the specified backup plan association."""

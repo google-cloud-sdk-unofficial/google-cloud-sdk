@@ -154,3 +154,10 @@ class UpdateAlpha(base.UpdateCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Update(UpdateAlpha):
+  """Update a Backup and DR backup vault."""

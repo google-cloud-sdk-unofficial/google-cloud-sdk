@@ -57,6 +57,7 @@ def _AddArgs(
     include_custom_hardware_link,
     api_version,
     include_ip_collection,
+    include_peer_migration_purpose,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -177,6 +178,11 @@ def _AddArgs(
   if include_custom_hardware_link:
     purpose_choices['CUSTOM_HARDWARE_LINK'] = (
         'Reserved for Custom Hardware Link.'
+    )
+
+  if include_peer_migration_purpose:
+    purpose_choices['PEER_MIGRATION'] = (
+        'Reserved for subnet migration between peered VPCs.'
     )
 
   # Subnetwork purpose is introduced with L7ILB feature. Aggregate purpose
@@ -335,6 +341,7 @@ def _CreateSubnetwork(
     include_external_ipv6_prefix,
     include_custom_hardware_link,
     ip_collection_ref,
+    include_peer_migration_purpose,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -402,6 +409,11 @@ def _CreateSubnetwork(
       or subnetwork.purpose
       == messages.Subnetwork.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
       or (
+          include_peer_migration_purpose
+          and subnetwork.purpose
+          == messages.Subnetwork.PurposeValueValuesEnum.PEER_MIGRATION
+      )
+      or (
           include_aggregate_purpose
           and subnetwork.purpose
           == messages.Subnetwork.PurposeValueValuesEnum.AGGREGATE
@@ -460,6 +472,7 @@ def _Run(
     include_external_ipv6_prefix,
     include_custom_hardware_link,
     include_ip_collection,
+    include_peer_migration_purpose,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -487,6 +500,7 @@ def _Run(
       include_external_ipv6_prefix,
       include_custom_hardware_link,
       ip_collection_ref,
+      include_peer_migration_purpose
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -516,6 +530,7 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_ip_collection = False
+  _include_peer_migration_purpose = False
 
   detailed_help = _DetailedHelp()
 
@@ -530,6 +545,7 @@ class Create(base.CreateCommand):
         cls._include_custom_hardware_link,
         cls._api_version,
         cls._include_ip_collection,
+        cls._include_peer_migration_purpose,
     )
 
   def Run(self, args):
@@ -544,6 +560,7 @@ class Create(base.CreateCommand):
         self._include_external_ipv6_prefix,
         self._include_custom_hardware_link,
         self._include_ip_collection,
+        self._include_peer_migration_purpose,
     )
 
 
@@ -566,3 +583,4 @@ class CreateAlpha(CreateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
   _include_ip_collection = True
+  _include_peer_migration_purpose = True

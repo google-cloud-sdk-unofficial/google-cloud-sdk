@@ -53,15 +53,15 @@ class List(commands.List):
   @classmethod
   def CommonArgs(cls, parser):
     # Flags specific to connecting to a cluster
-    cluster_group = flags.GetClusterArgGroup(parser)
     namespace_presentation = presentation_specs.ResourcePresentationSpec(
         '--namespace',
         resource_args.GetNamespaceResourceSpec(),
         'Namespace to list services in.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+        hidden=True)
     concept_parsers.ConceptParser([namespace_presentation
-                                  ]).AddToParser(cluster_group)
+                                  ]).AddToParser(parser)
 
     parser.display_info.AddUriFunc(cls._GetResourceUri)
 

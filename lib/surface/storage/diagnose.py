@@ -16,6 +16,7 @@
 """Diagnose Google Cloud Storage common issues."""
 
 import enum
+import os
 
 from googlecloudsdk.api_lib.storage import errors as api_errors
 from googlecloudsdk.api_lib.storage.gcs_json import client as gcs_json_client
@@ -57,6 +58,25 @@ def get_bucket_resource(
     raise command_errors.FatalError(
         f'Bucket metadata could not be fetched for {bucket_url.bucket_name}'
     ) from e
+
+
+def _validate_args(args):
+  """Validates and raises error if the command arguments are invalid."""
+  errors_util.raise_error_if_not_gcs_bucket(
+      args.command_path, storage_url.storage_url_from_string(args.url)
+  )
+
+  if (
+      args.export
+      and args.destination
+      and not (
+          os.path.exists(args.destination) and os.path.isdir(args.destination)
+      )
+  ):
+    raise ValueError(
+        f'Invalid destination path: {args.destination}. Please provide'
+        ' a valid path.'
+    )
 
 
 class TestType(enum.Enum):
@@ -369,9 +389,8 @@ class Diagnose(base.Command):
         TestType.UPLOAD_THROUGHPUT.value,
     ]
 
+    _validate_args(args)
     url_object = storage_url.storage_url_from_string(args.url)
-    errors_util.raise_error_if_not_gcs_bucket(args.command_path, url_object)
-
     bucket_resource = get_bucket_resource(url_object)
 
     log.status.Print(
@@ -410,7 +429,7 @@ class Diagnose(base.Command):
           test_results, args.destination
       )
       log.status.Print(
-          'Successfully exported diagnostic bundle to {}.'.format(export_path)
+          'Successfully exported diagnostic bundle to {}'.format(export_path)
       )
       return None
 

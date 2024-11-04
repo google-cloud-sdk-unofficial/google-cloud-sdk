@@ -32,3 +32,4 @@ class Locations(base.Group):
   Commands for querying Cloud Logging locations. Cloud Logging log buckets may
   be created in these locations.
   """
+  category = base.MANAGEMENT_TOOLS_CATEGORY

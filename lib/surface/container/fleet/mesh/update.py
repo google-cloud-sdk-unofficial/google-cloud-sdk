@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.anthos.common import file_parsers
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.features import base as features_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 from googlecloudsdk.command_lib.container.fleet.mesh import utils
 
 
@@ -380,9 +379,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
         hasattr(args, 'origin')
         and args.origin == 'fleet'
     )
-    if not use_fleet_default_config and mf_util.UseMembershipFeatureV2(
-        self.ReleaseTrack()
-    ):
+    if not use_fleet_default_config:
       _RunUpdateV2(self, args)
     else:
       _RunUpdate(self, args)
@@ -390,7 +387,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class UpdateGA(features_base.UpdateCommand):
+class UpdateGA(features_base.UpdateCommand, mf_base.UpdateCommand):
   """Update the configuration of the Service Mesh Feature.
 
   Update the Service Mesh Feature Spec of a Membership.
@@ -405,6 +402,7 @@ class UpdateGA(features_base.UpdateCommand):
   """
 
   feature_name = 'servicemesh'
+  mf_name = 'servicemesh'
 
   @staticmethod
   def Args(parser):
@@ -460,4 +458,13 @@ class UpdateGA(features_base.UpdateCommand):
     )
 
   def Run(self, args):
-    _RunUpdate(self, args)
+    # If the user is using the fleet default config, we will still use the v1
+    # Feature API for the update.
+    use_fleet_default_config = (
+        hasattr(args, 'origin')
+        and args.origin == 'fleet'
+    )
+    if not use_fleet_default_config:
+      _RunUpdateV2(self, args)
+    else:
+      _RunUpdate(self, args)

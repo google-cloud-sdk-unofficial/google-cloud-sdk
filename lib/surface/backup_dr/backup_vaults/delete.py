@@ -130,3 +130,10 @@ class DeleteAlpha(base.DeleteCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Delete(DeleteAlpha):
+  """Delete the specified Backup Vault."""

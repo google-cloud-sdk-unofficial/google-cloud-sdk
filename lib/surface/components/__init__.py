@@ -26,6 +26,7 @@ from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Components(base.Group):
   """List, install, update, or remove Google Cloud CLI components.

@@ -123,6 +123,8 @@ class CreateBeta(Create):
   maps define which requests are sent to which backend buckets.
   """
 
+  _support_load_balancing_scheme = True
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
@@ -133,5 +135,3 @@ class CreateAlpha(CreateBeta):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
-
-  _support_load_balancing_scheme = True

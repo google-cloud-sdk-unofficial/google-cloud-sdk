@@ -102,8 +102,8 @@ class UpdateRoutePolicyTerm(base.UpdateCommand):
     _UpdatePolicyTermMessage(term, messages, args)
     request = (
         service,
-        'UpdateRoutePolicy',
-        messages.ComputeRoutersUpdateRoutePolicyRequest(
+        'PatchRoutePolicy',
+        messages.ComputeRoutersPatchRoutePolicyRequest(
             **router_ref.AsDict(),
             routePolicy=route_policy,
         ),

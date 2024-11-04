@@ -24,14 +24,13 @@ from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_ar
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a batch-operations job."""
 
   detailed_help = {
       "DESCRIPTION": """
-      Describe the batch-operations job.
+      Describe the batch operation job.
       """,
       "EXAMPLES": """
       To describe a batch job with the name `my-job` in location `us-central1`:

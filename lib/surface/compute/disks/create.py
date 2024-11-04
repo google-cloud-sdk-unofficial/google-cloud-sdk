@@ -452,27 +452,6 @@ class Create(base.Command):
       ])
     return labels
 
-  def GetDiskTypeUri(self, args, disk_ref, compute_holder):
-    if args.type:
-      if disk_ref.Collection() == 'compute.disks':
-        type_ref = compute_holder.resources.Parse(
-            args.type,
-            collection='compute.diskTypes',
-            params={
-                'project': disk_ref.project,
-                'zone': disk_ref.zone
-            })
-      elif disk_ref.Collection() == 'compute.regionDisks':
-        type_ref = compute_holder.resources.Parse(
-            args.type,
-            collection='compute.regionDiskTypes',
-            params={
-                'project': disk_ref.project,
-                'region': disk_ref.region
-            })
-      return type_ref.SelfLink()
-    return None
-
   def GetReplicaZones(self, args, compute_holder, disk_ref):
     result = []
     for zone in args.replica_zones:
@@ -538,7 +517,7 @@ class Create(base.Command):
 
     requests = []
     for disk_ref in disk_refs:
-      type_uri = self.GetDiskTypeUri(args, disk_ref, compute_holder)
+      type_uri = disks_util.GetDiskTypeUri(args.type, disk_ref, compute_holder)
 
       kwargs = {}
       if csek_keys:

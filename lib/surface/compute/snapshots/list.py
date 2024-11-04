@@ -40,6 +40,7 @@ def _AlphaArgs(parser):
   parser.display_info.AddFormat("""\
       table(
         name,
+        location().yesno(no="GLOBAL"):label=LOCATION,
         diskSizeGb,
         sourceDisk.scope():label=SRC_DISK,
         status

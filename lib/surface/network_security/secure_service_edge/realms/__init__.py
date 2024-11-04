@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command group is deprecated. Please use `gcloud alpha '
         'network-security secure-access-connect realms` instead.'

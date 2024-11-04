@@ -42,7 +42,6 @@
       - enum_value: REDIS_SHARED_CORE_NANO
         arg_value: redis-shared-core-nano
     - arg_name: network
-      required: true
       api_field: cluster.pscConfigs.network
       help_text: |
          The network used to create your instance. It must use the format:

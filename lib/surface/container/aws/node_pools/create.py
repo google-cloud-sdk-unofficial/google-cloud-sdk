@@ -36,6 +36,7 @@ $ {command} my-node-pool --cluster=my-cluster --location=us-west1 --iam-instance
 """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a node pool in an Anthos cluster on AWS."""
@@ -70,6 +71,10 @@ class Create(base.CreateCommand):
     aws_flags.AddProxyConfig(parser)
     aws_flags.AddConfigEncryptionKmsKeyArn(parser)
     aws_flags.AddAutoScalingMetricsCollection(parser)
+    aws_flags.AddKubeletConfigCpuManagerPolicy(parser)
+    aws_flags.AddKubeletConfigCpuCfsQuota(parser)
+    aws_flags.AddKubeletConfigCpuCfsQuotaPeriod(parser)
+    aws_flags.AddKubeletConfigPodPidsLimit(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -95,6 +100,7 @@ class Create(base.CreateCommand):
       )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a node pool in an Anthos cluster on AWS."""

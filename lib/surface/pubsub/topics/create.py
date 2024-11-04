@@ -163,6 +163,16 @@ def _Run(args, legacy_output=False):
   azure_event_hubs_ingestion_service_account = getattr(
       args, 'azure_event_hubs_ingestion_service_account', None
   )
+  aws_msk_ingestion_cluster_arn = getattr(
+      args, 'aws_msk_ingestion_cluster_arn', None
+  )
+  aws_msk_ingestion_topic = getattr(args, 'aws_msk_ingestion_topic', None)
+  aws_msk_ingestion_aws_role_arn = getattr(
+      args, 'aws_msk_ingestion_aws_role_arn', None
+  )
+  aws_msk_ingestion_service_account = getattr(
+      args, 'aws_msk_ingestion_service_account', None
+  )
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
 
   failed = []
@@ -193,6 +203,10 @@ def _Run(args, legacy_output=False):
           azure_event_hubs_ingestion_client_id=azure_event_hubs_ingestion_client_id,
           azure_event_hubs_ingestion_tenant_id=azure_event_hubs_ingestion_tenant_id,
           azure_event_hubs_ingestion_service_account=azure_event_hubs_ingestion_service_account,
+          aws_msk_ingestion_cluster_arn=aws_msk_ingestion_cluster_arn,
+          aws_msk_ingestion_topic=aws_msk_ingestion_topic,
+          aws_msk_ingestion_aws_role_arn=aws_msk_ingestion_aws_role_arn,
+          aws_msk_ingestion_service_account=aws_msk_ingestion_service_account,
           ingestion_log_severity=ingestion_log_severity,
       )
     except api_ex.HttpError as error:
@@ -217,6 +231,7 @@ def _Run(args, legacy_output=False):
 def _Args(
     parser,
     include_ingestion_from_azure_event_hubs_flags=False,
+    include_ingestion_from_aws_msk_flags=False,
 ):
   """Custom args implementation.
 
@@ -224,6 +239,8 @@ def _Args(
     parser: The current parser.
     include_ingestion_from_azure_event_hubs_flags: Whether to include ingestion
       from Azure Event Hubs flags and log severity.
+    include_ingestion_from_aws_msk_flags: Whether to include ingestion from AWS
+      MSK flags.
   """
 
   resource_args.AddResourceArgs(
@@ -235,6 +252,7 @@ def _Args(
       parser,
       is_update=False,
       include_ingestion_from_azure_event_hubs_flags=include_ingestion_from_azure_event_hubs_flags,
+      include_ingestion_from_aws_msk_flags=include_ingestion_from_aws_msk_flags,
   )
 
   labels_util.AddCreateLabelsFlags(parser)
@@ -258,6 +276,7 @@ class Create(base.CreateCommand):
     _Args(
         parser,
         include_ingestion_from_azure_event_hubs_flags=False,
+        include_ingestion_from_aws_msk_flags=False,
     )
 
   def Run(self, args):
@@ -273,6 +292,7 @@ class CreateBeta(Create):
     _Args(
         parser,
         include_ingestion_from_azure_event_hubs_flags=False,
+        include_ingestion_from_aws_msk_flags=False,
     )
 
   def Run(self, args):
@@ -289,4 +309,5 @@ class CreateAlpha(CreateBeta):
     _Args(
         parser,
         include_ingestion_from_azure_event_hubs_flags=True,
+        include_ingestion_from_aws_msk_flags=True,
     )

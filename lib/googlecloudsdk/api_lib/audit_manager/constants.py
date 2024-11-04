@@ -12,11 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Util functions for commands for MembershipFeature resource."""
+"""Constants for Audit Manager API, Client Generation Functions."""
 
-from googlecloudsdk.calliope import base
+import enum
 
 
-def UseMembershipFeatureV2(release_track):
-  """Returns whether to use MembershipFeature v2 API."""
-  return release_track is base.ReleaseTrack.ALPHA
+@enum.unique
+class ApiVersion(enum.Enum):
+  """Different allowed versions of Audit Manager API."""
+
+  V1 = 'v1'
+  V1_ALPHA = 'v1alpha'

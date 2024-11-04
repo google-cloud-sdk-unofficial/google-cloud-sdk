@@ -3,6 +3,8 @@
     brief: Delete a `WasmPlugin` resource.
     description: |
       Delete a `WasmPlugin` resource.
+
+      Please note that all WasmPluginVersions associated with the WasmPlugin will also be deleted.
     examples: |
       To delete a `WasmPlugin` called `my-plugin`, run:
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Implementation of describe command for describing management hub."""
 
+from googlecloudsdk.api_lib.storage import management_hub_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 
@@ -43,5 +44,11 @@ class Describe(base.DescribeCommand):
     flags.add_management_hub_level_flags(parser)
 
   def Run(self, args):
-    # TODO: b/367267662 - Implementation of describe command.
-    raise NotImplementedError
+    client = management_hub_api.ManagementHubApi()
+
+    if args.sub_folder:
+      return client.get_sub_folder_management_hub(args.sub_folder)
+    elif args.project:
+      return client.get_project_management_hub(args.project)
+    elif args.organization:
+      return client.get_organization_management_hub(args.organization)

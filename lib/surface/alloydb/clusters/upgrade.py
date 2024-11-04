@@ -114,8 +114,8 @@ class UpgradeAlpha(Upgrade):
   """Upgrade an AlloyDB cluster within a given project and region."""
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.Visible
 class UpgradeBeta(Upgrade):
   """Upgrade an AlloyDB cluster within a given project and region."""
 

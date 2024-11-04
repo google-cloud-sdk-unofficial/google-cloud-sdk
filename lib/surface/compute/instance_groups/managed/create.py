@@ -127,7 +127,7 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
-    managed_flags.AddMigDefaultActionOnVmFailure(parser)
+    managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -483,6 +483,7 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(CreateAlpha, cls).Args(parser)
     managed_flags.AddTargetSizePolicyModeFlag(parser)
 

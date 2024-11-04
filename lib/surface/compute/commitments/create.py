@@ -50,7 +50,6 @@ class Create(base.Command):
   _support_share_setting = True
   _support_stable_fleet = False
   _support_existing_reservation = True
-  _support_custom_end_time = False
   _support_reservation_sharing_policy = False
 
   detailed_help = {
@@ -71,7 +70,6 @@ class Create(base.Command):
         support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
-        support_custom_end_time=cls._support_custom_end_time,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
     )
 
@@ -110,11 +108,7 @@ class Create(base.Command):
         ),
         existingReservations=existing_reservations,
     )
-    # TODO(b/331842266): Merge this to previous statement once enter GA.
-    if self._support_custom_end_time:
-      commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(
-          args
-      )
+    commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(args)
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,
@@ -181,7 +175,6 @@ class CreateBeta(Create):
   _support_share_setting = True
   _support_stable_fleet = True
   _support_existing_reservation = True
-  _support_custom_end_time = False
   _support_reservation_sharing_policy = True
 
   @classmethod
@@ -192,7 +185,6 @@ class CreateBeta(Create):
         support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
-        support_custom_end_time=cls._support_custom_end_time,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
     )
 
@@ -204,7 +196,6 @@ class CreateAlpha(CreateBeta):
   _support_share_setting = True
   _support_stable_fleet = True
   _support_existing_reservation = True
-  _support_custom_end_time = True
   _support_reservation_sharing_policy = True
 
   @classmethod
@@ -214,7 +205,6 @@ class CreateAlpha(CreateBeta):
         parser, support_share_setting=cls._support_share_setting,
         support_stable_fleet=cls._support_stable_fleet,
         support_existing_reservation=cls._support_existing_reservation,
-        support_custom_end_time=cls._support_custom_end_time,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
     )
 
@@ -251,11 +241,8 @@ class CreateAlpha(CreateBeta):
         ),
         existingReservations=existing_reservations,
     )
-    # TODO(b/331842266): Merge this to previous statement once enter GA.
-    if self._support_custom_end_time:
-      commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(
-          args
-      )
+
+    commitment.customEndTimestamp = flags.TranslateCustomEndTimeArg(args)
     return messages.ComputeRegionCommitmentsInsertRequest(
         commitment=commitment,
         project=project,

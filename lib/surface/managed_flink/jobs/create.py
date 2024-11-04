@@ -53,6 +53,16 @@ def GetJobType(job_type, job_file):
   return job_type
 
 
+def GetInputType(job_file):
+  """Returns the input type based on the job_file."""
+  input_type = 'file://'
+  # format is:
+  # ar://<project>/<location>/<repository>/<file/path/version/file.jar>
+  if job_file.startswith('ar://') or job_file.startswith('artifactregistry://'):
+    input_type = 'ar://'
+  return input_type
+
+
 class UnknownJobType(core_exceptions.Error):
   """Raised when the job type cannot be determined."""
 
@@ -198,8 +208,10 @@ class Create(base.BinaryBackedCommand):
     current_os = platforms.OperatingSystem.Current()
     if current_os is platforms.OperatingSystem.WINDOWS:
       raise exceptions.ToolException('Job creation not supported on Windows.')
+    # Determing the job_file input method
+    input_type = GetInputType(args.job)
     # Make sure the job file exists
-    if not os.path.exists(args.job):
+    if input_type == 'file://' and not os.path.exists(args.job):
       raise exceptions.InvalidArgumentException(
           'JAR|PY|SQL',
           'Job definition [{0}] does not exist.'.format(args.job),
@@ -270,11 +282,25 @@ class Create(base.BinaryBackedCommand):
       env['CLOUDSDK_MANAGEDFLINK_ECHO_CMD'] = 'true'
 
     with files.TemporaryDirectory() as temp_dir:
+      jar_path = args.job
+      if input_type == 'ar://':
+        jar_name, registry = flink_backend.CreateRegistryFromArtifactUri(
+            args.job
+        )
+        log.Print(
+            'Downloading {0} file from Artifact Registry...'.format(jar_name)
+        )
+        jar_path = os.path.join(temp_dir, jar_name.split('/')[-1])
+        # Will throw an HTTPError if the file does not exist.
+        flink_backend.DownloadJarFromArtifactRegistry(
+            dest_path=jar_path, artifact_jar_path=registry.RelativeName()
+        )
+        log.debug('Successfully downloaded the file to ' + jar_path)
       command_executor = flink_backend.FlinkClientWrapper()
       response = command_executor(
           command='run',
           job_type=job_type,
-          jar=args.job,
+          jar=jar_path,
           target='gcloud',
           deployment=args.deployment,
           staging_location=args.staging_location,

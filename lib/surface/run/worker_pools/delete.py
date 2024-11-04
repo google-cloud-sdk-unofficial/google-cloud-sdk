@@ -58,7 +58,7 @@ class Delete(base.Command):
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
-    flags.AddAsyncFlag(parser, is_managed_only=True)
+    flags.AddAsyncFlag(parser)
 
   @staticmethod
   def Args(parser):

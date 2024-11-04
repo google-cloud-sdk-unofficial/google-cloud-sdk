@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Sinks(base.Group):
   """Manages sinks used to route logs to storage or export destinations."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

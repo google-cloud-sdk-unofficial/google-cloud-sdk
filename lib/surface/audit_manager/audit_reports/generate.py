@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.audit_manager import audit_reports
+from googlecloudsdk.api_lib.audit_manager import constants
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.audit_manager import exception_utils
 from googlecloudsdk.command_lib.audit_manager import flags
@@ -31,24 +32,27 @@ _DETAILED_HELP = {
     'DESCRIPTION': 'Generate a new Audit Report.',
     'EXAMPLES': """ \
         To generate an Audit Report in the `us-central1` region,
-        for a project with ID `123` for compliance standard `fedramp_moderate` in `odf` format and store it in `gs://testbucketauditmanager` bucket, run:
+        for a project with ID `123` for compliance framework `fedramp_moderate` in `odf` format and store it in `gs://testbucketauditmanager` bucket, run:
 
-          $ {command} --project=123 --location=us-central1 --compliance-standard=fedramp_moderate --report-format=odf --gcs-uri=gs://testbucketauditmanager
+          $ {command} --project=123 --location=us-central1 --compliance-framework=fedramp_moderate --report-format=odf --gcs-uri=gs://testbucketauditmanager
         """,
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class Generate(base.CreateCommand):
   """Generate Audit Report."""
 
   detailed_help = _DETAILED_HELP
+  api_version = constants.ApiVersion.V1
 
   @staticmethod
   def Args(parser):
     flags.AddProjectOrFolderFlags(parser, 'for which to generate audit report')
     flags.AddLocationFlag(parser, 'the report should be generated')
-    flags.AddComplianceStandardFlag(parser)
+    flags.AddComplianceFrameworkFlag(parser)
     flags.AddReportFormatFlag(parser)
     flags.AddDestinationFlags(parser)
     parser.display_info.AddFormat(properties.VALUES.core.default_format.Get())
@@ -65,12 +69,12 @@ class Generate(base.CreateCommand):
 
     scope += '/locations/{location}'.format(location=args.location)
 
-    client = audit_reports.AuditReportsClient()
+    client = audit_reports.AuditReportsClient(api_version=self.api_version)
 
     try:
       return client.Generate(
           scope,
-          args.compliance_standard,
+          args.compliance_framework,
           report_format=args.report_format,
           gcs_uri=args.gcs_uri,
           is_parent_folder=is_parent_folder,
@@ -102,3 +106,12 @@ class Generate(base.CreateCommand):
         )
 
       core_exceptions.reraise(exc)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Visible
+class GenerateAlpha(Generate):
+  """Generate Audit Report."""
+
+  api_version = constants.ApiVersion.V1_ALPHA

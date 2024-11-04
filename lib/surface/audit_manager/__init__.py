@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.Hidden
 class AuditManager(base.Group):
   """Enroll resources, audit workloads and generate reports."""
 
@@ -32,3 +34,10 @@ class AuditManager(base.Group):
     # Don't ever take this off. Use gcloud quota for projects operations so
     # you can create a project before you have a project.
     base.DisableUserProjectQuota()
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Visible
+class AuditManagerAlpha(AuditManager):
+  """Enroll resources, audit workloads and generate reports."""

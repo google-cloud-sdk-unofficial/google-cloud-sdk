@@ -32,6 +32,7 @@
     - help_text: |-
         The name of the schema to delete, in the format projects/{project}/locations/{location}/services/{service}/schemas/{schema}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service_schema
       required: true
     - arg_name: force
@@ -42,6 +43,7 @@
       help_text: |-
         If set to true, any child resources (i.e. SchemaRevisions) will also be
         deleted.
+      default: null
     - arg_name: etag
       api_field: etag
       required: false
@@ -75,6 +77,7 @@
       help_text: |-
         If true and the Schema is not found, the request will
         succeed but no action will be taken on the server.
+      default: null
     - arg_name: validate-only
       api_field: validateOnly
       action: store_true
@@ -83,6 +86,7 @@
       help_text: |-
         If set, validate the request and preview the Schema, but do not actually
         delete it.
+      default: null
   request:
     api_version: v1alpha
     collection:

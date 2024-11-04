@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as fleet_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 
 # Pull out the example text so the example command can be one line without the
 # py linter complaining. The docgen tool properly breaks it into multiple lines.
@@ -123,7 +122,8 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
     if args.origin:
       # TODO(b/361345385): Remove this redundant FDC check once the v1 CLH error
       # message is more explicit.
-      # TODO(b/361373747): Remove FDC check once it is added to v2 CLH.
+      # Alternatively, remove FDC check once it is added to v2 CLH and gcloud
+      # uses Hub v2 API for FDC.
       if not self._get_feature_cache().fleetDefaultMemberConfig:
         project = core.properties.VALUES.core.project.GetOrFail()
         raise core.exceptions.Error((
@@ -188,8 +188,7 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
       Updated feature or membership feature, for projects migrated to v2 by Hub.
     """
     try:
-      if (not feature_spec.origin and
-          mf_util.UseMembershipFeatureV2(self.ReleaseTrack())):
+      if not feature_spec.origin:
         membershipfeature = convert.ToV2MembershipFeature(
             self, self.membership, self.mf_name, feature_spec
         )

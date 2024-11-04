@@ -55,6 +55,7 @@ class Update(base.UpdateCommand):
   _include_external_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
+  _update_purpose_to_private = False
   _include_ip_collection = False
   detailed_help = _DetailedHelp()
 
@@ -77,6 +78,7 @@ class Update(base.UpdateCommand):
         cls._include_external_ipv6_prefix,
         cls._include_allow_cidr_routes_overlap,
         cls._api_version,
+        cls._update_purpose_to_private,
     )
 
   def Run(self, args):
@@ -171,4 +173,5 @@ class UpdateAlpha(UpdateBeta):
   _include_external_ipv6_prefix = True
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
+  _update_purpose_to_private = True
   _include_ip_collection = True

@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Logs(base.Group):
   """Manages your project's logs."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

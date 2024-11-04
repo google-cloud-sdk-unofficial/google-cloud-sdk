@@ -32,6 +32,7 @@
     - help_text: |-
         The name of the connector to delete, in the format projects/{project}/locations/{location}/services/{service}/connectors/{connector}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service_connector
       required: true
     - arg_name: force
@@ -43,6 +44,7 @@
         If set to true, any child resources (i.e. ConnectorRevisions) will also
         be deleted. Otherwise, the request will only work if the Connector has
         no child resources.
+      default: null
     - arg_name: etag
       api_field: etag
       required: false
@@ -76,6 +78,7 @@
       help_text: |-
         If true and the Connector is not found, the request will succeed but no
         action will be taken on the server.
+      default: null
     - arg_name: validate-only
       api_field: validateOnly
       action: store_true
@@ -84,6 +87,7 @@
       help_text: |-
         If set, validate the request and preview the Connector, but do not
         actually delete it.
+      default: null
   request:
     api_version: v1alpha
     collection:

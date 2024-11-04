@@ -16,7 +16,9 @@
 
 import enum
 import json
+import logging
 import os.path
+import re
 
 from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.api_lib.run import k8s_object
@@ -119,34 +121,31 @@ class Deploy(base.Command):
 
   @classmethod
   def CommonArgs(cls, parser):
-    # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddAllowUnauthenticatedFlag(managed_group)
-    flags.AddBinAuthzPolicyFlags(managed_group)
-    flags.AddBinAuthzBreakglassFlag(managed_group)
-    flags.AddCloudSQLFlags(managed_group)
-    flags.AddCmekKeyFlag(managed_group)
-    flags.AddCmekKeyRevocationActionTypeFlag(managed_group)
-    flags.AddCpuThrottlingFlag(managed_group)
-    flags.AddCustomAudiencesFlag(managed_group)
-    flags.AddDescriptionFlag(managed_group)
-    flags.AddEgressSettingsFlag(managed_group)
-    flags.AddEncryptionKeyShutdownHoursFlag(managed_group)
-    flags.AddRevisionSuffixArg(managed_group)
-    flags.AddSandboxArg(managed_group)
-    flags.AddSessionAffinityFlag(managed_group)
-    flags.AddStartupCpuBoostFlag(managed_group)
-    flags.AddVpcConnectorArgs(managed_group)
-    flags.AddVpcNetworkGroupFlagsForUpdate(managed_group)
-    flags.RemoveContainersFlag().AddToParser(managed_group)
-    flags.AddVolumesFlags(managed_group, cls.ReleaseTrack())
-    flags.AddServiceMinInstancesFlag(managed_group)
-    flags.AddInvokerIamCheckFlag(managed_group)
+    flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddBinAuthzPolicyFlags(parser)
+    flags.AddBinAuthzBreakglassFlag(parser)
+    flags.AddCloudSQLFlags(parser)
+    flags.AddCmekKeyFlag(parser)
+    flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddCpuThrottlingFlag(parser)
+    flags.AddCustomAudiencesFlag(parser)
+    flags.AddDescriptionFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
+    flags.AddEncryptionKeyShutdownHoursFlag(parser)
+    flags.AddRevisionSuffixArg(parser)
+    flags.AddSandboxArg(parser)
+    flags.AddSessionAffinityFlag(parser)
+    flags.AddStartupCpuBoostFlag(parser)
+    flags.AddVpcConnectorArgs(parser)
+    flags.AddVpcNetworkGroupFlagsForUpdate(parser)
+    flags.RemoveContainersFlag().AddToParser(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddServiceMinInstancesFlag(parser)
+    flags.AddInvokerIamCheckFlag(parser)
 
     # Flags specific to connecting to a cluster
-    cluster_group = flags.GetClusterArgGroup(parser)
-    flags.AddEndpointVisibilityEnum(cluster_group)
-    flags.AddConfigMapsFlags(cluster_group)
+    flags.AddEndpointVisibilityEnum(parser)
+    flags.AddConfigMapsFlags(parser)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -381,6 +380,10 @@ class Deploy(base.Command):
     changes = []
     repo_to_create = None
     source = container_args.source
+    source_bucket = self._GetSourceBucketFromSourceLocation(
+        service.source_location
+    ) if service else None
+    logging.debug('source_bucket: %s', source_bucket)
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
     is_function = (
@@ -473,7 +476,17 @@ class Deploy(base.Command):
         build_worker_pool,
         build_env_vars,
         automatic_updates,
+        source_bucket,
     )
+
+  def _GetSourceBucketFromSourceLocation(self, source_location):
+    logging.debug('source_location: %s', source_location)
+    if not source_location:
+      return None
+    x = re.search(r'gs://([^/]+)/.*', source_location)
+    if x:
+      return x.group(1)
+    return None
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -512,8 +525,6 @@ class Deploy(base.Command):
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
-        include_validate_service=bool(build_from_source)
-        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_build=bool(build_from_source),
         include_create_repo=repo_to_create is not None,
     )
@@ -588,6 +599,7 @@ class Deploy(base.Command):
     build_changes = []
     build_from_source_container_name = ''
     enable_automatic_updates = None
+    source_bucket = None
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
@@ -608,6 +620,7 @@ class Deploy(base.Command):
             build_worker_pool,
             build_env_vars,
             enable_automatic_updates,
+            source_bucket,
         ) = self._BuildFromSource(
             args,
             build_from_source,
@@ -676,6 +689,7 @@ class Deploy(base.Command):
             build_env_vars=build_env_vars,
             enable_automatic_updates=enable_automatic_updates,
             is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
+            source_bucket=source_bucket,
         )
 
       self._DisplaySuccessMessage(service, args)
@@ -798,12 +812,11 @@ class BetaDeploy(Deploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddDefaultUrlFlag(managed_group)
-    flags.AddDeployHealthCheckFlag(managed_group)
-    flags.AddGpuTypeFlag(managed_group, hidden=False)
-    flags.AddRegionsArg(managed_group)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
+    flags.AddDefaultUrlFlag(parser)
+    flags.AddDeployHealthCheckFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.AddRegionsArg(parser)
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -916,23 +929,22 @@ class AlphaDeploy(BetaDeploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddDeployHealthCheckFlag(managed_group)
-    flags.AddDefaultUrlFlag(managed_group)
-    flags.AddIapFlag(managed_group)
-    flags.AddRuntimeFlag(managed_group)
-    flags.AddServiceMaxInstancesFlag(managed_group)
-    flags.AddScalingModeFlag(managed_group)
-    flags.AddMaxSurgeFlag(managed_group)
-    flags.AddMaxUnavailableFlag(managed_group)
-    flags.AddRegionsArg(managed_group)
-    flags.AddDomainArg(managed_group)
-    flags.AddGpuTypeFlag(managed_group)
-    flags.SERVICE_MESH_FLAG.AddToParser(managed_group)
-    flags.IDENTITY_FLAG.AddToParser(managed_group)
+    flags.AddDeployHealthCheckFlag(parser)
+    flags.AddDefaultUrlFlag(parser)
+    flags.AddIapFlag(parser)
+    flags.AddRuntimeFlag(parser)
+    flags.AddServiceMaxInstancesFlag(parser)
+    flags.AddScalingModeFlag(parser)
+    flags.AddMaxSurgeFlag(parser)
+    flags.AddMaxUnavailableFlag(parser)
+    flags.AddRegionsArg(parser)
+    flags.AddDomainArg(parser)
+    flags.AddGpuTypeFlag(parser)
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.IDENTITY_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
-    flags.AddDelegateBuildsFlag(managed_group)
+    flags.AddDelegateBuildsFlag(parser)
 
   def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     if self.__is_multi_region:

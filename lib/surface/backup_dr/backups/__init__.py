@@ -23,5 +23,12 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Backups(base.Group):
+class BackupsAlpha(base.Group):
+  """Manage Backup and DR backups."""
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Backups(BackupsAlpha):
   """Manage Backup and DR backups."""

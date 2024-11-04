@@ -23,13 +23,13 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import update
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class MultiRegionUpdate(update.Update):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class MultiRegionBetaUpdate(update.BetaUpdate):
   """Update environment variables, add/remove regions, and other configuration settings in Multi-Region Services."""
 
   @classmethod
   def Args(cls, parser):
-    update.AlphaUpdate.Args(parser)
+    update.BetaUpdate.Args(parser)
     flags.AddAddRegionsArg(parser)
     flags.AddRemoveRegionsArg(parser)
 
@@ -59,8 +59,8 @@ class MultiRegionUpdate(update.Update):
           super().input_flags + ', `--add-regions`, `remove-regions`',
           ignore_empty=False,
       )
-      ch2 = super()._GetBaseChanges(args, existing_service, ignore_empty=True)
-      return ch2 + changes
+    ch2 = super()._GetBaseChanges(args, existing_service, ignore_empty=True)
+    return ch2 + changes
 
   def Run(self, args):
     if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
@@ -69,3 +69,14 @@ class MultiRegionUpdate(update.Update):
           'Multi-region Services are only supported on managed platform.',
       )
     return super().Run(args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class MultiRegionAlphaUpdate(MultiRegionBetaUpdate):
+  """Update environment variables, add/remove regions, and other configuration settings in Multi-Region Services."""
+
+  @classmethod
+  def Args(cls, parser):
+    update.AlphaUpdate.Args(parser)
+    flags.AddAddRegionsArg(parser)
+    flags.AddRemoveRegionsArg(parser)

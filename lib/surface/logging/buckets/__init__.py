@@ -32,3 +32,5 @@ class Buckets(base.Group):
   Commands for managing Cloud Logging buckets. A bucket is a container of logs
   that can be managed as a unit, for example by setting the retention period.
   """
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

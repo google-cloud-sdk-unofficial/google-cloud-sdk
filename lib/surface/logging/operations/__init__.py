@@ -28,3 +28,5 @@ from googlecloudsdk.calliope import base
 )
 class Operations(base.Group):
   """Manage long running operations."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

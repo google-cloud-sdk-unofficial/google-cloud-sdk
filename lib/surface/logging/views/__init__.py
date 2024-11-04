@@ -32,3 +32,5 @@ class Views(base.Group):
   Commands for managing views. A log view represents a subset of the log entries
   in a Cloud Logging log bucket.
   """
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

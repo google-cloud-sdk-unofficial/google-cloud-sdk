@@ -61,10 +61,6 @@ class Create(base.CreateCommand):
           Create a new `WasmPlugin` resource.
       """),
       'EXAMPLES': textwrap.dedent("""\
-          To create a WasmPlugin called `my-plugin`, run:
-
-          $ {command} my-plugin
-
           To create a `WasmPlugin` called `my-plugin`, together with a new
           version called `v1`, and set it as main, run:
 
@@ -98,38 +94,15 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
-    create_wasm_plugin_with_version = None
-    if (
-        args.main_version is not None
-        and args.image is not None
-        and not args.async_
-    ):
-      create_wasm_plugin_with_version = True
-    elif args.main_version is None and args.image is None:
-      create_wasm_plugin_with_version = False
-    else:
-      if args.main_version is None:
-        raise calliope_exceptions.RequiredArgumentException(
-            '--main-version', 'Both flags --image and'
-            ' --main-version should be set or neither of them.')
-      elif args.image is None:
-        raise calliope_exceptions.RequiredArgumentException(
-            '--image', 'Both flags --image and --main-version should be set'
-            ' or neither of them.')
-      else:
-        raise calliope_exceptions.ConflictingArgumentsException(
-            '--async', 'If --async flag is set, --image and'
-            ' --main-version flags can\'t be used')
-    if not create_wasm_plugin_with_version:
-      if (
-          GetPluginConfigData(args) is not None
-          or args.plugin_config_uri is not None
-      ):
-        raise calliope_exceptions.ConflictingArgumentsException(
-            '--plugin_config or --plugin_config_file or --plugin_config_uri',
-            'If one of the flags is set, then --image and --main-version'
-            ' flags also should be set.',
-        )
+    if args.main_version is None:
+      raise calliope_exceptions.RequiredArgumentException(
+          '--main-version', 'Flag --main-version is mandatory.')
+    if not args.main_version:
+      raise calliope_exceptions.RequiredArgumentException(
+          '--main-version', 'Flag --main-version cannot be empty.')
+    if args.image is None:
+      raise calliope_exceptions.RequiredArgumentException(
+          '--image', 'Flag --image is mandatory.')
 
     wp_client = wasm_plugin_api.Client(self.ReleaseTrack())
 
@@ -167,15 +140,10 @@ class Create(base.CreateCommand):
         message='Waiting for operation [{}] to complete'.format(op_ref.name),
     )
 
-    if not create_wasm_plugin_with_version:
-      log.status.Print(
-          'Created WasmPlugin [{}].'.format(wasm_plugin_ref.Name())
-      )
-    else:
-      log.status.Print(
-          'Created WasmPlugin [{}] with WasmPluginVersion [{}].'.format(
-              wasm_plugin_ref.Name(), args.main_version
-          )
-      )
+    log.status.Print(
+        'Created WasmPlugin [{}] with WasmPluginVersion [{}].'.format(
+            wasm_plugin_ref.Name(), args.main_version
+        )
+    )
 
     return result

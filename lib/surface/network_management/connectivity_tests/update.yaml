@@ -181,6 +181,28 @@
           type: bool
           help_text: |
             Clear existing destination forwarding rule.
+    - group:
+        mutex: true
+        params:
+        - arg_name: destination-redis-instance
+          api_field: connectivityTest.destination.redisInstance
+          help_text: |
+            A Redis instance URI as the destination endpoint.
+        - arg_name: clear-destination-redis-instance
+          type: bool
+          help_text: |
+            Clear existing destination Redis Instance.
+    - group:
+        mutex: true
+        params:
+        - arg_name: destination-redis-cluster
+          api_field: connectivityTest.destination.redisCluster
+          help_text: |
+            A Redis cluster URI as the destination endpoint.
+        - arg_name: clear-destination-redis-cluster
+          type: bool
+          help_text: |
+            Clear existing destination Redis Cluster.
     - arg_name: description
       api_field: connectivityTest.description
       help_text: |
@@ -222,6 +244,8 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
     GA:
       api_version: v1
       modify_request_hooks:
@@ -234,6 +258,8 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudRunRevisionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
     method: patch
     collection: networkmanagement.projects.locations.global.connectivityTests
 

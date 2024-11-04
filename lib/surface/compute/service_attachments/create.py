@@ -63,20 +63,15 @@ class CreateHelper(object):
   PRODUCER_FORWARDING_RULE_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder, support_propagated_connection_limit):
+  def __init__(self, holder):
     self._holder = holder
-    self._support_propagated_connection_limit = (
-        support_propagated_connection_limit
-    )
 
   @classmethod
-  def Args(cls, parser, support_propagated_connection_limit):
+  def Args(cls, parser):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
-      support_propagated_connection_limit: whether propagated_connection_limit
-        is supported.
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
@@ -99,8 +94,7 @@ class CreateHelper(object):
     flags.AddConsumerRejectList(parser)
     flags.AddConsumerAcceptList(parser)
     flags.AddDomainNames(parser)
-    if support_propagated_connection_limit:
-      flags.AddPropagatedConnectionLimit(parser)
+    flags.AddPropagatedConnectionLimit(parser)
 
   def Run(self, args):
     """Issue a service attachment INSERT request."""
@@ -155,9 +149,7 @@ class CreateHelper(object):
       service_attachment.domainNames = args.domain_names
     if args.IsSpecified('reconcile_connections'):
       service_attachment.reconcileConnections = args.reconcile_connections
-    if self._support_propagated_connection_limit and args.IsSpecified(
-        'propagated_connection_limit'
-    ):
+    if args.IsSpecified('propagated_connection_limit'):
       service_attachment.propagatedConnectionLimit = (
           args.propagated_connection_limit
       )
@@ -170,24 +162,22 @@ class CreateHelper(object):
     return client.MakeRequests([(collection, 'Insert', request)])
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.GA,
 )
 class Create(base.CreateCommand):
   """Create a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser, cls._support_propagated_connection_limit)
+    CreateHelper.Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return CreateHelper(holder, self._support_propagated_connection_limit).Run(
-        args
-    )
+    return CreateHelper(holder).Run(args)
 
 
 @base.ReleaseTracks(
@@ -196,7 +186,6 @@ class Create(base.CreateCommand):
 class CreateBeta(Create):
   """Create a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = True
   detailed_help = _DetailedHelp()
 
 
@@ -206,5 +195,4 @@ class CreateBeta(Create):
 class CreateAlpha(Create):
   """Create a Google Compute Engine service attachment."""
 
-  _support_propagated_connection_limit = True
   detailed_help = _DetailedHelp()

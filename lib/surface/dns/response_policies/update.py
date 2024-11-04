@@ -36,6 +36,7 @@ def _AddArgsCommon(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Updates a Cloud DNS response policy.
 
@@ -60,13 +61,15 @@ class Update(base.UpdateCommand):
         --gkeclusters=cluster1 --location=us-central1-a
   """
 
-  def _FetchResponsePolicy(self, response_policy_ref, api_version):
+  def _FetchResponsePolicy(self, response_policy_ref, api_version, args):
     """Get response policy to be Updated."""
     client = util.GetApiClient(api_version)
     message_module = apis.GetMessagesModule('dns', api_version)
     get_request = message_module.DnsResponsePoliciesGetRequest(
         responsePolicy=response_policy_ref.Name(),
         project=response_policy_ref.project)
+    if api_version == 'v2':
+      get_request.location = args.location
     return client.responsePolicies.Get(get_request)
 
   @classmethod
@@ -93,8 +96,11 @@ class Update(base.UpdateCommand):
     response_policy_ref = registry.Parse(
         args.response_policies,
         util.GetParamsForRegistry(api_version, args),
-        collection='dns.responsePolicies')
-    to_update = self._FetchResponsePolicy(response_policy_ref, api_version)
+        collection='dns.responsePolicies',
+    )
+    to_update = self._FetchResponsePolicy(
+        response_policy_ref, api_version, args
+    )
 
     if not (
         args.IsSpecified('networks')

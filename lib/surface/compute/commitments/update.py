@@ -60,10 +60,7 @@ class Update(base.UpdateCommand):
     flags.MakeCommitmentArg(plural=False).AddArgument(
         parser, operation_type='update')
     flags.AddUpdateFlags(parser)
-
-    # CustomEndTime only supported in Alpha now
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.AddCustomEndTime(parser)
+    flags.AddCustomEndTime(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -81,11 +78,9 @@ class Update(base.UpdateCommand):
         messages=messages, plan=args.plan
     )
 
-    # customEndTimestamp only supported in Alpha now
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      commitment_resource.customEndTimestamp = (
-          flags.TranslateCustomEndTimeArg(args)
-      )
+    commitment_resource.customEndTimestamp = flags.TranslateCustomEndTimeArg(
+        args
+    )
     commitment_update_request = self._GetUpdateRequest(
         messages, commitment_ref, commitment_resource
     )
@@ -129,10 +124,7 @@ class Update(base.UpdateCommand):
       paths.append('autoRenew')
     if commitment_resource.plan is not None:
       paths.append('plan')
-    if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and commitment_resource.customEndTimestamp is not None
-    ):
+    if commitment_resource.customEndTimestamp is not None:
       paths.append('customEndTimestamp')
     return paths
 

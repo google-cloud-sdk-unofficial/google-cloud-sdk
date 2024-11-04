@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class Delete(base.DeleteCommand):
+class DeleteAlpha(base.DeleteCommand):
   """Deletes a Backup Plan."""
 
   detailed_help = {
@@ -104,3 +104,9 @@ class Delete(base.DeleteCommand):
         has_result=False,
     )
 
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Delete(DeleteAlpha):
+  """Deletes a Backup Plan."""

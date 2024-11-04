@@ -188,5 +188,4 @@ class AlphaAdjustTraffic(AdjustTraffic):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    managed_group = flags.GetManagedArgGroup(parser)
-    flags.AddBinAuthzBreakglassFlag(managed_group)
+    flags.AddBinAuthzBreakglassFlag(parser)

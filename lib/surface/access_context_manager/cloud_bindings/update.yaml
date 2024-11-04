@@ -162,7 +162,7 @@
       help_text: |
         The application names that replace the existing application names for
         the restricted client applications in the given binding.
-    - api_field: appendScopedAccessSettings
+    - api_field: append
       arg_name: append
       help_text: |
         When true, append the ScopedAccessSettings in `--binding-file` to the existing

@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import util as mf_util
 
 
 class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
@@ -53,18 +52,11 @@ class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
 
     # Setup a patch to set the MembershipSpec to the empty proto ("delete").
     membership_key = membership
-    specs = {membership_key: self.messages.MembershipFeatureSpec()}
-    patch = self.messages.Feature(
-        membershipSpecs=self.hubclient.ToMembershipSpecs(specs)
-    )
 
-    if mf_util.UseMembershipFeatureV2(self.ReleaseTrack()):
-      membershipfeature = convert.ToV2MembershipFeature(
-          self,
-          membership_key,
-          self.mf_name,
-          self.messages.MembershipFeatureSpec(),
-      )
-      self.UpdateV2(membership_key, ['spec'], membershipfeature)
-    else:
-      self.Update(['membership_specs'], patch)
+    membershipfeature = convert.ToV2MembershipFeature(
+        self,
+        membership_key,
+        self.mf_name,
+        self.messages.MembershipFeatureSpec(),
+    )
+    self.UpdateV2(membership_key, ['spec'], membershipfeature)

@@ -36,6 +36,9 @@ class DomainMappings(base.Group):
   `gcloud beta run domain-mappings`.
   """
 
+  # Hide GA command because only used by Cloud Run for Anthos
+  hidden = True
+
   detailed_help = {
       'DESCRIPTION':
           '{description}',

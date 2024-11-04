@@ -35,6 +35,9 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 class Delete(base.Command):
   """Delete domain mappings for Cloud Run for Anthos."""
 
+  # Hide GA command because only used by Cloud Run for Anthos
+  hidden = True
+
   detailed_help = {
       'DESCRIPTION':
           """\

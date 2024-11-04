@@ -68,7 +68,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag)
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
-    managed_flags.AddMigDefaultActionOnVmFailure(parser)
+    managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddMigSizeFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
@@ -430,6 +430,7 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(UpdateAlpha, cls).Args(parser)
 
   def _CreateInstanceGroupManagerPatch(self, args, igm_ref, igm_resource,

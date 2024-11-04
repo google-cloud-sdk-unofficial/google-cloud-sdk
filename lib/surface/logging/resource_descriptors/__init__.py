@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class ResourceDescriptors(base.Group):
   """Get information about resource descriptors."""
+
+  category = base.MANAGEMENT_TOOLS_CATEGORY

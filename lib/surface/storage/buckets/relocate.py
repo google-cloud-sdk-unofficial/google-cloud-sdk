@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage import operations_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
@@ -213,5 +214,8 @@ class Relocate(base.Command):
           args.dry_run,
       )
 
-    raise NotImplementedError
-    # TODO: b/361016441 - Implement the relocate finalize command
+    bucket, operation_id = (
+        operations_util.get_operation_bucket_and_id_from_name(args.operation)
+    )
+    log.status.Print(f'Advancing bucket relocation for gs://{bucket}...')
+    return gcs_client.advance_relocate_bucket(bucket, operation_id, args.ttl)
