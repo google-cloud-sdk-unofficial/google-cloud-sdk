@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-from googlecloudsdk.api_lib.securesourcemanager import instances
 from googlecloudsdk.api_lib.securesourcemanager import repositories
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import flags
@@ -33,6 +32,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List all repositories under a Secure Source Manager instance."""
@@ -41,9 +41,7 @@ class List(base.ListCommand):
   def Args(parser):
     resource_args.AddRegionResourceArg(parser, "to list")
     flags.AddInstance(parser)
-    flags.AddPageToken(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
-    base.LIMIT_FLAG.RemoveFromParser(parser)
     base.SORT_BY_FLAG.RemoveFromParser(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -61,14 +59,9 @@ class List(base.ListCommand):
     # Get resource args to contruct base url
     location_ref = args.CONCEPTS.region.Parse()
 
-    instance_client = instances.InstancesClient()
-    api_base_url = instance_client.GetApiBaseUrl(location_ref, args.instance)
-
-    with repositories.OverrideApiEndpointOverrides(api_base_url):
-      # List repositories
-      client = repositories.RepositoriesClient()
-      list_response = client.List(location_ref, args.page_size, args.page_token)
-      return list_response.repositories
+    # List repositories
+    client = repositories.RepositoriesClient()
+    return client.List(location_ref, args.instance, args.page_size, args.limit)
 
 
 List.detailed_help = DETAILED_HELP

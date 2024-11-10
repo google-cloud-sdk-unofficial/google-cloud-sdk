@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [BETA, ALPHA]
 
   help_text:
     brief: List policy orchestrators for a specified folder.
@@ -20,6 +20,8 @@
     - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyListRequest
     ALPHA:
       api_version: v2alpha
+    BETA:
+      api_version: v2beta
 
   response:
     id_field: name
@@ -35,5 +37,6 @@
          name.basename():label=POLICY_ORCHESTRATOR_ID,
          action,
          orchestrationState.currentIterationState.state,
+         createTime.date("%Y-%m-%dT%H:%M:%SZ"),
          updateTime.date("%Y-%m-%dT%H:%M:%SZ")
       )

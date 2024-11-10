@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.transfer import agent_pools_flag_util
 from googlecloudsdk.command_lib.transfer import name_util
 
 
+@base.UniverseCompatible
 class Create(base.Command):
   """Create a Transfer Service agent pool."""
 

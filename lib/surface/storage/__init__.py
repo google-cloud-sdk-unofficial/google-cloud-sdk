@@ -50,8 +50,6 @@ class Storage(base.Group):
     metrics_util.fix_user_agent_for_gsutil_shim()
 
   def Filter(self, context, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
     # gsutil does not keep the user project quota enabled by default. Hence
     # we will be keeping it disabled in gcloud storage as well to ensure parity.
     # See b/258687686#comment5 for more information.

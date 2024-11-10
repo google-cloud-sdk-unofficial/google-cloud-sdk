@@ -26,7 +26,7 @@
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMask
-      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionSettings
 
   ALPHA:
     help_text:
@@ -62,7 +62,7 @@
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessScopedAccessSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessLevels
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessRestrictedClientApplicationsAlpha
-      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessReauthSettings
+      - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionSettings
       - googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:AddUpdateMaskAlpha
 
 
@@ -102,7 +102,7 @@
         The dry run access level that replaces the existing dry run level for the given binding.
         The input must be the full identifier of an access level, such as
         `accessPolicies/123/accessLevels/new-def`.
-    - api_field: gcpUserAccessBinding.reauthSettings.sessionLength
+    - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
       hidden: true
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
@@ -112,21 +112,21 @@
         seconds.
 
         When --session-length=0 then users in the group attached to this binding will have infinite
-        session length, effectively disabling reauth.
+        session length, effectively disabling session.
 
         A session begins once a user signs-in successfully. If a user signs out before the end of
         the session lifetime, a new login creates a new session with a fresh lifetime. When a
-        session expires, the user is asked to reauthenticate in accordance with reauth-method.
+        session expires, the user is asked to sessionenticate in accordance with session-reauth-method.
 
-        Setting --reauth-method when --session-length is empty raises an error. Cannot set
+        Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
         --session-length on restricted client applications; please use scoped access settings.
-    - api_field: gcpUserAccessBinding.reauthSettings.reauthMethod
+    - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
       hidden: true
-      arg_name: reauth-method
+      arg_name: session-reauth-method
       default: login
       help_text: |
         Specifies the security check a user must undergo once their session expires. Defaults to
-        --reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
+        --session-reauth-method=LOGIN if unspecified and --session-length is set. Cannot be used when
         --session-length is empty or 0.
       choices:
       - arg_value: login

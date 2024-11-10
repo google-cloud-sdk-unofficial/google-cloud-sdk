@@ -27,6 +27,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer.appliances import resource_args
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.DeleteCommand):
   """Delete a transfer appliance."""

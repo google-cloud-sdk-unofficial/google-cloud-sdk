@@ -198,6 +198,8 @@ class Ls(base.Command):
 
   def Run(self, args):
     """Command execution logic."""
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     encryption_util.initialize_key_store(args)
 
     # We cannot do a backward incompatible change, and thus we are throwing a

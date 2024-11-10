@@ -20,9 +20,9 @@ from googlecloudsdk.command_lib.quotas import flags
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class Describe(base.DescribeCommand):
+class DescribeBeta(base.DescribeCommand):
   """Gets details of the QuotaAdjusterSettings for a container.
 
   This command gets the QuotaAdjusterSettings for a container. The supported
@@ -60,4 +60,53 @@ class Describe(base.DescribeCommand):
     Returns:
       The requested QuotaInfo for the service and consumer.
     """
-    return quota_adjuster_settings.GetQuotaAdjusterSettings(args)
+    return quota_adjuster_settings.GetQuotaAdjusterSettings(
+        args, release_track=base.ReleaseTrack.BETA
+    )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class DescribeAlpha(base.DescribeCommand):
+  """Gets details of the QuotaAdjusterSettings for a container.
+
+  This command gets the QuotaAdjusterSettings for a container. The supported
+  containers can be projects, folders, or organizations.
+
+  ## EXAMPLES
+
+  To get the QuotaAdjusterSettings for container 'projects/123', run:
+
+    $ {command} --project=12321
+
+
+  To get the QuotaAdjusterSettings for container 'folders/123', run:
+
+    $ {command} --folder=123
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    flags.AddResourceFlags(parser, 'container id')
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The requested QuotaInfo for the service and consumer.
+    """
+    # This is because alpha gcloud points to the v1 version of the API.
+    return quota_adjuster_settings.GetQuotaAdjusterSettings(
+        args, release_track=base.ReleaseTrack.GA
+    )

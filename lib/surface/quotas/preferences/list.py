@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.quotas import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class List(base.ListCommand):
+class ListAlpha(base.ListCommand):
   """List QuotaPreferences in a given project, folder or organization.
 
   ## EXAMPLES
@@ -67,4 +67,61 @@ class List(base.ListCommand):
     Returns:
       List of quota preferences.
     """
-    return quota_preference.ListQuotaPreferences(args)
+    # This is because alpha gcloud points to GA version of the API.
+    return quota_preference.ListQuotaPreferences(
+        args, release_track=base.ReleaseTrack.GA
+    )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class ListBeta(base.ListCommand):
+  """List QuotaPreferences in a given project, folder or organization.
+
+  ## EXAMPLES
+
+  To list the quota preferences for `projects/12321`, run:
+
+    $ {command} --project=12321
+    $ {command} --project=my-project-id
+
+
+  To list first 10 quota preferences ordered by create time for `folder/12345`,
+  run:
+
+    $ {command} --folder=12345 --page-size=10 --sort-by=create_time
+
+
+  To list all quota preferences in unresolved state in region `us-central1` for
+  `organization/987`, run:
+
+    $ {command} --organization=987 --filter=dimensions.region:us-central1
+    --reconciling-only
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    flags.AddResourceFlags(parser, 'quota preferences to list')
+    flags.PageToken().AddToParser(parser)
+    flags.ReconcilingOnly().AddToParser(parser)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      List of quota preferences.
+    """
+    return quota_preference.ListQuotaPreferences(
+        args, release_track=base.ReleaseTrack.BETA
+    )

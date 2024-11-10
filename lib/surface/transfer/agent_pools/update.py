@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.transfer import agent_pools_flag_util
 from googlecloudsdk.command_lib.transfer import name_util
 
 
+@base.UniverseCompatible
 class Update(base.Command):
   """Update a Transfer Service agent pool."""
 

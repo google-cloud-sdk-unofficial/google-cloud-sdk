@@ -52,13 +52,18 @@ EXAMPLE_FORMAT = """\
     """
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine virtual machine instances."""
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6)
+    parser.display_info.AddTransforms({
+        'external_ip': flags.TransformInstanceExternalIp,
+        'internal_ip': flags.TransformInstanceInternalIp,
+    })
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     lister.AddZonalListerArgs(parser)
     parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
@@ -77,6 +82,7 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListBeta(base.ListCommand):
   """List Compute Engine virtual machine instances."""

@@ -74,15 +74,23 @@ class Get(base.Command):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_forwarding_rule = False
+  _support_cloud_run = False
+  _is_missing_resource_type = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapSettingArg(parser)
+    iap_util.AddIapSettingArg(
+        parser,
+        support_forwarding_rule=cls._support_forwarding_rule,
+        support_cloud_run=cls._support_cloud_run,
+    )
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
@@ -95,8 +103,13 @@ class Get(base.Command):
     Returns:
       The IAP setting for the IAP resource.
     """
-    iap_setting_ref = iap_util.ParseIapSettingsResource(self.ReleaseTrack(),
-                                                        args)
+    iap_setting_ref = iap_util.ParseIapSettingsResource(
+        self.ReleaseTrack(),
+        args,
+        self._support_forwarding_rule,
+        self._support_cloud_run,
+        self._is_missing_resource_type,
+    )
     return iap_setting_ref.GetIapSetting()
 
 
@@ -104,29 +117,15 @@ class Get(base.Command):
 class GetBeta(Get):
   """Get the setting for an IAP resource."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, is_beta=True)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_forwarding_rule = True
+  _support_cloud_run = False
+  _is_missing_resource_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class GetAlpha(Get):
   """Get the setting for an IAP resource."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, is_alpha=True)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_forwarding_rule = True
+  _support_cloud_run = True
+  _is_missing_resource_type = True

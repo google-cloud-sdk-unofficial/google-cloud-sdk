@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.network_connectivity import flags
+from googlecloudsdk.core.resource import resource_expr_rewrite
 
 
 @base.DefaultUniverseOnly
@@ -69,22 +70,64 @@ class QueryStatus(base.ListCommand):
         """)
 
   def Run(self, args):
+    valid_fields = {
+        'psc_propagation_status.source_spoke',
+        'psc_propagation_status.source_group',
+        'psc_propagation_status.source_forwarding_rule',
+        'psc_propagation_status.target_spoke',
+        'psc_propagation_status.target_group',
+        'psc_propagation_status.code',
+    }
     release_track = self.ReleaseTrack()
     client = networkconnectivity_api.HubsClient(release_track)
     hub_ref = args.CONCEPTS.hub.Parse()
+    group_by_fields: list[str] = []
+    if args.group_by:
+      group_by_fields: list[str] = args.group_by.replace(' ', '').split(',')
+      if not all((x in valid_fields) for x in group_by_fields):
+        raise ValueError(
+            'Invalid group-by fields: {} valid fields are:\n{}'.format(
+                ', '.join(sorted((set(group_by_fields) - valid_fields))),
+                '\n'.join(sorted(valid_fields)),
+            )
+        )
 
-    sort_by_string = ''
+    filter_expression = ''
+    # this extracts the filter expression from the args.filter string
+    # then sets it to an empty string to bypass client-side filtering
+    if args.filter:
+      filter_rewriter = resource_expr_rewrite.Backend()
+      _, filter_expression = filter_rewriter.Rewrite(args.filter)
+    args.filter = ''
+
+    sort_by_fields = []
     if args.sort_by:
-      sort_by_string = ','.join(args.sort_by)
+      sort_by_fields: list[str] = args.sort_by
+      if not all((x in valid_fields) for x in sort_by_fields):
+        raise ValueError(
+            'Invalid sort-by fields: {}, valid fields are:\n{}'.format(
+                ', '.join(sorted((set(sort_by_fields) - valid_fields))),
+                '\n'.join(sorted(valid_fields)),
+            )
+        )
+
+    limit = 5000
+    if args.limit:
+      limit = args.limit
+
+    page_size = 100
+    if args.page_size:
+      page_size = args.page_size
 
     return client.QueryHubStatus(
         hub_ref,
-        filter_expression=args.filter,
-        group_by=args.group_by,
-        order_by=sort_by_string,
-        page_size=args.page_size,
-        limit=args.limit,
+        filter_expression=filter_expression,
+        group_by=','.join(group_by_fields),
+        order_by=','.join(sort_by_fields),
+        page_size=page_size,
+        limit=limit,
     )
+
 
 QueryStatus.detailed_help = {
     'EXAMPLES': """ \

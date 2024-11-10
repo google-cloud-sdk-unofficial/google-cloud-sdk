@@ -25,3 +25,8 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class Buckets(base.Group):
   """Manage Cloud Storage buckets."""
+
+  def Filter(self, context, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

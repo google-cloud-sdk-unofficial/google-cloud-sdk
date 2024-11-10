@@ -33,6 +33,7 @@ from googlecloudsdk.core.console import console_io
 @base.Hidden
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage rm` instead.')
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Delete(base.Command):
   """Delete Cloud Storage objects and buckets."""
@@ -114,6 +115,8 @@ class Delete(base.Command):
     flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     paths = args.path or ['gs://']
     expander = expansion.GCSPathExpander()
     objects, dirs = expander.ExpandPaths(paths)

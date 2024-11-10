@@ -21,7 +21,32 @@ from googlecloudsdk.calliope import base
 #   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class QuotaInfo(base.Group):
+class QuotaInfoAlpha(base.Group):
+  """Manage Cloud Quotas QuotaInfo.
+
+  QuotaInfo is a read-only resource that provides metadata and quota value
+  information about a particular quota for a given project, folder or
+  organization. The QuotaInfo resource contains:
+
+  * Metadata such as name and dimension.
+  * Quota values for different quota dimensions.
+
+  Cloud Quotas obtains information from the quotas defined by Google Cloud
+  services and any fulfilled quota adjustments that you initiate.
+
+  Note: Because QuotaInfo is constructed by incorporating information from
+  different sources, a default quota configuration exists even if you have not
+  created a QuotaPreference resource. Until you express a preferred state
+  through quotaPreference.create or quotaPreference.update, QuotaInfo relies on
+  the default quota information available to determine what quota value to
+  enforce.
+  """
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class QuotaInfoBeta(base.Group):
   """Manage Cloud Quotas QuotaInfo.
 
   QuotaInfo is a read-only resource that provides metadata and quota value

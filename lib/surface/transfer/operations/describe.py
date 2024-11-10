@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
 class Describe(base.Command):
   """Get configuration and latest transfer operation details."""
 

@@ -155,6 +155,93 @@ def _get_command_args_tree(command_node):
   return argument_tree
 
 
+def _get_positional_metavars(args_tree):
+  """Returns a dict of positional metavars."""
+
+  positional_args = []
+
+  def _process_arg(node):
+    if 'name' in node and node.get('positional', False):
+      if node['name']:
+        positional_args.append(node['name'])
+
+  def _traverse_arg_group(node):
+    for arg in node:
+      _traverse_tree(arg)
+
+  def _traverse_tree(node):
+    if 'group' in node:
+      group = node['group']['arguments']
+      _traverse_arg_group(group)
+    else:
+      _process_arg(node)
+
+  for node in args_tree:
+    _traverse_tree(node)
+  return positional_args
+
+
+def _normalize_command_args(command_args, args_tree):
+  """Normalizes command args for storage."""
+
+  positionals_used = set()
+  arg_name_value = {}
+  positional_args_in_tree = _get_positional_metavars(args_tree['arguments'])
+
+  def _sort_command_args(args):
+    """Sorts command arguments.
+
+    Arguments starting with '--' are placed at the back, and all arguments are
+    ordered alphabetically.
+
+    Args:
+      args: The command arguments to sort.
+
+    Returns:
+      The sorted command arguments.
+    """
+    flag_args = sorted([arg for arg in args if arg.startswith('--')])
+    positional_args = [arg for arg in args if not arg.startswith('--')]
+    return positional_args + flag_args
+
+  command_args = _sort_command_args(command_args)
+
+  def _get_next_available_positional_arg():
+    for positional_metavar in positional_args_in_tree:
+      if positional_metavar not in positionals_used:
+        command_value = command_arg
+        command_arg_name = positional_metavar.upper()
+        positionals_used.add(positional_metavar)
+        return command_arg_name, command_value
+    return None, None
+
+  arg_index = 0
+  for command_arg in command_args:
+    command_arg_name = command_arg
+    if command_arg.startswith('--'):
+      equals_index = command_arg.find('=')
+      if equals_index != -1:
+        command_arg_name = command_arg[:equals_index]
+        command_value = command_arg[equals_index + 1 :]
+      else:
+        command_value = ''
+    else:
+      # Positional argument
+      command_arg_name, command_value = _get_next_available_positional_arg()
+      # Arg should be included in output, regardless of whether it a real
+      # positional arg or not.
+      command_arg_name = command_arg_name or command_arg
+      command_value = command_value or ''
+    arg_name_value[command_arg_name] = {
+        'value': command_value,
+        'index': arg_index,
+    }
+    arg_index += 1
+  return collections.OrderedDict(
+      sorted(arg_name_value.items(), key=lambda item: item[1]['index'])
+  )
+
+
 @base.UniverseCompatible
 class GenerateCommand(base.Command):
   """Generate YAML file to implement given command.
@@ -316,9 +403,12 @@ class GenerateCommand(base.Command):
         command_node
     )
     validation_output['args_structure'] = _get_command_args_tree(command_node)
-    validation_output['command_args'] = (
-        sorted(command_args) if command_args else None
-    )
+    if command_args:
+      validation_output['command_args'] = _normalize_command_args(
+          command_args, validation_output['args_structure']
+      )
+    else:
+      validation_output['command_args'] = None
     validation_output['success'] = success
     validation_output['error_message'] = error_message
     validation_output['error_type'] = error_type

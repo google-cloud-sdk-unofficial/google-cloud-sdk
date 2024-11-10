@@ -26,3 +26,8 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class BatchOperations(base.Group):
   """Manage Cloud Storage batch operations."""
+
+  def Filter(self, context, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

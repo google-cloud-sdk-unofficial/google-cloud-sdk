@@ -21,7 +21,22 @@ from googlecloudsdk.calliope import base
 #   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class QuotaPreferences(base.Group):
+class QuotaPreferencesAlpha(base.Group):
+  """Manage Cloud Quotas QuotaPreferences.
+
+  A QuotaPreference resource represents your preference for a particular
+  dimension combination. Use this resource to make quota increase adjustments to
+  quotas in your projects and to make quota decrease adjustments to quotas in
+  your projects, folders or organizations. Quota increase adjustments are
+  subject to approval and fulfillment. Quota decreases are fulfilled
+  immediately. Use the Cloud Quotas console UI or API to set a quota preference.
+  """
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class QuotaPreferencesBeta(base.Group):
   """Manage Cloud Quotas QuotaPreferences.
 
   A QuotaPreference resource represents your preference for a particular

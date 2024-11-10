@@ -27,7 +27,7 @@
       Creates connector with source files.
 
       $ {command} my-connector --location=my-location --project=my-project --service=my-service \
-        --source-files=path=gcloud.gql,content=''
+        --source-files=path=gcloud.gql,contentFromFile=gcloud.gql
   arguments:
     params:
     - help_text: |-

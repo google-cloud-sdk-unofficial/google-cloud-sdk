@@ -25,3 +25,8 @@ from googlecloudsdk.calliope import base
 @base.UniverseCompatible
 class ManagedFolders(base.Group):
   """Manage Cloud Storage managed folders."""
+
+  def Filter(self, context, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

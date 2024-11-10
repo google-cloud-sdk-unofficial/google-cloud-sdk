@@ -40,7 +40,6 @@ _DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe Audit operation."""
 
@@ -71,7 +70,6 @@ class Describe(base.DescribeCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
 class DescribeAlpha(Describe):
   """Describe Audit operation."""
 

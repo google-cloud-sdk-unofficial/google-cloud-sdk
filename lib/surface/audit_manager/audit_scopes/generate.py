@@ -45,7 +45,6 @@ _FILE_EXTENSION = '.ods'
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Generate(base.CreateCommand):
   """Generate Audit Scope."""
 
@@ -119,7 +118,6 @@ class Generate(base.CreateCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
 class GenerateAlpha(Generate):
   """Generate Audit Scope."""
 

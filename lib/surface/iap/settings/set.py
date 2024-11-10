@@ -74,15 +74,23 @@ class Set(base.Command):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_forwarding_rule = False
+  _support_cloud_run = False
+  _is_missing_resource_type = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapSettingArg(parser)
+    iap_util.AddIapSettingArg(
+        parser,
+        support_forwarding_rule=cls._support_forwarding_rule,
+        support_cloud_run=cls._support_cloud_run
+    )
     iap_util.AddIapSettingFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -96,8 +104,13 @@ class Set(base.Command):
     Returns:
       The specified function with its description and configured filter
     """
-    iap_setting_ref = iap_util.ParseIapSettingsResource(self.ReleaseTrack(),
-                                                        args)
+    iap_setting_ref = iap_util.ParseIapSettingsResource(
+        self.ReleaseTrack(),
+        args,
+        self._support_forwarding_rule,
+        self._support_cloud_run,
+        self._is_missing_resource_type,
+    )
     return iap_setting_ref.SetIapSetting(args.setting_file)
 
 
@@ -105,17 +118,9 @@ class Set(base.Command):
 class SetBeta(Set):
   """Set the setting for an IAP resource."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, is_beta=True)
-    iap_util.AddIapSettingFileArg(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_forwarding_rule = True
+  _support_cloud_run = False
+  _is_missing_resource_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -123,14 +128,6 @@ class SetAlpha(Set):
 
   """Set the setting for an IAP resource."""
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-        to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapSettingArg(parser, is_alpha=True)
-    iap_util.AddIapSettingFileArg(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_forwarding_rule = True
+  _support_cloud_run = True
+  _is_missing_resource_type = True

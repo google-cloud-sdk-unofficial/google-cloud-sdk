@@ -31,6 +31,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.UniverseCompatible
 class List(base.Command):
   """List Transfer Service transfer agent pools."""
 

@@ -95,7 +95,7 @@ MIN_SUPPORTED_PY3_VERSION = (3, 8)
 MAX_SUPPORTED_PY3_VERSION = (
     (3, 13) if os.environ.get(
         'ENABLE_MAX_GCLOUD_PYTHON_VERSION_OVERRIDE'
-    ) else (3, 12)
+    ) else (3, 13)
 )
 
 

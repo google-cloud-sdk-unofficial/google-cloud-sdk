@@ -171,6 +171,7 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingClientIdleTimeout(parser)
   flags.AddConnectionPoolingServerIdleTimeout(parser)
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
+  flags.AddCustomSubjectAlternativeNames(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -331,6 +332,15 @@ def RunBaseCreateCommand(args, release_track):
   ) and not args.IsKnownAndSpecified('enable_private_service_connect'):
     raise sql_exceptions.ArgumentError(
         '`--psc-auto-connections` requires `--enable-private-service-connect`'
+    )
+
+  # TODO(b/372040396): Add the check for server_ca_mode when it is supported.
+  if args.IsKnownAndSpecified(
+      'custom_subject_alternative_names'
+  ) and not args.IsKnownAndSpecified('server_ca_mode'):
+    raise sql_exceptions.ArgumentError(
+        '`--custom-subject-alternative-names` requires customer managed'
+        ' server CA'
     )
 
   if args.database_flags is not None and any([

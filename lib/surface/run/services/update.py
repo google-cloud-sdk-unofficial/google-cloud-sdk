@@ -295,7 +295,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddScalingModeFlag(parser)
+    flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.AddGpuTypeFlag(parser)

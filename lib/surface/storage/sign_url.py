@@ -214,6 +214,8 @@ class SignUrl(base.Command):
     )
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     key = None
     delegates = None
     delegate_chain = args.impersonate_service_account or (

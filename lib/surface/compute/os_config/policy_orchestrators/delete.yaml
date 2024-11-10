@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [BETA, ALPHA]
 
   help_text:
     brief: Delete a policy orchestrator
@@ -6,7 +6,7 @@
       Delete a policy orchestrator and cancel ongoing rollouts (best-effort).
       ## EXAMPLES
 
-      To delete a policy orchestrator `my-orchestrator` in folder `123456`:
+      To delete a policy orchestrator `my-orchestrator` in the folder `123456`:
 
         $ {command} my-orchestrator --folder=123456
 
@@ -17,6 +17,8 @@
     - osconfig.organizations.locations.global.policyOrchestrators
     ALPHA:
       api_version: v2alpha
+    BETA:
+      api_version: v2beta
     method: delete
 
   arguments:
@@ -31,3 +33,5 @@
     - osconfig.organizations.locations.operations
     ALPHA:
       api_version: v2alpha
+    BETA:
+      api_version: v2beta

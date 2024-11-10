@@ -77,4 +77,6 @@ class Cp(base.Command):
     flags.add_per_object_retention_flags(parser)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     self.exit_code = cp_command_util.run_cp(args)

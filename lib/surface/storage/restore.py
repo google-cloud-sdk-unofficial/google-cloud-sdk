@@ -330,6 +330,8 @@ class Restore(base.Command):
     )
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     if args.asyncronous:

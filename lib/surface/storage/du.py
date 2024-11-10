@@ -143,6 +143,8 @@ class Du(base.Command):
     flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
 
     if args.url:

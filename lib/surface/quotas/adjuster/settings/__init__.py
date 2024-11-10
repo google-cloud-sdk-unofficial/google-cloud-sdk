@@ -17,12 +17,21 @@
 from googlecloudsdk.calliope import base
 
 
-# We could have multiple tracks here, e.g.
-#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class QuotaAdjusterSettingsBeta(base.Group):
+  """The command group for Cloud Quotas AdjusterSettings.
+
+  A QuotaAdjusterSettings resource represents your adjuster setting for a
+  particular container. Enable this to automatically adjust quotas.
+  """
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class QuotaAdjusterSettings(base.Group):
+class QuotaAdjusterSettingsAlpha(base.Group):
   """The command group for Cloud Quotas AdjusterSettings.
 
   A QuotaAdjusterSettings resource represents your adjuster setting for a

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import name_util
 
 
+@base.UniverseCompatible
 class Pause(base.Command):
   """Pause a currently running transfer operation."""
 

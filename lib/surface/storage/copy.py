@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage cp` instead.')
 class Copy(base.Command):
@@ -187,6 +188,8 @@ class Copy(base.Command):
         help='The number of threads to use for the copy.')
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     sources = [paths.Path(p) for p in args.source]
     dest = paths.Path(args.destination)
     copier = copying.CopyTaskGenerator()

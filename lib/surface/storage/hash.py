@@ -137,6 +137,8 @@ class Hash(base.Command):
     flags.add_additional_headers_flag(parser)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     encryption_util.initialize_key_store(args)
     if not args.skip_crc32c:
       if fast_crc32c_util.should_use_gcloud_crc32c():

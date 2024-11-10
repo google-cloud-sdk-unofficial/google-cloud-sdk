@@ -224,6 +224,7 @@ class AlphaCreate(Create):
     flags.DefaultBackupScheduleType().AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
+    resource_args.AddDefaultStorageTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
         hide_autoscaling_args=False,
@@ -245,6 +246,7 @@ class AlphaCreate(Create):
     """
     instance_type = resource_args.GetInstanceType(args)
     expire_behavior = resource_args.GetExpireBehavior(args)
+    default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
 
     op = instances.Create(
         args.instance,
@@ -261,6 +263,7 @@ class AlphaCreate(Create):
         args.asymmetric_autoscaling_option,
         instance_type,
         expire_behavior,
+        default_storage_type,
         args.ssd_cache,
         args.edition,
         args.default_backup_schedule_type,

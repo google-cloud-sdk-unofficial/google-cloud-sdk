@@ -40,7 +40,6 @@ _DETAILED_HELP = {
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Add(base.CreateCommand):
   """Enroll a new scope."""
 
@@ -106,7 +105,6 @@ class Add(base.CreateCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
 class AddAlpha(Add):
   """Enroll a new scope."""
 

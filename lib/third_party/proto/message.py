@@ -481,7 +481,7 @@ class MessageMeta(type):
                 `always_print_fields_with_no_presence` instead. An option that
                 determines whether the default field values should be included in the results.
                 This value must match `always_print_fields_with_no_presence`,
-                if both arguments are explictly set.
+                if both arguments are explicitly set.
             preserving_proto_field_name (Optional(bool)): An option that
                 determines whether field name representations preserve
                 proto case (snake_case) or use lowerCamelCase. Default is False.
@@ -497,7 +497,7 @@ class MessageMeta(type):
                 always be serialized. Any field that supports presence is not affected by
                 this option (including singular message fields and oneof fields).
                 This value must match `including_default_value_fields`,
-                if both arguments are explictly set.
+                if both arguments are explicitly set.
         Returns:
             str: The json string representation of the protocol buffer.
         """
@@ -574,14 +574,14 @@ class MessageMeta(type):
                 `always_print_fields_with_no_presence` instead. An option that
                 determines whether the default field values should be included in the results.
                 This value must match `always_print_fields_with_no_presence`,
-                if both arguments are explictly set.
+                if both arguments are explicitly set.
             float_precision (Optional(int)): If set, use this to specify float field valid digits.
                 Default is None.
             always_print_fields_with_no_presence (Optional(bool)): If True, fields without
                 presence (implicit presence scalars, repeated fields, and map fields) will
                 always be serialized. Any field that supports presence is not affected by
                 this option (including singular message fields and oneof fields). This value
-                must match `including_default_value_fields`, if both arguments are explictly set.
+                must match `including_default_value_fields`, if both arguments are explicitly set.
 
         Returns:
             dict: A representation of the protocol buffer using pythonic data structures.
@@ -725,36 +725,7 @@ class Message(metaclass=MessageMeta):
                     "Unknown field for {}: {}".format(self.__class__.__name__, key)
                 )
 
-            try:
-                pb_value = marshal.to_proto(pb_type, value)
-            except ValueError:
-                # Underscores may be appended to field names
-                # that collide with python or proto-plus keywords.
-                # In case a key only exists with a `_` suffix, coerce the key
-                # to include the `_` suffix. It's not possible to
-                # natively define the same field with a trailing underscore in protobuf.
-                # See related issue
-                # https://github.com/googleapis/python-api-core/issues/227
-                if isinstance(value, dict):
-                    if _upb:
-                        # In UPB, pb_type is MessageMeta which doesn't expose attrs like it used to in Python/CPP.
-                        keys_to_update = [
-                            item
-                            for item in value
-                            if item not in pb_type.DESCRIPTOR.fields_by_name
-                            and f"{item}_" in pb_type.DESCRIPTOR.fields_by_name
-                        ]
-                    else:
-                        keys_to_update = [
-                            item
-                            for item in value
-                            if not hasattr(pb_type, item)
-                            and hasattr(pb_type, f"{item}_")
-                        ]
-                    for item in keys_to_update:
-                        value[f"{item}_"] = value.pop(item)
-
-                pb_value = marshal.to_proto(pb_type, value)
+            pb_value = marshal.to_proto(pb_type, value)
 
             if pb_value is not None:
                 params[key] = pb_value

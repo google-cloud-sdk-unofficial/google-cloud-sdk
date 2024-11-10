@@ -29,7 +29,8 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Deactivate(base.Command):
   """Deactivate a spoke.
 

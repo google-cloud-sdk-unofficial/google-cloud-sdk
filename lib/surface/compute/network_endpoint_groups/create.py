@@ -107,7 +107,17 @@ class Create(base.CreateCommand):
 
     self._ValidateNEG(args, neg_ref)
 
-    if self.support_port_mapping_neg:
+    if args.producer_port:
+      result = neg_client.Create(
+          neg_ref,
+          args.network_endpoint_type,
+          default_port=args.default_port,
+          producer_port=args.producer_port,
+          network=args.network,
+          subnet=args.subnet,
+          psc_target_service=args.psc_target_service,
+      )
+    elif self.support_port_mapping_neg:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
@@ -152,7 +162,6 @@ class Create(base.CreateCommand):
           serverless_deployment_url_mask=args.serverless_deployment_url_mask,
           psc_target_service=args.psc_target_service,
       )
-
     else:
       result = neg_client.Create(
           neg_ref,

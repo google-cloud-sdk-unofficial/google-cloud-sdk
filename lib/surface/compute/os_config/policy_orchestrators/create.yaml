@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [BETA, ALPHA]
 
   help_text:
     brief: Create a policy orchestrator
@@ -6,16 +6,16 @@
       Create a policy orchestrator.
       ## EXAMPLES
 
-      To create an policy orchestrator `my-orchestrator` in folder `123456` for OS Policy assignment
+      To create a policy orchestrator `my-orchestrator` in folder `123456` for OS policy assignment
       with config file `/path/to/file/config.yaml`, run:
 
-        $ {command} my-orchestrator --folder=123456 --policy-type OS_POLICY_ASSIGNMENT_V1 \
-            --file=/path/to/file/config.yaml
+        $ {command} my-orchestrator --folder=123456 --policy-type os_policy_assignment_v1 \
+            --policy-file=/path/to/file/config.yaml
 
-      To create an policy orchestrator `my-orchestrator` in folder `123456` that deletes OS Policy
+      To create a policy orchestrator `my-orchestrator` in folder `123456` that deletes OS Policy
       assignments with id `my-policy`, run:
 
-        $ {command} my-orchestrator --folder=123456 --policy-type OS_POLICY_ASSIGNMENT_V1 \
+        $ {command} my-orchestrator --folder=123456 --policy-type os_policy_assignment_v1 \
             --action delete --policy-id my-policy
 
   request:
@@ -28,6 +28,8 @@
     - googlecloudsdk.command_lib.compute.os_config.utils:ModifyOrchestrorPolicyCreateRequest
     ALPHA:
       api_version: v2alpha
+    BETA:
+      api_version: v2beta
 
   async:
     collection:
@@ -36,6 +38,8 @@
     - osconfig.organizations.locations.operations
     ALPHA:
       api_version: v2alpha
+    BETA:
+      api_version: v2beta
 
   arguments:
     resource:
@@ -63,9 +67,9 @@
       default: ACTIVE
       choices:
       - arg_value: ACTIVE
-        help_text: Policy orchestrator is active.
+        help_text: Creates a policy orchestrator in `ACTIVE` state.
       - arg_value: STOPPED
-        help_text: Policy orchestrator is stopped.
+        help_text: Creates a policy orchestrator in `STOPPED` state.
     - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
     - arg_name: include-projects
       help_text: Applies policy to selected projects only.

@@ -72,6 +72,12 @@
               spec:
               - api_field: key
               - api_field: value
+    - group:
+        params:
+        - arg_name: description
+          api_field: internalRange.description
+          help_text: Description of the Internal Range
+
 
   async:
     collection: networkconnectivity.projects.locations.operations

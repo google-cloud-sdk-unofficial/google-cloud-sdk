@@ -21,7 +21,61 @@ from googlecloudsdk.command_lib.quotas import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class Describe(base.DescribeCommand):
+class DescribeAlpha(base.DescribeCommand):
+  """Retrieve the QuotaInfo of a quota for a project, folder or organization.
+
+  ## EXAMPLES
+
+  To get the details about quota `CpusPerProject` for service
+  `example.googleapis.com` and `projects/my-project`, run:
+
+    $ {command} CpusPerProject --service=example.googleapis.com
+    --project=my-project
+
+
+  To get the details about quota `CpusPerProject` for service
+  `example.googleapis.com` and `folders/12345`, run:
+
+    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    flags.QuotaId().AddToParser(parser)
+    flags.AddResourceFlags(parser, 'quota info to describe')
+    flags.Service().AddToParser(parser)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The requested QuotaInfo for specified container and service.
+    """
+    # This is because alpha gcloud points to GA version of the API.
+    return quota_info.GetQuotaInfo(
+        args.project,
+        args.folder,
+        args.organization,
+        args.service,
+        args.QUOTA_ID,
+        release_track=base.ReleaseTrack.GA,
+    )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class DescribeBeta(base.DescribeCommand):
   """Retrieve the QuotaInfo of a quota for a project, folder or organization.
 
   ## EXAMPLES
@@ -67,4 +121,5 @@ class Describe(base.DescribeCommand):
         args.organization,
         args.service,
         args.QUOTA_ID,
+        release_track=base.ReleaseTrack.BETA,
     )

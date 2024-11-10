@@ -130,7 +130,7 @@ def _clear_fields(args, messages, job):
       job.transferSpec.awsS3CompatibleDataSource.s3Metadata = None
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Update(base.Command):
   """Update a Transfer Service transfer job."""
 

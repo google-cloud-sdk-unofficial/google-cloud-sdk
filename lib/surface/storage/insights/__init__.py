@@ -26,3 +26,8 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Insights(base.Group):
   """Manage Cloud Storage inventory reports."""
+
+  def Filter(self, context, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
+    del context, args

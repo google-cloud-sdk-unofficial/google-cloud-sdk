@@ -135,6 +135,8 @@ class Rm(base.Command):
     flags.add_read_paths_from_stdin_flag(parser)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     if args.recursive:
       bucket_setting = name_expansion.BucketSetting.YES
       object_state = cloud_api.ObjectState.LIVE_AND_NONCURRENT

@@ -21,5 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class AgentPools(base.Group):
   """Manage on-premise transfer agent pools."""

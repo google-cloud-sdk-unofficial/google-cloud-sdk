@@ -24,9 +24,9 @@ from googlecloudsdk.core import log
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class Update(base.UpdateCommand):
+class UpdateBeta(base.UpdateCommand):
   """Update the QuotaAdjusterSettings of a container.
 
   This command updates the enablement state of the container..
@@ -74,7 +74,76 @@ class Update(base.UpdateCommand):
       None or any possible error.
     """
     self.updated_resource = quota_adjuster_settings.UpdateQuotaAdjusterSettings(
-        args
+        args, release_track=base.ReleaseTrack.BETA
+    )
+    self.validate_only = args.validate_only
+    return self.updated_resource
+
+  def Epilog(self, resources_were_displayed=True):
+    if resources_were_displayed and not self.validate_only:
+      log.status.Print(
+          json.dumps(
+              encoding.MessageToDict(self.updated_resource),
+              sort_keys=True,
+              indent=4,
+              separators=(',', ':'),
+          )
+      )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class UpdateAlpha(base.UpdateCommand):
+  """Update the QuotaAdjusterSettings of a container.
+
+  This command updates the enablement state of the container..
+
+  ## EXAMPLES
+
+  To update QuotaAdjusterSettings for `projects/123`, run:
+
+    $ {command}
+    --enablement=Enabled
+    --project=12321
+
+  To disable QuotaAdjusterSettings for `organizations/123`, run:
+
+    $ {command} my-preference
+    --enablement=Disabled
+    --organization=123
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    # required flags
+    flags.AddResourceFlags(parser, 'container id')
+    flags.Enablement().AddToParser(parser)
+
+    # optional flags
+    flags.ValidateOnly().AddToParser(parser)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The updated QuotaAdjusterSettings. If `--validate-only` is specified, it
+      returns
+      None or any possible error.
+    """
+    # This is because alpha gcloud points to the v1 version of the API.
+    self.updated_resource = quota_adjuster_settings.UpdateQuotaAdjusterSettings(
+        args, release_track=base.ReleaseTrack.GA
     )
     self.validate_only = args.validate_only
     return self.updated_resource

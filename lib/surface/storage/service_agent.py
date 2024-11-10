@@ -67,6 +67,8 @@ class ServiceAgent(base.Command):
             service agent's project."""))
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     api = api_factory.get_api(storage_url.ProviderPrefix.GCS)
     service_agent = api.get_service_agent()
     if args.authorize_cmek:

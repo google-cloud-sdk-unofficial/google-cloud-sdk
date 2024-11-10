@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.quotas import flags
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class Describe(base.DescribeCommand):
+class DescribeAlpha(base.DescribeCommand):
   """Get details about a single QuotaPreference.
 
   ## EXAMPLES
@@ -60,4 +60,54 @@ class Describe(base.DescribeCommand):
     Returns:
       The requested QuotaPreference for specified container and service.
     """
-    return quota_preference.GetQuotaPreference(args)
+    # This is because alpha gcloud points to GA version of the API.
+    return quota_preference.GetQuotaPreference(
+        args, release_track=base.ReleaseTrack.GA
+    )
+
+
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class DescribeBeta(base.DescribeCommand):
+  """Get details about a single QuotaPreference.
+
+  ## EXAMPLES
+
+  To get the details about quota preference `my-preference` for
+  `projects/12321`, run:
+
+    $ {command} my-preference --project=12321
+    $ {command} my-preference --project=my-project-id
+
+
+  To get the details about quota preference `my-preference` for `folders/12345`,
+  run:
+
+    $ {command} my-preference --folder=12345
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    flags.AddResourceFlags(parser, 'quota preference to describe')
+    flags.PreferenceId().AddToParser(parser)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      The requested QuotaPreference for specified container and service.
+    """
+    return quota_preference.GetQuotaPreference(
+        args, release_track=base.ReleaseTrack.BETA
+    )

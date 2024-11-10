@@ -38,6 +38,10 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
+    support_network_scopes = (
+        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
+    )
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyRuleArgument(
         required=True, operation='create'
     )
@@ -52,10 +56,10 @@ class Create(base.CreateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
-    flags.AddSrcThreatIntelligence(parser)
-    flags.AddDestThreatIntelligence(parser)
-    flags.AddSrcRegionCodes(parser)
-    flags.AddDestRegionCodes(parser)
+    flags.AddSrcThreatIntelligence(parser, support_network_scopes)
+    flags.AddDestThreatIntelligence(parser, support_network_scopes)
+    flags.AddSrcRegionCodes(parser, support_network_scopes)
+    flags.AddDestRegionCodes(parser, support_network_scopes)
     flags.AddSrcFqdns(parser)
     flags.AddDestFqdns(parser)
     flags.AddSrcAddressGroups(parser)

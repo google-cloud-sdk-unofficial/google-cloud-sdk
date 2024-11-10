@@ -90,7 +90,8 @@ class BulkMute(base.Command):
 
     parser.add_argument(
         "--filter",
-        help="The filter string which will applied to findings being muted.",
+        help="Expression that identifies findings that should be muted.",
+        required=True,
     )
 
     # To accept both lower and uppercase arguments for the choices we use

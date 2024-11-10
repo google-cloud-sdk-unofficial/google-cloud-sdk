@@ -46,6 +46,7 @@ Cannot specify --{opt} with Composer 1.X.
 """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update properties of a Cloud Composer environment."""
@@ -347,8 +348,17 @@ class Update(base.Command):
 
   def _getImageVersion(self, args, env_ref, env_obj, release_track):
     if release_track != base.ReleaseTrack.GA:
-      if (args.airflow_version or args.image_version) and (
-          image_versions_command_util.IsDefaultImageVersion(args.image_version)
+      is_composer_3 = image_versions_command_util.IsVersionComposer3Compatible(
+          env_obj.config.softwareConfig.imageVersion
+      )
+
+      if (
+          (args.image_version or (args.airflow_version and not is_composer_3))
+          and (
+              image_versions_command_util.IsDefaultImageVersion(
+                  args.image_version
+              )
+          )
       ):
         message = (
             image_versions_command_util.BuildDefaultComposerVersionWarning(
@@ -537,6 +547,7 @@ class Update(base.Command):
         release_track=self.ReleaseTrack())
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
@@ -578,6 +589,7 @@ class UpdateBeta(Update):
         release_track=self.ReleaseTrack())
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update properties of a Cloud Composer environment."""

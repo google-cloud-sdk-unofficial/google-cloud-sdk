@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.transfer import name_util
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete a Transfer Service transfer job."""
 

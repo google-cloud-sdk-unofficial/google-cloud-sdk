@@ -17,10 +17,15 @@
 from googlecloudsdk.calliope import base
 
 
-# We could have multiple tracks here, e.g.
-#   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
+@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class QuotaAdjusterBeta(base.Group):
+  """The command group for Cloud Quotas Adjuster."""
+
+
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-class QuotaAdjuster(base.Group):
+class QuotaAdjusterAlpha(base.Group):
   """The command group for Cloud Quotas Adjuster."""

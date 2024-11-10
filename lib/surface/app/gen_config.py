@@ -26,9 +26,9 @@ import shutil
 import tempfile
 
 from gae_ext_runtime import ext_runtime
-
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.app.runtimes import fingerprinter
+from googlecloudsdk.appengine.api import appinfo
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import deployables
 from googlecloudsdk.command_lib.app import exceptions
@@ -36,9 +36,6 @@ from googlecloudsdk.command_lib.app import output_helpers
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
-
-from googlecloudsdk.third_party.appengine.api import appinfo
-
 from ruamel import yaml
 import six
 

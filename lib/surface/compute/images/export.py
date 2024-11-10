@@ -184,7 +184,8 @@ class Export(base.CreateCommand):
     return daisy_utils.CreateDaisyBucketInProject(
         bucket_location,
         storage_client,
-        enable_uniform_level_access=True)
+        enable_uniform_level_access=True,
+        soft_delete_duration=0)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

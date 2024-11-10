@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.transfer import name_util
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel a transfer operation."""
 

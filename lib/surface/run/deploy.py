@@ -934,7 +934,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddScalingModeFlag(parser)
+    flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.AddRegionsArg(parser)

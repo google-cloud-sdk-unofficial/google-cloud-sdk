@@ -225,10 +225,9 @@ class Login(base.Command):
     if not creds:
       return
 
-    if hasattr(creds, 'with_account'):
-      creds = creds.with_account(
-          command_auth_util.ExtractAndValidateAccount(args.account, creds)
-      )
+    if args.account and hasattr(creds, 'with_account'):
+      _ = command_auth_util.ExtractAndValidateAccount(args.account, creds)
+      creds = creds.with_account(args.account)
 
     target_impersonation_principal, delegates = None, None
     impersonation_service_accounts = (

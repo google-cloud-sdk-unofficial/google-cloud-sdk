@@ -335,6 +335,7 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
     _log_created_agent(docker_command_to_run)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Install(base.Command):
   """Install Transfer Service agents."""
@@ -506,6 +507,7 @@ class Install(base.Command):
             pool=args.pool, project=project))
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InstallAlpha(Install):
   """Install Transfer Service agents."""

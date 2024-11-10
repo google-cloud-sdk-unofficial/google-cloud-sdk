@@ -27,7 +27,7 @@
       resource_spec: !REF googlecloudsdk.command_lib.saas.resources:unit_kind
       resource_method_params:
         release.unitKind: '{__relative_name__}'
-      required: true
+      required: false
     - group:
         required: false
         help_text: |-

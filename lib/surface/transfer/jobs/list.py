@@ -37,7 +37,7 @@ class JobType(enum.Enum):
   REPLICATION = 'replication'
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.Command):
   """List Transfer Service transfer jobs."""

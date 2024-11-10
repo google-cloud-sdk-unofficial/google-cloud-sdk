@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class AuditManager(base.Group):
   """Enroll resources, audit workloads and generate reports."""
 
@@ -38,6 +37,5 @@ class AuditManager(base.Group):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
 class AuditManagerAlpha(AuditManager):
   """Enroll resources, audit workloads and generate reports."""

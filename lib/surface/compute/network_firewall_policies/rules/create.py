@@ -54,16 +54,28 @@ class Create(base.CreateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetServiceAccounts(parser)
     flags.AddDescription(parser)
-    flags.AddSrcSecureTags(parser)
+    flags.AddSrcSecureTags(
+        parser,
+        required=False,
+        support_network_scopes=cls.support_network_scopes,
+    )
     flags.AddTargetSecureTags(parser)
     flags.AddSrcAddressGroups(parser)
     flags.AddDestAddressGroups(parser)
     flags.AddSrcFqdns(parser)
     flags.AddDestFqdns(parser)
-    flags.AddSrcRegionCodes(parser)
-    flags.AddDestRegionCodes(parser)
-    flags.AddSrcThreatIntelligence(parser)
-    flags.AddDestThreatIntelligence(parser)
+    flags.AddSrcRegionCodes(
+        parser, support_network_scopes=cls.support_network_scopes
+    )
+    flags.AddDestRegionCodes(
+        parser, support_network_scopes=cls.support_network_scopes
+    )
+    flags.AddSrcThreatIntelligence(
+        parser, support_network_scopes=cls.support_network_scopes
+    )
+    flags.AddDestThreatIntelligence(
+        parser, support_network_scopes=cls.support_network_scopes
+    )
     flags.AddSecurityProfileGroup(parser)
     flags.AddTlsInspect(parser)
     if cls.support_network_scopes:

@@ -30,6 +30,7 @@ from six.moves import queue
 @base.Hidden
 @base.Deprecate(is_removed=False, warning='This command is deprecated. '
                 'Use `gcloud alpha storage ls` instead.')
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List the objects in Cloud Storage buckets."""
@@ -117,6 +118,8 @@ class List(base.ListCommand):
         )""" % List.OBJECT_FORMAT_STRING)
 
   def Run(self, args):
+    # TODO(b/190541521):  Determine if command group works with project number
+    base.RequireProjectID(args)
     paths = args.path or ['gs://']
     expander = expansion.GCSPathExpander()
     objects, dirs = expander.ExpandPaths(paths)

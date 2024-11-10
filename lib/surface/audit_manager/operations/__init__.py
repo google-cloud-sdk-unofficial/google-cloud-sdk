@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Operations(base.Group):
   """Check audit operation status."""
 
@@ -32,6 +31,5 @@ class Operations(base.Group):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
 class OperationsAlpha(Operations):
   """Check audit operation status."""

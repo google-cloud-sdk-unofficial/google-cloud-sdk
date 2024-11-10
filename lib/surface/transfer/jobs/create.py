@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.transfer import jobs_flag_util
 from googlecloudsdk.core import log
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Create(base.Command):
   """Create a Transfer Service transfer job."""
 

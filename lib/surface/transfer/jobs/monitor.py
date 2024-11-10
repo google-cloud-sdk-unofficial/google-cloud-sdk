@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.transfer import operations_util
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class Monitor(base.Command):
   """Track progress in real time for a transfer job's latest operation."""
 

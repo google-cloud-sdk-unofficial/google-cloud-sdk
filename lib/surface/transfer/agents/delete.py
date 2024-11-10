@@ -57,6 +57,7 @@ docker container list --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent
 """
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete a Transfer Service transfer agents."""
 

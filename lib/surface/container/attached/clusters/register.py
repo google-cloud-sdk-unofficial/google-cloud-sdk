@@ -91,6 +91,7 @@ class Register(base.CreateCommand):
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroups(parser)
     flags.AddWorkloadVulnerabilityScanning(parser)
+    flags.AddTagBindings(parser)
 
     parser.display_info.AddFormat(constants.ATTACHED_CLUSTERS_FORMAT)
 

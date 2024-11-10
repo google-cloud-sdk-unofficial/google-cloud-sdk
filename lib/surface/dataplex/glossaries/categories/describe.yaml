@@ -1,0 +1,20 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Retrieve a Glossary Category Resource.
+    description: |
+      Get a Glossary Category resource based on project, location, glossary and category.
+    examples: |
+       To describe a Category `test-category` in Glossary `test-glossary` in project `test-project` under loaction `us-central1`, run:
+         $ {command} test-category --glossary=test-glossary --location=us-central1 --project=test-dataplex
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.glossaries.categories
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that define the Dataplex Glossary Category you want to retrieve.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:glossary_category

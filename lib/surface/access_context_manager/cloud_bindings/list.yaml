@@ -140,4 +140,4 @@
     GA:
       format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, restrictedClientApplications, scopedAccessSettings)
     ALPHA:
-      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, reauthSettings, restrictedClientApplications, scopedAccessSettings)
+      format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)

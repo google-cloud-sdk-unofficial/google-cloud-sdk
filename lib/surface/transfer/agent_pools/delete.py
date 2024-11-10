@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import name_util
 
 
+@base.UniverseCompatible
 class Delete(base.Command):
   """Delete a Transfer Service agent pool."""
 

@@ -27,9 +27,10 @@
       Creates schema associated with postgres database and sql instance.
 
       $ {command} main --location=my-location --project=my-project --service=my-service \
-        --source-files=path=gcloud.gql,content='' --postgresql-database=my-db \
+        --source-files=path=gcloud.gql,contentFromFile=gcloud.gql --postgresql-database=my-db \
         --postgresql-cloud-sql-instance=projects/my-project/locations/my-location/instances/my-instance \
-        --postgresql-schema-validation=STRICT
+        --postgresql-schema-validation=STRICT \
+        --datasources='postgresql={"cloudSql":{"instance":"projects/my-project/locations/my-location/instances/my-instance"},"database":"my-db","schemaValidation":"STRICT"}'
   arguments:
     params:
     - help_text: |
