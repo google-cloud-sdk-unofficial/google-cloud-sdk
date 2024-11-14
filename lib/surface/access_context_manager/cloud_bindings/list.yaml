@@ -19,6 +19,10 @@
           - accessPolicies/9522/accessLevels/specific_location
           groupKey: a3dad
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+          sessionSettings:
+            sessionLength: 57600s
+            sessionLengthEnabled: true
+            sessionReauthMethod: LOGIN
 
         Or
 
@@ -50,6 +54,19 @@
               clientScope:
                 restrictedClientApplication:
                   name: Cloud Console
+          - activeSettings:
+              sessionSettings:
+                sessionLength: 57600s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  clientId: 123.apps.googleusercontent.com
+          sessionSettings:
+            sessionLength: 57600s
+            sessionLengthEnabled: true
+            sessionReauthMethod: LOGIN
     ALPHA:
       examples: |
         To list cloud access bindings, run:
@@ -97,6 +114,19 @@
               clientScope:
                 restrictedClientApplication:
                   name: Cloud Console
+          - activeSettings:
+              sessionSettings:
+                sessionLength: 57600s
+                sessionLengthEnabled: true
+                sessionReauthMethod: LOGIN
+            scope:
+              clientScope:
+                restrictedClientApplication:
+                  clientId: 123.apps.googleusercontent.com
+          sessionSettings:
+            sessionLength: 57600s
+            sessionLengthEnabled: true
+            sessionReauthMethod: LOGIN
 
         If filter is specified as
         `principal:serviceAccount OR principal:serviceAccountProjectNumber`,
@@ -138,6 +168,6 @@
 
   output:
     GA:
-      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, restrictedClientApplications, scopedAccessSettings)
+      format: yaml(name, groupKey, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)
     ALPHA:
       format: yaml(name, groupKey, principal, accessLevels, dryRunAccessLevels, sessionSettings, restrictedClientApplications, scopedAccessSettings)

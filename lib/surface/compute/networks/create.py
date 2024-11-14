@@ -149,10 +149,52 @@ class CreateBeta(Create):
 
   """
 
+  NETWORK_PROFILE_ARG = None
+
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
+    cls.NETWORK_PROFILE_ARG = (
+        network_profile_flags.NetworkProfileArgumentForOtherResource(
+            'The network profile to apply to this network.'
+        )
+    )
+    cls.NETWORK_PROFILE_ARG.AddArgument(parser)
     network_utils.AddBgpBestPathSelectionArgGroup(parser)
+
+  def Run(self, args):
+    """Issues the request necessary for adding the network."""
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    messages = client.messages
+
+    network_utils.CheckRangeLegacyModeOrRaise(args)
+
+    network_profile_ref = self.NETWORK_PROFILE_ARG.ResolveAsResource(
+        args, holder.resources
+    )
+
+    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
+    self._network_name = network_ref.Name()
+    network_resource = networks_utils.CreateNetworkResourceFromArgs(
+        messages=messages,
+        network_ref=network_ref,
+        network_args=args,
+        network_profile_ref=network_profile_ref,
+        support_firewall_order=self._support_firewall_order,
+    )
+
+    request = (
+        client.apitools_client.networks,
+        'Insert',
+        client.messages.ComputeNetworksInsertRequest(
+            network=network_resource, project=network_ref.project
+        ),
+    )
+    response = client.MakeRequests([request])
+
+    resource_dict = resource_projector.MakeSerializable(response[0])
+    return networks_utils.AddModesForListFormat(resource_dict)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

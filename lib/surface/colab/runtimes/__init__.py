@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Runtimes(base.Group):
   # pylint: disable=g-doc - this is required for help text.
   """Manage Colab Enterprise runtimes.

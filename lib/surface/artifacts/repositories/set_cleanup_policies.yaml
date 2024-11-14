@@ -1,4 +1,5 @@
 - release_tracks: [GA]
+  universe_compatible: false
 
   help_text:
     brief: |

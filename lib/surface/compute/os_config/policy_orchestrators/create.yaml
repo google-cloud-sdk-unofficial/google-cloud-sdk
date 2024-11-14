@@ -72,4 +72,13 @@
         help_text: Creates a policy orchestrator in `STOPPED` state.
     - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
     - arg_name: include-projects
-      help_text: Applies policy to selected projects only.
+      help_text: |
+        Applies policy to selected projects. Comma-separated list of project numbers. Can be used
+        together with `--include-folders`.
+    - arg_name: include-folders
+      help_text: |
+        Applies policy to selected folders. Comma-separated list of folder numbers. Can beused
+        together with `--include-projects`.
+    - arg_name: include-locations
+      help_text: |
+        Applies policy to selected locations, e.g. `us-central1-a`.

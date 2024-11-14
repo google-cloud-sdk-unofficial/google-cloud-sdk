@@ -54,7 +54,6 @@ class ListAlpha(base.ListCommand):
         the command line after this command. Positional arguments are allowed.
     """
     flags.AddResourceFlags(parser, 'quota preferences to list')
-    flags.PageToken().AddToParser(parser)
     flags.ReconcilingOnly().AddToParser(parser)
 
   def Run(self, args):
@@ -109,7 +108,6 @@ class ListBeta(base.ListCommand):
         the command line after this command. Positional arguments are allowed.
     """
     flags.AddResourceFlags(parser, 'quota preferences to list')
-    flags.PageToken().AddToParser(parser)
     flags.ReconcilingOnly().AddToParser(parser)
 
   def Run(self, args):

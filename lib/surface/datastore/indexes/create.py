@@ -31,9 +31,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create Cloud Datastore indexes."""
 
@@ -68,9 +66,13 @@ Any indexes in your index file that do not exist will be created.
     database_id = (
         args.database if args.database else constants.DEFAULT_NAMESPACE
     )
-    self.CreateIndexes(index_file=args.index_file, database=database_id)
+    self.CreateIndexes(
+        index_file=args.index_file, database=database_id, enable_vector=False
+    )
 
-  def CreateIndexes(self, index_file: str, database: str) -> None:
+  def CreateIndexes(
+      self, index_file: str, database: str, enable_vector: bool
+  ) -> None:
     """Cleates missing indexes via the Firestore Admin API.
 
     Lists the database's existing indexes, and then compares them against the
@@ -80,6 +82,7 @@ Any indexes in your index file that do not exist will be created.
     Args:
       index_file: The users definition of their desired indexes.
       database: The database within the project we are operating on.
+      enable_vector: Whether or not vector indexes are supported.
     """
     project = properties.VALUES.core.project.Get(required=True)
     info = yaml_parsing.ConfigYamlInfo.FromFile(index_file)
@@ -98,4 +101,20 @@ Any indexes in your index file that do not exist will be created.
         project_id=project,
         database_id=database,
         index_definitions=info.parsed,
+        enable_vector=enable_vector,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPI(Create):
+  """Create Cloud Datastore indexes with Firestore API."""
+
+  def Run(self, args) -> None:
+    # Default to '(default)' if unset.
+    database_id = (
+        constants.DEFAULT_NAMESPACE if not args.database else args.database
+    )
+    return self.CreateIndexes(
+        index_file=args.index_file, database=database_id, enable_vector=True
     )

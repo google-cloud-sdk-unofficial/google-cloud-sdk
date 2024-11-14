@@ -19,9 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import enum
+import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import disks_util
+from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import name_generator
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -30,9 +32,21 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+
+
+CONTINUE_WITH_CONVERT_PROMPT = (
+    'This command will permanently convert disk {0} to disk type: {1}. Please'
+    ' detach the disk from all instances before continuing. Data written to the'
+    ' original disk during conversion will not appear on the converted disk.'
+    ' Please see'
+    ' https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert for'
+    ' more details.'
+)
 
 
 class _ConvertState(enum.Enum):
@@ -45,7 +59,6 @@ class _ConvertState(enum.Enum):
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Convert(base.RestoreCommand):
   """Convert a Compute Engine disk into a new disk type or new format."""
@@ -63,6 +76,9 @@ class Convert(base.RestoreCommand):
         list of available disk types, run `gcloud compute disk-types list`.
         """,
     )
+    kms_resource_args.AddKmsKeyResourceArg(
+        parser, 'disk', region_fallthrough=True
+    )
 
   def Run(self, args):
     self.holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -72,13 +88,13 @@ class Convert(base.RestoreCommand):
     self.state = None
     self.user_messages = ''
 
-    disk_ref = self._DISK_ARG.ResolveAsResource(
+    self.disk_ref = self._DISK_ARG.ResolveAsResource(
         args,
         self.holder.resources,
         scope_lister=flags.GetDefaultScopeLister(self.holder.client),
     )
 
-    if disk_ref.Collection() == 'compute.regionDisks':
+    if self.disk_ref.Collection() == 'compute.regionDisks':
       raise exceptions.InvalidArgumentException(
           '--region',
           'Regional disks are not supported for this command.'
@@ -89,30 +105,51 @@ class Convert(base.RestoreCommand):
           '--target-disk-type',
           'Hyperdisk ML is not supported for this command.',
       )
+    self.target_disk_type = args.target_disk_type
 
     # make sure disk is not attached to any instances
-    disk_info = disks_util.GetDiskInfo(disk_ref, self.client, self.messages)
+    disk_info = disks_util.GetDiskInfo(
+        self.disk_ref, self.client, self.messages)
     original_disk = disk_info.GetDiskResource()
     if original_disk.users:
       raise exceptions.ToolException(
           'Disk is attached to instances. Please Detach the disk before'
           ' converting.'
       )
+    console_io.PromptContinue(
+        message=textwrap.dedent(
+            CONTINUE_WITH_CONVERT_PROMPT.format(
+                self.disk_ref.Name(), self.target_disk_type
+            )
+        ),
+        cancel_on_no=True,
+    )
+
     try:
-      with self._CreateProgressTracker(disk_ref.Name()):
+      with self._CreateProgressTracker(self.disk_ref.Name()):
         result = self._ConvertDisk(
-            disk_ref, args.target_disk_type, original_disk.sizeGb
+            self.disk_ref, self.target_disk_type, original_disk.sizeGb,
+            disk_encryption_key=kms_utils.MaybeGetKmsKey(
+                args, self.messages, None
+            ),
         )
     except Exception as e:
       raise e
     finally:
       self._CleanUp()
       if self.user_messages:
-        log.error(self.user_messages)
+        if self.state in [_ConvertState.ORIGINAL_DISK_RECREATED,
+                          _ConvertState.RESTORED_DISK_DELETED,
+                          _ConvertState.SNAPSHOT_DELETED]:
+          log.warning(self.user_messages)
+        else:
+          log.error(self.user_messages)
 
     return result
 
-  def _ConvertDisk(self, disk_ref, target_disk_type, size_gb):
+  def _ConvertDisk(
+      self, disk_ref, target_disk_type, size_gb, disk_encryption_key=None
+  ):
     # create a snapshot of the disk
     snapshot_name = self._GenerateName(disk_ref)
     result = self._InsertSnapshot(disk_ref, snapshot_name)
@@ -136,6 +173,7 @@ class Convert(base.RestoreCommand):
             snapshot_ref,
             target_disk_type,
             size_gb,
+            disk_encryption_key=disk_encryption_key,
         )
         or result
     )
@@ -145,7 +183,14 @@ class Convert(base.RestoreCommand):
     self._UpdateState(_ConvertState.ORIGINAL_DISK_DELETED)
 
     # recreate the original disk with the new disk as source
-    result = self._CloneDisk(disk_ref.Name(), restored_disk_ref) or result
+    result = (
+        self._CloneDisk(
+            disk_ref.Name(),
+            restored_disk_ref,
+            disk_encryption_key=disk_encryption_key,
+        )
+        or result
+    )
     self._UpdateState(_ConvertState.ORIGINAL_DISK_RECREATED)
 
     # delete the restored disk because the original disk is recreated
@@ -202,7 +247,11 @@ class Convert(base.RestoreCommand):
       snapshot_ref,
       disk_type,
       size_gb,
+      disk_encryption_key=None,
   ):
+    kwargs = {}
+    if disk_encryption_key:
+      kwargs['diskEncryptionKey'] = disk_encryption_key
     disk = self.messages.Disk(
         name=restored_disk_ref.Name(),
         type=disks_util.GetDiskTypeUri(
@@ -210,6 +259,7 @@ class Convert(base.RestoreCommand):
         ),
         sizeGb=size_gb,
         sourceSnapshot=snapshot_ref.SelfLink(),
+        **kwargs,
     )
 
     request = self.messages.ComputeDisksInsertRequest(
@@ -252,10 +302,16 @@ class Convert(base.RestoreCommand):
         max_wait_ms=None,
     )
 
-  def _CloneDisk(self, original_disk_name, restored_disk_ref):
+  def _CloneDisk(
+      self, original_disk_name, restored_disk_ref, disk_encryption_key=None
+  ):
+    kwargs = {}
+    if disk_encryption_key:
+      kwargs['diskEncryptionKey'] = disk_encryption_key
     disk = self.messages.Disk(
         name=original_disk_name,
         sourceDisk=restored_disk_ref.SelfLink(),
+        **kwargs,
     )
     request = self.messages.ComputeDisksInsertRequest(
         disk=disk,
@@ -292,10 +348,19 @@ class Convert(base.RestoreCommand):
       self.created_resources[state] = created_resource
 
   def _CleanUp(self):
+    if not self.state:
+      self.user_messages = (
+          'Creating snapshot failed.'
+      )
+      return
     if self.state == _ConvertState.SNAPSHOT_CREATED:
       # restore disk failed
       self.user_messages = (
-          'Please address erros below and rerun the command to retry.'
+          'Creating disk from snapshot {0} failed. '
+          'Please run `gcloud compute snapshots delete {0}` to delete'
+          ' the temporary snapshot if it still exists.'
+      ).format(
+          self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
       )
       self._DeleteSnapshot(
           self.created_resources[_ConvertState.SNAPSHOT_CREATED]
@@ -303,7 +368,10 @@ class Convert(base.RestoreCommand):
     elif self.state == _ConvertState.DISK_RESTORED:
       # delete original disk request failed
       self.user_messages = (
-          'Please address erros below and rerun the command to retry.'
+          'Deleting original disk {0} failed. Please run `gcloud compute disks'
+          ' delete {0} --zone={1}` to delete the temporary disk if it still'
+          ' exists. Please run `gcloud compute snapshots delete {2}` to delete'
+          ' the temporary snapshot if it still exists.'
       )
       self._DeleteDisk(self.created_resources[_ConvertState.DISK_RESTORED])
       self._DeleteSnapshot(
@@ -311,25 +379,33 @@ class Convert(base.RestoreCommand):
       )
     elif self.state == _ConvertState.ORIGINAL_DISK_DELETED:
       # recreate original disk failed
-      self.user_messages = """Please address errors below and use disk {0} as the source disk to recreate the original disk.
-      You can also use the snapshot {1} to restore the original disk.
-      """.format(
+      self.user_messages = (
+          'Recreating original disk {0} failed. Please run `gcloud compute'
+          ' disks create {0} --zone={1} --type={2} --source-disk={3}` to'
+          ' recreate the original disk. Please run `gcloud compute snapshots'
+          ' delete {4}` to delete the temporary snapshot. Please run `gcloud'
+          ' compute disks delete {3} --zone={1}` to delete the temporary disk.'
+      ).format(
+          self.disk_ref.Name(),
+          self.disk_ref.zone,
+          self.target_disk_type,
           self.created_resources[_ConvertState.DISK_RESTORED].Name(),
           self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
       )
     elif self.state == _ConvertState.ORIGINAL_DISK_RECREATED:
       # delete restored disk failed
-      self.user_messages = """Conversion completed successfully.
-          Encountered errors when cleaning up.
-          Please delete the restored disk {0} and snapshot {1} manually.
+      self.user_messages = """ Conversion completed successfully, Deleting temporary disk {0} failed.
+          Please run `gcloud compute disks delete {0} --zone={1}` to delete the temporary disk.
+          Please run `gcloud compute snapshots delete {2}` to delete the temporary snapshot.
       """.format(
           self.created_resources[_ConvertState.DISK_RESTORED].Name(),
+          self.created_resources[_ConvertState.DISK_RESTORED].zone,
           self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
       )
     elif self.state == _ConvertState.RESTORED_DISK_DELETED:
       self.user_messages = """Conversion completed successfully.
-          Encountered errors when cleaning up.
-          Please delete snapshot {1} manually.
+          Deleting temporary snapshot {0} failed.
+          Please run `gcloud compute snapshots delete {0}` to delete the snapshot.
       """.format(
           self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
       )
@@ -345,3 +421,16 @@ class Convert(base.RestoreCommand):
         interruptable=True,
         aborted_message=''
     )
+
+Convert.detailed_help = {
+    'DESCRIPTION': """\
+ Convert Compute Engine Persistent Disk volumes to Hyperdisk volumes.
+
+ *{command}* converts a Compute Engine Persistent Disk volume to a Hyperdisk volume. For a comprehensive guide, refer to: https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert.
+    """,
+    'EXAMPLES': """\
+The following command converts a PD Standard disk to a Hyperdisk Throughput:
+
+        $ {command} my-disk-1 --zone=ZONE --target-disk-type=hyperdisk-throughput
+        """,
+}

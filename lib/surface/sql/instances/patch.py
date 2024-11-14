@@ -150,6 +150,10 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.pscAutoConnections'
     )
+  if args.IsKnownAndSpecified('clear_custom_subject_alternative_names'):
+    cleared_fields.append(
+        'settings.ipConfiguration.customSubjectAlternativeNames'
+    )
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -326,6 +330,14 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingClientIdleTimeout(parser)
   flags.AddConnectionPoolingServerIdleTimeout(parser)
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
+  ip_update_custom_sans_group = parser.add_mutually_exclusive_group(
+      hidden=True
+  )
+  flags.AddCustomSubjectAlternativeNames(
+      ip_update_custom_sans_group, hidden=True)
+  flags.AddClearCustomSubjectAlternativeNames(
+      ip_update_custom_sans_group, hidden=True
+  )
 
 
 def AddAlphaArgs(unused_parser):

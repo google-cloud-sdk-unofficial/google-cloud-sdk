@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Creates a notebook execution to be used on a Colab Enterprise runtime.
+        Create a notebook execution to be used on a Colab Enterprise runtime.
     """,
     'EXAMPLES': """
         To create an execution of a notebook file with Cloud Storage URI `gs://my-bucket/my-notebook.ipynb`, with an execution job display name `my-execution`, compute configured from runtime template `my-runtime-template-id`, running with service account `my-service-account@my-project.iam.gserviceaccount.com`, with results uploaded to Cloud Storage bucket `gs://my-bucket/results`, and in region `us-central1` run:
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create an execution."""
 

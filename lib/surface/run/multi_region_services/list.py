@@ -40,8 +40,9 @@ class MultiRegionList(services_list.List):
           """,
   }
 
-  def _GlobalList(self, client):
+  def _GlobalList(self, client, args):
     """Provides the method to provide a regionless list."""
+    self._SetFormat(args, show_region=True, is_multi_region=True)
     return global_methods.ListServices(client, field_selector='multiRegionOnly')
 
   def Run(self, args):

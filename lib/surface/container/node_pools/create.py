@@ -399,6 +399,8 @@ class CreateBeta(Create):
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
         parser, for_node_pool=True, for_create=True)
+    flags.AddLocalSsdEncryptionModeFlag(
+        parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
@@ -455,6 +457,7 @@ class CreateBeta(Create):
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
+    ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     return ops
 
 
@@ -506,6 +509,7 @@ class CreateAlpha(Create):
     ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
+    ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     return ops
 
   @staticmethod
@@ -555,6 +559,8 @@ class CreateAlpha(Create):
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
         parser, for_node_pool=True, for_create=True)
+    flags.AddLocalSsdEncryptionModeFlag(
+        parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)

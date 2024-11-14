@@ -67,6 +67,22 @@ class Create(base.CreateCommand):
             ),
         },
     ).AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
+            ),
+        },
+    ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
@@ -105,6 +121,7 @@ class Create(base.CreateCommand):
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
     )
     if args.async_:
       return op
@@ -144,9 +161,25 @@ class BetaCreate(base.CreateCommand):
             'ENTERPRISE': 'Enterprise edition',
             'ENTERPRISE_PLUS': 'Enterprise Plus edition',
             'EDITION_UNSPECIFIED': (
-                'Spanner\'s legacy pricing model. For more information, see the'
+                "Spanner's legacy pricing model. For more information, see the"
                 ' [Spanner editions overview]'
                 '(https://cloud.google.com/spanner/docs/editions-overview)'
+            ),
+        },
+    ).AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
             ),
         },
     ).AddToParser(parser)
@@ -190,6 +223,7 @@ class BetaCreate(base.CreateCommand):
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
     )
     if args.async_:
       return op
@@ -221,7 +255,22 @@ class AlphaCreate(Create):
             ),
         },
     ).AddToParser(parser)
-    flags.DefaultBackupScheduleType().AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
+            ),
+        },
+    ).AddToParser(parser)
     resource_args.AddExpireBehaviorArg(parser)
     resource_args.AddInstanceTypeArg(parser)
     resource_args.AddDefaultStorageTypeArg(parser)

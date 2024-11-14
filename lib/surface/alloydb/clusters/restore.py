@@ -29,7 +29,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Restore(base.RestoreCommand):
   """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
 
@@ -110,8 +111,35 @@ class Restore(base.RestoreCommand):
     return op
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RestoreBeta(Restore):
+  """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
+
+  detailed_help = {
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
+          To restore a cluster from a backup, run:
+
+              $ {command} my-cluster --region=us-central1 --backup=my-backup
+
+          To restore a cluster from a source cluster and a timestamp, run:
+
+              $ {command} my-cluster --region=us-central1 \
+                --source-cluster=old-cluster \
+                --point-in-time=2012-11-15T16:19:00.094Z
+        """,
+  }
+
+  @classmethod
+  def Args(cls, parser):
+    super(RestoreBeta, cls).Args(parser)
+    flags.AddTagsArg(parser)
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RestoreAlpha(Restore):
+class RestoreAlpha(RestoreBeta):
   """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
 
   detailed_help = {

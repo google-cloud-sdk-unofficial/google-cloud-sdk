@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
 import os
 import shutil
 import socket
@@ -286,7 +287,6 @@ def _get_docker_command(args, project, creds_file_path):
       agent_id_prefix = args.id_prefix + '0'
     else:
       agent_id_prefix = args.id_prefix
-    # ID prefix must be the last argument for multipe-agent creation to work.
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
 
   _add_docker_flag_if_user_arg_present(args, agent_args)
@@ -320,19 +320,27 @@ def _execute_and_return_docker_command(args, project, creds_file_path):
 
 def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
   """Creates multiple identical agents."""
-  for i in range(1, agent_count):
+
+  # Find the index of the --agent-id-prefix flag in the docker command.
+  idx_agent_prefix = -1
+  for idx, token in enumerate(docker_command):
+    if token.startswith('--agent-id-prefix='):
+      idx_agent_prefix = idx
+      break
+
+  for count in range(1, agent_count):
+    # docker_command is a list, so copy to avoid mutating the original.
+    docker_command_copy = copy.deepcopy(docker_command)
     if agent_id_prefix:
-      # docker_command is a list, so copy to avoid  mutating the original.
-      # Agent ID prefix is always the last argument.
-      docker_command_to_run = docker_command[:-1] + [
-          '--agent-id-prefix={}{}'.format(agent_id_prefix, i)
-      ]
-    else:
-      docker_command_to_run = docker_command
+      # Since agent_id_prefix is not None, we know that idx_agent_prefix is not
+      # -1.
+      docker_command_copy[idx_agent_prefix] = (
+          '--agent-id-prefix={}{}'.format(agent_id_prefix, str(count))
+      )
 
     # Less error handling than before. Just propogate any process errors.
-    subprocess.run(docker_command_to_run, check=True)
-    _log_created_agent(docker_command_to_run)
+    subprocess.run(docker_command_copy, check=True)
+    _log_created_agent(docker_command_copy)
 
 
 @base.UniverseCompatible

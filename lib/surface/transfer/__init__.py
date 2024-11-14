@@ -36,6 +36,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Transfer(base.Group):
   """Manage Transfer Service jobs, operations, and agents."""

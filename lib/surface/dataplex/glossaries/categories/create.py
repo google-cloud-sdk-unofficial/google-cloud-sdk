@@ -26,21 +26,21 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.DefaultUniverseOnly
 class Create(base.Command):
-  """Create a Dataplex Glossary Category resource.
+  """Creates a glossary category.
 
-  A GlossaryCategory represents a collection of categories and terms within a
-  Glossary that are related to each other.
+  A glossary category represents a collection of glossary categories and
+  glossary terms within a glossary that are related to each other.
   """
 
   detailed_help = {
       'EXAMPLES': """\
 
-          To create a Glossary Category `test-category` in Glossary `test-glossary` in project `test-dataplex` at
+          To create a glossary category `test-category` in glossary `test-glossary` in project `test-project` in
           location `us-central1`, with description `test description`,
           displayName `displayName` and parent `projects/test-project/locations/us-central1/glossaries/test-glossary` , run:
 
             $ {command} test-category --glossary=test-glossary
-            --location=us-central1 --project=test-dataplex
+            --location=us-central1 --project=test-project
             --parent='projects/test-project/locations/us-central1/glossaries/test-glossary'
             --description='test description' --display-name='displayName'
 
@@ -53,17 +53,17 @@ class Create(base.Command):
     parser.add_argument(
         '--display-name',
         required=False,
-        help='Display Name of the Glossary Category.',
+        help='Display name of the glossary category.',
     )
     parser.add_argument(
         '--description',
         required=False,
-        help='Description of the Glossary Category.',
+        help='Description of the glossary category.',
     )
     parser.add_argument(
         '--parent',
         required=True,
-        help='Immediate parent of the created Glossary Category.',
+        help='Immediate parent of the created glossary category.',
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -86,8 +86,8 @@ class Create(base.Command):
     log.CreatedResource(
         create_response.name,
         details=(
-            'Glossary Category created in project [{0}] in location [{1}] in'
-            ' Glossary [{2}]'.format(
+            'Glossary category created in project [{0}] in location [{1}] in'
+            ' glossary [{2}]'.format(
                 glossary_category_ref.projectsId,
                 glossary_category_ref.locationsId,
                 glossary_category_ref.glossariesId,

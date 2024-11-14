@@ -45,6 +45,10 @@ class Update(base.Command):
     flags.AddDescriptionFlag(parser, 'New description of the spoke.')
     flags.AddAsyncFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    flags.AddUpdateIncludeExportRangesFlag(
+        parser,
+        hide_include_export_ranges_flag=False,
+    )
 
   def Run(self, args):
     client = networkconnectivity_api.SpokesClient(
@@ -55,6 +59,9 @@ class Update(base.Command):
     description = args.description
     if description is not None:
       update_mask.append('description')
+    include_export_ranges = args.include_export_ranges
+    if include_export_ranges is not None:
+      update_mask.append('linked_producer_vpc_network.include_export_ranges')
 
     labels = None
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -73,6 +80,10 @@ class Update(base.Command):
       spoke = client.messages.GoogleCloudNetworkconnectivityV1betaSpoke(
           description=description, labels=labels
       )
+      if include_export_ranges is not None:
+        spoke.linkedProducerVpcNetwork = client.messages.GoogleCloudNetworkconnectivityV1betaLinkedProducerVpcNetwork(
+            includeExportRanges=include_export_ranges,
+        )
       op_ref = client.UpdateSpokeBeta(spoke_ref, spoke, update_mask)
     else:
       if labels_diff.MayHaveUpdates():
@@ -83,8 +94,14 @@ class Update(base.Command):
           labels = labels_update.labels
           update_mask.append('labels')
 
-       # Construct a spoke message with only the updated fields
+      # Construct a spoke message with only the updated fields
       spoke = client.messages.Spoke(description=description, labels=labels)
+      if include_export_ranges is not None:
+        spoke.linkedProducerVpcNetwork = (
+            client.messages.LinkedProducerVpcNetwork(
+                includeExportRanges=include_export_ranges,
+            )
+        )
       op_ref = client.UpdateSpoke(spoke_ref, spoke, update_mask)
 
     log.status.Print('Update request issued for: [{}]'.format(spoke_ref.Name()))

@@ -14,11 +14,24 @@
 # limitations under the License.
 """Deploy a container to Cloud Run that will handle workloads that are not ingress based."""
 
+import enum
+
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.command_lib.run.v2 import flags_parser
+from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+
+
+class BuildType(enum.Enum):
+  DOCKERFILE = 'Dockerfile'
+  BUILDPACKS = 'Buildpacks'
 
 
 def ContainerArgGroup():
@@ -109,8 +122,49 @@ class Deploy(base.Command):
     container_args.AddToParser(parser)
 
     # No output by default, can be overridden by --format
-    parser.display_info.AddFormat('none')
+    # parser.display_info.AddFormat('none')
+
+  def _GetBaseChanges(self, args):
+    """Returns the worker pool config changes with some default settings."""
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    # TODO(b/365790178): Removal of binauthz break glass justification comes
+    # here.
+    changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
+    return changes
 
   def Run(self, args):
     """Deploy a WorkerPool container to Cloud Run."""
-    raise NotImplementedError
+    # TODO(b/366466235): Add support for source deploy.
+    # TODO(b/376904673): Add progress tracker.
+    if not args.IsSpecified('image'):
+      raise c_exceptions.RequiredArgumentException(
+          '--image',
+          'Requires a container image to deploy (e.g. '
+          '`gcr.io/cloudrun/hello:latest`).',
+      )
+
+    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
+    flags.ValidateResource(worker_pool_ref)
+
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.worker_pool.Parse().locationsId
+      return region + '-' + endpoint
+
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    # pre-fetch the worker pool in case it already exists.
+    worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+    config_changes = self._GetBaseChanges(args)
+    response = worker_pools_client.ReleaseWorkerPool(
+        worker_pool_ref, worker_pool, config_changes
+    )
+    if not response:
+      raise exceptions.ArgumentError(
+          'Cannot create WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+      )
+    # TODO(b/366576967): Support wait operation in sync mode.
+    return response.operation

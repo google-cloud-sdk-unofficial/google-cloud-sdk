@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Gets the IAM policy for a Colab Enterprise runtime template.
+        Get the IAM policy for a Colab Enterprise runtime template.
     """,
     'EXAMPLES': """
         To get the IAM policy for a runtime template with id `my-runtime-template` in region `us-central1`, run:
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a Colab Enterprise runtime template."""
 

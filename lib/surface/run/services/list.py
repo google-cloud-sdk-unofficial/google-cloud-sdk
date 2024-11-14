@@ -73,7 +73,8 @@ class List(commands.List):
                  args,
                  show_region=False,
                  show_namespace=False,
-                 show_description=False):
+                 show_description=False,
+                 is_multi_region=False):
     """Set display format for output.
 
     Args:
@@ -81,13 +82,15 @@ class List(commands.List):
       show_region: bool, True to show region of listed services
       show_namespace: bool, True to show namespace of listed services
       show_description: bool, True to show description of listed services
+      is_multi_region: bool, True if the list is for multi-region services
     """
     columns = [
         pretty_print.READY_COLUMN,
         'firstof(id,metadata.name):label=SERVICE',
     ]
     if show_region:
-      columns.append('region:label=REGION')
+      columns.append('region:label={}'
+                     .format('REGIONS' if is_multi_region else 'REGION'))
     if show_namespace:
       columns.append('namespace:label=NAMESPACE')
     if show_description:
@@ -103,20 +106,20 @@ class List(commands.List):
         )
     )
 
-  def _GlobalList(self, client):
+  def _GlobalList(self, client, args):
     """Provides the method to provide a regionless list."""
+    self._SetFormat(args, show_region=True)
     return global_methods.ListServices(client)
 
   def Run(self, args):
     """List available services."""
     is_managed = platforms.GetPlatform() == platforms.PLATFORM_MANAGED
     if is_managed and not args.IsSpecified('region'):
-      self._SetFormat(args, show_region=True)
       client = global_methods.GetServerlessClientInstance()
       self.SetPartialApiEndpoint(client.url)
       args.CONCEPTS.namespace.Parse()  # Error if no proj.
       # Don't consider region property here, we'll default to all regions
-      return commands.SortByName(self._GlobalList(client))
+      return commands.SortByName(self._GlobalList(client, args))
     else:
       conn_context = connection_context.GetConnectionContext(
           args, flags.Product.RUN, self.ReleaseTrack())

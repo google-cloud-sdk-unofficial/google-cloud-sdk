@@ -37,6 +37,7 @@ $ {command} my-cluster --location=us-west1
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update an Anthos on VMware admin cluster."""
 
@@ -52,6 +53,7 @@ class Update(base.UpdateCommand):
     parser.display_info.AddFormat(vmware_constants.VMWARE_ADMIN_CLUSTERS_FORMAT)
     flags.AddAdminClusterResourceArg(parser, 'to update', True)
     flags.AddRequiredPlatformVersion(parser)
+    flags.AddVersion(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):

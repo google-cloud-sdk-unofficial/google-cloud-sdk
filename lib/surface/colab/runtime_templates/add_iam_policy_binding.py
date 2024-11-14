@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Adds an IAM policy binding to a Colab Enterprise runtime template.
+        Add an IAM policy binding to a Colab Enterprise runtime template.
     """,
     'EXAMPLES': """
         To set `someone@example.com` to have the `roles/aiplatform.notebookRuntimeUser` role for a runtime template with id `my-runtime-template` in region `us-central1`, run:
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a Colab Enterprise runtime template."""
 

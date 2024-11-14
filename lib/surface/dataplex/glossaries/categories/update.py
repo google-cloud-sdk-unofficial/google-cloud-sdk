@@ -28,20 +28,20 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.DefaultUniverseOnly
 class Update(base.Command):
-  """Update a Dataplex Glossary Category resource."""
+  """Updates a glossary category."""
 
   detailed_help = {
       'EXAMPLES': """\
-          To update display name, desciption and labels of Glossary Category
-          `test-category` in Glossary `test-glossary` in project `test-project`
-          at location `us-central1`, run:
+          To update display name, desciption and labels of glossary category
+          `test-category` in glossary `test-glossary` in project `test-project`
+          in location `us-central1`, run:
 
           $ {command} test-category --location=us-central1 --project=test-project
           --glossary=test-glossary --description='updated description'
           --display-name='updated displayName' --labels=key1=value1,key2=value2
 
-          To update parent of Glossary Category `test-category` in Glossary
-          `test-glossary` in project `test-project` at location `us-central1`, run:
+          To update parent of glossary category `test-category` in glossary
+          `test-glossary` in project `test-project` in location `us-central1`, run:
 
           $ {command} test-category --location=us-central1 --project=test-project
           --glossary=test-glossary --parent='projects/test-project/locations/us-central1/glossaries/updated-glossary'
@@ -55,17 +55,17 @@ class Update(base.Command):
     parser.add_argument(
         '--description',
         required=False,
-        help='Description of the Glossary Category.',
+        help='Description of the glossary category.',
     )
     parser.add_argument(
         '--display-name',
         required=False,
-        help='Display Name of the Glossary Category.',
+        help='Display Name of the glossary category.',
     )
     parser.add_argument(
         '--parent',
         required=False,
-        help='Immediate parent of the created Glossary Category.',
+        help='Immediate parent of the created glossary category.',
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -76,7 +76,7 @@ class Update(base.Command):
     update_mask = glossary.GenerateCategoryUpdateMask(args)
     if len(update_mask) < 1:
       raise exceptions.HttpException(
-          'Update commands must specify at least one additional parameter to'
+          'Update command must specify at least one additional parameter to'
           ' change.'
       )
 

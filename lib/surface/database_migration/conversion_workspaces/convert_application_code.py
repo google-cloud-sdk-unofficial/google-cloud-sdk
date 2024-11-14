@@ -59,6 +59,8 @@ class ConvertApplicationCode(base.Command):
         group_help='The location of the resource.',
         required=True,
     ).AddToParser(parser)
+    cw_flags.AddSourceDialectFlag(parser)
+    cw_flags.AddTargetDialectFlag(parser)
     cw_flags.AddSourceDetailsFlag(parser)
     cw_flags.AddTargetPathFlag(parser)
 

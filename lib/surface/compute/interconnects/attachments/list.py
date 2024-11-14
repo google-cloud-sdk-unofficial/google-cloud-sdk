@@ -26,6 +26,9 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List InterconnectAttachments."""
 
@@ -33,15 +36,27 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""
-        table(
-          name,
-          region.basename(),
-          type.basename(),
-          interconnect.basename(),
-          router.basename()
-        )
-    """)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            region.basename(),
+            type.basename(),
+            interconnect.basename(),
+            router.basename(),
+            attachmentGroup.basename()
+          )
+      """)
+    else:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            region.basename(),
+            type.basename(),
+            interconnect.basename(),
+            router.basename()
+          )
+      """)
 
   def _GetListPage(self, compute_interconnect_attachments, request):
     response = compute_interconnect_attachments.AggregatedList(request)

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Describes a Colab Enterprise notebook execution.
+        Describe a Colab Enterprise notebook execution.
     """,
     'EXAMPLES': """
         To describe a notebook execution with id `my-execution` in region `us-central1`, run:
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe an execution."""
 

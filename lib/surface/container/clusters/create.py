@@ -433,6 +433,7 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
       enable_confidential_storage=get_default('enable_confidential_storage'),
       storage_pools=get_default('storage_pools'),
+      local_ssd_encryption_mode=get_default('local_ssd_encryption_mode'),
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
@@ -857,6 +858,7 @@ flags_to_add = {
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'stacktype': flags.AddStackTypeFlag,
         'storagePools': flags.AddStoragePoolsFlag,
+        'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1052,6 +1054,7 @@ flags_to_add = {
         'securityprofile': flags.AddSecurityProfileForCreateFlags,
         'stacktype': flags.AddStackTypeFlag,
         'storagePools': flags.AddStoragePoolsFlag,
+        'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1389,6 +1392,7 @@ class CreateBeta(Create):
     )
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.storage_pools = get_default('storage_pools')
+    ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
@@ -1526,6 +1530,7 @@ class CreateAlpha(Create):
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.storage_pools = get_default('storage_pools')
+    ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'

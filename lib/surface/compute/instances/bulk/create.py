@@ -180,6 +180,7 @@ class Create(base.Command):
   _support_watchdog_timer = False
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
+  _support_reservation_bound = False
 
   _log_async = False
 
@@ -210,6 +211,7 @@ class Create(base.Command):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
+        support_reservation_bound=cls._support_reservation_bound,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -422,6 +424,7 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
+  _support_reservation_bound = False
 
   @classmethod
   def Args(cls, parser):
@@ -450,6 +453,7 @@ class CreateBeta(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
+        support_reservation_bound=cls._support_reservation_bound,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -483,6 +487,7 @@ class CreateAlpha(Create):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
+  _support_reservation_bound = True
 
   @classmethod
   def Args(cls, parser):
@@ -511,6 +516,7 @@ class CreateAlpha(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_reservation_bound=cls._support_reservation_bound,
     )
 
     cls.AddSourceInstanceTemplate(parser)

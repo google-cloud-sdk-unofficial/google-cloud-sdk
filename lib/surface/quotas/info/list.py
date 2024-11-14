@@ -49,7 +49,6 @@ class ListAlpha(base.ListCommand):
     """
     flags.AddResourceFlags(parser, 'quota info to list')
     flags.Service().AddToParser(parser)
-    flags.PageToken().AddToParser(parser)
 
   def Run(self, args):
     """Run command.
@@ -96,7 +95,6 @@ class ListBeta(base.ListCommand):
     """
     flags.AddResourceFlags(parser, 'quota info to list')
     flags.Service().AddToParser(parser)
-    flags.PageToken().AddToParser(parser)
 
   def Run(self, args):
     """Run command.

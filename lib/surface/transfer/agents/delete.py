@@ -20,96 +20,154 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.transfer import agents_util
 from googlecloudsdk.core.resource import resource_printer
 
 
-_DELETE_SPECIFIC_AGENTS_MESSAGE_FORMAT = """\
-To delete specific agents on your machine, run the following Docker command:
+_DELETE_SPECIFIC_AGENTS_MESSAGE = """\
+To delete specific agents on your machine, run the following command:
 
-docker stop {}
+{container_manager} stop {container_ids}
 
-Note: If you encounter a permission error, you may need to add "sudo" before "docker".
+Note: If you encounter a permission error or cannot find the agent, you may need
+to add "sudo" before "{container_manager}".
 """
-_DELETE_ALL_AGENTS_COMMAND = (
-    'docker stop $(docker container list --quiet --all --filter'
-    ' ancestor=gcr.io/cloud-ingest/tsop-agent)')
 _DELETE_ALL_AGENTS_MESSAGE = """\
-To delete all agents on your machine, run the following Docker command:
+To delete all agents on your machine, run the following command:
 
-{}
+{container_manager} stop $({container_manager} container list --quiet --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent)
 
-Note: If you encounter a permission error, you may need to add "sudo" before both instances of "docker".
-""".format(_DELETE_ALL_AGENTS_COMMAND)
+Note: If you encounter a permission error, you may need to add "sudo" before both instances of "{container_manager}".
+"""
 _UNINSTALL_MESSAGE = """\
-To delete all agents on your machine and uninstall the machine's agent Docker image, run the following commands:
+To delete all agents on your machine and uninstall the machine's agent container image, run the following commands:
 
-{}
-# May take a moment for Docker containers to shutdown before you can run:
-docker image rm gcr.io/cloud-ingest/tsop-agent
+{container_manager} stop $({container_manager} container list --quiet --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent)
 
-Note: If you encounter a permission error, you may need to add "sudo" before all three instances of "docker".
-""".format(_DELETE_ALL_AGENTS_COMMAND)
+# May take a moment for containers to shutdown before you can run:
+{container_manager} image rm gcr.io/cloud-ingest/tsop-agent
+
+Note: If you encounter a permission error, you may need to add "sudo" before all three instances of "{container_manager}".
+"""
 _LIST_AGENTS_MESSAGE = """\
 Pick which agents to delete. You can include --all to delete all agents on your machine or --ids to specify agent IDs. You can find agent IDs by running:
 
-docker container list --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent
-
+{container_manager} container list --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent
 """
 
 
-@base.UniverseCompatible
-class Delete(base.Command):
-  """Delete a Transfer Service transfer agents."""
+_DELETE_COMMAND_DESCRIPTION_TEXT = """\
+Delete Transfer Service agents from your machine.
+"""
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-      Delete agents and remove agent resources from your machine.
+_DELETE_COMMAND_EXAMPLES_TEXT = """\
+If you plan to delete specific agents, you can list which agents are running on your machine by running:
 
-      """,
-      'EXAMPLES':
-          """\
-      If you plan to delete specific agents, you can list which agents are running on your machine by running:
+  $ {container_managers} container list --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent
 
-        $ docker container list --all --filter ancestor=gcr.io/cloud-ingest/tsop-agent
+Then run:
 
-      Then run:
+  $ {{command}} --ids=id1,id2,...
+"""
 
-        $ {command} --ids=id1,id2,...
-      """
+
+def _get_detailed_help_text(release_track):
+  """Returns the detailed help text for the delete command.
+
+  Args:
+    release_track (base.ReleaseTrack): The release track.
+
+  Returns:
+    A dict containing keys DESCRIPTION, EXAMPLES that provides detailed help.
+  """
+  is_alpha = release_track == base.ReleaseTrack.ALPHA
+  container_managers = 'docker (or podman)' if is_alpha else 'docker'
+  return {
+      'DESCRIPTION': _DELETE_COMMAND_DESCRIPTION_TEXT,
+      'EXAMPLES': _DELETE_COMMAND_EXAMPLES_TEXT.format(
+          container_managers=container_managers
+      ),
   }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.Command):
+  """Delete Transfer Service transfer agents."""
+
+  detailed_help = _get_detailed_help_text(base.ReleaseTrack.GA)
 
   @staticmethod
   def Args(parser):
     mutually_exclusive_flags_group = parser.add_group(
-        mutex=True, sort_args=False)
+        mutex=True, sort_args=False
+    )
     mutually_exclusive_flags_group.add_argument(
         '--ids',
         type=arg_parsers.ArgList(),
         metavar='IDS',
-        help='The IDs of the agents you want to delete. Separate multiple agent'
-        ' IDs with commas, with no spaces following the commas.')
+        help=(
+            'The IDs of the agents you want to delete. Separate multiple agent'
+            ' IDs with commas, with no spaces following the commas.'
+        ),
+    )
     mutually_exclusive_flags_group.add_argument(
         '--all',
         action='store_true',
-        help='Delete all agents running on your machine.')
+        help='Delete all agents running on your machine.',
+    )
     mutually_exclusive_flags_group.add_argument(
         '--uninstall',
         action='store_true',
-        help='Fully uninstall the agent Docker image in addition to deleting'
-        ' the agents. Uninstalling the Docker image will free up space, but'
-        " you'll need to reinstall it to run agents on this machine in the"
-        ' future.')
+        help=(
+            'Fully uninstall the agent container image in addition to deleting'
+            ' the agents. Uninstalling the container image will free up space,'
+            " but you'll need to reinstall it to run agents on this machine in"
+            ' the future.'
+        ),
+    )
 
   def Display(self, args, resources):
-    del args  # Unsued.
+    del args  # Unused.
     resource_printer.Print(resources, 'object')
 
   def Run(self, args):
+    container_manager = agents_util.ContainerManager.from_args(args)
+
     if args.ids:
-      return _DELETE_SPECIFIC_AGENTS_MESSAGE_FORMAT.format(' '.join(args.ids))
+      return _DELETE_SPECIFIC_AGENTS_MESSAGE.format(
+          container_manager=container_manager.value,
+          container_ids=' '.join(args.ids),
+      )
     if args.all:
-      return _DELETE_ALL_AGENTS_MESSAGE
+      return _DELETE_ALL_AGENTS_MESSAGE.format(
+          container_manager=container_manager.value,
+      )
     if args.uninstall:
-      return _UNINSTALL_MESSAGE
-    return _LIST_AGENTS_MESSAGE
+      return _UNINSTALL_MESSAGE.format(
+          container_manager=container_manager.value,
+      )
+    return _LIST_AGENTS_MESSAGE.format(
+        container_manager=container_manager.value,
+    )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete Transfer Service transfer agents."""
+
+  detailed_help = _get_detailed_help_text(base.ReleaseTrack.ALPHA)
+
+  @staticmethod
+  def Args(parser):
+    Delete.Args(parser)
+    # TODO(b/377355485) - Once Podman support is GA, move this flag to GA track.
+    parser.add_argument(
+        '--container-manager',
+        choices=sorted(
+            [option.value for option in agents_util.ContainerManager]
+        ),
+        default=agents_util.ContainerManager.DOCKER.value,
+        help='The container manager to use for running agents.',
+    )

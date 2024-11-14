@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Describes a Colab Enterprise notebook runtime.
+        Describe a Colab Enterprise notebook runtime.
     """,
     'EXAMPLES': """
         To describe a runtime with id 'my-runtime' in region 'us-central1', run:
@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a runtime."""
 

@@ -71,6 +71,7 @@ def _CommonArgs(
     support_vlan_nic=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_reservation_bound=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -123,7 +124,9 @@ def _CommonArgs(
   maintenance_flags.AddResourcePoliciesArgs(
       parser, 'added to', 'instance-template'
   )
-  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddProvisioningModelVmArgs(
+      parser, support_reservation_bound=support_reservation_bound
+  )
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
@@ -1134,6 +1137,7 @@ class Create(base.CreateCommand):
   _support_watchdog_timer = False
   _support_disk_labels = False
   _support_ipv6_only = True
+  _support_reservation_bound = False
 
   @classmethod
   def Args(cls, parser):
@@ -1159,6 +1163,7 @@ class Create(base.CreateCommand):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1252,6 +1257,7 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_disk_labels = True
   _support_ipv6_only = True
+  _support_reservation_bound = False
 
   @classmethod
   def Args(cls, parser):
@@ -1278,6 +1284,7 @@ class CreateBeta(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1375,6 +1382,7 @@ class CreateAlpha(Create):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_disk_labels = True
+  _support_reservation_bound = True
 
   @classmethod
   def Args(cls, parser):
@@ -1402,6 +1410,7 @@ class CreateAlpha(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)

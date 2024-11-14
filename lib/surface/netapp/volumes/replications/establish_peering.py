@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class EstablishPeering(base.Command):
   """Establish peering for Hybrid replication."""

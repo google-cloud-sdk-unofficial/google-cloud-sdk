@@ -65,6 +65,22 @@ class Update(base.Command):
         parser=parser,
     )
     flags.Edition(None, True).AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
+            ),
+        },
+    ).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -93,6 +109,7 @@ class Update(base.Command):
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
     )
     if args.async_:
       return op
@@ -139,6 +156,22 @@ class BetaUpdate(base.Command):
         asymmetric_options_group=True,
     )
     flags.Edition(None, True).AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
+            ),
+        },
+    ).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -169,6 +202,7 @@ class BetaUpdate(base.Command):
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
     )
     if args.async_:
       return op
@@ -219,7 +253,22 @@ class AlphaUpdate(base.Command):
 
     flags.SsdCache().AddToParser(parser)
     flags.Edition(None, True).AddToParser(parser)
-    flags.DefaultBackupScheduleType().AddToParser(parser)
+    flags.DefaultBackupScheduleType(
+        choices={
+            'DEFAULT_BACKUP_SCHEDULE_TYPE_UNSPECIFIED': 'Not specified.',
+            'NONE': (
+                'No default backup schedule is created automatically when a new'
+                ' database is created in an instance.'
+            ),
+            'AUTOMATIC': (
+                'A default backup schedule is created automatically when a new'
+                ' database is created in an instance. You can edit or delete'
+                " the default backup schedule once it's created. The default"
+                ' backup schedule creates a full backup every 24 hours. These'
+                ' full backups are retained for 7 days.'
+            ),
+        },
+    ).AddToParser(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

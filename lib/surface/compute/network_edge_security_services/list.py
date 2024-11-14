@@ -25,6 +25,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine network edge security services.
 
@@ -70,7 +71,7 @@ class List(base.ListCommand):
         args.filter, defaults=defaults)
 
     request = messages.ComputeNetworkEdgeSecurityServicesAggregatedListRequest(
-        project=project, filter=filter_expr)
+        project=project, filter=filter_expr, returnPartialSuccess=True)
 
     # TODO(b/34871930): Write and use helper for handling listing.
     resource_lists, next_page_token = (

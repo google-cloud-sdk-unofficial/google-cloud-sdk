@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Starts a stopped Colab Enterprise notebook runtime.
+        Start a stopped Colab Enterprise notebook runtime.
     """,
     'EXAMPLES': """
         To start a runtime with id 'my-runtime' in region 'us-central1', run:
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Start(base.UpdateCommand):
   """Start a stopped runtime."""
 

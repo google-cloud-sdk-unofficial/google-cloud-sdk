@@ -21,14 +21,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class NetworkProfiles(base.Group):
   """Read Compute Engine network profiles."""
 
 
-NetworkProfiles.category = base.INSTANCES_CATEGORY
+NetworkProfiles.category = base.NETWORKING_CATEGORY
 
 NetworkProfiles.detailed_help = {
     'DESCRIPTION': """

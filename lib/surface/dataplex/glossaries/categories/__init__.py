@@ -12,18 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Dataplex Glossary Category services."""
+"""Command group for Dataplex glossary category services."""
 from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 @base.DefaultUniverseOnly
-class Glossaries(base.Group):
-  """Manage Dataplex Glossary Categories.
+class GlossaryCategories(base.Group):
+  """Manage Dataplex glossary categories.
 
-  A GlossaryCategory represents a collection of categories and terms within a
-  Glossary that are related to each other.
+  A glossary category represents a collection of glossary categories and
+  glossary terms within a glossary that are related to each other.
   """
 
   category = base.DATA_ANALYTICS_CATEGORY

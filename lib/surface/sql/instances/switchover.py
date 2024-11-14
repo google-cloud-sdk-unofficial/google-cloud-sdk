@@ -26,8 +26,6 @@ import sys
 import textwrap
 
 from googlecloudsdk.api_lib.sql import api_util
-from googlecloudsdk.api_lib.sql import exceptions
-from googlecloudsdk.api_lib.sql import instances
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -54,13 +52,11 @@ def AddBaseArgs(parser):
   flags.AddSwitchoverDbTimeout(parser)
 
 
-def RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False):
+def RunBaseSwitchoverCommand(args):
   """Switches over a Cloud SQL instance to one of its replicas.
 
   Args:
     args: argparse.Namespace, The arguments that this command was invoked with.
-    is_postgres_switchover_enabled: bool, Whether the Postgres switchover
-      feature is enabled.
 
   Returns:
     A dict object representing the operations resource describing the
@@ -80,22 +76,6 @@ def RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False):
       params={'project': properties.VALUES.core.project.GetOrFail},
       collection='sql.instances',
   )
-
-  instance_resource = sql_client.instances.Get(
-      sql_messages.SqlInstancesGetRequest(
-          project=instance_ref.project, instance=instance_ref.instance
-      )
-  )
-
-  is_postgres = instances.InstancesV1Beta4.IsPostgresDatabaseVersion(
-      instance_resource.databaseVersion
-  )
-
-  if is_postgres and not is_postgres_switchover_enabled:
-    raise exceptions.OperationError(
-        'Switchover operation is currently supported for Cloud SQL for SQL'
-        ' Server and MySQL instances only'
-    )
 
   # Format the message ourselves here rather than supplying it as part of the
   # 'message' to PromptContinue. Having the whole paragraph be automatically
@@ -146,66 +126,19 @@ def RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Switchover(base.Command):
   """Switches over a Cloud SQL instance to one of its replicas.
 
-  Switches over a Cloud SQL instance to one of its replicas. Only supported on
-  Cloud SQL for SQL Server and MySQL instances.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  def Run(self, args):
-    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=False)
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-    """
-    AddBaseArgs(parser)
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class SwitchoverBeta(base.Command):
-  """Switches over a Cloud SQL instance to one of its replicas.
-
   Switches over a Cloud SQL instance to one of its replicas.
   """
 
   detailed_help = DETAILED_HELP
 
   def Run(self, args):
-    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=True)
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-    """
-    AddBaseArgs(parser)
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SwitchoverAlpha(base.Command):
-  """Switches over a Cloud SQL instance to one of its replicas.
-
-  Switches over a Cloud SQL instance to one of its replicas.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  def Run(self, args):
-    return RunBaseSwitchoverCommand(args, is_postgres_switchover_enabled=True)
+    return RunBaseSwitchoverCommand(args)
 
   @staticmethod
   def Args(parser):

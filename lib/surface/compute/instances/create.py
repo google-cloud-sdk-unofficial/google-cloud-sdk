@@ -192,7 +192,6 @@ def _CommonArgs(
   instances_flags.AddStackTypeArgs(parser, support_ipv6_only=support_ipv6_only)
   instances_flags.AddIpv6NetworkTierArgs(parser)
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
-  instances_flags.AddProvisioningModelVmArgs(parser)
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddIPv6AddressArgs(parser)
   instances_flags.AddIPv6PrefixLengthArgs(parser)
@@ -364,6 +363,7 @@ class Create(base.CreateCommand):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(parser)
 
   def Collection(self):
     return 'compute.instances'
@@ -894,6 +894,7 @@ class CreateBeta(Create):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(parser)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 
@@ -1001,6 +1002,9 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(
+        parser, support_reservation_bound=True
+    )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 

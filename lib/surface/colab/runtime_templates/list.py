@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Lists your project's Colab Enterprise notebook runtime templates in a given region.
+        List your project's Colab Enterprise notebook runtime templates in a given region.
     """,
     'EXAMPLES': """
         To list your runtime templates in region 'us-central1', run:
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List your runtime templates."""
 

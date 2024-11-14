@@ -26,6 +26,10 @@ from surface.run.services import describe
 class MultiRegionDescribe(describe.Describe):
   """Command to describe a multi-region service."""
 
+  @staticmethod
+  def Args(parser):
+    describe.Describe.CommonArgs(parser, is_multi_region=True)
+
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(
         args,

@@ -62,11 +62,11 @@ Container Flags
 
   if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.BaseImageArg())
-    group.AddArgument(flags.StartupProbeFlag())
-    group.AddArgument(flags.LivenessProbeFlag())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
+    group.AddArgument(flags.StartupProbeFlag())
+    group.AddArgument(flags.LivenessProbeFlag())
 
   return group
 

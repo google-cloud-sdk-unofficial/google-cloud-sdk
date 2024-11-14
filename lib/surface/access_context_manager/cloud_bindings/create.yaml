@@ -4,11 +4,13 @@
     brief: Create cloud access bindings for a specific group.
     GA:
       description: |
-        Create a new cloud access binding. The access level will be globally bound with the group.
+        Create a new cloud access binding. The access level and/or session settings will be globally
+        bound with the group.
 
-        Allowlisted Applications can be specified to limit the scope of the cloud access binding
-        in the 'binding-file'. In such case, the access level specified in the yaml file will be
-        bound with the group and the allowlisted applications.
+        To apply access level and/or session settings to a specific application, specify the
+        restricted application in the 'binding-file'. In such case, the access level and/or
+        session settings specified in the yaml file will be bound with the group and the restricted
+        applications.
       examples: |
         To create a new cloud access binding, run:
 
@@ -30,22 +32,56 @@
 
           $ {command} --group-key=my-group-key --level=accessPolicies/123/accessLevels/abc \
             --dry-run-level=accessPolicies/123/accessLevels/def
+
+        To create a new cloud access binding with global session settings, specify your session
+        length using an ISO duration string and the `session-length` flag. For example:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h
+
+        To set a particular session reauth method for these session settings, run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h --session-reauth-method=LOGIN
+
+        To create session settings for a particular application, supply a YAML file and run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --binding-file='binding.yaml'
+
+        Global and per-app session settings can be set on the same group, along with access levels.
+        For example:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h --session-reauth-method=LOGIN \
+            --level=accessPolicies/123/accessLevels/abc \
+            --dry-run-level=accessPolicies/123/accessLevels/def \
+            --binding-file='binding.yaml'
     ALPHA:
       description: |
-        Create a new access binding. The access level will be bound with
+        Create a new access binding. The access level (if any) will be bound with
 
         - a group and the restricted client application
         - a specific service account or all service accounts in a specified project.
 
-        If a group key is specified, the access level is globally enforced for
-        all context-aware access group members, as specified in the binding.
+        The session settings (if any) will be bound with
+
+        - a group
+
+        If you want to bind session settings to a particular application, use scoped access
+        settings.
+
+        If a group key is specified, the access level and/or session settings are globally enforced
+        for all context-aware access group members, as specified in the binding.
         If a restricted client application is also specified, then the enforcement applies only to
-        the specified application, and not to the entire organization.
-        If the restricted client application is specified, then --binding-file cannot be set.
+        the specified application, and not to the entire organization. Session settings are
+        incompatible with the top level --restricted-client-application flags; please use
+        --binding-file to specify scoped access settings. If the restricted client application is
+        specified, then --binding-file cannot be set.
         If a service account is specified, then the enforcement applies only to the specified
         service account.
-        If a service account project is specified, then the enforcement applies to all the service
-        accounts belongs to the specified project.
+        If a service account project is specified, the enforcement applies to all of the
+        service accounts belonging to the specified project.
       examples: |
         To create a new global cloud access binding, run:
 
@@ -97,6 +133,31 @@
             --level=accessPolicies/123/accessLevels/abc \
             --organization='1234567890' \
 
+        To create a new cloud access binding with global session settings, specify your session
+        length using an ISO duration string and the `session-length` flag. For example:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h
+
+        To set a particular session reauth method for these session settings, run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h --session-reauth-method=LOGIN
+
+        To create session settings for specific applications, supply a YAML file and run:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --binding-file='binding.yaml'
+
+        Global and per-app session settings can be set on the same group, along with access levels.
+        For example:
+
+          $ {command} --group-key=my-group-key --organization='1234567890' \
+            --session-length=2h --session-reauth-method=LOGIN \
+            --level=accessPolicies/123/accessLevels/abc \
+            --dry-run-level=accessPolicies/123/accessLevels/def \
+            --binding-file='binding.yaml'
+
   GA:
     request:
       collection: accesscontextmanager.organizations.gcpUserAccessBindings
@@ -139,7 +200,7 @@
     - api_field: gcpUserAccessBinding.groupKey
       arg_name: group-key
       type: str
-      help_text: Google Group id whose members are subject to the restrictions of this binding.
+      help_text: Google Group ID whose members are subject to the restrictions of this binding.
       GA:
         required: true
     - api_field: gcpUserAccessBinding.accessLevels
@@ -174,47 +235,61 @@
           `restricted-client-application-client-ids` or `restricted-client-application-names` are
           provided, then the access level is applied to the entire organization.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionLength
-      hidden: true
       arg_name: session-length
       type: googlecloudsdk.command_lib.accesscontextmanager.cloud_bindings:ProcessSessionLength
-      help_text: |
-        The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
-        least one hour or zero, and no more than twenty-four hours. Granularity is limited to
-        seconds.
+      GA:
+        help_text: |
+          The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
+          least one hour or zero seconds, and no more than twenty-four hours. Granularity is limited
+          to seconds.
 
-        When --session-length=0 then users in the group attached to this binding will have infinite
-        session length, effectively disabling session.
+          When --session-length=0 then users in the group attached to this binding will have infinite
+          session length, effectively disabling the session settings.
 
-        A session begins once a user signs-in successfully. If a user signs out before the end of
-        the session lifetime, a new login creates a new session with a fresh lifetime. When a
-        session expires, the user is asked to sessionenticate in accordance with session-method.
+          A session begins when a user signs in successfully. If a user signs out before the end of
+          the session lifetime, a new login creates a new session with a fresh lifetime. When a
+          session expires, the user is asked to re-authenticate in accordance with session-method.
 
-        Setting --session-method when --session-length is empty raises an error. Cannot set
-        --session-length on restricted client applications; please use scoped access settings.
+          Setting --session-reauth-method when --session-length is empty raises an error.
+      ALPHA:
+        help_text: |
+            The maximum lifetime of a user session provided as an  ISO 8601 duration string. Must be at
+            least one hour or zero seconds, and no more than twenty-four hours. Granularity is limited
+            to seconds.
+
+            When --session-length=0 then users in the group attached to this binding will have infinite
+            session length, effectively disabling session.
+
+            A session begins when a user signs-in successfully. If a user signs out before the end of
+            the session lifetime, a new login creates a new session with a fresh lifetime. When a
+            session expires, the user is asked to re-authenticate in accordance with session-method.
+
+            Setting --session-reauth-method when --session-length is empty raises an error. Cannot set
+            --session-length with --restricted-client-application-client-ids or
+            --restricted-client-application-names; please use scoped access settings.
     - api_field: gcpUserAccessBinding.sessionSettings.sessionReauthMethod
-      hidden: true
       arg_name: session-reauth-method
       default: login
       help_text: |
-        Specifies the security check a user must undergo once their session expires. Defaults to
-        --session-method=LOGIN if unspecified and --session-length is set. Cannot be used when
-        --session-length is empty or 0.
+        Specifies the type of re-authentication challenge given to the user when their session
+         expires. Defaults to --session-reauth-method=login if unspecified and --session-length is
+         set. Cannot be used when --session-length is empty or 0.
       choices:
       - arg_value: login
         enum_value: LOGIN
         help_text: |
-          The user will prompted to perform regular login. Users who are enrolled for two-step
-          verification and haven't chosen to "Remember this computer" will be prompted for their
-          second factor.
+          The user must complete a regular login.
       - arg_value: security-key
         enum_value: SECURITY_KEY
         help_text: |
-         The user will be prompted to autheticate using their security key. If no security key has
-         been configured, then we will fallback to LOGIN.
+         The user must re-autheticate using their security key. Before enabling this session reauth
+         method, ensure a security key is properly configured for the user. For help configuring
+         your security key, see
+         https://support.google.com/a/answer/2537800?hl=en#zippy=%2Cview-add-or-remove-security-keys
       - arg_value: password
         enum_value: PASSWORD
         help_text: |
-          The user will be prompted for their password.
+          The user will only be required to enter their password.
     - api_field: parent
       arg_name: organization
       type: googlecloudsdk.command_lib.util.hooks.types:Resource:collection=cloudresourcemanager.organizations

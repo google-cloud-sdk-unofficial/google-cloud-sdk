@@ -45,17 +45,18 @@ _BUCKET_RELOCATION_WITHOUT_WRITE_DOWNTIME_WARNING = textwrap.dedent("""
 performing the relocation.
 """)
 
+_ADVANCING_BUCKET_RELOCATION_WARNING = textwrap.dedent("""
+1. Any ongoing, in-flight resumable uploads will be canceled and lost.
+2. Write downtime will be incurred.
+""")
+
 
 def _get_bucket_resource(gcs_client, bucket_url):
   """Fetches the bucket resource for the given bucket storage URL."""
   try:
     return gcs_client.get_bucket(bucket_url.bucket_name)
   except api_errors.CloudApiError as e:
-    raise command_errors.FatalError(
-        'Failed to fetch the bucket metadata for the bucket'
-        f' {bucket_url.bucket_name}. Please ensure you have storage.buckets.get'
-        ' permission on the bucket.'
-    ) from e
+    raise command_errors.FatalError(e) from e
 
 
 def _prompt_user_to_confirm_the_relocation(bucket_resource, args):
@@ -83,7 +84,19 @@ def _prompt_user_to_confirm_the_relocation(bucket_resource, args):
       cancel_on_no=True,
   )
 
-  log.status.Print(f'Starting bucket relocation for {args.url}...')
+  log.status.Print(f'Starting bucket relocation for {args.url}...\n')
+
+
+def _prompt_user_to_confirm_advancing_the_relocation(bucket_name):
+  """Prompt the user to confirm advancing the relocation."""
+  log.warning(_ADVANCING_BUCKET_RELOCATION_WARNING)
+  console_io.PromptContinue(
+      prompt_string=(
+          'This will start the write downtime for your relocation of gs://'
+          f'{bucket_name}, are you sure you want to continue?'
+      ),
+      cancel_on_no=True,
+  )
 
 
 # TODO: b/361729720 - Make bucket-relocate command group universe compatible.
@@ -192,7 +205,7 @@ class Relocate(base.Command):
         '--ttl',
         type=arg_parsers.Duration(),
         help=(
-            'Time to live for the relcoation operation. Default to 24h if not'
+            'Time to live for the relocation operation. Default to 24h if not'
             ' provided.'
         ),
     )
@@ -217,5 +230,9 @@ class Relocate(base.Command):
     bucket, operation_id = (
         operations_util.get_operation_bucket_and_id_from_name(args.operation)
     )
-    log.status.Print(f'Advancing bucket relocation for gs://{bucket}...')
-    return gcs_client.advance_relocate_bucket(bucket, operation_id, args.ttl)
+    _prompt_user_to_confirm_advancing_the_relocation(bucket)
+    gcs_client.advance_relocate_bucket(bucket, operation_id, args.ttl)
+    log.status.Print(
+        f'Sent request to advance relocation for bucket gs://{bucket} with'
+        f' operation {operation_id}.'
+    )

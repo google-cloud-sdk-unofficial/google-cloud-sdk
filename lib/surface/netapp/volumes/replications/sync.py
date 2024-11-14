@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Sync(base.Command):
   """Sync a Cloud NetApp Volume Replication."""

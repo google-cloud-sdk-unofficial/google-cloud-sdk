@@ -179,22 +179,15 @@ class ConfigmanagementFeatureState(object):
       self.last_synced_token = 'PENDING'
       self.last_synced = 'PENDING'
       self.sync_branch = 'PENDING'
-    if self.config_sync.__str__() in [
-        'SYNCED',
-        'NOT_CONFIGURED',
-        'NOT_INSTALLED',
-        NA,
-    ] and (
-        feature_state_pending
-        or feature_spec_mc.configSync != feature_state_mc.configSync
-    ):
-      self.config_sync = 'PENDING'
+      if self.config_sync == NA:
+        self.config_sync = 'PENDING'
     if (
         self.policy_controller_state.__str__()
         in ['INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA]
         and feature_state_pending
     ):
       self.policy_controller_state = 'PENDING'
+
     hc_semantic_copy = (
         lambda hc_spec: hc_spec if hc_spec is not None
         else api.ConfigManagementHierarchyControllerConfig()
@@ -327,13 +320,16 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
               append_error(
                   name, fs.configSyncState.syncState.errors, acm_errors
               )
-            cluster.update_hierarchy_controller_state(fs)
-            if name in self.feature_spec_memberships:
-              cluster.update_pending_state(
-                  self.messages,
-                  self.feature_spec_memberships[name].configmanagement,
-                  fs.membershipSpec,
-              )
+
+          # Set cluster.hierarchy_controller_state
+          cluster.update_hierarchy_controller_state(fs)
+
+          if name in self.feature_spec_memberships:
+            cluster.update_pending_state(
+                self.messages,
+                self.feature_spec_memberships[name].configmanagement,
+                fs.membershipSpec,
+            )
       acm_status.append(cluster)
     return {'acm_errors': acm_errors, 'acm_status': acm_status}
 

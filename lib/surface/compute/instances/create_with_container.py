@@ -46,6 +46,7 @@ def _Args(
     support_specific_then_x_affinity=False,
     support_disk_labels=False,
     support_ipv6_only=False,
+    support_reservation_bound=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -72,7 +73,9 @@ def _Args(
       parser, deprecate=deprecate_maintenance_policy)
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
-  instances_flags.AddProvisioningModelVmArgs(parser)
+  instances_flags.AddProvisioningModelVmArgs(
+      parser, support_reservation_bound=support_reservation_bound
+  )
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
   instances_flags.AddTagsArgs(parser)
@@ -154,6 +157,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
+        support_reservation_bound=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -437,6 +441,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
+        support_reservation_bound=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -480,6 +485,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
+        support_reservation_bound=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

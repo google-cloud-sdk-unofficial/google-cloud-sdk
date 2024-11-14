@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Describes a Colab Enterprise notebook runtime template.
+        Describe a Colab Enterprise notebook runtime template.
     """,
     'EXAMPLES': """
         To describe a runtime template with id 'my-runtime-template' in region 'us-central1', run:
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a runtime template."""
 

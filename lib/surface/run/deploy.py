@@ -85,11 +85,10 @@ Container Flags
     group.AddArgument(flags.BuildServiceAccountMutexGroup())
     group.AddArgument(flags.BuildWorkerPoolMutexGroup())
     group.AddArgument(flags.MutexBuildEnvVarsFlags())
-  else:
-    group.AddArgument(flags.CommandFlag())
-  if release_track == base.ReleaseTrack.ALPHA:
     group.AddArgument(flags.StartupProbeFlag())
     group.AddArgument(flags.LivenessProbeFlag())
+  else:
+    group.AddArgument(flags.CommandFlag())
 
   return group
 

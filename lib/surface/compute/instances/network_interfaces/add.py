@@ -37,6 +37,7 @@ class Add(base.UpdateCommand):
   """
 
   enable_ipv6_assignment = True
+  support_igmp_query = True
 
   @classmethod
   def Args(cls, parser):
@@ -62,6 +63,9 @@ class Add(base.UpdateCommand):
     if cls.enable_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
       network_interfaces_flags.AddIpv6PrefixLengthArg(parser)
+
+    if cls.support_igmp_query:
+      network_interfaces_flags.AddIgmpQueryArg(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -104,6 +108,7 @@ class Add(base.UpdateCommand):
         ),
         ipv6_address=getattr(args, 'ipv6_address', None),
         ipv6_prefix_length=getattr(args, 'ipv6_prefix_length', None),
+        igmp_query=getattr(args, 'igmp_query', None),
     )
 
     request = messages.ComputeInstancesAddNetworkInterfaceRequest(

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.notebook_executor import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Deletes a Colab Enterprise notebook execution.
+        Delete a Colab Enterprise notebook execution.
     """,
     'EXAMPLES': """
         To delete an execution with id `my-execution`, in region `us-central1`, run:
@@ -36,7 +36,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete an execution."""
 

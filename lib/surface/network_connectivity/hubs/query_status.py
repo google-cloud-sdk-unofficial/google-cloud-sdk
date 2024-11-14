@@ -28,7 +28,6 @@ from googlecloudsdk.core.resource import resource_expr_rewrite
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class QueryStatus(base.ListCommand):
   """Query the status of Private Service Connect propagation for a hub."""
 
@@ -65,7 +64,6 @@ class QueryStatus(base.ListCommand):
         pscPropagationStatus.targetSpoke.basename(),
         pscPropagationStatus.targetGroup.basename(),
         pscPropagationStatus.code:label=CODE,
-        pscPropagationStatus.message:label=MESSAGE,
         count)
         """)
 

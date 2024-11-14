@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [GA, ALPHA, BETA]
 
 help_text:
   brief: |

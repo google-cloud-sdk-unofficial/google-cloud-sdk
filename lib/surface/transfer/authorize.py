@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds
 from googlecloudsdk.core.credentials import store as creds_store
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 from googlecloudsdk.core.util import files
 
 EXPECTED_USER_ROLES = frozenset([
@@ -44,7 +45,7 @@ EXPECTED_P4SA_ROLES = frozenset([
 ])
 EXPECTED_GCS_SA_ROLES = frozenset(['roles/pubsub.publisher'])
 SERVICE_ACCOUNT_URL_FORMAT = (
-    'serviceAccount:service-{}@gs-project-accounts.iam.gserviceaccount.com'
+    'serviceAccount:service-{project_number}@{service_account_url_suffix}'
 )
 
 
@@ -56,7 +57,21 @@ def _get_iam_prefixed_email(email_string, is_service_account):
 
 def _get_iam_prefiexed_gcs_sa_email(project_number):
   """Returns a GCS SA email."""
-  return SERVICE_ACCOUNT_URL_FORMAT.format(project_number)
+  project_prefix = (
+      universe_descriptor.UniverseDescriptor()
+      .Get(properties.VALUES.core.universe_domain.Get())
+      .project_prefix
+  )
+  if project_prefix:
+    service_account_url_suffix = (
+        f'gs-project-accounts.{project_prefix}.iam.gserviceaccount.com'
+    )
+  else:
+    service_account_url_suffix = 'gs-project-accounts.iam.gserviceaccount.com'
+  return SERVICE_ACCOUNT_URL_FORMAT.format(
+      project_number=project_number,
+      service_account_url_suffix=service_account_url_suffix,
+  )
 
 
 def _get_existing_transfer_roles_for_account(
@@ -75,7 +90,7 @@ def _get_existing_transfer_roles_for_account(
   return roles
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Authorize(base.Command):
   """Authorize an account for all Transfer Service features."""
 

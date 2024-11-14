@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Removes an IAM policy binding from a Colab Enterprise runtime template.
+        Remove an IAM policy binding from a Colab Enterprise runtime template.
     """,
     'EXAMPLES': """
         To remove an IAM policy binding of `roles/aiplatform.notebookRuntimeUser` for `someone@example.com`, from the runtime template with id `my-runtime-template` in region `us-central1`, run:
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a Colab Enterprise runtime template."""
 

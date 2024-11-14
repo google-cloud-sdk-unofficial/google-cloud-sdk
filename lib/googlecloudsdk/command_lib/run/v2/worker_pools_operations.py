@@ -21,6 +21,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from google.api_core import exceptions
+from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.generated_clients.gapic_clients.run_v2.types import worker_pool as worker_pool_objects
 
 
 class WorkerPoolsOperations(object):
@@ -83,3 +85,34 @@ class WorkerPoolsOperations(object):
     # TODO(b/357135595): Add and record durations metrics
     # TODO(b/366501494): Support `next_page_token`
     return worker_pools.list_worker_pools(list_request)
+
+  def ReleaseWorkerPool(self, worker_pool_ref, worker_pool, config_changes):
+    """Stubbed method for worker pool deploy surface.
+
+    Update the WorkerPool if it exists, otherwise create it (Upsert).
+
+    Args:
+      worker_pool_ref: WorkerPool reference containing project, location,
+        workerpool IDs.
+      worker_pool: Resource, the WorkerPool to release. None for create flow.
+      config_changes: list, objects that implement Adjust().
+
+    Returns:
+      A WorkerPool object.
+    """
+    # TODO(b/376904673): Add progress tracker.
+    if worker_pool is None:
+      # WorkerPool does not exist, create it.
+      worker_pool = worker_pool_objects.WorkerPool(
+          name=worker_pool_ref.RelativeName(),
+      )
+    # Apply config changes to the WorkerPool.
+    worker_pool = config_changes_mod.WithChanges(worker_pool, config_changes)
+    worker_pools = self._client.worker
+    upsert_request = self._client.types.UpdateWorkerPoolRequest(
+        worker_pool=worker_pool,
+        allow_missing=True,
+    )
+    # TODO(b/357135595): Add and record durations metrics
+    # TODO(b/366576967): Support wait operation in sync mode.
+    return worker_pools.update_worker_pool(upsert_request)

@@ -21,6 +21,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import argparse
+
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
@@ -31,6 +33,7 @@ from googlecloudsdk.core.console import console_io
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Deletes a Cloud SQL user in a given instance.
 
@@ -45,11 +48,11 @@ class Delete(base.DeleteCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.UserCompleter)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace):
     """Lists Cloud SQL users in a given instance.
 
     Args:
-      args: argparse.Namespace, The arguments that this command was invoked
+      args: The arguments that this command was invoked
           with.
 
     Returns:
@@ -64,11 +67,14 @@ class Delete(base.DeleteCommand):
         params={'project': properties.VALUES.core.project.GetOrFail},
         collection='sql.instances')
     operation_ref = None
+    user_name = args.username
+    if args.host:
+      user_name = 'f{0}@{1}'.format(args.username, args.host)
 
     console_io.PromptContinue(
-        message='{0}@{1} will be deleted. New connections can no longer be '
+        message='{0} will be deleted. New connections can no longer be '
         'made using this user. Existing connections are not affected.'.format(
-            args.username, args.host),
+            user_name),
         default=True,
         cancel_on_no=True)
 

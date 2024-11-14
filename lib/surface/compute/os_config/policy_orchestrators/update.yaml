@@ -62,7 +62,7 @@
     - _REF_: googlecloudsdk.command_lib.compute.os_config.flags:policy-file
     - group:
         help_text: |
-            Projects to include in the policy orchestrator.
+            Projects to include in the policy orchestrator. Comma separated list of project numbers.
             If `include-projects` is set, `clear-projects` must not be set.
         mutex: true
         params:
@@ -71,3 +71,29 @@
         - arg_name: clear-projects
           help_text: Clears included projects from policy orchestrator selectors.
           type: bool
+    - group:
+        help_text: |
+            Folders to include in the policy orchestrator. Comma-separated list of folder numbers.
+            If `--include-folders` is set, `--clear-folders` must not be set.
+        mutex: true
+        params:
+        - arg_name: include-folders
+          help_text: Applies policy to selected folders only.
+        - arg_name: clear-folders
+          help_text: Clears included folders from policy orchestrator selectors.
+          type: bool
+    - group:
+        help_text: |
+            Locations to include in the policy orchestrator, e.g. `us-central1-a`.
+            If `include-locations` is set, `clear-locations` must not be set.
+        mutex: true
+        params:
+        - arg_name: include-locations
+          help_text: Applies policy to selected locations only.
+        - arg_name: clear-locations
+          help_text: Clears included locations from policy orchestrator selectors.
+          type: bool
+
+  update:
+    read_modify_update: true
+    disable_auto_field_mask: true

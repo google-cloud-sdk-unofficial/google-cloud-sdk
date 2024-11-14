@@ -116,13 +116,11 @@
         Whether this is the default repository for the alternative hostname if no repository matches the path prefix.
     - group:
         mutex: true
-        hidden: true
         params:
         - arg_name: allow-vulnerability-scanning
           api_field: repository.vulnerabilityScanningConfig.enablementConfig
           default: null
           action: store_true
-          hidden: true
           help_text: |
             Allow vulnerability scanning on the repository.
           choices:
@@ -133,7 +131,6 @@
           api_field: repository.vulnerabilityScanningConfig.enablementConfig
           default: null
           action: store_true
-          hidden: true
           help_text: |
             Disable vulnerability scanning on the repository.
           choices:

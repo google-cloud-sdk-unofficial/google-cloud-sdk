@@ -117,8 +117,13 @@ class GetCredentials(base.Command):
       util.Error: if the cluster is unreachable or not running.
     """
     cluster, cluster_ref = _BaseRun(args, self.context)
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip,
-                               use_dns_endpoint=args.dns_endpoint)
+    util.ClusterConfig.Persist(
+        cluster,
+        cluster_ref.projectId,
+        args.internal_ip,
+        use_dns_endpoint=args.dns_endpoint,
+        impersonate_service_account=args.impersonate_service_account,
+    )
 
 
 @base.UniverseCompatible

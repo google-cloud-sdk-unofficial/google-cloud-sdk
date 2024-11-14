@@ -128,6 +128,7 @@ class CreateGA(base.CreateCommand):
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
+    managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -311,10 +312,14 @@ class CreateGA(base.CreateCommand):
         auto_healing_policies)
     update_policy = managed_instance_groups_utils.PatchUpdatePolicy(
         client, args, None)
-
     instance_lifecycle_policy = (
         managed_instance_groups_utils.CreateInstanceLifecyclePolicy(
             client.messages, args
+        )
+    )
+    instance_flexibility_policy = (
+        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+            args, client.messages
         )
     )
 
@@ -333,6 +338,7 @@ class CreateGA(base.CreateCommand):
         ),
         updatePolicy=update_policy,
         instanceLifecyclePolicy=instance_lifecycle_policy,
+        instanceFlexibilityPolicy=instance_flexibility_policy,
     )
 
     if args.IsSpecified('list_managed_instances_results'):
@@ -441,7 +447,6 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
-    managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -460,15 +465,6 @@ class CreateBeta(CreateGA):
       instance_group_manager.targetSuspendedSize = args.suspended_size
     if args.stopped_size:
       instance_group_manager.targetStoppedSize = args.stopped_size
-
-    instance_flexibility_policy = (
-        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            args, client.messages
-        )
-    )
-    instance_group_manager.instanceFlexibilityPolicy = (
-        instance_flexibility_policy
-    )
     return instance_group_manager
 
 

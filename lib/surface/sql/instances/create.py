@@ -172,6 +172,7 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingServerIdleTimeout(parser)
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
   flags.AddCustomSubjectAlternativeNames(parser, hidden=True)
+  flags.AddServerCaPool(parser)
 
 
 def AddAlphaArgs(unused_parser):

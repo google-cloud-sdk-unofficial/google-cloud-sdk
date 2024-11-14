@@ -41,10 +41,14 @@ _DETAILED_HELP = {
 
 @base.Deprecate(
     is_removed=False,
-    warning=('This command is deprecated. '
-             'Please use `gcloud beta colab runtimes create` instead.'),
-    error=('This command has been removed. '
-           'Please use `gcloud beta colab runtimes create` instead.'),
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud beta colab runtimes create` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud beta colab runtimes create` instead.'
+    ),
 )
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)

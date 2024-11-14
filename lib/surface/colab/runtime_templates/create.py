@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Creates a Colab Enterprise runtime template, a VM configuration for your notebook runtimes.
+        Create a Colab Enterprise runtime template, a VM configuration for your notebook runtimes.
     """,
     'EXAMPLES': """
         To create a runtime template in region 'us-central1' with the display name 'my-runtime-template', run:
@@ -44,7 +44,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a runtime template."""
 

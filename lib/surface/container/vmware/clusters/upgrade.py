@@ -42,6 +42,7 @@ $ {command} my-cluster --location=us-west1 --version=1.13.0-gke.1000
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Upgrade(base.Command):
   """Centrally upgrade an Anthos cluster on VMware."""
 
@@ -114,7 +115,8 @@ class Upgrade(base.Command):
     log.status.Print('Preparing version {} for upgrade'.format(args.version))
     admin_cluster_client = vmware_admin_clusters.AdminClustersClient()
     operation_client = operations.OperationsClient()
-    operation = admin_cluster_client.Update(args, admin_cluster_ref)
+    operation = admin_cluster_client.Update(
+        args, admin_cluster_ref, is_user_cluster_upgrade=True)
     operation_response = operation_client.Wait(operation)
     log.UpdatedResource(admin_cluster_ref, 'Anthos on VMware admin cluster')
     return operation_response

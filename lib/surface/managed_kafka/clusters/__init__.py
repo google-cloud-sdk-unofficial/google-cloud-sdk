@@ -21,7 +21,9 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 class Clusters(base.Group):
   """Administer Managed Service for Apache Kafka clusters."""
   category = base.DATA_ANALYTICS_CATEGORY

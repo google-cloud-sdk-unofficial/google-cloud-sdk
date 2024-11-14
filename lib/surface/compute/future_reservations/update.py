@@ -104,8 +104,6 @@ class UpdateBeta(base.UpdateCommand):
           '--commitment-plan',
           '--previous-commitment-terms',
           '--scheduling-type',
-          '--enable-opportunistic-maintenance',
-          '--no-enable-opportunistic-maintenance',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update'
@@ -185,8 +183,6 @@ class UpdateBeta(base.UpdateCommand):
       update_mask.append('commitmentInfo.previousCommitmentTerms')
     if args.IsKnownAndSpecified('scheduling_type'):
       update_mask.append('schedulingType')
-    if args.IsKnownAndSpecified('enable_opportunistic_maintenance'):
-      update_mask.append('enableOpportunisticMaintenance')
 
     require_specific_reservation = getattr(
         args, 'require_specific_reservation', None

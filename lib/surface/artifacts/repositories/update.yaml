@@ -42,13 +42,11 @@
         Secret Manager secret version that contains password for the remote repository upstream.
     - group:
         mutex: true
-        hidden: true
         params:
         - arg_name: allow-vulnerability-scanning
           api_field: repository.vulnerabilityScanningConfig.enablementConfig
           default: null
           action: store_true
-          hidden: true
           help_text: |
             Allow vulnerability scanning on the repository.
           choices:
@@ -59,7 +57,6 @@
           api_field: repository.vulnerabilityScanningConfig.enablementConfig
           default: null
           action: store_true
-          hidden: true
           help_text: |
             Disable vulnerability scanning on the repository.
           choices:

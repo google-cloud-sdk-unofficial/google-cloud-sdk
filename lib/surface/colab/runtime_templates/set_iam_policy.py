@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.colab_enterprise import flags
 
 _DETAILED_HELP = {
     'DESCRIPTION': """
-        Sets the IAM policy for a Colab Enterprise runtime template as defined in a JSON or YAML file.
+        Set the IAM policy for a Colab Enterprise runtime template as defined in a JSON or YAML file.
 
         See https://cloud.google.com/iam/docs/managing-policies for details of
         the policy file format and contents.
@@ -37,7 +37,7 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class SetIamPolicy(base.Command):
   """Set IAM policy for a Colab Enterprise runtime template as defined in a JSON or YAML file."""
 

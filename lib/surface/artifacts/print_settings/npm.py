@@ -23,6 +23,7 @@ from googlecloudsdk.command_lib.artifacts import flags
 from googlecloudsdk.command_lib.artifacts.print_settings import settings_util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Npm(base.Command):
