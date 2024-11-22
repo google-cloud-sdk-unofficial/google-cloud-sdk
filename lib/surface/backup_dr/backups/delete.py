@@ -30,8 +30,8 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(base.DeleteCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
   """Delete the specified Backup."""
 
   detailed_help = {
@@ -103,10 +103,3 @@ class DeleteAlpha(base.DeleteCommand):
     log.DeletedResource(backup.RelativeName(), kind='backup')
 
     return response
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Delete(DeleteAlpha):
-  """Delete the specified Backup."""

@@ -23,8 +23,8 @@ from googlecloudsdk.command_lib.backupdr import flags
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class List(base.ListCommand):
   """List Backup and DR backup vaults."""
 
   detailed_help = {
@@ -65,7 +65,7 @@ class ListAlpha(base.ListCommand):
       parser: argparse.Parser: Parser object for command line inputs.
     """
 
-    flags.AddOutputFormat(parser, ListAlpha.DEFAULT_LIST_FORMAT)
+    flags.AddOutputFormat(parser, List.DEFAULT_LIST_FORMAT)
     flags.AddLocationResourceArg(
         parser,
         'Location for which backup vaults should be listed.',
@@ -77,10 +77,3 @@ class ListAlpha(base.ListCommand):
     parent_ref = args.CONCEPTS.location.Parse()
     client = BackupVaultsClient()
     return client.List(parent_ref)
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class List(ListAlpha):
-  """List Backup and DR backup vaults."""

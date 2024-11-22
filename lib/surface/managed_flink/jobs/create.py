@@ -32,6 +32,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
@@ -252,12 +253,6 @@ class Create(base.BinaryBackedCommand):
       )
     flink_backend.CheckStagingLocation(args.staging_location)
 
-    if not args.staging_location.startswith('gs://'):
-      raise exceptions.InvalidArgumentException(
-          'staging-location',
-          'Staging location must be of the form gs://<bucket>/<path>.',
-      )
-
     # Validate the python virtualenv
     if job_type == 'python':
       if not args.python_venv:
@@ -275,6 +270,22 @@ class Create(base.BinaryBackedCommand):
 
     env = dict()
     env['CLOUDSDK_MANAGEDFLINK_JOB_TYPE'] = job_type
+    if job_type == 'python':
+      if args.extra_jars:
+        env['HADOOP_CLASSPATH'] = ':'.join(args.extra_jars)
+    elif job_type == 'jar':
+      if args.extra_jars:
+        env['HADOOP_CLASSPATH'] = ':'.join(args.extra_jars)
+
+    # If there is a HADOOP_CLASSPATH environment variable, add it to the env
+    # variable so it doesn't get overwritten.
+    if env.get('HADOOP_CLASSPATH') and encoding.GetEncodedValue(
+        os.environ, 'HADOOP_CLASSPATH'
+    ):
+      env['HADOOP_CLASSPATH'] = ':'.join([
+          env.get('HADOOP_CLASSPATH'),
+          encoding.GetEncodedValue(os.environ, 'HADOOP_CLASSPATH'),
+      ])
 
     # Dry run
     if args.dry_run:

@@ -22,6 +22,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class Anthos(base.Group):
   """Anthos command Group."""
   category = base.ANTHOS_CLI_CATEGORY

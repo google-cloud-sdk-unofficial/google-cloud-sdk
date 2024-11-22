@@ -441,7 +441,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
-        support_reservation_bound=False,
+        support_reservation_bound=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)

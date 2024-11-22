@@ -27,9 +27,9 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
-  """Update the QuotaAdjusterSettings of a container.
+  """Update the QuotaAdjusterSettings of a project.
 
-  This command updates the enablement state of the container..
+  This command updates the enablement state of a project.
 
   ## EXAMPLES
 
@@ -38,12 +38,6 @@ class UpdateBeta(base.UpdateCommand):
     $ {command}
     --enablement=enabled
     --project=12321
-
-  To disable QuotaAdjusterSettings for `organizations/123`, run:
-
-    $ {command} my-preference
-    --enablement=disabled
-    --organization=123
   """
 
   @staticmethod
@@ -55,7 +49,7 @@ class UpdateBeta(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.AddResourceFlags(parser, 'container id')
+    flags.AddProjectFlag(parser, 'container id')
     flags.Enablement().AddToParser(parser)
 
     # optional flags
@@ -95,9 +89,9 @@ class UpdateBeta(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class UpdateAlpha(base.UpdateCommand):
-  """Update the QuotaAdjusterSettings of a container.
+  """Update the QuotaAdjusterSettings of a project.
 
-  This command updates the enablement state of the container..
+  This command updates the enablement state of the project.
 
   ## EXAMPLES
 
@@ -106,12 +100,6 @@ class UpdateAlpha(base.UpdateCommand):
     $ {command}
     --enablement=Enabled
     --project=12321
-
-  To disable QuotaAdjusterSettings for `organizations/123`, run:
-
-    $ {command} my-preference
-    --enablement=Disabled
-    --organization=123
   """
 
   @staticmethod
@@ -123,7 +111,7 @@ class UpdateAlpha(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.AddResourceFlags(parser, 'container id')
+    flags.AddProjectFlag(parser, 'container id')
     flags.Enablement().AddToParser(parser)
 
     # optional flags

@@ -39,6 +39,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class DeployIndexV1(base.Command):
   """Deploy an index to a Vertex AI index endpoint."""
 
@@ -55,6 +56,7 @@ class DeployIndexV1(base.Command):
     flags.AddDeploymentGroupArg(parser)
     flags.AddAuthConfigArgs(parser, 'deployed index')
     flags.GetEnableAccessLoggingArg().AddToParser(parser)
+    flags.AddPscAutomationConfigsArgs(parser)
 
   def _Run(self, args, version):
     validation.ValidateDisplayName(args.display_name)

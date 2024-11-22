@@ -218,6 +218,30 @@
       help_text: |
         The primary cluster that the secondary cluster will replicate from. It must use the format:
         projects/PROJECT_ID/locations/REGION/clusters/CLUSTER_ID. It must refer to an existing cluster. Otherwise, the create operation fails.
+    - group:
+        mutex: true
+        release_tracks: [ALPHA, BETA]
+        params:
+        - arg_name: import-gcs-object-uris
+          type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+          api_field: cluster.gcsSource.uris
+          help_text: |
+            The URIs of Google Cloud Storage objects to import from. For example, `gs://bucket/folder/file1.rdb,gs://bucket/folder/file2.rdb`.
+          release_tracks: [ALPHA, BETA]
+        - arg_name: import-managed-backup
+          api_field: cluster.managedBackupSource.backup
+          help_text: |
+            The managed backup to import from. For example, `projects/PROJECT_ID/locations/REGION/backupCollections/BACKUP_COLLECTION_ID/backups/BACKUP_ID`.
+          release_tracks: [ALPHA, BETA]
+    - arg_name: kms-key
+      api_field: cluster.kmsKey
+      hidden: true
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        The resource name of the customer managed encryption key (CMEK) to use for the cluster.
+        It must use the format:
+        projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/CRYPTO_KEY.
+        The key must be in the same region as the cluster. Otherwise, the create operation fails.
 
 
   async:

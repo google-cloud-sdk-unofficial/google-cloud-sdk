@@ -37,6 +37,11 @@
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
         added to the list. If it's empty, the spoke does not import any subnets from the hub.
+    - arg_name: group
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.group
+      help_text: |
+        The group that the spoke will be added to. The group must already exist. If unset, the spoke
+        will be added to the ``default`` group.
     labels:
       api_field: googleCloudNetworkconnectivityV1betaSpoke.labels
 
@@ -88,6 +93,11 @@
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
         added to the list. If it's empty, the spoke does not import any subnets from the hub.
+    - arg_name: group
+      api_field: spoke.group
+      help_text: |
+        The group that the spoke will be added to. The group must already exist. If unset, the spoke
+        will be added to the ``default`` group.
     labels:
       api_field: spoke.labels
 

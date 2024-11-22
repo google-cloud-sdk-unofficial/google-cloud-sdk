@@ -71,6 +71,7 @@ def _CommonArgs(
     support_vlan_nic=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_igmp_query=False,
     support_reservation_bound=False,
 ):
   """Adding arguments applicable for creating instance templates."""
@@ -96,6 +97,7 @@ def _CommonArgs(
       support_network_queue_count=support_network_queue_count,
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
+      support_igmp_query=support_igmp_query,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -1137,6 +1139,7 @@ class Create(base.CreateCommand):
   _support_watchdog_timer = False
   _support_disk_labels = False
   _support_ipv6_only = True
+  _support_igmp_query = False
   _support_reservation_bound = False
 
   @classmethod
@@ -1163,6 +1166,7 @@ class Create(base.CreateCommand):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_igmp_query=cls._support_igmp_query,
         support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -1257,7 +1261,8 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_disk_labels = True
   _support_ipv6_only = True
-  _support_reservation_bound = False
+  _support_igmp_query = False
+  _support_reservation_bound = True
 
   @classmethod
   def Args(cls, parser):
@@ -1284,6 +1289,7 @@ class CreateBeta(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_igmp_query=cls._support_igmp_query,
         support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
@@ -1382,6 +1388,7 @@ class CreateAlpha(Create):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_disk_labels = True
+  _support_igmp_query = True
   _support_reservation_bound = True
 
   @classmethod
@@ -1410,6 +1417,7 @@ class CreateAlpha(Create):
         support_vlan_nic=cls._support_vlan_nic,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_igmp_query=cls._support_igmp_query,
         support_reservation_bound=cls._support_reservation_bound,
     )
     instances_flags.AddLocalNvdimmArgs(parser)

@@ -45,6 +45,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class MutateDeployedIndexV1(base.Command):
   """Mutate an existing deployed index from a Vertex AI index endpoint."""
 
@@ -54,7 +55,7 @@ class MutateDeployedIndexV1(base.Command):
   def Args(parser):
     flags.AddIndexEndpointResourceArg(parser, 'ID of the index endpoint.')
     flags.GetDeployedIndexId().AddToParser(parser)
-    flags.AddMutateDeploymentResourcesArgs(parser, 'deployed index')
+    flags.AddDeploymentResourcesArgs(parser, 'deployed index')
     flags.AddReservedIpRangesArgs(parser, 'deployed index')
     flags.AddDeploymentGroupArg(parser)
     flags.AddAuthConfigArgs(parser, 'deployed index')

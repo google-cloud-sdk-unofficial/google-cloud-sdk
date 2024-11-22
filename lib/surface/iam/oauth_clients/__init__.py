@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+# TODO: b/369204602 - revisit the annotation
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class OauthClients(base.Group):
   """Create and manage OAuth clients.

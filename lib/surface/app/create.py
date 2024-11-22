@@ -25,44 +25,36 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        {description}
+        """,
+    'EXAMPLES': """\
+        To create an app with region chosen interactively, run:
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+            $ {command}
+
+        To create an app in the us-central region, run:
+
+            $ {command} --region=us-central
+
+        To create an app that with a user-managed service account, run:
+
+            $ {command} --service-account=SERVICE_ACCOUNT
+        """,
+}
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an App Engine app within the current Google Cloud Project."""
 
-  detailed_help = {
-      'DESCRIPTION': """\
-          {description}
-          """,
-      'EXAMPLES': """\
-          To create an app with region chosen interactively, run:
-
-              $ {command}
-
-          To create an app in the us-central region, run:
-
-              $ {command} --region=us-central
-
-          To create an app that with a user-managed service account, run:
-
-              $ {command} --service-account=SERVICE_ACCOUNT
-          """,
-  }
+  detailed_help = _DETAILED_HELP
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--region',
-        help=('The region to create the app within.  '
-              'Use `gcloud app regions list` to list available regions.  '
-              'If not provided, select region interactively.'))
-    parser.add_argument(
-        '--service-account',
-        help=(
-            'The app-level default service account to create the app with.  '
-            'Note that you can specify a distinct service account for each App Engine version with `gcloud app deploy --service-account`. However if you do not specify a version-level service account, this default will be used. '
-            'If this parameter is not provided for app creation, the app-level default will be set to be the out-of-box App Engine Default Service Account, https://cloud.google.com/appengine/docs/standard/python3/service-account outlines the limitation of that service account.'
-        ))
+    create_util.AddAppCreateFlags(parser)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)
@@ -84,3 +76,52 @@ class Create(base.CreateCommand):
           'list` to list available regions.')
     log.status.Print('Success! The app is now created. Please use '
                      '`gcloud app deploy` to deploy your first app.')
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create an App Engine app within the current Google Cloud Project."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    create_util.AddAppCreateFlags(parser)
+
+    parser.add_argument(
+        '--ssl-policy',
+        choices=['default', 'modern'],
+        hidden=True,
+        help='The app-level SSL policy to create the app with.',
+    )
+
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
+    if args.region:
+      create_util.CreateApp(
+          api_client,
+          project,
+          args.region,
+          service_account=args.service_account,
+          ssl_policy=args.ssl_policy,
+      )
+    elif console_io.CanPrompt():
+      create_util.CheckAppNotExists(api_client, project)
+      create_util.CreateAppInteractively(
+          api_client,
+          project,
+          service_account=args.service_account,
+          ssl_policy=args.ssl_policy,
+      )
+    else:
+      raise create_util.UnspecifiedRegionError(
+          'Prompts are disabled. Region must be specified either by the '
+          '`--region` flag or interactively. Use `gcloud app regions '
+          'list` to list available regions.'
+      )
+    log.status.Print(
+        'Success! The app is now created. Please use '
+        '`gcloud app deploy` to deploy your first app.'
+    )

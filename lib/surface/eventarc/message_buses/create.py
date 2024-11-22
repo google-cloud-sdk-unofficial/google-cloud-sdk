@@ -47,6 +47,7 @@ class Create(base.CreateCommand):
     )
     flags.AddLoggingConfigArg(parser, 'The logging config of the message bus.')
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
+    flags.AddLabelsArg(parser, help_text='Labels to apply to the message bus.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -65,7 +66,7 @@ class Create(base.CreateCommand):
     operation = client.Create(
         message_bus_ref,
         client.BuildMessageBus(
-            message_bus_ref, args.logging_config, args.crypto_key
+            message_bus_ref, args.logging_config, args.crypto_key, args.labels
         ),
     )
 

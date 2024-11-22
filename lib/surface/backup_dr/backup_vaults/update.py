@@ -29,9 +29,9 @@ from googlecloudsdk.command_lib.backupdr import util as command_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-class UpdateAlpha(base.UpdateCommand):
+class Update(base.UpdateCommand):
   """Update a Backup and DR backup vault."""
 
   detailed_help = {
@@ -154,10 +154,3 @@ class UpdateAlpha(base.UpdateCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class Update(UpdateAlpha):
-  """Update a Backup and DR backup vault."""

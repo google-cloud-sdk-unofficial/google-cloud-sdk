@@ -29,9 +29,9 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-class CreateAlpha(base.DeleteCommand):
+class Create(base.CreateCommand):
   """Create a Backup and DR backup vault."""
 
   detailed_help = {
@@ -145,10 +145,3 @@ class CreateAlpha(base.DeleteCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
-
-
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class Create(CreateAlpha):
-  """Create a Backup and DR backup vault."""

@@ -77,6 +77,7 @@ class Set(base.Command):
   _support_forwarding_rule = False
   _support_cloud_run = False
   _is_missing_resource_type = False
+  _log_warning = False
 
   @classmethod
   def Args(cls, parser):
@@ -111,7 +112,7 @@ class Set(base.Command):
         self._support_cloud_run,
         self._is_missing_resource_type,
     )
-    return iap_setting_ref.SetIapSetting(args.setting_file)
+    return iap_setting_ref.SetIapSetting(args.setting_file, self._log_warning)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -121,6 +122,7 @@ class SetBeta(Set):
   _support_forwarding_rule = True
   _support_cloud_run = False
   _is_missing_resource_type = False
+  _log_warning = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -131,3 +133,4 @@ class SetAlpha(Set):
   _support_forwarding_rule = True
   _support_cloud_run = True
   _is_missing_resource_type = True
+  _log_warning = True

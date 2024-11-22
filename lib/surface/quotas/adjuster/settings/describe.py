@@ -23,21 +23,15 @@ from googlecloudsdk.command_lib.quotas import flags
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
-  """Gets details of the QuotaAdjusterSettings for a container.
+  """Gets details of the QuotaAdjusterSettings for a project.
 
-  This command gets the QuotaAdjusterSettings for a container. The supported
-  containers can be projects, folders, or organizations.
+  This command gets the QuotaAdjusterSettings for a project.
 
   ## EXAMPLES
 
   To get the QuotaAdjusterSettings for container 'projects/123', run:
 
     $ {command} --project=12321
-
-
-  To get the QuotaAdjusterSettings for container 'folders/123', run:
-
-    $ {command} --folder=123
   """
 
   @staticmethod
@@ -48,7 +42,7 @@ class DescribeBeta(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddResourceFlags(parser, 'container id')
+    flags.AddProjectFlag(parser, 'container id')
 
   def Run(self, args):
     """Run command.
@@ -58,7 +52,7 @@ class DescribeBeta(base.DescribeCommand):
         with.
 
     Returns:
-      The requested QuotaInfo for the service and consumer.
+      The requested QuotaAdjusterSettings for the project.
     """
     return quota_adjuster_settings.GetQuotaAdjusterSettings(
         args, release_track=base.ReleaseTrack.BETA
@@ -69,21 +63,15 @@ class DescribeBeta(base.DescribeCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class DescribeAlpha(base.DescribeCommand):
-  """Gets details of the QuotaAdjusterSettings for a container.
+  """Gets details of the QuotaAdjusterSettings for a project.
 
-  This command gets the QuotaAdjusterSettings for a container. The supported
-  containers can be projects, folders, or organizations.
+  This command gets the QuotaAdjusterSettings for a project.
 
   ## EXAMPLES
 
   To get the QuotaAdjusterSettings for container 'projects/123', run:
 
     $ {command} --project=12321
-
-
-  To get the QuotaAdjusterSettings for container 'folders/123', run:
-
-    $ {command} --folder=123
   """
 
   @staticmethod
@@ -94,7 +82,7 @@ class DescribeAlpha(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddResourceFlags(parser, 'container id')
+    flags.AddProjectFlag(parser, 'container id')
 
   def Run(self, args):
     """Run command.
@@ -104,7 +92,7 @@ class DescribeAlpha(base.DescribeCommand):
         with.
 
     Returns:
-      The requested QuotaInfo for the service and consumer.
+      The requested QuotaAdjusterSettings for the project.
     """
     # This is because alpha gcloud points to the v1 version of the API.
     return quota_adjuster_settings.GetQuotaAdjusterSettings(

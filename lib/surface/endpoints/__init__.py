@@ -23,6 +23,11 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class Endpoints(base.Group):
   """Create, enable and manage API services.
 

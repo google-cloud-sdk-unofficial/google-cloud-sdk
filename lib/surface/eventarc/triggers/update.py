@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     service_account_group = parser.add_mutually_exclusive_group()
     flags.AddServiceAccountArg(service_account_group)
     flags.AddClearServiceAccountArg(service_account_group)
+    flags.AddLabelsArg(parser, 'Labels to apply to the trigger.')
 
   def Run(self, args):
     """Run the update command."""
@@ -90,6 +91,7 @@ class Update(base.UpdateCommand):
         destination_function_location=args.IsSpecified(
             'destination_function_location'
         ),
+        labels=args.IsSpecified('labels'),
     )
     old_trigger = client.Get(trigger_ref)
     # The type can't be updated, so it's safe to use the old trigger's type.
@@ -132,6 +134,7 @@ class Update(base.UpdateCommand):
         destination_message,
         None,
         None,
+        args.labels,
     )
     operation = client.Patch(trigger_ref, trigger_message, update_mask)
     if args.async_:

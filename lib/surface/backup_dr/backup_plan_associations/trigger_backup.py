@@ -29,8 +29,8 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class TriggerBackupAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class TriggerBackup(base.Command):
   """Create an on-demand backup for a resource."""
 
   detailed_help = {
@@ -111,10 +111,3 @@ class TriggerBackupAlpha(base.Command):
     )
 
     return
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class TriggerBackup(TriggerBackupAlpha):
-  """Create an on-demand backup for a resource."""

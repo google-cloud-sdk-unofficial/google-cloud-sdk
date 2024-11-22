@@ -29,8 +29,8 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class Create(base.CreateCommand):
   """Creates a new Backup Plan."""
 
   detailed_help = {
@@ -184,10 +184,3 @@ class CreateAlpha(base.CreateCommand):
     log.CreatedResource(backup_plan.RelativeName(), kind='backup plan')
 
     return resource
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Create(CreateAlpha):
-  """Creates a new Backup Plan."""

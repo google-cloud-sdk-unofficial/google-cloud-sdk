@@ -53,7 +53,7 @@ class Create(base.Command):
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
     flags.AddLandingNetworkFlag(parser)
-    flags.AddCapacityFlag(messages, parser)
+    flags.AddCapacityFlag(messages.Gateway, parser)
     flags.AddIpRangeReservationsFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -63,32 +63,61 @@ class Create(base.Command):
     )
 
     spoke_ref = args.CONCEPTS.spoke.Parse()
-    labels = labels_util.ParseCreateArgs(
-        args, client.messages.Spoke.LabelsValue
-    )
 
-    range_reservations = [
-        client.messages.IpRangeReservation(ipRange=ip_range)
-        for ip_range in args.ip_range_reservations
-    ]
+    if self.ReleaseTrack() == base.ReleaseTrack.BETA:
+      labels = labels_util.ParseCreateArgs(
+          args,
+          client.messages.GoogleCloudNetworkconnectivityV1betaSpoke.LabelsValue,
+      )
 
-    spoke = client.messages.Spoke(
-        hub=args.hub,
-        group=args.group,
-        gateway=client.messages.Gateway(
-            capacity=flags.GetCapacityArg(
-                client.messages
-            ).GetEnumForChoice(args.capacity),
-            landingNetwork=client.messages.LandingNetwork(
-                network=args.landing_network
-            ),
-            ipRangeReservations=range_reservations,
-        ),
-        description=args.description,
-        labels=labels,
-    )
+      range_reservations = [
+          client.messages.GoogleCloudNetworkconnectivityV1betaIpRangeReservation(
+              ipRange=ip_range
+          )
+          for ip_range in args.ip_range_reservations
+      ]
+      spoke = client.messages.GoogleCloudNetworkconnectivityV1betaSpoke(
+          hub=args.hub,
+          group=args.group,
+          gateway=client.messages.GoogleCloudNetworkconnectivityV1betaGateway(
+              capacity=flags.GetCapacityArg(
+                  client.messages.GoogleCloudNetworkconnectivityV1betaGateway
+              ).GetEnumForChoice(args.capacity),
+              landingNetwork=client.messages.GoogleCloudNetworkconnectivityV1betaLandingNetwork(
+                  network=args.landing_network
+              ),
+              ipRangeReservations=range_reservations,
+          ),
+          description=args.description,
+          labels=labels,
+      )
+      op_ref = client.CreateSpokeBeta(spoke_ref, spoke)
+    else:
+      labels = labels_util.ParseCreateArgs(
+          args, client.messages.Spoke.LabelsValue
+      )
 
-    op_ref = client.CreateSpoke(spoke_ref, spoke)
+      range_reservations = [
+          client.messages.IpRangeReservation(ipRange=ip_range)
+          for ip_range in args.ip_range_reservations
+      ]
+
+      spoke = client.messages.Spoke(
+          hub=args.hub,
+          group=args.group,
+          gateway=client.messages.Gateway(
+              capacity=flags.GetCapacityArg(
+                  client.messages.Gateway
+              ).GetEnumForChoice(args.capacity),
+              landingNetwork=client.messages.LandingNetwork(
+                  network=args.landing_network
+              ),
+              ipRangeReservations=range_reservations,
+          ),
+          description=args.description,
+          labels=labels,
+      )
+      op_ref = client.CreateSpoke(spoke_ref, spoke)
 
     log.status.Print('Create request issued for: [{}]'.format(spoke_ref.Name()))
 
@@ -115,6 +144,36 @@ class Create(base.Command):
     )
     log.CreatedResource(spoke_ref.Name(), kind='spoke')
     return res
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBETA(Create):
+  """Create a new Gateway spoke.
+
+  Create a new Gateway spoke.
+  """
+
+  @staticmethod
+  def Args(parser):
+    messages = apis.GetMessagesModule('networkconnectivity', 'v1beta')
+
+    flags.AddSpokeResourceArg(
+        parser, 'to create', flags.ResourceLocationType.REGION_ONLY
+    )
+    flags.AddRegionFlag(
+        parser, supports_region_wildcard=False, hidden=False, required=True
+    )
+    flags.AddHubFlag(parser)
+    flags.AddGroupFlag(parser, required=True)
+    flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
+    flags.AddAsyncFlag(parser)
+    flags.AddLandingNetworkFlag(parser)
+    flags.AddCapacityFlag(
+        messages.GoogleCloudNetworkconnectivityV1betaGateway, parser
+    )
+    flags.AddIpRangeReservationsFlag(parser)
+    labels_util.AddCreateLabelsFlags(parser)
 
 
 Create.detailed_help = {

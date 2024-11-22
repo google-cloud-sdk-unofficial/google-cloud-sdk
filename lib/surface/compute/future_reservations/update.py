@@ -63,7 +63,8 @@ class UpdateBeta(base.UpdateCommand):
         support_local_ssd_count=True,
         support_share_setting=True,
         support_auto_delete=True,
-        support_require_specific_reservation=False,
+        support_require_specific_reservation=True,
+        support_gsc=True,
     )
 
   def _ValidateArgs(self, update_mask):
@@ -252,4 +253,5 @@ class UpdateAlpha(UpdateBeta):
         support_auto_delete=True,
         support_require_specific_reservation=True,
         support_gsc=True,
+        support_cuds=True,
     )

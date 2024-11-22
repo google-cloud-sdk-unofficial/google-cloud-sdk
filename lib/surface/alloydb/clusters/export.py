@@ -32,10 +32,9 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Export(base.SilentCommand):
-  """Export an AlloyDB cluster to Google Cloud Storage."""
+  """Export data from an AlloyDB cluster to Google Cloud Storage."""
 
   detailed_help = {
       'DESCRIPTION':
@@ -65,7 +64,7 @@ class Export(base.SilentCommand):
   def ConstructExportRequestFromArgs(
       self, alloydb_messages, cluster_ref, args
   ):
-    return cluster_helper.ConstructExportRequestFromArgsAlpha(
+    return cluster_helper.ConstructExportRequestFromArgs(
         alloydb_messages, cluster_ref, args
     )
 

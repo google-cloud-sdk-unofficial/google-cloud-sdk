@@ -50,6 +50,7 @@ class Create(base.CreateCommand):
   def Args(parser):
 
     flags.AddCreateKeyHandleFlags(parser)
+    parser.display_info.AddCacheUpdater(flags.KeyHandleCompleter)
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

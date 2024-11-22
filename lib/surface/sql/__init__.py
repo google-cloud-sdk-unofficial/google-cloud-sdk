@@ -43,6 +43,11 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class SQL(base.Group):
   """Create and manage Google Cloud SQL databases."""
 

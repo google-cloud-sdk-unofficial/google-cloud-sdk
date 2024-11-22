@@ -234,7 +234,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=False)
+    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)

@@ -102,7 +102,9 @@ removed.
       project: The project we are operating on.
       database: The database within the project we are operating on.
     """
-    received_indexes = index_api.NormalizeIndexes(info.parsed.indexes or [])
+    received_indexes = (
+        index_api.NormalizeIndexesForFirestoreApi(info.parsed.indexes or [])
+    )
     indexes_to_delete_ids = set()
     current_indexes = index_api.ListDatastoreIndexesViaFirestoreApi(
         project, database
@@ -110,7 +112,7 @@ removed.
     for index_id, index in current_indexes:
       # Firestore API returns index with '__name__' field path. Normalizing the
       # index is required.
-      normalized_index = index_api.NormalizeIndex(index)
+      normalized_index = index_api.NormalizeIndexForFirestoreApi(index)
       if normalized_index in received_indexes:
         continue
       msg = (

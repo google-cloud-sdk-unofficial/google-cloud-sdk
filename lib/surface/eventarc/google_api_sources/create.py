@@ -47,6 +47,9 @@ class Create(base.CreateCommand):
         parser, 'The logging config for the Google API source.'
     )
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
+    flags.AddLabelsArg(
+        parser, help_text='Labels to apply to the Google API source.'
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -69,6 +72,7 @@ class Create(base.CreateCommand):
             args.CONCEPTS.destination_message_bus.Parse(),
             args.logging_config,
             args.crypto_key,
+            args.labels,
         ),
     )
 

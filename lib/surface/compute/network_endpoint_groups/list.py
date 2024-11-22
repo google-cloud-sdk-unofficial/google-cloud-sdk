@@ -44,7 +44,7 @@ class List(base.ListCommand):
     table = """\
         table(
             name,
-            selfLink.scope().segment(-3).yesno(no="global"):label=LOCATION,
+            uri().scope().segment(-3).yesno(no="global"):label=LOCATION,
             networkEndpointType:label=ENDPOINT_TYPE,
             size
             )

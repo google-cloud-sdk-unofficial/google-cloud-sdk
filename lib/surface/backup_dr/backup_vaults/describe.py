@@ -24,8 +24,8 @@ from googlecloudsdk.command_lib.backupdr import util as command_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(base.DescribeCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class Describe(base.DescribeCommand):
   """Show the metadata for a Backup and DR backup vault."""
 
   detailed_help = {
@@ -75,7 +75,7 @@ class DescribeAlpha(base.DescribeCommand):
         parser,
         'Name of the backup vault to retreive metadata of.',
     )
-    flags.AddOutputFormat(parser, DescribeAlpha.DEFAULT_DESCRIBE_FORMAT)
+    flags.AddOutputFormat(parser, Describe.DEFAULT_DESCRIBE_FORMAT)
 
   def Run(self, args):
     client = BackupVaultsClient()
@@ -85,10 +85,3 @@ class DescribeAlpha(base.DescribeCommand):
         command_util.TransformEnforcedRetention(bv_details)
     )
     return bv_details
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Describe(DescribeAlpha):
-  """Show the metadata for a Backup and DR backup vault."""

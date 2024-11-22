@@ -46,6 +46,7 @@ class FakeCredentials(object):
     self.token = token
 
 
+@base.UniverseCompatible
 class AccessToken(base.Command):
   """Print an access token for the specified account."""
   detailed_help = {
@@ -118,12 +119,14 @@ class AccessToken(base.Command):
 
     # Do not auto cache the custom scoped access token. Otherwise, it'll
     # affect other gcloud CLIs that depends on cloud-platform scopes.
-    with_access_token_cache = not args.scopes
+    cache_only_rapt = True if args.scopes else False
+
     cred = c_store.Load(
         args.account,
         allow_account_impersonation=True,
         use_google_auth=True,
-        with_access_token_cache=with_access_token_cache)
+        cache_only_rapt=cache_only_rapt,
+    )
 
     # c_store.Load already refreshed the cred, so we don't need to refresh the
     # cred unless we need to alter the cred in the code below, for example,

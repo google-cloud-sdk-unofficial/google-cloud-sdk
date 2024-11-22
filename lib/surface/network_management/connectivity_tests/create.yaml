@@ -113,6 +113,10 @@
       api_field: connectivityTest.destination.projectId
       help_text: |
         Project ID of the destination endpoint.
+    - arg_name: destination-fqdn
+      api_field: connectivityTest.destination.fqdn
+      help_text: |
+        A hostname as the destination endpoint. Only applicable for Google Kubernetes Engine.
     - arg_name: description
       api_field: connectivityTest.description
       help_text: |
@@ -156,6 +160,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateFqdn
     GA:
       api_version: v1
       modify_request_hooks:
@@ -170,5 +175,6 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateForwardingRulesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateRedisClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateFqdn
     collection: networkmanagement.projects.locations.global.connectivityTests
     method: create

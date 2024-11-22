@@ -15,10 +15,6 @@
 
 """The `app update` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import update_util
 
@@ -41,6 +37,7 @@ _DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGa(base.UpdateCommand):
   """Updates an App Engine application(GA version)."""
@@ -58,6 +55,7 @@ class UpdateGa(base.UpdateCommand):
         service_account=args.service_account)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class UpdateAlphaAndBeta(base.UpdateCommand):
   """Updates an App Engine application(Alpha and Beta version)."""
@@ -68,8 +66,17 @@ class UpdateAlphaAndBeta(base.UpdateCommand):
   def Args(parser):
     update_util.AddAppUpdateFlags(parser)
 
+    parser.add_argument(
+        '--ssl-policy',
+        choices=['default', 'modern'],
+        hidden=True,
+        help='The app-level SSL policy to update the app with.',
+    )
+
   def Run(self, args):
     update_util.PatchApplication(
         self.ReleaseTrack(),
         split_health_checks=args.split_health_checks,
-        service_account=args.service_account)
+        service_account=args.service_account,
+        ssl_policy=args.ssl_policy,
+    )

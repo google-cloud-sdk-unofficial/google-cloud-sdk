@@ -22,6 +22,11 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class Pubsub(base.Group):
   """Manage Cloud Pub/Sub topics, subscriptions, and snapshots."""
 

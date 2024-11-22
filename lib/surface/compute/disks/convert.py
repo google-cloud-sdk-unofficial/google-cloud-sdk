@@ -59,9 +59,11 @@ class _ConvertState(enum.Enum):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Convert(base.RestoreCommand):
-  """Convert a Compute Engine disk into a new disk type or new format."""
+  """Convert a Compute Engine Persistent Disk volume to a Hyperdisk volume."""
 
   _DISK_ARG = disks_flags.MakeDiskArg(plural=False)
 
@@ -72,7 +74,8 @@ class Convert(base.RestoreCommand):
         '--target-disk-type',
         completer=completers.DiskTypesCompleter,
         required=True,
-        help="""Specifies the type of disk to convert to. To get a
+        help="""Specifies the type of Hyperdisk to convert to, for example,
+        to convert a Hyperdisk Balanced volume, specify `hyperdisk-balanced`. To get a
         list of available disk types, run `gcloud compute disk-types list`.
         """,
     )
@@ -84,8 +87,8 @@ class Convert(base.RestoreCommand):
     self.holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     self.client = self.holder.client.apitools_client
     self.messages = self.holder.client.messages
-    self.created_resources = {}
     self.state = None
+    self.created_resources = {}
     self.user_messages = ''
 
     self.disk_ref = self._DISK_ARG.ResolveAsResource(
@@ -113,7 +116,7 @@ class Convert(base.RestoreCommand):
     original_disk = disk_info.GetDiskResource()
     if original_disk.users:
       raise exceptions.ToolException(
-          'Disk is attached to instances. Please Detach the disk before'
+          'Disk is attached to instances. Please detach the disk before'
           ' converting.'
       )
     console_io.PromptContinue(
@@ -151,20 +154,19 @@ class Convert(base.RestoreCommand):
       self, disk_ref, target_disk_type, size_gb, disk_encryption_key=None
   ):
     # create a snapshot of the disk
-    snapshot_name = self._GenerateName(disk_ref)
-    result = self._InsertSnapshot(disk_ref, snapshot_name)
+    self.snapshot_name = self._GenerateName(disk_ref)
+    result = self._InsertSnapshot(disk_ref, self.snapshot_name)
     snapshot_ref = self.holder.resources.Parse(
-        snapshot_name,
+        self.snapshot_name,
         params={'project': disk_ref.project},
         collection='compute.snapshots',
     )
     self._UpdateState(_ConvertState.SNAPSHOT_CREATED, snapshot_ref)
     # create a new disk from the snapshot with target disk type
-    restored_disk_name = self._GenerateName(disk_ref)
+    self.restored_disk_name = self._GenerateName(disk_ref)
     restored_disk_ref = self.holder.resources.Parse(
-        restored_disk_name,
-        params={'project': disk_ref.project,
-                'zone': disk_ref.zone},
+        self.restored_disk_name,
+        params={'project': disk_ref.project, 'zone': disk_ref.zone},
         collection='compute.disks',
     )
     result = (
@@ -280,9 +282,7 @@ class Convert(base.RestoreCommand):
     )
 
   def _GenerateName(self, resource_ref):
-    return '{0}-{1}'.format(
-        name_generator.GenerateRandomName(), resource_ref.Name()
-    )[:64]
+    return f'{name_generator.GenerateRandomName()}-{resource_ref.Name()}'[:64]
 
   def _DeleteDisk(self, disk_ref):
     request = self.messages.ComputeDisksDeleteRequest(
@@ -350,17 +350,14 @@ class Convert(base.RestoreCommand):
   def _CleanUp(self):
     if not self.state:
       self.user_messages = (
-          'Creating snapshot failed.'
+          'Creating snapshot failed.' + self._BuildCleanupSnapshotMessage()
       )
       return
     if self.state == _ConvertState.SNAPSHOT_CREATED:
       # restore disk failed
       self.user_messages = (
-          'Creating disk from snapshot {0} failed. '
-          'Please run `gcloud compute snapshots delete {0}` to delete'
-          ' the temporary snapshot if it still exists.'
-      ).format(
-          self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
+          f'Creating disk from snapshot {self.snapshot_name} failed. '
+          + self._BuildCleanupSnapshotMessage()
       )
       self._DeleteSnapshot(
           self.created_resources[_ConvertState.SNAPSHOT_CREATED]
@@ -368,10 +365,9 @@ class Convert(base.RestoreCommand):
     elif self.state == _ConvertState.DISK_RESTORED:
       # delete original disk request failed
       self.user_messages = (
-          'Deleting original disk {0} failed. Please run `gcloud compute disks'
-          ' delete {0} --zone={1}` to delete the temporary disk if it still'
-          ' exists. Please run `gcloud compute snapshots delete {2}` to delete'
-          ' the temporary snapshot if it still exists.'
+          f'Deleting original disk {self.disk_ref.Name()} failed. '
+          + self._BuildCleanupDiskMessage()
+          + self._BuildCleanupSnapshotMessage()
       )
       self._DeleteDisk(self.created_resources[_ConvertState.DISK_RESTORED])
       self._DeleteSnapshot(
@@ -380,34 +376,28 @@ class Convert(base.RestoreCommand):
     elif self.state == _ConvertState.ORIGINAL_DISK_DELETED:
       # recreate original disk failed
       self.user_messages = (
-          'Recreating original disk {0} failed. Please run `gcloud compute'
-          ' disks create {0} --zone={1} --type={2} --source-disk={3}` to'
-          ' recreate the original disk. Please run `gcloud compute snapshots'
-          ' delete {4}` to delete the temporary snapshot. Please run `gcloud'
-          ' compute disks delete {3} --zone={1}` to delete the temporary disk.'
-      ).format(
-          self.disk_ref.Name(),
-          self.disk_ref.zone,
-          self.target_disk_type,
-          self.created_resources[_ConvertState.DISK_RESTORED].Name(),
-          self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
+          f'Recreating original disk {self.disk_ref.Name()} failed. Please run'
+          ' `gcloud compute disks create'
+          f' {self.disk_ref.Name()} --zone={self.disk_ref.zone} --type={self.target_disk_type} --source-disk={self.restored_disk_name}`'
+          ' to recreate the original disk. Please run `gcloud compute'
+          f' snapshots delete {self.snapshot_name}` to delete the temporary'
+          ' snapshot. Please run `gcloud compute disks delete'
+          f' {self.restored_disk_name} --zone={self.disk_ref.zone}` to delete'
+          ' the temporary disk.'
       )
     elif self.state == _ConvertState.ORIGINAL_DISK_RECREATED:
       # delete restored disk failed
-      self.user_messages = """ Conversion completed successfully, Deleting temporary disk {0} failed.
-          Please run `gcloud compute disks delete {0} --zone={1}` to delete the temporary disk.
-          Please run `gcloud compute snapshots delete {2}` to delete the temporary snapshot.
-      """.format(
-          self.created_resources[_ConvertState.DISK_RESTORED].Name(),
-          self.created_resources[_ConvertState.DISK_RESTORED].zone,
-          self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
+      self.user_messages = (
+          'Conversion completed successfully, Deleting temporary disk'
+          f' {self.restored_disk_name} failed.'
+          + self._BuildCleanupDiskMessage()
+          + self._BuildCleanupSnapshotMessage()
       )
     elif self.state == _ConvertState.RESTORED_DISK_DELETED:
-      self.user_messages = """Conversion completed successfully.
-          Deleting temporary snapshot {0} failed.
-          Please run `gcloud compute snapshots delete {0}` to delete the snapshot.
-      """.format(
-          self.created_resources[_ConvertState.SNAPSHOT_CREATED].Name(),
+      self.user_messages = (
+          'Conversion completed successfully. Deleting temporary snapshot'
+          f' {self.snapshot_name} failed.'
+          + self._BuildCleanupSnapshotMessage()
       )
 
   def _CreateProgressTracker(self, disk_name):
@@ -418,9 +408,22 @@ class Convert(base.RestoreCommand):
 
   def _CreateNoOpProgressTracker(self):
     return progress_tracker.NoOpProgressTracker(
-        interruptable=True,
-        aborted_message=''
+        interruptable=True, aborted_message=''
     )
+
+  def _BuildCleanupSnapshotMessage(self):
+    return (
+        f' Please run `gcloud compute snapshots delete {self.snapshot_name}` to'
+        ' delete the temporary snapshot if it still exists.'
+    )
+
+  def _BuildCleanupDiskMessage(self):
+    return (
+        ' Please run `gcloud compute disks delete'
+        f' {self.restored_disk_name} --zone={self.disk_ref.zone}` to delete the'
+        ' temporary disk if it still exists.'
+    )
+
 
 Convert.detailed_help = {
     'DESCRIPTION': """\

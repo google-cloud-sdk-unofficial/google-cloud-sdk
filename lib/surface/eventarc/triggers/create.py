@@ -73,6 +73,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
     flags.AddTransportTopicResourceArg(parser)
+    flags.AddLabelsArg(parser, 'Labels to apply to the trigger.')
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -182,6 +183,7 @@ class Create(base.CreateCommand):
         destination_message,
         transport_topic_ref,
         channel_ref,
+        args.labels,
     )
     operation = client.Create(trigger_ref, trigger_message)
     self._event_type = event_filters['type']

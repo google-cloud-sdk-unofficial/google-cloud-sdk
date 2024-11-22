@@ -303,6 +303,8 @@ def AddBaseArgs(parser):
   flags.AddUpgradeSqlNetworkArchitecture(parser)
   flags.AddSimulateMaintenanceEvent(parser)
   flags.AddSwitchTransactionLogsToCloudStorage(parser)
+  flags.AddFailoverDrReplicaName(parser)
+  flags.AddClearFailoverDrReplicaName(parser)
 
 
 def AddBetaArgs(parser):
@@ -311,12 +313,8 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddFailoverDrReplicaName(parser)
-  flags.AddClearFailoverDrReplicaName(parser)
   flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
-  flags.AddEnablePrivateServiceConnect(
-      parser, show_negated_in_help=True, hidden=True
-  )
+  flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
@@ -399,7 +397,6 @@ def RunBasePatchCommand(args, release_track):
           '`--enable-point-in-time-recovery` cannot be specified when '
           '--no-backup is specified')
 
-  # beta only
   if args.IsKnownAndSpecified('failover_dr_replica_name'):
     if args.IsKnownAndSpecified('clear_failover_dr_replica_name'):
       raise exceptions.ArgumentError(
@@ -429,7 +426,6 @@ def RunBasePatchCommand(args, release_track):
   if args.maintenance_window_any:
     cleared_fields.append('settings.maintenanceWindow')
 
-  # beta only
   if args.IsKnownAndSpecified('clear_failover_dr_replica_name'):
     cleared_fields.append('replicationCluster')
 

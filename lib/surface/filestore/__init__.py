@@ -37,6 +37,11 @@ DETAILED_HELP = {
 }
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class Filestore(base.Group):
   """Create and manipulate Filestore resources."""
   detailed_help = DETAILED_HELP

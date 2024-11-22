@@ -534,6 +534,7 @@ class BaseImportStager(object):
         self.GetBucketLocation(),
         self.storage_client,
         enable_uniform_level_access=True,
+        soft_delete_duration=0,
     )
 
   def GetBucketLocation(self):

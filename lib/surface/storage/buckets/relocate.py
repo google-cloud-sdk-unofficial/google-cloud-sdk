@@ -100,11 +100,10 @@ def _prompt_user_to_confirm_advancing_the_relocation(bucket_name):
 
 
 # TODO: b/361729720 - Make bucket-relocate command group universe compatible.
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Relocate(base.Command):
-  """Relocates buckets, between different locations."""
+  """Relocates bucket between different locations."""
 
   detailed_help = {
       'DESCRIPTION': """
@@ -205,7 +204,7 @@ class Relocate(base.Command):
         '--ttl',
         type=arg_parsers.Duration(),
         help=(
-            'Time to live for the relocation operation. Default to 24h if not'
+            'Time to live for the relocation operation. Defaults to 12h if not'
             ' provided.'
         ),
     )

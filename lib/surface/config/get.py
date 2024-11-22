@@ -29,8 +29,6 @@ from googlecloudsdk.core.configurations import named_configs
 import six
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
 class Get(base.Command):
   """Print the value of a Google Cloud CLI property.
 

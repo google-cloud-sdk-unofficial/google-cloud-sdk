@@ -123,6 +123,13 @@
               help_text: |
                Hour of day (`0` to `23`) for the start of maintenance window, in UTC time zone.
               processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField
+    - arg_name: ondemand-maintenance
+      hidden: true
+      release_tracks: [ALPHA]
+      action: store_true
+      help_text: |
+        Trigger an on-demand maintenance.
+      type: bool
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
 
   async:
@@ -140,6 +147,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
     BETA:
       api_version: v1beta1
       modify_request_hooks:

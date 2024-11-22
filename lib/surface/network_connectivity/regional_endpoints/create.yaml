@@ -47,7 +47,11 @@
       help_text: The service endpoint the regional endpoint will connect to.
     - arg_name: address
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.address
-      help_text: The IPv4 address or address resource URI of the Regional Endpoint. When no address value is provided, an IP from the subnetwork is allocated. IPv6 address support is not available yet.
+      help_text: The IP Address of the Regional Endpoint. When no address is provided, an IP from the subnetwork is allocated. Use one of the following formats:\
+        * IPv4 address as in `10.0.0.1`
+        * Address resource URI as in
+        `projects/{project}/regions/{region}/addresses/{address_name}` for an IPv4
+        or IPv6 address.
     labels:
       api_field: googleCloudNetworkconnectivityV1betaRegionalEndpoint.labels
 
@@ -109,7 +113,10 @@
       help_text: The service endpoint the regional endpoint will connect to.
     - arg_name: address
       api_field: regionalEndpoint.address
-      help_text: The IPv4 address or address resource URI of the Regional Endpoint. When no address value is provided, an IP from the subnetwork is allocated. IPv6 address support is not available yet.
+      help_text: |
+        The IP Address of the Regional Endpoint. When no address is provided, an IP from the subnetwork is allocated. Use one of the following formats:
+        - IPv4 address as in ``10.0.0.1""
+        - Address resource URI as in ``projects/{project}/regions/{region}/addresses/{address_name} for an IPv4 or IPv6 address.""
     labels:
       api_field: regionalEndpoint.labels
 

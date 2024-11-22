@@ -363,7 +363,9 @@ class Create(base.CreateCommand):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
-    instances_flags.AddProvisioningModelVmArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(
+        parser, support_reservation_bound=False
+    )
 
   def Collection(self):
     return 'compute.instances'
@@ -894,7 +896,9 @@ class CreateBeta(Create):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
-    instances_flags.AddProvisioningModelVmArgs(parser)
+    instances_flags.AddProvisioningModelVmArgs(
+        parser, support_reservation_bound=True
+    )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
 

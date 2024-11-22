@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import collections
 import copy
 import os
 import shutil
@@ -29,11 +30,11 @@ from googlecloudsdk.api_lib.transfer import agent_pools_util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.transfer import agents_util
 from googlecloudsdk.command_lib.transfer import creds_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import platforms
-
 from oauth2client import client as oauth2_client
 
 COUNT_FLAG_HELP_TEXT = """
@@ -65,12 +66,12 @@ It is strongly recommended that you use this flag. If this flag isn't specified,
 gcloud transfer will mount your entire filesystem to the agent container and
 give the agent root access.
 """
-DOCKER_NETWORK_HELP_TEXT = """
-Specify the network to connect the Docker container to. This flag maps directly
-to the --network flag in the underlying 'docker run' command.
+NETWORK_HELP_TEXT = """
+Specify the network to connect the container to. This flag maps directly
+to the `--network` flag in the underlying '{container_managers} run' command.
 
-If binding directly to the Docker host's network is an option, then setting
-this value to 'host' can dramatically improve transfer performance.
+If binding directly to the host's network is an option, then setting this value
+to 'host' can dramatically improve transfer performance.
 """
 MISSING_PROJECT_ERROR_TEXT = """
 Could not find project ID. Try adding the project flag: --project=[project-id]
@@ -93,29 +94,6 @@ Credentials file not found at {creds_file_path}.
 Afterwards, re-run {executed_command}.
 """
 
-DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT = """
-The agent runs inside a Docker container, so you'll need
-to install Docker before finishing agent installation.
-
-{os_instructions}
-"""
-
-DOCKER_NOT_FOUND_HELP_TEXT_LINUX_FORMAT = (
-    DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT.format(os_instructions="""
-For most Linux operating systems, you can copy and run the piped installation
-commands below:
-
-curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh &&
-sudo systemctl enable docker && {executed_command}
-"""))
-
-DOCKER_NOT_FOUND_HELP_TEXT_NON_LINUX_FORMAT = (
-    DOCKER_NOT_FOUND_HELP_TEXT_BASE_FORMAT.format(os_instructions="""
-See the installation instructions at
-https://docs.docker.com/engine/install/binaries/ and re-run
-'{executed_command}' after Docker installation.
-"""))
-
 CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT = """
 To confirm your agents are connected, go to the following link in your browser,
 and check that agent status is 'Connected' (it can take a moment for the status
@@ -125,9 +103,9 @@ https://console.cloud.google.com/transfer/on-premises/agent-pools/pool/\
 {pool}/agents?project={project}
 
 If your agent does not appear in the pool, check its local logs by running
-"docker container logs [container ID]". The container ID is the string of random
+"{logs_command}". The container ID is the string of random
 characters printed by step [2/3]. The container ID can also be found by running
-"docker container list".
+"{list_command}".
 """
 
 S3_COMPATIBLE_HELP_TEXT = """
@@ -145,23 +123,110 @@ AWS_ACCESS_KEY_ID="id" AWS_SECRET_ACCESS_KEY="secret" gcloud transfer agents ins
 ```
 """
 
+# Container manager installation guide URLs for the different container managers
+# that are supported (currently Docker and Podman).
+CONTAINER_MANAGER_INSTALLATION_GUIDE_URL_MAP = {
+    agents_util.ContainerManager.DOCKER: collections.defaultdict(
+        # Default guide URL when an OS-specific guide URL is not found.
+        lambda: 'https://docs.docker.com/engine/install/',
+        # OS-specific guide URLs.
+        {
+            platforms.OperatingSystem.LINUX: (
+                'https://docs.docker.com/engine/install/'
+            ),
+            platforms.OperatingSystem.WINDOWS: 'https://docs.docker.com/engine/install/binaries/#install-server-and-client-binaries-on-windows',
+            platforms.OperatingSystem.MACOSX: 'https://docs.docker.com/engine/install/binaries/#install-client-binaries-on-macos',
+        },
+    ),
+    agents_util.ContainerManager.PODMAN: collections.defaultdict(
+        # Default guide URL when an OS-specific guide URL is not found.
+        lambda: 'https://podman.io/docs/installation/',
+        # OS-specific guide URLs.
+        {
+            platforms.OperatingSystem.LINUX: (
+                'https://podman.io/docs/installation/#installing-on-linux'
+            ),
+            platforms.OperatingSystem.WINDOWS: (
+                'https://podman.io/docs/installation/#windows'
+            ),
+            platforms.OperatingSystem.MACOSX: (
+                'https://podman.io/docs/installation/#macos'
+            ),
+        },
+    ),
+}
+
+# Help text for when the container manager is not found.
+CONTAINER_MANAGER_NOT_FOUND_HELP_TEXT = """
+The agent runs inside a {container_manager} container, so you'll need
+to install {container_manager} before finishing agent installation.
+
+See the installation instructions at
+{installation_guide_url} and re-run
+'{executed_command}' after {container_manager} installation.
+"""
+
+
+def _get_container_subcommand(use_sudo, container_manager, subcommand):
+  """Returns the container command for the given subcommand and container manager.
+
+  Args:
+    use_sudo (bool): Whether to use sudo in the command.
+    container_manager (agents_util.ContainerManager): The container manager.
+    subcommand (str): The subcommand to run.
+
+  Returns:
+    str: The container command for the given subcommand and container manager.
+  """
+  sudo_prefix = 'sudo ' if use_sudo else ''
+  return (
+      f'{sudo_prefix}{container_manager.value} container'
+      f' {subcommand} [container ID]'
+  )
+
 
 def _expand_path(path):
-  """Converts relative and symbolic paths to absolute paths."""
+  """Converts relative and symbolic paths to absolute paths.
+
+  Args:
+    path (str): The path to expand.
+
+  Returns:
+    str: The absolute path.
+  """
   return os.path.abspath(os.path.expanduser(path))
 
 
 def _get_executed_command():
-  """Returns the run command. Does not include environment variables."""
+  """Returns the run command. Does not include environment variables.
+
+  Returns:
+    str: The command that was executed by the user.
+  """
   return ' '.join(sys.argv)
 
 
-def _log_created_agent(docker_command):
-  log.info('Created agent with command:\n{}'.format(' '.join(docker_command)))
+def _log_created_agent(command):
+  """Logs the command used to create the agent.
+
+  Args:
+    command (list[str]): The command used to create the agent.
+  """
+  log.info('Created agent with command:\n{}'.format(' '.join(command)))
 
 
 def _authenticate_and_get_creds_file_path(existing_creds_file=None):
-  """Ensures agent will be able to authenticate and returns creds."""
+  """Ensures agent will be able to authenticate and returns creds.
+
+  Args:
+    existing_creds_file (str): The path to the credentials file.
+
+  Returns:
+    str: The path to the credentials file.
+
+  Raises:
+    OSError: If the credentials file is not found.
+  """
   # Can't disable near "else" (https://github.com/PyCQA/pylint/issues/872).
   # pylint:disable=protected-access
   if existing_creds_file:
@@ -189,19 +254,33 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   return creds_file_path
 
 
-def _check_if_docker_installed():
-  """Checks for 'docker' in system PATH."""
-  if not shutil.which('docker'):
-    log.error('[2/3] Docker not found')
-    if platforms.OperatingSystem.Current() == platforms.OperatingSystem.LINUX:
-      error_format = DOCKER_NOT_FOUND_HELP_TEXT_LINUX_FORMAT
-    else:
-      error_format = DOCKER_NOT_FOUND_HELP_TEXT_NON_LINUX_FORMAT
+def _check_if_container_manager_is_installed(
+    container_manager=agents_util.ContainerManager.DOCKER,
+):
+  """Checks for binary identified by container_manager is in system PATH.
 
-    raise OSError(error_format.format(executed_command=_get_executed_command()))
+  Args:
+    container_manager (agents_util.ContainerManager): The container manager.
+
+  Raises:
+    OSError: If the binary is not found.
+  """
+  command = container_manager.value
+  if shutil.which(command):
+    return
+
+  # Raise a message that includes the installation guide URL.
+  log.error('[2/3] {} not found'.format(command.title()))
+  help_str = _get_help_text_for_container_manager_not_found(
+      container_manager=container_manager,
+      current_os=platforms.OperatingSystem(),
+      executed_command=_get_executed_command(),
+  )
+  raise OSError(help_str)
 
 
-# Pairs of user arg and Docker flag. Coincidence that it's just a case change.
+# Pairs of user arg and container manager flag.
+# Coincidence that it's just a case change.
 _ADD_IF_PRESENT_PAIRS = [
     ('enable_multipart', '--enable-multipart'),
     ('hdfs_data_transfer_protection', '--hdfs-data-transfer-protection'),
@@ -215,34 +294,62 @@ _ADD_IF_PRESENT_PAIRS = [
 ]
 
 
-def _add_docker_flag_if_user_arg_present(user_args, docker_args):
-  """Adds user flags values directly directly to docker command."""
-  for user_arg, docker_flag in _ADD_IF_PRESENT_PAIRS:
+def _add_container_flag_if_user_arg_present(user_args, container_args):
+  """Adds user flags values directly to Docker/Podman command.
+
+  Args:
+    user_args (argparse.Namespace): The user arguments.
+    container_args (list[str]): The container arguments.
+  """
+  for user_arg, container_flag in _ADD_IF_PRESENT_PAIRS:
     user_value = getattr(user_args, user_arg, None)
     if user_value is not None:
-      docker_args.append('{}={}'.format(docker_flag, user_value))
+      container_args.append('{}={}'.format(container_flag, user_value))
 
 
-def _get_docker_command(args, project, creds_file_path):
-  """Returns docker command from user arguments and generated values."""
-  base_docker_command = [
-      'docker',
+def _get_container_run_command(
+    args, project, creds_file_path, elevate_privileges=False
+):
+  """Returns container run command from user arguments and generated values.
+
+  When `elevate_privileges` is True, the command will be run with sudo and
+  SELinux will be disabled by passing appropriate security-opt flags. This is
+  needed for running the agent in a container that is not owned by the user.
+
+  Args:
+    args (argparse.Namespace): The user arguments.
+    project (str): The project to use for the agent.
+    creds_file_path (str): The path to the credentials file.
+    elevate_privileges (bool): Whether to use sudo and disable SELinux.
+
+  Returns:
+    list[str]: The container run command.
+  """
+  base_container_command = []
+  if elevate_privileges:
+    base_container_command.append('sudo')
+
+  container_manager = agents_util.ContainerManager.from_args(args)
+  base_container_command.extend([
+      container_manager.value,
       'run',
       '--ulimit',
       'memlock={}'.format(args.memlock_limit),
       '--rm',
       '-d',
-  ]
+  ])
+
   aws_access_key, aws_secret_key = creds_util.get_default_aws_creds()
   if aws_access_key:
-    base_docker_command.append('--env')
-    base_docker_command.append('AWS_ACCESS_KEY_ID={}'.format(aws_access_key))
+    base_container_command.append('--env')
+    base_container_command.append('AWS_ACCESS_KEY_ID={}'.format(aws_access_key))
   if aws_secret_key:
-    base_docker_command.append('--env')
-    base_docker_command.append(
-        'AWS_SECRET_ACCESS_KEY={}'.format(aws_secret_key))
-  if args.docker_network:
-    base_docker_command.append('--network={}'.format(args.docker_network))
+    base_container_command.append('--env')
+    base_container_command.append(
+        'AWS_SECRET_ACCESS_KEY={}'.format(aws_secret_key)
+    )
+  if args.network:
+    base_container_command.append('--network={}'.format(args.network))
 
   expanded_creds_file_path = _expand_path(creds_file_path)
   expanded_logs_directory_path = _expand_path(args.logs_directory)
@@ -255,7 +362,7 @@ def _get_docker_command(args, project, creds_file_path):
       or root_without_drive in args.mount_directories
   )
   if mount_entire_filesystem:
-    base_docker_command.append('-v=/:/transfer_root')
+    base_container_command.append('-v=/:/transfer_root')
   else:
     # Mount mandatory directories.
     mount_flags = [
@@ -266,11 +373,11 @@ def _get_docker_command(args, project, creds_file_path):
     for path in args.mount_directories:
       # Mount custom directory.
       mount_flags.append('-v={path}:{path}'.format(path=path))
-    base_docker_command.extend(mount_flags)
+    base_container_command.extend(mount_flags)
 
   if args.proxy:
-    base_docker_command.append('--env')
-    base_docker_command.append('HTTPS_PROXY={}'.format(args.proxy))
+    base_container_command.append('--env')
+    base_container_command.append('HTTPS_PROXY={}'.format(args.proxy))
 
   agent_args = [
       'gcr.io/cloud-ingest/tsop-agent:latest',
@@ -289,58 +396,160 @@ def _get_docker_command(args, project, creds_file_path):
       agent_id_prefix = args.id_prefix
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
 
-  _add_docker_flag_if_user_arg_present(args, agent_args)
+  _add_container_flag_if_user_arg_present(args, agent_args)
 
   if args.s3_compatible_mode:
     # TODO(b/238213039): Remove when this flag becomes optional.
     agent_args.append('--enable-s3')
-  return base_docker_command + agent_args
+  return base_container_command + agent_args
 
 
-def _execute_and_return_docker_command(args, project, creds_file_path):
-  """Generates, executes, and returns agent install and run command."""
-  full_docker_command = _get_docker_command(args, project, creds_file_path)
+def _execute_container_command(args, project, creds_file_path):
+  """Generates, executes, and returns agent install and run command.
 
-  completed_process = subprocess.run(full_docker_command, check=False)
-  if completed_process.returncode != 0:
-    log.status.Print('\nCould not execute Docker command. Trying with "sudo".')
-    sudo_full_docker_command = ['sudo'] + full_docker_command
-    sudo_completed_process = subprocess.run(
-        sudo_full_docker_command, check=False)
-    if sudo_completed_process.returncode != 0:
-      raise OSError('Error executing Docker command:\n{}'.format(
-          ' '.join(full_docker_command)))
-    executed_docker_command = sudo_full_docker_command
-  else:
-    executed_docker_command = full_docker_command
+  Args:
+    args (argparse.Namespace): The user arguments.
+    project (str): The project to use for the agent.
+    creds_file_path (str): The path to the credentials file.
 
-  _log_created_agent(executed_docker_command)
-  return executed_docker_command
+  Returns:
+    list[str]: The container run command.
+
+  Raises:
+    OSError: If the command fails to execute.
+  """
+  container_run_command = _get_container_run_command(
+      args, project, creds_file_path
+  )
+
+  completed_process = subprocess.run(container_run_command, check=False)
+  if completed_process.returncode == 0:
+    _log_created_agent(container_run_command)
+    return container_run_command
+
+  container_manager = agents_util.ContainerManager.from_args(args)
+  log.status.Print(
+      '\nCould not execute {} command. Trying with "sudo".'.format(
+          container_manager.value.title()
+      )
+  )
+  elevated_privileges_container_run_command = _get_container_run_command(
+      args, project, creds_file_path, elevate_privileges=True
+  )
+  elevated_prev_completed_process = subprocess.run(
+      elevated_privileges_container_run_command, check=False
+  )
+  if elevated_prev_completed_process.returncode == 0:
+    _log_created_agent(elevated_privileges_container_run_command)
+    return elevated_privileges_container_run_command
+  command_str = ' '.join(container_run_command)
+  raise OSError(f'Error executing command:\n{command_str}')
 
 
-def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
-  """Creates multiple identical agents."""
+def _create_additional_agents(agent_count, agent_id_prefix, container_command):
+  """Creates multiple identical agents.
+
+  Args:
+    agent_count (int): The number of agents to create.
+    agent_id_prefix (str): The prefix to add to the agent ID.
+    container_command (list[str]): The container command to execute.
+  """
 
   # Find the index of the --agent-id-prefix flag in the docker command.
   idx_agent_prefix = -1
-  for idx, token in enumerate(docker_command):
+  for idx, token in enumerate(container_command):
     if token.startswith('--agent-id-prefix='):
       idx_agent_prefix = idx
       break
 
   for count in range(1, agent_count):
-    # docker_command is a list, so copy to avoid mutating the original.
-    docker_command_copy = copy.deepcopy(docker_command)
+    # container_command is a list, so copy to avoid mutating the original.
+    container_command_copy = copy.deepcopy(container_command)
     if agent_id_prefix:
       # Since agent_id_prefix is not None, we know that idx_agent_prefix is not
       # -1.
-      docker_command_copy[idx_agent_prefix] = (
+      container_command_copy[idx_agent_prefix] = (
           '--agent-id-prefix={}{}'.format(agent_id_prefix, str(count))
       )
-
     # Less error handling than before. Just propogate any process errors.
-    subprocess.run(docker_command_copy, check=True)
-    _log_created_agent(docker_command_copy)
+    subprocess.run(container_command_copy, check=True)
+    _log_created_agent(container_command_copy)
+
+
+def _get_help_text_for_container_manager_not_found(
+    container_manager, current_os, executed_command
+):
+  """Returns the help text for when the container manager is not found.
+
+  Args:
+    container_manager (agents_util.ContainerManager): The container manager.
+    current_os (platforms.OperatingSystem): The current operating system.
+    executed_command (str): The command that was executed.
+
+  Returns:
+    str: The help text for when the container manager is not found.
+
+  Raises:
+    ValueError: If the container manager is not supported.
+  """
+  if container_manager not in CONTAINER_MANAGER_INSTALLATION_GUIDE_URL_MAP:
+    raise ValueError(f'Container manager not supported: {container_manager}')
+
+  # Get OS-specific installation guide URL for container manager.
+  installation_guide_url = CONTAINER_MANAGER_INSTALLATION_GUIDE_URL_MAP[
+      container_manager
+  ][current_os]
+
+  return CONTAINER_MANAGER_NOT_FOUND_HELP_TEXT.format(
+      container_manager=container_manager.value.title(),
+      installation_guide_url=installation_guide_url,
+      executed_command=executed_command,
+  )
+
+
+INSTALL_CMD_DESCRIPTION_TEXT = """\
+    Install Transfer Service agents to enable you to transfer data to or from
+    POSIX filesystems, such as on-premises filesystems. Agents are installed
+    locally on your machine and run inside {container_managers} containers.
+"""
+
+INSTALL_CMD_EXAMPLES_TEXT = """\
+    To create an agent pool for your agent, see the
+    `gcloud transfer agent-pools create` command.
+
+    To install an agent that authenticates with your user account credentials
+    and has default agent parameters, run:
+
+      $ {command} --pool=AGENT_POOL
+
+    You will be prompted to run a command to generate a credentials file if
+    one does not already exist.
+
+    To install an agent that authenticates with a service account with
+    credentials stored at '/example/path.json', run:
+
+      $ {command} --creds-file=/example/path.json --pool=AGENT_POOL
+"""
+
+
+def _get_detailed_help_text(release_track):
+  """Returns the detailed help dictionary for the install command based on the release track.
+
+  Args:
+    release_track (base.ReleaseTrack): The release track.
+
+  Returns:
+    dict[str, str]: The detailed help dictionary for the install command.
+  """
+  is_alpha = release_track == base.ReleaseTrack.ALPHA
+  container_managers = 'Docker or Podman' if is_alpha else 'Docker'
+  description_text = INSTALL_CMD_DESCRIPTION_TEXT.format(
+      container_managers=container_managers
+  )
+  return {
+      'DESCRIPTION': description_text,
+      'EXAMPLES': INSTALL_CMD_EXAMPLES_TEXT,
+  }
 
 
 @base.UniverseCompatible
@@ -348,36 +557,16 @@ def _create_additional_agents(agent_count, agent_id_prefix, docker_command):
 class Install(base.Command):
   """Install Transfer Service agents."""
 
-  detailed_help = {
-      'DESCRIPTION':
-          """\
-      Install Transfer Service agents to enable you to transfer data to or from
-      POSIX filesystems, such as on-premises filesystems. Agents are installed
-      locally on your machine and run inside Docker containers.
-      """,
-      'EXAMPLES':
-          """\
-      To create an agent pool for your agent, see the
-      `gcloud transfer agent-pools create` command.
-
-      To install an agent that authenticates with your user account credentials
-      and has default agent parameters, run:
-
-        $ {command} --pool=AGENT_POOL
-
-      You will be prompted to run a command to generate a credentials file if
-      one does not already exist.
-
-      To install an agent that authenticates with a service account with
-      credentials stored at '/example/path.json', run:
-
-        $ {command} --creds-file=/example/path.json --pool=AGENT_POOL
-
-      """
-  }
+  detailed_help = _get_detailed_help_text(base.ReleaseTrack.GA)
 
   @staticmethod
-  def Args(parser):
+  def Args(parser, release_track=base.ReleaseTrack.GA):
+    """Add arguments for the install command.
+
+    Args:
+      parser (argparse.ArgumentParser): The argument parser for the command.
+      release_track (base.ReleaseTrack): The release track.
+    """
     parser.add_argument(
         '--pool',
         required=True,
@@ -386,7 +575,14 @@ class Install(base.Command):
         ' which agents are activated.')
     parser.add_argument('--count', type=int, help=COUNT_FLAG_HELP_TEXT)
     parser.add_argument('--creds-file', help=CREDS_FILE_FLAG_HELP_TEXT)
-    parser.add_argument('--docker-network', help=DOCKER_NETWORK_HELP_TEXT)
+    # The flag --docker-network is only supported in GA and will eventually
+    # be replaced by the --network flag.
+    if release_track == base.ReleaseTrack.GA:
+      parser.add_argument(
+          '--docker-network',
+          dest='network',
+          help=NETWORK_HELP_TEXT.format(container_managers='docker'),
+      )
     parser.add_argument(
         '--enable-multipart',
         action=arg_parsers.StoreTrueFalseAction,
@@ -487,6 +683,11 @@ class Install(base.Command):
     )
 
   def Run(self, args):
+    """Installs the agent.
+
+    Args:
+      args (argparse.Namespace): The arguments to the command.
+    """
     if args.count is not None and args.count < 1:
       raise ValueError('Agent count must be greater than zero.')
 
@@ -502,17 +703,41 @@ class Install(base.Command):
     creds_file_path = _authenticate_and_get_creds_file_path(args.creds_file)
     log.status.Print('[1/3] Credentials found ✓')
 
-    _check_if_docker_installed()
-    log.status.Print('[2/3] Docker found ✓')
+    # Get the container_manager attribute on args, or default to Docker
+    # because we are in the GA surface, we need to be resilient to the
+    # container_manager flag not being present.
+    container_manager = agents_util.ContainerManager.from_args(args)
 
-    docker_command = _execute_and_return_docker_command(args, project,
-                                                        creds_file_path)
+    _check_if_container_manager_is_installed(container_manager)
+    log.status.Print('[2/3] {} found ✓'.format(container_manager.value.title()))
+
+    container_command = _execute_container_command(
+        args, project, creds_file_path
+    )
     if args.count is not None:
-      _create_additional_agents(args.count, args.id_prefix, docker_command)
+      _create_additional_agents(args.count, args.id_prefix, container_command)
     log.status.Print('[3/3] Agent installation complete! ✓')
+
+    # If the user ran the command with sudo, we need to use sudo for the
+    # subsequent commands (logs and list).
+    use_sudo = container_command[0] == 'sudo'
+
     log.status.Print(
         CHECK_AGENT_CONNECTED_HELP_TEXT_FORMAT.format(
-            pool=args.pool, project=project))
+            pool=args.pool,
+            project=project,
+            logs_command=_get_container_subcommand(
+                use_sudo,
+                container_manager,
+                'logs',
+            ),
+            list_command=_get_container_subcommand(
+                use_sudo,
+                container_manager,
+                'list',
+            ),
+        )
+    )
 
 
 @base.UniverseCompatible
@@ -520,12 +745,36 @@ class Install(base.Command):
 class InstallAlpha(Install):
   """Install Transfer Service agents."""
 
+  detailed_help = _get_detailed_help_text(base.ReleaseTrack.ALPHA)
+
   @staticmethod
   def Args(parser):
-    Install.Args(parser)
+    """Add arguments for the install command.
+
+    Args:
+      parser (argparse.ArgumentParser): The argument parser for the command.
+    """
+    Install.Args(parser, release_track=base.ReleaseTrack.ALPHA)
     parser.add_argument(
         '--max-concurrent-small-file-uploads',
         type=int,
         help='Adjust the maximum number of files less than or equal to 32 MiB'
         ' large that the agent can upload in parallel. Not recommended for'
         " users unfamiliar with Google Cloud's rate limiting.")
+    # podman is available in alpha only but the wiring to make it work in GA
+    # is already in place.
+    parser.add_argument(
+        '--container-manager',
+        choices=sorted(
+            [option.value for option in agents_util.ContainerManager]
+        ),
+        default=agents_util.ContainerManager.DOCKER.value,
+        help='The container manager to use for running agents.',
+    )
+    # --network is the new name for the --docker-network flag, once we are ready
+    # to deprecate and eventually remove the --docker-network flag.
+    parser.add_argument(
+        '--network',
+        dest='network',
+        help=NETWORK_HELP_TEXT.format(container_managers='(docker or podman)'),
+    )

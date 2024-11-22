@@ -80,10 +80,13 @@ class ConfigmanagementFeatureState(object):
     Args:
       fs: ConfigManagementFeatureState
     """
-    if not (fs.configSyncState and fs.configSyncState.syncState):
-      self.config_sync = 'SYNC_STATE_UNSPECIFIED'
-    else:
-      self.config_sync = fs.configSyncState.syncState.code
+    if (
+        fs.configSyncState is None
+        or fs.configSyncState.state.name != 'CONFIG_SYNC_INSTALLED'
+    ):
+      return
+
+    if fs.configSyncState.syncState:
       if fs.configSyncState.syncState.syncToken:
         self.last_synced_token = fs.configSyncState.syncState.syncToken[:7]
       self.last_synced = fs.configSyncState.syncState.lastSyncTime
@@ -176,33 +179,43 @@ class ConfigmanagementFeatureState(object):
         feature_state_mc is None and feature_spec_mc is not None
     )
     if feature_state_pending:
-      self.last_synced_token = 'PENDING'
-      self.last_synced = 'PENDING'
-      self.sync_branch = 'PENDING'
+      self.last_synced_token = utils.STATUS_PENDING
+      self.last_synced = utils.STATUS_PENDING
+      self.sync_branch = utils.STATUS_PENDING
       if self.config_sync == NA:
-        self.config_sync = 'PENDING'
+        self.config_sync = utils.STATUS_PENDING
     if (
         self.policy_controller_state.__str__()
         in ['INSTALLED', 'GatekeeperAudit NOT_INSTALLED', NA]
         and feature_state_pending
     ):
-      self.policy_controller_state = 'PENDING'
+      self.policy_controller_state = utils.STATUS_PENDING
 
     hc_semantic_copy = (
         lambda hc_spec: hc_spec if hc_spec is not None
         else api.ConfigManagementHierarchyControllerConfig()
     )
     if (
-        self.hierarchy_controller_state.__str__() != 'ERROR'
+        self.hierarchy_controller_state.__str__() != utils.STATUS_ERROR
         and feature_state_pending
         or hc_semantic_copy(feature_spec_mc.hierarchyController)
         != hc_semantic_copy(feature_state_mc.hierarchyController)
     ):
-      self.hierarchy_controller_state = 'PENDING'
+      self.hierarchy_controller_state = utils.STATUS_PENDING
 
 
 class Status(feature_base.FeatureCommand, base.ListCommand):
   """Print the status of all clusters with Config Management enabled.
+
+  The `Status` column indicates the status of the Config Sync component.
+  `Status` displays `NOT_INSTALLED` when Config Sync is not installed.
+  `Status` displays `NOT_CONFIGURED` when Config Sync is installed but git/oci
+  is not configured. `Status` displays `SYNCED` when Config Sync is installed
+  and git/oci is configured and the last sync was successful. `Status` displays
+  `ERROR` when Config Sync encounters errors. `Status` displays `STOPPED` when
+  Config Sync stops syncing configs to the cluster. `Status` displays
+  `PENDING` when Config Sync has not reached the desired state. Otherwise,
+  `Status` displays `UNSPECIFIED`.
 
   The `Synced_to_Fleet_Default` status indicates whether each membership's
   configuration has been synced with the [fleet-default membership configuration
@@ -281,7 +294,7 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
       if md.state is None or md.state.code is None:
         cluster.config_sync = 'CODE_UNSPECIFIED'
       elif fs is None:
-        cluster.config_sync = 'NOT_INSTALLED'
+        cluster.config_sync = utils.STATUS_NOT_INSTALLED
       else:
         # operator errors could occur regardless of the deployment_state
         if has_operator_error(fs):
@@ -304,22 +317,24 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
             cluster.upgrades = utils.UPGRADES_AUTO
           else:
             cluster.upgrades = utils.UPGRADES_MANUAL
+
           # Set cluster.version
           if fs.membershipSpec is not None:
             cluster.version = fs.membershipSpec.version
+
           # Set cluster.config_sync
           if fs.configSyncState.state is not None:
-            cluster.config_sync = config_sync_state(
-                fs.configSyncState.state.name
-            )
+            cluster.config_sync = config_sync_state(fs)
+
+          # Set cluster.last_synced_token, cluster.sync_branch and
+          # cluster.last_synced_time
+          cluster.update_sync_state(fs)
+
+          # Add errors into acm_errors
           if fs.configSyncState.errors:
             append_error(name, fs.configSyncState.errors, acm_errors)
-          if cluster.config_sync == 'INSTALLED':
-            cluster.update_sync_state(fs)
-            if has_config_sync_error(fs):
-              append_error(
-                  name, fs.configSyncState.syncState.errors, acm_errors
-              )
+          if has_config_sync_sync_error(fs):
+            append_error(name, fs.configSyncState.syncState.errors, acm_errors)
 
           # Set cluster.hierarchy_controller_state
           cluster.update_hierarchy_controller_state(fs)
@@ -348,26 +363,43 @@ class Status(feature_base.FeatureCommand, base.ListCommand):
     return 'UNKNOWN'
 
 
-def config_sync_state(state):
+def config_sync_state(fs):
   """Convert state to a string shown to the users.
 
   Args:
-    state: a string from the ACM Fleet Feature state representing the Config
-    Sync state.
+    fs: ConfigManagementFeatureState
 
   Returns:
     a string shown to the users representing the Config Sync state.
   """
-  if state == 'CONFIG_SYNC_INSTALLED':
-    return 'INSTALLED'
-  elif state == 'CONFIG_SYNC_NOT_INSTALLED':
-    return 'NOT_INSTALLED'
-  elif state == 'CONFIG_SYNC_ERROR':
-    return 'ERROR'
-  elif state == 'CONFIG_SYNC_PENDING':
-    return 'PENDING'
-  else:
-    return 'UNSPECIFIED'
+
+  if (
+      fs.configSyncState is not None
+      and fs.configSyncState.clusterLevelStopSyncingState is not None
+  ):
+    if fs.configSyncState.clusterLevelStopSyncingState.name in [
+        utils.STATUS_STOPPED,
+        utils.STATUS_PENDING,
+    ]:
+      return fs.configSyncState.clusterLevelStopSyncingState.name
+
+  cs_installation_state = fs.configSyncState.state.name
+
+  if cs_installation_state == 'CONFIG_SYNC_PENDING':
+    return utils.STATUS_PENDING
+
+  if cs_installation_state == 'CONFIG_SYNC_INSTALLED':
+    if fs.configSyncState and fs.configSyncState.syncState:
+      return fs.configSyncState.syncState.code.name
+    return utils.STATUS_INSTALLED
+
+  if cs_installation_state == 'CONFIG_SYNC_NOT_INSTALLED':
+    return utils.STATUS_NOT_INSTALLED
+
+  if cs_installation_state == 'CONFIG_SYNC_ERROR':
+    return utils.STATUS_ERROR
+
+  return 'UNSPECIFIED'
 
 
 def has_operator_state(fs):
@@ -378,7 +410,7 @@ def has_operator_error(fs):
   return fs and fs.operatorState and fs.operatorState.errors
 
 
-def has_config_sync_error(fs):
+def has_config_sync_sync_error(fs):
   return (
       fs
       and fs.configSyncState

@@ -51,6 +51,10 @@ def _clear_fields(args, messages, job):
   if args.clear_manifest_file:
     job.transferSpec.transferManifest = None
 
+  if getattr(job.transferSpec, 'awsS3DataSource', None):
+    if getattr(args, 'clear_s3_cloudfront_domain', None):
+      job.transferSpec.awsS3DataSource.cloudfrontDomain = None
+
   if getattr(job.transferSpec, 'objectConditions', None):
     object_conditions = job.transferSpec.objectConditions
     if args.clear_include_prefixes:
@@ -158,9 +162,11 @@ class Update(base.Command):
       """
   }
 
-  @staticmethod
-  def Args(parser):
-    jobs_flag_util.setup_parser(parser, is_update=True)
+  @classmethod
+  def Args(cls, parser):
+    jobs_flag_util.setup_parser(
+        parser, is_update=True, release_track=cls.ReleaseTrack()
+    )
 
   def Run(self, args):
     client = apis.GetClientInstance('transfer', 'v1')

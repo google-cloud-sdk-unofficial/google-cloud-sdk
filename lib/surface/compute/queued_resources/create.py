@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
+  _support_igmp_query = True
 
   @classmethod
   def Args(cls, parser):
@@ -111,6 +112,7 @@ class Create(base.CreateCommand):
         support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
+        support_igmp_query=cls._support_igmp_query,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)

@@ -12,7 +12,64 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command that statically validates gcloud commands for corectness."""
+"""Command that statically validates gcloud commands for corectness.
+
+To validate a command, run:
+
+```
+gcloud meta lint-gcloud-commands --command-string="gcloud compute instances
+list"
+```
+
+To validate a list of commands in a file:
+
+1) Create a JSON file with the following format:
+
+```
+[
+  {
+    "command_string": "gcloud compute instances list",
+  },
+  {
+    "command_string": "gcloud compute instances describe my-instance",
+  }
+]
+```
+
+2) Then run the command:
+
+```
+gcloud meta lint-gcloud-commands --commands-file=commands.json
+```
+
+Commands can also be associated with an ID, which will be used to identify the
+command in the output. Simply run:
+
+```
+gcloud meta lint-gcloud-commands --commands-file=commands.json --serialize
+```
+This will associated each command with using the index it was found in the file
+as the ID. If you want to associate a command with a specific ID, you can do so
+by adding the `id` field to the command in the JSON file. For example:
+
+```
+[
+  {
+    "command_string": "gcloud compute instances list",
+    "id": 0,
+  },
+  {
+    "command_string": "gcloud compute instances describe my-instance",
+    "id": 1,
+  }
+]
+```
+
+This will output the validation results in the following format:
+
+```
+{"0": [{<OUTPUT_1>}], "1": [{<OUTPUT_2>}]}
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -39,9 +96,14 @@ import six
 _PARSING_OUTPUT_TEMPLATE = {
     'command_string': None,
     'success': False,
+    'command_args': None,
+    'command_string_no_args': None,
+    'args_structure': {},
     'error_message': None,
     'error_type': None,
 }
+
+_IGNORE_ARGS = ['--help']
 
 
 class CommandValidationError(Exception):
@@ -49,21 +111,37 @@ class CommandValidationError(Exception):
 
 
 def _read_commands_from_file(commands_file):
+  """Reads commands from a JSON file."""
   with files.FileReader(commands_file) as f:
     command_file_data = json.load(f)
-  command_strings = []
+  ref_id = 0
+  command_strings = {}
+  needs_id = any(command_data.get('id') for command_data in command_file_data)
   for command_data in command_file_data:
-    command_strings.append(command_data['command_string'])
+    command_id = command_data.get('id')
+    if needs_id and command_id is None:
+      raise ValueError(
+          'Not all commands have an ID. Id for command'
+          f' {command_data["command_string"]} is None.'
+      )
+    command_strings[command_data['command_string']] = command_id or ref_id
+    ref_id += 1
   return command_strings
 
 
 def _separate_command_arguments(command_string: str):
   """Move all flag arguments to back."""
-  # Split arguments
-  if os.name == 'nt':
-    command_arguments = shlex.split(command_string, posix=False)
-  else:
-    command_arguments = shlex.split(command_string)
+  command_string = command_string.split('#')[0]
+  try:
+    # Split arguments
+    if os.name == 'nt':
+      command_arguments = shlex.split(command_string, posix=False)
+    else:
+      command_arguments = shlex.split(command_string)
+  except Exception:  # pylint: disable=broad-except
+    raise CommandValidationError(
+        'Command could not be validated due to unforeseen edge case.'
+    )
   # Move any flag arguments to end of command.
   flag_args = [arg for arg in command_arguments if arg.startswith('--')]
   command_args = [arg for arg in command_arguments if not arg.startswith('--')]
@@ -250,35 +328,38 @@ class GenerateCommand(base.Command):
   """
 
   _INDEXED_VALIDATION_RESULTS = collections.OrderedDict()
+  _SERIALIZED_VALIDATION_RESULTS = collections.OrderedDict()
   _VALIDATION_RESULTS = []
   index_results = False
+  serialize_results = False
 
-  def _validate_command(self, command_string):
+  def _validate_command(self, command_string, ref_id=0):
     """Validate a single command."""
     command_string = formalize_gcloud_command(command_string)
     command_arguments = _separate_command_arguments(command_string)
     command_success, command_node, flag_arguments = (
-        self._validate_command_prefix(command_arguments, command_string)
+        self._validate_command_prefix(command_arguments, command_string, ref_id)
     )
     if not command_success:
       return
     flag_success = self._validate_command_suffix(
-        command_node, flag_arguments, command_string
+        command_node, flag_arguments, command_string, ref_id
     )
     if not flag_success:
       return
-    self._store_validation_results(True, command_string, flag_arguments)
+    self._store_validation_results(True, command_string, ref_id, flag_arguments)
 
   def _validate_commands_from_file(self, commands_file):
     """Validate multiple commands given in a file."""
     commands = _read_commands_from_file(commands_file)
-    for command in commands:
+    for command, ref_id in commands.items():
       try:
-        self._validate_command(command)
+        self._validate_command(command, ref_id)
       except Exception as e:  # pylint: disable=broad-except
         self._store_validation_results(
             False,
             command,
+            ref_id,
             None,
             f'Command could not be validated: {e}',
             'CommandValidationError',
@@ -289,10 +370,12 @@ class GenerateCommand(base.Command):
     with files.FileReader(commands_text_file) as f:
       text = f.read()
     commands = _extract_gcloud_commands(text)
+    ref_id = 0
     for command in commands:
-      self._validate_command(command)
+      self._validate_command(command, ref_id)
+      ref_id += 1
 
-  def _validate_command_prefix(self, command_arguments, command_string):
+  def _validate_command_prefix(self, command_arguments, command_string, ref_id):
     """Validate that the argument string contains a valid command or group."""
     cli = gcloud_main.CreateCLI([])
     # Remove "gcloud" from command arguments.
@@ -315,6 +398,7 @@ class GenerateCommand(base.Command):
         self._store_validation_results(
             False,
             command_string,
+            ref_id,
             command_arguments[index:],
             "Invalid choice: '{}'".format(argument),
             'UnrecognizedCommandError',
@@ -335,6 +419,7 @@ class GenerateCommand(base.Command):
       self._store_validation_results(
           False,
           command_string,
+          ref_id,
           command_arguments[index:],
           'Command name argument expected',
           'UnrecognizedCommandError',
@@ -347,10 +432,12 @@ class GenerateCommand(base.Command):
     )
 
   def _validate_command_suffix(
-      self, command_node, command_arguments, command_string
+      self, command_node, command_arguments, command_string, ref_id
   ):
     """Validates that the given flags can be parsed by the argparse parser."""
-
+    for ignored_arg in _IGNORE_ARGS:
+      if ignored_arg in command_arguments:
+        return True
     found_parent = False
     if command_arguments:
       for command_arg in command_arguments:
@@ -378,6 +465,7 @@ class GenerateCommand(base.Command):
       self._store_validation_results(
           False,
           command_string,
+          ref_id,
           command_arguments,
           six.text_type(e),
           type(e).__name__,
@@ -389,6 +477,7 @@ class GenerateCommand(base.Command):
       self,
       success,
       command_string,
+      ref_id,
       command_args=None,
       error_message=None,
       error_type=None,
@@ -396,25 +485,33 @@ class GenerateCommand(base.Command):
     """Store information related to the command validation."""
     validation_output = copy.deepcopy(_PARSING_OUTPUT_TEMPLATE)
     validation_output['command_string'] = command_string
-    command_node = _get_command_node(
-        _separate_command_arguments(command_string)
-    )
-    validation_output['command_string_no_args'] = _get_command_no_args(
-        command_node
-    )
-    validation_output['args_structure'] = _get_command_args_tree(command_node)
+    try:
+      command_node = _get_command_node(
+          _separate_command_arguments(command_string)
+      )
+      validation_output['command_string_no_args'] = _get_command_no_args(
+          command_node
+      )
+      validation_output['args_structure'] = _get_command_args_tree(command_node)
+    except Exception:  # pylint: disable=broad-except
+      validation_output['command_string_no_args'] = command_string
     if command_args:
       validation_output['command_args'] = _normalize_command_args(
           command_args, validation_output['args_structure']
       )
-    else:
-      validation_output['command_args'] = None
     validation_output['success'] = success
     validation_output['error_message'] = error_message
     validation_output['error_type'] = error_type
     sorted_validation_output = collections.OrderedDict(
         sorted(validation_output.items())
     )
+    if self.serialize_results:
+      if ref_id not in self._SERIALIZED_VALIDATION_RESULTS:
+        self._SERIALIZED_VALIDATION_RESULTS[ref_id] = [sorted_validation_output]
+      else:
+        self._SERIALIZED_VALIDATION_RESULTS[ref_id].append(
+            sorted_validation_output
+        )
     if self.index_results:
       self._INDEXED_VALIDATION_RESULTS[command_string] = (
           sorted_validation_output
@@ -426,6 +523,8 @@ class GenerateCommand(base.Command):
     """Output collected validation results."""
     if self.index_results:
       log.out.Print(json.dumps(self._INDEXED_VALIDATION_RESULTS))
+    elif self.serialize_results:
+      log.out.Print(json.dumps(self._SERIALIZED_VALIDATION_RESULTS))
     else:
       log.out.Print(json.dumps(self._VALIDATION_RESULTS))
 
@@ -449,14 +548,14 @@ class GenerateCommand(base.Command):
         ),
     )
     parser.add_argument(
-        '--index',
+        '--serialize',
         action='store_true',
-        help='Output results in a dictionary indexed by command string.',
+        help='Output results in a dictionary serialized by reference id.',
     )
 
   def Run(self, args):
-    if args.index:
-      self.index_results = True
+    if args.serialize:
+      self.serialize_results = True
     if args.IsSpecified('command_string'):
       self._validate_command(args.command_string)
     elif args.IsSpecified('commands_text_file'):
