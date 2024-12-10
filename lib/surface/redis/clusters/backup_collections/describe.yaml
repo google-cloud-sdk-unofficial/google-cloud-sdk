@@ -23,6 +23,7 @@
       spec: !REF googlecloudsdk.command_lib.redis.resources:backup_collection
       help_text: |
         Arguments and flags that specify the backup collection you want to describe.
+      is_positional: true
 
   request:
     ALPHA:

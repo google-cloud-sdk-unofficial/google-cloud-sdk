@@ -57,6 +57,21 @@
         help_text: |
           A Looker (Google Cloud core) product for deploying and maintaining external analytics and
           custom applications at scale. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_NONPROD_STANDARD_ANNUAL
+        arg_value: nonprod-core-standard-annual
+        help_text: |
+          A non-production edition of Looker (Google Cloud core) product for small organizations or teams with fewer than 50
+          users. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_NONPROD_ENTERPRISE_ANNUAL
+        arg_value: nonprod-core-enterprise-annual
+        help_text: |
+          A non-production edition of Looker (Google Cloud core) product with enhanced security features for a wide variety of
+          internal BI and analytics use cases. This can be purchased via an annual contract.
+      - enum_value:  LOOKER_CORE_NONPROD_EMBED_ANNUAL
+        arg_value: nonprod-core-embed-annual
+        help_text: |
+          A non-production edition of Looker (Google Cloud core) product for deploying and maintaining external analytics and
+          custom applications at scale. This can be purchased via an annual contract.
     # Flags - Public IP
     - arg_name: public-ip-enabled
       api_field: instance.publicIpEnabled

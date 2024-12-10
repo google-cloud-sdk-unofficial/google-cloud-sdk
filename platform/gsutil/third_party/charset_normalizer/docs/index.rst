@@ -13,7 +13,6 @@ It aims to be as generic as possible.
 
 .. image:: https://repository-images.githubusercontent.com/200259335/d3da9600-dedc-11e9-83e8-081f597505df
    :width: 500px
-   :scale: 100 %
    :alt: CLI Charset Normalizer
    :align: right
 
@@ -21,7 +20,7 @@ It aims to be as generic as possible.
 It is released under MIT license, see LICENSE for more
 details. Be aware that no warranty of any kind is provided with this package.
 
-Copyright (C) 2019 Ahmed TAHRI @Ousret <ahmed(dot)tahri(at)cloudnursery.dev>
+Copyright (C) 2023 Ahmed TAHRI <ahmed(dot)tahri(at)cloudnursery.dev>
 
 Introduction
 ============
@@ -52,6 +51,7 @@ Features
 - Transpose any encoded content to Unicode the best we can.
 - Detect spoken language in text.
 - Ship with a great CLI.
+- Also, detect binaries.
 
 Start Guide
 -----------
@@ -72,8 +72,10 @@ Community Guide
 .. toctree::
     :maxdepth: 2
 
+    community/speedup
     community/faq
     community/why_migrate
+    community/featured
 
 Developer Guide
 ---------------

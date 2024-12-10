@@ -428,6 +428,11 @@ class ProtoConformanceTestBase(object):
         <OptionalMessage
           enum_value: (invalid value for serialization type)
           >
+
+      encoded_invalid_repeated_enum:
+        <RepeatedMessage
+          enum_value: (invalid value for serialization type)
+          >
     """
 
     encoded_empty_message = ''
@@ -448,11 +453,11 @@ class ProtoConformanceTestBase(object):
           expected_encoded: Expected string encoded value.
           actual_encoded: Actual string encoded value.
         """
-        self.assertEquals(expected_encoded, actual_encoded)
+        self.assertEqual(expected_encoded, actual_encoded)
 
     def EncodeDecode(self, encoded, expected_message):
         message = self.PROTOLIB.decode_message(type(expected_message), encoded)
-        self.assertEquals(expected_message, message)
+        self.assertEqual(expected_message, message)
         self.CompareEncoded(encoded, self.PROTOLIB.encode_message(message))
 
     def testEmptyMessage(self):
@@ -543,10 +548,10 @@ class ProtoConformanceTestBase(object):
             OptionalMessage, self.unexpected_tag_message)
         # Message should be equal to an empty message, since unknown
         # values aren't included in equality.
-        self.assertEquals(OptionalMessage(), loaded_message)
+        self.assertEqual(OptionalMessage(), loaded_message)
         # Verify that the encoded message matches the source, including the
         # unknown value.
-        self.assertEquals(self.unexpected_tag_message,
+        self.assertEqual(self.unexpected_tag_message,
                           self.PROTOLIB.encode_message(loaded_message))
 
     def testDoNotSendDefault(self):
@@ -589,6 +594,19 @@ class ProtoConformanceTestBase(object):
         self.assertEqual(message, decoded)
         encoded = self.PROTOLIB.encode_message(decoded)
         self.assertEqual(self.encoded_invalid_enum, encoded)
+    
+    def testDecodeInvalidRepeatedEnumType(self):
+        # Since protos need to be able to add new enums, a message should be
+        # successfully decoded even if the enum value is invalid. Encoding the
+        # decoded message should result in equivalence with the original
+        # encoded message containing an invalid enum.
+        decoded = self.PROTOLIB.decode_message(RepeatedMessage,
+                                               self.encoded_invalid_repeated_enum)
+        message = RepeatedMessage()
+        message.enum_value = [RepeatedMessage.SimpleEnum.VAL1]
+        self.assertEqual(message, decoded)
+        encoded = self.PROTOLIB.encode_message(decoded)
+        self.assertEqual(self.encoded_invalid_repeated_enum, encoded)
 
     def testDateTimeNoTimeZone(self):
         """Test that DateTimeFields are encoded/decoded correctly."""
@@ -600,7 +618,7 @@ class ProtoConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value, value)
+        self.assertEqual(decoded.value, value)
 
     def testDateTimeWithTimeZone(self):
         """Test DateTimeFields with time zones."""
@@ -613,7 +631,7 @@ class ProtoConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value, value)
+        self.assertEqual(decoded.value, value)
 
 
 def pick_unused_port():

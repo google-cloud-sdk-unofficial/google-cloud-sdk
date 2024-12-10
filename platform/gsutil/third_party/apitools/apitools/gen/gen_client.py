@@ -86,7 +86,7 @@ def _GetCodegenFromFlags(args):
 
     client_info = util.ClientInfo.Create(
         discovery_doc, args.scope, client_id, client_secret,
-        args.user_agent, names, args.api_key)
+        args.user_agent, names, args.api_key, args.version_identifier)
     outdir = os.path.expanduser(args.outdir) or client_info.default_directory
     if os.path.exists(outdir) and not args.overwrite:
         raise exceptions.ConfigurationValueError(
@@ -226,6 +226,12 @@ def main(argv=None):
               '(defaults to apitools.base.protorpclite'))
 
     parser.add_argument(
+        '--version-identifier',
+        help=('Version identifier to use for the generated client (defaults to '
+              '"version" value in discovery doc). This must be a valid '
+              'identifier when used in a Python module name.'))
+
+    parser.add_argument(
         '--outdir',
         default='',
         help='Directory name for output files. (Defaults to the API name.)')
@@ -258,12 +264,12 @@ def main(argv=None):
 
     parser.add_argument(
         '--client_id',
-        default='1042881264118.apps.googleusercontent.com',
+        default='CLIENT_ID',
         help='Client ID to use for the generated client.')
 
     parser.add_argument(
         '--client_secret',
-        default='x_Tw5K8nnjoRAqULM9PFAC2b',
+        default='CLIENT_SECRET',
         help='Client secret for the generated client.')
 
     parser.add_argument(

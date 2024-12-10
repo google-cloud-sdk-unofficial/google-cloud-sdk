@@ -76,7 +76,6 @@ class Get(base.Command):
 
   _support_forwarding_rule = False
   _support_cloud_run = False
-  _is_missing_resource_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -108,7 +107,6 @@ class Get(base.Command):
         args,
         self._support_forwarding_rule,
         self._support_cloud_run,
-        self._is_missing_resource_type,
     )
     return iap_setting_ref.GetIapSetting()
 
@@ -119,7 +117,6 @@ class GetBeta(Get):
 
   _support_forwarding_rule = True
   _support_cloud_run = False
-  _is_missing_resource_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -128,4 +125,3 @@ class GetAlpha(Get):
 
   _support_forwarding_rule = True
   _support_cloud_run = True
-  _is_missing_resource_type = True

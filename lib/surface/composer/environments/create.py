@@ -90,8 +90,7 @@ def _CommonArgs(parser, support_max_pods_per_node, release_track):
   network_subnetwork_group = parser.add_group(
         help='Virtual Private Cloud networking'
   )
-  if release_track != base.ReleaseTrack.GA:
-    flags.NETWORK_ATTACHMENT.AddToParser(parser)
+  flags.NETWORK_ATTACHMENT.AddToParser(parser)
   flags.NETWORK_FLAG.AddToParser(network_subnetwork_group)
   flags.SUBNETWORK_FLAG.AddToParser(network_subnetwork_group)
   flags.STORAGE_BUCKET_FLAG.AddToParser(parser)
@@ -263,6 +262,7 @@ information on how to structure KEYs and VALUEs, run
       parser.add_argument_group(hidden=True))
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create and initialize a Cloud Composer environment.
@@ -279,7 +279,7 @@ class Create(base.Command):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.GA):
     _CommonArgs(parser, cls._support_max_pods_per_node, release_track)
-
+    AddComposer3Flags(parser)
     AddLineageIntegrationParser(parser)
 
   def Run(self, args):
@@ -474,7 +474,7 @@ class Create(base.Command):
               opt='composer-network-ipv4-cidr'))
 
   def isComposer3(self, args):
-    return False
+    return image_versions_util.IsVersionComposer3Compatible(args.image_version)
 
   def ParseWebServerAccessControlConfigOptions(self, args):
     if (
@@ -546,10 +546,56 @@ class Create(base.Command):
         )
 
   def ValidateComposer3Flags(self, args):
-    pass
+    is_composer3 = self.isComposer3(args)
+    # Composer2 flags that are not supported in Composer3
+    forbidden_args = {
+        'cloud-sql-ipv4-cidr': args.cloud_sql_ipv4_cidr,
+        'composer-network-ipv4-cidr': args.composer_network_ipv4_cidr,
+        'connection-subnetwork': args.connection_subnetwork,
+        'enable-private-endpoint': args.enable_private_endpoint,
+        'master-ipv4-cidr': args.master_ipv4_cidr,
+    }
+    possible_args = {
+        'support-web-server-plugins': args.support_web_server_plugins,
+        'dag-processor-cpu': args.dag_processor_cpu,
+        'dag-processor-memory': args.dag_processor_memory,
+        'dag-processor-count': args.dag_processor_count,
+        'dag-processor-storage': args.dag_processor_storage,
+        'network-attachment': args.network_attachment,
+        'composer-internal-ipv4-cidr-block': (
+            args.composer_internal_ipv4_cidr_block
+        ),
+        'enable-private-builds-only': args.enable_private_builds_only,
+        'disable-private-builds-only': args.disable_private_builds_only,
+    }
+
+    for k, v in possible_args.items():
+      if v is not None and not is_composer3:
+        raise command_util.InvalidUserInputError(
+            flags.COMPOSER3_IS_REQUIRED_MSG.format(
+                opt=k,
+                composer_version=flags.MIN_COMPOSER3_VERSION,
+            )
+        )
+    for k, v in forbidden_args.items():
+      if v is not None and is_composer3:
+        raise command_util.InvalidUserInputError(
+            flags.COMPOSER3_IS_NOT_SUPPORTED_MSG.format(
+                opt=k,
+                composer_version=flags.MIN_COMPOSER3_VERSION,
+            )
+        )
+    if args.network_attachment and (args.network or args.subnetwork):
+      raise command_util.InvalidUserInputError(
+          'argument --network-attachment: At most one of --network-attachment'
+          ' | [--network : --subnetwork] can be specified'
+      )
 
   def ParseComposer3Flags(self, args):
-    pass
+    if args.network_attachment:
+      args.network_attachment = parsers.ParseNetworkAttachment(
+          args.network_attachment, fallback_region=self.env_ref.Parent().Name()
+      ).RelativeName()
 
   def ValidateFlagsAddedInComposer2(self, args, is_composer_v1, release_track):
     """Raises InputError if flags from Composer v2 are used when creating v1."""
@@ -643,6 +689,7 @@ class Create(base.Command):
         machine_type=self.machine_type,
         network=self.network,
         subnetwork=self.subnetwork,
+        network_attachment=args.network_attachment,
         env_variables=args.env_variables,
         airflow_config_overrides=args.airflow_configs,
         service_account=args.service_account,
@@ -720,6 +767,18 @@ class Create(base.Command):
         enable_logs_in_cloud_logging_only=args.enable_logs_in_cloud_logging_only,
         disable_logs_in_cloud_logging_only=args.disable_logs_in_cloud_logging_only,
         cloud_sql_preferred_zone=args.cloud_sql_preferred_zone,
+        support_web_server_plugins=args.support_web_server_plugins,
+        dag_processor_cpu=args.dag_processor_cpu,
+        dag_processor_count=args.dag_processor_count,
+        dag_processor_memory_gb=environments_api_util.MemorySizeBytesToGB(
+            args.dag_processor_memory
+        ),
+        dag_processor_storage_gb=environments_api_util.MemorySizeBytesToGB(
+            args.dag_processor_storage
+        ),
+        composer_internal_ipv4_cidr_block=args.composer_internal_ipv4_cidr_block,
+        enable_private_builds_only=args.enable_private_builds_only,
+        disable_private_builds_only=args.disable_private_builds_only,
         release_track=self.ReleaseTrack(),
         storage_bucket=args.storage_bucket,
         airflow_database_retention_days=args.airflow_database_retention_days,
@@ -728,6 +787,7 @@ class Create(base.Command):
                                         is_composer_v1)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create and initialize a Cloud Composer environment.
@@ -743,8 +803,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser, release_track=base.ReleaseTrack.BETA):
     super(CreateBeta, cls).Args(parser, release_track)
-
-    AddComposer3Flags(parser)
 
   def GetOperationMessage(self, args, is_composer_v1):
     """See base class."""
@@ -851,52 +909,6 @@ class CreateBeta(Create):
     return environments_api_util.Create(self.env_ref, create_flags,
                                         is_composer_v1)
 
-  def ValidateComposer3Flags(self, args):
-    is_composer3 = self.isComposer3(args)
-    # Composer2 flags that are not supported in Composer3
-    forbidden_args = {
-        'cloud-sql-ipv4-cidr': args.cloud_sql_ipv4_cidr,
-        'composer-network-ipv4-cidr': args.composer_network_ipv4_cidr,
-        'connection-subnetwork': args.connection_subnetwork,
-        'enable-private-endpoint': args.enable_private_endpoint,
-        'master-ipv4-cidr': args.master_ipv4_cidr,
-    }
-    possible_args = {
-        'support-web-server-plugins': args.support_web_server_plugins,
-        'dag-processor-cpu': args.dag_processor_cpu,
-        'dag-processor-memory': args.dag_processor_memory,
-        'dag-processor-count': args.dag_processor_count,
-        'dag-processor-storage': args.dag_processor_storage,
-        'network-attachment': args.network_attachment,
-        'composer-internal-ipv4-cidr-block': (
-            args.composer_internal_ipv4_cidr_block
-        ),
-        'enable-private-builds-only': args.enable_private_builds_only,
-        'disable-private-builds-only': args.disable_private_builds_only,
-    }
-
-    for k, v in possible_args.items():
-      if v is not None and not is_composer3:
-        raise command_util.InvalidUserInputError(
-            flags.COMPOSER3_IS_REQUIRED_MSG.format(
-                opt=k,
-                composer_version=flags.MIN_COMPOSER3_VERSION,
-            )
-        )
-    for k, v in forbidden_args.items():
-      if v is not None and is_composer3:
-        raise command_util.InvalidUserInputError(
-            flags.COMPOSER3_IS_NOT_SUPPORTED_MSG.format(
-                opt=k,
-                composer_version=flags.MIN_COMPOSER3_VERSION,
-            )
-        )
-    if args.network_attachment and (args.network or args.subnetwork):
-      raise command_util.InvalidUserInputError(
-          'argument --network-attachment: At most one of --network-attachment'
-          ' | [--network : --subnetwork] can be specified'
-      )
-
   def ValidateTriggererFlags(self, args):
     if args.image_version:
       triggerer_supported = image_versions_util.IsVersionTriggererCompatible(
@@ -924,15 +936,6 @@ class CreateBeta(Create):
         raise command_util.InvalidUserInputError(
             flags.ENABLED_TRIGGERER_IS_REQUIRED_MSG.format(
                 opt='triggerer-memory'))
-
-  def isComposer3(self, args):
-    return image_versions_util.IsVersionComposer3Compatible(args.image_version)
-
-  def ParseComposer3Flags(self, args):
-    if args.network_attachment:
-      args.network_attachment = parsers.ParseNetworkAttachment(
-          args.network_attachment, fallback_region=self.env_ref.Parent().Name()
-      ).RelativeName()
 
 
 def AddLineageIntegrationParser(parser):
@@ -968,6 +971,7 @@ def AddComposer3Flags(parser):
   flags.DISABLE_PRIVATE_BUILDS_ONLY.AddToParser(private_builds_only_group)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create and initialize a Cloud Composer environment.

@@ -16,6 +16,7 @@ import bq_flags
 import bq_utils
 import credential_loader
 from auth import main_credential_loader
+from clients import bigquery_client
 from clients import bigquery_client_extended
 from clients import wait_printer
 from frontend import utils as bq_frontend_utils
@@ -68,9 +69,9 @@ class Client(object):
         and not bq_api_utils.is_gdu(bq_flags.UNIVERSE_DOMAIN.value)
         and not bq_auth_flags.USE_GOOGLE_AUTH.value
     ):
-      raise app.UsageError(
+      logging.warning(
           'Attempting to use a non-GDU universe domain without setting'
-          ' `use_google_auth`. Please set `use_google_auth` to True.'
+          ' `use_google_auth`. You might need to set `use_google_auth` to True.'
       )
 
     if bq_flags.HTTPLIB2_DEBUGLEVEL.value:
@@ -113,7 +114,9 @@ class Client(object):
     return client_args
 
   @staticmethod
-  def GetCredentials(credentials=None):
+  def GetCredentials(
+      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType = None,
+  ) -> bigquery_client.LegacyAndGoogleAuthCredentialsUnionType:
     """A function to lookup the credentials to use for this BQ CLI invocation.
 
     Args:
@@ -135,7 +138,9 @@ class Client(object):
 
   @staticmethod
   def Create(
-      config_logging: bool = True, credentials=None, **kwds
+      config_logging: bool = True,
+      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType = None,
+      **kwds,
   ) -> bigquery_client_extended.BigqueryClientExtended:
     """Build a new BigqueryClient configured from kwds and FLAGS.
 

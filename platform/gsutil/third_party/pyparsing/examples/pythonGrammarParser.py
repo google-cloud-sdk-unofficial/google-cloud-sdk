@@ -15,7 +15,7 @@ grammar = r"""
 # Note:  Changing the grammar specified in this file will most likely
 #        require corresponding changes in the parser module
 #        (../Modules/parsermodule.c).  If you can't make the changes to
-#        that module yourself, please co-ordinate the required changes
+#        that module yourself, please coordinate the required changes
 #        with someone who can; ask around on python-dev for help.  Fred
 #        Drake <fdrake@acm.org> will probably be listening there.
 
@@ -130,48 +130,57 @@ testlist1: test (',' test)*
 encoding_decl: NAME
 """
 
-class SemanticGroup(object):
-    def __init__(self,contents):
+
+class SemanticGroup:
+    def __init__(self, contents):
         self.contents = contents
         while self.contents[-1].__class__ == self.__class__:
             self.contents = self.contents[:-1] + self.contents[-1].contents
 
     def __str__(self):
-        return "{0}({1})".format(self.label,
-                " ".join([isinstance(c,str) and c or str(c) for c in self.contents]) )
+        return "{}({})".format(
+            self.label,
+            " ".join([isinstance(c, str) and c or str(c) for c in self.contents]),
+        )
+
 
 class OrList(SemanticGroup):
     label = "OR"
     pass
 
+
 class AndList(SemanticGroup):
     label = "AND"
     pass
+
 
 class OptionalGroup(SemanticGroup):
     label = "OPT"
     pass
 
+
 class Atom(SemanticGroup):
-    def __init__(self,contents):
+    def __init__(self, contents):
         if len(contents) > 1:
             self.rep = contents[1]
         else:
             self.rep = ""
-        if isinstance(contents,str):
+        if isinstance(contents, str):
             self.contents = contents
         else:
             self.contents = contents[0]
 
     def __str__(self):
-        return "{0}{1}".format(self.rep, self.contents)
+        return "{}{}".format(self.rep, self.contents)
+
 
 def makeGroupObject(cls):
-    def groupAction(s,l,t):
+    def groupAction(s, l, t):
         try:
             return cls(t[0].asList())
         except Exception:
             return cls(t)
+
     return groupAction
 
 
@@ -180,20 +189,27 @@ LPAREN = Suppress("(")
 RPAREN = Suppress(")")
 LBRACK = Suppress("[")
 RBRACK = Suppress("]")
-COLON  = Suppress(":")
+COLON = Suppress(":")
 ALT_OP = Suppress("|")
 
 # bnf grammar
-ident = Word(alphanums+"_")
-bnfToken = Word(alphanums+"_") + ~FollowedBy(":")
+ident = Word(alphanums + "_")
+bnfToken = Word(alphanums + "_") + ~FollowedBy(":")
 repSymbol = oneOf("* +")
 bnfExpr = Forward()
-optionalTerm = Group(LBRACK + bnfExpr + RBRACK).setParseAction(makeGroupObject(OptionalGroup))
-bnfTerm = ( (bnfToken | quotedString | optionalTerm | ( LPAREN + bnfExpr + RPAREN )) + Optional(repSymbol) ).setParseAction(makeGroupObject(Atom))
+optionalTerm = Group(LBRACK + bnfExpr + RBRACK).setParseAction(
+    makeGroupObject(OptionalGroup)
+)
+bnfTerm = (
+    (bnfToken | quotedString | optionalTerm | (LPAREN + bnfExpr + RPAREN))
+    + Optional(repSymbol)
+).setParseAction(makeGroupObject(Atom))
 andList = Group(bnfTerm + OneOrMore(bnfTerm)).setParseAction(makeGroupObject(AndList))
 bnfFactor = andList | bnfTerm
-orList = Group( bnfFactor + OneOrMore( ALT_OP + bnfFactor ) ).setParseAction(makeGroupObject(OrList))
-bnfExpr <<  ( orList | bnfFactor )
+orList = Group(bnfFactor + OneOrMore(ALT_OP + bnfFactor)).setParseAction(
+    makeGroupObject(OrList)
+)
+bnfExpr << (orList | bnfFactor)
 bnfLine = ident + COLON + bnfExpr
 
 bnfComment = "#" + restOfLine
@@ -207,14 +223,16 @@ bnfDefs = bnf.parseString(grammar)
 
 # correct answer is 78
 expected = 78
-assert len(bnfDefs) == expected, \
-    "Error, found %d BNF defns, expected %d" % (len(bnfDefs), expected)
+assert len(bnfDefs) == expected, "Error, found %d BNF defns, expected %d" % (
+    len(bnfDefs),
+    expected,
+)
 
 # list out defns in order they were parsed (to verify accuracy of parsing)
-for k,v in bnfDefs:
-    print(k,"=",v)
+for k, v in bnfDefs:
+    print(k, "=", v)
 print()
 
 # list out parsed grammar defns (demonstrates dictionary access to parsed tokens)
 for k in list(bnfDefs.keys()):
-    print(k,"=",bnfDefs[k])
+    print(k, "=", bnfDefs[k])

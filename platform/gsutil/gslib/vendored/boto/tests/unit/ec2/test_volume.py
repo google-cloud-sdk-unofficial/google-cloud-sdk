@@ -113,7 +113,7 @@ class VolumeTests(unittest.TestCase):
     def test_update_with_validate_true_raises_value_error(self):
         self.volume_one.connection = mock.Mock()
         self.volume_one.connection.get_all_volumes.return_value = []
-        with self.assertRaisesRegexp(ValueError, "^1 is not a valid Volume ID$"):
+        with self.assertRaisesRegex(ValueError, "^1 is not a valid Volume ID$"):
             self.volume_one.update(True)
 
     def test_update_returns_status(self):

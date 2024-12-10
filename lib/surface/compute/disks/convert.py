@@ -44,8 +44,8 @@ CONTINUE_WITH_CONVERT_PROMPT = (
     ' detach the disk from all instances before continuing. Data written to the'
     ' original disk during conversion will not appear on the converted disk.'
     ' Please see'
-    ' https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert for'
-    ' more details.'
+    ' https://cloud.google.com/compute/docs/disks/automatically-convert-disks'
+    ' for more details.'
 )
 
 

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.org_security_policies import org_securit
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine organization security policy.
@@ -45,7 +46,7 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         '--organization',
         help=('Organization in which the organization security policy is to be'
-              ' described. Must be set if SECURITY_POLICY is display name.'))
+              ' described. Must be set if SECURITY_POLICY is short name.'))
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -66,7 +67,7 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'EXAMPLES':
         """\
-    To describe an organization security policy with ID ``123456789", run:
+    To describe an organization security policy with ID "123456789", run:
 
       $ {command} 123456789
     """,

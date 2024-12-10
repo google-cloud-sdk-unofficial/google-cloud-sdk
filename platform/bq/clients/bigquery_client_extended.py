@@ -7,8 +7,6 @@ from __future__ import print_function
 
 from typing import Any, Dict, List, Optional
 
-
-
 # To configure apiclient logging.
 from absl import flags
 
@@ -61,6 +59,9 @@ class BigqueryClientExtended(bigquery_client.BigqueryClient):
       return self.apiclient.jobs().get(**dict(reference)).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
       request = dict(reference)
+      request['accessPolicyVersion'] = (
+          bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
+      )
       return self.apiclient.datasets().get(**request).execute()
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       return self.apiclient.tables().get(**dict(reference)).execute()

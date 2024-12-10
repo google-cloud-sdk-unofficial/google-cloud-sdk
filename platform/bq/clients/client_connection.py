@@ -8,8 +8,6 @@ from __future__ import print_function
 import re
 from typing import Any, Dict, List, Mapping, Optional
 
-
-
 from googleapiclient import discovery
 import inflection
 

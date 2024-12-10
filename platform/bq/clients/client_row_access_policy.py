@@ -7,8 +7,6 @@ from __future__ import print_function
 
 from typing import Any, Dict, List
 
-
-
 # To configure apiclient logging.
 from google.api_core import iam
 

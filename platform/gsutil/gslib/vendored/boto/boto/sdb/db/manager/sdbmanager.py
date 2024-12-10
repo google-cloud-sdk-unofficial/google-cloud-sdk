@@ -345,7 +345,7 @@ class SDBConverter(object):
             key = bucket.new_key(str(uuid.uuid4()))
             value.id = "s3://%s/%s" % (key.bucket.name, key.name)
         else:
-            match = re.match("^s3:\/\/([^\/]*)\/(.*)$", value.id)
+            match = re.match(r"^s3://([^/]*)/(.*)$", value.id)
             if match:
                 s3 = self.manager.get_s3_connection()
                 bucket = s3.get_bucket(match.group(1), validate=False)
@@ -360,7 +360,7 @@ class SDBConverter(object):
     def decode_blob(self, value):
         if not value:
             return None
-        match = re.match("^s3:\/\/([^\/]*)\/(.*)$", value)
+        match = re.match(r"^s3://([^/]*)/(.*)$", value)
         if match:
             s3 = self.manager.get_s3_connection()
             bucket = s3.get_bucket(match.group(1), validate=False)

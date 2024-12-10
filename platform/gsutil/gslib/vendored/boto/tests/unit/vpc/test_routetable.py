@@ -88,42 +88,42 @@ class TestDescribeRouteTables(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(len(api_response), 2)
+        self.assertEqual(len(api_response), 2)
         self.assertIsInstance(api_response[0], RouteTable)
-        self.assertEquals(api_response[0].id, 'rtb-13ad487a')
-        self.assertEquals(len(api_response[0].routes), 1)
-        self.assertEquals(api_response[0].routes[0].destination_cidr_block, '10.0.0.0/22')
-        self.assertEquals(api_response[0].routes[0].gateway_id, 'local')
-        self.assertEquals(api_response[0].routes[0].state, 'active')
-        self.assertEquals(api_response[0].routes[0].origin, 'CreateRouteTable')
-        self.assertEquals(len(api_response[0].associations), 1)
-        self.assertEquals(api_response[0].associations[0].id, 'rtbassoc-12ad487b')
-        self.assertEquals(api_response[0].associations[0].route_table_id, 'rtb-13ad487a')
+        self.assertEqual(api_response[0].id, 'rtb-13ad487a')
+        self.assertEqual(len(api_response[0].routes), 1)
+        self.assertEqual(api_response[0].routes[0].destination_cidr_block, '10.0.0.0/22')
+        self.assertEqual(api_response[0].routes[0].gateway_id, 'local')
+        self.assertEqual(api_response[0].routes[0].state, 'active')
+        self.assertEqual(api_response[0].routes[0].origin, 'CreateRouteTable')
+        self.assertEqual(len(api_response[0].associations), 1)
+        self.assertEqual(api_response[0].associations[0].id, 'rtbassoc-12ad487b')
+        self.assertEqual(api_response[0].associations[0].route_table_id, 'rtb-13ad487a')
         self.assertIsNone(api_response[0].associations[0].subnet_id)
-        self.assertEquals(api_response[0].associations[0].main, True)
-        self.assertEquals(api_response[1].id, 'rtb-f9ad4890')
-        self.assertEquals(len(api_response[1].routes), 4)
-        self.assertEquals(api_response[1].routes[0].destination_cidr_block, '10.0.0.0/22')
-        self.assertEquals(api_response[1].routes[0].gateway_id, 'local')
-        self.assertEquals(api_response[1].routes[0].state, 'active')
-        self.assertEquals(api_response[1].routes[0].origin, 'CreateRouteTable')
-        self.assertEquals(api_response[1].routes[1].destination_cidr_block, '0.0.0.0/0')
-        self.assertEquals(api_response[1].routes[1].gateway_id, 'igw-eaad4883')
-        self.assertEquals(api_response[1].routes[1].state, 'active')
-        self.assertEquals(api_response[1].routes[1].origin, 'CreateRoute')
-        self.assertEquals(api_response[1].routes[2].destination_cidr_block, '10.0.0.0/21')
-        self.assertEquals(api_response[1].routes[2].interface_id, 'eni-884ec1d1')
-        self.assertEquals(api_response[1].routes[2].state, 'blackhole')
-        self.assertEquals(api_response[1].routes[2].origin, 'CreateRoute')
-        self.assertEquals(api_response[1].routes[3].destination_cidr_block, '11.0.0.0/22')
-        self.assertEquals(api_response[1].routes[3].vpc_peering_connection_id, 'pcx-efc52b86')
-        self.assertEquals(api_response[1].routes[3].state, 'blackhole')
-        self.assertEquals(api_response[1].routes[3].origin, 'CreateRoute')
-        self.assertEquals(len(api_response[1].associations), 1)
-        self.assertEquals(api_response[1].associations[0].id, 'rtbassoc-faad4893')
-        self.assertEquals(api_response[1].associations[0].route_table_id, 'rtb-f9ad4890')
-        self.assertEquals(api_response[1].associations[0].subnet_id, 'subnet-15ad487c')
-        self.assertEquals(api_response[1].associations[0].main, False)
+        self.assertEqual(api_response[0].associations[0].main, True)
+        self.assertEqual(api_response[1].id, 'rtb-f9ad4890')
+        self.assertEqual(len(api_response[1].routes), 4)
+        self.assertEqual(api_response[1].routes[0].destination_cidr_block, '10.0.0.0/22')
+        self.assertEqual(api_response[1].routes[0].gateway_id, 'local')
+        self.assertEqual(api_response[1].routes[0].state, 'active')
+        self.assertEqual(api_response[1].routes[0].origin, 'CreateRouteTable')
+        self.assertEqual(api_response[1].routes[1].destination_cidr_block, '0.0.0.0/0')
+        self.assertEqual(api_response[1].routes[1].gateway_id, 'igw-eaad4883')
+        self.assertEqual(api_response[1].routes[1].state, 'active')
+        self.assertEqual(api_response[1].routes[1].origin, 'CreateRoute')
+        self.assertEqual(api_response[1].routes[2].destination_cidr_block, '10.0.0.0/21')
+        self.assertEqual(api_response[1].routes[2].interface_id, 'eni-884ec1d1')
+        self.assertEqual(api_response[1].routes[2].state, 'blackhole')
+        self.assertEqual(api_response[1].routes[2].origin, 'CreateRoute')
+        self.assertEqual(api_response[1].routes[3].destination_cidr_block, '11.0.0.0/22')
+        self.assertEqual(api_response[1].routes[3].vpc_peering_connection_id, 'pcx-efc52b86')
+        self.assertEqual(api_response[1].routes[3].state, 'blackhole')
+        self.assertEqual(api_response[1].routes[3].origin, 'CreateRoute')
+        self.assertEqual(len(api_response[1].associations), 1)
+        self.assertEqual(api_response[1].associations[0].id, 'rtbassoc-faad4893')
+        self.assertEqual(api_response[1].associations[0].route_table_id, 'rtb-f9ad4890')
+        self.assertEqual(api_response[1].associations[0].subnet_id, 'subnet-15ad487c')
+        self.assertEqual(api_response[1].associations[0].main, False)
 
 
 class TestAssociateRouteTable(AWSMockServiceTestCase):
@@ -149,7 +149,7 @@ class TestAssociateRouteTable(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, 'rtbassoc-f8ad4891')
+        self.assertEqual(api_response, 'rtbassoc-f8ad4891')
 
 
 class TestDisassociateRouteTable(AWSMockServiceTestCase):
@@ -173,7 +173,7 @@ class TestDisassociateRouteTable(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestCreateRouteTable(AWSMockServiceTestCase):
@@ -210,11 +210,11 @@ class TestCreateRouteTable(AWSMockServiceTestCase):
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
         self.assertIsInstance(api_response, RouteTable)
-        self.assertEquals(api_response.id, 'rtb-f9ad4890')
-        self.assertEquals(len(api_response.routes), 1)
-        self.assertEquals(api_response.routes[0].destination_cidr_block, '10.0.0.0/22')
-        self.assertEquals(api_response.routes[0].gateway_id, 'local')
-        self.assertEquals(api_response.routes[0].state, 'active')
+        self.assertEqual(api_response.id, 'rtb-f9ad4890')
+        self.assertEqual(len(api_response.routes), 1)
+        self.assertEqual(api_response.routes[0].destination_cidr_block, '10.0.0.0/22')
+        self.assertEqual(api_response.routes[0].gateway_id, 'local')
+        self.assertEqual(api_response.routes[0].state, 'active')
 
 
 class TestDeleteRouteTable(AWSMockServiceTestCase):
@@ -238,7 +238,7 @@ class TestDeleteRouteTable(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestReplaceRouteTableAssociation(AWSMockServiceTestCase):
@@ -264,7 +264,7 @@ class TestReplaceRouteTableAssociation(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_replace_route_table_association_with_assoc(self):
         self.set_http_response(status_code=200)
@@ -277,7 +277,7 @@ class TestReplaceRouteTableAssociation(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, 'rtbassoc-faad4893')
+        self.assertEqual(api_response, 'rtbassoc-faad4893')
 
 
 class TestCreateRoute(AWSMockServiceTestCase):
@@ -304,7 +304,7 @@ class TestCreateRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_create_route_instance(self):
         self.set_http_response(status_code=200)
@@ -318,7 +318,7 @@ class TestCreateRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_create_route_interface(self):
         self.set_http_response(status_code=200)
@@ -332,7 +332,7 @@ class TestCreateRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_create_route_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
@@ -346,7 +346,7 @@ class TestCreateRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestReplaceRoute(AWSMockServiceTestCase):
@@ -373,7 +373,7 @@ class TestReplaceRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_replace_route_instance(self):
         self.set_http_response(status_code=200)
@@ -387,7 +387,7 @@ class TestReplaceRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_replace_route_interface(self):
         self.set_http_response(status_code=200)
@@ -401,7 +401,7 @@ class TestReplaceRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_replace_route_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
@@ -415,7 +415,7 @@ class TestReplaceRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestDeleteRoute(AWSMockServiceTestCase):
@@ -440,7 +440,7 @@ class TestDeleteRoute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 if __name__ == '__main__':
     unittest.main()

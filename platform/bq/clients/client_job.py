@@ -13,8 +13,6 @@ import time
 from typing import Callable, Dict, List, Optional
 import uuid
 
-
-
 # To configure apiclient logging.
 from absl import flags
 from googleapiclient import http as http_request
@@ -426,6 +424,9 @@ def _StartQueryRpc(
     use_legacy_sql: Optional[bool] = None,
     location: Optional[str] = None,
     connection_properties=None,
+    job_creation_mode: Optional[
+        bigquery_client.BigqueryClient.JobCreationMode
+    ] = None,
     reservation_id: Optional[str] = None,
     create_session: Optional[bool] = None,
     query_parameters=None,
@@ -523,6 +524,7 @@ def _StartQueryRpc(
       max_results=max_results,
       use_legacy_sql=use_legacy_sql,
       min_completion_ratio=min_completion_ratio,
+      job_creation_mode=job_creation_mode,
       reservation=reservation_path,
       location=location,
       create_session=create_session,
@@ -722,7 +724,7 @@ def WaitJob(
     status: str = 'DONE',  # Should be an enum
     wait: int = sys.maxsize,
     wait_printer_factory: Optional[
-        Callable[[], wait_printer.TransitionWaitPrinter]
+        Callable[[], wait_printer.WaitPrinter]
     ] = None,
 ):
   """Poll for a job to run until it reaches the requested status.
@@ -882,6 +884,9 @@ def RunQueryRpc(
     udf_resources=None,
     location: Optional[str] = None,
     connection_properties=None,
+    job_creation_mode: Optional[
+        bigquery_client.BigqueryClient.JobCreationMode
+    ] = None,
     reservation_id: Optional[str] = None,
     **kwds,
 ):
@@ -916,6 +921,8 @@ def RunQueryRpc(
       the query, presented as a list of key/value pairs. A key of "time_zone"
       indicates that the query will be run with the default timezone
       corresponding to the value.
+    job_creation_mode: Optional. An option for job creation. The valid values
+      are JOB_CREATION_REQUIRED and JOB_CREATION_OPTIONAL.
     reservation_id: Optional. An option to set the reservation to use when
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
@@ -990,6 +997,7 @@ def RunQueryRpc(
             udf_resources=udf_resources,
             location=location,
             connection_properties=connection_properties,
+            job_creation_mode=job_creation_mode,
             reservation_id=reservation_id,
             **kwds,
         )
@@ -1077,6 +1085,9 @@ def Query(
     create_session: Optional[bool] = None,
     connection_properties=None,
     continuous=None,
+    job_creation_mode: Optional[
+        bigquery_client.BigqueryClient.JobCreationMode
+    ] = None,
     reservation_id: Optional[str] = None,
     **kwds,
 ):
@@ -1136,6 +1147,8 @@ def Query(
     job_timeout_ms: Optional. How long to let the job run.
     continuous: Optional. Whether the query should be executed as continuous
       query.
+    job_creation_mode: Optional. An option for job creation. The valid values
+      are JOB_CREATION_REQUIRED and JOB_CREATION_OPTIONAL.
     reservation_id: Optional. An option to set the reservation to use when
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
@@ -1175,6 +1188,8 @@ def Query(
     )
   if script_options:
     query_config['scriptOptions'] = script_options
+  if job_creation_mode:
+    query_config['jobCreationMode'] = job_creation_mode.name
   bq_processor_utils.ApplyParameters(
       query_config,
       allow_large_results=allow_large_results,
@@ -1194,6 +1209,7 @@ def Query(
       create_session=create_session,
       min_completion_ratio=min_completion_ratio,
       continuous=continuous,
+      job_creation_mode=job_creation_mode,
       range_partitioning=range_partitioning,
   )
   bq_processor_utils.ApplyParameters(
@@ -1206,6 +1222,7 @@ def Query(
         id_fallbacks=bqclient,
         identifier=reservation_id,
         default_location=bq_flags.LOCATION.value,
+        check_reservation_project=False,
     )
     reservation_path = reference.path()
   bq_processor_utils.ApplyParameters(
@@ -1431,6 +1448,7 @@ def Load(
         id_fallbacks=bqclient,
         identifier=reservation_id,
         default_location=bq_flags.LOCATION.value,
+        check_reservation_project=False,
     )
     configuration['reservation'] = reference.path()
   return ExecuteJob(
@@ -1531,6 +1549,7 @@ def Extract(
         id_fallbacks=bqclient,
         identifier=reservation_id,
         default_location=bq_flags.LOCATION.value,
+        check_reservation_project=False,
     )
     configuration['reservation'] = reference.path()
   return ExecuteJob(bqclient, configuration=configuration, **kwds)

@@ -7,5 +7,6 @@ fi
 
 set -x
 
-${PREFIX}black --target-version=py35 charset_normalizer
+${PREFIX}pip install -r ./dev-requirements.txt
+${PREFIX}black --target-version=py37 charset_normalizer
 ${PREFIX}isort charset_normalizer

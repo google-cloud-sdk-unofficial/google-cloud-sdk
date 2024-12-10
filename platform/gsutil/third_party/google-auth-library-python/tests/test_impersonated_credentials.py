@@ -13,15 +13,12 @@
 # limitations under the License.
 
 import datetime
+import http.client as http_client
 import json
 import os
 
-# Because Python 2.7
-# from typing import List
-
 import mock
 import pytest  # type: ignore
-from six.moves import http_client
 
 from google.auth import _helpers
 from google.auth import crypt
@@ -54,6 +51,13 @@ with open(SERVICE_ACCOUNT_JSON_FILE, "rb") as fh:
 
 SIGNER = crypt.RSASigner.from_string(PRIVATE_KEY_BYTES, "1")
 TOKEN_URI = "https://example.com/oauth2/token"
+
+ACCESS_TOKEN_REQUEST_METRICS_HEADER_VALUE = (
+    "gl-python/3.7 auth/1.1 auth-request-type/at cred-type/imp"
+)
+ID_TOKEN_REQUEST_METRICS_HEADER_VALUE = (
+    "gl-python/3.7 auth/1.1 auth-request-type/it cred-type/imp"
+)
 
 
 @pytest.fixture
@@ -143,6 +147,15 @@ class TestImpersonatedCredentials(object):
         assert not credentials.valid
         assert credentials.expired
 
+    def test_make_from_service_account_self_signed_jwt(self):
+        source_credentials = service_account.Credentials(
+            SIGNER, self.SERVICE_ACCOUNT_EMAIL, TOKEN_URI, always_use_jwt_access=True
+        )
+        credentials = self.make_credentials(source_credentials=source_credentials)
+        # test the source credential don't lose self signed jwt setting
+        assert credentials._source_credentials._always_use_jwt_access
+        assert credentials._source_credentials._jwt_credentials
+
     def make_request(
         self,
         data,
@@ -162,6 +175,16 @@ class TestImpersonatedCredentials(object):
 
         return request
 
+    def test_token_usage_metrics(self):
+        credentials = self.make_credentials()
+        credentials.token = "token"
+        credentials.expiry = None
+
+        headers = {}
+        credentials.before_request(mock.Mock(), None, None, headers)
+        assert headers["authorization"] == "Bearer token"
+        assert headers["x-goog-api-client"] == "cred-type/imp"
+
     @pytest.mark.parametrize("use_data_bytes", [True, False])
     def test_refresh_success(self, use_data_bytes, mock_donor_credentials):
         credentials = self.make_credentials(lifetime=None)
@@ -178,10 +201,18 @@ class TestImpersonatedCredentials(object):
             use_data_bytes=use_data_bytes,
         )
 
-        credentials.refresh(request)
+        with mock.patch(
+            "google.auth.metrics.token_request_access_token_impersonate",
+            return_value=ACCESS_TOKEN_REQUEST_METRICS_HEADER_VALUE,
+        ):
+            credentials.refresh(request)
 
         assert credentials.valid
         assert not credentials.expired
+        assert (
+            request.call_args.kwargs["headers"]["x-goog-api-client"]
+            == ACCESS_TOKEN_REQUEST_METRICS_HEADER_VALUE
+        )
 
     @pytest.mark.parametrize("use_data_bytes", [True, False])
     def test_refresh_success_iam_endpoint_override(
@@ -292,6 +323,27 @@ class TestImpersonatedCredentials(object):
 
         assert not credentials.valid
         assert credentials.expired
+
+    def test_refresh_failure(self):
+        credentials = self.make_credentials(lifetime=None)
+        credentials.expiry = None
+        credentials.token = "token"
+        id_creds = impersonated_credentials.IDTokenCredentials(
+            credentials, target_audience="audience"
+        )
+
+        response = mock.create_autospec(transport.Response, instance=False)
+        response.status_code = http_client.UNAUTHORIZED
+        response.json = mock.Mock(return_value="failed to get ID token")
+
+        with mock.patch(
+            "google.auth.transport.requests.AuthorizedSession.post",
+            return_value=response,
+        ):
+            with pytest.raises(exceptions.RefreshError) as excinfo:
+                id_creds.refresh(None)
+
+        assert excinfo.match("Error getting ID token")
 
     def test_refresh_failure_http_error(self, mock_donor_credentials):
         credentials = self.make_credentials(lifetime=None)
@@ -442,7 +494,37 @@ class TestImpersonatedCredentials(object):
         id_creds.refresh(request)
 
         assert id_creds.token == ID_TOKEN_DATA
-        assert id_creds.expiry == datetime.datetime.fromtimestamp(ID_TOKEN_EXPIRY)
+        assert id_creds.expiry == datetime.datetime.utcfromtimestamp(ID_TOKEN_EXPIRY)
+
+    def test_id_token_metrics(self, mock_donor_credentials):
+        credentials = self.make_credentials(lifetime=None)
+        credentials.token = "token"
+        credentials.expiry = None
+        target_audience = "https://foo.bar"
+
+        id_creds = impersonated_credentials.IDTokenCredentials(
+            credentials, target_audience=target_audience
+        )
+
+        with mock.patch(
+            "google.auth.metrics.token_request_id_token_impersonate",
+            return_value=ID_TOKEN_REQUEST_METRICS_HEADER_VALUE,
+        ):
+            with mock.patch(
+                "google.auth.transport.requests.AuthorizedSession.post", autospec=True
+            ) as mock_post:
+                data = {"token": ID_TOKEN_DATA}
+                mock_post.return_value = MockResponse(data, http_client.OK)
+                id_creds.refresh(None)
+
+                assert id_creds.token == ID_TOKEN_DATA
+                assert id_creds.expiry == datetime.datetime.utcfromtimestamp(
+                    ID_TOKEN_EXPIRY
+                )
+                assert (
+                    mock_post.call_args.kwargs["headers"]["x-goog-api-client"]
+                    == ID_TOKEN_REQUEST_METRICS_HEADER_VALUE
+                )
 
     def test_id_token_from_credential(
         self, mock_donor_credentials, mock_authorizedsession_idtoken
@@ -505,7 +587,7 @@ class TestImpersonatedCredentials(object):
         id_creds.refresh(request)
 
         assert id_creds.token == ID_TOKEN_DATA
-        assert id_creds.expiry == datetime.datetime.fromtimestamp(ID_TOKEN_EXPIRY)
+        assert id_creds.expiry == datetime.datetime.utcfromtimestamp(ID_TOKEN_EXPIRY)
         assert id_creds._include_email is True
 
     def test_id_token_invalid_cred(

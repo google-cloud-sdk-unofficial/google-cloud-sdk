@@ -1136,7 +1136,7 @@ def storage_uri(uri_str, default_scheme='file', debug=0, validate=True,
     * gs://bucket
     * s3://bucket
     * filename (which could be a Unix path like /a/b/c or a Windows path like
-      C:\a\b\c)
+      C:\a\b\\c)
 
     The last example uses the default scheme ('file', unless overridden).
     """

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# import datetime
 import json
 import os
 import subprocess
@@ -20,16 +19,9 @@ import subprocess
 import mock
 import pytest  # type: ignore
 
-# from six.moves import http_client
-# from six.moves import urllib
-
-# from google.auth import _helpers
 from google.auth import exceptions
 from google.auth import pluggable
 from tests.test__default import WORKFORCE_AUDIENCE
-
-# from google.auth import transport
-
 
 CLIENT_ID = "username"
 CLIENT_SECRET = "password"
@@ -53,6 +45,7 @@ TOKEN_URL = "https://sts.googleapis.com/v1/token"
 TOKEN_INFO_URL = "https://sts.googleapis.com/v1/introspect"
 SUBJECT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:jwt"
 AUDIENCE = "//iam.googleapis.com/projects/123456/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID"
+DEFAULT_UNIVERSE_DOMAIN = "googleapis.com"
 
 VALID_TOKEN_URLS = [
     "https://sts.googleapis.com",
@@ -278,6 +271,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE,
             quota_project_id=QUOTA_PROJECT_ID,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(pluggable.Credentials, "__init__", return_value=None)
@@ -305,6 +299,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE,
             quota_project_id=None,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(pluggable.Credentials, "__init__", return_value=None)
@@ -339,6 +334,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE,
             quota_project_id=QUOTA_PROJECT_ID,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(pluggable.Credentials, "__init__", return_value=None)
@@ -367,6 +363,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE,
             quota_project_id=None,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     def test_constructor_invalid_options(self):
@@ -395,6 +392,7 @@ class TestCredentials(object):
             "token_url": TOKEN_URL,
             "token_info_url": TOKEN_INFO_URL,
             "credential_source": self.CREDENTIAL_SOURCE,
+            "universe_domain": DEFAULT_UNIVERSE_DOMAIN,
         }
 
     def test_token_info_url(self):
@@ -1235,7 +1233,7 @@ class TestCredentials(object):
             with pytest.raises(exceptions.RefreshError) as excinfo:
                 _ = credentials.retrieve_subject_token(None)
 
-            assert excinfo.match(r"Pluggable auth is only supported for python 3.6+")
+            assert excinfo.match(r"Pluggable auth is only supported for python 3.7+")
 
     @mock.patch.dict(os.environ, {"GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES": "1"})
     def test_revoke_subject_token_python_2(self):
@@ -1249,4 +1247,4 @@ class TestCredentials(object):
             with pytest.raises(exceptions.RefreshError) as excinfo:
                 _ = credentials.revoke(None)
 
-            assert excinfo.match(r"Pluggable auth is only supported for python 3.6+")
+            assert excinfo.match(r"Pluggable auth is only supported for python 3.7+")

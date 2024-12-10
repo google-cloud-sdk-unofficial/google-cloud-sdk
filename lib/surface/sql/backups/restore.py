@@ -75,6 +75,8 @@ OVERRIDE_FLAGS_SET = (
     'root_password',
     'storage_auto_increase',
     'storage_size',
+    'storage_provisioned_iops',
+    'storage_provisioned_throughput',
     'storage_type',
     'tier',
     'edition',
@@ -100,6 +102,7 @@ OVERRIDE_FLAGS_SET = (
     'disk_encryption_key_location',
     'disk_encryption_key_project',
     'psc_auto_connections',
+    'server_ca_mode',
 )
 
 
@@ -147,6 +150,8 @@ def AddInstanceSettingsArgs(parser):
   flags.AddRootPassword(parser, hidden=True)
   flags.AddStorageAutoIncrease(parser, hidden=True)
   flags.AddStorageSize(parser, hidden=True)
+  flags.AddStorageProvisionedIops(parser)
+  flags.AddStorageProvisionedThroughput(parser)
   flags.AddStorageType(parser, hidden=True)
   flags.AddTier(parser, hidden=True)
   flags.AddEdition(parser, hidden=True)
@@ -184,6 +189,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddDatabaseVersion(
       parser, restrict_choices=False, hidden=True, support_default_version=False
   )
+  flags.AddServerCaMode(parser, hidden=True)
   # (--
   # LINT.ThenChange(
   #     ../instances/create.py:instance_settings)

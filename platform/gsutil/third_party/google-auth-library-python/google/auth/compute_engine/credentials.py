@@ -21,13 +21,12 @@ Compute Engine using the Compute Engine metadata server.
 
 import datetime
 
-import six
-
 from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
 from google.auth import iam
 from google.auth import jwt
+from google.auth import metrics
 from google.auth.compute_engine import _metadata
 from google.oauth2 import _client
 
@@ -74,6 +73,7 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject):
         self._quota_project_id = quota_project_id
         self._scopes = scopes
         self._default_scopes = default_scopes
+        self._universe_domain_cached = False
 
     def _retrieve_info(self, request):
         """Retrieve information about the service account.
@@ -93,6 +93,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject):
         # Don't override scopes requested by the user.
         if self._scopes is None:
             self._scopes = info["scopes"]
+
+    def _metric_header_for_usage(self):
+        return metrics.CRED_TYPE_SA_MDS
 
     def refresh(self, request):
         """Refresh the access token and scopes.
@@ -114,7 +117,7 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject):
             )
         except exceptions.TransportError as caught_exc:
             new_exc = exceptions.RefreshError(caught_exc)
-            six.raise_from(new_exc, caught_exc)
+            raise new_exc from caught_exc
 
     @property
     def service_account_email(self):
@@ -128,6 +131,14 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject):
     @property
     def requires_scopes(self):
         return not self._scopes
+
+    @property
+    def universe_domain(self):
+        if self._universe_domain_cached:
+            return self._universe_domain
+        self._universe_domain = _metadata.get_universe_domain()
+        self._universe_domain_cached = True
+        return self._universe_domain
 
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
@@ -374,13 +385,18 @@ class IDTokenCredentials(
         try:
             path = "instance/service-accounts/default/identity"
             params = {"audience": self._target_audience, "format": "full"}
-            id_token = _metadata.get(request, path, params=params)
+            metrics_header = {
+                metrics.API_CLIENT_HEADER: metrics.token_request_id_token_mds()
+            }
+            id_token = _metadata.get(
+                request, path, params=params, headers=metrics_header
+            )
         except exceptions.TransportError as caught_exc:
             new_exc = exceptions.RefreshError(caught_exc)
-            six.raise_from(new_exc, caught_exc)
+            raise new_exc from caught_exc
 
         _, payload, _, _ = jwt._unverified_decode(id_token)
-        return id_token, datetime.datetime.fromtimestamp(payload["exp"])
+        return id_token, datetime.datetime.utcfromtimestamp(payload["exp"])
 
     def refresh(self, request):
         """Refreshes the ID token.

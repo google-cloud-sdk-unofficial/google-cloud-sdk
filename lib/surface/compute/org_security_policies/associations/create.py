@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a new association between a security policy and an organization or folder resource.
@@ -53,11 +54,12 @@ class Create(base.CreateCommand):
     name = None
     attachment_id = None
     replace_existing_association = False
+    excluded_projects = []
+    excluded_folders = []
 
     if args.IsSpecified('name'):
       name = args.name
 
-    attachment_id = None
     if args.IsSpecified('folder'):
       attachment_id = 'folders/' + args.folder
       if name is None:
@@ -74,12 +76,21 @@ class Create(base.CreateCommand):
           '--folder=FOLDER')
       sys.exit()
 
-    replace_existing_association = False
+    if args.IsSpecified('excluded_projects'):
+      excluded_projects = args.excluded_projects
+
+    if args.IsSpecified('excluded_folders'):
+      excluded_folders = args.excluded_folders
+
     if args.replace_association_on_target:
       replace_existing_association = True
 
     association = holder.client.messages.SecurityPolicyAssociation(
-        attachmentId=attachment_id, name=name)
+        attachmentId=attachment_id,
+        name=name,
+        excludedProjects=excluded_projects,
+        excludedFolders=excluded_folders,
+    )
 
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         org_security_policy,

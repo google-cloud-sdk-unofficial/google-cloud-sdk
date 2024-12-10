@@ -540,7 +540,7 @@ class Distribution(object):
         :type policy_url: str
         :param policy_url: If provided, allows the signature to contain
             wildcard globs in the URL.  For example, you could
-            provide: 'http://example.com/media/\*' and the policy
+            provide: 'http://example.com/media/*' and the policy
             and signature would allow access to all contents of
             the media subdirectory. If not specified, only
             allow access to the exact url provided in 'url'.

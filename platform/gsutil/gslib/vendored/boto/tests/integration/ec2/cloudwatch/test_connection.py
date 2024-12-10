@@ -220,14 +220,14 @@ class CloudWatchConnectionTest(unittest.TestCase):
     def test_get_metric_statistics(self):
         c = CloudWatchConnection()
         m = c.list_metrics()[0]
-        end = datetime.datetime.utcnow()
+        end = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
         start = end - datetime.timedelta(hours=24 * 14)
         c.get_metric_statistics(
             3600 * 24, start, end, m.name, m.namespace, ['Average', 'Sum'])
 
     def test_put_metric_data(self):
         c = CloudWatchConnection()
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
         name, namespace = 'unit-test-metric', 'boto-unit-test'
         c.put_metric_data(namespace, name, 5, now, 'Bytes')
 
@@ -240,7 +240,7 @@ class CloudWatchConnectionTest(unittest.TestCase):
         # time.sleep(60)
         # l = metric.query(
         #     now - datetime.timedelta(seconds=60),
-        #     datetime.datetime.utcnow(),
+        #     datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None),
         #     'Average')
         # assert l
         # for row in l:
@@ -261,13 +261,13 @@ class CloudWatchConnectionTest(unittest.TestCase):
 
         c.make_request = make_request
         alarms = c.describe_alarms()
-        self.assertEquals(alarms.next_token, 'mynexttoken')
-        self.assertEquals(alarms[0].name, 'FancyAlarm')
-        self.assertEquals(alarms[0].comparison, '<')
-        self.assertEquals(alarms[0].dimensions, {u'Job': [u'ANiceCronJob']})
-        self.assertEquals(alarms[1].name, 'SuperFancyAlarm')
-        self.assertEquals(alarms[1].comparison, '>')
-        self.assertEquals(alarms[1].dimensions, {u'Job': [u'ABadCronJob']})
+        self.assertEqual(alarms.next_token, 'mynexttoken')
+        self.assertEqual(alarms[0].name, 'FancyAlarm')
+        self.assertEqual(alarms[0].comparison, '<')
+        self.assertEqual(alarms[0].dimensions, {u'Job': [u'ANiceCronJob']})
+        self.assertEqual(alarms[1].name, 'SuperFancyAlarm')
+        self.assertEqual(alarms[1].comparison, '>')
+        self.assertEqual(alarms[1].dimensions, {u'Job': [u'ABadCronJob']})
 
 if __name__ == '__main__':
     unittest.main()

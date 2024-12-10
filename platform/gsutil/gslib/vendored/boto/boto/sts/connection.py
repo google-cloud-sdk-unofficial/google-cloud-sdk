@@ -115,7 +115,7 @@ class STSConnection(AWSQueryConnection):
     def _check_token_cache(self, token_key, duration=None, window_seconds=60):
         token = _session_token_cache.get(token_key, None)
         if token:
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
             expires = boto.utils.parse_ts(token.expiration)
             delta = expires - now
             if delta < datetime.timedelta(seconds=window_seconds):

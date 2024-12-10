@@ -70,7 +70,7 @@ class TestMTurkPostingWithQualificationsIn(AWSMockServiceTestCase):
                                   'Reward.1.CurrencyCode',
                                   'Keywords',
                                   'Operation'])
-        self.assertEquals(create_hit_rs.status, True)
+        self.assertEqual(create_hit_rs.status, True)
 
     def test_locale_qualification_notin_in(self):
         self.set_http_response(
@@ -130,4 +130,4 @@ class TestMTurkPostingWithQualificationsIn(AWSMockServiceTestCase):
                                   'Reward.1.CurrencyCode',
                                   'Keywords',
                                   'Operation'])
-        self.assertEquals(create_hit_rs.status, True)
+        self.assertEqual(create_hit_rs.status, True)

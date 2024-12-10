@@ -49,16 +49,14 @@ _CLIENT_INFO = {
 
 
 WrappedCredentialsUnionType = Union[
-    'wrapped_credentials.WrappedCredentials'
-    '| Oauth2WithReauthCredentials'
-    '| oauth2client_4_0.client.AccessTokenCredentials'
+    wrapped_credentials.WrappedCredentials,
+    Oauth2WithReauthCredentials,
+    oauth2client_4_0.client.AccessTokenCredentials,
 ]
 
 CredentialsFromFlagsUnionType = Union[
     WrappedCredentialsUnionType,
-    (
-        'oauth2client_4_0.contrib.gce.AppAssertionCredentials'
-    ),
+    oauth2client_4_0.contrib.gce.AppAssertionCredentials,
 ]
 
 

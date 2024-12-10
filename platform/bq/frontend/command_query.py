@@ -10,8 +10,6 @@ import logging
 import sys
 from typing import Optional
 
-
-
 from absl import app
 from absl import flags
 
@@ -28,6 +26,7 @@ from pyglib import appcommands
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
+from frontend import utils_flags
 from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
@@ -370,6 +369,17 @@ class Query(bigquery_command.BigqueryCmd):
         'Whether to run the query as continuous query',
         flag_values=fv,
     )
+    flags.DEFINE_enum_class(
+        'job_creation_mode',
+        None,
+        bigquery_client.BigqueryClient.JobCreationMode,
+        'An option on job creation. Options include:'
+        '\n JOB_CREATION_REQUIRED'
+        '\n JOB_CREATION_OPTIONAL'
+        '\n Specifying JOB_CREATION_OPTIONAL may speed up the query if the'
+        ' query engine decides to bypass job creation.',
+        flag_values=fv,
+    )
     self.reservation_id_for_a_job_flag = (
         frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
     )
@@ -596,6 +606,7 @@ class Query(bigquery_command.BigqueryCmd):
         raise app.UsageError('flatten_results cannot be specified in rpc mode.')
       if self.continuous:
         raise app.UsageError('continuous cannot be specified in rpc mode.')
+      kwds['job_creation_mode'] = self.job_creation_mode
       kwds['max_results'] = self.max_rows
       logging.debug('Calling client_job.RunQueryRpc(%s, %s)', query, kwds)
       fields, rows, execution = client_job.RunQueryRpc(client, query, **kwds)
@@ -632,9 +643,10 @@ class Query(bigquery_command.BigqueryCmd):
       kwds['allow_large_results'] = self.allow_large_results
       kwds['flatten_results'] = self.flatten_results
       kwds['continuous'] = self.continuous
-      kwds['job_id'] = frontend_utils.GetJobIdFromFlags()
+      kwds['job_id'] = utils_flags.get_job_id_from_flags()
       if self.job_timeout_ms:
         kwds['job_timeout_ms'] = self.job_timeout_ms
+      kwds['job_creation_mode'] = self.job_creation_mode
 
       logging.debug('Calling client.Query(%s, %s)', query, kwds)
       job = client_job.Query(client, query, **kwds)

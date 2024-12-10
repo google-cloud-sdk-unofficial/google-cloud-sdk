@@ -1,19 +1,14 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
 import datetime
 import pickle
 import sys
 from copy import deepcopy
-
-try:
-    import unittest2 as unittest
-
-except ImportError:
-    import unittest
+import unittest
 
 from tests.base import BaseTestCase
 
@@ -46,7 +41,7 @@ class ObjectDescriptorTestCase(BaseTestCase):
 class GeneralizedTimeTestCase(BaseTestCase):
 
     def testFromDateTime(self):
-        assert useful.GeneralizedTime.fromDateTime(datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC)) == '20170711000102.3Z'
+        assert useful.GeneralizedTime.fromDateTime(datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC)) == '20170711000102.3Z'
 
     def testToDateTime0(self):
         assert datetime.datetime(2017, 7, 11, 0, 1, 2) == useful.GeneralizedTime('20170711000102').asDateTime
@@ -55,19 +50,19 @@ class GeneralizedTimeTestCase(BaseTestCase):
         assert datetime.datetime(2017, 7, 11, 0, 1, 2, tzinfo=UTC) == useful.GeneralizedTime('20170711000102Z').asDateTime
 
     def testToDateTime2(self):
-        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102.3Z').asDateTime
+        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102.3Z').asDateTime
 
     def testToDateTime3(self):
-        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102,3Z').asDateTime
+        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102,3Z').asDateTime
 
     def testToDateTime4(self):
-        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102.3+0000').asDateTime
+        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC) == useful.GeneralizedTime('20170711000102.3+0000').asDateTime
 
     def testToDateTime5(self):
-        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC2) == useful.GeneralizedTime('20170711000102.3+0200').asDateTime
+        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC2) == useful.GeneralizedTime('20170711000102.3+0200').asDateTime
 
     def testToDateTime6(self):
-        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 30000, tzinfo=UTC2) == useful.GeneralizedTime('20170711000102.3+02').asDateTime
+        assert datetime.datetime(2017, 7, 11, 0, 1, 2, 3000, tzinfo=UTC2) == useful.GeneralizedTime('20170711000102.3+02').asDateTime
 
     def testToDateTime7(self):
         assert datetime.datetime(2017, 7, 11, 0, 1) == useful.GeneralizedTime('201707110001').asDateTime

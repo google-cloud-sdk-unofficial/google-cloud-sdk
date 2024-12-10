@@ -832,33 +832,33 @@ class TestGetAllImages(TestEC2ConnectionBase):
     def test_get_all_images(self):
         self.set_http_response(status_code=200)
         parsed = self.ec2.get_all_images()
-        self.assertEquals(1, len(parsed))
-        self.assertEquals("ami-abcd1234", parsed[0].id)
-        self.assertEquals("111111111111/windows2008r2-hvm-i386-20130702", parsed[0].location)
-        self.assertEquals("available", parsed[0].state)
-        self.assertEquals("111111111111", parsed[0].ownerId)
-        self.assertEquals("111111111111", parsed[0].owner_id)
-        self.assertEquals(False, parsed[0].is_public)
-        self.assertEquals("i386", parsed[0].architecture)
-        self.assertEquals("machine", parsed[0].type)
-        self.assertEquals(None, parsed[0].kernel_id)
-        self.assertEquals(None, parsed[0].ramdisk_id)
-        self.assertEquals(None, parsed[0].owner_alias)
-        self.assertEquals("windows", parsed[0].platform)
-        self.assertEquals("Windows Test", parsed[0].name)
-        self.assertEquals("Windows Test Description", parsed[0].description)
-        self.assertEquals("ebs", parsed[0].root_device_type)
-        self.assertEquals("/dev/sda1", parsed[0].root_device_name)
-        self.assertEquals("hvm", parsed[0].virtualization_type)
-        self.assertEquals("xen", parsed[0].hypervisor)
-        self.assertEquals(None, parsed[0].instance_lifecycle)
+        self.assertEqual(1, len(parsed))
+        self.assertEqual("ami-abcd1234", parsed[0].id)
+        self.assertEqual("111111111111/windows2008r2-hvm-i386-20130702", parsed[0].location)
+        self.assertEqual("available", parsed[0].state)
+        self.assertEqual("111111111111", parsed[0].ownerId)
+        self.assertEqual("111111111111", parsed[0].owner_id)
+        self.assertEqual(False, parsed[0].is_public)
+        self.assertEqual("i386", parsed[0].architecture)
+        self.assertEqual("machine", parsed[0].type)
+        self.assertEqual(None, parsed[0].kernel_id)
+        self.assertEqual(None, parsed[0].ramdisk_id)
+        self.assertEqual(None, parsed[0].owner_alias)
+        self.assertEqual("windows", parsed[0].platform)
+        self.assertEqual("Windows Test", parsed[0].name)
+        self.assertEqual("Windows Test Description", parsed[0].description)
+        self.assertEqual("ebs", parsed[0].root_device_type)
+        self.assertEqual("/dev/sda1", parsed[0].root_device_name)
+        self.assertEqual("hvm", parsed[0].virtualization_type)
+        self.assertEqual("xen", parsed[0].hypervisor)
+        self.assertEqual(None, parsed[0].instance_lifecycle)
 
         # 1 billing product parsed into a list
-        self.assertEquals(1, len(parsed[0].billing_products))
-        self.assertEquals("bp-6ba54002", parsed[0].billing_products[0])
+        self.assertEqual(1, len(parsed[0].billing_products))
+        self.assertEqual("bp-6ba54002", parsed[0].billing_products[0])
 
         # Just verify length, there is already a block_device_mapping test
-        self.assertEquals(5, len(parsed[0].block_device_mapping))
+        self.assertEqual(5, len(parsed[0].block_device_mapping))
 
         # TODO: No tests for product codes?
 
@@ -976,14 +976,14 @@ class TestModifyInterfaceAttribute(TestEC2ConnectionBase):
     def test_modify_group_set_invalid(self):
         self.set_http_response(status_code=200)
 
-        with self.assertRaisesRegexp(TypeError, 'iterable'):
+        with self.assertRaisesRegex(TypeError, 'iterable'):
             self.ec2.modify_network_interface_attribute('id', 'groupSet',
                                                         False)
 
     def test_modify_attr_invalid(self):
         self.set_http_response(status_code=200)
 
-        with self.assertRaisesRegexp(ValueError, 'Unknown attribute'):
+        with self.assertRaisesRegex(ValueError, 'Unknown attribute'):
             self.ec2.modify_network_interface_attribute('id', 'invalid', 0)
 
 

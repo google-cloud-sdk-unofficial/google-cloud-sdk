@@ -1,3 +1,4 @@
+.. _Start Content:
 
 ASN.1 library for Python
 ========================
@@ -11,7 +12,7 @@ technology for exchanging structured data in a universally understood,
 hardware agnostic way. Many industrial, security and telephony
 applications heavily rely on ASN.1.
 
-The `pyasn1 <https://pypi.python.org/pypi/pyasn1/>`_ library implements
+The `pyasn1 <https://pypi.org/project/pyasn1/>`_ library implements
 ASN.1 support in pure-Python.
 
 What is ASN.1
@@ -131,8 +132,8 @@ The PyASN1 software is distributed under 2-clause BSD License.
 Getting help
 ------------
 
-Please, file your `issues <https://github.com/etingof/pyasn1/issues>`_
-and `PRs <https://github.com/etingof/pyasn1/pulls>`_ at GitHub.
+Please, file your `issues <https://github.com/pyasn1/pyasn1/issues>`_
+and `PRs <https://github.com/pyasn1/pyasn1/pulls>`_ at GitHub.
 Alternatively, you could ask for help at
 `Stack Overflow <http://stackoverflow.com/questions/tagged/pyasn1>`_
 or search
@@ -154,8 +155,14 @@ Here you can get the official standards which is hard to read:
 
 On the other end of the readability spectrum, here is a quick and sweet write up:
 
-* `A Layman's Guide to a Subset of ASN.1, BER, and DER <ftp://ftp.rsasecurity.com/pub/pkcs/ascii/layman.asc>`_ by Burton S. Kaliski
+* `A Layman's Guide to a Subset of ASN.1, BER, and DER <https://www.researchgate.net/publication/2820226_A_Layman's_Guide_to_a_Subset_of_ASN1_BER_and_DER>`_ by Burton S. Kaliski
 
 If you are working with ASN.1, we'd highly recommend reading a proper
 book on the subject.
 
+
+.. hidden toctree to include `index.rst` for RTD
+.. toctree::
+   :hidden:
+
+   /index

@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete PrincipalAccessBoundaryPolicy instance.
     description: |
@@ -35,6 +34,7 @@
         Format:
           `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:organization_location_principal_access_boundary_policy
       required: true
     - arg_name: etag
@@ -52,6 +52,7 @@
       help_text: |-
         If set to true, the request will force the deletion of the Policy even if
         the Policy references PolicyBindings.
+      default: null
   request:
     api_version: v3
     collection:

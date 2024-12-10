@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import pytest
 
-from urllib3.fields import RequestField, format_header_param_rfc2231, guess_content_type
-from urllib3.packages.six import u
+from urllib3.fields import (
+    RequestField,
+    format_header_param,
+    format_header_param_html5,
+    format_header_param_rfc2231,
+    format_multipart_header_param,
+    guess_content_type,
+)
 
 
-class TestRequestField(object):
+class TestRequestField:
     @pytest.mark.parametrize(
         "filename, content_types",
         [
@@ -13,18 +21,22 @@ class TestRequestField(object):
             (None, ["application/octet-stream"]),
         ],
     )
-    def test_guess_content_type(self, filename, content_types):
+    def test_guess_content_type(
+        self, filename: str | None, content_types: list[str]
+    ) -> None:
         assert guess_content_type(filename) in content_types
 
-    def test_create(self):
+    def test_create(self) -> None:
         simple_field = RequestField("somename", "data")
         assert simple_field.render_headers() == "\r\n"
         filename_field = RequestField("somename", "data", filename="somefile.txt")
         assert filename_field.render_headers() == "\r\n"
-        headers_field = RequestField("somename", "data", headers={"Content-Length": 4})
+        headers_field = RequestField(
+            "somename", "data", headers={"Content-Length": "4"}
+        )
         assert headers_field.render_headers() == "Content-Length: 4\r\n\r\n"
 
-    def test_make_multipart(self):
+    def test_make_multipart(self) -> None:
         field = RequestField("somename", "data")
         field.make_multipart(content_type="image/jpg", content_location="/test")
         assert (
@@ -35,7 +47,7 @@ class TestRequestField(object):
             "\r\n"
         )
 
-    def test_make_multipart_empty_filename(self):
+    def test_make_multipart_empty_filename(self) -> None:
         field = RequestField("somename", "data", "")
         field.make_multipart(content_type="application/octet-stream")
         assert (
@@ -45,7 +57,7 @@ class TestRequestField(object):
             "\r\n"
         )
 
-    def test_render_parts(self):
+    def test_render_parts(self) -> None:
         field = RequestField("somename", "data")
         parts = field._render_parts({"name": "value", "filename": "value"})
         assert 'name="value"' in parts
@@ -53,50 +65,56 @@ class TestRequestField(object):
         parts = field._render_parts([("name", "value"), ("filename", "value")])
         assert parts == 'name="value"; filename="value"'
 
-    def test_render_part_rfc2231_unicode(self):
-        field = RequestField(
-            "somename", "data", header_formatter=format_header_param_rfc2231
-        )
-        param = field._render_part("filename", u("n\u00e4me"))
-        assert param == "filename*=utf-8''n%C3%A4me"
+    @pytest.mark.parametrize(
+        ("value", "expect"),
+        [("näme", "filename*=utf-8''n%C3%A4me"), (b"name", 'filename="name"')],
+    )
+    def test_format_header_param_rfc2231_deprecated(
+        self, value: bytes | str, expect: str
+    ) -> None:
+        with pytest.deprecated_call(match=r"urllib3 v2\.1\.0"):
+            param = format_header_param_rfc2231("filename", value)
 
-    def test_render_part_rfc2231_ascii(self):
-        field = RequestField(
-            "somename", "data", header_formatter=format_header_param_rfc2231
-        )
-        param = field._render_part("filename", b"name")
-        assert param == 'filename="name"'
+        assert param == expect
 
-    def test_render_part_html5_unicode(self):
-        field = RequestField("somename", "data")
-        param = field._render_part("filename", u("n\u00e4me"))
-        assert param == u('filename="n\u00e4me"')
+    def test_format_header_param_html5_deprecated(self) -> None:
+        with pytest.deprecated_call(match=r"urllib3 v2\.1\.0"):
+            param2 = format_header_param_html5("filename", "name")
 
-    def test_render_part_html5_ascii(self):
-        field = RequestField("somename", "data")
-        param = field._render_part("filename", b"name")
-        assert param == 'filename="name"'
+        with pytest.deprecated_call(match=r"urllib3 v2\.1\.0"):
+            param1 = format_header_param("filename", "name")
 
-    def test_render_part_html5_unicode_escape(self):
-        field = RequestField("somename", "data")
-        param = field._render_part("filename", u("hello\\world\u0022"))
-        assert param == u('filename="hello\\\\world%22"')
+        assert param1 == param2
 
-    def test_render_part_html5_unicode_with_control_character(self):
-        field = RequestField("somename", "data")
-        param = field._render_part("filename", u("hello\x1A\x1B\x1C"))
-        assert param == u('filename="hello%1A\x1B%1C"')
+    @pytest.mark.parametrize(
+        ("value", "expect"),
+        [
+            ("name", "name"),
+            ("näme", "näme"),
+            (b"n\xc3\xa4me", "näme"),
+            ("ski ⛷.txt", "ski ⛷.txt"),
+            ("control \x1A\x1B\x1C", "control \x1A\x1B\x1C"),
+            ("backslash \\", "backslash \\"),
+            ("quotes '\"", "quotes '%22"),
+            ("newline \n\r", "newline %0A%0D"),
+        ],
+    )
+    def test_format_multipart_header_param(
+        self, value: bytes | str, expect: str
+    ) -> None:
+        param = format_multipart_header_param("filename", value)
+        assert param == f'filename="{expect}"'
 
-    def test_from_tuples_rfc2231(self):
-        field = RequestField.from_tuples(
-            u("fieldname"),
-            (u("filen\u00e4me"), "data"),
-            header_formatter=format_header_param_rfc2231,
-        )
+    def test_from_tuples(self) -> None:
+        field = RequestField.from_tuples("file", ("スキー旅行.txt", "data"))
         cd = field.headers["Content-Disposition"]
-        assert cd == u("form-data; name=\"fieldname\"; filename*=utf-8''filen%C3%A4me")
+        assert cd == 'form-data; name="file"; filename="スキー旅行.txt"'
 
-    def test_from_tuples_html5(self):
-        field = RequestField.from_tuples(u("fieldname"), (u("filen\u00e4me"), "data"))
+    def test_from_tuples_rfc2231(self) -> None:
+        with pytest.deprecated_call(match=r"urllib3 v2\.1\.0"):
+            field = RequestField.from_tuples(
+                "file", ("näme", "data"), header_formatter=format_header_param_rfc2231
+            )
+
         cd = field.headers["Content-Disposition"]
-        assert cd == u('form-data; name="fieldname"; filename="filen\u00e4me"')
+        assert cd == "form-data; name=\"file\"; filename*=utf-8''n%C3%A4me"

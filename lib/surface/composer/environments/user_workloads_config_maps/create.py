@@ -30,7 +30,7 @@ _DETAILED_HELP = frozendict.frozendict({'EXAMPLES': textwrap.dedent("""\
         """)})
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateUserWorkloadsConfigMap(base.Command):
   """Create a user workloads ConfigMap."""
 

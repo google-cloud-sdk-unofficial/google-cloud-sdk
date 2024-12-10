@@ -5,6 +5,12 @@
 <p>
 This directory contains a number of Python scripts that can get you started in learning to use pyparsing.
 
+<h2>LICENSE</h2>
+<b><i>
+The files and source code in this examples directory are covered under the same LICENSE as
+the core pyparsing package. You will find this license in the LICENSE file of the pyparsing package.
+</i></b>
+
 <ul>
 <li><a href="greeting.py">greeting.py</a><br>
 Parse "Hello, World!".
@@ -21,12 +27,12 @@ Unicode example to parse "Hello, World!" in Greek.
 </li>
 <p>
 
-<li><a href="holaMundo.py">holaMundo.py</a> <i>~ submission by Marco Alfonso</i><br>
+<li><a href="hola_mundo.py">hola_mundo.py</a> <i>~ submission by Marco Alfonso</i><br>
 "Hello, World!" example translated to Spanish, from Marco Alfonso's blog.
 </li>
 <p>
 
-<li><a href="chemicalFormulas.py">chemicalFormulas.py</a><br>
+<li><a href="chemical_formulas.py">chemical_formulas.py</a><br>
 Simple example to demonstrate the use of ParseResults returned from parseString().
 Parses a chemical formula (such as "H2O" or "C6H5OH"), and walks the returned list of tokens to calculate the molecular weight.
 </li>
@@ -35,6 +41,17 @@ Parses a chemical formula (such as "H2O" or "C6H5OH"), and walks the returned li
 <li><a href="wordsToNum.py">wordsToNum.py</a><br>
 A sample program that reads a number in words (such as "fifteen hundred and sixty four"), and returns the actual number (1564).
 Also demonstrates some processing of ParseExceptions, including marking where the parse failure was found.
+</li>
+<p>
+
+<li><a href="mongodb_query_expression.py">mongodb_query_expression.py</a><br>
+A useful utility to convert infix query expressions into the nested dicts required by the MongoDB pymongo library's
+`find()` command.
+</li>
+<p>
+
+<li><a href="delta_time.py">delta_time.py</a><br>
+A utility to parse colloquial time expressions such as "2pm next Tuesday" and convert them into Python datetime instances.
 </li>
 <p>
 
@@ -141,18 +158,7 @@ An expression parser that parses search strings, with special keyword and expres
 </li>
 <p>
 
-<li><a href="sparser.py">sparser.py</a> <i>~ submission by Tim Cera</i><br>
-A configurable parser module that can be configured with a list of tuples, giving a high-level definition for parsing common sets
-of water table data files.  Tim had to contend with several different styles of data file formats, each with slight variations of its own.
-Tim created a configurable parser (or "SPECIFIED parser" - hence the name "sparser"), that simply works from a config variable listing
-the field names and data types, and implicitly, their order in the source data file.
-<p>
-See <a href="mayport_florida_8720220_data_def.txt">mayport_florida_8720220_data_def.txt</a> for an
-example configuration file.
-</li>
-<p>
-
-<li><a href="romanNumerals.py">romanNumerals.py</a><br>
+<li><a href="roman_numerals.py">romanNumerals.py</a><br>
 A Roman numeral generator and parser example, showing the power of parse actions
 to compile Roman numerals into their integer values.
 </li>
@@ -256,26 +262,22 @@ A parser for the data representation format, Stackish.
 <p>
 
 <li><a href="builtin_parse_action_demo.py">builtin_parse_action_demo.py</a><br>
-<b>New in version 1.5.7</b><br>
 Demonstration of using builtins (min, max, sum, len, etc.) as parse actions.
 </li>
 <p>
 
 <li><a href="antlr_grammar.py">antlr_grammar.py</a><i>~ submission by Luca DellOlio</i><br>
-<b>New in version 1.5.7</b><br>
 Pyparsing example parsing ANTLR .a files and generating a working pyparsing parser.
 </li>
 <p>
 
 <li><a href="shapes.py">shapes.py</a><br>
-<b>New in version 1.5.7</b><br>
 Parse actions example simple shape definition syntax, and returning the matched tokens as
 domain objects instead of just strings.
 </li>
 <p>
 
 <li><a href="datetimeParseActions.py">datetimeParseActions.py</a><br>
-<b>New in version 1.5.7</b><br>
 Parse actions example showing a parse action returning a datetime object instead of
 string tokens, and doing validation of the tokens, raising a ParseException if the
 given YYYY/MM/DD string does not represent a valid date.
@@ -283,7 +285,6 @@ given YYYY/MM/DD string does not represent a valid date.
 <p>
 
 <li><a href="position.py">position.py</a><br>
-<b>New in version 1.5.7</b><br>
 Demonstration of a couple of different ways to capture the location a particular
 expression was found within the overall input string.
 </li>

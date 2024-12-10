@@ -1,8 +1,8 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
 from pyasn1.type import base
 from pyasn1.type import tag
@@ -10,7 +10,7 @@ from pyasn1.type import tag
 __all__ = ['endOfOctets']
 
 
-class EndOfOctets(base.AbstractSimpleAsn1Item):
+class EndOfOctets(base.SimpleAsn1Type):
     defaultValue = 0
     tagSet = tag.initTagSet(
         tag.Tag(tag.tagClassUniversal, tag.tagFormatSimple, 0x00)

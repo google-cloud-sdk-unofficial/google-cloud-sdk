@@ -49,14 +49,14 @@ KEYBOARD_RD = (
 
 def AddDevice(fs, dev_name, product_name,
               vendor_id, product_id, report_descriptor_b64):
-  uevent = fs.CreateFile('/sys/class/hidraw/%s/device/uevent' % dev_name)
-  rd = fs.CreateFile('/sys/class/hidraw/%s/device/report_descriptor' % dev_name)
+  uevent = fs.create_file('/sys/class/hidraw/%s/device/uevent' % dev_name)
+  rd = fs.create_file('/sys/class/hidraw/%s/device/report_descriptor' % dev_name)
   report_descriptor = base64.b64decode(report_descriptor_b64)
-  rd.SetContents(report_descriptor)
+  rd.set_contents(report_descriptor)
 
   buf = 'HID_NAME=%s\n' % product_name.encode('utf8')
   buf += 'HID_ID=0001:%08X:%08X\n' % (vendor_id, product_id)
-  uevent.SetContents(buf)
+  uevent.set_contents(buf)
 
 
 class FakeDeviceOsModule(object):
@@ -79,10 +79,10 @@ class FakeDeviceOsModule(object):
 class LinuxTest(unittest.TestCase):
   def setUp(self):
     self.fs = fake_filesystem.FakeFilesystem()
-    self.fs.CreateDirectory('/sys/class/hidraw')
+    self.fs.create_dir('/sys/class/hidraw')
 
   def tearDown(self):
-    self.fs.RemoveObject('/sys/class/hidraw')
+    self.fs.remove_object('/sys/class/hidraw')
 
   def testCallEnumerate(self):
     AddDevice(self.fs, 'hidraw1', 'Logitech USB Keyboard',
@@ -94,13 +94,13 @@ class LinuxTest(unittest.TestCase):
         devs = list(linux.LinuxHidDevice.Enumerate())
         devs = sorted(devs, key=lambda k: (k['vendor_id']))
 
-        self.assertEquals(len(devs), 2)
-        self.assertEquals(devs[0]['vendor_id'], 0x046d)
-        self.assertEquals(devs[0]['product_id'], 0x0c31c)
-        self.assertEquals(devs[1]['vendor_id'], 0x1050)
-        self.assertEquals(devs[1]['product_id'], 0x0407)
-        self.assertEquals(devs[1]['usage_page'], 0xf1d0)
-        self.assertEquals(devs[1]['usage'], 1)
+        self.assertEqual(len(devs), 2)
+        self.assertEqual(devs[0]['vendor_id'], 0x046d)
+        self.assertEqual(devs[0]['product_id'], 0x0c31c)
+        self.assertEqual(devs[1]['vendor_id'], 0x1050)
+        self.assertEqual(devs[1]['product_id'], 0x0407)
+        self.assertEqual(devs[1]['usage_page'], 0xf1d0)
+        self.assertEqual(devs[1]['usage'], 1)
 
   def testCallOpen(self):
     AddDevice(self.fs, 'hidraw1', 'Yubico U2F', 0x1050, 0x0407, YUBICO_RD)
@@ -112,17 +112,17 @@ class LinuxTest(unittest.TestCase):
       fake_dev_os = FakeDeviceOsModule()
       with mock.patch.object(linux, 'os', fake_dev_os):
         dev = linux.LinuxHidDevice('/dev/hidraw1')
-        self.assertEquals(dev.GetInReportDataLength(), 64)
-        self.assertEquals(dev.GetOutReportDataLength(), 64)
+        self.assertEqual(dev.GetInReportDataLength(), 64)
+        self.assertEqual(dev.GetOutReportDataLength(), 64)
 
         dev.Write(list(range(0, 64)))
         # The HidDevice implementation prepends a zero-byte representing the
         # report ID
-        self.assertEquals(list(fake_dev_os.data_written),
-                          [0] + list(range(0, 64)))
+        self.assertEqual(list(fake_dev_os.data_written),
+                         [0] + list(range(0, 64)))
 
         fake_dev_os.data_to_return = b'x' * 64
-        self.assertEquals(dev.Read(), [120] * 64)  # chr(120) = 'x'
+        self.assertEqual(dev.Read(), [120] * 64)  # chr(120) = 'x'
 
 
 if __name__ == '__main__':

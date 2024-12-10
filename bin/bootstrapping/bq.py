@@ -34,6 +34,13 @@ def _GetGoogleAuthFlagValue(argv):
   return None
 
 
+def _IsOAuthAccessTokenFlagPresent(argv):
+  for arg in argv[1:]:
+    if re.fullmatch(r'--oauth_access_token=.+', arg):
+      return True
+  return False
+
+
 def main():
   """Launches bq."""
   version = bootstrapping.ReadFileContents('platform/bq', 'VERSION')
@@ -52,8 +59,12 @@ def main():
   print_logging = False
   if len(cmd_args) == 1 and cmd_args[0] == 'info':
     print_logging = True
-  if cmd_args and cmd_args[0] not in ('version', 'help'):
-    # Check for credentials only if they are needed.
+  # Check for credentials only if they are needed.
+  if (
+      cmd_args
+      and cmd_args[0] not in ('version', 'help')
+      and not _IsOAuthAccessTokenFlagPresent(argv)
+  ):
     store.IMPERSONATION_TOKEN_PROVIDER = (
         iamcred_util.ImpersonationAccessTokenProvider()
     )

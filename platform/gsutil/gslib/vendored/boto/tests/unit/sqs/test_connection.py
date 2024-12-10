@@ -113,7 +113,7 @@ class SQSAuthParams(AWSMockServiceTestCase):
         self.service_connection.get_queue('my_queue', '599169622985')
 
         assert 'QueueOwnerAWSAccountId' in self.actual_request.params.keys()
-        self.assertEquals(self.actual_request.params['QueueOwnerAWSAccountId'], '599169622985')
+        self.assertEqual(self.actual_request.params['QueueOwnerAWSAccountId'], '599169622985')
 
 class SQSProfileName(MockServiceWithConfigTestCase):
     connection_class = SQSConnection
@@ -140,7 +140,7 @@ class SQSProfileName(MockServiceWithConfigTestCase):
         self.initialize_service_connection()
         self.set_http_response(status_code=200)
 
-        self.assertEquals(self.service_connection.profile_name, self.profile_name)
+        self.assertEqual(self.service_connection.profile_name, self.profile_name)
 
 class SQSMessageAttributesParsing(AWSMockServiceTestCase):
     connection_class = SQSConnection

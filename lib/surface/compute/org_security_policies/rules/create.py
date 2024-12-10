@@ -24,12 +24,14 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.command_lib.compute.security_policies.rules import flags as rule_flags
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
-  r"""Create a Compute Engine security policy rule.
+  r"""Create a Compute Engine organizationsecurity policy rule.
 
   *{command}* is used to create organization security policy rules.
   """
@@ -43,7 +45,6 @@ class Create(base.CreateCommand):
     cls.ORG_SECURITY_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddAction(parser)
     flags.AddSecurityPolicyId(parser, operation='inserted')
-    flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddLayer4Configs(parser)
     flags.AddDirection(parser)
@@ -52,6 +53,14 @@ class Create(base.CreateCommand):
     flags.AddTargetServiceAccounts(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
+    rule_flags.AddMatcher(parser, required=False)
+    rule_flags.AddPreview(parser, default=None)
+    parser.add_argument(
+        '--cloud-armor',
+        action='store_true',
+        default=False,
+        help='Specified for Hierarchical Cloud Armor rules.',
+    )
     parser.display_info.AddCacheUpdater(flags.OrgSecurityPoliciesCompleter)
 
   def Run(self, args):
@@ -69,7 +78,8 @@ class Create(base.CreateCommand):
     layer4_configs = []
     target_resources = []
     target_service_accounts = []
-    enable_logging = False
+    enable_logging = None
+    preview = None
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
     if args.IsSpecified('dest_ip_ranges'):
@@ -85,44 +95,69 @@ class Create(base.CreateCommand):
       target_service_accounts = args.target_service_accounts
     if args.IsSpecified('enable_logging'):
       enable_logging = True
+    if args.IsSpecified('preview'):
+      preview = True
 
     dest_ports_list = rule_utils.ParseDestPorts(dest_ports,
                                                 holder.client.messages)
     layer4_config_list = rule_utils.ParseLayer4Configs(layer4_configs,
                                                        holder.client.messages)
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      matcher = holder.client.messages.SecurityPolicyRuleMatcher(
-          versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher
-          .VersionedExprValueValuesEnum.FIREWALL,
-          config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
-              srcIpRanges=src_ip_ranges,
-              destIpRanges=dest_ip_ranges,
-              destPorts=dest_ports_list,
-              layer4Configs=layer4_config_list))
-    else:
-      matcher = holder.client.messages.SecurityPolicyRuleMatcher(
-          versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher
-          .VersionedExprValueValuesEnum.FIREWALL,
-          config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
-              srcIpRanges=src_ip_ranges,
-              destIpRanges=dest_ip_ranges,
-              layer4Configs=layer4_config_list))
-    traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
-    if args.IsSpecified('direction'):
-      if args.direction == 'INGRESS':
-        traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+    traffic_direct = None
+    if args.IsSpecified('cloud_armor'):
+      if args.IsSpecified('expression'):
+        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
+            expr=holder.client.messages.Expr(expression=args.expression)
+        )
       else:
-        traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
+            versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.SRC_IPS_V1,
+            config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+                srcIpRanges=src_ip_ranges
+            ),
+        )
+    else:
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
+            versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.FIREWALL,
+            config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+                srcIpRanges=src_ip_ranges,
+                destIpRanges=dest_ip_ranges,
+                destPorts=dest_ports_list,
+                layer4Configs=layer4_config_list,
+            ),
+        )
+      else:
+        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
+            versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.FIREWALL,
+            config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+                srcIpRanges=src_ip_ranges,
+                destIpRanges=dest_ip_ranges,
+                layer4Configs=layer4_config_list,
+            ),
+        )
+      traffic_direct = (
+          holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+      )
+      if args.IsSpecified('direction'):
+        if args.direction == 'INGRESS':
+          traffic_direct = (
+              holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+          )
+        else:
+          traffic_direct = (
+              holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+          )
 
     security_policy_rule = holder.client.messages.SecurityPolicyRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),
-        action=args.action,
+        action=rule_utils.ConvertAction(args.action),
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
         targetServiceAccounts=target_service_accounts,
         description=args.description,
-        enableLogging=enable_logging)
+        enableLogging=enable_logging,
+        preview=preview)
 
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         security_policy_rule_client,
@@ -133,6 +168,7 @@ class Create(base.CreateCommand):
         security_policy_rule=security_policy_rule)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   r"""Create a Compute Engine security policy rule.
@@ -149,7 +185,6 @@ class CreateAlpha(Create):
     cls.ORG_SECURITY_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddAction(parser)
     flags.AddSecurityPolicyId(parser, operation='inserted')
-    flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddDestPorts(parser)
     flags.AddLayer4Configs(parser)
@@ -159,16 +194,23 @@ class CreateAlpha(Create):
     flags.AddTargetServiceAccounts(parser)
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
+    rule_flags.AddMatcher(parser, required=False)
+    rule_flags.AddPreview(parser, default=None)
+    parser.add_argument(
+        '--cloud-armor',
+        action='store_true',
+        default=False,
+        help='Specified for Hierarchical Cloud Armor rules.',
+    )
     parser.display_info.AddCacheUpdater(flags.OrgSecurityPoliciesCompleter)
 
 
 Create.detailed_help = {
-    'EXAMPLES':
-        """\
-    To create a rule with priority ``10" in an organization security policy with ID
-    ``123456789", run:
+    'EXAMPLES': """\
+    To create a rule with priority "10" in an organization security policy with
+    ID "123456789", run:
 
       $ {command} create 10 --security-policy=123456789 --action=allow
-      --description=example-rule
+      --description=example-rule --cloud-armor
     """,
 }

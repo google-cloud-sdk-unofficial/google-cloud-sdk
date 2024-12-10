@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create PrincipalAccessBoundaryPolicy instance.
     description: |
@@ -35,6 +34,7 @@
         The following format is supported:
         `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{policy_id}`
       is_positional: true
+      is_primary_resource: true
       request_id_field: principalAccessBoundaryPolicyId
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:organization_location_principal_access_boundary_policy
       required: true

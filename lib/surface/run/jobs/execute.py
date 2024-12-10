@@ -20,6 +20,8 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -32,6 +34,22 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
+def ContainerOverridesGroup():
+  """Returns an argument group with all per-container args for overrides."""
+
+  help_text = """
+Container Flags
+
+  If the --container is specified the following arguments may only be specified after a --container flag.
+"""
+  group = base.ArgumentGroup(help=help_text)
+  group.AddArgument(flags.ArgsFlag(for_execution_overrides=True))
+  group.AddArgument(flags.OverrideEnvVarsFlag())
+  return group
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Execute(base.Command):
   """Execute a job."""
 
@@ -46,8 +64,10 @@ class Execute(base.Command):
           """,
   }
 
-  @staticmethod
-  def Args(parser):
+  container_flags_text = '`--update-env-vars`, `--args`'
+
+  @classmethod
+  def CommonArgs(cls, parser, add_container_args=True):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
@@ -63,13 +83,42 @@ class Execute(base.Command):
     parser.display_info.AddFormat('none')
     flags.AddTaskTimeoutFlags(parser, for_execution_overrides=True)
     flags.AddTasksFlag(parser, for_execution_overrides=True)
-    flags.AddArgsFlag(parser, for_execution_overrides=True)
-    flags.AddOverrideEnvVarsFlag(parser)
+    if add_container_args:
+      flags.AddArgsFlag(parser, for_execution_overrides=True)
+      flags.AddOverrideEnvVarsFlag(parser)
+
+  @staticmethod
+  def Args(parser):
+    Execute.CommonArgs(parser)
+
+  def _MakeContainerOverrde(self, operations, args, container_name=None):
+    # If args list has been explicitly set as an empty list,
+    # this is to clear out the existing args list.
+    clear_args = flags.FlagIsExplicitlySet(args, 'args') and not args.args
+    return operations.MakeContainerOverride(
+        name=container_name,
+        update_env_vars=args.update_env_vars,
+        args=args.args,
+        clear_args=clear_args,
+    )
+
+  def _AssertContainerOverrides(self, args):
+    if flags.FlagIsExplicitlySet(args, 'containers'):
+      for container_name, container_args in args.containers.items():
+        if not flags.FlagIsExplicitlySet(
+            container_args, 'args'
+        ) and not flags.FlagIsExplicitlySet(container_args, 'update_env_vars'):
+          raise exceptions.NoConfigurationChangeError(
+              'No container overrides requested to container `{}`. '
+              'Did you mean to include the flags {} after `--container` flag?'
+              .format(container_name, self.container_flags_text)
+          )
 
   def Run(self, args):
     """Execute a Job on Cloud Run."""
     job_ref = args.CONCEPTS.job.Parse()
     flags.ValidateResource(job_ref)
+    self._AssertContainerOverrides(args)
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack()
     )
@@ -82,18 +131,22 @@ class Execute(base.Command):
       ) as tracker:
         overrides = None
         if flags.HasExecutionOverrides(args):
-          config_overrides = flags.GetRunJobConfigurationOverrides(args)
-          operations.ValidateConfigOverrides(job_ref, config_overrides)
+          operations.ValidateConfigOverrides(
+              job_ref, flags.GetExecutionOverridesChangesForValidation(args)
+          )
           container_overrides = []
           if flags.HasContainerOverrides(args):
-            # If args list has been explicitly provided as an empty list,
-            # this is to clear out the existing args list.
-            clear_args = (
-                flags.FlagIsExplicitlySet(args, 'args') and not args.args
-            )
-            container_overrides = operations.GetContainerOverrides(
-                args.update_env_vars, args.args, clear_args
-            )
+            if flags.HasTopLevelContainerOverride(args):
+              container_overrides.append(
+                  self._MakeContainerOverrde(operations, args)
+              )
+            if flags.FlagIsExplicitlySet(args, 'containers'):
+              for container_name, container_args in args.containers.items():
+                container_overrides.append(
+                    self._MakeContainerOverrde(
+                        operations, container_args, container_name
+                    )
+                )
           overrides = operations.GetExecutionOverrides(
               args.tasks, args.task_timeout, container_overrides
           )
@@ -125,3 +178,25 @@ class Execute(base.Command):
           messages_util.GetExecutionCreatedMessage(self.ReleaseTrack(), e)
       )
       return e
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class BetaExecute(Execute):
+  """Execute a job."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser, add_container_args=False)
+    container_args = ContainerOverridesGroup()
+    container_parser.AddContainerFlags(parser, container_args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaExecute(BetaExecute):
+  """Execute a job."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser, add_container_args=False)
+    container_args = ContainerOverridesGroup()
+    container_parser.AddContainerFlags(parser, container_args)

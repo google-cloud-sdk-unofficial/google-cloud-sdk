@@ -40,7 +40,7 @@ class TestDescribeInternetGateway(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(len(api_response), 1)
+        self.assertEqual(len(api_response), 1)
         self.assertIsInstance(api_response[0], InternetGateway)
         self.assertEqual(api_response[0].id, 'igw-eaad4883EXAMPLE')
 
@@ -94,7 +94,7 @@ class TestDeleteInternetGateway(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestAttachInternetGateway(AWSMockServiceTestCase):
@@ -120,7 +120,7 @@ class TestAttachInternetGateway(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestDetachInternetGateway(AWSMockServiceTestCase):
@@ -146,7 +146,7 @@ class TestDetachInternetGateway(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 if __name__ == '__main__':
     unittest.main()

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import enrollments
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -44,6 +45,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     flags.AddCreateEnrollmentResourceArgs(parser)
     flags.AddCelMatchArg(parser, required=True)
+    labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -65,6 +67,7 @@ class Create(base.CreateCommand):
             args.cel_match,
             args.CONCEPTS.message_bus.Parse(),
             args.CONCEPTS.destination_pipeline.Parse(),
+            labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
         ),
     )
 

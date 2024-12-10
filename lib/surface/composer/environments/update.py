@@ -53,7 +53,6 @@ class Update(base.Command):
 
   detailed_help = DETAILED_HELP
   _support_autoscaling = True
-  _support_composer3flags = False
   _support_maintenance_window = True
   _support_environment_size = True
 
@@ -101,6 +100,8 @@ class Update(base.Command):
 
     # Environment upgrade arguments
     flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group, release_track)
+
+    flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
   def _ConstructPatch(self, env_ref, args):
     env_obj = environments_api_util.Get(
@@ -342,8 +343,7 @@ class Update(base.Command):
           args.enable_cloud_data_lineage_integration
       )
 
-    if self._support_composer3flags:
-      self._addComposer3Fields(params, args, env_obj)
+    self._addComposer3Fields(params, args, env_obj)
     return patch_util.ConstructPatch(**params)
 
   def _getImageVersion(self, args, env_ref, env_obj, release_track):
@@ -553,7 +553,6 @@ class UpdateBeta(Update):
   """Update properties of a Cloud Composer environment."""
 
   _support_autoscaling = True
-  _support_composer3flags = True
   _support_maintenance_window = True
   _support_environment_size = True
 
@@ -561,9 +560,6 @@ class UpdateBeta(Update):
   def AlphaAndBetaArgs(parser, release_track=base.ReleaseTrack.BETA):
     """Arguments available only in both alpha and beta."""
     Update.Args(parser, release_track=release_track)
-
-    # Environment upgrade arguments
-    flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
   @staticmethod
   def Args(parser):

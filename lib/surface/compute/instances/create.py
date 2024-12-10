@@ -266,10 +266,7 @@ def _CommonArgs(
   instances_flags.AddTurboModeArgs(parser)
 
 
-# TODO(b/305707759):Change @base.DefaultUniverseOnly to
-# @base.UniverseCompatible once b/305707759 is fixed.
-# See go/gcloud-cli-running-tpc-tests.
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Compute Engine virtual machine instances."""
@@ -827,7 +824,7 @@ class CreateBeta(Create):
   _support_partner_metadata = True
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
-  _support_graceful_shutdown = False
+  _support_graceful_shutdown = True
   _support_igmp_query = False
   _support_watchdog_timer = False
   _support_disk_labels = True

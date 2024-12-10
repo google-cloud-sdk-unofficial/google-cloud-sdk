@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.org_security_policies import org_securit
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine organization security policy.
@@ -44,7 +45,7 @@ class Delete(base.DeleteCommand):
     parser.add_argument(
         '--organization',
         help=('Organization in which the organization security policy is to be'
-              ' deleted. Must be set if SECURITY_POLICY is display name.'))
+              ' deleted. Must be set if SECURITY_POLICY is short name.'))
     parser.display_info.AddCacheUpdater(flags.OrgSecurityPoliciesCompleter)
 
   def Run(self, args):
@@ -64,7 +65,7 @@ class Delete(base.DeleteCommand):
 Delete.detailed_help = {
     'EXAMPLES':
         """\
-    To delete an organization security policy with ID ``123456789", run:
+    To delete an organization security policy with ID "123456789", run:
 
       $ {command} delete 123456789
     """,

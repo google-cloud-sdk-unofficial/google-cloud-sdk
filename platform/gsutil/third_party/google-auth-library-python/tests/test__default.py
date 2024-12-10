@@ -188,6 +188,28 @@ def test_load_credentials_from_missing_file():
     assert excinfo.match(r"not found")
 
 
+def test_load_credentials_from_dict_non_dict_object():
+    with pytest.raises(exceptions.DefaultCredentialsError) as excinfo:
+        _default.load_credentials_from_dict("")
+    assert excinfo.match(r"dict type was expected")
+
+    with pytest.raises(exceptions.DefaultCredentialsError) as excinfo:
+        _default.load_credentials_from_dict(None)
+    assert excinfo.match(r"dict type was expected")
+
+    with pytest.raises(exceptions.DefaultCredentialsError) as excinfo:
+        _default.load_credentials_from_dict(1)
+    assert excinfo.match(r"dict type was expected")
+
+
+def test_load_credentials_from_dict_authorized_user():
+    credentials, project_id = _default.load_credentials_from_dict(
+        AUTHORIZED_USER_FILE_DATA
+    )
+    assert isinstance(credentials, google.oauth2.credentials.Credentials)
+    assert project_id is None
+
+
 def test_load_credentials_from_file_invalid_json(tmpdir):
     jsonfile = tmpdir.join("invalid.json")
     jsonfile.write("{")
@@ -781,7 +803,7 @@ def test__get_gae_credentials_no_apis():
 
 
 @mock.patch(
-    "google.auth.compute_engine._metadata.ping", return_value=True, autospec=True
+    "google.auth.compute_engine._metadata.is_on_gce", return_value=True, autospec=True
 )
 @mock.patch(
     "google.auth.compute_engine._metadata.get_project_id",
@@ -796,7 +818,7 @@ def test__get_gce_credentials(unused_get, unused_ping):
 
 
 @mock.patch(
-    "google.auth.compute_engine._metadata.ping", return_value=False, autospec=True
+    "google.auth.compute_engine._metadata.is_on_gce", return_value=False, autospec=True
 )
 def test__get_gce_credentials_no_ping(unused_ping):
     credentials, project_id = _default._get_gce_credentials()
@@ -806,7 +828,7 @@ def test__get_gce_credentials_no_ping(unused_ping):
 
 
 @mock.patch(
-    "google.auth.compute_engine._metadata.ping", return_value=True, autospec=True
+    "google.auth.compute_engine._metadata.is_on_gce", return_value=True, autospec=True
 )
 @mock.patch(
     "google.auth.compute_engine._metadata.get_project_id",
@@ -831,7 +853,7 @@ def test__get_gce_credentials_no_compute_engine():
 
 
 @mock.patch(
-    "google.auth.compute_engine._metadata.ping", return_value=False, autospec=True
+    "google.auth.compute_engine._metadata.is_on_gce", return_value=False, autospec=True
 )
 def test__get_gce_credentials_explicit_request(ping):
     _default._get_gce_credentials(mock.sentinel.request)
@@ -1007,6 +1029,61 @@ def test_default_environ_external_credentials_identity_pool_impersonated(
     assert not credentials.is_workforce_pool
     assert project_id is mock.sentinel.project_id
     assert credentials.scopes == ["https://www.google.com/calendar/feeds"]
+
+    # The credential.get_project_id should have been used in _get_external_account_credentials and default
+    assert get_project_id.call_count == 2
+
+
+@EXTERNAL_ACCOUNT_GET_PROJECT_ID_PATCH
+@mock.patch.dict(os.environ)
+def test_default_environ_external_credentials_project_from_env(
+    get_project_id, monkeypatch, tmpdir
+):
+    project_from_env = "project_from_env"
+    os.environ[environment_vars.PROJECT] = project_from_env
+
+    config_file = tmpdir.join("config.json")
+    config_file.write(json.dumps(IMPERSONATED_IDENTITY_POOL_DATA))
+    monkeypatch.setenv(environment_vars.CREDENTIALS, str(config_file))
+
+    credentials, project_id = _default.default(
+        scopes=["https://www.google.com/calendar/feeds"]
+    )
+
+    assert isinstance(credentials, identity_pool.Credentials)
+    assert not credentials.is_user
+    assert not credentials.is_workforce_pool
+    assert project_id == project_from_env
+    assert credentials.scopes == ["https://www.google.com/calendar/feeds"]
+
+    # The credential.get_project_id should have been used only in _get_external_account_credentials
+    assert get_project_id.call_count == 1
+
+
+@EXTERNAL_ACCOUNT_GET_PROJECT_ID_PATCH
+@mock.patch.dict(os.environ)
+def test_default_environ_external_credentials_legacy_project_from_env(
+    get_project_id, monkeypatch, tmpdir
+):
+    project_from_env = "project_from_env"
+    os.environ[environment_vars.LEGACY_PROJECT] = project_from_env
+
+    config_file = tmpdir.join("config.json")
+    config_file.write(json.dumps(IMPERSONATED_IDENTITY_POOL_DATA))
+    monkeypatch.setenv(environment_vars.CREDENTIALS, str(config_file))
+
+    credentials, project_id = _default.default(
+        scopes=["https://www.google.com/calendar/feeds"]
+    )
+
+    assert isinstance(credentials, identity_pool.Credentials)
+    assert not credentials.is_user
+    assert not credentials.is_workforce_pool
+    assert project_id == project_from_env
+    assert credentials.scopes == ["https://www.google.com/calendar/feeds"]
+
+    # The credential.get_project_id should have been used only in _get_external_account_credentials
+    assert get_project_id.call_count == 1
 
 
 @EXTERNAL_ACCOUNT_GET_PROJECT_ID_PATCH
@@ -1246,7 +1323,7 @@ def test_quota_project_from_environment(get_adc_path):
 
 
 @mock.patch(
-    "google.auth.compute_engine._metadata.ping", return_value=True, autospec=True
+    "google.auth.compute_engine._metadata.is_on_gce", return_value=True, autospec=True
 )
 @mock.patch(
     "google.auth.compute_engine._metadata.get_project_id",

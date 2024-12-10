@@ -237,7 +237,7 @@ class ResumableUploadHandler(object):
         range_spec = resp.getheader('range')
         if range_spec:
             # Parse 'bytes=<from>-<to>' range_spec.
-            m = re.search('bytes=(\d+)-(\d+)', range_spec)
+            m = re.search(r'bytes=(\d+)-(\d+)', range_spec)
             if m:
                 server_start = long(m.group(1))
                 server_end = long(m.group(2))

@@ -13,12 +13,11 @@ Those functions are publicly exposed and are protected through our BC guarantee.
 .. autofunction:: from_bytes
 .. autofunction:: from_fp
 .. autofunction:: from_path
+.. autofunction:: is_binary
 
-.. autofunction:: normalize
-
-.. autoclass:: charset_normalizer.CharsetMatches
+.. autoclass:: charset_normalizer.models.CharsetMatches
     :inherited-members:
-.. autoclass:: charset_normalizer.CharsetMatch
+.. autoclass:: charset_normalizer.models.CharsetMatch
     :inherited-members:
 
 .. autofunction:: detect
@@ -60,8 +59,6 @@ Some reusable functions used across the project. We do not guarantee the BC in t
 
 .. autofunction:: charset_normalizer.utils.is_latin
 
-.. autofunction:: charset_normalizer.utils.is_ascii
-
 .. autofunction:: charset_normalizer.utils.is_punctuation
 
 .. autofunction:: charset_normalizer.utils.is_symbol
@@ -71,8 +68,6 @@ Some reusable functions used across the project. We do not guarantee the BC in t
 .. autofunction:: charset_normalizer.utils.is_separator
 
 .. autofunction:: charset_normalizer.utils.is_case_variable
-
-.. autofunction:: charset_normalizer.utils.is_private_use_only
 
 .. autofunction:: charset_normalizer.utils.is_cjk
 
@@ -99,3 +94,7 @@ Some reusable functions used across the project. We do not guarantee the BC in t
 .. autofunction:: charset_normalizer.utils.range_scan
 
 .. autofunction:: charset_normalizer.utils.is_cp_similar
+
+
+.. class:: os.PathLike
+.. class:: typing.BinaryIO

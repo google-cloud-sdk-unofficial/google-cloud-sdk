@@ -87,7 +87,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddReleaseChannelFlag(parser, autopilot=True)
   flags.AddEnableBackupRestoreFlag(parser)
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
-  flags.AddAdditiveVPCScopeFlags(parser, release_track=release_track)
+  flags.AddAdditiveVPCScopeFlags(parser)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
   flags.AddEnableRayOperatorFlag(parser, hidden=False)

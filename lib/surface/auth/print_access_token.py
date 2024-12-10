@@ -33,6 +33,10 @@ from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
 
 
+# bq needs this as part of its auth flow to support the Drive scope.
+_TRUSTED_SCOPES = list(config.CLOUDSDK_SCOPES) + [auth_util.GOOGLE_DRIVE_SCOPE]
+
+
 class FakeCredentials(object):
   """An access token container.
 
@@ -49,6 +53,7 @@ class FakeCredentials(object):
 @base.UniverseCompatible
 class AccessToken(base.Command):
   """Print an access token for the specified account."""
+
   detailed_help = {
       'DESCRIPTION': """\
         {description}
@@ -79,43 +84,58 @@ class AccessToken(base.Command):
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'account', nargs='?',
-        help=('Account to get the access token for. If not specified, '
-              'the current active account will be used.'))
+        'account',
+        nargs='?',
+        help=(
+            'Account to get the access token for. If not specified, '
+            'the current active account will be used.'
+        ),
+    )
     parser.add_argument(
         '--lifetime',
         type=arg_parsers.Duration(upper_bound='43200s'),
-        help=('Access token lifetime. The default access token '
-              'lifetime is 3600 seconds, but you can use this flag to reduce '
-              'the lifetime or extend it up to 43200 seconds (12 hours). The '
-              'org policy constraint '
-              '`constraints/iam.allowServiceAccountCredentialLifetimeExtension`'
-              ' must be set if you want to extend the lifetime beyond 3600 '
-              'seconds. Note that this flag is for service account '
-              'impersonation only, so it must be used together with the '
-              '`--impersonate-service-account` flag.'))
+        help=(
+            'Access token lifetime. The default access token '
+            'lifetime is 3600 seconds, but you can use this flag to reduce '
+            'the lifetime or extend it up to 43200 seconds (12 hours). The '
+            'org policy constraint '
+            '`constraints/iam.allowServiceAccountCredentialLifetimeExtension`'
+            ' must be set if you want to extend the lifetime beyond 3600 '
+            'seconds. Note that this flag is for service account '
+            'impersonation only, so it must be used together with the '
+            '`--impersonate-service-account` flag.'
+        ),
+    )
     parser.add_argument(
         '--scopes',
         hidden=True,
         type=arg_parsers.ArgList(min_length=1),
         metavar='SCOPE',
-        help='The scopes to authorize for. This flag is supported for user '
-        'accounts and service accounts only. '
-        'The list of possible scopes can be found at: '
-        '[](https://developers.google.com/identity/protocols/googlescopes).\n\n'
-        'For end-user accounts the provided '
-        'scopes must from [{0}]'.format(config.CLOUDSDK_SCOPES))
+        help=(
+            'The scopes to authorize for. This flag is supported for user'
+            ' accounts and service accounts only. The list of possible scopes'
+            ' can be found at:'
+            ' https://developers.google.com/identity/protocols/googlescopes.\n\nFor'
+            ' end-user accounts the provided scopes must from [{0}]'.format(
+                _TRUSTED_SCOPES
+            )
+        ),
+    )
     parser.display_info.AddFormat('value(token)')
 
-  @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error,
-                             google_auth_exceptions.GoogleAuthError)
+  @c_exc.RaiseErrorInsteadOf(
+      auth_exceptions.AuthenticationError,
+      client.Error,
+      google_auth_exceptions.GoogleAuthError,
+  )
   def Run(self, args):
     """Run the helper command."""
     if args.lifetime and not args.impersonate_service_account:
       raise c_exc.InvalidArgumentException(
           '--lifetime',
           'Lifetime flag is for service account impersonation only. It must be '
-          'used together with the --impersonate-service-account flag.')
+          'used together with the --impersonate-service-account flag.',
+      )
 
     # Do not auto cache the custom scoped access token. Otherwise, it'll
     # affect other gcloud CLIs that depends on cloud-platform scopes.
@@ -139,7 +159,7 @@ class AccessToken(base.Command):
       cred_type = c_creds.CredentialTypeGoogleAuth.FromCredentials(cred)
       if cred_type not in [
           c_creds.CredentialTypeGoogleAuth.USER_ACCOUNT,
-          c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT
+          c_creds.CredentialTypeGoogleAuth.SERVICE_ACCOUNT,
       ]:
         # TODO(b/223649175): Add support for other credential types(e.g GCE).
         log.warning(
@@ -153,12 +173,13 @@ class AccessToken(base.Command):
         cred = cred.with_scopes(scopes)
       else:
         requested_scopes = set(args.scopes)
-        trusted_scopes = set(config.CLOUDSDK_SCOPES)
+        trusted_scopes = set(_TRUSTED_SCOPES)
         if not requested_scopes.issubset(trusted_scopes):
           raise c_exc.InvalidArgumentException(
               '--scopes',
               'Invalid scopes value. Please make sure the scopes are from [{0}]'
-              .format(config.CLOUDSDK_SCOPES))
+              .format(config.CLOUDSDK_SCOPES),
+          )
         # pylint:disable=protected-access
         cred._scopes = scopes
 
@@ -176,5 +197,6 @@ class AccessToken(base.Command):
       token = cred.token
     if not token:
       raise auth_exceptions.InvalidCredentialsError(
-          'No access token could be obtained from the current credentials.')
+          'No access token could be obtained from the current credentials.'
+      )
     return FakeCredentials(token)

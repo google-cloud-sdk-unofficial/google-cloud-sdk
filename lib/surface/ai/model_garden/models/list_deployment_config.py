@@ -27,19 +27,29 @@ from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.core import exceptions as core_exceptions
 
 
+_DEFAULT_FORMAT = """
+        table[all-box, title="The supported machine specifications"](
+            dedicatedResources.machineSpec.machineType:label=MACHINE_TYPE,
+            dedicatedResources.machineSpec.acceleratorType:label=ACCELERATOR_TYPE,
+            dedicatedResources.machineSpec.acceleratorCount:label=ACCELERATOR_COUNT
+        )
+    """
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class ListDeployMentConfig(base.Command):
-  """List the deployment configurations supported by a model in Model Garden.
+class ListDeployMentConfig(base.ListCommand):
+  """List the machine specifications supported by and verified for a model in Model Garden.
 
   ## EXAMPLES
 
-  To list the deployment configurations for `google/gemma2/gemma2-9b`, run:
+  To list the supported machine specifications for `google/gemma2/gemma2-9b`,
+  run:
 
     $ gcloud ai model-garden models list-deployment-config
     --model=google/gemma2/gemma2-9b
 
-  To list the deployment configurations for a Hugging Face model
+  To list the supported machine specifications for a Hugging Face model
   `meta-llama/Meta-Llama-3-8B`, run:
 
     $ gcloud ai model-garden models list-deployment-config
@@ -48,8 +58,7 @@ class ListDeployMentConfig(base.Command):
 
   def _GetMultiDeploy(self, args, version):
     mg_client = client_mg.ModelGardenClient(version)
-    is_hf_model = args.hugging_face_model is not None
-    if is_hf_model:
+    if args.hugging_face_model is not None:
       # Convert to lower case because API only takes in lower case.
       publisher_name, model_name = args.hugging_face_model.lower().split('/')
       publisher_model = mg_client.GetPublisherModel(
@@ -71,7 +80,7 @@ class ListDeployMentConfig(base.Command):
       )
     except AttributeError:
       raise core_exceptions.Error(
-          'Model does not support deployment, please use a deploy-able model'
+          'Model does not support deployment, please enter a deploy-able model'
           ' instead. You can use the `gcloud ai model-garden models list`'
           ' command to find out which ones are currently supported by the'
           ' `deploy` command.'
@@ -80,13 +89,19 @@ class ListDeployMentConfig(base.Command):
 
   @staticmethod
   def Args(parser):
+    # Remove the flags that are not supported by this command.
+    base.LIMIT_FLAG.RemoveFromParser(parser)
+    base.PAGE_SIZE_FLAG.RemoveFromParser(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat(_DEFAULT_FORMAT)
     model_group = parser.add_group(mutex=True, required=True)
     model_group.add_argument(
         '--model',
         help=(
             'The Model Garden model to be deployed, in the format of'
             ' `{publisher_name}/{model_name}/{model_version_name}, e.g.'
-            ' `google/gemma2/gemma2-2b`.'
+            ' `google/gemma2/gemma-2-2b`.'
         ),
     )
     model_group.add_argument(
@@ -101,11 +116,7 @@ class ListDeployMentConfig(base.Command):
     validation.ValidateModelGardenModelArgs(args)
     version = constants.BETA_VERSION
 
-    # Use us-central1 because all data are stored in us-central1.
     with endpoint_util.AiplatformEndpointOverrides(
         version, region='us-central1'
     ):
-      return list(
-          deploy_config.dedicatedResources.machineSpec
-          for deploy_config in self._GetMultiDeploy(args, version)
-      )
+      return self._GetMultiDeploy(args, version)

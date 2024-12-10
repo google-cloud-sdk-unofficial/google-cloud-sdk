@@ -30,9 +30,8 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterceptEndpointGroupAssociations(base.Group):
   """Manage Intercept Endpoint Group Association resources."""
 

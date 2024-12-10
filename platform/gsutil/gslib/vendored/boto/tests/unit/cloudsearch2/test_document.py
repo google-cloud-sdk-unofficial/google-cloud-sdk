@@ -343,4 +343,4 @@ class CloudSearchDocumentErrorMismatch(CloudSearchDocumentTest):
         except CommitMismatchError as e:
             self.assertTrue(hasattr(e, 'errors'))
             self.assertIsInstance(e.errors, list)
-            self.assertEquals(e.errors[0], self.response['errors'][0].get('message'))
+            self.assertEqual(e.errors[0], self.response['errors'][0].get('message'))

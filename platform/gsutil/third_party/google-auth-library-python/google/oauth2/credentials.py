@@ -35,13 +35,13 @@ from datetime import datetime
 import io
 import json
 import logging
-
-import six
+import warnings
 
 from google.auth import _cloud_sdk
 from google.auth import _helpers
 from google.auth import credentials
 from google.auth import exceptions
+from google.auth import metrics
 from google.oauth2 import reauth
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,8 +54,9 @@ _GOOGLE_OAUTH2_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaProject):
     """Credentials using OAuth 2.0 access and refresh tokens.
 
-    The credentials are considered immutable. If you want to modify the
-    quota project, use :meth:`with_quota_project` or ::
+    The credentials are considered immutable except the tokens and the token
+    expiry, which are updated after refresh. If you want to modify the quota
+    project, use :meth:`with_quota_project` or ::
 
         credentials = credentials.with_quota_project('myproject-123')
 
@@ -83,6 +84,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         refresh_handler=None,
         enable_reauth_refresh=False,
         granted_scopes=None,
+        trust_boundary=None,
     ):
         """
         Args:
@@ -140,6 +142,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         self._rapt_token = rapt_token
         self.refresh_handler = refresh_handler
         self._enable_reauth_refresh = enable_reauth_refresh
+        self._trust_boundary = trust_boundary
 
     def __getstate__(self):
         """A __getstate__ method must exist for the __setstate__ to be called
@@ -170,6 +173,8 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         self._quota_project_id = d.get("_quota_project_id")
         self._rapt_token = d.get("_rapt_token")
         self._enable_reauth_refresh = d.get("_enable_reauth_refresh")
+        self._trust_boundary = d.get("_trust_boundary")
+        self._universe_domain = d.get("_universe_domain")
         # The refresh_handler setter should be used to repopulate this.
         self._refresh_handler = None
 
@@ -267,6 +272,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             quota_project_id=quota_project_id,
             rapt_token=self.rapt_token,
             enable_reauth_refresh=self._enable_reauth_refresh,
+            trust_boundary=self._trust_boundary,
         )
 
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
@@ -285,7 +291,11 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             quota_project_id=self.quota_project_id,
             rapt_token=self.rapt_token,
             enable_reauth_refresh=self._enable_reauth_refresh,
+            trust_boundary=self._trust_boundary,
         )
+
+    def _metric_header_for_usage(self):
+        return metrics.CRED_TYPE_USER
 
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):
@@ -297,7 +307,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         if self._refresh_token is None and self.refresh_handler:
             token, expiry = self.refresh_handler(request, scopes=scopes)
             # Validate returned data.
-            if not isinstance(token, six.string_types):
+            if not isinstance(token, str):
                 raise exceptions.RefreshError(
                     "The refresh_handler returned token is not a string."
                 )
@@ -384,7 +394,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             ValueError: If the info is not in the expected format.
         """
         keys_needed = set(("refresh_token", "client_id", "client_secret"))
-        missing = keys_needed.difference(six.iterkeys(info))
+        missing = keys_needed.difference(info.keys())
 
         if missing:
             raise ValueError(
@@ -404,7 +414,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         # process scopes, which needs to be a seq
         if scopes is None and "scopes" in info:
             scopes = info.get("scopes")
-            if isinstance(scopes, six.string_types):
+            if isinstance(scopes, str):
                 scopes = scopes.split(" ")
 
         return cls(
@@ -417,6 +427,7 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             quota_project_id=info.get("quota_project_id"),  # may not exist
             expiry=expiry,
             rapt_token=info.get("rapt_token"),  # may not exist
+            trust_boundary=info.get("trust_boundary"),  # may not exist
         )
 
     @classmethod
@@ -488,6 +499,13 @@ class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
     """
 
     def __init__(self, account=None, quota_project_id=None):
+        warnings.warn(
+            "UserAccessTokenCredentials is deprecated, please use "
+            "google.oauth2.credentials.Credentials instead. To use "
+            "that credential type, simply run "
+            "`gcloud auth application-default login` and let the "
+            "client libraries pick up the application default credentials."
+        )
         super(UserAccessTokenCredentials, self).__init__()
         self._account = account
         self._quota_project_id = quota_project_id

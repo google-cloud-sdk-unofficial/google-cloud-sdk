@@ -59,11 +59,11 @@ class TestDescribeDhcpOptions(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(len(api_response), 1)
+        self.assertEqual(len(api_response), 1)
         self.assertIsInstance(api_response[0], DhcpOptions)
-        self.assertEquals(api_response[0].id, 'dopt-7a8b9c2d')
-        self.assertEquals(api_response[0].options['domain-name'], ['example.com'])
-        self.assertEquals(api_response[0].options['domain-name-servers'], ['10.2.5.1', '10.2.5.2'])
+        self.assertEqual(api_response[0].id, 'dopt-7a8b9c2d')
+        self.assertEqual(api_response[0].options['domain-name'], ['example.com'])
+        self.assertEqual(api_response[0].options['domain-name-servers'], ['10.2.5.1', '10.2.5.2'])
 
 
 class TestCreateDhcpOptions(AWSMockServiceTestCase):
@@ -154,12 +154,12 @@ class TestCreateDhcpOptions(AWSMockServiceTestCase):
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
         self.assertIsInstance(api_response, DhcpOptions)
-        self.assertEquals(api_response.id, 'dopt-7a8b9c2d')
-        self.assertEquals(api_response.options['domain-name'], ['example.com'])
-        self.assertEquals(api_response.options['domain-name-servers'], ['10.2.5.1', '10.2.5.2'])
-        self.assertEquals(api_response.options['ntp-servers'], ['10.12.12.1', '10.12.12.2'])
-        self.assertEquals(api_response.options['netbios-name-servers'], ['10.20.20.1'])
-        self.assertEquals(api_response.options['netbios-node-type'], ['2'])
+        self.assertEqual(api_response.id, 'dopt-7a8b9c2d')
+        self.assertEqual(api_response.options['domain-name'], ['example.com'])
+        self.assertEqual(api_response.options['domain-name-servers'], ['10.2.5.1', '10.2.5.2'])
+        self.assertEqual(api_response.options['ntp-servers'], ['10.12.12.1', '10.12.12.2'])
+        self.assertEqual(api_response.options['netbios-name-servers'], ['10.20.20.1'])
+        self.assertEqual(api_response.options['netbios-node-type'], ['2'])
 
 
 class TestDeleteDhcpOptions(AWSMockServiceTestCase):
@@ -183,7 +183,7 @@ class TestDeleteDhcpOptions(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestAssociateDhcpOptions(AWSMockServiceTestCase):
@@ -209,7 +209,7 @@ class TestAssociateDhcpOptions(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 if __name__ == '__main__':
     unittest.main()

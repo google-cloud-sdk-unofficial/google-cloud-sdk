@@ -1,6 +1,6 @@
 """Key functions for memoizing decorators."""
 
-__all__ = ("hashkey", "typedkey")
+__all__ = ("hashkey", "methodkey", "typedkey", "typedmethodkey")
 
 
 class _HashedTuple(tuple):
@@ -43,6 +43,11 @@ def hashkey(*args, **kwargs):
         return _HashedTuple(args)
 
 
+def methodkey(self, *args, **kwargs):
+    """Return a cache key for use with cached methods."""
+    return hashkey(*args, **kwargs)
+
+
 def typedkey(*args, **kwargs):
     """Return a typed cache key for the specified hashable arguments."""
 
@@ -50,3 +55,8 @@ def typedkey(*args, **kwargs):
     key += tuple(type(v) for v in args)
     key += tuple(type(v) for _, v in sorted(kwargs.items()))
     return key
+
+
+def typedmethodkey(self, *args, **kwargs):
+    """Return a typed cache key for use with cached methods."""
+    return typedkey(*args, **kwargs)

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import datetime
+import urllib
 
 import pytest  # type: ignore
-from six.moves import urllib
 
 from google.auth import _helpers
 
@@ -49,6 +49,32 @@ def test_copy_docstring_non_existing():
 
     with pytest.raises(AttributeError):
         _helpers.copy_docstring(SourceClass)(func2)
+
+
+def test_parse_content_type_plain():
+    assert _helpers.parse_content_type("text/html") == "text/html"
+    assert _helpers.parse_content_type("application/xml") == "application/xml"
+    assert _helpers.parse_content_type("application/json") == "application/json"
+
+
+def test_parse_content_type_with_parameters():
+    content_type_html = "text/html; charset=UTF-8"
+    content_type_xml = "application/xml; charset=UTF-16; version=1.0"
+    content_type_json = "application/json; charset=UTF-8; indent=2"
+    assert _helpers.parse_content_type(content_type_html) == "text/html"
+    assert _helpers.parse_content_type(content_type_xml) == "application/xml"
+    assert _helpers.parse_content_type(content_type_json) == "application/json"
+
+
+def test_parse_content_type_missing_or_broken():
+    content_type_foo = None
+    content_type_bar = ""
+    content_type_baz = "1234"
+    content_type_qux = " ; charset=UTF-8"
+    assert _helpers.parse_content_type(content_type_foo) == "text/plain"
+    assert _helpers.parse_content_type(content_type_bar) == "text/plain"
+    assert _helpers.parse_content_type(content_type_baz) == "text/plain"
+    assert _helpers.parse_content_type(content_type_qux) == "text/plain"
 
 
 def test_utcnow():

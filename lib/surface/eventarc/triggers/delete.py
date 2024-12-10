@@ -48,7 +48,7 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = triggers.CreateTriggersClient(self.ReleaseTrack())
+    client = triggers.TriggersClientV1()
     trigger_ref = args.CONCEPTS.trigger.Parse()
     operation = client.Delete(trigger_ref)
     if args.async_:

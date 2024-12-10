@@ -54,6 +54,7 @@ DETAILED_HELP = {
 }
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine virtual machine."""
@@ -425,6 +426,7 @@ class UpdateBeta(Update):
     flags.AddDisplayDeviceArg(parser, is_update=True)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
+    flags.AddGracefulShutdownArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

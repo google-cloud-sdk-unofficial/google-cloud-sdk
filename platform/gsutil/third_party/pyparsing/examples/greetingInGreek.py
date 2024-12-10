@@ -1,4 +1,3 @@
-# vim:fileencoding=utf-8
 #
 # greetingInGreek.py
 #
@@ -10,10 +9,10 @@ from pyparsing import Word, pyparsing_unicode as ppu
 
 # define grammar
 alphas = ppu.Greek.alphas
-greet = Word(alphas) + ',' + Word(alphas) + '!'
+greet = Word(alphas) + "," + Word(alphas) + "!"
 
 # input string
 hello = "Καλημέρα, κόσμε!"
 
 # parse input string
-print(greet.parseString(hello))
+print(greet.parse_string(hello))

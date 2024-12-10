@@ -7,15 +7,14 @@ API documentation
 
 .. automodule:: argcomplete
    :members:
+   :imported-members:
    :special-members:
    :exclude-members: __weakref__
 
-Table of Contents
-=================
+Change log
+==========
 
 .. toctree::
    :maxdepth: 5
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   changelog

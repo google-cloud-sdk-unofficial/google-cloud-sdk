@@ -3,6 +3,75 @@
 History
 -------
 
+3.10 (2024-09-15)
++++++++++++++++++
+
+- Reverted to Unicode 15.1.0 data. Unicode 16 has some significant changes
+  to UTS46 processing that will require more work to properly implement.
+
+3.9 (2024-09-13)
+++++++++++++++++
+
+- Update to Unicode 16.0.0
+- Deprecate setup.cfg in favour of pyproject.toml
+- Use ruff for code formatting
+
+Thanks to Waket Zheng for contributions to this release.
+
+3.8 (2024-08-23)
+++++++++++++++++
+
+- Fix regression where IDNAError exception was not being produced for
+  certain inputs.
+- Add support for Python 3.13, drop support for Python 3.5 as it is no
+  longer testable.
+- Documentation improvements
+- Updates to package testing using Github actions
+
+Thanks to Hugo van Kemenade for contributions to this release.
+
+3.7 (2024-04-11)
+++++++++++++++++
+
+- Fix issue where specially crafted inputs to encode() could
+  take exceptionally long amount of time to process. [CVE-2024-3651]
+
+Thanks to Guido Vranken for reporting the issue.
+
+3.6 (2023-11-25)
+++++++++++++++++
+
+- Fix regression to include tests in source distribution.
+
+3.5 (2023-11-24)
+++++++++++++++++
+
+- Update to Unicode 15.1.0
+- String codec name is now "idna2008" as overriding the system codec
+  "idna" was not working.
+- Fix typing error for codec encoding
+- "setup.cfg" has been added for this release due to some downstream
+  lack of adherence to PEP 517. Should be removed in a future release
+  so please prepare accordingly.
+- Removed reliance on a symlink for the "idna-data" tool to comport
+  with PEP 517 and the Python Packaging User Guide for sdist archives.
+- Added security reporting protocol for project
+
+Thanks Jon Ribbens, Diogo Teles Sant'Anna, Wu Tingfeng for contributions
+to this release.
+
+3.4 (2022-09-14)
+++++++++++++++++
+
+- Update to Unicode 15.0.0
+- Migrate to pyproject.toml for build information (PEP 621)
+- Correct another instance where generic exception was raised instead of
+  IDNAError for malformed input
+- Source distribution uses zeroized file ownership for improved
+  reproducibility
+
+Thanks to Seth Michael Larson for contributions to this release.
+
 3.3 (2021-10-13)
 ++++++++++++++++
 

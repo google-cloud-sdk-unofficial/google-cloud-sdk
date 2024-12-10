@@ -1,44 +1,48 @@
-from __future__ import absolute_import
+from __future__ import annotations
 
+import http.client as httplib
 import ssl
+import typing
+from http.client import HTTPException
+from queue import Empty
 from socket import error as SocketError
 from ssl import SSLError as BaseSSLError
 from test import SHORT_TIMEOUT
+from unittest.mock import Mock, patch
 
 import pytest
-from mock import Mock
 
-from dummyserver.server import DEFAULT_CA
-from urllib3._collections import HTTPHeaderDict
+from dummyserver.socketserver import DEFAULT_CA
+from urllib3 import Retry
+from urllib3.connection import HTTPConnection
 from urllib3.connectionpool import (
-    HTTPConnection,
     HTTPConnectionPool,
     HTTPSConnectionPool,
+    _url_from_pool,
     connection_from_url,
 )
 from urllib3.exceptions import (
     ClosedPoolError,
     EmptyPoolError,
+    FullPoolError,
     HostChangedError,
     LocationValueError,
     MaxRetryError,
     ProtocolError,
+    ReadTimeoutError,
     SSLError,
     TimeoutError,
 )
-from urllib3.packages.six.moves import http_client as httplib
-from urllib3.packages.six.moves.http_client import HTTPException
-from urllib3.packages.six.moves.queue import Empty
 from urllib3.response import HTTPResponse
 from urllib3.util.ssl_match_hostname import CertificateError
-from urllib3.util.timeout import Timeout
+from urllib3.util.timeout import _DEFAULT_TIMEOUT, Timeout
 
 from .test_response import MockChunkedEncodingResponse, MockSock
 
 
 class HTTPUnixConnection(HTTPConnection):
-    def __init__(self, host, timeout=60, **kwargs):
-        super(HTTPUnixConnection, self).__init__("localhost")
+    def __init__(self, host: str, timeout: int = 60, **kwargs: typing.Any) -> None:
+        super().__init__("localhost")
         self.unix_socket = host
         self.timeout = timeout
         self.sock = None
@@ -49,7 +53,7 @@ class HTTPUnixConnectionPool(HTTPConnectionPool):
     ConnectionCls = HTTPUnixConnection
 
 
-class TestConnectionPool(object):
+class TestConnectionPool:
     """
     Tests in this suite should exercise the ConnectionPool functionality
     without actually making any network requests or connections.
@@ -83,7 +87,7 @@ class TestConnectionPool(object):
             ),
         ],
     )
-    def test_same_host(self, a, b):
+    def test_same_host(self, a: str, b: str) -> None:
         with connection_from_url(a) as c:
             assert c.is_same_host(b)
 
@@ -109,7 +113,7 @@ class TestConnectionPool(object):
             ("http://[dead::beef]", "https://[dead::beef%en5]/"),
         ],
     )
-    def test_not_same_host(self, a, b):
+    def test_not_same_host(self, a: str, b: str) -> None:
         with connection_from_url(a) as c:
             assert not c.is_same_host(b)
 
@@ -127,7 +131,7 @@ class TestConnectionPool(object):
             ("google.com", "http://google.com:80/abracadabra"),
         ],
     )
-    def test_same_host_no_port_http(self, a, b):
+    def test_same_host_no_port_http(self, a: str, b: str) -> None:
         # This test was introduced in #801 to deal with the fact that urllib3
         # never initializes ConnectionPool objects with port=None.
         with HTTPConnectionPool(a) as c:
@@ -144,7 +148,7 @@ class TestConnectionPool(object):
             ("google.com", "https://google.com:443/abracadabra"),
         ],
     )
-    def test_same_host_no_port_https(self, a, b):
+    def test_same_host_no_port_https(self, a: str, b: str) -> None:
         # This test was introduced in #801 to deal with the fact that urllib3
         # never initializes ConnectionPool objects with port=None.
         with HTTPSConnectionPool(a) as c:
@@ -159,7 +163,7 @@ class TestConnectionPool(object):
             ("google.com", "http://google.com./"),
         ],
     )
-    def test_not_same_host_no_port_http(self, a, b):
+    def test_not_same_host_no_port_http(self, a: str, b: str) -> None:
         with HTTPConnectionPool(a) as c:
             assert not c.is_same_host(b)
 
@@ -175,7 +179,7 @@ class TestConnectionPool(object):
             ("google.com", "https://google.com./"),
         ],
     )
-    def test_not_same_host_no_port_https(self, a, b):
+    def test_not_same_host_no_port_https(self, a: str, b: str) -> None:
         with HTTPSConnectionPool(a) as c:
             assert not c.is_same_host(b)
 
@@ -196,7 +200,7 @@ class TestConnectionPool(object):
             ("%2Ftmp%2FTEST.sock", "http+unix://%2Ftmp%2FTEST.sock/abracadabra"),
         ],
     )
-    def test_same_host_custom_protocol(self, a, b):
+    def test_same_host_custom_protocol(self, a: str, b: str) -> None:
         with HTTPUnixConnectionPool(a) as c:
             assert c.is_same_host(b)
 
@@ -209,11 +213,11 @@ class TestConnectionPool(object):
             ("%2Fvar%2Frun%2Fdocker.sock", "http+unix://%2Ftmp%2FTEST.sock"),
         ],
     )
-    def test_not_same_host_custom_protocol(self, a, b):
+    def test_not_same_host_custom_protocol(self, a: str, b: str) -> None:
         with HTTPUnixConnectionPool(a) as c:
             assert not c.is_same_host(b)
 
-    def test_max_connections(self):
+    def test_max_connections(self) -> None:
         with HTTPConnectionPool(host="localhost", maxsize=1, block=True) as pool:
             pool._get_conn(timeout=SHORT_TIMEOUT)
 
@@ -225,13 +229,26 @@ class TestConnectionPool(object):
 
             assert pool.num_connections == 1
 
-    def test_pool_edgecases(self, caplog):
+    def test_put_conn_when_pool_is_full_nonblocking(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """
+        If maxsize = n and we _put_conn n + 1 conns, the n + 1th conn will
+        get closed and will not get added to the pool.
+        """
         with HTTPConnectionPool(host="localhost", maxsize=1, block=False) as pool:
             conn1 = pool._get_conn()
-            conn2 = pool._get_conn()  # New because block=False
+            # pool.pool is empty because we popped the one None that pool.pool was initialized with
+            # but this pool._get_conn call will not raise EmptyPoolError because block is False
+            conn2 = pool._get_conn()
 
-            pool._put_conn(conn1)
-            pool._put_conn(conn2)  # Should be discarded
+            with patch.object(conn1, "close") as conn1_close:
+                with patch.object(conn2, "close") as conn2_close:
+                    pool._put_conn(conn1)
+                    pool._put_conn(conn2)
+
+            assert conn1_close.called is False
+            assert conn2_close.called is True
 
             assert conn1 == pool._get_conn()
             assert conn2 != pool._get_conn()
@@ -240,13 +257,47 @@ class TestConnectionPool(object):
             assert "Connection pool is full, discarding connection" in caplog.text
             assert "Connection pool size: 1" in caplog.text
 
-    def test_exception_str(self):
+    def test_put_conn_when_pool_is_full_blocking(self) -> None:
+        """
+        If maxsize = n and we _put_conn n + 1 conns, the n + 1th conn will
+        cause a FullPoolError.
+        """
+        with HTTPConnectionPool(host="localhost", maxsize=1, block=True) as pool:
+            conn1 = pool._get_conn()
+            conn2 = pool._new_conn()
+
+            with patch.object(conn1, "close") as conn1_close:
+                with patch.object(conn2, "close") as conn2_close:
+                    pool._put_conn(conn1)
+                    with pytest.raises(FullPoolError):
+                        pool._put_conn(conn2)
+
+            assert conn1_close.called is False
+            assert conn2_close.called is True
+
+            assert conn1 == pool._get_conn()
+
+    def test_put_conn_closed_pool(self) -> None:
+        with HTTPConnectionPool(host="localhost", maxsize=1, block=True) as pool:
+            conn1 = pool._get_conn()
+            with patch.object(conn1, "close") as conn1_close:
+                pool.close()
+
+                assert pool.pool is None
+
+                # Accessing pool.pool will raise AttributeError, which will get
+                # caught and will close conn1
+                pool._put_conn(conn1)
+
+            assert conn1_close.called is True
+
+    def test_exception_str(self) -> None:
         assert (
             str(EmptyPoolError(HTTPConnectionPool(host="localhost"), "Test."))
             == "HTTPConnectionPool(host='localhost', port=None): Test."
         )
 
-    def test_retry_exception_str(self):
+    def test_retry_exception_str(self) -> None:
         assert (
             str(MaxRetryError(HTTPConnectionPool(host="localhost"), "Test.", None))
             == "HTTPConnectionPool(host='localhost', port=None): "
@@ -264,21 +315,23 @@ class TestConnectionPool(object):
             "(Caused by %r)" % err
         )
 
-    def test_pool_size(self):
+    def test_pool_size(self) -> None:
         POOL_SIZE = 1
         with HTTPConnectionPool(
             host="localhost", maxsize=POOL_SIZE, block=True
         ) as pool:
 
-            def _raise(ex):
-                raise ex()
-
-            def _test(exception, expect, reason=None):
-                pool._make_request = lambda *args, **kwargs: _raise(exception)
-                with pytest.raises(expect) as excinfo:
-                    pool.request("GET", "/")
+            def _test(
+                exception: type[BaseException],
+                expect: type[BaseException],
+                reason: type[BaseException] | None = None,
+            ) -> None:
+                with patch.object(pool, "_make_request", side_effect=exception()):
+                    with pytest.raises(expect) as excinfo:
+                        pool.request("GET", "/")
                 if reason is not None:
-                    assert isinstance(excinfo.value.reason, reason)
+                    assert isinstance(excinfo.value.reason, reason)  # type: ignore[attr-defined]
+                assert pool.pool is not None
                 assert pool.pool.qsize() == POOL_SIZE
 
             # Make sure that all of the exceptions return the connection
@@ -290,26 +343,33 @@ class TestConnectionPool(object):
             # being raised, a retry will be triggered, but that retry will
             # fail, eventually raising MaxRetryError, not EmptyPoolError
             # See: https://github.com/urllib3/urllib3/issues/76
-            pool._make_request = lambda *args, **kwargs: _raise(HTTPException)
-            with pytest.raises(MaxRetryError):
-                pool.request("GET", "/", retries=1, pool_timeout=SHORT_TIMEOUT)
+            with patch.object(pool, "_make_request", side_effect=HTTPException()):
+                with pytest.raises(MaxRetryError):
+                    pool.request("GET", "/", retries=1, pool_timeout=SHORT_TIMEOUT)
+            assert pool.pool is not None
             assert pool.pool.qsize() == POOL_SIZE
 
-    def test_empty_does_not_put_conn(self):
+    def test_empty_does_not_put_conn(self) -> None:
         """Do not put None back in the pool if the pool was empty"""
 
         with HTTPConnectionPool(host="localhost", maxsize=1, block=True) as pool:
-            pool._get_conn = Mock(side_effect=EmptyPoolError(pool, "Pool is empty"))
-            pool._put_conn = Mock(side_effect=AssertionError("Unexpected _put_conn"))
-            with pytest.raises(EmptyPoolError):
-                pool.request("GET", "/")
+            with patch.object(
+                pool, "_get_conn", side_effect=EmptyPoolError(pool, "Pool is empty")
+            ):
+                with patch.object(
+                    pool,
+                    "_put_conn",
+                    side_effect=AssertionError("Unexpected _put_conn"),
+                ):
+                    with pytest.raises(EmptyPoolError):
+                        pool.request("GET", "/")
 
-    def test_assert_same_host(self):
+    def test_assert_same_host(self) -> None:
         with connection_from_url("http://google.com:80") as c:
             with pytest.raises(HostChangedError):
                 c.request("GET", "http://yahoo.com:80", assert_same_host=True)
 
-    def test_pool_close(self):
+    def test_pool_close(self) -> None:
         pool = connection_from_url("http://google.com:80")
 
         # Populate with some connections
@@ -333,9 +393,10 @@ class TestConnectionPool(object):
             pool._get_conn()
 
         with pytest.raises(Empty):
+            assert old_pool_queue is not None
             old_pool_queue.get(block=False)
 
-    def test_pool_close_twice(self):
+    def test_pool_close_twice(self) -> None:
         pool = connection_from_url("http://google.com:80")
 
         # Populate with some connections
@@ -352,13 +413,13 @@ class TestConnectionPool(object):
         except AttributeError:
             pytest.fail("Pool of the ConnectionPool is None and has no attribute get.")
 
-    def test_pool_timeouts(self):
+    def test_pool_timeouts(self) -> None:
         with HTTPConnectionPool(host="localhost") as pool:
             conn = pool._new_conn()
             assert conn.__class__ == HTTPConnection
             assert pool.timeout.__class__ == Timeout
-            assert pool.timeout._read == Timeout.DEFAULT_TIMEOUT
-            assert pool.timeout._connect == Timeout.DEFAULT_TIMEOUT
+            assert pool.timeout._read == _DEFAULT_TIMEOUT
+            assert pool.timeout._connect == _DEFAULT_TIMEOUT
             assert pool.timeout.total is None
 
             pool = HTTPConnectionPool(host="localhost", timeout=SHORT_TIMEOUT)
@@ -366,11 +427,11 @@ class TestConnectionPool(object):
             assert pool.timeout._connect == SHORT_TIMEOUT
             assert pool.timeout.total is None
 
-    def test_no_host(self):
+    def test_no_host(self) -> None:
         with pytest.raises(LocationValueError):
-            HTTPConnectionPool(None)
+            HTTPConnectionPool(None)  # type: ignore[arg-type]
 
-    def test_contextmanager(self):
+    def test_contextmanager(self) -> None:
         with connection_from_url("http://google.com:80") as pool:
             # Populate with some connections
             conn1 = pool._get_conn()
@@ -389,20 +450,20 @@ class TestConnectionPool(object):
         with pytest.raises(ClosedPoolError):
             pool._get_conn()
         with pytest.raises(Empty):
+            assert old_pool_queue is not None
             old_pool_queue.get(block=False)
 
-    def test_absolute_url(self):
-        with connection_from_url("http://google.com:80") as c:
-            assert "http://google.com:80/path?query=foo" == c._absolute_url(
-                "path?query=foo"
-            )
+    def test_url_from_pool(self) -> None:
+        with connection_from_url("http://google.com:80") as pool:
+            path = "path?query=foo"
+            assert f"http://google.com:80/{path}" == _url_from_pool(pool, path)
 
-    def test_ca_certs_default_cert_required(self):
+    def test_ca_certs_default_cert_required(self) -> None:
         with connection_from_url("https://google.com:80", ca_certs=DEFAULT_CA) as pool:
             conn = pool._get_conn()
-            assert conn.cert_reqs == ssl.CERT_REQUIRED
+            assert conn.cert_reqs == ssl.CERT_REQUIRED  # type: ignore[attr-defined]
 
-    def test_cleanup_on_extreme_connection_error(self):
+    def test_cleanup_on_extreme_connection_error(self) -> None:
         """
         This test validates that we clean up properly even on exceptions that
         we'd not otherwise catch, i.e. those that inherit from BaseException
@@ -412,25 +473,25 @@ class TestConnectionPool(object):
         class RealBad(BaseException):
             pass
 
-        def kaboom(*args, **kwargs):
+        def kaboom(*args: typing.Any, **kwargs: typing.Any) -> None:
             raise RealBad()
 
         with connection_from_url("http://localhost:80") as c:
-            c._make_request = kaboom
+            with patch.object(c, "_make_request", kaboom):
+                assert c.pool is not None
+                initial_pool_size = c.pool.qsize()
 
-            initial_pool_size = c.pool.qsize()
-
-            try:
-                # We need to release_conn this way or we'd put it away
-                # regardless.
-                c.urlopen("GET", "/", release_conn=False)
-            except RealBad:
-                pass
+                try:
+                    # We need to release_conn this way or we'd put it away
+                    # regardless.
+                    c.urlopen("GET", "/", release_conn=False)
+                except RealBad:
+                    pass
 
             new_pool_size = c.pool.qsize()
             assert initial_pool_size == new_pool_size
 
-    def test_release_conn_param_is_respected_after_http_error_retry(self):
+    def test_release_conn_param_is_respected_after_http_error_retry(self) -> None:
         """For successful ```urlopen(release_conn=False)```,
         the connection isn't released, even after a retry.
 
@@ -441,40 +502,73 @@ class TestConnectionPool(object):
         [1] <https://github.com/urllib3/urllib3/issues/651>
         """
 
-        class _raise_once_make_request_function(object):
+        class _raise_once_make_request_function:
             """Callable that can mimic `_make_request()`.
 
             Raises the given exception on its first call, but returns a
             successful response on subsequent calls.
             """
 
-            def __init__(self, ex):
-                super(_raise_once_make_request_function, self).__init__()
-                self._ex = ex
+            def __init__(
+                self, ex: type[BaseException], pool: HTTPConnectionPool
+            ) -> None:
+                super().__init__()
+                self._ex: type[BaseException] | None = ex
+                self._pool = pool
 
-            def __call__(self, *args, **kwargs):
+            def __call__(
+                self,
+                conn: HTTPConnection,
+                method: str,
+                url: str,
+                *args: typing.Any,
+                retries: Retry,
+                **kwargs: typing.Any,
+            ) -> HTTPResponse:
                 if self._ex:
                     ex, self._ex = self._ex, None
                     raise ex()
-                response = httplib.HTTPResponse(MockSock)
-                response.fp = MockChunkedEncodingResponse([b"f", b"o", b"o"])
-                response.headers = response.msg = HTTPHeaderDict()
+                httplib_response = httplib.HTTPResponse(MockSock)  # type: ignore[arg-type]
+                httplib_response.fp = MockChunkedEncodingResponse([b"f", b"o", b"o"])  # type: ignore[assignment]
+                httplib_response.headers = httplib_response.msg = httplib.HTTPMessage()
+
+                response_conn: HTTPConnection | None = kwargs.get("response_conn")
+
+                response = HTTPResponse(
+                    body=httplib_response,
+                    headers=httplib_response.headers,  # type: ignore[arg-type]
+                    status=httplib_response.status,
+                    version=httplib_response.version,
+                    reason=httplib_response.reason,
+                    original_response=httplib_response,
+                    retries=retries,
+                    request_method=method,
+                    request_url=url,
+                    preload_content=False,
+                    connection=response_conn,
+                    pool=self._pool,
+                )
                 return response
 
-        def _test(exception):
+        def _test(exception: type[BaseException]) -> None:
             with HTTPConnectionPool(host="localhost", maxsize=1, block=True) as pool:
                 # Verify that the request succeeds after two attempts, and that the
                 # connection is left on the response object, instead of being
                 # released back into the pool.
-                pool._make_request = _raise_once_make_request_function(exception)
-                response = pool.urlopen(
-                    "GET",
-                    "/",
-                    retries=1,
-                    release_conn=False,
-                    preload_content=False,
-                    chunked=True,
-                )
+                with patch.object(
+                    pool,
+                    "_make_request",
+                    _raise_once_make_request_function(exception, pool),
+                ):
+                    response = pool.urlopen(
+                        "GET",
+                        "/",
+                        retries=1,
+                        release_conn=False,
+                        preload_content=False,
+                        chunked=True,
+                    )
+                assert pool.pool is not None
                 assert pool.pool.qsize() == 0
                 assert pool.num_connections == 2
                 assert response.connection is not None
@@ -489,21 +583,12 @@ class TestConnectionPool(object):
         _test(SocketError)
         _test(ProtocolError)
 
-    def test_custom_http_response_class(self):
-        class CustomHTTPResponse(HTTPResponse):
-            pass
-
-        class CustomConnectionPool(HTTPConnectionPool):
-            ResponseCls = CustomHTTPResponse
-
-            def _make_request(self, *args, **kwargs):
-                httplib_response = httplib.HTTPResponse(MockSock)
-                httplib_response.fp = MockChunkedEncodingResponse([b"f", b"o", b"o"])
-                httplib_response.headers = httplib_response.msg = HTTPHeaderDict()
-                return httplib_response
-
-        with CustomConnectionPool(host="localhost", maxsize=1, block=True) as pool:
-            response = pool.request(
-                "GET", "/", retries=False, chunked=True, preload_content=False
-            )
-            assert isinstance(response, CustomHTTPResponse)
+    def test_read_timeout_0_does_not_raise_bad_status_line_error(self) -> None:
+        with HTTPConnectionPool(host="localhost", maxsize=1) as pool:
+            conn = Mock(spec=HTTPConnection)
+            # Needed to tell the pool that the connection is alive.
+            conn.is_closed = False
+            with patch.object(Timeout, "read_timeout", 0):
+                timeout = Timeout(1, 1, 1)
+                with pytest.raises(ReadTimeoutError):
+                    pool._make_request(conn, "", "", timeout=timeout)

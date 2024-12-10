@@ -1,17 +1,15 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
-try:
-    from collections import OrderedDict
-
-except ImportError:
-    OrderedDict = dict
+from collections import OrderedDict
+import warnings
 
 from pyasn1 import debug
 from pyasn1 import error
+from pyasn1.compat import _MISSING
 from pyasn1.type import base
 from pyasn1.type import char
 from pyasn1.type import tag
@@ -19,6 +17,8 @@ from pyasn1.type import univ
 from pyasn1.type import useful
 
 __all__ = ['encode']
+
+LOG = debug.registerLoggee(__name__, flags=debug.DEBUG_ENCODER)
 
 
 class AbstractItemEncoder(object):
@@ -61,6 +61,11 @@ class ObjectIdentifierEncoder(AbstractItemEncoder):
         return str(value)
 
 
+class RelativeOIDEncoder(AbstractItemEncoder):
+    def encode(self, value, encodeFun, **options):
+        return str(value)
+
+
 class RealEncoder(AbstractItemEncoder):
     def encode(self, value, encodeFun, **options):
         return float(value)
@@ -70,7 +75,10 @@ class SetEncoder(AbstractItemEncoder):
     protoDict = dict
 
     def encode(self, value, encodeFun, **options):
-        value.verifySizeSpec()
+        inconsistency = value.isInconsistent
+        if inconsistency:
+            raise error.PyAsn1Error(
+                f"ASN.1 object {value.__class__.__name__} is inconsistent")
 
         namedTypes = value.componentType
         substrate = self.protoDict()
@@ -88,7 +96,10 @@ class SequenceEncoder(SetEncoder):
 
 class SequenceOfEncoder(AbstractItemEncoder):
     def encode(self, value, encodeFun, **options):
-        value.verifySizeSpec()
+        inconsistency = value.isInconsistent
+        if inconsistency:
+            raise error.PyAsn1Error(
+                f"ASN.1 object {value.__class__.__name__} is inconsistent")
         return [encodeFun(x, **options) for x in value]
 
 
@@ -101,13 +112,14 @@ class AnyEncoder(AbstractItemEncoder):
         return value.asOctets()
 
 
-tagMap = {
+TAG_MAP = {
     univ.Boolean.tagSet: BooleanEncoder(),
     univ.Integer.tagSet: IntegerEncoder(),
     univ.BitString.tagSet: BitStringEncoder(),
     univ.OctetString.tagSet: OctetStringEncoder(),
     univ.Null.tagSet: NullEncoder(),
     univ.ObjectIdentifier.tagSet: ObjectIdentifierEncoder(),
+    univ.RelativeOID.tagSet: RelativeOIDEncoder(),
     univ.Enumerated.tagSet: IntegerEncoder(),
     univ.Real.tagSet: RealEncoder(),
     # Sequence & Set have same tags as SequenceOf & SetOf
@@ -132,62 +144,101 @@ tagMap = {
     useful.UTCTime.tagSet: OctetStringEncoder()
 }
 
-# Type-to-codec map for ambiguous ASN.1 types
-typeMap = {
+# Put in ambiguous & non-ambiguous types for faster codec lookup
+TYPE_MAP = {
+    univ.Boolean.typeId: BooleanEncoder(),
+    univ.Integer.typeId: IntegerEncoder(),
+    univ.BitString.typeId: BitStringEncoder(),
+    univ.OctetString.typeId: OctetStringEncoder(),
+    univ.Null.typeId: NullEncoder(),
+    univ.ObjectIdentifier.typeId: ObjectIdentifierEncoder(),
+    univ.RelativeOID.typeId: RelativeOIDEncoder(),
+    univ.Enumerated.typeId: IntegerEncoder(),
+    univ.Real.typeId: RealEncoder(),
+    # Sequence & Set have same tags as SequenceOf & SetOf
     univ.Set.typeId: SetEncoder(),
     univ.SetOf.typeId: SequenceOfEncoder(),
     univ.Sequence.typeId: SequenceEncoder(),
     univ.SequenceOf.typeId: SequenceOfEncoder(),
     univ.Choice.typeId: ChoiceEncoder(),
-    univ.Any.typeId: AnyEncoder()
+    univ.Any.typeId: AnyEncoder(),
+    # character string types
+    char.UTF8String.typeId: OctetStringEncoder(),
+    char.NumericString.typeId: OctetStringEncoder(),
+    char.PrintableString.typeId: OctetStringEncoder(),
+    char.TeletexString.typeId: OctetStringEncoder(),
+    char.VideotexString.typeId: OctetStringEncoder(),
+    char.IA5String.typeId: OctetStringEncoder(),
+    char.GraphicString.typeId: OctetStringEncoder(),
+    char.VisibleString.typeId: OctetStringEncoder(),
+    char.GeneralString.typeId: OctetStringEncoder(),
+    char.UniversalString.typeId: OctetStringEncoder(),
+    char.BMPString.typeId: OctetStringEncoder(),
+    # useful types
+    useful.ObjectDescriptor.typeId: OctetStringEncoder(),
+    useful.GeneralizedTime.typeId: OctetStringEncoder(),
+    useful.UTCTime.typeId: OctetStringEncoder()
 }
 
 
-class Encoder(object):
+class SingleItemEncoder(object):
 
-    # noinspection PyDefaultArgument
-    def __init__(self, tagMap, typeMap={}):
-        self.__tagMap = tagMap
-        self.__typeMap = typeMap
+    TAG_MAP = TAG_MAP
+    TYPE_MAP = TYPE_MAP
+
+    def __init__(self, tagMap=_MISSING, typeMap=_MISSING, **ignored):
+        self._tagMap = tagMap if tagMap is not _MISSING else self.TAG_MAP
+        self._typeMap = typeMap if typeMap is not _MISSING else self.TYPE_MAP
 
     def __call__(self, value, **options):
         if not isinstance(value, base.Asn1Item):
-            raise error.PyAsn1Error('value is not valid (should be an instance of an ASN.1 Item)')
+            raise error.PyAsn1Error(
+                'value is not valid (should be an instance of an ASN.1 Item)')
 
-        if debug.logger & debug.flagEncoder:
-            logger = debug.logger
-        else:
-            logger = None
-
-        if logger:
+        if LOG:
             debug.scope.push(type(value).__name__)
-            logger('encoder called for type %s <%s>' % (type(value).__name__, value.prettyPrint()))
+            LOG('encoder called for type %s '
+                '<%s>' % (type(value).__name__, value.prettyPrint()))
 
         tagSet = value.tagSet
 
         try:
-            concreteEncoder = self.__typeMap[value.typeId]
+            concreteEncoder = self._typeMap[value.typeId]
 
         except KeyError:
             # use base type for codec lookup to recover untagged types
-            baseTagSet = tag.TagSet(value.tagSet.baseTag, value.tagSet.baseTag)
+            baseTagSet = tag.TagSet(
+                value.tagSet.baseTag, value.tagSet.baseTag)
 
             try:
-                concreteEncoder = self.__tagMap[baseTagSet]
+                concreteEncoder = self._tagMap[baseTagSet]
 
             except KeyError:
                 raise error.PyAsn1Error('No encoder for %s' % (value,))
 
-        if logger:
-            logger('using value codec %s chosen by %s' % (concreteEncoder.__class__.__name__, tagSet))
+        if LOG:
+            LOG('using value codec %s chosen by '
+                '%s' % (concreteEncoder.__class__.__name__, tagSet))
 
         pyObject = concreteEncoder.encode(value, self, **options)
 
-        if logger:
-            logger('encoder %s produced: %s' % (type(concreteEncoder).__name__, repr(pyObject)))
+        if LOG:
+            LOG('encoder %s produced: '
+                '%s' % (type(concreteEncoder).__name__, repr(pyObject)))
             debug.scope.pop()
 
         return pyObject
+
+
+class Encoder(object):
+    SINGLE_ITEM_ENCODER = SingleItemEncoder
+
+    def __init__(self, **options):
+        self._singleItemEncoder = self.SINGLE_ITEM_ENCODER(**options)
+
+    def __call__(self, pyObject, asn1Spec=None, **options):
+        return self._singleItemEncoder(
+            pyObject, asn1Spec=asn1Spec, **options)
 
 
 #: Turns ASN.1 object into a Python built-in type object(s).
@@ -197,8 +248,7 @@ class Encoder(object):
 #: of those.
 #:
 #: One exception is that instead of :py:class:`dict`, the :py:class:`OrderedDict`
-#: can be produced (whenever available) to preserve ordering of the components
-#: in ASN.1 SEQUENCE.
+#: is used to preserve ordering of the components in ASN.1 SEQUENCE.
 #:
 #: Parameters
 #: ----------
@@ -212,7 +262,7 @@ class Encoder(object):
 #:
 #: Raises
 #: ------
-#: :py:class:`~pyasn1.error.PyAsn1Error`
+#: ~pyasn1.error.PyAsn1Error
 #:     On encoding errors
 #:
 #: Examples
@@ -226,4 +276,10 @@ class Encoder(object):
 #:    >>> encode(seq)
 #:    [1, 2, 3]
 #:
-encode = Encoder(tagMap, typeMap)
+encode = SingleItemEncoder()
+
+def __getattr__(attr: str):
+    if newAttr := {"tagMap": "TAG_MAP", "typeMap": "TYPE_MAP"}.get(attr):
+        warnings.warn(f"{attr} is deprecated. Please use {newAttr} instead.", DeprecationWarning)
+        return globals()[newAttr]
+    raise AttributeError(attr)

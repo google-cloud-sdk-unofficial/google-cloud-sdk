@@ -2,12 +2,20 @@
  Support
 =================
 
-Here are a list of supported encoding and supported language with latest update. Also this list
-may change depending of your python version.
+**If you are running:**
+
+- Python >=2.7,<3.5: Unsupported
+- Python 3.5: charset-normalizer < 2.1
+- Python 3.6: charset-normalizer < 3.1
+
+Upgrade your Python interpreter as soon as possible.
 
 -------------------
 Supported Encodings
 -------------------
+
+Here are a list of supported encoding and supported language with latest update. Also this list
+may change depending of your python version.
 
 Charset Normalizer is able to detect any of those encoding. This list is NOT static and depends heavily on what your
 current cPython version is shipped with. See https://docs.python.org/3/library/codecs.html#standard-encodings
@@ -92,13 +100,10 @@ mac_iceland      maciceland
 mac_latin2       maccentraleurope, maclatin2
 mac_roman        macintosh, macroman
 mac_turkish      macturkish
-mbcs             ansi, dbcs
 ptcp154          csptcp154, pt154, cp154, cyrillic_asian
-rot_13           rot13
 shift_jis        csshiftjis, shiftjis, sjis, s_jis, x_mac_japanese
 shift_jis_2004   shiftjis2004, sjis_2004, s_jis_2004
 shift_jisx0213   shiftjisx0213, sjisx0213, s_jisx0213
-tactis           tis260
 tis_620          tis620, tis_620_0, tis_620_2529_0, tis_620_2529_1, iso_ir_166
 utf_16           u16, utf16
 utf_16_be        unicodebigunmarked, utf_16be
@@ -107,8 +112,19 @@ utf_32           u32, utf32
 utf_32_be        utf_32be
 utf_32_le        utf_32le
 utf_8            u8, utf, utf8, utf8_ucs2, utf8_ucs4 (+utf_8_sig)
-utf_7            u7, unicode-1-1-utf-7
+utf_7*           u7, unicode-1-1-utf-7
+cp720            N.A.
+cp737            N.A.
+cp856            N.A.
+cp874            N.A.
+cp875            N.A.
+cp1006           N.A.
+koi8_r           N.A.
+koi8_t           N.A.
+koi8_u           N.A.
 ===============  ===============================================================================================================================
+
+*: Only if a SIG/mark is found.
 
 -------------------
 Supported Languages
@@ -117,43 +133,51 @@ Supported Languages
 Those language can be detected inside your content. All of these are specified in ./charset_normalizer/assets/__init__.py .
 
 
-English,
-German,
-French,
-Dutch,
-Italian,
-Polish,
-Spanish,
-Russian,
-Japanese,
-Portuguese,
-Swedish,
-Chinese,
-Ukrainian,
-Norwegian,
-Finnish,
-Vietnamese,
-Czech,
-Hungarian,
-Korean,
-Indonesian,
-Turkish,
-Romanian,
-Farsi,
-Arabic,
-Danish,
-Serbian,
-Lithuanian,
-Slovene,
-Slovak,
-Malay,
-Hebrew,
-Bulgarian,
-Croatian,
-Hindi,
-Estonian,
-Simple English,
-Thai,
-Greek,
-Tamil,
-Classical Chinese.
+| English,
+| German,
+| French,
+| Dutch,
+| Italian,
+| Polish,
+| Spanish,
+| Russian,
+| Japanese,
+| Portuguese,
+| Swedish,
+| Chinese,
+| Ukrainian,
+| Norwegian,
+| Finnish,
+| Vietnamese,
+| Czech,
+| Hungarian,
+| Korean,
+| Indonesian,
+| Turkish,
+| Romanian,
+| Farsi,
+| Arabic,
+| Danish,
+| Serbian,
+| Lithuanian,
+| Slovene,
+| Slovak,
+| Malay,
+| Hebrew,
+| Bulgarian,
+| Croatian,
+| Hindi,
+| Estonian,
+| Thai,
+| Greek,
+| Tamil.
+
+----------------------------
+Incomplete Sequence / Stream
+----------------------------
+
+It is not (yet) officially supported. If you feed an incomplete byte sequence (eg. truncated multi-byte sequence) the detector will
+most likely fail to return a proper result.
+If you are purposely feeding part of your payload for performance concerns, you may stop doing it as this package is fairly optimized.
+
+We are working on a dedicated way to handle streams.

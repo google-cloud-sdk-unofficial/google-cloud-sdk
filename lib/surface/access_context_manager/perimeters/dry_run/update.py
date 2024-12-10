@@ -73,6 +73,7 @@ def _GetIngressEgressFieldValue(args, field_name, base_config_value, has_spec):
   return ingress_egress_field
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class UpdatePerimeterDryRun(base.UpdateCommand):
   """Updates the dry-run mode configuration for a Service Perimeter."""
@@ -86,6 +87,7 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
   def ArgsVersioned(parser, version='v1'):
     perimeters.AddResourceArg(parser, 'to update')
     perimeters.AddUpdateDirectionalPoliciesGroupArgs(parser, version)
+    perimeters.AddEtagArg(parser)
     repeated.AddPrimitiveArgs(
         parser,
         'Service Perimeter',
@@ -195,6 +197,7 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         enable_vpc_accessible_services=updated_vpc_enabled,
         ingress_policies=updated_ingress,
         egress_policies=updated_egress,
+        etag=args.etag
     )
 
 

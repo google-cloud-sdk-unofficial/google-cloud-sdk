@@ -72,7 +72,9 @@ class _BaseList(object):
     return iter(result)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class List(_BaseList, base.ListCommand):
   """List all server certificates for a Cloud SQL instance."""

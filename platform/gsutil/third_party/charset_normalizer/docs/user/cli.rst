@@ -5,11 +5,12 @@ charset-normalizer ship with a CLI that should be available as `normalizer`.
 This is a great tool to fully exploit the detector capabilities without having to write Python code.
 
 Possible use cases:
+
 #. Quickly discover probable originating charset from a file.
 #. I want to quickly convert a non Unicode file to Unicode.
 #. Debug the charset-detector.
 
-Down bellow, we will guide you through some basic examples.
+Down below, we will guide you through some basic examples.
 
 Arguments
 ---------
@@ -50,6 +51,13 @@ You may simply invoke `normalizer -h` (with the h(elp) flag) to understand the b
 .. code:: bash
 
    normalizer ./data/sample.1.fr.srt
+
+You may also run the command line interface using:
+
+.. code:: bash
+
+   python -m charset_normalizer ./data/sample.1.fr.srt
+
 
 Main JSON Output
 ----------------

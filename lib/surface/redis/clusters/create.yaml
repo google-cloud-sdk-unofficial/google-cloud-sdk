@@ -218,6 +218,37 @@
       help_text: |
         The primary cluster that the secondary cluster will replicate from. It must use the format:
         projects/PROJECT_ID/locations/REGION/clusters/CLUSTER_ID. It must refer to an existing cluster. Otherwise, the create operation fails.
+    - arg_name: automated-backup-mode
+      api_field: cluster.automatedBackupConfig.automatedBackupMode
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Automated backup mode
+      choices:
+      - enum_value: DISABLED
+        arg_value: disabled
+        help_text: |
+          (default) Automated backup is disabled.
+      - enum_value: ENABLED
+        arg_value: enabled
+        help_text: |
+          Automated backup is enabled.
+    - arg_name: automated-backup-start-time
+      api_field: cluster.automatedBackupConfig.fixedFrequencySchedule.startTime
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        One-hour window when you want automated-backup operations to start. Specify the time in the format HH:00 on a 24-hour cycle in UTC time.
+      ALPHA:
+        processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayAlpha
+      BETA:
+        processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayBeta
+    - arg_name: automated-backup-ttl
+      api_field: cluster.automatedBackupConfig.retention
+      release_tracks: [ALPHA, BETA]
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+      help_text: |
+        Time to live for automated backups. A backup will be deleted automatically after the TTL
+        is reached. It ranges from 1 day to 365 days. For example, "10d" for 10 days. If not specified, the default value is 35 days.
     - group:
         mutex: true
         release_tracks: [ALPHA, BETA]
@@ -226,12 +257,12 @@
           type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
           api_field: cluster.gcsSource.uris
           help_text: |
-            The URIs of Google Cloud Storage objects to import from. For example, `gs://bucket/folder/file1.rdb,gs://bucket/folder/file2.rdb`.
+            URIs of Google Cloud Storage objects to import from. For example, `gs://bucket/folder/file1.rdb,gs://bucket/folder/file2.rdb`.
           release_tracks: [ALPHA, BETA]
         - arg_name: import-managed-backup
           api_field: cluster.managedBackupSource.backup
           help_text: |
-            The managed backup to import from. For example, `projects/PROJECT_ID/locations/REGION/backupCollections/BACKUP_COLLECTION_ID/backups/BACKUP_ID`.
+            Managed backup to import from. For example, `projects/PROJECT_ID/locations/REGION/backupCollections/BACKUP_COLLECTION_ID/backups/BACKUP_ID`.
           release_tracks: [ALPHA, BETA]
     - arg_name: kms-key
       api_field: cluster.kmsKey

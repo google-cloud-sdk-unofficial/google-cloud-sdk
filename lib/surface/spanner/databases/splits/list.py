@@ -43,6 +43,8 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     """See base class."""
+    base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat(DEFAULT_SPLIT_POINTS_FORMAT)
     resource_args.AddDatabaseResourceArg(
         parser, 'on which to list split points')
 
@@ -56,6 +58,14 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    return database_splits.ListSplitPoints(
-        args.CONCEPTS.database.Parse(),
-    )
+    return database_splits.ListSplitPoints(args.CONCEPTS.database.Parse())
+
+
+DEFAULT_SPLIT_POINTS_FORMAT = """\
+    table(
+      TABLE_NAME,
+      INDEX_NAME,
+     INITIATOR,
+     SPLIT_KEY,
+     EXPIRE_TIME
+    )"""

@@ -1,8 +1,8 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
 import sys
 
@@ -21,107 +21,74 @@ noValue = univ.noValue
 class AbstractCharacterString(univ.OctetString):
     """Creates |ASN.1| schema or value object.
 
-    |ASN.1| objects are immutable and duck-type Python 2 :class:`unicode` or Python 3 :class:`str`.
-    When used in octet-stream context, |ASN.1| type assumes "|encoding|" encoding.
+    |ASN.1| class is based on :class:`~pyasn1.type.base.SimpleAsn1Type`,
+    its objects are immutable and duck-type :class:`bytes`.
+    When used in octet-stream context, |ASN.1| type assumes
+    "|encoding|" encoding.
 
     Keyword Args
     ------------
-    value: :class:`unicode`, :class:`str`, :class:`bytes` or |ASN.1| object
-        unicode object (Python 2) or string (Python 3), alternatively string
-        (Python 2) or bytes (Python 3) representing octet-stream of serialised
-        unicode string (note `encoding` parameter) or |ASN.1| class instance.
+    value: :class:`str`, :class:`bytes` or |ASN.1| object
+        :class:`str`, alternatively :class:`bytes`
+        representing octet-stream of serialised unicode string
+        (note `encoding` parameter) or |ASN.1| class instance.
+        If `value` is not given, schema object will be created.
 
     tagSet: :py:class:`~pyasn1.type.tag.TagSet`
         Object representing non-default ASN.1 tag(s)
 
     subtypeSpec: :py:class:`~pyasn1.type.constraint.ConstraintsIntersection`
-        Object representing non-default ASN.1 subtype constraint(s)
+        Object representing non-default ASN.1 subtype constraint(s). Constraints
+        verification for |ASN.1| type occurs automatically on object
+        instantiation.
 
     encoding: :py:class:`str`
-        Unicode codec ID to encode/decode :class:`unicode` (Python 2) or
-        :class:`str` (Python 3) the payload when |ASN.1| object is used
+        Unicode codec ID to encode/decode
+        :class:`str` the payload when |ASN.1| object is used
         in octet-stream context.
 
     Raises
     ------
-    :py:class:`~pyasn1.error.PyAsn1Error`
+    ~pyasn1.error.ValueConstraintError, ~pyasn1.error.PyAsn1Error
         On constraint violation or bad initializer.
     """
 
-    if sys.version_info[0] <= 2:
-        def __str__(self):
-            try:
-                # `str` is Py2 text representation
-                return self._value.encode(self.encoding)
+    def __str__(self):
+        return str(self._value)
 
-            except UnicodeEncodeError:
-                raise error.PyAsn1Error(
-                    "Can't encode string '%s' with codec %s" % (self._value, self.encoding)
-                )
+    def __bytes__(self):
+        try:
+            return self._value.encode(self.encoding)
+        except UnicodeEncodeError as exc:
+            raise error.PyAsn1UnicodeEncodeError(
+                "Can't encode string '%s' with codec "
+                "%s" % (self._value, self.encoding), exc
+            )
 
-        def __unicode__(self):
-            return unicode(self._value)
+    def prettyIn(self, value):
+        try:
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, bytes):
+                return value.decode(self.encoding)
+            elif isinstance(value, (tuple, list)):
+                return self.prettyIn(bytes(value))
+            elif isinstance(value, univ.OctetString):
+                return value.asOctets().decode(self.encoding)
+            else:
+                return str(value)
 
-        def prettyIn(self, value):
-            try:
-                if isinstance(value, unicode):
-                    return value
-                elif isinstance(value, str):
-                    return value.decode(self.encoding)
-                elif isinstance(value, (tuple, list)):
-                    return self.prettyIn(''.join([chr(x) for x in value]))
-                elif isinstance(value, univ.OctetString):
-                    return value.asOctets().decode(self.encoding)
-                else:
-                    return unicode(value)
+        except (UnicodeDecodeError, LookupError) as exc:
+            raise error.PyAsn1UnicodeDecodeError(
+                "Can't decode string '%s' with codec "
+                "%s" % (value, self.encoding), exc
+            )
 
-            except (UnicodeDecodeError, LookupError):
-                raise error.PyAsn1Error(
-                    "Can't decode string '%s' with codec %s" % (value, self.encoding)
-                )
+    def asOctets(self, padding=True):
+        return bytes(self)
 
-        def asOctets(self, padding=True):
-            return str(self)
-
-        def asNumbers(self, padding=True):
-            return tuple([ord(x) for x in str(self)])
-
-    else:
-        def __str__(self):
-            # `unicode` is Py3 text representation
-            return str(self._value)
-
-        def __bytes__(self):
-            try:
-                return self._value.encode(self.encoding)
-            except UnicodeEncodeError:
-                raise error.PyAsn1Error(
-                    "Can't encode string '%s' with codec %s" % (self._value, self.encoding)
-                )
-
-        def prettyIn(self, value):
-            try:
-                if isinstance(value, str):
-                    return value
-                elif isinstance(value, bytes):
-                    return value.decode(self.encoding)
-                elif isinstance(value, (tuple, list)):
-                    return self.prettyIn(bytes(value))
-                elif isinstance(value, univ.OctetString):
-                    return value.asOctets().decode(self.encoding)
-                else:
-                    return str(value)
-
-            except (UnicodeDecodeError, LookupError):
-                raise error.PyAsn1Error(
-                    "Can't decode string '%s' with codec %s" % (value, self.encoding)
-                )
-
-        def asOctets(self, padding=True):
-            return bytes(self)
-
-        def asNumbers(self, padding=True):
-            return tuple(bytes(self))
+    def asNumbers(self, padding=True):
+        return tuple(bytes(self))
 
     #
     # See OctetString.prettyPrint() for the explanation

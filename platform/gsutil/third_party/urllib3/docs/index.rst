@@ -6,12 +6,14 @@ urllib3
    :maxdepth: 3
 
    For Enterprise <https://tidelift.com/subscription/pkg/pypi-urllib3?utm_source=pypi-urllib3&utm_medium=referral&utm_campaign=docs>
-   v2-roadmap
+   Community Discord <https://discord.gg/urllib3>
+   v2-migration-guide
    sponsors
    user-guide
    advanced-usage
    reference/index
    contributing
+   changelog
 
 urllib3 is a powerful, *user-friendly* HTTP client for Python.
 :ref:`Much of the Python ecosystem already uses <who-uses>` urllib3 and you should too.
@@ -24,21 +26,20 @@ standard libraries:
 - Client-side TLS/SSL verification.
 - File uploads with multipart encoding.
 - Helpers for retrying requests and dealing with HTTP redirects.
-- Support for gzip, deflate, and brotli encoding.
+- Support for gzip, deflate, brotli, and zstd encoding.
 - Proxy support for HTTP and SOCKS.
 - 100% test coverage.
 
 urllib3 is powerful and easy to use:
 
-.. code-block:: python
+.. code-block:: pycon
 
-    >>> import urllib3
-    >>> http = urllib3.PoolManager()
-    >>> r = http.request('GET', 'http://httpbin.org/robots.txt')
-    >>> r.status
-    200
-    >>> r.data
-    'User-agent: *\nDisallow: /deny\n'
+   >>> import urllib3
+   >>> resp = urllib3.request("GET", "https://httpbin.org/robots.txt")
+   >>> resp.status
+   200
+   >>> resp.data
+   b"User-agent: *\nDisallow: /deny\n"
 
 For Enterprise
 --------------
@@ -85,7 +86,8 @@ Alternatively, you can grab the latest source code from `GitHub <https://github.
 
 .. code-block:: bash
 
-  $ git clone git://github.com/urllib3/urllib3.git
+  $ git clone https://github.com/urllib3/urllib3.git
+  $ cd urllib3
   $ pip install .
 
 Usage

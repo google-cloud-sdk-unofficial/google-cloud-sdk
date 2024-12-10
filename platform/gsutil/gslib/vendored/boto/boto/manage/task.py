@@ -63,7 +63,7 @@ class Task(Model):
         super(Task, self).__init__(id, **kw)
         self.hourly = self.hour == '*'
         self.daily = self.hour != '*'
-        self.now = datetime.datetime.utcnow()
+        self.now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
 
     def check(self):
         """

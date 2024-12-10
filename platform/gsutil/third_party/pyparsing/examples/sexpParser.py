@@ -45,7 +45,6 @@ BNF reference: http://theory.lcs.mit.edu/~rivest/sexp.txt
 
 import pyparsing as pp
 from base64 import b64decode
-import pprint
 
 
 def verify_length(s, l, t):
@@ -53,28 +52,40 @@ def verify_length(s, l, t):
     if t.len is not None:
         t1len = len(t[1])
         if t1len != t.len:
-            raise pp.ParseFatalException(s, l, "invalid data of length {0}, expected {1}".format(t1len, t.len))
+            raise pp.ParseFatalException(
+                s, l, "invalid data of length {}, expected {}".format(t1len, t.len)
+            )
     return t[1]
 
 
 # define punctuation literals
-LPAR, RPAR, LBRK, RBRK, LBRC, RBRC, VBAR, COLON = (pp.Suppress(c).setName(c) for c in "()[]{}|:")
+LPAR, RPAR, LBRK, RBRK, LBRC, RBRC, VBAR, COLON = (
+    pp.Suppress(c).setName(c) for c in "()[]{}|:"
+)
 
-decimal = pp.Regex(r'-?0|[1-9]\d*').setParseAction(lambda t: int(t[0]))
-hexadecimal = ("#" + pp.Word(pp.hexnums)[1, ...] + "#").setParseAction(lambda t: int("".join(t[1:-1]), 16))
+decimal = pp.Regex(r"-?0|[1-9]\d*").setParseAction(lambda t: int(t[0]))
+hexadecimal = ("#" + pp.Word(pp.hexnums)[1, ...] + "#").setParseAction(
+    lambda t: int("".join(t[1:-1]), 16)
+)
 bytes = pp.Word(pp.printables)
 raw = pp.Group(decimal("len") + COLON + bytes).setParseAction(verify_length)
-base64_ = pp.Group(pp.Optional(decimal | hexadecimal, default=None)("len")
-                   + VBAR
-                   + pp.Word(pp.alphanums + "+/=")[1, ...].setParseAction(lambda t: b64decode("".join(t)))
-                   + VBAR
-                   ).setParseAction(verify_length)
+base64_ = pp.Group(
+    pp.Optional(decimal | hexadecimal, default=None)("len")
+    + VBAR
+    + pp.Word(pp.alphanums + "+/=")[1, ...].setParseAction(
+        lambda t: b64decode("".join(t))
+    )
+    + VBAR
+).setParseAction(verify_length)
 
-real = pp.Regex(r"[+-]?\d+\.\d*([eE][+-]?\d+)?").setParseAction(lambda tokens: float(tokens[0]))
+real = pp.Regex(r"[+-]?\d+\.\d*([eE][+-]?\d+)?").setParseAction(
+    lambda tokens: float(tokens[0])
+)
 token = pp.Word(pp.alphanums + "-./_:*+=!<>")
-qString = pp.Group(pp.Optional(decimal, default=None)("len")
-                   + pp.dblQuotedString.setParseAction(pp.removeQuotes)
-                   ).setParseAction(verify_length)
+qString = pp.Group(
+    pp.Optional(decimal, default=None)("len")
+    + pp.dblQuotedString.setParseAction(pp.removeQuotes)
+).setParseAction(verify_length)
 
 simpleString = real | base64_ | raw | decimal | token | hexadecimal | qString
 
@@ -86,72 +97,80 @@ sexpList = pp.Group(LPAR + sexp[...] + RPAR)
 sexp <<= string_ | sexpList
 
 
-#  Test data
+def main():
+    #  Test data
 
-test00 = """(snicker "abc" (#03# |YWJj|))"""
-test01 = """(certificate
- (issuer
-  (name
-   (public-key
-    rsa-with-md5
-    (e 15 |NFGq/E3wh9f4rJIQVXhS|)
-    (n |d738/4ghP9rFZ0gAIYZ5q9y6iskDJwASi5rEQpEQq8ZyMZeIZzIAR2I5iGE=|))
-   aid-committee))
- (subject
-  (ref
-   (public-key
-    rsa-with-md5
-    (e |NFGq/E3wh9f4rJIQVXhS|)
-    (n |d738/4ghP9rFZ0gAIYZ5q9y6iskDJwASi5rEQpEQq8ZyMZeIZzIAR2I5iGE=|))
-   tom
-   mother))
- (not-before "1997-01-01_09:00:00")
- (not-after "1998-01-01_09:00:00")
- (tag
-  (spend (account "12345678") (* numeric range "1" "1000"))))
-"""
-test02 = """(lambda (x) (* x x))"""
-test03 = """(def length
-   (lambda (x)
-      (cond
-         ((not x) 0)
-         (   t   (+ 1 (length (cdr x))))
-      )
-   )
-)
-"""
-test04 = """(2:XX "abc" (#03# |YWJj|))"""
-test05 = """(if (is (window_name) "XMMS") (set_workspace 2))"""
-test06 = """(if
-  (and
-    (is (application_name) "Firefox")
-    (or
-      (contains (window_name) "Enter name of file to save to")
-      (contains (window_name) "Save As")
-      (contains (window_name) "Save Image")
-      ()
-    )
-  )
-  (geometry "+140+122")
-)
-"""
-test07 = """(defun factorial (x)
-   (if (zerop x) 1
-       (* x (factorial (- x 1)))))
-       """
-test51 = """(2:XX "abc" (#03# |YWJj|))"""
-test51error = """(3:XX "abc" (#03# |YWJj|))"""
-
-test52 = """
-    (and
-      (or (> uid 1000)
-          (!= gid 20)
-      )
-      (> quota 5.0e+03)
+    test00 = """(snicker "abc" (#03# |YWJj|))"""
+    test01 = """(certificate
+     (issuer
+      (name
+       (public-key
+        rsa-with-md5
+        (e 15 |NFGq/E3wh9f4rJIQVXhS|)
+        (n |d738/4ghP9rFZ0gAIYZ5q9y6iskDJwASi5rEQpEQq8ZyMZeIZzIAR2I5iGE=|))
+       aid-committee))
+     (subject
+      (ref
+       (public-key
+        rsa-with-md5
+        (e |NFGq/E3wh9f4rJIQVXhS|)
+        (n |d738/4ghP9rFZ0gAIYZ5q9y6iskDJwASi5rEQpEQq8ZyMZeIZzIAR2I5iGE=|))
+       tom
+       mother))
+     (not-before "1997-01-01_09:00:00")
+     (not-after "1998-01-01_09:00:00")
+     (tag
+      (spend (account "12345678") (* numeric range "1" "1000"))))
+    """
+    test02 = """(lambda (x) (* x x))"""
+    test03 = """(def length
+       (lambda (x)
+          (cond
+             ((not x) 0)
+             (   t   (+ 1 (length (cdr x))))
+          )
+       )
     )
     """
+    test04 = """(2:XX "abc" (#03# |YWJj|))"""
+    test05 = """(if (is (window_name) "XMMS") (set_workspace 2))"""
+    test06 = """(if
+      (and
+        (is (application_name) "Firefox")
+        (or
+          (contains (window_name) "Enter name of file to save to")
+          (contains (window_name) "Save As")
+          (contains (window_name) "Save Image")
+          ()
+        )
+      )
+      (geometry "+140+122")
+    )
+    """
+    test07 = """(defun factorial (x)
+       (if (zerop x) 1
+           (* x (factorial (- x 1)))))
+           """
+    test51 = """(2:XX "abc" (#03# |YWJj|))"""
+    test51error = """(3:XX "abc" (#03# |YWJj|))"""
 
-# Run tests
-alltests = [globals()[testname] for testname in sorted(locals()) if testname.startswith("test")]
+    test52 = """
+        (and
+          (or (> uid 1000)
+              (!= gid 20)
+          )
+          (> quota 5.0e+03)
+        )
+        """
 
-sexp.runTests(alltests, fullDump=False)
+    # Run tests
+    local_vars = sorted(locals().items())
+    alltests = [
+        test_fn for testname, test_fn in local_vars if testname.startswith("test")
+    ]
+
+    sexp.runTests(alltests, fullDump=False)
+
+
+if __name__ == "__main__":
+    main()

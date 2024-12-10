@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List PrincipalAccessBoundaryPolicy instances.
     description: |
@@ -36,6 +35,7 @@
         Format:
           `organizations/{organization_id}/locations/{location}`
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:organization_location
       required: true
   request:

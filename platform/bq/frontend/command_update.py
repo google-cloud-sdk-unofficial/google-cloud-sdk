@@ -8,8 +8,6 @@ from __future__ import print_function
 import time
 from typing import Any, Dict, List, Optional
 
-
-
 from absl import app
 from absl import flags
 

@@ -40,6 +40,7 @@ class Delete(base.DeleteCommand):
     flags.AddReleaseFlag(parser)
     flags.AddLocationFlag(parser)
     flags.AddResourceBundleFlag(parser)
+    flags.AddForceDeleteFlag(parser, 'Release')
 
   def Run(self, args):
     """Run the delete command."""
@@ -49,4 +50,5 @@ class Delete(base.DeleteCommand):
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
         resource_bundle=args.resource_bundle,
+        force=args.force,
     )

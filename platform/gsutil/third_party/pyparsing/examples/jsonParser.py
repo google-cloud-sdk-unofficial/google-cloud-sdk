@@ -36,25 +36,48 @@ value
 import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 
+
 def make_keyword(kwd_str, kwd_value):
     return pp.Keyword(kwd_str).setParseAction(pp.replaceWith(kwd_value))
-TRUE  = make_keyword("true", True)
+
+
+# set to False to return ParseResults
+RETURN_PYTHON_COLLECTIONS = True
+
+TRUE = make_keyword("true", True)
 FALSE = make_keyword("false", False)
-NULL  = make_keyword("null", None)
+NULL = make_keyword("null", None)
 
 LBRACK, RBRACK, LBRACE, RBRACE, COLON = map(pp.Suppress, "[]{}:")
 
 jsonString = pp.dblQuotedString().setParseAction(pp.removeQuotes)
-jsonNumber = ppc.number()
+jsonNumber = ppc.number().setName("jsonNumber")
 
-jsonObject = pp.Forward()
-jsonValue = pp.Forward()
-jsonElements = pp.delimitedList( jsonValue )
-jsonArray = pp.Group(LBRACK + pp.Optional(jsonElements, []) + RBRACK)
-jsonValue << (jsonString | jsonNumber | pp.Group(jsonObject)  | jsonArray | TRUE | FALSE | NULL)
-memberDef = pp.Group(jsonString + COLON + jsonValue)
-jsonMembers = pp.delimitedList(memberDef)
-jsonObject << pp.Dict(LBRACE + pp.Optional(jsonMembers) + RBRACE)
+jsonObject = pp.Forward().setName("jsonObject")
+jsonValue = pp.Forward().setName("jsonValue")
+
+jsonElements = pp.delimitedList(jsonValue).setName(None)
+# jsonArray = pp.Group(LBRACK + pp.Optional(jsonElements, []) + RBRACK)
+# jsonValue << (
+#     jsonString | jsonNumber | pp.Group(jsonObject) | jsonArray | TRUE | FALSE | NULL
+# )
+# memberDef = pp.Group(jsonString + COLON + jsonValue).setName("jsonMember")
+
+jsonArray = pp.Group(
+    LBRACK + pp.Optional(jsonElements) + RBRACK, aslist=RETURN_PYTHON_COLLECTIONS
+).setName("jsonArray")
+
+jsonValue << (jsonString | jsonNumber | jsonObject | jsonArray | TRUE | FALSE | NULL)
+
+memberDef = pp.Group(
+    jsonString + COLON + jsonValue, aslist=RETURN_PYTHON_COLLECTIONS
+).setName("jsonMember")
+
+jsonMembers = pp.delimitedList(memberDef).setName(None)
+# jsonObject << pp.Dict(LBRACE + pp.Optional(jsonMembers) + RBRACE)
+jsonObject << pp.Dict(
+    LBRACE + pp.Optional(jsonMembers) + RBRACE, asdict=RETURN_PYTHON_COLLECTIONS
+)
 
 jsonComment = pp.cppStyleComment
 jsonObject.ignore(jsonComment)
@@ -67,7 +90,7 @@ if __name__ == "__main__":
             "title": "example glossary",
             "GlossDiv": {
                 "title": "S",
-                "GlossList":
+                "GlossList": [
                     {
                     "ID": "SGML",
                     "SortAs": "SGML",
@@ -86,20 +109,42 @@ if __name__ == "__main__":
                     "EmptyDict" : {},
                     "EmptyList" : []
                     }
+                ]
             }
         }
     }
     """
 
     results = jsonObject.parseString(testdata)
+
     results.pprint()
+    if RETURN_PYTHON_COLLECTIONS:
+        from pprint import pprint
+
+        pprint(results)
+    else:
+        results.pprint()
     print()
+
     def testPrint(x):
         print(type(x), repr(x))
-    print(list(results.glossary.GlossDiv.GlossList.keys()))
-    testPrint( results.glossary.title )
-    testPrint( results.glossary.GlossDiv.GlossList.ID )
-    testPrint( results.glossary.GlossDiv.GlossList.FalseValue )
-    testPrint( results.glossary.GlossDiv.GlossList.Acronym )
-    testPrint( results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2 )
-    testPrint( results.glossary.GlossDiv.GlossList.PrimesLessThan10 )
+
+    if RETURN_PYTHON_COLLECTIONS:
+        results = results[0]
+        print(list(results["glossary"]["GlossDiv"]["GlossList"][0].keys()))
+        testPrint(results["glossary"]["title"])
+        testPrint(results["glossary"]["GlossDiv"]["GlossList"][0]["ID"])
+        testPrint(results["glossary"]["GlossDiv"]["GlossList"][0]["FalseValue"])
+        testPrint(results["glossary"]["GlossDiv"]["GlossList"][0]["Acronym"])
+        testPrint(
+            results["glossary"]["GlossDiv"]["GlossList"][0]["EvenPrimesGreaterThan2"]
+        )
+        testPrint(results["glossary"]["GlossDiv"]["GlossList"][0]["PrimesLessThan10"])
+    else:
+        print(list(results.glossary.GlossDiv.GlossList.keys()))
+        testPrint(results.glossary.title)
+        testPrint(results.glossary.GlossDiv.GlossList.ID)
+        testPrint(results.glossary.GlossDiv.GlossList.FalseValue)
+        testPrint(results.glossary.GlossDiv.GlossList.Acronym)
+        testPrint(results.glossary.GlossDiv.GlossList.EvenPrimesGreaterThan2)
+        testPrint(results.glossary.GlossDiv.GlossList.PrimesLessThan10)

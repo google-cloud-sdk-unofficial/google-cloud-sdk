@@ -91,7 +91,9 @@ class _BaseAddCert(object):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class AddCert(_BaseAddCert, base.CreateCommand):
   """Create a server certificate for a Cloud SQL instance."""

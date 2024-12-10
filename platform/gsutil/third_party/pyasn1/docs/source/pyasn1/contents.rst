@@ -1,5 +1,5 @@
 
-.. _pyasn1:
+.. _pyasn1-library:
 
 Library documentation
 =====================
@@ -18,9 +18,9 @@ grammar parser paired to code generator capable of generating pyasn1
 code. So this is an alternative (or at least a good start) to manual
 implementation of pyasn1 classes from ASN.1 specification.
 
-Both `pyasn1 <https://github.com/etingof/pyasn1>`_ and
-`pyasn1-modules <https://github.com/etingof/pyasn1-modules>`_ libraries
-can be used out-of-the-box with Python versions 2.4 through 3.6.
+Both `pyasn1 <https://github.com/pyasn1/pyasn1>`_ and
+`pyasn1-modules <https://github.com/pyasn1/pyasn1-modules>`_ libraries
+can be used out-of-the-box with Python versions 3.8+.
 No external dependencies required.
 
 .. _pyasn1-types:
@@ -139,6 +139,7 @@ type's values.
 .. toctree::
    :maxdepth: 2
 
+   /pyasn1/type/base/contents
    /pyasn1/type/univ/contents
    /pyasn1/type/char/contents
    /pyasn1/type/useful/contents
@@ -212,3 +213,16 @@ implemented in pyasn1.
    /pyasn1/codec/cer/contents
    /pyasn1/codec/der/contents
    /pyasn1/codec/native/contents
+
+Exceptions
+----------
+
+Operations on PyASN1 schema and value objects might cause errors. These
+errors are manifested to the caller in form of Python exceptions.
+
+The exception hierarchy is as follows (ordered from least specific).
+
+.. toctree::
+   :maxdepth: 2
+
+   /pyasn1/error/contents

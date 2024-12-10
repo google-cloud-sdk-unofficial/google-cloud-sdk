@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update PolicyBinding instance.
     description: |
@@ -42,6 +41,7 @@
         * `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
         * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:folder_or_organization_or_project_location_policy_binding
       required: true
     - arg_name: etag

@@ -70,11 +70,11 @@ class TestCreateVpc(AWSMockServiceTestCase):
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
         self.assertIsInstance(api_response, VPC)
-        self.assertEquals(api_response.id, 'vpc-1a2b3c4d')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.cidr_block, '10.0.0.0/16')
-        self.assertEquals(api_response.dhcp_options_id, 'dopt-1a2b3c4d2')
-        self.assertEquals(api_response.instance_tenancy, 'default')
+        self.assertEqual(api_response.id, 'vpc-1a2b3c4d')
+        self.assertEqual(api_response.state, 'pending')
+        self.assertEqual(api_response.cidr_block, '10.0.0.0/16')
+        self.assertEqual(api_response.dhcp_options_id, 'dopt-1a2b3c4d2')
+        self.assertEqual(api_response.instance_tenancy, 'default')
 
 
 class TestDeleteVpc(AWSMockServiceTestCase):
@@ -98,7 +98,7 @@ class TestDeleteVpc(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestModifyVpcAttribute(AWSMockServiceTestCase):
@@ -124,7 +124,7 @@ class TestModifyVpcAttribute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
     def test_modify_vpc_attribute_dns_hostnames(self):
         self.set_http_response(status_code=200)
@@ -137,7 +137,7 @@ class TestModifyVpcAttribute(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 class TestGetAllClassicLinkVpc(AWSMockServiceTestCase):

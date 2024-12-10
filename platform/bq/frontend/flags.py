@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Flags shared across multiple commands."""
 
-from typing import Optional
+from typing import List, Optional
 
 from absl import flags
 
@@ -16,6 +16,8 @@ def define_null_marker(
       'in CSV External table data.',
       flag_values=flag_values,
   )
+
+
 
 
 def define_parquet_map_target_type(

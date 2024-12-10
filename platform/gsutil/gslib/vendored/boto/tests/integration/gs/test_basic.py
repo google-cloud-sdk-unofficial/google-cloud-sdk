@@ -85,17 +85,17 @@ BILLING_ENABLED = {'BillingConfiguration': {'RequesterPays': 'Enabled'}}
 BILLING_DISABLED = {'BillingConfiguration': {'RequesterPays': 'Disabled'}}
 
 # Regexp for matching project-private default object ACL.
-PROJECT_PRIVATE_RE = ('\s*<AccessControlList>\s*<Entries>\s*<Entry>'
-  '\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
-  '\s*(<Name>[^<]+</Name>)?\s*</Scope>'
-  '\s*<Permission>FULL_CONTROL</Permission>\s*</Entry>\s*<Entry>'
-  '\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
-  '\s*(<Name>[^<]+</Name>)?\s*</Scope>'
-  '\s*<Permission>FULL_CONTROL</Permission>\s*</Entry>\s*<Entry>'
-  '\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
-  '\s*(<Name>[^<]+</Name>)?\s*</Scope>'
-  '\s*<Permission>READ</Permission>\s*</Entry>\s*</Entries>'
-  '\s*</AccessControlList>\s*')
+PROJECT_PRIVATE_RE = (r'\s*<AccessControlList>\s*<Entries>\s*<Entry>'
+  r'\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
+  r'\s*(<Name>[^<]+</Name>)?\s*</Scope>'
+  r'\s*<Permission>FULL_CONTROL</Permission>\s*</Entry>\s*<Entry>'
+  r'\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
+  r'\s*(<Name>[^<]+</Name>)?\s*</Scope>'
+  r'\s*<Permission>FULL_CONTROL</Permission>\s*</Entry>\s*<Entry>'
+  r'\s*<Scope type="GroupById">\s*<ID>[-a-zA-Z0-9]+</ID>'
+  r'\s*(<Name>[^<]+</Name>)?\s*</Scope>'
+  r'\s*<Permission>READ</Permission>\s*</Entry>\s*</Entries>'
+  r'\s*</AccessControlList>\s*')
 
 
 class GSBasicTest(GSTestCase):

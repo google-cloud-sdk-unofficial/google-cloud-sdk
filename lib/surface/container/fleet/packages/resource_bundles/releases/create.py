@@ -61,6 +61,14 @@ class Create(base.CreateCommand):
           Can optionally be paired with the ``--variants-pattern'' arg to create
           multiple variants of a Release.""",
     )
+    parser.add_argument(
+        '--clh-variants',
+        required=False,
+        hidden=True,
+        action='store_true',
+        help="""Flag to create variants sent in the request as a separate
+          resource, enabled if flag is present.""",
+    )
 
   def Run(self, args):
     """Run the create command."""
@@ -78,4 +86,5 @@ class Create(base.CreateCommand):
         location=flags.GetLocation(args),
         lifecycle=args.lifecycle,
         variants=variants,
+        clh_variants=args.clh_variants,
     )

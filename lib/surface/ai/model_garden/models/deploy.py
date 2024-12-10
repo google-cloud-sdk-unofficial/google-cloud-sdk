@@ -104,6 +104,26 @@ class Deploy(base.Command):
         ),
         required=False,
     ).AddToParser(parser)
+    base.Argument(
+        '--accelerator-type',
+        help=(
+            'The accelerator type to serve the model. It should be a supported'
+            ' accelerator type from the verified deployment configurations of'
+            ' the model. Use `gcloud ai model-garden models'
+            ' list-deployment-config` to check the supported accelerator types.'
+        ),
+        required=False,
+    ).AddToParser(parser)
+    base.Argument(
+        '--accept-eula',
+        help=(
+            'When set, the user accepts the End User License Agreement (EULA)'
+            ' of the model.'
+        ),
+        action='store_true',
+        default=False,
+        required=False,
+    ).AddToParser(parser)
 
   def Run(self, args):
     validation.ValidateModelGardenModelArgs(args)

@@ -24,9 +24,11 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.command_lib.compute.security_policies.rules import flags as rule_flags
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
@@ -43,7 +45,6 @@ class Update(base.UpdateCommand):
     cls.ORG_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddAction(parser, required=False)
     flags.AddSecurityPolicyId(parser, operation='updated')
-    flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddLayer4Configs(parser)
     flags.AddDirection(parser)
@@ -53,6 +54,55 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
+    rule_flags.AddMatcher(parser, required=False)
+    rule_flags.AddPreview(parser, default=None)
+    parser.add_argument(
+        '--cloud-armor',
+        action='store_true',
+        default=False,
+        help='Specified for Hierarchical Cloud Armor rules.',
+    )
+
+  def _SetupCloudArmorMatch(self, args, holder, expression, src_ip_ranges):
+    if args.IsSpecified('expression'):
+      return holder.client.messages.SecurityPolicyRuleMatcher(
+          expr=holder.client.messages.Expr(expression=expression)
+      )
+    else:
+      return holder.client.messages.SecurityPolicyRuleMatcher(
+          versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.SRC_IPS_V1,
+          config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+              srcIpRanges=src_ip_ranges
+          ),
+      )
+
+  def _SetupFirewallMatch(
+      self,
+      holder,
+      src_ip_ranges,
+      dest_ip_ranges,
+      dest_ports_list,
+      layer4_config_list,
+  ):
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      return holder.client.messages.SecurityPolicyRuleMatcher(
+          versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.FIREWALL,
+          config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+              srcIpRanges=src_ip_ranges,
+              destIpRanges=dest_ip_ranges,
+              destPorts=dest_ports_list,
+              layer4Configs=layer4_config_list,
+          ),
+      )
+    else:
+      return holder.client.messages.SecurityPolicyRuleMatcher(
+          versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher.VersionedExprValueValuesEnum.FIREWALL,
+          config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
+              srcIpRanges=src_ip_ranges,
+              destIpRanges=dest_ip_ranges,
+              layer4Configs=layer4_config_list,
+          ),
+      )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -64,16 +114,21 @@ class Update(base.UpdateCommand):
         resources=holder.resources,
         version=six.text_type(self.ReleaseTrack()).lower())
     priority = rule_utils.ConvertPriorityToInt(ref.Name())
+    expression = None
     src_ip_ranges = []
     dest_ip_ranges = []
     dest_ports_list = []
     layer4_config_list = []
     target_resources = []
     target_service_accounts = []
-    enable_logging = False
+    enable_logging = None
+    preview = None
     should_setup_match = False
     traffic_direct = None
     matcher = None
+    if args.IsSpecified('expression'):
+      expression = args.expression
+      should_setup_match = True
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
       should_setup_match = True
@@ -95,6 +150,8 @@ class Update(base.UpdateCommand):
       target_service_accounts = args.target_service_accounts
     if args.IsSpecified('enable_logging'):
       enable_logging = True
+    if args.IsSpecified('preview'):
+      preview = args.preview
     if args.IsSpecified('new_priority'):
       new_priority = rule_utils.ConvertPriorityToInt(args.new_priority)
     else:
@@ -102,38 +159,39 @@ class Update(base.UpdateCommand):
 
     # If need to construct a new matcher.
     if should_setup_match:
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
-            versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher
-            .VersionedExprValueValuesEnum.FIREWALL,
-            config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
-                srcIpRanges=src_ip_ranges,
-                destIpRanges=dest_ip_ranges,
-                destPorts=dest_ports_list,
-                layer4Configs=layer4_config_list))
+      if args.IsSpecified('cloud_armor'):
+        matcher = self._SetupCloudArmorMatch(
+            args, holder, expression, src_ip_ranges
+        )
       else:
-        matcher = holder.client.messages.SecurityPolicyRuleMatcher(
-            versionedExpr=holder.client.messages.SecurityPolicyRuleMatcher
-            .VersionedExprValueValuesEnum.FIREWALL,
-            config=holder.client.messages.SecurityPolicyRuleMatcherConfig(
-                srcIpRanges=src_ip_ranges,
-                destIpRanges=dest_ip_ranges,
-                layer4Configs=layer4_config_list))
+        matcher = self._SetupFirewallMatch(
+            holder,
+            src_ip_ranges,
+            dest_ip_ranges,
+            dest_ports_list,
+            layer4_config_list,
+        )
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
-        traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+        traffic_direct = (
+            holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+        )
       else:
-        traffic_direct = holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+        traffic_direct = (
+            holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+        )
 
     security_policy_rule = holder.client.messages.SecurityPolicyRule(
         priority=new_priority,
-        action=args.action,
+        action=rule_utils.ConvertAction(args.action),
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
         targetServiceAccounts=target_service_accounts,
         description=args.description,
-        enableLogging=enable_logging)
+        enableLogging=enable_logging,
+        preview=preview,
+    )
 
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         security_policy_rule_client,
@@ -146,6 +204,7 @@ class Update(base.UpdateCommand):
         security_policy_rule=security_policy_rule)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   r"""Update a Compute Engine security policy rule.
@@ -162,7 +221,6 @@ class UpdateAlpha(Update):
     cls.ORG_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddAction(parser, required=False)
     flags.AddSecurityPolicyId(parser, operation='updated')
-    flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
     flags.AddDestPorts(parser)
     flags.AddLayer4Configs(parser)
@@ -173,6 +231,14 @@ class UpdateAlpha(Update):
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
+    rule_flags.AddMatcher(parser, required=False)
+    rule_flags.AddPreview(parser, default=None)
+    parser.add_argument(
+        '--cloud-armor',
+        action='store_true',
+        default=False,
+        help='Specified for Hierarchical Cloud Armor rules.',
+    )
 
 
 Update.detailed_help = {

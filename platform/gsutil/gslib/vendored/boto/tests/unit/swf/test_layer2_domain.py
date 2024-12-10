@@ -14,8 +14,8 @@ class TestDomain(unittest.TestCase):
         self.domain.region = 'test-region'
 
     def test_domain_instantiation(self):
-        self.assertEquals('test-domain', self.domain.name)
-        self.assertEquals('My test domain', self.domain.description)
+        self.assertEqual('test-domain', self.domain.name)
+        self.assertEqual('My test domain', self.domain.description)
 
     def test_domain_list_activities(self):
         self.domain._swf.list_activity_types.return_value = {
@@ -44,11 +44,11 @@ class TestDomain(unittest.TestCase):
                           'S3Upload', 'SepiaTransform', 'DoUpdate')
 
         activity_types = self.domain.activities()
-        self.assertEquals(6, len(activity_types))
+        self.assertEqual(6, len(activity_types))
         for activity_type in activity_types:
             self.assertIsInstance(activity_type, ActivityType)
             self.assertTrue(activity_type.name in expected_names)
-            self.assertEquals(self.domain.region, activity_type.region)
+            self.assertEqual(self.domain.region, activity_type.region)
 
     def test_domain_list_workflows(self):
         self.domain._swf.list_workflow_types.return_value = {
@@ -63,14 +63,14 @@ class TestDomain(unittest.TestCase):
         expected_names = ('ProcessFile', 'test_workflow_name') 
         
         workflow_types = self.domain.workflows()
-        self.assertEquals(2, len(workflow_types))
+        self.assertEqual(2, len(workflow_types))
         for workflow_type in workflow_types:
             self.assertIsInstance(workflow_type, WorkflowType)
             self.assertTrue(workflow_type.name in expected_names)
-            self.assertEquals(self.domain.aws_access_key_id, workflow_type.aws_access_key_id)
-            self.assertEquals(self.domain.aws_secret_access_key, workflow_type.aws_secret_access_key)
-            self.assertEquals(self.domain.name, workflow_type.domain)
-            self.assertEquals(self.domain.region, workflow_type.region)
+            self.assertEqual(self.domain.aws_access_key_id, workflow_type.aws_access_key_id)
+            self.assertEqual(self.domain.aws_secret_access_key, workflow_type.aws_secret_access_key)
+            self.assertEqual(self.domain.name, workflow_type.domain)
+            self.assertEqual(self.domain.region, workflow_type.region)
 
     def test_domain_list_executions(self):
         self.domain._swf.list_open_workflow_executions.return_value = {
@@ -104,13 +104,13 @@ class TestDomain(unittest.TestCase):
                                       'version': '1.0'}}]}
 
         executions = self.domain.executions()
-        self.assertEquals(4, len(executions))
+        self.assertEqual(4, len(executions))
         for wf_execution in executions:
             self.assertIsInstance(wf_execution, WorkflowExecution)
-            self.assertEquals(self.domain.aws_access_key_id, wf_execution.aws_access_key_id)
-            self.assertEquals(self.domain.aws_secret_access_key, wf_execution.aws_secret_access_key)
-            self.assertEquals(self.domain.name, wf_execution.domain)
-            self.assertEquals(self.domain.region, wf_execution.region)
+            self.assertEqual(self.domain.aws_access_key_id, wf_execution.aws_access_key_id)
+            self.assertEqual(self.domain.aws_secret_access_key, wf_execution.aws_secret_access_key)
+            self.assertEqual(self.domain.name, wf_execution.domain)
+            self.assertEqual(self.domain.region, wf_execution.region)
 
 if __name__ == '__main__':
     unittest.main()

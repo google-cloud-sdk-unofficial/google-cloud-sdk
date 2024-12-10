@@ -6,8 +6,6 @@ import sys
 import time
 from typing import Optional
 
-
-
 import googleapiclient
 import httplib2
 

@@ -89,7 +89,9 @@ class _BaseRotateCert(object):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class RotateCert(_BaseRotateCert, base.CreateCommand):
   """Rotate in the upcoming server certificate for a Cloud SQL instance."""

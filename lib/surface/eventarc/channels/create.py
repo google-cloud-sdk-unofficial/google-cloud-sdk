@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import channels
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 # TODO(b/188207212): Update documentation when provider will be a resource
@@ -41,6 +42,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc channel."""
 
@@ -50,6 +52,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     flags.AddCreateChannelArg(parser)
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
+    labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -64,7 +67,13 @@ class Create(base.CreateCommand):
     provider_ref = args.CONCEPTS.provider.Parse()
     operation = client.Create(
         channel_ref,
-        client.BuildChannel(channel_ref, provider_ref, args.crypto_key))
+        client.BuildChannel(
+            channel_ref,
+            provider_ref,
+            args.crypto_key,
+            labels_util.ParseCreateArgs(args, client.LabelsValueCls()),
+        ),
+    )
 
     if args.async_:
       return operation

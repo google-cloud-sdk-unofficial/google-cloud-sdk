@@ -132,7 +132,7 @@ class Credentials(object):
         :param time_offset_seconds: The number of seconds into the future
             to test the Session Token for expiration.
         """
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
         if time_offset_seconds:
             now = now + datetime.timedelta(seconds=time_offset_seconds)
         ts = boto.utils.parse_ts(self.expiration)

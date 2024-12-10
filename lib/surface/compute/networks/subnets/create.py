@@ -167,6 +167,7 @@ def _AddArgs(
           'Reserved for Private Service Connect Internal Load Balancing.'
       ),
       'PRIVATE_NAT': 'Reserved for use as source range for Private NAT.',
+      'PEER_MIGRATION': 'Reserved for subnet migration between peered VPCs.',
   }
 
   if include_aggregate_purpose:
@@ -530,7 +531,7 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_ip_collection = False
-  _include_peer_migration_purpose = False
+  _include_peer_migration_purpose = True
 
   detailed_help = _DetailedHelp()
 

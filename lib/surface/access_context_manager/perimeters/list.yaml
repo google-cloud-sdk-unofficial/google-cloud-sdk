@@ -23,5 +23,6 @@
     format: |
       table(
           name.basename(),
-          title
+          title,
+          etag
       )

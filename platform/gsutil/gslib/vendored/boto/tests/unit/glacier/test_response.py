@@ -29,7 +29,7 @@ class TestResponse(AWSMockServiceTestCase):
     def test_204_body_isnt_passed_to_json(self):
         response = self.create_response(status_code=204,header=[('Content-Type','application/json')])
         result = GlacierResponse(response,response.getheaders())
-        self.assertEquals(result.status, response.status)
+        self.assertEqual(result.status, response.status)
 
 if __name__ == '__main__':
     unittest.main()

@@ -48,6 +48,7 @@ CHANNEL_FLAG = base.Argument(
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc channel connection."""
 
@@ -59,6 +60,9 @@ class Create(base.CreateCommand):
                                           'Channel connection to create.')
     CHANNEL_FLAG.AddToParser(parser)
     ACTIVATION_TOKEN_FLAG.AddToParser(parser)
+    flags.AddLabelsArg(
+        parser, help_text='Labels to apply to the channel connection.'
+    )
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -75,7 +79,10 @@ class Create(base.CreateCommand):
         client.BuildChannelConnection(
             channel_connection_ref,
             channel=args.channel,
-            activation_token=args.activation_token))
+            activation_token=args.activation_token,
+            labels=args.labels,
+        ),
+    )
 
     if args.async_:
       return operation

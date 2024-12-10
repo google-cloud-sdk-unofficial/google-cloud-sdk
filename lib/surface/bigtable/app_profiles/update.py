@@ -53,6 +53,10 @@ class UpdateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --priority=PRIORITY_LOW
 
+          To update an app profile to enable row-affinity routing, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
+
           """),
   }
 
@@ -91,6 +95,7 @@ class UpdateAppProfile(base.CreateCommand):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
+        row_affinity=args.row_affinity,
         priority=args.priority,
         force=args.force,
     )
@@ -160,6 +165,10 @@ class UpdateAppProfileBeta(UpdateAppProfile):
 
             $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
 
+          To update an app profile to enable row-affinity routing, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
+
           """),
   }
 
@@ -198,6 +207,7 @@ class UpdateAppProfileBeta(UpdateAppProfile):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
+        row_affinity=args.row_affinity,
         priority=args.priority,
         data_boost=args.data_boost,
         data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
@@ -218,7 +228,6 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
         .AddAppProfileRouting(
             required=False,
             allow_failover_radius=True,
-            allow_row_affinity=True,
         )
         .AddIsolation(allow_data_boost=True)
         .AddForce('update')

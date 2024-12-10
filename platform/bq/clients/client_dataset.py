@@ -4,7 +4,6 @@
 import datetime
 from typing import Dict, List, NamedTuple, Optional
 from googleapiclient import discovery
-import bq_flags
 from clients import utils as bq_client_utils
 from frontend import utils as frontend_utils
 from utils import bq_error
@@ -110,10 +109,18 @@ def GetDatasetIAMPolicy(apiclient, reference):
       reference.projectId,
       reference.datasetId,
   )
+  body = {
+      'options': {
+          'requestedPolicyVersion': (
+              bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
+          )
+      }
+  }
   return (
       apiclient.datasets()
       .getIamPolicy(
           resource=formatted_resource,
+          body=body,
       )
       .execute()
   )
@@ -300,6 +307,7 @@ def CreateDataset(
     body['resourceTags'] = resource_tags
 
   args = dict(reference.GetProjectReference())
+  args['accessPolicyVersion'] = bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
   try:
     apiclient.datasets().insert(body=body, **args).execute()
   except bq_error.BigqueryDuplicateError:
@@ -414,8 +422,6 @@ def UpdateDataset(
   )
 
 
-
-
 def _ExecuteGetDatasetRequest(
     apiclient: discovery.Resource,
     reference,
@@ -432,6 +438,7 @@ def _ExecuteGetDatasetRequest(
   The result of executing the request, if it succeeds.
   """
   args = dict(reference)
+  args['accessPolicyVersion'] = bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
   get_request = apiclient.datasets().get(**args)
   if etag:
     get_request.headers['If-Match'] = etag
@@ -454,6 +461,9 @@ def _ExecutePatchDatasetRequest(
     etag: if set, checks that etag in the existing dataset matches.
   """
   parameters = dict(reference)
+  parameters['accessPolicyVersion'] = (
+      bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
+  )
 
   request = apiclient.datasets().patch(body=dataset, **parameters)
 

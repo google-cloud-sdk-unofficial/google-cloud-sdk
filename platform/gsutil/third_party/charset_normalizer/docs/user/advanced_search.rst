@@ -8,7 +8,7 @@ As follow ::
 
     from charset_normalizer import from_bytes
 
-    my_byte_str = '我没有埋怨，磋砣的只是一些时间。'.encode('gb18030')
+    my_byte_str = 'Bсеки човек има право на образование.'.encode('cp1251')
 
     results = from_bytes(
         my_byte_str,
@@ -18,7 +18,8 @@ As follow ::
         cp_isolation=None,  # Finite list of encoding to use when searching for a match
         cp_exclusion=None,  # Finite list of encoding to avoid when searching for a match
         preemptive_behaviour=True,  # Determine if we should look into my_byte_str (ASCII-Mode) for pre-defined encoding
-        explain=False  # Print on screen what is happening when searching for a match
+        explain=False,  # Print on screen what is happening when searching for a match
+        language_threshold=0.1  # Minimum coherence ratio / language ratio match accepted
     )
 
 

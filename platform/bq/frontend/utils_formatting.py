@@ -8,8 +8,6 @@ import sys
 import time
 from typing import Dict, List, Optional, Type
 
-
-
 import table_formatter
 import bq_flags
 from clients import utils as bq_client_utils
@@ -230,14 +228,14 @@ def format_acl(acl):
     dataset = entry.pop('dataset', None)
     routine = entry.pop('routine', None)
     if view:
-      acl_entries['VIEW'].append(
+      acl_entries['VIEW', ()].append(
           '%s:%s.%s'
           % (view.get('projectId'), view.get('datasetId'), view.get('tableId'))
       )
     elif dataset:
       dataset_reference = dataset.get('dataset')
       for target in dataset.get('targetTypes'):
-        acl_entries['All ' + target + ' in DATASET'].append(
+        acl_entries['All ' + target + ' in DATASET', ()].append(
             '%s:%s'
             % (
                 dataset_reference.get('projectId'),
@@ -245,7 +243,7 @@ def format_acl(acl):
             )
         )
     elif routine:
-      acl_entries['ROUTINE'].append(
+      acl_entries['ROUTINE', ()].append(
           '%s:%s.%s'
           % (
               routine.get('projectId'),
@@ -255,12 +253,15 @@ def format_acl(acl):
       )
     else:
       role = entry.pop('role', None)
+      condition = entry.pop('condition', None)
       if not role or len(list(entry.values())) != 1:
-        # pylint: enable=line-too-long
         raise bq_error.BigqueryInterfaceError(
             'Invalid ACL returned by server: %s' % acl, {}, []
         )
-      acl_entries[role].extend(entry.values())
+      if condition:
+        acl_entries[(role, tuple(condition.items()))].extend(entry.values())
+      else:
+        acl_entries[role, ()].extend(entry.values())
   # Show a couple things first.
   original_roles = {
       'OWNER': 'Owners',
@@ -269,18 +270,26 @@ def format_acl(acl):
       'VIEW': 'Authorized Views',
   }
   result_lines = []
-  # TODO(b/351081309): Remove this for loop once dataset conditions is rolled
-  # out.
   for role, name in original_roles.items():
-    members = acl_entries.pop(role, None)
+    members = acl_entries.pop((role, ()), None)
     if members:
       result_lines.append('%s:' % name)
       result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
   # Show everything else.
-  for role, members in sorted(acl_entries.items()):
-    # pylint: enable=line-too-long
-    result_lines.append('%s:' % role)
+  for (role, condition), members in sorted(acl_entries.items()):
+    if role in original_roles:
+      result_lines.append('%s:' % original_roles[role])
+    else:
+      result_lines.append('%s:' % role)
     result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
+    if condition:
+      result_lines.append('    condition:')
+      result_lines.append(
+          '\n'.join(
+              '      %s: %s' % (key, value)
+              for key, value in dict(condition).items()
+          )
+      )
   return '\n'.join(result_lines)
 
 

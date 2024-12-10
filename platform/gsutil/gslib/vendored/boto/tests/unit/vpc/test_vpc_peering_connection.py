@@ -157,7 +157,7 @@ class TestDeleteVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_delete_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        self.assertEquals(self.service_connection.delete_vpc_peering_connection('pcx-12345678'), True)
+        self.assertEqual(self.service_connection.delete_vpc_peering_connection('pcx-12345678'), True)
 
 class TestDeleteVpcPeeringConnectionShortForm(unittest.TestCase):
     DESCRIBE_VPC_PEERING_CONNECTIONS= b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -199,14 +199,14 @@ class TestDeleteVpcPeeringConnectionShortForm(unittest.TestCase):
         vpc_conn.make_request = mock.Mock(return_value=mock_response)
         vpc_peering_connections = vpc_conn.get_all_vpc_peering_connections()
 
-        self.assertEquals(1, len(vpc_peering_connections))
+        self.assertEqual(1, len(vpc_peering_connections))
         vpc_peering_connection = vpc_peering_connections[0]
 
         mock_response = mock.Mock()
         mock_response.read.return_value = self.DELETE_VPC_PEERING_CONNECTION
         mock_response.status = 200
         vpc_conn.make_request = mock.Mock(return_value=mock_response)
-        self.assertEquals(True, vpc_peering_connection.delete())
+        self.assertEqual(True, vpc_peering_connection.delete())
 
         self.assertIn('DeleteVpcPeeringConnection', vpc_conn.make_request.call_args_list[0][0])
         self.assertNotIn('DeleteVpc', vpc_conn.make_request.call_args_list[0][0])
@@ -224,7 +224,7 @@ class TestRejectVpcPeeringConnection(AWSMockServiceTestCase):
 
     def test_reject_vpc_peering_connection(self):
         self.set_http_response(status_code=200)
-        self.assertEquals(self.service_connection.reject_vpc_peering_connection('pcx-12345678'), True)
+        self.assertEqual(self.service_connection.reject_vpc_peering_connection('pcx-12345678'), True)
 
 
 class TestAcceptVpcPeeringConnection(AWSMockServiceTestCase):

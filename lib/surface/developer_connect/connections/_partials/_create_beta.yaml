@@ -128,13 +128,16 @@
                   connection.
                 params:
                 - arg_name: github-enterprise-config-service-directory
-                  api_field: connection.githubEnterpriseConfig.serviceDirectoryConfig.service
-                  required: true
-                  repeated: false
                   help_text: |-
                     The Service Directory service name.
                     Format:
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_method_params:
+                    connection.githubEnterpriseConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: true
             - arg_name: github-enterprise-config-ssl-ca-certificate
               api_field: connection.githubEnterpriseConfig.sslCaCertificate
               required: false
@@ -254,13 +257,16 @@
                   connection.
                 params:
                 - arg_name: gitlab-enterprise-config-service-directory
-                  api_field: connection.gitlabEnterpriseConfig.serviceDirectoryConfig.service
-                  required: true
-                  repeated: false
                   help_text: |-
                     The Service Directory service name.
                     Format:
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_method_params:
+                    connection.gitlabEnterpriseConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: true
             - arg_name: gitlab-enterprise-config-ssl-ca-certificate
               api_field: connection.gitlabEnterpriseConfig.sslCaCertificate
               required: false
@@ -268,6 +274,142 @@
               help_text: |-
                 SSL Certificate Authority certificate to use for requests to GitLab
                 Enterprise instance.
+        - group:
+            required: false
+            help_text: |-
+              Configuration for connections to an instance of Bitbucket Data Center.
+            params:
+            - arg_name: bitbucket-data-center-config-host-uri
+              api_field: connection.bitbucketDataCenterConfig.hostUri
+              required: true
+              repeated: false
+              help_text: |-
+                The URI of the Bitbucket Data Center host this connection is for.
+            - arg_name: bitbucket-data-center-config-webhook-secret-version
+              help_text: |-
+                SecretManager resource containing the webhook secret used to verify webhook
+                events, formatted as `projects/*/secrets/*/versions/*`. This is used to
+                validate webhooks.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_method_params:
+                connection.bitbucketDataCenterConfig.webhookSecretSecretVersion: '{__relative_name__}'
+              required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: bitbucket-data-center-config-read-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.bitbucketDataCenterConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: bitbucket-data-center-config-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.bitbucketDataCenterConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
+            - group:
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: bitbucket-data-center-config-service-directory
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_method_params:
+                    connection.bitbucketDataCenterConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: true
+            - arg_name: bitbucket-data-center-config-ssl-ca-certificate
+              api_field: connection.bitbucketDataCenterConfig.sslCaCertificate
+              required: false
+              repeated: false
+              help_text: |-
+                SSL certificate authority to trust when making requests to Bitbucket Data
+                Center.
+        - group:
+            required: false
+            help_text: |-
+              Configuration for connections to an instance of Bitbucket Cloud.
+            params:
+            - arg_name: bitbucket-cloud-config-workspace
+              api_field: connection.bitbucketCloudConfig.workspace
+              required: true
+              repeated: false
+              help_text: |-
+                The Bitbucket Cloud Workspace ID to be connected to Google Cloud Platform.
+            - arg_name: bitbucket-cloud-config-webhook-secret-version
+              help_text: |-
+                SecretManager resource containing the webhook secret used to verify webhook
+                events, formatted as `projects/*/secrets/*/versions/*`. This is used to
+                validate and create webhooks.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_method_params:
+                connection.bitbucketCloudConfig.webhookSecretSecretVersion: '{__relative_name__}'
+              required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: bitbucket-cloud-config-read-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.bitbucketCloudConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
+            - group:
+                required: true
+                help_text: |-
+                  Represents a personal access token that authorized the Connection,
+                  and associated metadata.
+                params:
+                - arg_name: bitbucket-cloud-config-authorizer-credential-user-token-secret-version
+                  help_text: |-
+                    A SecretManager resource containing the user token that authorizes
+                    the Developer Connect connection. Format:
+                    `projects/*/secrets/*/versions/*`.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_method_params:
+                    connection.bitbucketCloudConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
+                  required: true
     - help_text: |-
         Identifier. The resource name of the connection, in the format
         `projects/{project}/locations/{location}/connections/{connection_id}`.

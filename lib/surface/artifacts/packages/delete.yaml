@@ -13,7 +13,7 @@
     examples: |
       To delete a package named `my-pkg` under the current project, repository, and location, run:
 
-          $ {command} my-repo
+          $ {command} my-pkg
 
   arguments:
     resource:

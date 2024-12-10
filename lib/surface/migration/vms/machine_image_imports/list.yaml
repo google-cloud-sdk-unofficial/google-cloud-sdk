@@ -24,4 +24,4 @@
       spec: !REF googlecloudsdk.command_lib.migration.vms.resources:location
 
   output:
-    format: table(name.basename(), recentImageImportJobs[0].state, cloudStorageUri, machineImageTargetDefaults.imageName, machineImageTargetDefaults.targetProject.basename(), createTime)
+    format: table(name.basename(), recentImageImportJobs[0].state, cloudStorageUri, machineImageTargetDefaults.machineImageName, machineImageTargetDefaults.targetProject.basename(), createTime)

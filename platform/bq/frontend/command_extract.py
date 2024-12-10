@@ -7,8 +7,6 @@ from __future__ import print_function
 
 from typing import Optional
 
-
-
 from absl import flags
 
 import bq_flags
@@ -18,6 +16,7 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 
 # These aren't relevant for user-facing docstrings:
@@ -134,7 +133,7 @@ class Extract(bigquery_command.BigqueryCmd):
     """
     client = bq_cached_client.Client.Get()
     kwds = {
-        'job_id': frontend_utils.GetJobIdFromFlags(),
+        'job_id': utils_flags.get_job_id_from_flags(),
     }
     if bq_flags.LOCATION.value:
       kwds['location'] = bq_flags.LOCATION.value

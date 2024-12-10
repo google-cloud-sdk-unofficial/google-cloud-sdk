@@ -22,6 +22,7 @@ import yaml
 import table_formatter
 import bq_utils
 from clients import utils as bq_client_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 from utils import bq_consts
 from utils import bq_error
@@ -118,13 +119,6 @@ def ValidateAtMostOneSelectedAllowsDefault(*args: Any) -> bool:
   return count > 1
 
 
-def GetFormatterFromFlags(secondary_format='sparse'):
-  if FLAGS['format'].present:
-    return table_formatter.GetFormatter(FLAGS.format)
-  else:
-    return table_formatter.GetFormatter(secondary_format)
-
-
 def ProcessSource(description: str, source: str) -> Tuple[Any, Any]:
   """Process "source" parameter used for bq update and bq mk command.
 
@@ -217,26 +211,6 @@ def PrintDryRunInfo(job):
             'accuracy is unknown because of federated tables or clustered '
             'tables.' % (num_bytes,)
         )
-
-
-def GetJobIdFromFlags() -> Optional[bq_client_utils.JobIdGenerator]:
-  """Returns the job id or job generator from the flags."""
-  if FLAGS.fingerprint_job_id and FLAGS.job_id:
-    raise app.UsageError(
-        'The fingerprint_job_id flag cannot be specified with the job_id flag.'
-    )
-  if FLAGS.fingerprint_job_id:
-    return bq_client_utils.JobIdGeneratorFingerprint()
-  elif FLAGS.job_id is None:
-    return bq_client_utils.JobIdGeneratorIncrementing(
-        bq_client_utils.JobIdGeneratorRandom()
-    )
-  elif FLAGS.job_id:
-    return FLAGS.job_id
-  else:
-    # User specified a job id, but it was empty. Let the
-    # server come up with a job id.
-    return None
 
 
 def RawInput(message: str) -> str:
@@ -457,7 +431,7 @@ class TablePrinter(object):
     return values
 
   def PrintTable(self, fields, rows):
-    formatter = GetFormatterFromFlags(secondary_format='pretty')
+    formatter = utils_flags.get_formatter_from_flags(secondary_format='pretty')
     self._ValidateFields(fields, formatter)
     formatter.AddFields(fields)
     formatter.AddRows(
@@ -809,7 +783,7 @@ def PrintPageToken(page_token):
   Args:
     page_token: The dictionary mapping of pageToken with string 'nextPageToken'.
   """
-  formatter = GetFormatterFromFlags(secondary_format='pretty')
+  formatter = utils_flags.get_formatter_from_flags(secondary_format='pretty')
   utils_formatting.configure_formatter(
       formatter, bq_id_utils.ApiClientHelper.NextPageTokenReference
   )
@@ -1237,7 +1211,7 @@ def PrintObjectInfo(
   elif FLAGS.format in ['prettyjson', 'json']:
     bq_utils.PrintFormattedJsonObject(object_info)
   elif FLAGS.format in [None, 'sparse', 'pretty']:
-    formatter = GetFormatterFromFlags()
+    formatter = utils_flags.get_formatter_from_flags()
     utils_formatting.configure_formatter(
         formatter,
         type(reference),
@@ -1256,7 +1230,7 @@ def PrintObjectInfo(
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       PrintJobMessages(object_info)
   else:
-    formatter = GetFormatterFromFlags()
+    formatter = utils_flags.get_formatter_from_flags()
     formatter.AddColumns(list(object_info.keys()))
     formatter.AddDict(object_info)
     formatter.Print()
@@ -1268,7 +1242,7 @@ def PrintObjectsArray(object_infos, objects_type):
   elif FLAGS.format in [None, 'sparse', 'pretty']:
     if not object_infos:
       return
-    formatter = GetFormatterFromFlags()
+    formatter = utils_flags.get_formatter_from_flags()
     utils_formatting.configure_formatter(
         formatter, objects_type, print_format='list'
     )
@@ -1285,7 +1259,7 @@ def PrintObjectsArray(object_infos, objects_type):
       formatter.AddDict(info)
     formatter.Print()
   elif object_infos:
-    formatter = GetFormatterFromFlags()
+    formatter = utils_flags.get_formatter_from_flags()
     formatter.AddColumns(list(object_infos[0].keys()))
     for info in object_infos:
       formatter.AddDict(info)

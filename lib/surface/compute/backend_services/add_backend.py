@@ -53,9 +53,6 @@ class AddBackend(base.UpdateCommand):
   support_global_neg = True
   support_region_neg = True
   support_failover = True
-  # This fields decides whether --preference flag can be set when updating the
-  # backend.
-  support_preference = True
   support_custom_metrics = False
 
   @classmethod
@@ -79,8 +76,7 @@ class AddBackend(base.UpdateCommand):
         parser,
         support_global_neg=cls.support_global_neg,
         support_region_neg=cls.support_region_neg)
-    if cls.support_preference:
-      backend_flags.AddPreference(parser)
+    backend_flags.AddPreference(parser)
     if cls.support_failover:
       backend_flags.AddFailover(parser, default=None)
     if cls.support_custom_metrics:
@@ -153,7 +149,7 @@ class AddBackend(base.UpdateCommand):
       arguments.
     """
     backend_services_utils.ValidateBalancingModeArgs(messages, args)
-    if self.support_preference and preference is not None:
+    if preference is not None:
       return messages.Backend(
           balancingMode=balancing_mode,
           preference=preference,
@@ -212,7 +208,7 @@ class AddBackend(base.UpdateCommand):
       balancing_mode = None
 
     preference = None
-    if self.support_preference and args.preference:
+    if args.preference:
       preference = client.messages.Backend.PreferenceValueValuesEnum(
           args.preference)
 

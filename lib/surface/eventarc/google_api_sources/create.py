@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import google_api_sources
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -47,9 +48,7 @@ class Create(base.CreateCommand):
         parser, 'The logging config for the Google API source.'
     )
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
-    flags.AddLabelsArg(
-        parser, help_text='Labels to apply to the Google API source.'
-    )
+    labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -72,7 +71,7 @@ class Create(base.CreateCommand):
             args.CONCEPTS.destination_message_bus.Parse(),
             args.logging_config,
             args.crypto_key,
-            args.labels,
+            labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
         ),
     )
 

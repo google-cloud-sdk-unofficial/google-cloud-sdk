@@ -43,7 +43,7 @@ class TestDescribeCustomerGateways(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(len(api_response), 1)
+        self.assertEqual(len(api_response), 1)
         self.assertIsInstance(api_response[0], CustomerGateway)
         self.assertEqual(api_response[0].id, 'cgw-b4dc3961')
 
@@ -80,11 +80,11 @@ class TestCreateCustomerGateway(AWSMockServiceTestCase):
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
         self.assertIsInstance(api_response, CustomerGateway)
-        self.assertEquals(api_response.id, 'cgw-b4dc3961')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.type, 'ipsec.1')
-        self.assertEquals(api_response.ip_address, '12.1.2.3')
-        self.assertEquals(api_response.bgp_asn, 65534)
+        self.assertEqual(api_response.id, 'cgw-b4dc3961')
+        self.assertEqual(api_response.state, 'pending')
+        self.assertEqual(api_response.type, 'ipsec.1')
+        self.assertEqual(api_response.ip_address, '12.1.2.3')
+        self.assertEqual(api_response.bgp_asn, 65534)
 
 
 class TestDeleteCustomerGateway(AWSMockServiceTestCase):
@@ -108,7 +108,7 @@ class TestDeleteCustomerGateway(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 if __name__ == '__main__':

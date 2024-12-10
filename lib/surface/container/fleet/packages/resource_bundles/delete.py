@@ -39,14 +39,7 @@ class Delete(base.DeleteCommand):
   def Args(parser):
     flags.AddNameFlag(parser)
     flags.AddLocationFlag(parser)
-    parser.add_argument(
-        '--force',
-        action='store_true',
-        required=False,
-        help="""If set to true, any releases of this Resource Bundle will also
-                  be deleted. (Otherwise, the request will only work if the
-                  Resource Bundle has no releases.)""",
-    )
+    flags.AddForceDeleteFlag(parser, 'Resource Bundle')
 
   def Run(self, args):
     """Run the delete command."""

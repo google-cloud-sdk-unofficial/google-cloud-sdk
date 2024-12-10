@@ -330,7 +330,7 @@ class CloudSearchUnauthorizedTest(CloudSearchSearchBaseTest):
     def test_response(self):
         search = SearchConnection(endpoint=HOSTNAME)
 
-        with self.assertRaisesRegexp(SearchServiceException, 'foo bar baz'):
+        with self.assertRaisesRegex(SearchServiceException, 'foo bar baz'):
             search.search(q='Test')
 
 

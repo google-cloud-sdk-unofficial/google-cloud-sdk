@@ -25,7 +25,6 @@ from googlecloudsdk.api_lib.bigtable import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.bigtable import arguments
-from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
@@ -209,57 +208,10 @@ class CreateInstance(base.CreateCommand):
           'Use --cluster-config to specify cluster(s).',
       )
 
-    # TODO(b/188686383): Remove in favor of argDict spec in AddClusterConfig.
-
-  # In go/cbt-large-nodes-new-clusters-ga we introduce a new node_scaling_factor
-  # field on new clusters. While in preview, this field should remain hidden.
-  # Since clusterConfig (ArgDict) does not support partially hidden fields, we
-  # will temporarily validate and convert fields to their respective types here.
-  # Once node_scaling_factor GAs, we can revert back to doing this in
-  # AddClusterConfig.
-  def _ConvertClusterConfigArgs(self, cluster_dict):
-    for key in cluster_dict.keys():
-      if key in [
-          'nodes',
-          'autoscaling-min-nodes',
-          'autoscaling-max-nodes',
-          'autoscaling-cpu-target',
-          'autoscaling-storage-target',
-      ]:
-        cluster_dict[key] = int(cluster_dict[key])
-      elif key == 'node-scaling-factor':
-        node_scaling_factor = arg_utils.ChoiceToEnum(
-            cluster_dict['node-scaling-factor'],
-            util.GetAdminMessages().Cluster.NodeScalingFactorValueValuesEnum,
-            valid_choices=arguments.GetValidNodeScalingFactors(),
-        )
-        cluster_dict['node-scaling-factor'] = node_scaling_factor
-
   def _ValidateClusterConfigArgs(self, cluster_config):
     """Validates arguments in cluster-config as a repeated dict."""
-    valid_cluster_config_params = set([
-        'id',
-        'zone',
-        'nodes',
-        'node-scaling-factor',
-        'kms-key',
-        'autoscaling-min-nodes',
-        'autoscaling-max-nodes',
-        'autoscaling-cpu-target',
-        'autoscaling-storage-target',
-    ])
     # Validate cluster-config of each cluster.
     for cluster_dict in cluster_config:
-      # TODO(b/340864145): Remove in favor of argDict spec in AddClusterConfig
-      if not set(cluster_dict.keys()).issubset(valid_cluster_config_params):
-        raise exceptions.InvalidArgumentException(
-            '--cluster-config',
-            'Valid keys are: [id, zone, nodes, kms-key,'
-            ' autoscaling-min-nodes,autoscaling-max-nodes,'
-            ' autoscaling-cpu-target, autoscaling-storage-target,'
-            ' node-scaling-factor]. Received: {0}'.format(cluster_dict.keys()),
-        )
-      self._ConvertClusterConfigArgs(cluster_dict)
       if ('autoscaling-min-nodes' in cluster_dict or
           'autoscaling-max-nodes' in cluster_dict or
           'autoscaling-cpu-target' in cluster_dict or

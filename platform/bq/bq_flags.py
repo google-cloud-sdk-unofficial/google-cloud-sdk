@@ -5,8 +5,6 @@ import enum
 import os
 from typing import Optional
 
-
-
 from absl import flags
 
 
@@ -42,6 +40,14 @@ API: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'api',
     'https://bigquery.googleapis.com',
     'API endpoint to talk to.'
+)
+
+flags.register_validator(
+    'api',
+    lambda val: val is None or not (val.startswith("'") or val.startswith('"')),
+    message=(
+        'The parsed api flag value should not still be wrapped with quotes.'
+    ),
 )
 
 UNIVERSE_DOMAIN: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(

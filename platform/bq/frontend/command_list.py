@@ -7,8 +7,6 @@ from __future__ import print_function
 
 from typing import Optional
 
-
-
 from absl import app
 from absl import flags
 

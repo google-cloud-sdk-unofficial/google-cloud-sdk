@@ -15,7 +15,7 @@ class Book(librarybookstate.BookStateMixin):
 
 class RestrictedBook(Book):
     def __init__(self):
-        super(RestrictedBook, self).__init__()
+        super().__init__()
         self._authorized_users = []
 
     def authorize(self, name):
@@ -26,7 +26,11 @@ class RestrictedBook(Book):
         if user in self._authorized_users:
             super().checkout()
         else:
-            raise Exception("{0} could not check out restricted book".format(user if user is not None else "anonymous"))
+            raise Exception(
+                "{} could not check out restricted book".format(
+                    user if user is not None else "anonymous"
+                )
+            )
 
 
 def run_demo():
@@ -41,9 +45,9 @@ def run_demo():
     print(book)
     try:
         book.checkout()
-    except Exception as e: # statemachine.InvalidTransitionException:
+    except librarybookstate.BookState.InvalidTransitionException as e:
         print(e)
-        print('..cannot check out reserved book')
+        print("..cannot check out reserved book")
     book.release()
     print(book)
     book.checkout()
@@ -58,13 +62,13 @@ def run_demo():
         try:
             restricted_book.checkout(name)
         except Exception as e:
-            print('..' + str(e))
+            print(".." + str(e))
         else:
-            print('checkout to', name)
+            print("checkout to", name)
     print(restricted_book)
     restricted_book.checkin()
     print(restricted_book)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_demo()

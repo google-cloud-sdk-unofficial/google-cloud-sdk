@@ -81,6 +81,7 @@ class Create(base.CreateCommand):
     container_flags.AddOfflineRebootTtL(parser)
     container_flags.AddReleaseChannel(parser)
     container_flags.AddVersion(parser)
+    container_flags.AddZoneStorageKMSKey(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -150,4 +151,3 @@ class CreateAlpha(Create):
     container_flags.AddServicesIPV6CIDR(parser)
     container_flags.AddExternalLbIpv6AddressPools(parser)
     container_flags.AddExternalLoadBalancerAddressPools(parser)
-    container_flags.AddZoneStorageKMSKey(parser)

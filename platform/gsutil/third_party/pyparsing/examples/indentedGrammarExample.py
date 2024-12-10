@@ -10,6 +10,7 @@
 
 from pyparsing import *
 
+
 data = """\
 def A(z):
   A1
@@ -32,19 +33,20 @@ def spam(x,y):
 """
 
 
-indentStack = [1]
 stmt = Forward()
-suite = indentedBlock(stmt, indentStack)
+suite = IndentedBlock(stmt)
 
 identifier = Word(alphas, alphanums)
-funcDecl = ("def" + identifier + Group( "(" + Optional( delimitedList(identifier) ) + ")" ) + ":")
-funcDef = Group( funcDecl + suite )
+funcDecl = (
+    "def" + identifier + Group("(" + Optional(delimitedList(identifier)) + ")") + ":"
+)
+funcDef = Group(funcDecl + suite)
 
 rvalue = Forward()
 funcCall = Group(identifier + "(" + Optional(delimitedList(rvalue)) + ")")
 rvalue << (funcCall | identifier | Word(nums))
 assignment = Group(identifier + "=" + rvalue)
-stmt << ( funcDef | assignment | identifier )
+stmt << (funcDef | assignment | identifier)
 
 module_body = OneOrMore(stmt)
 

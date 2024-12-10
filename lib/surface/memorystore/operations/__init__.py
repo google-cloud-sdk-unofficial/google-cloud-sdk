@@ -29,7 +29,6 @@ class OperationsBETA(base.Group):
   """Manage Memorystore operations."""
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class OperationsGA(base.Group):

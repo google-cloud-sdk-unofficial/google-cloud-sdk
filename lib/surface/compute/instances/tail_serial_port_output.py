@@ -93,6 +93,7 @@ class TailSerialPortOutput(base.Command):
 
       result = objects[0]
       log.out.write(result.contents)
+      log.out.flush()
       start = result.next
 
       # If we didn't get any results, we sleep for a short time before the next

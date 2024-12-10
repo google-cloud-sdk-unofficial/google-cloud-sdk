@@ -58,6 +58,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAllocatedIPRangeName(parser)
     flags.AddContinuousBackupConfigFlagsForCreateSecondary(parser)
     flags.AddAutomatedBackupFlagsForCreateSecondary(parser, alloydb_messages)
+    flags.AddTags(parser)
     kms_resource_args.AddKmsKeyResourceArg(
         parser,
         'cluster',
@@ -111,7 +112,6 @@ class CreateSecondaryBeta(CreateSecondary):
   @classmethod
   def Args(cls, parser):
     super(CreateSecondaryBeta, cls).Args(parser)
-    flags.AddTagsArg(parser)
 
   def ConstructCreateSecondaryRequestFromArgs(
       self, alloydb_messages, location_ref, args):

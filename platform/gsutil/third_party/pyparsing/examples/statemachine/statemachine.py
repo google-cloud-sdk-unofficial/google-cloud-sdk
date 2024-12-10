@@ -8,14 +8,8 @@ import sys
 import os
 import types
 import importlib
-try:
-    import urllib.parse
-    url_parse = urllib.parse.urlparse
-except ImportError:
-    print("import error, Python 2 not supported")
-    raise
-    import urllib
-    url_parse = urllib.parse
+import importlib.machinery
+from urllib.parse import urlparse
 
 
 DEBUG = False
@@ -25,7 +19,8 @@ import pyparsing as pp
 
 # define basic exception for invalid state transitions - state machine classes will subclass to
 # define their own specific exception type
-class InvalidTransitionException(Exception): pass
+class InvalidTransitionException(Exception):
+    pass
 
 
 ident = pp.Word(pp.alphas + "_", pp.alphanums + "_$")
@@ -35,17 +30,30 @@ ident = pp.Word(pp.alphas + "_", pp.alphanums + "_$")
 def no_keywords_allowed(s, l, t):
     wd = t[0]
     return not keyword.iskeyword(wd)
-ident.addCondition(no_keywords_allowed, message="cannot use a Python keyword for state or transition identifier")
+
+
+ident.addCondition(
+    no_keywords_allowed,
+    message="cannot use a Python keyword for state or transition identifier",
+)
 
 stateTransition = ident("from_state") + "->" + ident("to_state")
-stateMachine = (pp.Keyword("statemachine") + ident("name") + ":"
-                + pp.OneOrMore(pp.Group(stateTransition))("transitions"))
+stateMachine = (
+    pp.Keyword("statemachine")
+    + ident("name")
+    + ":"
+    + pp.OneOrMore(pp.Group(stateTransition))("transitions")
+)
 
-namedStateTransition = (ident("from_state")
-                        + "-(" + ident("transition") + ")->"
-                        + ident("to_state"))
-namedStateMachine = (pp.Keyword("statemachine") + ident("name") + ":"
-                     + pp.OneOrMore(pp.Group(namedStateTransition))("transitions"))
+namedStateTransition = (
+    ident("from_state") + "-(" + ident("transition") + ")->" + ident("to_state")
+)
+namedStateMachine = (
+    pp.Keyword("statemachine")
+    + ident("name")
+    + ":"
+    + pp.OneOrMore(pp.Group(namedStateTransition))("transitions")
+)
 
 
 def expand_state_definition(source, loc, tokens):
@@ -65,49 +73,52 @@ def expand_state_definition(source, loc, tokens):
 
     # define base class for state classes
     baseStateClass = tokens.name
-    statedef.extend([
-        "class %s(object):" % baseStateClass,
-        "    def __str__(self):",
-        "        return self.__class__.__name__",
-
-        "    @classmethod",
-        "    def states(cls):",
-        "        return list(cls.__subclasses__())",
-
-        "    def next_state(self):",
-        "        return self._next_state_class()",
-    ])
+    statedef.extend(
+        [
+            f"class {baseStateClass}(object):",
+            "    def __str__(self):",
+            "        return self.__class__.__name__",
+            "    @classmethod",
+            "    def states(cls):",
+            "        return list(cls.__subclasses__())",
+            "    def next_state(self):",
+            "        return self._next_state_class()",
+        ]
+    )
 
     # define all state classes
-    statedef.extend("class {0}({1}): pass".format(s, baseStateClass) for s in states)
+    statedef.extend("class {}({}): pass".format(s, baseStateClass) for s in states)
 
     # define state->state transitions
-    statedef.extend("{0}._next_state_class = {1}".format(s, fromTo[s]) for s in states if s in fromTo)
+    statedef.extend(
+        "{}._next_state_class = {}".format(s, fromTo[s]) for s in states if s in fromTo
+    )
 
-    statedef.extend([
-        "class {baseStateClass}Mixin:".format(baseStateClass=baseStateClass),
-        "    def __init__(self):",
-        "        self._state = None",
-
-        "    def initialize_state(self, init_state):",
-        "        if issubclass(init_state, {baseStateClass}):".format(baseStateClass=baseStateClass),
-        "            init_state = init_state()",
-        "        self._state = init_state",
-
-        "    @property",
-        "    def state(self):",
-        "        return self._state",
-
-        "    # get behavior/properties from current state",
-        "    def __getattr__(self, attrname):",
-        "        attr = getattr(self._state, attrname)",
-        "        return attr",
-
-        "    def __str__(self):",
-        "       return '{0}: {1}'.format(self.__class__.__name__, self._state)",
-        ])
+    statedef.extend(
+        [
+            "class {baseStateClass}Mixin:".format(baseStateClass=baseStateClass),
+            "    def __init__(self):",
+            "        self._state = None",
+            "    def initialize_state(self, init_state):",
+            "        if issubclass(init_state, {baseStateClass}):".format(
+                baseStateClass=baseStateClass
+            ),
+            "            init_state = init_state()",
+            "        self._state = init_state",
+            "    @property",
+            "    def state(self):",
+            "        return self._state",
+            "    # get behavior/properties from current state",
+            "    def __getattr__(self, attrname):",
+            "        attr = getattr(self._state, attrname)",
+            "        return attr",
+            "    def __str__(self):",
+            "       return '{0}: {1}'.format(self.__class__.__name__, self._state)",
+        ]
+    )
 
     return ("\n" + indent).join(statedef) + "\n"
+
 
 stateMachine.setParseAction(expand_state_definition)
 
@@ -141,101 +152,114 @@ def expand_named_state_definition(source, loc, tokens):
             fromTo[s] = {}
 
     # define state transition class
-    statedef.extend([
-        "class {baseStateClass}Transition:".format(baseStateClass=baseStateClass),
-        "    def __str__(self):",
-        "        return self.transitionName",
-    ])
     statedef.extend(
-        "{tn_name} = {baseStateClass}Transition()".format(tn_name=tn,
-                                                          baseStateClass=baseStateClass)
-        for tn in transitions)
-    statedef.extend("{tn_name}.transitionName = '{tn_name}'".format(tn_name=tn)
-                    for tn in transitions)
+        [
+            "class {baseStateClass}Transition:".format(baseStateClass=baseStateClass),
+            "    def __str__(self):",
+            "        return self.transitionName",
+        ]
+    )
+    statedef.extend(
+        "{tn_name} = {baseStateClass}Transition()".format(
+            tn_name=tn, baseStateClass=baseStateClass
+        )
+        for tn in transitions
+    )
+    statedef.extend(
+        "{tn_name}.transitionName = '{tn_name}'".format(tn_name=tn)
+        for tn in transitions
+    )
 
     # define base class for state classes
-    statedef.extend([
-        "class %s(object):" % baseStateClass,
-        "    from statemachine import InvalidTransitionException as BaseTransitionException",
-        "    class InvalidTransitionException(BaseTransitionException): pass",
-        "    def __str__(self):",
-        "        return self.__class__.__name__",
-
-        "    @classmethod",
-        "    def states(cls):",
-        "        return list(cls.__subclasses__())",
-
-        "    @classmethod",
-        "    def next_state(cls, name):",
-        "        try:",
-        "            return cls.tnmap[name]()",
-        "        except KeyError:",
-        "            raise cls.InvalidTransitionException('%s does not support transition %r'% (cls.__name__, name))",
-
-        "    def __bad_tn(name):",
-        "        def _fn(cls):",
-        "            raise cls.InvalidTransitionException('%s does not support transition %r'% (cls.__name__, name))",
-        "        _fn.__name__ = name",
-        "        return _fn",
-    ])
+    statedef.extend(
+        [
+            f"class {baseStateClass}(object):",
+            "    from statemachine import InvalidTransitionException as BaseTransitionException",
+            "    class InvalidTransitionException(BaseTransitionException): pass",
+            "    def __str__(self):",
+            "        return self.__class__.__name__",
+            "    @classmethod",
+            "    def states(cls):",
+            "        return list(cls.__subclasses__())",
+            "    @classmethod",
+            "    def next_state(cls, name):",
+            "        try:",
+            "            return cls.tnmap[name]()",
+            "        except KeyError:",
+            "            raise cls.InvalidTransitionException(f'{cls.__name__} does not support transition {name!r}'",
+            "    def __bad_tn(name):",
+            "        def _fn(cls):",
+            "            raise cls.InvalidTransitionException(f'{cls.__name__} does not support transition {name!r}'",
+            "        _fn.__name__ = name",
+            "        return _fn",
+        ]
+    )
 
     # define default 'invalid transition' methods in base class, valid transitions will be implemented in subclasses
     statedef.extend(
         "    {tn_name} = classmethod(__bad_tn({tn_name!r}))".format(tn_name=tn)
-        for tn in transitions)
+        for tn in transitions
+    )
 
     # define all state classes
-    statedef.extend("class %s(%s): pass" % (s, baseStateClass)
-                    for s in states)
+    statedef.extend("class {}({}): pass".format(s, baseStateClass) for s in states)
 
     # define state transition methods for valid transitions from each state
     for s in states:
         trns = list(fromTo[s].items())
-        # statedef.append("%s.tnmap = {%s}" % (s, ", ".join("%s:%s" % tn for tn in trns)))
-        statedef.extend("%s.%s = classmethod(lambda cls: %s())" % (s, tn_, to_)
-                        for tn_, to_ in trns)
-
-    statedef.extend([
-        "{baseStateClass}.transitions = classmethod(lambda cls: [{transition_class_list}])".format(
-            baseStateClass=baseStateClass,
-            transition_class_list = ', '.join("cls.{0}".format(tn) for tn in transitions)
-        ),
-        "{baseStateClass}.transition_names = [tn.__name__ for tn in {baseStateClass}.transitions()]".format(
-            baseStateClass=baseStateClass
+        # statedef.append(f"{s}.tnmap = {{{', '.join('%s:%s' % tn for tn in trns)}}}")
+        statedef.extend(
+            f"{s}.{tn_} = classmethod(lambda cls: {to_}())"
+            for tn_, to_ in trns
         )
-    ])
+
+    statedef.extend(
+        [
+            "{baseStateClass}.transitions = classmethod(lambda cls: [{transition_class_list}])".format(
+                baseStateClass=baseStateClass,
+                transition_class_list=", ".join(
+                    "cls.{}".format(tn) for tn in transitions
+                ),
+            ),
+            "{baseStateClass}.transition_names = [tn.__name__ for tn in {baseStateClass}.transitions()]".format(
+                baseStateClass=baseStateClass
+            ),
+        ]
+    )
 
     # define <state>Mixin class for application classes that delegate to the state
-    statedef.extend([
-        "class {baseStateClass}Mixin:".format(baseStateClass=baseStateClass),
-        "    def __init__(self):",
-        "        self._state = None",
-
-        "    def initialize_state(self, init_state):",
-        "        if issubclass(init_state, {baseStateClass}):".format(baseStateClass=baseStateClass),
-        "            init_state = init_state()",
-        "        self._state = init_state",
-
-        "    @property",
-        "    def state(self):",
-        "        return self._state",
-
-        "    # get behavior/properties from current state",
-        "    def __getattr__(self, attrname):",
-        "        attr = getattr(self._state, attrname)",
-        "        return attr",
-
-        "    def __str__(self):",
-        "       return '{0}: {1}'.format(self.__class__.__name__, self._state)",
-
-    ])
+    statedef.extend(
+        [
+            "class {baseStateClass}Mixin:".format(baseStateClass=baseStateClass),
+            "    def __init__(self):",
+            "        self._state = None",
+            "    def initialize_state(self, init_state):",
+            "        if issubclass(init_state, {baseStateClass}):".format(
+                baseStateClass=baseStateClass
+            ),
+            "            init_state = init_state()",
+            "        self._state = init_state",
+            "    @property",
+            "    def state(self):",
+            "        return self._state",
+            "    # get behavior/properties from current state",
+            "    def __getattr__(self, attrname):",
+            "        attr = getattr(self._state, attrname)",
+            "        return attr",
+            "    def __str__(self):",
+            "       return '{0}: {1}'.format(self.__class__.__name__, self._state)",
+        ]
+    )
 
     # define transition methods to be delegated to the _state instance variable
     statedef.extend(
-        "    def {tn_name}(self): self._state = self._state.{tn_name}()".format(tn_name=tn)
+        "    def {tn_name}(self): self._state = self._state.{tn_name}()".format(
+            tn_name=tn
+        )
         for tn in transitions
     )
     return ("\n" + indent).join(statedef) + "\n"
+
 
 namedStateMachine.setParseAction(expand_named_state_definition)
 
@@ -243,7 +267,7 @@ namedStateMachine.setParseAction(expand_named_state_definition)
 # ======================================================================
 # NEW STUFF - Matt Anderson, 2009-11-26
 # ======================================================================
-class SuffixImporter(object):
+class SuffixImporter:
     """An importer designed using the mechanism defined in :pep:`302`. I read
     the PEP, and also used Doug Hellmann's PyMOTW article `Modules and
     Imports`_, as a pattern.
@@ -253,17 +277,17 @@ class SuffixImporter(object):
     Define a subclass that specifies a :attr:`suffix` attribute, and
     implements a :meth:`process_filedata` method. Then call the classmethod
     :meth:`register` on your class to actually install it in the appropriate
-    places in :mod:`sys`. """
+    places in :mod:`sys`."""
 
-    scheme = 'suffix'
+    scheme = "suffix"
     suffix = None
     path_entry = None
 
     @classmethod
     def trigger_url(cls):
         if cls.suffix is None:
-            raise ValueError('%s.suffix is not set' % cls.__name__)
-        return 'suffix:%s' % cls.suffix
+            raise ValueError(f"{cls.__name__}.suffix is not set")
+        return f"suffix:{cls.suffix}"
 
     @classmethod
     def register(cls):
@@ -271,7 +295,7 @@ class SuffixImporter(object):
         sys.path.append(cls.trigger_url())
 
     def __init__(self, path_entry):
-        pr = url_parse(str(path_entry))
+        pr = urlparse(str(path_entry))
         if pr.scheme != self.scheme or pr.path != self.suffix:
             raise ImportError()
         self.path_entry = path_entry
@@ -286,7 +310,7 @@ class SuffixImporter(object):
             # it probably isn't even a filesystem path
             finder = sys.path_importer_cache.get(dirpath)
             if isinstance(finder, (type(None), importlib.machinery.FileFinder)):
-                checkpath = os.path.join(dirpath, '{0}.{1}'.format(fullname, self.suffix))
+                checkpath = os.path.join(dirpath, "{}.{}".format(fullname, self.suffix))
                 yield checkpath
 
     def find_module(self, fullname, path=None):
@@ -318,25 +342,26 @@ class SuffixImporter(object):
 
 
 class PystateImporter(SuffixImporter):
-    suffix = 'pystate'
+    suffix = "pystate"
 
     def process_filedata(self, module, data):
         # MATT-NOTE: re-worked :func:`get_state_machine`
 
         # convert any statemachine expressions
-        stateMachineExpr = (stateMachine | namedStateMachine).ignore(pp.pythonStyleComment)
+        stateMachineExpr = (stateMachine | namedStateMachine).ignore(
+            pp.pythonStyleComment
+        )
         generated_code = stateMachineExpr.transformString(data)
 
-        if DEBUG: print(generated_code)
+        if DEBUG:
+            print(generated_code)
 
         # compile code object from generated code
         # (strip trailing spaces and tabs, compile doesn't like
         # dangling whitespace)
-        COMPILE_MODE = 'exec'
+        COMPILE_MODE = "exec"
 
-        codeobj = compile(generated_code.rstrip(" \t"),
-                          module.__file__,
-                          COMPILE_MODE)
+        codeobj = compile(generated_code.rstrip(" \t"), module.__file__, COMPILE_MODE)
 
         exec(codeobj, module.__dict__)
 
@@ -344,4 +369,4 @@ class PystateImporter(SuffixImporter):
 PystateImporter.register()
 
 if DEBUG:
-    print("registered {0!r} importer".format(PystateImporter.suffix))
+    print("registered {!r} importer".format(PystateImporter.suffix))

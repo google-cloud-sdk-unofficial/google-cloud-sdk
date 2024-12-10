@@ -9,21 +9,21 @@ Any ``CharsetMatch`` object can be transformed to exploitable ``str`` variable.
 
  ::
 
-    my_byte_str = '我没有埋怨，磋砣的只是一些时间。'.encode('gb18030')
+    my_byte_str = 'Bсеки човек има право на образование.'.encode('cp1251')
 
     # Assign return value so we can fully exploit result
     result = from_bytes(
         my_byte_str
     ).best()
 
-    # This should print '我没有埋怨，磋砣的只是一些时间。'
+    # This should print 'Bсеки човек има право на образование.'
     print(str(result))
 
 
 Logging
 -------
 
-Prior to the version 2.0.10 you may encounter some unexpected logs in your streams.
+Prior to the version 2.0.11 you may encounter some unexpected logs in your streams.
 Something along the line of:
 
  ::
@@ -44,3 +44,21 @@ On `DEBUG` only one entry will be observed and that is about the detection resul
 
 Then regarding the others log entries, they will be pushed as `Level 5`. Commonly known as TRACE level, but we do
 not register it globally.
+
+
+Detect binaries
+---------------
+
+This package offers a neat way to detect files that can be considered as 'binaries'
+meaning that it is not likely to be a text-file.
+
+ ::
+
+    from charset_normalizer import is_binary
+
+    # It can receive both a path or bytes or even a file pointer.
+    result = is_binary("./my-file.ext")
+
+    # This should print 'True' or 'False'
+    print(result)
+

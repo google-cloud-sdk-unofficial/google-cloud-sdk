@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from tests.compat import mock, unittest
 import os
@@ -371,7 +371,7 @@ class TestProvider(unittest.TestCase):
             p = provider.Provider('aws')
 
     def test_refresh_credentials(self):
-        now = datetime.utcnow()
+        now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
         first_expiration = (now + timedelta(seconds=10)).strftime(
             "%Y-%m-%dT%H:%M:%SZ")
         credentials = {

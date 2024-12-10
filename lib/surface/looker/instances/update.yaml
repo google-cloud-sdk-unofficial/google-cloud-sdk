@@ -165,6 +165,35 @@
           api_field: instance.userMetadata.additionalDeveloperUserCount
           help_text: |
             Number of additional Developer Users to allocate to the Looker Instance.
+    # Group for Gemini AI
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Gemini AI - Gemini AI is a powerful AI model that can be used to answer questions,
+          generate content, and perform a variety of other tasks.
+        params:
+        - arg_name: gemini-enabled
+          api_field: instance.geminiEnabled
+          type: bool
+          required: true
+          help_text: |
+            This specifies whether Gemini AI is enabled on the Looker instance. To disable Gemini AI,
+            use the `--no-gemini-enabled` flag.
+        - arg_name: gemini-preview-tester-enabled
+          api_field: instance.geminiAiConfig.trustedTester
+          required: true
+          type: bool
+          help_text: |
+            This specifies whether user opts in for Gemini AI public preview for the Looker instance. To disable Gemini AI public preview,
+            use the `--no-gemini-preview-tester-enabled` flag.
+        - arg_name: gemini-prompt-log-enabled
+          api_field: instance.geminiAiConfig.promptLogging
+          required: true
+          type: bool
+          help_text: |
+            This specifies whether user opts in for Gemini AI prompt logging for the Looker instance. To disable Gemini AI prompt logging,
+            use the `--no-gemini-prompt-log-enabled` flag.
     # Group for Custom Domain
     - group:
         required: false
@@ -237,6 +266,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateGeminiAiConfig
     GA:
       api_version: v1
       modify_request_hooks:

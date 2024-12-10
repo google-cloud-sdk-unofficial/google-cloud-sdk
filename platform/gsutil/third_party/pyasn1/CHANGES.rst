@@ -1,3 +1,203 @@
+Revision 0.6.1, released 10-09-2024
+---------------------------------------
+
+- Added support for Python 3.13 and updated GitHub Actions
+  [pr #73](https://github.com/pyasn1/pyasn1/pull/73/)
+- Removed Python 2 support and related code
+  [pr #62](https://github.com/pyasn1/pyasn1/pull/62/)
+  [pr #61](https://github.com/pyasn1/pyasn1/pull/61/)
+  [pr #60](https://github.com/pyasn1/pyasn1/pull/60/)
+- Improved error handling and consistency
+  [pr #71](https://github.com/pyasn1/pyasn1/pull/71/)
+  [pr #70](https://github.com/pyasn1/pyasn1/pull/70/)
+- Runtime deprecation of `tagMap` and `typeMap` aliases
+  [pr #72](https://github.com/pyasn1/pyasn1/pull/72/)
+- Fixed duplicated and missing declarations
+  [pr #64](https://github.com/pyasn1/pyasn1/pull/64/)
+- Cleaned documentation and comments
+  [pr #63](https://github.com/pyasn1/pyasn1/pull/63/)
+- Removed bdist_wheel universal flag from setup.cfg
+  [pr #69](https://github.com/pyasn1/pyasn1/pull/69/)
+
+Revision 0.6.0, released 26-03-2024
+---------------------------------------
+
+- Added support for previously missing `RELATIVE-OID` construct
+  [pr #48](https://github.com/pyasn1/pyasn1/pull/48/)
+- Updated link to Layman's Guide
+  Now it provides a link to links to a formatted PDF version of the paper,
+  at a stable domain (researchgate), using https
+  [pr #50](https://github.com/pyasn1/pyasn1/pull/50/)
+- Removed support for EOL Python 2.7, 3.6, 3.7
+  [pr #56](https://github.com/pyasn1/pyasn1/pull/56/)
+
+Revision 0.5.1, released 20-11-2023
+---------------------------------------
+
+- Added support for PyPy 3.10 and Python 3.12
+  [pr #32](https://github.com/pyasn1/pyasn1/pull/32/)
+- Updated RTD configuration to include a dummy index.rst
+  redirecting to contents.html, ensuring compatibility with
+  third-party documentation and search indexes.
+  [pr #47](https://github.com/pyasn1/pyasn1/pull/47/)
+- Fixed the API breakage wih decoder.decode(substrateFun=...).
+
+  A substrateFun passed to ``decoder.decode()`` can now be either
+  v0.4 Non-Streaming or v0.5 Streaming. pyasn1 will detect and
+  handle both cases transparently.
+
+  A substrateFun passed to one of the new streaming decoders is
+  still expected to be v0.5 Streaming only.
+  [pr #30](https://github.com/pyasn1/pyasn1/pull/30/)
+  [pr #39](https://github.com/pyasn1/pyasn1/pull/39/)
+
+Revision 0.5.0, released 19-04-2023
+---------------------------------------
+
+- Change `RealEncoder.supportIndefLenMode` type to a boolean
+  [pr #21](https://github.com/pyasn1/pyasn1/pull/21/)
+- Fix CI for py39 test environment
+  [pr #25](https://github.com/pyasn1/pyasn1/pull/25/)
+- Replace all snmplabs.com links
+  [issue #4](https://github.com/pyasn1/pyasn1/issues/4)
+- Use correct SPDX identifier for the license
+  [pr #16](https://github.com/pyasn1/pyasn1/pull/16)
+- Re-add ``tagMap`` and ``typeMap`` module level attributes to all
+  encoder and decoder modules. They are aliases for ``TAG_MAP`` and
+  ``TYPE_MAP``, [issue #9](https://github.com/pyasn1/pyasn1/issues/9).
+- Restore API for passing for ``tagMap`` and ``typeMap`` arguments
+  to ``Encoder`` and ``Decoder`` classes by name and position,
+  [issue #12](https://github.com/pyasn1/pyasn1/issues/12).
+- Re-add ``tagMap`` and ``typeMap`` module level attributes to all
+  encoder and decoder modules. They are aliases for ``TAG_MAP`` and
+  ``TYPE_MAP``, [issue #9](https://github.com/pyasn1/pyasn1/issues/9).
+- Restore API for passing for ``tagMap`` and ``typeMap`` arguments
+  to ``Encoder`` and ``Decoder`` classes by name and position,
+- Make BER/CER/DER decoders streaming and suspendible
+
+  The goal of this change is to make the decoder yielding on input
+  data starvation and resuming from where it stopped whenever the
+  caller decides to try again (hopefully making sure that some more
+  input becomes available).
+
+  This change makes it possible for the decoder to operate on streams
+  of data (meaning that the entire DER blob might not be immediately
+  available on input).
+
+  On top of that, the decoder yields partially reconstructed ASN.1
+  object on input starvation making it possible for the caller to
+  inspect what has been decoded so far and possibly consume partial
+  ASN.1 data.
+
+  All these new feature are natively available through
+  `StreamingDecoder` class. Previously published API is implemented
+  as a thin wrapper on top of that ensuring backward compatibility.
+- Added support for Python 3.8, 3.9, 3.10, 3.11
+- Removed support for EOL Pythons 2.4, 2.5, 2.6, 3.2, 3.3, 3.4, 3.5
+- Added support for PyPy 3.7, 3.8, 3.9
+- Modernized packaging and testing. pyasn1 now uses ``setup.cfg``,
+  ``pyproject.toml``, [build](https://pypi.org/project/build/), and
+  GitHub Actions.
+- PyPI package ownership for `pyasn1` and `pyasn1-module` has been
+  transfered to *Christian Heimes* and *Simon Pichugin* in
+  [PyPI support ticket #2090](https://github.com/pypa/pypi-support/issues/2090).
+- The upstream repositories for `pyasn1` and `pyasn1-modules` are now
+  in the GitHub organization https://github.com/pyasn1/.
+
+Revision 0.4.8, released 16-11-2019
+-----------------------------------
+
+- Added ability of combining `SingleValueConstraint` and
+  `PermittedAlphabetConstraint` objects into one for proper modeling
+  `FROM ... EXCEPT ...` ASN.1 clause.
+
+Revision 0.4.7, released 01-09-2019
+-----------------------------------
+
+- Added `isInconsistent` property to all constructed types. This property
+  conceptually replaces `verifySizeSpec` method to serve a more general
+  purpose e.g. ensuring all required fields are in a good shape. By default
+  this check invokes subtype constraints verification and is run by codecs
+  on value de/serialisation.
+- Deprecate `subtypeSpec` attributes and keyword argument. It is now
+  recommended to pass `ValueSizeConstraint`, as well as all other constraints,
+  to `subtypeSpec`.
+- Fixed a design bug in a way of how the items assigned to constructed
+  types are verified. Now if `Asn1Type`-based object is assigned, its
+  compatibility is verified based on having all tags and constraint
+  objects as the type in field definition. When a bare Python value is
+  assigned, then field type object is cloned and initialized with the
+  bare value (constraints verificaton would run at this moment).
+- Added `WithComponentsConstraint` along with related
+  `ComponentPresentConstraint` and `ComponentAbsentConstraint` classes
+  to be used with `Sequence`/`Set` types representing
+  `SET ... WITH COMPONENTS ...` like ASN.1 constructs.
+
+Revision 0.4.6, released 31-07-2019
+-----------------------------------
+
+- Added previously missing `SET OF ANY` construct encoding/decoding support.
+- Added `omitEmptyOptionals` option which is respected by `Sequence`
+  and `Set` encoders. When `omitEmptyOptionals` is set to `True`, empty
+  initialized optional components are not encoded. Default is `False`.
+- New elements to `SequenceOf`/`SetOf` objects can now be added at any
+  position - the requirement for the new elements to reside at the end
+  of the existing ones (i.e. s[len(s)] = 123) is removed.
+- List-like slicing support added to `SequenceOf`/`SetOf` objects.
+- Removed default initializer from `SequenceOf`/`SetOf` types to ensure
+  consistent behaviour with the rest of ASN.1 types. Before this change,
+  `SequenceOf`/`SetOf` instances immediately become value objects behaving
+  like an empty list. With this change, `SequenceOf`/`SetOf` objects
+  remain schema objects unless a component is added or `.clear()` is
+  called.
+  This change can potentially cause incompatibilities with existing
+  pyasn1 objects which assume `SequenceOf`/`SetOf` instances are value
+  objects right upon instantiation.
+  The behaviour of `Sequence`/`Set` types depends on the `componentType`
+  initializer: if on `componentType` is given, the behaviour is the
+  same as `SequenceOf`/`SetOf` have. IF `componentType` is given, but
+  neither optional nor defaulted components are present, the created
+  instance remains schema object, If, however, either optional or
+  defaulted component isi present, the created instance immediately
+  becomes a value object.
+- Added `.reset()` method to all constructed types to turn value object
+  into a schema object.
+- Added `PyAsn1UnicodeDecodeError`/`PyAsn1UnicodeDecodeError` exceptions
+  to help the caller treating unicode errors happening internally
+  to pyasn1 at the upper layers.
+- Added support for subseconds CER/DER encoding edge cases in
+  `GeneralizedTime` codec.
+- Fixed 3-digit fractional seconds value CER/DER encoding of
+  `GeneralizedTime`.
+- Fixed `AnyDecoder` to accept possible `TagMap` as `asn1Spec`
+  to make dumping raw value operational
+
+Revision 0.4.5, released 29-12-2018
+-----------------------------------
+
+- Debug logging refactored for more efficiency when disabled and
+  for more functionality when in use. Specifically, the global
+  LOG object can easily be used from any function/method, not just
+  from codec main loop as it used to be.
+- More debug logging added to BER family of codecs to ease encoding
+  problems troubleshooting.
+- Copyright notice extended to the year 2019
+- Fixed defaulted constructed SEQUENCE component initialization.
+
+Revision 0.4.4, released 26-07-2018
+-----------------------------------
+
+- Fixed native encoder type map to include all ASN.1 types
+  rather than just ambiguous ones
+- Fixed crash in `.prettyPrint` of `Sequence` and `Set` occurring
+  at OPTIONAL components
+
+Revision 0.4.3, released 23-05-2018
+-----------------------------------
+
+- Copyright notice extended to the year 2018
+- Fixed GeneralizedTime.asDateTime to perform milliseconds conversion
+  correctly
 
 Revision 0.4.2, released 23-11-2017
 -----------------------------------
@@ -342,7 +542,7 @@ Revision 0.1.7
 --------------
 
 - License updated to vanilla BSD 2-Clause to ease package use
-  (http://opensource.org/licenses/BSD-2-Clause).
+  (https://opensource.org/licenses/BSD-2-Clause).
 - Test suite made discoverable by unittest/unittest2 discovery feature.
 - Fix to decoder working on indefinite length substrate -- end-of-octets
   marker is now detected by both tag and value. Otherwise zero values may
@@ -406,7 +606,7 @@ Revision 0.1.4
 - Fix to BER Boolean decoder that allows other pre-computed
   values besides 0 and 1
 - Fix to leading 0x80 octet handling in DER/CER/DER ObjectIdentifier decoder.
-  See http://www.cosic.esat.kuleuven.be/publications/article-1432.pdf
+  See https://www.esat.kuleuven.be/cosic/publications/article-1432.pdf
 
 Revision 0.1.3
 --------------
@@ -592,7 +792,7 @@ Revision 0.0.5a
 Revision 0.0.4a
 ---------------
 
-* Asn1ItemBase.prettyPrinter() -> \*.prettyPrint()
+* Asn1Type.prettyPrinter() -> \*.prettyPrint()
 
 Revision 0.0.3a
 ---------------

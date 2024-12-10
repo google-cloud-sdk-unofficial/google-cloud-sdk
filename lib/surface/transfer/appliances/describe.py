@@ -20,7 +20,9 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.transfer.appliances import offline_import_printer
 from googlecloudsdk.command_lib.transfer.appliances import resource_args
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.DefaultUniverseOnly
@@ -52,6 +54,12 @@ class Describe(base.DescribeCommand):
   def Args(parser):
     resource_args.add_appliance_resource_arg(
         parser, resource_args.ResourceVerb.DESCRIBE)
+
+    resource_printer.RegisterFormatter(
+        offline_import_printer.OFFLINE_IMPORT_PRINTER_FORMAT,
+        offline_import_printer.OfflineImportPrinter,
+        hidden=True,
+    )
 
   def Run(self, args):
     client = apis.GetClientInstance('transferappliance', 'v1alpha1')

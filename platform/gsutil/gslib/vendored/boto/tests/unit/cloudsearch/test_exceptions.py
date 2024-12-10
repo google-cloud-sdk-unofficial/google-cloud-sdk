@@ -24,7 +24,7 @@ class CloudSearchJSONExceptionTest(CloudSearchSearchBaseTest):
         with mock.patch.object(json, 'loads', fake_loads_value_error):
             search = SearchConnection(endpoint=HOSTNAME)
 
-            with self.assertRaisesRegexp(SearchServiceException, 'non-json'):
+            with self.assertRaisesRegex(SearchServiceException, 'non-json'):
                 search.search(q='test')
 
     @unittest.skipUnless(hasattr(json, 'JSONDecodeError'),
@@ -33,5 +33,5 @@ class CloudSearchJSONExceptionTest(CloudSearchSearchBaseTest):
         with mock.patch.object(json, 'loads', fake_loads_json_error):
             search = SearchConnection(endpoint=HOSTNAME)
 
-            with self.assertRaisesRegexp(SearchServiceException, 'non-json'):
+            with self.assertRaisesRegex(SearchServiceException, 'non-json'):
                 search.search(q='test')

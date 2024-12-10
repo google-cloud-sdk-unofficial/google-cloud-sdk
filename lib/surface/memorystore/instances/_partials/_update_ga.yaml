@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update the configuration of a Memorystore instance.
     description: Update the configuration of a Memorystore instance.

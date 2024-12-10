@@ -22,5 +22,3 @@
       api_version: v1
     collection: memorystore.projects.locations.operations
     method: cancel
-  GA:
-    hidden: true

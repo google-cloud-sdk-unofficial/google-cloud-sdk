@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.command_lib.util.args import repeated
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class UpdatePerimetersGA(base.UpdateCommand):
   """Update an existing access zone."""
@@ -65,12 +66,13 @@ class UpdatePerimetersGA(base.UpdateCommand):
         ingress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
             args, 'ingress-policies'),
         egress_policies=perimeters.ParseUpdateDirectionalPoliciesArgs(
-            args, 'egress-policies'))
+            args, 'egress-policies'),
+        etag=args.etag)
 
   def Patch(self, client, args, result, perimeter_ref, description, title,
             perimeter_type, resources, restricted_services, levels,
             vpc_allowed_services, enable_vpc_accessible_services,
-            ingress_policies, egress_policies):
+            ingress_policies, egress_policies, etag):
     return client.Patch(
         perimeter_ref,
         description=description,
@@ -82,7 +84,8 @@ class UpdatePerimetersGA(base.UpdateCommand):
         vpc_allowed_services=vpc_allowed_services,
         enable_vpc_accessible_services=enable_vpc_accessible_services,
         ingress_policies=ingress_policies,
-        egress_policies=egress_policies)
+        egress_policies=egress_policies,
+        etag=etag)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

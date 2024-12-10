@@ -77,9 +77,8 @@
           - api_field: value
     - api_field: backup.tags.additionalProperties
       arg_name: tags
-      release_tracks: [GA]
-      # TODO(b/350663939): Remove hidden as part of GA launch.
-      hidden: true
+      release_tracks: [BETA, GA]
+      required: false
       metavar: KEY=VALUE
       help_text: |
         List of tag KEY=VALUE pairs to add.

@@ -38,15 +38,7 @@ class Delete(base.DeleteCommand):
 
   @staticmethod
   def Args(parser):
-    parser.add_argument(
-        '--force',
-        required=False,
-        action='store_true',
-        help=(
-            'Force deletion of the Fleet Package and Releases of its'
-            ' Resource Bundle.'
-        ),
-    )
+    flags.AddForceDeleteFlag(parser, 'Fleet Package')
     concept_parsers.ConceptParser.ForResource(
         'fleet_package',
         flags.GetFleetPackageResourceSpec(),

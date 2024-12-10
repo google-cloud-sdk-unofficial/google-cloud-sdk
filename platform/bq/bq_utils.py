@@ -1,18 +1,16 @@
 #!/usr/bin/env python
 """A library of functions to handle bq flags consistently."""
 
-import copy
 import json
 import os
 import pkgutil
 import platform
 import sys
 import textwrap
-from typing import Dict, List, Literal, Optional, TextIO, Union
+from typing import Dict, List, Literal, Optional, TextIO
 
 from absl import app
 from absl import flags
-from google.auth import credentials as google_credentials
 from google.auth import version as google_auth_version
 from google.oauth2 import credentials as google_oauth2
 import httplib2
@@ -229,30 +227,6 @@ def GetEffectiveQuotaProjectIDForHTTPHeader(
   )
 
 
-def GetSanitizedCredentialForDiscoveryRequest(
-    use_google_auth: bool,
-    credentials: Union[
-        'google_oauth2.Credentials', 'google_credentials.Credentials'
-    ],
-) -> Union['google_oauth2.Credentials', 'google_credentials.Credentials']:
-  """Return the sanitized input credentials used to make discovery requests.
-
-  When the credentials object is not Google Auth, return the original
-  credentials. When it's of type google.oauth2.Credentials, return a copy of the
-  original credentials without quota project ID. The returned credentials object
-  is used in bigquery_client to construct an http object for discovery requests.
-
-  Args:
-    use_google_auth: True if Google Auth credentials should be used.
-    credentials: The credentials object.
-  """
-  if use_google_auth and isinstance(credentials, google_oauth2.Credentials):
-    sanitized_credentials = copy.deepcopy(credentials)
-    sanitized_credentials._quota_project_id = None  # pylint: disable=protected-access
-    return sanitized_credentials
-  return credentials
-
-
 def GetPlatformString() -> str:
   return ':'.join([
       platform.python_implementation(),
@@ -370,7 +344,7 @@ def ParseTags(tags: str) -> Dict[str, str]:
     raise app.UsageError('No tags supplied')
   tags_dict = {}
   for key_value in tags.split(','):
-    k, _, v = key_value.partition(':')
+    k, _, v = key_value.rpartition(':')
     k = k.strip()
     if not k:
       raise app.UsageError('Tag key cannot be None')
@@ -388,7 +362,8 @@ def ParseTagKeys(tag_keys: str) -> List[str]:
 
   Args:
     tag_keys: A comma separated user-supplied string representing tag keys.  It
-      is expected to be in the format "key1,key2".
+      is expected to be in the format "key1,key2" or
+      "tpczero-system:key1,tpczero-system:key2".
 
   Returns:
     A list of tag keys.
@@ -406,8 +381,6 @@ def ParseTagKeys(tag_keys: str) -> List[str]:
       raise app.UsageError('Tag key cannot be None')
     if key in tags_set:
       raise app.UsageError('Cannot specify tag key "%s" multiple times' % key)
-    if key.find(':') != -1:
-      raise app.UsageError('Specify only tag key for "%s"' % key)
     tags_set.add(key)
   return list(tags_set)
 

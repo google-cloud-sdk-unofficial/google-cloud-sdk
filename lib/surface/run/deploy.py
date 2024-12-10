@@ -121,6 +121,7 @@ class Deploy(base.Command):
   @classmethod
   def CommonArgs(cls, parser):
     flags.AddAllowUnauthenticatedFlag(parser)
+    flags.AddAllowUnencryptedBuildFlag(parser)
     flags.AddBinAuthzPolicyFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags.AddCloudSQLFlags(parser)
@@ -574,6 +575,32 @@ class Deploy(base.Command):
 
     required_apis = self._GetRequiredApis(args)
     if build_from_source:
+      if flags.FlagIsExplicitlySet(
+          args, 'key'
+      ) and not flags.FlagIsExplicitlySet(args, 'allow_unencrypted_build'):
+        if not console_io.CanPrompt():
+          raise c_exceptions.ConflictingArgumentsException(
+              '--key',
+              'This source deployment involves a build process which does not'
+              ' support customer-managed encryption keys (CMEK). The current'
+              ' command is executed in a non-interactive session, it cannot'
+              ' prompt the user to acknowledge these limitations. Re-run the'
+              ' command in an interactive session where prompting is'
+              ' available.',
+          )
+        if not console_io.PromptContinue(
+            message=(
+                (
+                    'This source deployment involves a build process which does'
+                    ' not support customer-managed encryption keys (CMEK). If'
+                    ' you choose to continue, compliance will be limited to'
+                    ' only the deployed container, and will not apply to the'
+                    ' build sources and artifacts. Would you like to continue?'
+                ),
+            )
+        ):
+          return None
+
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
 

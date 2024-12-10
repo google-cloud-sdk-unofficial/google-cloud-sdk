@@ -401,6 +401,12 @@ def _get_container_run_command(
   if args.s3_compatible_mode:
     # TODO(b/238213039): Remove when this flag becomes optional.
     agent_args.append('--enable-s3')
+
+  # Propagate universe domain to the agent if available.
+  if not properties.IsDefaultUniverse():
+    universe_domain = properties.VALUES.core.universe_domain.Get()
+    agent_args.append('--universe-domain={}'.format(universe_domain))
+
   return base_container_command + agent_args
 
 

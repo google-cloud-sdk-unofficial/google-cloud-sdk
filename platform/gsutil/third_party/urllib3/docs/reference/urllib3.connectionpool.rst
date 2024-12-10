@@ -1,6 +1,8 @@
 Connection Pools
 ================
 
+.. automodule:: urllib3.connectionpool
+
 .. autoclass:: urllib3.HTTPConnectionPool
     :members:
     :undoc-members:
@@ -15,3 +17,5 @@ Connection Pools
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. autofunction:: urllib3.connectionpool.connection_from_url

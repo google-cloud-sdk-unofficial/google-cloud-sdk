@@ -1,31 +1,54 @@
+from __future__ import annotations
+
 import errno
+import importlib.util
 import logging
 import os
 import platform
 import socket
-import ssl
 import sys
+import typing
 import warnings
+from collections.abc import Sequence
+from functools import wraps
+from importlib.abc import Loader, MetaPathFinder
+from importlib.machinery import ModuleSpec
+from types import ModuleType, TracebackType
 
 import pytest
 
 try:
     try:
-        import brotlicffi as brotli
+        import brotlicffi as brotli  # type: ignore[import-not-found]
     except ImportError:
-        import brotli
+        import brotli  # type: ignore[import-not-found]
 except ImportError:
     brotli = None
 
+try:
+    import zstandard as _unused_module_zstd  # noqa: F401
+except ImportError:
+    HAS_ZSTD = False
+else:
+    HAS_ZSTD = True
+
 from urllib3 import util
+from urllib3.connectionpool import ConnectionPool
 from urllib3.exceptions import HTTPWarning
-from urllib3.packages import six
 from urllib3.util import ssl_
 
 try:
     import urllib3.contrib.pyopenssl as pyopenssl
 except ImportError:
-    pyopenssl = None
+    pyopenssl = None  # type: ignore[assignment]
+
+if typing.TYPE_CHECKING:
+    import ssl
+
+
+_RT = typing.TypeVar("_RT")  # return type
+_TestFuncT = typing.TypeVar("_TestFuncT", bound=typing.Callable[..., typing.Any])
+
 
 # We need a host that will not immediately close the connection with a TCP
 # Reset.
@@ -41,7 +64,7 @@ else:
 VALID_SOURCE_ADDRESSES = [(("::1", 0), True), (("127.0.0.1", 0), False)]
 # RFC 5737: 192.0.2.0/24 is for testing only.
 # RFC 3849: 2001:db8::/32 is for documentation only.
-INVALID_SOURCE_ADDRESSES = [("192.0.2.255", 0), ("2001:db8::1", 0)]
+INVALID_SOURCE_ADDRESSES = [(("192.0.2.255", 0), False), (("2001:db8::1", 0), True)]
 
 # We use timeouts in three different ways in our tests
 #
@@ -51,12 +74,14 @@ INVALID_SOURCE_ADDRESSES = [("192.0.2.255", 0), ("2001:db8::1", 0)]
 # 3. To test our timeout logic by using two different values, eg. by using different
 #    values at the pool level and at the request level.
 SHORT_TIMEOUT = 0.001
-LONG_TIMEOUT = 0.01
+LONG_TIMEOUT = 0.1
 if os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS") == "true":
     LONG_TIMEOUT = 0.5
 
+DUMMY_POOL = ConnectionPool("dummy")
 
-def _can_resolve(host):
+
+def _can_resolve(host: str) -> bool:
     """Returns True if the system can resolve host to an address."""
     try:
         socket.getaddrinfo(host, None, socket.AF_UNSPEC)
@@ -65,10 +90,10 @@ def _can_resolve(host):
         return False
 
 
-def has_alpn(ctx_cls=None):
+def has_alpn(ctx_cls: type[ssl.SSLContext] | None = None) -> bool:
     """Detect if ALPN support is enabled."""
     ctx_cls = ctx_cls or util.SSLContext
-    ctx = ctx_cls(protocol=ssl_.PROTOCOL_TLS)
+    ctx = ctx_cls(protocol=ssl_.PROTOCOL_TLS)  # type: ignore[misc, attr-defined]
     try:
         if hasattr(ctx, "set_alpn_protocols"):
             ctx.set_alpn_protocols(ssl_.ALPN_PROTOCOLS)
@@ -84,208 +109,116 @@ def has_alpn(ctx_cls=None):
 RESOLVES_LOCALHOST_FQDN = _can_resolve("localhost.")
 
 
-def clear_warnings(cls=HTTPWarning):
+def clear_warnings(cls: type[Warning] = HTTPWarning) -> None:
     new_filters = []
     for f in warnings.filters:
         if issubclass(f[2], cls):
             continue
         new_filters.append(f)
-    warnings.filters[:] = new_filters
+    warnings.filters[:] = new_filters  # type: ignore[index]
 
 
-def setUp():
+def setUp() -> None:
     clear_warnings()
     warnings.simplefilter("ignore", HTTPWarning)
 
 
-def onlyPy279OrNewer(test):
-    """Skips this test unless you are on Python 2.7.9 or later."""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} requires Python 2.7.9+ to run".format(name=test.__name__)
-        if sys.version_info < (2, 7, 9):
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
-
-
-def onlyPy2(test):
-    """Skips this test unless you are on Python 2.x"""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} requires Python 2.x to run".format(name=test.__name__)
-        if not six.PY2:
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
-
-
-def onlyPy3(test):
-    """Skips this test unless you are on Python3.x"""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} requires Python3.x to run".format(name=test.__name__)
-        if six.PY2:
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
-
-
-def notPyPy2(test):
-    """Skips this test on PyPy2"""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        # https://github.com/testing-cabal/mock/issues/438
-        msg = "{} fails with PyPy 2 dues to funcsigs bugs".format(test.__name__)
-        if platform.python_implementation() == "PyPy" and sys.version_info[0] == 2:
-            pytest.xfail(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
-
-
-def notWindows(test):
+def notWindows() -> typing.Callable[[_TestFuncT], _TestFuncT]:
     """Skips this test on Windows"""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} does not run on Windows".format(name=test.__name__)
-        if platform.system() == "Windows":
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
-
-
-def onlyBrotlipy():
-    return pytest.mark.skipif(brotli is None, reason="only run if brotlipy is present")
-
-
-def notBrotlipy():
     return pytest.mark.skipif(
-        brotli is not None, reason="only run if brotlipy is absent"
+        platform.system() == "Windows",
+        reason="Test does not run on Windows",
     )
 
 
-def onlySecureTransport(test):
-    """Runs this test when SecureTransport is in use."""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} only runs with SecureTransport".format(name=test.__name__)
-        if not ssl_.IS_SECURETRANSPORT:
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
+def onlyBrotli() -> typing.Callable[[_TestFuncT], _TestFuncT]:
+    return pytest.mark.skipif(
+        brotli is None, reason="only run if brotli library is present"
+    )
 
 
-def notSecureTransport(test):
-    """Skips this test when SecureTransport is in use."""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        msg = "{name} does not run with SecureTransport".format(name=test.__name__)
-        if ssl_.IS_SECURETRANSPORT:
-            pytest.skip(msg)
-        return test(*args, **kwargs)
-
-    return wrapper
+def notBrotli() -> typing.Callable[[_TestFuncT], _TestFuncT]:
+    return pytest.mark.skipif(
+        brotli is not None, reason="only run if a brotli library is absent"
+    )
 
 
-def notOpenSSL098(test):
-    """Skips this test for Python 3.5 macOS python.org distribution"""
+def onlyZstd() -> typing.Callable[[_TestFuncT], _TestFuncT]:
+    return pytest.mark.skipif(
+        not HAS_ZSTD, reason="only run if a python-zstandard library is installed"
+    )
 
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        is_stdlib_ssl = not ssl_.IS_SECURETRANSPORT and not ssl_.IS_PYOPENSSL
-        if is_stdlib_ssl and ssl.OPENSSL_VERSION == "OpenSSL 0.9.8zh 14 Jan 2016":
-            pytest.xfail("{name} fails with OpenSSL 0.9.8zh".format(name=test.__name__))
-        return test(*args, **kwargs)
 
-    return wrapper
+def notZstd() -> typing.Callable[[_TestFuncT], _TestFuncT]:
+    return pytest.mark.skipif(
+        HAS_ZSTD,
+        reason="only run if a python-zstandard library is not installed",
+    )
 
 
 _requires_network_has_route = None
 
 
-def requires_network(test):
+def requires_network() -> typing.Callable[[_TestFuncT], _TestFuncT]:
     """Helps you skip tests that require the network"""
 
-    def _is_unreachable_err(err):
+    def _is_unreachable_err(err: Exception) -> bool:
         return getattr(err, "errno", None) in (
             errno.ENETUNREACH,
             errno.EHOSTUNREACH,  # For OSX
         )
 
-    def _has_route():
+    def _has_route() -> bool:
         try:
             sock = socket.create_connection((TARPIT_HOST, 80), 0.0001)
             sock.close()
             return True
         except socket.timeout:
             return True
-        except socket.error as e:
+        except OSError as e:
             if _is_unreachable_err(e):
                 return False
             else:
                 raise
 
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        global _requires_network_has_route
+    def _skip_if_no_route(f: _TestFuncT) -> _TestFuncT:
+        """Skip test exuction if network is unreachable"""
 
-        if _requires_network_has_route is None:
-            _requires_network_has_route = _has_route()
+        @wraps(f)
+        def wrapper(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+            global _requires_network_has_route
+            if _requires_network_has_route is None:
+                _requires_network_has_route = _has_route()
+            if not _requires_network_has_route:
+                pytest.skip("Can't run the test because the network is unreachable")
+            return f(*args, **kwargs)
 
-        if _requires_network_has_route:
-            return test(*args, **kwargs)
-        else:
-            msg = "Can't run {name} because the network is unreachable".format(
-                name=test.__name__
-            )
-            pytest.skip(msg)
+        return typing.cast(_TestFuncT, wrapper)
 
-    return wrapper
+    def _decorator_requires_internet(
+        decorator: typing.Callable[[_TestFuncT], _TestFuncT]
+    ) -> typing.Callable[[_TestFuncT], _TestFuncT]:
+        """Mark a decorator with the "requires_internet" mark"""
 
+        def wrapper(f: _TestFuncT) -> typing.Any:
+            return pytest.mark.requires_network(decorator(f))
 
-def requires_ssl_context_keyfile_password(test):
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        if (
-            not ssl_.IS_PYOPENSSL and sys.version_info < (2, 7, 9)
-        ) or ssl_.IS_SECURETRANSPORT:
-            pytest.skip(
-                "%s requires password parameter for "
-                "SSLContext.load_cert_chain()" % test.__name__
-            )
-        return test(*args, **kwargs)
+        return wrapper
 
-    return wrapper
+    return _decorator_requires_internet(_skip_if_no_route)
 
 
-def resolvesLocalhostFQDN(test):
+def resolvesLocalhostFQDN() -> typing.Callable[[_TestFuncT], _TestFuncT]:
     """Test requires successful resolving of 'localhost.'"""
-
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
-        if not RESOLVES_LOCALHOST_FQDN:
-            pytest.skip("Can't resolve localhost.")
-        return test(*args, **kwargs)
-
-    return wrapper
+    return pytest.mark.skipif(
+        not RESOLVES_LOCALHOST_FQDN,
+        reason="Can't resolve localhost.",
+    )
 
 
-def withPyOpenSSL(test):
-    @six.wraps(test)
-    def wrapper(*args, **kwargs):
+def withPyOpenSSL(test: typing.Callable[..., _RT]) -> typing.Callable[..., _RT]:
+    @wraps(test)
+    def wrapper(*args: typing.Any, **kwargs: typing.Any) -> _RT:
         if not pyopenssl:
             pytest.skip("pyopenssl not available, skipping test.")
             return test(*args, **kwargs)
@@ -299,34 +232,114 @@ def withPyOpenSSL(test):
 
 
 class _ListHandler(logging.Handler):
-    def __init__(self):
-        super(_ListHandler, self).__init__()
-        self.records = []
+    def __init__(self) -> None:
+        super().__init__()
+        self.records: list[logging.LogRecord] = []
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         self.records.append(record)
 
 
-class LogRecorder(object):
-    def __init__(self, target=logging.root):
-        super(LogRecorder, self).__init__()
+class LogRecorder:
+    def __init__(self, target: logging.Logger = logging.root) -> None:
+        super().__init__()
         self._target = target
         self._handler = _ListHandler()
 
     @property
-    def records(self):
+    def records(self) -> list[logging.LogRecord]:
         return self._handler.records
 
-    def install(self):
+    def install(self) -> None:
         self._target.addHandler(self._handler)
 
-    def uninstall(self):
+    def uninstall(self) -> None:
         self._target.removeHandler(self._handler)
 
-    def __enter__(self):
+    def __enter__(self) -> list[logging.LogRecord]:
         self.install()
         return self.records
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> typing.Literal[False]:
         self.uninstall()
         return False
+
+
+class ImportBlockerLoader(Loader):
+    def __init__(self, fullname: str) -> None:
+        self._fullname = fullname
+
+    def load_module(self, fullname: str) -> ModuleType:
+        raise ImportError(f"import of {fullname} is blocked")
+
+    def exec_module(self, module: ModuleType) -> None:
+        raise ImportError(f"import of {self._fullname} is blocked")
+
+
+class ImportBlocker(MetaPathFinder):
+    """
+    Block Imports
+
+    To be placed on ``sys.meta_path``. This ensures that the modules
+    specified cannot be imported, even if they are a builtin.
+    """
+
+    def __init__(self, *namestoblock: str) -> None:
+        self.namestoblock = namestoblock
+
+    def find_module(
+        self, fullname: str, path: typing.Sequence[bytes | str] | None = None
+    ) -> Loader | None:
+        if fullname in self.namestoblock:
+            return ImportBlockerLoader(fullname)
+        return None
+
+    def find_spec(
+        self,
+        fullname: str,
+        path: Sequence[bytes | str] | None,
+        target: ModuleType | None = None,
+    ) -> ModuleSpec | None:
+        loader = self.find_module(fullname, path)
+        if loader is None:
+            return None
+
+        return importlib.util.spec_from_loader(fullname, loader)
+
+
+class ModuleStash(MetaPathFinder):
+    """
+    Stashes away previously imported modules
+
+    If we reimport a module the data from coverage is lost, so we reuse the old
+    modules
+    """
+
+    def __init__(
+        self, namespace: str, modules: dict[str, ModuleType] = sys.modules
+    ) -> None:
+        self.namespace = namespace
+        self.modules = modules
+        self._data: dict[str, ModuleType] = {}
+
+    def stash(self) -> None:
+        if self.namespace in self.modules:
+            self._data[self.namespace] = self.modules.pop(self.namespace)
+
+        for module in list(self.modules.keys()):
+            if module.startswith(self.namespace + "."):
+                self._data[module] = self.modules.pop(module)
+
+    def pop(self) -> None:
+        self.modules.pop(self.namespace, None)
+
+        for module in list(self.modules.keys()):
+            if module.startswith(self.namespace + "."):
+                self.modules.pop(module)
+
+        self.modules.update(self._data)

@@ -1,0 +1,42 @@
+name: Python package
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12, macos-14]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{matrix.python-version}}
+        allow-prereleases: true
+    - name: Install CI dependencies
+      run: |
+        [[ $(uname) == Linux ]] && sudo apt-get install --yes rpm tcsh fish zsh
+        [[ $(uname) == Darwin ]] && brew install bash tcsh fish
+        # Some runners have python-argcomplete preinstalled
+        # as a dependency of pipx, which interferes with the tests.
+        [[ $(uname) == Darwin ]] && brew uninstall --ignore-dependencies python-argcomplete || true
+        python -m pip install --quiet --upgrade codecov
+    - run: make install
+    - run: make lint
+    - run: make test
+    - uses: codecov/codecov-action@v3
+      if: ${{matrix.python-version == '3.12' && matrix.os == 'ubuntu-22.04'}}
+  black:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: psf/black@stable
+  isort:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: isort/isort-action@v1.1.0

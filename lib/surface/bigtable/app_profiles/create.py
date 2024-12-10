@@ -53,6 +53,10 @@ class CreateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any --priority=PRIORITY_MEDIUM
 
+          To create an app profile with row-affinity routing enabled, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
+
           """),
   }
 
@@ -90,6 +94,7 @@ class CreateAppProfile(base.CreateCommand):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
+        row_affinity=args.row_affinity,
         priority=args.priority,
         force=args.force,
     )
@@ -147,6 +152,10 @@ class CreateAppProfileBeta(CreateAppProfile):
 
             $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
 
+          To create an app profile with row-affinity routing enabled, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
+
           """),
   }
 
@@ -184,6 +193,7 @@ class CreateAppProfileBeta(CreateAppProfile):
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
         transactional_writes=args.transactional_writes,
+        row_affinity=args.row_affinity,
         priority=args.priority,
         data_boost=args.data_boost,
         data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
@@ -203,7 +213,6 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(
             allow_failover_radius=True,
-            allow_row_affinity=True,
         )
         .AddIsolation(allow_data_boost=True)
         .AddForce('create')

@@ -28,12 +28,21 @@ class CredentialsImpl(credentials.Credentials):
         raise NotImplementedError()
 
 
+class CredentialsImplWithMetrics(credentials.Credentials):
+    def refresh(self, request):
+        self.token = request
+
+    def _metric_header_for_usage(self):
+        return "foo"
+
+
 def test_credentials_constructor():
     credentials = CredentialsImpl()
     assert not credentials.token
     assert not credentials.expiry
     assert not credentials.expired
     assert not credentials.valid
+    assert credentials.universe_domain == "googleapis.com"
 
 
 def test_expired_and_valid():
@@ -46,9 +55,7 @@ def test_expired_and_valid():
     # Set the expiration to one second more than now plus the clock skew
     # accomodation. These credentials should be valid.
     credentials.expiry = (
-        datetime.datetime.utcnow()
-        + _helpers.REFRESH_THRESHOLD
-        + datetime.timedelta(seconds=1)
+        _helpers.utcnow() + _helpers.REFRESH_THRESHOLD + datetime.timedelta(seconds=1)
     )
 
     assert credentials.valid
@@ -56,7 +63,7 @@ def test_expired_and_valid():
 
     # Set the credentials expiration to now. Because of the clock skew
     # accomodation, these credentials should report as expired.
-    credentials.expiry = datetime.datetime.utcnow()
+    credentials.expiry = _helpers.utcnow()
 
     assert not credentials.valid
     assert credentials.expired
@@ -72,6 +79,7 @@ def test_before_request():
     assert credentials.valid
     assert credentials.token == "token"
     assert headers["authorization"] == "Bearer token"
+    assert "x-allowed-locations" not in headers
 
     request = "token2"
     headers = {}
@@ -81,6 +89,41 @@ def test_before_request():
     assert credentials.valid
     assert credentials.token == "token"
     assert headers["authorization"] == "Bearer token"
+    assert "x-allowed-locations" not in headers
+
+
+def test_before_request_with_trust_boundary():
+    DUMMY_BOUNDARY = "0xA30"
+    credentials = CredentialsImpl()
+    credentials._trust_boundary = {"locations": [], "encoded_locations": DUMMY_BOUNDARY}
+    request = "token"
+    headers = {}
+
+    # First call should call refresh, setting the token.
+    credentials.before_request(request, "http://example.com", "GET", headers)
+    assert credentials.valid
+    assert credentials.token == "token"
+    assert headers["authorization"] == "Bearer token"
+    assert headers["x-allowed-locations"] == DUMMY_BOUNDARY
+
+    request = "token2"
+    headers = {}
+
+    # Second call shouldn't call refresh.
+    credentials.before_request(request, "http://example.com", "GET", headers)
+    assert credentials.valid
+    assert credentials.token == "token"
+    assert headers["authorization"] == "Bearer token"
+    assert headers["x-allowed-locations"] == DUMMY_BOUNDARY
+
+
+def test_before_request_metrics():
+    credentials = CredentialsImplWithMetrics()
+    request = "token"
+    headers = {}
+
+    credentials.before_request(request, "http://example.com", "GET", headers)
+    assert headers["x-goog-api-client"] == "foo"
 
 
 def test_anonymous_credentials_ctor():

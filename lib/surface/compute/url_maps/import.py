@@ -269,35 +269,13 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   return cleared_fields
 
 
-def _GetClearedFieldsForCustomErrorResponseRule(
-    custom_error_response_rule, field_prefix
-):
-  """Gets a list of fields cleared by the user for CustomErrorResponseRule."""
-  cleared_fields = []
-  if not custom_error_response_rule.matchResponseCode:
-    cleared_fields.append(field_prefix + 'matchResponseCode')
-  if not custom_error_response_rule.path:
-    cleared_fields.append(field_prefix + 'path')
-  if not custom_error_response_rule.overrideResponseCode:
-    cleared_fields.append(field_prefix + 'overrideResponseCode')
-  return cleared_fields
-
-
 def _GetClearedFieldsForCustomErrorResponsePolicy(
     custom_error_response_policy, field_prefix
 ):
   """Gets a list of fields cleared by the user for CustomErrorResponsePolicy."""
   cleared_fields = []
-  if not custom_error_response_policy.errorResponseRule:
-    cleared_fields.append(field_prefix + 'errorResponseRule')
-  else:
-    cleared_fields = (
-        cleared_fields
-        + _GetClearedFieldsForCustomErrorResponseRule(
-            custom_error_response_policy.errorResponseRule,
-            field_prefix + 'errorResponseRule.',
-        )
-    )
+  if not custom_error_response_policy.errorResponseRules:
+    cleared_fields.append(field_prefix + 'errorResponseRules')
   if not custom_error_response_policy.errorService:
     cleared_fields.append(field_prefix + 'errorService')
   return cleared_fields

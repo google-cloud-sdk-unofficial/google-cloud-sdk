@@ -53,7 +53,7 @@ class NetworkInterfaceTests(unittest.TestCase):
     def test_update_with_validate_true_raises_value_error(self):
         self.eni_one.connection = mock.Mock()
         self.eni_one.connection.get_all_network_interfaces.return_value = []
-        with self.assertRaisesRegexp(ValueError, "^eni-1 is not a valid ENI ID$"):
+        with self.assertRaisesRegex(ValueError, "^eni-1 is not a valid ENI ID$"):
             self.eni_one.update(True)
 
     def test_update_with_result_set_greater_than_0_updates_dict(self):

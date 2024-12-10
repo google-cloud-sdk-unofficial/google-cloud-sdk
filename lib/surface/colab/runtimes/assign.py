@@ -40,7 +40,7 @@ _DETAILED_HELP = {
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please use `gcloud beta colab runtimes create` instead.'

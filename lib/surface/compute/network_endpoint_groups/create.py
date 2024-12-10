@@ -77,7 +77,7 @@ class Create(base.CreateCommand):
   detailed_help = DETAILED_HELP
   support_neg_type = False
   support_serverless_deployment = False
-  support_port_mapping_neg = False
+  support_port_mapping_neg = True
 
   @classmethod
   def Args(cls, parser):
@@ -117,7 +117,7 @@ class Create(base.CreateCommand):
           subnet=args.subnet,
           psc_target_service=args.psc_target_service,
       )
-    elif self.support_port_mapping_neg:
+    elif self.support_serverless_deployment:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
@@ -140,11 +140,12 @@ class Create(base.CreateCommand):
           serverless_deployment_url_mask=args.serverless_deployment_url_mask,
           psc_target_service=args.psc_target_service,
       )
-    elif self.support_serverless_deployment:
+    elif self.support_port_mapping_neg:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
           default_port=args.default_port,
+          producer_port=args.producer_port,
           network=args.network,
           subnet=args.subnet,
           cloud_run_service=args.cloud_run_service,
@@ -156,10 +157,6 @@ class Create(base.CreateCommand):
           app_engine_url_mask=args.app_engine_url_mask,
           cloud_function_name=args.cloud_function_name,
           cloud_function_url_mask=args.cloud_function_url_mask,
-          serverless_deployment_platform=args.serverless_deployment_platform,
-          serverless_deployment_resource=args.serverless_deployment_resource,
-          serverless_deployment_version=args.serverless_deployment_version,
-          serverless_deployment_url_mask=args.serverless_deployment_url_mask,
           psc_target_service=args.psc_target_service,
       )
     else:
@@ -265,7 +262,6 @@ class CreateBeta(Create):
   """Create a Google Compute Engine network endpoint group."""
 
   support_serverless_deployment = True
-  support_port_mapping_neg = True
 
   @classmethod
   def Args(cls, parser):

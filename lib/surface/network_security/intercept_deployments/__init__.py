@@ -30,9 +30,8 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterceptDeployments(base.Group):
   """Manage Intercept Deployment resources."""
 

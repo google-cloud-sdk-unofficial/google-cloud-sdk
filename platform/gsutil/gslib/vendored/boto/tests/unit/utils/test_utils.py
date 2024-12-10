@@ -58,17 +58,17 @@ class TestPassword(unittest.TestCase):
     def clstest(self, cls):
         """Insure that password.__eq__ hashes test value before compare."""
         password = cls('foo')
-        self.assertNotEquals(password, 'foo')
+        self.assertNotEqual(password, 'foo')
 
         password.set('foo')
         hashed = str(password)
-        self.assertEquals(password, 'foo')
-        self.assertEquals(password.str, hashed)
+        self.assertEqual(password, 'foo')
+        self.assertEqual(password.str, hashed)
 
         password = cls(hashed)
-        self.assertNotEquals(password.str, 'foo')
-        self.assertEquals(password, 'foo')
-        self.assertEquals(password.str, hashed)
+        self.assertNotEqual(password.str, 'foo')
+        self.assertEqual(password, 'foo')
+        self.assertEqual(password.str, hashed)
 
     def test_aaa_version_1_9_default_behavior(self):
         self.clstest(Password)
@@ -79,7 +79,7 @@ class TestPassword(unittest.TestCase):
 
         password = SHA224Password()
         password.set('foo')
-        self.assertEquals(hashlib.sha224(b'foo').hexdigest(), str(password))
+        self.assertEqual(hashlib.sha224(b'foo').hexdigest(), str(password))
 
     def test_hmac(self):
         def hmac_hashfunc(cls, msg):
@@ -94,7 +94,7 @@ class TestPassword(unittest.TestCase):
         password = HMACPassword()
         password.set('foo')
 
-        self.assertEquals(str(password),
+        self.assertEqual(str(password),
                           hmac.new(b'mysecretkey', b'foo').hexdigest())
 
     def test_constructor(self):
@@ -102,7 +102,7 @@ class TestPassword(unittest.TestCase):
 
         password = Password(hashfunc=hmac_hashfunc)
         password.set('foo')
-        self.assertEquals(password.str,
+        self.assertEqual(password.str,
                           hmac.new(b'mysecretkey', b'foo').hexdigest())
 
 
@@ -381,37 +381,37 @@ class TestParseHost(unittest.TestCase):
     def test_parses_ipv6_hosts_no_brackets(self):
         host = 'bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, host)
+        self.assertEqual(result, host)
 
     def test_parses_ipv6_hosts_with_brackets_stripping_them(self):
         host = '[bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be]'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, 'bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be')
+        self.assertEqual(result, 'bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be')
 
     def test_parses_ipv6_hosts_with_brackets_and_port(self):
         host = '[bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be]:8080'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, 'bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be')
+        self.assertEqual(result, 'bf1d:cb48:4513:d1f1:efdd:b290:9ff9:64be')
 
     def test_parses_ipv4_hosts(self):
         host = '10.0.1.1'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, host)
+        self.assertEqual(result, host)
 
     def test_parses_ipv4_hosts_with_port(self):
         host = '192.168.168.200:8080'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, '192.168.168.200')
+        self.assertEqual(result, '192.168.168.200')
 
     def test_parses_hostnames_with_port(self):
         host = 'example.org:8080'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, 'example.org')
+        self.assertEqual(result, 'example.org')
 
     def test_parses_hostnames_without_port(self):
         host = 'example.org'
         result = boto.utils.parse_host(host)
-        self.assertEquals(result, host)
+        self.assertEqual(result, host)
 
 if __name__ == '__main__':
     unittest.main()

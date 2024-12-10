@@ -2657,7 +2657,7 @@ class OpsWorksConnection(AWSQueryConnection):
             OpsWorksand by Chef. The short name is also used as the name for
             the directory where your app files are installed. It can have a
             maximum of 200 characters and must be in the following format:
-            /\A[a-z0-9\-\_\.]+\Z/.
+            /\\A[a-z0-9\\-\\_\\.]+\\Z/.
 
         :type attributes: map
         :param attributes: One or more user-defined key/value pairs to be added

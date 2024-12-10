@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.org_security_policies import org_securit
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine organization security policy rule.

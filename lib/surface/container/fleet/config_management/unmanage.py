@@ -22,10 +22,9 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
-from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
 
 
-class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
+class Unmanage(mf_base.DeleteCommand):
   """Remove the Config Management feature spec for the given membership.
 
   Remove the Config Management feature spec for the given membership. The
@@ -38,7 +37,6 @@ class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
     $ {command} --membership=MEMBERSHIP_NAME
   """
 
-  feature_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
   mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
 
   @classmethod
@@ -50,13 +48,5 @@ class Unmanage(base.UpdateCommand, mf_base.UpdateCommand):
         args, prompt=True, autoselect=True, search=True
     )
 
-    # Setup a patch to set the MembershipSpec to the empty proto ("delete").
-    membership_key = membership
-
-    membershipfeature = convert.ToV2MembershipFeature(
-        self,
-        membership_key,
-        self.mf_name,
-        self.messages.MembershipFeatureSpec(),
-    )
-    self.UpdateV2(membership_key, ['spec'], membershipfeature)
+    # Directly delete the MembershipFeature resource.
+    self.DeleteV2(membership)

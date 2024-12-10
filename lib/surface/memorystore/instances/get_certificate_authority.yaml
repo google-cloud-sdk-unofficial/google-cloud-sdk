@@ -25,5 +25,3 @@
       api_version: v1
     collection: memorystore.projects.locations.instances
     method: getCertificateAuthority
-  GA:
-    hidden: true

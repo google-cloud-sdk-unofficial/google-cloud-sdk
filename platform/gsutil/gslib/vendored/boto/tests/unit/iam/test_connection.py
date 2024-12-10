@@ -332,7 +332,7 @@ class TestGenerateCredentialReport(AWSMockServiceTestCase):
     def test_generate_credential_report(self):
         self.set_http_response(status_code=200)
         response = self.service_connection.generate_credential_report()
-        self.assertEquals(response['generate_credential_report_response']
+        self.assertEqual(response['generate_credential_report_response']
                                   ['generate_credential_report_result']
                                   ['state'], 'COMPLETE')
 
@@ -389,7 +389,7 @@ class TestCreateVirtualMFADevice(AWSMockServiceTestCase):
              'VirtualMFADeviceName': 'ExampleName',
              'Action': 'CreateVirtualMFADevice'},
             ignore_params_values=['Version'])
-        self.assertEquals(response['create_virtual_mfa_device_response']
+        self.assertEqual(response['create_virtual_mfa_device_response']
                                   ['create_virtual_mfa_device_result']
                                   ['virtual_mfa_device']
                                   ['serial_number'], 'arn:aws:iam::123456789012:mfa/ExampleName')
@@ -429,7 +429,7 @@ class TestGetAccountPasswordPolicy(AWSMockServiceTestCase):
                 'Action': 'GetAccountPasswordPolicy',
             },
             ignore_params_values=['Version'])
-        self.assertEquals(response['get_account_password_policy_response']
+        self.assertEqual(response['get_account_password_policy_response']
                           ['get_account_password_policy_result']['password_policy']
                           ['minimum_password_length'], '12')
 

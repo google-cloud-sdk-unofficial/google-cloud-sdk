@@ -6,18 +6,23 @@
 #
 # Copyright 2006, by Paul McGuire
 #
-
+import sys
 from pyparsing import *
 
-integer = Word(nums).setParseAction(lambda t:int(t[0]))
-variable = Word(alphas,exact=1)
+ppc = pyparsing_common
+
+ParserElement.enablePackrat()
+sys.setrecursionlimit(3000)
+
+integer = ppc.integer
+variable = Word(alphas, exact=1)
 operand = integer | variable
 
-expop = Literal('^')
-signop = oneOf('+ -')
-multop = oneOf('* /')
-plusop = oneOf('+ -')
-factop = Literal('!')
+expop = Literal("^")
+signop = oneOf("+ -")
+multop = oneOf("* /")
+plusop = oneOf("+ -")
+factop = Literal("!")
 
 # To use the infixNotation helper:
 #   1.  Define the "atom" operand term of the grammar.
@@ -25,7 +30,7 @@ factop = Literal('!')
 #       and integer or a variable.  This will be the first argument
 #       to the infixNotation method.
 #   2.  Define a list of tuples for each level of operator
-#       precendence.  Each tuple is of the form
+#       precedence.  Each tuple is of the form
 #       (opExpr, numTerms, rightLeftAssoc, parseAction), where
 #       - opExpr is the pyparsing expression for the operator;
 #          may also be a string, which will be converted to a Literal
@@ -43,24 +48,34 @@ factop = Literal('!')
 #       this expression to parse input strings, or incorporate it
 #       into a larger, more complex grammar.
 #
-expr = infixNotation( operand,
-    [("!", 1, opAssoc.LEFT),
-     ("^", 2, opAssoc.RIGHT),
-     (signop, 1, opAssoc.RIGHT),
-     (multop, 2, opAssoc.LEFT),
-     (plusop, 2, opAssoc.LEFT),]
-    )
+expr = infixNotation(
+    operand,
+    [
+        ("!", 1, opAssoc.LEFT),
+        ("^", 2, opAssoc.RIGHT),
+        (signop, 1, opAssoc.RIGHT),
+        (multop, 2, opAssoc.LEFT),
+        (plusop, 2, opAssoc.LEFT),
+    ],
+)
 
-test = ["9 + 2 + 3",
-        "9 + 2 * 3",
-        "(9 + 2) * 3",
-        "(9 + -2) * 3",
-        "(9 + -2) * 3^2^2",
-        "(9! + -2) * 3^2^2",
-        "M*X + B",
-        "M*(X + B)",
-        "1+2*-3^4*5+-+-6",]
+test = [
+    "9 + 2 + 3",
+    "9 + 2 * 3",
+    "(9 + 2) * 3",
+    "(9 + -2) * 3",
+    "(9 + -2) * 3^2^2",
+    "(9! + -2) * 3^2^2",
+    "M*X + B",
+    "M*(X + B)",
+    "1+2*-3^4*5+-+-6",
+    "(a + b)",
+    "((a + b))",
+    "(((a + b)))",
+    "((((a + b))))",
+    "((((((((((((((a + b))))))))))))))",
+]
 for t in test:
     print(t)
     print(expr.parseString(t))
-    print('')
+    print("")

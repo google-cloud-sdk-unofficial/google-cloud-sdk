@@ -130,7 +130,7 @@ class TestWriter(unittest.TestCase):
     def test_returns_archive_id(self):
         self.writer.write(b'1')
         self.writer.close()
-        self.assertEquals(sentinel.archive_id, self.writer.get_archive_id())
+        self.assertEqual(sentinel.archive_id, self.writer.get_archive_id())
 
     def test_current_tree_hash(self):
         self.writer.write(b'1234')
@@ -178,7 +178,7 @@ class TestWriter(unittest.TestCase):
         self.assertEqual(final_size, self.writer.current_uploaded_size)
 
     def test_upload_id(self):
-        self.assertEquals(sentinel.upload_id, self.writer.upload_id)
+        self.assertEqual(sentinel.upload_id, self.writer.upload_id)
 
 
 class TestResume(unittest.TestCase):
@@ -226,4 +226,4 @@ class TestResume(unittest.TestCase):
         archive_id = resume_file_upload(
             self.vault, sentinel.upload_id, self.part_size, StringIO('1'), {},
             self.chunk_size)
-        self.assertEquals(sentinel.archive_id, archive_id)
+        self.assertEqual(sentinel.archive_id, archive_id)

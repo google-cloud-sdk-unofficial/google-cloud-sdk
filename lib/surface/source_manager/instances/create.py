@@ -46,6 +46,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Secure Source Manager instance."""
 
@@ -55,6 +56,7 @@ class Create(base.CreateCommand):
     flags.AddKmsKey(parser)
     flags.AddCAPool(parser)
     flags.AddIsPrivate(parser)
+    flags.AddEnableWorkforceIdentityFederation(parser)
     flags.AddMaxWait(parser, '60m')  # Default to 60 minutes wait.
     # Create --async flag and set default to be true.
     base.ASYNC_FLAG.AddToParser(parser)
@@ -66,6 +68,9 @@ class Create(base.CreateCommand):
     kms_key = args.kms_key
     is_private = args.is_private
     ca_pool = args.ca_pool
+    enable_workforce_identity_federation = (
+        args.enable_workforce_identity_federation
+    )
 
     # Get a long-running operation for this creation
     client = instances.InstancesClient()
@@ -77,6 +82,7 @@ class Create(base.CreateCommand):
           kms_key=kms_key,
           is_private=is_private,
           ca_pool=ca_pool,
+          enable_workforce_identity_federation=enable_workforce_identity_federation,
       )
     except exceptions.EnableServicePermissionDeniedException:
       # Display a message indicating the special invitation only status of SSM

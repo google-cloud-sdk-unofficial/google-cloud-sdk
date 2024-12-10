@@ -5,9 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from typing import Any, Dict, NamedTuple, Optional, Tuple
-
-
+from typing import Any, Dict, NamedTuple, Optional, Set, Tuple
 
 from clients import utils as bq_client_utils
 from frontend import utils as frontend_utils
@@ -321,6 +319,7 @@ def GetParamsForUpdateReservation(
     else:
       # Disable autoscale.
       update_mask += 'autoscale,'
+
 
   if frontend_utils.ValidateAtMostOneSelectedAllowsDefault(
       max_slots, autoscale_max_slots

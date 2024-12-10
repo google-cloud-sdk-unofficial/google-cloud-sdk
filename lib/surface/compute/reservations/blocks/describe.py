@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing images."""
+"""Command for describing reservation blocks."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,9 +27,9 @@ from googlecloudsdk.command_lib.compute.reservations.blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
-  """Describe a Compute Engine image."""
+  """Describe a Compute Engine reservation block."""
 
   @staticmethod
   def Args(parser):

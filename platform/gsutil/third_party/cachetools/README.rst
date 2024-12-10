@@ -5,17 +5,21 @@ cachetools
    :target: https://pypi.org/project/cachetools/
    :alt: Latest PyPI version
 
+.. image:: https://img.shields.io/github/actions/workflow/status/tkem/cachetools/ci.yml
+   :target: https://github.com/tkem/cachetools/actions/workflows/ci.yml
+   :alt: CI build status
+
 .. image:: https://img.shields.io/readthedocs/cachetools
    :target: https://cachetools.readthedocs.io/
    :alt: Documentation build status
 
-.. image:: https://img.shields.io/github/workflow/status/tkem/cachetools/CI
-   :target: https://github.com/tkem/cachetools/actions/workflows/ci.yml
-   :alt: CI build status
-
 .. image:: https://img.shields.io/codecov/c/github/tkem/cachetools/master.svg
    :target: https://codecov.io/gh/tkem/cachetools
    :alt: Test coverage
+
+.. image:: https://img.shields.io/librariesio/sourcerank/pypi/cachetools
+   :target: https://libraries.io/pypi/cachetools
+   :alt: Libraries.io SourceRank
 
 .. image:: https://img.shields.io/github/license/tkem/cachetools
    :target: https://raw.github.com/tkem/cachetools/master/LICENSE
@@ -24,6 +28,7 @@ cachetools
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
    :alt: Code style: black
+
 
 This module provides various memoizing collections and decorators,
 including variants of the Python Standard Library's `@lru_cache`_
@@ -82,10 +87,20 @@ Project Resources
 - `Change log`_
 
 
+Related Projects
+------------------------------------------------------------------------
+
+- asyncache_: Helpers to use cachetools with async functions
+- cacheing_: Pure Python Cacheing Library
+- CacheToolsUtils_: Cachetools Utilities
+- kids.cache_: Kids caching library
+- shelved-cache_: Persistent cache for Python cachetools
+
+
 License
 ------------------------------------------------------------------------
 
-Copyright (c) 2014-2021 Thomas Kemmer.
+Copyright (c) 2014-2024 Thomas Kemmer.
 
 Licensed under the `MIT License`_.
 
@@ -102,3 +117,9 @@ Licensed under the `MIT License`_.
 .. _Source code: https://github.com/tkem/cachetools/
 .. _Change log: https://github.com/tkem/cachetools/blob/master/CHANGELOG.rst
 .. _MIT License: https://raw.github.com/tkem/cachetools/master/LICENSE
+
+.. _asyncache: https://pypi.org/project/asyncache/
+.. _cacheing: https://github.com/breid48/cacheing
+.. _CacheToolsUtils: https://pypi.org/project/CacheToolsUtils/
+.. _kids.cache: https://pypi.org/project/kids.cache/
+.. _shelved-cache: https://pypi.org/project/shelved-cache/

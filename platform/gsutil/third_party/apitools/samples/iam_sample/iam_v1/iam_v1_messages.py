@@ -280,6 +280,9 @@ class IamProjectsServiceAccountsGetIamPolicyRequest(_messages.Message):
   r"""A IamProjectsServiceAccountsGetIamPolicyRequest object.
 
   Fields:
+    options_requestedPolicyVersion: Optional. The policy format version to be
+      returned. Acceptable values are 0 and 1. If the value is 0, or the field
+      is omitted, policy format version 1 will be returned.
     resource: REQUIRED: The resource for which the policy is being requested.
       `resource` is usually specified as a path, such as
       `projects/*project*/zones/*zone*/disks/*disk*`.  The format for the path
@@ -287,7 +290,8 @@ class IamProjectsServiceAccountsGetIamPolicyRequest(_messages.Message):
       `getIamPolicy` documentation.
   """
 
-  resource = _messages.StringField(1, required=True)
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
 
 
 class IamProjectsServiceAccountsGetRequest(_messages.Message):
@@ -915,7 +919,7 @@ class StandardQueryParameters(_messages.Message):
 
   f__xgafv = _messages.EnumField('FXgafvValueValuesEnum', 1)
   access_token = _messages.StringField(2)
-  alt = _messages.EnumField('AltValueValuesEnum', 3, default=u'json')
+  alt = _messages.EnumField('AltValueValuesEnum', 3, default='json')
   bearer_token = _messages.StringField(4)
   callback = _messages.StringField(5)
   fields = _messages.StringField(6)
@@ -960,3 +964,5 @@ encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_1', '1')
 encoding.AddCustomJsonEnumMapping(
     StandardQueryParameters.FXgafvValueValuesEnum, '_2', '2')
+encoding.AddCustomJsonFieldMapping(
+    IamProjectsServiceAccountsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

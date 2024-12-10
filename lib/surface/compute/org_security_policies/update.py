@@ -23,9 +23,12 @@ from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
 from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
+from googlecloudsdk.command_lib.compute.security_policies import flags as sp_flags
+from googlecloudsdk.command_lib.compute.security_policies import security_policies_utils
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine organization security policy.
@@ -42,6 +45,7 @@ class Update(base.UpdateCommand):
         required=True, operation='update')
     cls.ORG_SECURITY_POLICY_ARG.AddArgument(parser, operation_type='update')
     flags.AddArgsUpdateSp(parser)
+    sp_flags.AddAdvancedOptions(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -56,8 +60,20 @@ class Update(base.UpdateCommand):
         org_security_policy, ref.Name(), organization=args.organization)
     existing_security_policy = org_security_policy.Describe(
         sp_id=sp_id, only_generate_request=False)[0]
+    description = existing_security_policy.description
+    advanced_options_config = existing_security_policy.advancedOptionsConfig
+    if args.description is not None:
+      description = args.description
+    if (args.IsSpecified('json_parsing') or
+        args.IsSpecified('json_custom_content_types') or
+        args.IsSpecified('log_level') or
+        args.IsSpecified('user_ip_request_headers')):
+      advanced_options_config = (
+          security_policies_utils.CreateAdvancedOptionsConfig(
+              holder.client, args, advanced_options_config))
     security_policy = holder.client.messages.SecurityPolicy(
-        description=args.description,
+        description=description,
+        advancedOptionsConfig=advanced_options_config,
         fingerprint=existing_security_policy.fingerprint)
 
     return org_security_policy.Update(
@@ -69,8 +85,8 @@ class Update(base.UpdateCommand):
 Update.detailed_help = {
     'EXAMPLES':
         """\
-    To update an organization security policy with ID ``123456789" to change the
-    description to ``New description", run:
+    To update an organization security policy with ID "123456789" to change the
+    description to "New description", run:
 
       $ {command} update 123456789 --description='New description'
     """,

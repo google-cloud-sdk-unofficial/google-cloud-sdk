@@ -611,9 +611,7 @@ flags_to_add = {
         'clusterautoscaling': functools.partial(
             flags.AddClusterAutoscalingFlags
         ),
-        'clusterdns': lambda p: flags.AddClusterDNSFlags(
-            p, release_track=base.ReleaseTrack.GA
-        ),
+        'clusterdns': flags.AddClusterDNSFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
@@ -769,9 +767,7 @@ flags_to_add = {
         'clusterautoscaling': functools.partial(
             flags.AddClusterAutoscalingFlags
         ),
-        'clusterdns': lambda p: flags.AddClusterDNSFlags(
-            p, release_track=base.ReleaseTrack.BETA
-        ),
+        'clusterdns': flags.AddClusterDNSFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'placementtype': flags.AddPlacementTypeFlag,
@@ -957,9 +953,7 @@ flags_to_add = {
         'clusterautoscaling': functools.partial(
             flags.AddClusterAutoscalingFlags
         ),
-        'clusterdns': lambda p: flags.AddClusterDNSFlags(
-            p, release_track=base.ReleaseTrack.ALPHA
-        ),
+        'clusterdns': flags.AddClusterDNSFlags,
         'placementtype': flags.AddPlacementTypeFlag,
         'placementpolicy': flags.AddPlacementPolicyFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,

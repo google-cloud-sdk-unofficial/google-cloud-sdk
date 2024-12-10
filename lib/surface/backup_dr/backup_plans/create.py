@@ -20,8 +20,8 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.backupdr import backup_plans
 from googlecloudsdk.api_lib.backupdr import util
-from googlecloudsdk.api_lib.backupdr.backup_plans import BackupPlansClient
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags
@@ -132,6 +132,7 @@ class Create(base.CreateCommand):
         only hyphens (-), underscores (_), lowercase characters, and numbers.
         """
     flags.AddLabels(parser, labels_help)
+    flags.AddLogRetentionDays(parser)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -143,13 +144,14 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = BackupPlansClient()
+    client = backup_plans.BackupPlansClient()
     is_async = args.async_
 
     backup_plan = args.CONCEPTS.backup_plan.Parse()
     backup_vault = args.CONCEPTS.backup_vault.Parse()
     resource_type = args.resource_type
     backup_rules = args.backup_rule
+    log_retention_days = args.log_retention_days
     description = args.description
     labels = args.labels
 
@@ -159,6 +161,7 @@ class Create(base.CreateCommand):
           backup_vault.RelativeName(),
           resource_type,
           backup_rules,
+          log_retention_days,
           description,
           labels,
       )

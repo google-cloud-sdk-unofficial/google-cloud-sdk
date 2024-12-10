@@ -660,9 +660,9 @@ class TestRDSLogFileDownload(AWSMockServiceTestCase):
 
 2014-01-26 23:59:00.01 spid54      Authentication mode is MIXED.
 
-2014-01-26 23:59:00.01 spid54      Logging SQL Server messages in file 'D:\RDSDBDATA\Log\ERROR'.
+2014-01-26 23:59:00.01 spid54      Logging SQL Server messages in file 'D:\\RDSDBDATA\\Log\\ERROR'.
 
-2014-01-26 23:59:00.01 spid54      The service account is 'WORKGROUP\AMAZONA-NUQUUMV$'. This is an informational message; no user action is required.
+2014-01-26 23:59:00.01 spid54      The service account is 'WORKGROUP\\AMAZONA-NUQUUMV$'. This is an informational message; no user action is required.
 
 2014-01-26 23:59:00.01 spid54      The error log has been reinitialized. See the previous log for older entries.
 

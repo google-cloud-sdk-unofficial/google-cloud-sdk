@@ -12,8 +12,6 @@ import os
 import re
 from typing import Any, Dict, List, NamedTuple, Optional, TypedDict
 
-
-
 from utils import bq_error
 from utils import bq_id_utils
 

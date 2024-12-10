@@ -79,13 +79,12 @@ def mypy(session):
         "types-pyOpenSSL",
         "types-requests",
         "types-setuptools",
-        "types-six",
         "types-mock",
     )
-    session.run("mypy", "google/", "tests/", "tests_async/")
+    session.run("mypy", "-p", "google", "-p", "tests", "-p", "tests_async")
 
 
-@nox.session(python=["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"])
+@nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"])
 def unit(session):
     constraints_path = str(
         CURRENT_DIRECTORY / "testing" / f"constraints-{session.python}.txt"
@@ -101,25 +100,6 @@ def unit(session):
         "--cov-report=term-missing",
         "tests",
         "tests_async",
-    )
-
-
-@nox.session(python=["2.7"])
-def unit_prev_versions(session):
-    constraints_path = str(
-        CURRENT_DIRECTORY / "testing" / f"constraints-{session.python}.txt"
-    )
-    session.install("-r", "testing/requirements.txt", "-c", constraints_path)
-    session.install("-e", ".", "-c", constraints_path)
-    session.run(
-        "pytest",
-        f"--junitxml=unit_{session.python}_sponge_log.xml",
-        "--cov=google.auth",
-        "--cov=google.oauth2",
-        "--cov=tests",
-        "--ignore=tests/test_pluggable.py",  # Pluggable auth only support 3.6+ for now.
-        "tests",
-        "--ignore=tests/transport/test__custom_tls_signer.py",  # enterprise cert is for python 3.6+
     )
 
 
@@ -164,7 +144,7 @@ def docs(session):
 
 @nox.session(python="pypy")
 def pypy(session):
-    session.install("-r", "test/requirements.txt")
+    session.install("-r", "testing/requirements.txt")
     session.install("-e", ".")
     session.run(
         "pytest",

@@ -143,7 +143,7 @@ class ValidationError(Error):
 # Attributes that are reserved by a class definition that
 # may not be used by either Enum or Message class definitions.
 _RESERVED_ATTRIBUTE_NAMES = frozenset(
-    ['__module__', '__doc__', '__qualname__'])
+    ['__module__', '__doc__', '__qualname__', '__static_attributes__', '__firstlineno__'])
 
 _POST_INIT_FIELD_ATTRIBUTE_NAMES = frozenset(
     ['name',
@@ -1139,12 +1139,14 @@ class FieldList(list):
 
     def append(self, value):
         """Validate item appending to list."""
-        self.__field.validate_element(value)
+        if getattr(self, '_FieldList__field', None):
+            self.__field.validate_element(value)
         return list.append(self, value)
 
     def extend(self, sequence):
         """Validate extension of list."""
-        self.__field.validate(sequence)
+        if getattr(self, '_FieldList__field', None):
+            self.__field.validate(sequence)
         return list.extend(self, sequence)
 
     def insert(self, index, value):

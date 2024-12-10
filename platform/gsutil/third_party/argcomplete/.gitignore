@@ -5,15 +5,12 @@
 # Python files
 *.pyc
 __pycache__/
-.tox/
 *.egg-info/
 /build/
 /dist/
 /.eggs/
 .coverage
-
-# Sphinx documentation
-/docs/_build/
+.venv
 
 # IDE project files
 /.pydevproject
@@ -31,3 +28,6 @@ npm-debug.log
 
 # OS X metadata files
 .DS_Store
+
+# test
+test/test_package/build

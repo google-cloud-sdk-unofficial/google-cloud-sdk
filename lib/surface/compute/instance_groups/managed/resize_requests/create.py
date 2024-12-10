@@ -64,13 +64,16 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--requested-run-duration',
         type=arg_parsers.Duration(),
-        required=True,
+        required=False,
         help="""The time you need the requested VMs to run before being
         automatically deleted. The value must be formatted as the number of
         days, hours, minutes, or seconds followed by `d`, `h`, `m`, and `s`
         respectively. For example, specify `30m` for a duration of 30
         minutes or `1d2h3m4s` for 1 day, 2 hours, 3 minutes, and 4 seconds.
-        The value must be between `10m` (10 minutes) and `7d` (7 days).""",
+        The value must be between `10m` (10 minutes) and `7d` (7 days).
+
+        If you want the managed instance group to consume a reservation, then
+        this flag is optional. Otherwise, it's required.""",
     )
 
   @classmethod
@@ -92,12 +95,17 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resource_arg = instance_groups_flags.MakeZonalInstanceGroupManagerArg()
     igm_ref = self._GetIgmRef(args, holder, resource_arg)
+
+    requested_run_duration = None
+    if args.IsKnownAndSpecified('requested_run_duration'):
+      requested_run_duration = holder.client.messages.Duration(
+          seconds=args.requested_run_duration
+      )
+
     resize_request = holder.client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
         resizeBy=args.resize_by,
-        requestedRunDuration=holder.client.messages.Duration(
-            seconds=args.requested_run_duration
-        ),
+        requestedRunDuration=requested_run_duration,
     )
     return self._MakeRequest(holder.client, igm_ref, resize_request)
 
@@ -147,12 +155,17 @@ class CreateBeta(Create):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     resource_arg = instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG
     igm_ref = self._GetIgmRef(args, holder, resource_arg)
+
+    requested_run_duration = None
+    if args.IsKnownAndSpecified('requested_run_duration'):
+      requested_run_duration = holder.client.messages.Duration(
+          seconds=args.requested_run_duration
+      )
+
     resize_request = holder.client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
         resizeBy=args.resize_by,
-        requestedRunDuration=holder.client.messages.Duration(
-            seconds=args.requested_run_duration
-        ),
+        requestedRunDuration=requested_run_duration,
     )
     return self._MakeRequest(holder.client, igm_ref, resize_request)
 

@@ -10,8 +10,6 @@ from __future__ import print_function
 import json
 from typing import Optional
 
-
-
 from absl import app
 from absl import flags
 

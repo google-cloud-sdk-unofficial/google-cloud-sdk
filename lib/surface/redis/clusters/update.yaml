@@ -90,6 +90,37 @@
         arg_value: always
         help_text: |
           Redis explicitly calls fsync for every write command.
+    - arg_name: automated-backup-mode
+      api_field: cluster.automatedBackupConfig.automatedBackupMode
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        Automated backup mode
+      choices:
+      - enum_value: DISABLED
+        arg_value: disabled
+        help_text: |
+          (default) Automated backup is disabled.
+      - enum_value: ENABLED
+        arg_value: enabled
+        help_text: |
+          Automated backup is enabled.
+    - arg_name: automated-backup-start-time
+      api_field: cluster.automatedBackupConfig.fixedFrequencySchedule.startTime
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        One-hour window when you want automated-backup operations to start. Specify the time in the format HH:00 on a 24-hour cycle in UTC time.
+      ALPHA:
+        processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayAlpha
+      BETA:
+        processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayBeta
+    - arg_name: automated-backup-ttl
+      api_field: cluster.automatedBackupConfig.retention
+      release_tracks: [ALPHA, BETA]
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+      help_text: |
+        Time to live for automated backups. A backup will be deleted automatically after the TTL
+        is reached. It ranges from 1 day to 365 days. For example, "10d" for 10 days. If not specified, the default value is 35 days.
     - group:
         mutex: true
         params:
@@ -148,6 +179,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
     BETA:
       api_version: v1beta1
       modify_request_hooks:
@@ -159,6 +191,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
     GA:
       api_version: v1
       modify_request_hooks:

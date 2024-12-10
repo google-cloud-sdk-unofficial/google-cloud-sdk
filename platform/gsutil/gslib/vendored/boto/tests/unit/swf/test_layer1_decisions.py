@@ -9,7 +9,7 @@ class TestDecisions(unittest.TestCase):
         self.decisions = boto.swf.layer1_decisions.Layer1Decisions()
 
     def assert_data(self, *data):
-        self.assertEquals(self.decisions._data, list(data))
+        self.assertEqual(self.decisions._data, list(data))
 
     def test_continue_as_new_workflow_execution(self):
         self.decisions.continue_as_new_workflow_execution(

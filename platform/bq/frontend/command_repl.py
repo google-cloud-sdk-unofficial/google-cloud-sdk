@@ -9,8 +9,6 @@ import cmd
 import shlex
 from typing import List, Optional
 
-
-
 from absl import flags
 
 from clients import utils as bq_client_utils

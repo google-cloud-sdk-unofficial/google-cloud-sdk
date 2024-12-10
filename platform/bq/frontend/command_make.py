@@ -8,8 +8,6 @@ from __future__ import print_function
 import time
 from typing import Optional
 
-
-
 from absl import app
 from absl import flags
 
@@ -50,7 +48,8 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_boolean(
         'force',
         False,
-        'Ignore errors reporting that the object already exists.',
+        'Bypass existence checks and ignore errors that the object already '
+        'exists.',
         short_name='f',
         flag_values=fv,
     )
@@ -1086,7 +1085,7 @@ class Make(bigquery_command.BigqueryCmd):
       )
       self.printSuccessMessage('Transfer configuration', transfer_name)
     elif self.transfer_run:
-      formatter = frontend_utils.GetFormatterFromFlags()
+      formatter = utils_flags.get_formatter_from_flags()
       formatted_identifier = frontend_id_utils.FormatDataTransferIdentifiers(
           client, identifier
       )
@@ -1222,7 +1221,7 @@ class Make(bigquery_command.BigqueryCmd):
         raise app.UsageError(
             'Cannot specify an external_table_definition for a dataset.'
         )
-      if client_dataset.DatasetExists(
+      if (not self.force) and client_dataset.DatasetExists(
           apiclient=client.apiclient,
           reference=reference,
       ):
@@ -1296,7 +1295,7 @@ class Make(bigquery_command.BigqueryCmd):
         object_name = 'View'
       if self.materialized_view:
         object_name = 'Materialized View'
-      if client.TableExists(reference):
+      if (not self.force) and client.TableExists(reference):
         message = (
             "%s '%s' could not be created; a table with this name "
             'already exists.'

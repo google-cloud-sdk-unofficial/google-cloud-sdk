@@ -28,6 +28,7 @@
     format: |
       table(
         name.basename():label=NAME,
+        status:label=STATUS,
         zone:label=ZONE,
         labels['/cpu']:label=CPU,
         labels['/ram_mb']:label=RAM_MB,

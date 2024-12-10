@@ -1,7 +1,4 @@
-Request Methods
-===============
+urllib3.request()
+=================
 
-.. automodule:: urllib3.request
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: urllib3.request

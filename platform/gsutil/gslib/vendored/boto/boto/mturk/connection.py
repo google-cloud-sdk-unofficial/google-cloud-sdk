@@ -919,7 +919,7 @@ class HIT(BaseAutoResultElement):
         """ Has this HIT expired yet? """
         expired = False
         if hasattr(self, 'Expiration'):
-            now = datetime.datetime.utcnow()
+            now = datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
             expiration = datetime.datetime.strptime(self.Expiration, '%Y-%m-%dT%H:%M:%SZ')
             expired = (now >= expiration)
         else:

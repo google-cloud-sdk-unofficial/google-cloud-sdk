@@ -113,25 +113,23 @@ class Relocate(base.Command):
       To move a bucket (``gs://my-bucket'') to the ``us-central1'' location, use
       the following command:
 
-          $ gcloud storage buckets relocate gs://my-bucket
-              --location=us-central1
+          $ {command} gs://my-bucket --location=us-central1
 
-      To move a bucket to a custom Dual-region, use the following command:
+      To move a bucket to a custom dual-region, use the following command:
 
-          $ gcloud storage buckets relocate gs://my-bucket --location=us
+          $ {command} gs://my-bucket --location=us
               --placement=us-central1,us-east1
 
       To validate the operation without actually moving the bucket, use the
       following command:
 
-          $ gcloud storage buckets relocate gs://my-bucket
-              --location=us-central1 --dry-run
+          $ {command} gs://my-bucket --location=us-central1 --dry-run
 
       To schedule a write lock for the move, with ttl for reverting the write
       lock after 7h, if the relocation has not succeeded, use the following
       command:
 
-          $ gcloud storage buckets relocate
+          $ {command}
               --operation=projects/_/buckets/my-bucket/operations/C894F35J
               --finalize --ttl=7h
       """,
@@ -158,7 +156,7 @@ class Relocate(base.Command):
         required=True,
         help=(
             'The final [location]'
-            ' (https://cloud.google.com/storage/docs/locations) where the'
+            '(https://cloud.google.com/storage/docs/locations) where the'
             ' bucket will be relocated to. If no location is provided, Cloud'
             ' Storage will use the default location, which is us.'
         ),

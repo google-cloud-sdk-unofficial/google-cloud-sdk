@@ -3,8 +3,6 @@
 
 from typing import Optional
 
-
-
 from googleapiclient import discovery
 
 from utils import bq_processor_utils

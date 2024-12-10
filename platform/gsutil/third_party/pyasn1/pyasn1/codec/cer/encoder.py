@@ -1,16 +1,17 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
+import warnings
+
 from pyasn1 import error
 from pyasn1.codec.ber import encoder
-from pyasn1.compat.octets import str2octs, null
 from pyasn1.type import univ
 from pyasn1.type import useful
 
-__all__ = ['encode']
+__all__ = ['Encoder', 'encode']
 
 
 class BooleanEncoder(encoder.IntegerEncoder):
@@ -31,17 +32,20 @@ class RealEncoder(encoder.RealEncoder):
 # specialized GeneralStringEncoder here
 
 class TimeEncoderMixIn(object):
-    zchar, = str2octs('Z')
-    pluschar, = str2octs('+')
-    minuschar, = str2octs('-')
-    commachar, = str2octs(',')
-    minLength = 12
-    maxLength = 19
+    Z_CHAR = ord('Z')
+    PLUS_CHAR = ord('+')
+    MINUS_CHAR = ord('-')
+    COMMA_CHAR = ord(',')
+    DOT_CHAR = ord('.')
+    ZERO_CHAR = ord('0')
+
+    MIN_LENGTH = 12
+    MAX_LENGTH = 19
 
     def encodeValue(self, value, asn1Spec, encodeFun, **options):
-        # Encoding constraints:
+        # CER encoding constraints:
         # - minutes are mandatory, seconds are optional
-        # - subseconds must NOT be zero
+        # - sub-seconds must NOT be zero / no meaningless zeros
         # - no hanging fraction dot
         # - time in UTC (Z)
         # - only dot is allowed for fractions
@@ -49,19 +53,45 @@ class TimeEncoderMixIn(object):
         if asn1Spec is not None:
             value = asn1Spec.clone(value)
 
-        octets = value.asOctets()
+        numbers = value.asNumbers()
 
-        if not self.minLength < len(octets) < self.maxLength:
-            raise error.PyAsn1Error('Length constraint violated: %r' % value)
+        if self.PLUS_CHAR in numbers or self.MINUS_CHAR in numbers:
+            raise error.PyAsn1Error('Must be UTC time: %r' % value)
 
-        if self.pluschar in octets or self.minuschar in octets:
-            raise error.PyAsn1Error('Must be UTC time: %r' % octets)
+        if numbers[-1] != self.Z_CHAR:
+            raise error.PyAsn1Error('Missing "Z" time zone specifier: %r' % value)
 
-        if octets[-1] != self.zchar:
-            raise error.PyAsn1Error('Missing "Z" time zone specifier: %r' % octets)
-
-        if self.commachar in octets:
+        if self.COMMA_CHAR in numbers:
             raise error.PyAsn1Error('Comma in fractions disallowed: %r' % value)
+
+        if self.DOT_CHAR in numbers:
+
+            isModified = False
+
+            numbers = list(numbers)
+
+            searchIndex = min(numbers.index(self.DOT_CHAR) + 4, len(numbers) - 1)
+
+            while numbers[searchIndex] != self.DOT_CHAR:
+                if numbers[searchIndex] == self.ZERO_CHAR:
+                    del numbers[searchIndex]
+                    isModified = True
+
+                searchIndex -= 1
+
+            searchIndex += 1
+
+            if searchIndex < len(numbers):
+                if numbers[searchIndex] == self.Z_CHAR:
+                    # drop hanging comma
+                    del numbers[searchIndex - 1]
+                    isModified = True
+
+            if isModified:
+                value = value.clone(numbers)
+
+        if not self.MIN_LENGTH < len(numbers) < self.MAX_LENGTH:
+            raise error.PyAsn1Error('Length constraint violated: %r' % value)
 
         options.update(maxChunkSize=1000)
 
@@ -71,13 +101,44 @@ class TimeEncoderMixIn(object):
 
 
 class GeneralizedTimeEncoder(TimeEncoderMixIn, encoder.OctetStringEncoder):
-    minLength = 12
-    maxLength = 19
+    MIN_LENGTH = 12
+    MAX_LENGTH = 20
 
 
 class UTCTimeEncoder(TimeEncoderMixIn, encoder.OctetStringEncoder):
-    minLength = 10
-    maxLength = 14
+    MIN_LENGTH = 10
+    MAX_LENGTH = 14
+
+
+class SetOfEncoder(encoder.SequenceOfEncoder):
+    def encodeValue(self, value, asn1Spec, encodeFun, **options):
+        chunks = self._encodeComponents(
+            value, asn1Spec, encodeFun, **options)
+
+        # sort by serialised and padded components
+        if len(chunks) > 1:
+            zero = b'\x00'
+            maxLen = max(map(len, chunks))
+            paddedChunks = [
+                (x.ljust(maxLen, zero), x) for x in chunks
+            ]
+            paddedChunks.sort(key=lambda x: x[0])
+
+            chunks = [x[1] for x in paddedChunks]
+
+        return b''.join(chunks), True, True
+
+
+class SequenceOfEncoder(encoder.SequenceOfEncoder):
+    def encodeValue(self, value, asn1Spec, encodeFun, **options):
+
+        if options.get('ifNotEmpty', False) and not len(value):
+            return b'', True, True
+
+        chunks = self._encodeComponents(
+            value, asn1Spec, encodeFun, **options)
+
+        return b''.join(chunks), True, True
 
 
 class SetEncoder(encoder.SequenceEncoder):
@@ -102,14 +163,17 @@ class SetEncoder(encoder.SequenceEncoder):
 
     def encodeValue(self, value, asn1Spec, encodeFun, **options):
 
-        substrate = null
+        substrate = b''
 
         comps = []
         compsMap = {}
 
         if asn1Spec is None:
             # instance of ASN.1 schema
-            value.verifySizeSpec()
+            inconsistency = value.isInconsistent
+            if inconsistency:
+                raise error.PyAsn1Error(
+                    f"ASN.1 object {value.__class__.__name__} is inconsistent")
 
             namedTypes = value.componentType
 
@@ -168,57 +232,13 @@ class SetEncoder(encoder.SequenceEncoder):
         return substrate, True, True
 
 
-class SetOfEncoder(encoder.SequenceOfEncoder):
-    def encodeValue(self, value, asn1Spec, encodeFun, **options):
-        if asn1Spec is None:
-            value.verifySizeSpec()
-        else:
-            asn1Spec = asn1Spec.componentType
-
-        components = [encodeFun(x, asn1Spec, **options)
-                      for x in value]
-
-        # sort by serialised and padded components
-        if len(components) > 1:
-            zero = str2octs('\x00')
-            maxLen = max(map(len, components))
-            paddedComponents = [
-                (x.ljust(maxLen, zero), x) for x in components
-                ]
-            paddedComponents.sort(key=lambda x: x[0])
-
-            components = [x[1] for x in paddedComponents]
-
-        substrate = null.join(components)
-
-        return substrate, True, True
-
-
 class SequenceEncoder(encoder.SequenceEncoder):
     omitEmptyOptionals = True
 
 
-class SequenceOfEncoder(encoder.SequenceOfEncoder):
-    def encodeValue(self, value, asn1Spec, encodeFun, **options):
+TAG_MAP = encoder.TAG_MAP.copy()
 
-        if options.get('ifNotEmpty', False) and not len(value):
-            return null, True, True
-
-        if asn1Spec is None:
-            value.verifySizeSpec()
-        else:
-            asn1Spec = asn1Spec.componentType
-
-        substrate = null
-
-        for idx, component in enumerate(value):
-            substrate += encodeFun(value[idx], asn1Spec, **options)
-
-        return substrate, True, True
-
-
-tagMap = encoder.tagMap.copy()
-tagMap.update({
+TAG_MAP.update({
     univ.Boolean.tagSet: BooleanEncoder(),
     univ.Real.tagSet: RealEncoder(),
     useful.GeneralizedTime.tagSet: GeneralizedTimeEncoder(),
@@ -228,8 +248,9 @@ tagMap.update({
     univ.Sequence.typeId: SequenceEncoder()
 })
 
-typeMap = encoder.typeMap.copy()
-typeMap.update({
+TYPE_MAP = encoder.TYPE_MAP.copy()
+
+TYPE_MAP.update({
     univ.Boolean.typeId: BooleanEncoder(),
     univ.Real.typeId: RealEncoder(),
     useful.GeneralizedTime.typeId: GeneralizedTimeEncoder(),
@@ -242,9 +263,17 @@ typeMap.update({
 })
 
 
-class Encoder(encoder.Encoder):
+class SingleItemEncoder(encoder.SingleItemEncoder):
     fixedDefLengthMode = False
     fixedChunkSize = 1000
+
+    TAG_MAP = TAG_MAP
+    TYPE_MAP = TYPE_MAP
+
+
+class Encoder(encoder.Encoder):
+    SINGLE_ITEM_ENCODER = SingleItemEncoder
+
 
 #: Turns ASN.1 object into CER octet stream.
 #:
@@ -264,12 +293,12 @@ class Encoder(encoder.Encoder):
 #:
 #: Returns
 #: -------
-#: : :py:class:`bytes` (Python 3) or :py:class:`str` (Python 2)
+#: : :py:class:`bytes`
 #:     Given ASN.1 object encoded into BER octet-stream
 #:
 #: Raises
 #: ------
-#: :py:class:`~pyasn1.error.PyAsn1Error`
+#: ~pyasn1.error.PyAsn1Error
 #:     On encoding errors
 #:
 #: Examples
@@ -291,6 +320,12 @@ class Encoder(encoder.Encoder):
 #:    >>> encode(seq)
 #:    b'0\x80\x02\x01\x01\x02\x01\x02\x02\x01\x03\x00\x00'
 #:
-encode = Encoder(tagMap, typeMap)
+encode = Encoder()
 
 # EncoderFactory queries class instance and builds a map of tags -> encoders
+
+def __getattr__(attr: str):
+    if newAttr := {"tagMap": "TAG_MAP", "typeMap": "TYPE_MAP"}.get(attr):
+        warnings.warn(f"{attr} is deprecated. Please use {newAttr} instead.", DeprecationWarning)
+        return globals()[newAttr]
+    raise AttributeError(attr)

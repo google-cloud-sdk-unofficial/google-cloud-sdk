@@ -136,7 +136,7 @@ class TestCloudformationConnection(unittest.TestCase):
         self.assertEqual(self.stack_name, stack.stack_name)
         
         params = [(p.key, p.value) for p in stack.parameters]
-        self.assertEquals([('Parameter1', 'initial_value'),
+        self.assertEqual([('Parameter1', 'initial_value'),
                            ('Parameter2', 'initial_value')], params)
         
         for _ in range(30):
@@ -154,7 +154,7 @@ class TestCloudformationConnection(unittest.TestCase):
         stacks = self.connection.describe_stacks(self.stack_name)
         stack = stacks[0]
         params = [(p.key, p.value) for p in stacks[0].parameters]
-        self.assertEquals([('Parameter1', 'initial_value'),
+        self.assertEqual([('Parameter1', 'initial_value'),
                            ('Parameter2', 'updated_value')], params)
 
         # Waiting for the update to complete to unblock the delete_stack in the

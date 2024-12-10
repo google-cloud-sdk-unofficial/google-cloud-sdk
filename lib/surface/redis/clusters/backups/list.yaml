@@ -10,7 +10,7 @@
     examples: |
       To list up to 5 backups in the us-central1 region, run:
 
-      $ {command} --backup_collection=my-collection --region=us-central1 --limit=5
+      $ {command} --backup-collection=my-collection --region=us-central1 --limit=5
 
   arguments:
     resource:

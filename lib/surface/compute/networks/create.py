@@ -88,6 +88,7 @@ class Create(base.CreateCommand):
     network_utils.AddInternalIpv6RangeArg(parser)
     network_utils.AddEnableUlaInternalIpv6Arg(parser)
     network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
+    network_utils.AddBgpBestPathSelectionArgGroup(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 
@@ -109,9 +110,13 @@ class Create(base.CreateCommand):
         support_firewall_order=self._support_firewall_order,
     )
 
-    request = (client.apitools_client.networks, 'Insert',
-               client.messages.ComputeNetworksInsertRequest(
-                   network=network_resource, project=network_ref.project))
+    request = (
+        client.apitools_client.networks,
+        'Insert',
+        client.messages.ComputeNetworksInsertRequest(
+            network=network_resource, project=network_ref.project
+        ),
+    )
     response = client.MakeRequests([request])
 
     resource_dict = resource_projector.MakeSerializable(response[0])
@@ -160,7 +165,6 @@ class CreateBeta(Create):
         )
     )
     cls.NETWORK_PROFILE_ARG.AddArgument(parser)
-    network_utils.AddBgpBestPathSelectionArgGroup(parser)
 
   def Run(self, args):
     """Issues the request necessary for adding the network."""

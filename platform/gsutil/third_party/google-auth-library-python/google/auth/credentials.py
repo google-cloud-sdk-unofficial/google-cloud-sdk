@@ -18,14 +18,12 @@
 import abc
 import os
 
-import six
-
 from google.auth import _helpers, environment_vars
 from google.auth import exceptions
+from google.auth import metrics
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Credentials(object):
+class Credentials(metaclass=abc.ABCMeta):
     """Base class for all credentials.
 
     All credentials have a :attr:`token` that is used for authentication and
@@ -53,6 +51,13 @@ class Credentials(object):
         If this is None, the token is assumed to never expire."""
         self._quota_project_id = None
         """Optional[str]: Project to use for quota and billing purposes."""
+        self._trust_boundary = None
+        """Optional[dict]: Cache of a trust boundary response which has a list
+        of allowed regions and an encoded string representation of credentials
+        trust boundary."""
+        self._universe_domain = "googleapis.com"
+        """Optional[str]: The universe domain value, default is googleapis.com
+        """
 
     @property
     def expired(self):
@@ -84,6 +89,11 @@ class Credentials(object):
         """Project to use for quota and billing purposes."""
         return self._quota_project_id
 
+    @property
+    def universe_domain(self):
+        """The universe domain value."""
+        return self._universe_domain
+
     @abc.abstractmethod
     def refresh(self, request):
         """Refreshes the access token.
@@ -100,6 +110,21 @@ class Credentials(object):
         # (pylint doesn't recognize that this is abstract)
         raise NotImplementedError("Refresh must be implemented")
 
+    def _metric_header_for_usage(self):
+        """The x-goog-api-client header for token usage metric.
+
+        This header will be added to the API service requests in before_request
+        method. For example, "cred-type/sa-jwt" means service account self
+        signed jwt access token is used in the API service request
+        authorization header. Children credentials classes need to override
+        this method to provide the header value, if the token usage metric is
+        needed.
+
+        Returns:
+            str: The x-goog-api-client header value.
+        """
+        return None
+
     def apply(self, headers, token=None):
         """Apply the token to the authentication header.
 
@@ -111,6 +136,21 @@ class Credentials(object):
         headers["authorization"] = "Bearer {}".format(
             _helpers.from_bytes(token or self.token)
         )
+        """Trust boundary value will be a cached value from global lookup.
+
+        The response of trust boundary will be a list of regions and a hex
+        encoded representation.
+
+        An example of global lookup response:
+        {
+          "locations": [
+            "us-central1", "us-east1", "europe-west1", "asia-east1"
+          ]
+          "encoded_locations": "0xA30"
+        }
+        """
+        if self._trust_boundary is not None:
+            headers["x-allowed-locations"] = self._trust_boundary["encoded_locations"]
         if self.quota_project_id:
             headers["x-goog-user-project"] = self.quota_project_id
 
@@ -133,6 +173,7 @@ class Credentials(object):
         # the http request.)
         if not self.valid:
             self.refresh(request)
+        metrics.add_metric_header(headers, self._metric_header_for_usage())
         self.apply(headers)
 
 
@@ -210,8 +251,7 @@ class AnonymousCredentials(Credentials):
         """Anonymous credentials do nothing to the request."""
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ReadOnlyScoped(object):
+class ReadOnlyScoped(metaclass=abc.ABCMeta):
     """Interface for credentials whose scopes can be queried.
 
     OAuth 2.0-based credentials allow limiting access using scopes as described
@@ -352,8 +392,7 @@ def with_scopes_if_required(credentials, scopes, default_scopes=None):
         return credentials
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Signing(object):
+class Signing(metaclass=abc.ABCMeta):
     """Interface for credentials that can cryptographically sign messages."""
 
     @abc.abstractmethod

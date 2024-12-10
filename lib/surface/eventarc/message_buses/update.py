@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import message_buses
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -52,7 +53,7 @@ class Update(base.UpdateCommand):
     )
     flags.AddLoggingConfigArg(parser, 'The logging config of the message bus.')
     flags.AddCryptoKeyArg(parser, with_clear=True)
-    flags.AddLabelsArg(parser, 'Labels to apply to the message bus.')
+    labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -68,11 +69,16 @@ class Update(base.UpdateCommand):
         )
     )
 
+    original_message_bus = client.Get(message_bus_ref)
+    labels_update_result = labels_util.Diff.FromUpdateArgs(args).Apply(
+        client.LabelsValueClass(), original_message_bus.labels
+    )
+
     update_mask = client.BuildUpdateMask(
         logging_config=args.IsSpecified('logging_config'),
         crypto_key=args.IsSpecified('crypto_key'),
         clear_crypto_key=args.clear_crypto_key,
-        labels=args.IsSpecified('labels'),
+        labels=labels_update_result.needs_update,
     )
 
     operation = client.Patch(
@@ -81,7 +87,7 @@ class Update(base.UpdateCommand):
             message_bus_ref=message_bus_ref,
             logging_config=args.logging_config,
             crypto_key_name=args.crypto_key,
-            labels=args.labels,
+            labels=labels_update_result.GetOrNone(),
         ),
         update_mask,
     )

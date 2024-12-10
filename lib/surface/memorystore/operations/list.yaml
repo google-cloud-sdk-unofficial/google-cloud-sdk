@@ -22,5 +22,3 @@
     collection: memorystore.projects.locations.operations
   response:
     id_field: name
-  GA:
-    hidden: true

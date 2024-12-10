@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Move(base.UpdateCommand):
   """Move a Compute Engine organization security policy.
@@ -75,8 +76,8 @@ class Move(base.UpdateCommand):
 Move.detailed_help = {
     'EXAMPLES':
         """\
-    To move an organization security policy under folder with ID ``123456789" to
-    folder ``987654321", run:
+    To move an organization security policy under folder with ID "123456789" to
+    folder "987654321", run:
 
       $ {command} move 123456789 --folder=987654321
     """,

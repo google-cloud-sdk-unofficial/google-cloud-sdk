@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import message_buses
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -47,7 +48,7 @@ class Create(base.CreateCommand):
     )
     flags.AddLoggingConfigArg(parser, 'The logging config of the message bus.')
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
-    flags.AddLabelsArg(parser, help_text='Labels to apply to the message bus.')
+    labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -66,7 +67,10 @@ class Create(base.CreateCommand):
     operation = client.Create(
         message_bus_ref,
         client.BuildMessageBus(
-            message_bus_ref, args.logging_config, args.crypto_key, args.labels
+            message_bus_ref,
+            args.logging_config,
+            args.crypto_key,
+            labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
         ),
     )
 

@@ -291,7 +291,7 @@ versions of Requests.
 For the sake of security we recommend upgrading certifi frequently!
 
 .. _HTTP persistent connection: https://en.wikipedia.org/wiki/HTTP_persistent_connection
-.. _connection pooling: https://urllib3.readthedocs.io/en/latest/reference/index.html#module-urllib3.connectionpool
+.. _connection pooling: https://urllib3.readthedocs.io/en/latest/reference/urllib3.connectionpool.html
 .. _certifi: https://certifiio.readthedocs.io/
 .. _Mozilla trust store: https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt
 
@@ -603,10 +603,19 @@ Alternatively you can configure it once for an entire
 
     session.get('http://example.org')
 
-When the proxies configuration is not overridden in python as shown above,
-by default Requests relies on the proxy configuration defined by standard
-environment variables ``http_proxy``, ``https_proxy``, ``no_proxy``, 
-``curl_ca_bundle``, and ``all_proxy``. Uppercase variants of these variables are also supported.
+.. warning::  Setting ``session.proxies`` may behave differently than expected.
+    Values provided will be overwritten by environmental proxies
+    (those returned by `urllib.request.getproxies <https://docs.python.org/3/library/urllib.request.html#urllib.request.getproxies>`_).
+    To ensure the use of proxies in the presence of environmental proxies,
+    explicitly specify the ``proxies`` argument on all individual requests as
+    initially explained above.
+
+    See `#2018 <https://github.com/psf/requests/issues/2018>`_ for details.
+
+When the proxies configuration is not overridden per request as shown above,
+Requests relies on the proxy configuration defined by standard
+environment variables ``http_proxy``, ``https_proxy``, ``no_proxy``,
+and ``all_proxy``. Uppercase variants of these variables are also supported.
 You can therefore set them to configure Requests (only set the ones relevant
 to your needs)::
 
@@ -647,15 +656,17 @@ certificates trusted by Requests can be found with::
     from requests.utils import DEFAULT_CA_BUNDLE_PATH
     print(DEFAULT_CA_BUNDLE_PATH)
 
-You override this default certificate bundle by setting the standard
-``curl_ca_bundle`` environment variable to another file path::
+You override this default certificate bundle by setting the ``REQUESTS_CA_BUNDLE``
+(or ``CURL_CA_BUNDLE``) environment variable to another file path::
 
-    $ export curl_ca_bundle="/usr/local/myproxy_info/cacert.pem"
+    $ export REQUESTS_CA_BUNDLE="/usr/local/myproxy_info/cacert.pem"
     $ export https_proxy="http://10.10.1.10:1080"
 
     $ python
     >>> import requests
     >>> requests.get('https://example.org')
+
+.. _socks:
 
 SOCKS
 ^^^^^
@@ -708,10 +719,9 @@ If ``chardet`` is installed, ``requests`` uses it, however for python3
 library is an LGPL-licenced dependency and some users of requests
 cannot depend on mandatory LGPL-licensed dependencies.
 
-When you install ``request`` without specifying ``[use_chardet_on_py3]]`` extra,
+When you install ``requests`` without specifying ``[use_chardet_on_py3]`` extra,
 and ``chardet`` is not already installed, ``requests`` uses ``charset-normalizer``
-(MIT-licensed) to guess the encoding. For Python 2, ``requests`` uses only
-``chardet`` and is a mandatory dependency there.
+(MIT-licensed) to guess the encoding.
 
 The only time Requests will not guess the encoding is if no explicit charset
 is present in the HTTP headers **and** the ``Content-Type``
@@ -938,7 +948,7 @@ Link Headers
 Many HTTP APIs feature Link headers. They make APIs more self describing and
 discoverable.
 
-GitHub uses these for `pagination <https://developer.github.com/v3/#pagination>`_
+GitHub uses these for `pagination <https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api>`_
 in their API, for example::
 
     >>> url = 'https://api.github.com/users/kennethreitz/repos?page=1&per_page=10'
@@ -986,6 +996,10 @@ The mount call registers a specific instance of a Transport Adapter to a
 prefix. Once mounted, any HTTP request made using that session whose URL starts
 with the given prefix will use the given Transport Adapter.
 
+.. note:: The adapter will be chosen based on a longest prefix match. Be mindful
+   prefixes such as ``http://localhost`` will also match ``http://localhost.other.com``
+   or ``http://localhost@other.com``. It's recommended to terminate full hostnames with a ``/``.
+
 Many of the details of implementing a Transport Adapter are beyond the scope of
 this documentation, but take a look at the next example for a simple SSL use-
 case. For more than that, you might look at subclassing the
@@ -1018,8 +1032,30 @@ library to use SSLv3::
                 num_pools=connections, maxsize=maxsize,
                 block=block, ssl_version=ssl.PROTOCOL_SSLv3)
 
+Example: Automatic Retries
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, Requests does not retry failed connections. However, it is possible
+to implement automatic retries with a powerful array of features, including
+backoff, within a Requests :class:`Session <requests.Session>` using the
+`urllib3.util.Retry`_ class::
+
+    from urllib3.util import Retry
+    from requests import Session
+    from requests.adapters import HTTPAdapter
+
+    s = Session()
+    retries = Retry(
+        total=3,
+        backoff_factor=0.1,
+        status_forcelist=[502, 503, 504],
+        allowed_methods={'POST'},
+    )
+    s.mount('https://', HTTPAdapter(max_retries=retries))
+
 .. _`described here`: https://kenreitz.org/essays/2012/06/14/the-future-of-python-http
 .. _`urllib3`: https://github.com/urllib3/urllib3
+.. _`urllib3.util.Retry`: https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html#urllib3.util.Retry
 
 .. _blocking-or-nonblocking:
 
@@ -1047,7 +1083,7 @@ Header Ordering
 
 In unusual circumstances you may want to provide headers in an ordered manner. If you pass an ``OrderedDict`` to the ``headers`` keyword argument, that will provide the headers with an ordering. *However*, the ordering of the default headers used by Requests will be preferred, which means that if you override default headers in the ``headers`` keyword argument, they may appear out of order compared to other headers in that keyword argument.
 
-If this is problematic, users should consider setting the default headers on a :class:`Session <requests.Session>` object, by setting :attr:`Session <requests.Session.headers>` to a custom ``OrderedDict``. That ordering will always be preferred.
+If this is problematic, users should consider setting the default headers on a :class:`Session <requests.Session>` object, by setting :attr:`Session.headers <requests.Session.headers>` to a custom ``OrderedDict``. That ordering will always be preferred.
 
 .. _timeouts:
 
@@ -1063,7 +1099,7 @@ The **connect** timeout is the number of seconds Requests will wait for your
 client to establish a connection to a remote machine (corresponding to the
 `connect()`_) call on the socket. It's a good practice to set connect timeouts
 to slightly larger than a multiple of 3, which is the default `TCP packet
-retransmission window <https://www.hjp.at/doc/rfc/rfc2988.txt>`_.
+retransmission window <https://datatracker.ietf.org/doc/html/rfc2988>`_.
 
 Once your client has connected to the server and sent the HTTP request, the
 **read** timeout is the number of seconds the client will wait for the server
@@ -1088,4 +1124,18 @@ coffee.
 
     r = requests.get('https://github.com', timeout=None)
 
+.. note:: The connect timeout applies to each connection attempt to an IP address.
+          If multiple addresses exist for a domain name, the underlying ``urllib3`` will
+          try each address sequentially until one successfully connects.
+          This may lead to an effective total connection timeout *multiple* times longer
+          than the specified time, e.g. an unresponsive server having both IPv4 and IPv6
+          addresses will have its perceived timeout *doubled*, so take that into account
+          when setting the connection timeout.
+.. note:: Neither the connect nor read timeouts are `wall clock`_. This means
+          that if you start a request, and look at the time, and then look at
+          the time when the request finishes or times out, the real-world time
+          may be greater than what you specified.
+
+
+.. _`wall clock`: https://wiki.php.net/rfc/max_execution_wall_time
 .. _`connect()`: https://linux.die.net/man/2/connect

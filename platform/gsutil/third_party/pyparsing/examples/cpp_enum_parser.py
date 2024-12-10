@@ -9,9 +9,10 @@
 #
 #
 
-from pyparsing import *
+import pyparsing as pp
+
 # sample string with enums and other stuff
-sample = '''
+sample = """
     stuff before
     enum hello {
         Zero,
@@ -31,22 +32,22 @@ sample = '''
         zeta = 50
         };
     at the end
-    '''
+    """
 
 # syntax we don't want to see in the final parse tree
-LBRACE,RBRACE,EQ,COMMA = map(Suppress,"{}=,")
-_enum = Suppress('enum')
-identifier = Word(alphas,alphanums+'_')
-integer = Word(nums)
-enumValue = Group(identifier('name') + Optional(EQ + integer('value')))
-enumList = Group(enumValue + ZeroOrMore(COMMA + enumValue))
-enum = _enum + identifier('enum') + LBRACE + enumList('names') + RBRACE
+LBRACE, RBRACE, EQ, COMMA = pp.Suppress.using_each("{}=,")
+_enum = pp.Suppress("enum")
+identifier = pp.Word(pp.alphas + "_", pp.alphanums + "_")
+integer = pp.Word(pp.nums)
+enumValue = pp.Group(identifier("name") + pp.Optional(EQ + integer("value")))
+enumList = pp.Group(enumValue + (COMMA + enumValue)[...])
+enum = _enum + identifier("enum") + LBRACE + enumList("names") + RBRACE
 
 # find instances of enums ignoring other syntax
-for item,start,stop in enum.scanString(sample):
-    id = 0
+for item, start, stop in enum.scan_string(sample):
+    idx = 0
     for entry in item.names:
-        if entry.value != '':
-            id = int(entry.value)
-        print('%s_%s = %d' % (item.enum.upper(),entry.name.upper(),id))
-        id += 1
+        if entry.value != "":
+            idx = int(entry.value)
+        print(f"{item.enum.upper()}_{entry.name.upper()} = {idx}")
+        idx += 1

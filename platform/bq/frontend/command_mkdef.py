@@ -9,8 +9,6 @@ import json
 import sys
 from typing import Optional
 
-
-
 from absl import flags
 
 from frontend import bigquery_command

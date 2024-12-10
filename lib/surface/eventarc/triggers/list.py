@@ -152,7 +152,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = triggers.CreateTriggersClient(self.ReleaseTrack())
+    client = triggers.TriggersClientV1()
     args.CONCEPTS.project.Parse()
     location_ref = args.CONCEPTS.location.Parse()
     return client.List(location_ref, args.limit, args.page_size)

@@ -67,8 +67,10 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA, base.ReleaseTrack.BETA
+)
 class Stop(base.SilentCommand):
   """Stop a virtual machine instance."""
 
@@ -85,16 +87,26 @@ class Stop(base.SilentCommand):
         type=lambda x: ast.literal_eval(x.lower().capitalize()),
         help=('If set to true, local SSD data is discarded.'))
     base.ASYNC_FLAG.AddToParser(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       parser.add_argument(
           '--no-graceful-shutdown',
           default=None,
           action='store_true',
-          help='If specified, skips graceful shutdown.',
+          help=(
+              'Stops the instance immediately without gracefully shutting it'
+              ' down. If a graceful shutdown is in progress, then the instance'
+              ' is forcefully stopped.'
+          ),
       )
 
   def _CreateStopRequest(self, client, instance_ref, args):
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
+    ):
       return client.messages.ComputeInstancesStopRequest(
           discardLocalSsd=args.discard_local_ssd,
           instance=instance_ref.Name(),

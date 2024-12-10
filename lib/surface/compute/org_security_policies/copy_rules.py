@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.org_security_policies import org_securit
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CopyRules(base.UpdateCommand):
   """Replace the rules of a Compute Engine organization security policy with rules from another policy.
@@ -64,8 +65,8 @@ class CopyRules(base.UpdateCommand):
 CopyRules.detailed_help = {
     'EXAMPLES':
         """\
-    To copy the rules of an organization security policy with ID ``123456789", from
-    another organization security policy with ID ``987654321", run:
+    To copy the rules of an organization security policy with ID "123456789",
+    from another organization security policy with ID "987654321", run:
 
       $ {command} copy-rules 123456789 --source-security-policy=987654321
     """,

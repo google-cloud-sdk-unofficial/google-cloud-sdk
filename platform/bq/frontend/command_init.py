@@ -6,8 +6,6 @@ import sys
 import textwrap
 from typing import Optional
 
-
-
 from absl import flags
 import termcolor
 
@@ -18,6 +16,7 @@ from clients import client_project
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 from utils import bq_id_utils
 from utils import bq_logging
@@ -140,7 +139,7 @@ class Init(bigquery_command.BigqueryCmd):
         print()
       else:
         print('List of projects:')
-        formatter = frontend_utils.GetFormatterFromFlags()
+        formatter = utils_flags.get_formatter_from_flags()
         formatter.AddColumn('#')
         utils_formatting.configure_formatter(
             formatter, bq_id_utils.ApiClientHelper.ProjectReference

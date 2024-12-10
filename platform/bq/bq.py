@@ -31,7 +31,6 @@ if 'google' in sys.modules:
 
     importlib.reload(google)
 
-
 from absl import flags
 
 from pyglib import appcommands

@@ -7,8 +7,6 @@ import time
 import typing
 from typing import Optional, TextIO
 
-
-
 from absl import app
 from absl import flags
 
@@ -19,6 +17,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
@@ -86,7 +85,7 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     """
 
     client = bq_cached_client.Client.Get()
-    formatter = frontend_utils.GetFormatterFromFlags()
+    formatter = utils_flags.get_formatter_from_flags()
 
     source_table_prefix = bq_client_utils.GetReference(
         id_fallbacks=client, identifier=source_prefix
@@ -119,7 +118,7 @@ class Partition(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstr
     source_id_prefix = stringutil.ensure_str(source_table_prefix.tableId)
     source_id_len = len(source_id_prefix)
 
-    job_id_prefix = frontend_utils.GetJobIdFromFlags()
+    job_id_prefix = utils_flags.get_job_id_from_flags()
     if isinstance(job_id_prefix, bq_client_utils.JobIdGenerator):
       job_id_prefix = job_id_prefix.Generate(
           [source_table_prefix, destination_table]

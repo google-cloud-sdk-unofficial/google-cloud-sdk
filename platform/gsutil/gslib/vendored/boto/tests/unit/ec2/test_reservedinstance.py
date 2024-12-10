@@ -38,7 +38,7 @@ class TestReservedInstancesSet(AWSMockServiceTestCase):
 
         self.assertEqual(len(response), 1)
         self.assertTrue(isinstance(response[0], ReservedInstance))
-        self.assertEquals(response[0].id, 'ididididid')
-        self.assertEquals(response[0].instance_count, 5)
-        self.assertEquals(response[0].start, '2014-05-03T14:10:10.944Z')
-        self.assertEquals(response[0].end, '2014-05-03T14:10:11.000Z')
+        self.assertEqual(response[0].id, 'ididididid')
+        self.assertEqual(response[0].instance_count, 5)
+        self.assertEqual(response[0].start, '2014-05-03T14:10:10.944Z')
+        self.assertEqual(response[0].end, '2014-05-03T14:10:11.000Z')

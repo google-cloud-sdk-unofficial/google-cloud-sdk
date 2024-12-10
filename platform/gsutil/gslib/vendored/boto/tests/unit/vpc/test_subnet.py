@@ -58,7 +58,7 @@ class TestDescribeSubnets(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(len(api_response), 2)
+        self.assertEqual(len(api_response), 2)
         self.assertIsInstance(api_response[0], Subnet)
         self.assertEqual(api_response[0].id, 'subnet-9d4a7b6c')
         self.assertEqual(api_response[1].id, 'subnet-6e7f829e')
@@ -97,12 +97,12 @@ class TestCreateSubnet(AWSMockServiceTestCase):
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
         self.assertIsInstance(api_response, Subnet)
-        self.assertEquals(api_response.id, 'subnet-9d4a7b6c')
-        self.assertEquals(api_response.state, 'pending')
-        self.assertEquals(api_response.vpc_id, 'vpc-1a2b3c4d')
-        self.assertEquals(api_response.cidr_block, '10.0.1.0/24')
-        self.assertEquals(api_response.available_ip_address_count, 251)
-        self.assertEquals(api_response.availability_zone, 'us-east-1a')
+        self.assertEqual(api_response.id, 'subnet-9d4a7b6c')
+        self.assertEqual(api_response.state, 'pending')
+        self.assertEqual(api_response.vpc_id, 'vpc-1a2b3c4d')
+        self.assertEqual(api_response.cidr_block, '10.0.1.0/24')
+        self.assertEqual(api_response.available_ip_address_count, 251)
+        self.assertEqual(api_response.availability_zone, 'us-east-1a')
 
 
 class TestDeleteSubnet(AWSMockServiceTestCase):
@@ -126,7 +126,7 @@ class TestDeleteSubnet(AWSMockServiceTestCase):
             ignore_params_values=['AWSAccessKeyId', 'SignatureMethod',
                                   'SignatureVersion', 'Timestamp',
                                   'Version'])
-        self.assertEquals(api_response, True)
+        self.assertEqual(api_response, True)
 
 
 if __name__ == '__main__':

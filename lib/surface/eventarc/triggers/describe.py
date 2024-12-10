@@ -49,7 +49,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = triggers.CreateTriggersClient(self.ReleaseTrack())
+    client = triggers.TriggersClientV1()
     trigger_ref = args.CONCEPTS.trigger.Parse()
     trigger = client.Get(trigger_ref)
     event_type = client.GetEventType(trigger)

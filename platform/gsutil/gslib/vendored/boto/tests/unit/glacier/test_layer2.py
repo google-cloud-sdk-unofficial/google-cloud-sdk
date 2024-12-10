@@ -257,8 +257,8 @@ class TestVault(GlacierLayer2Base):
             dict(EXAMPLE_PART_LIST_COMPLETE)) # take a copy
         parts_result = self.vault.list_all_parts(sentinel.upload_id)
         expected = [call('examplevault', sentinel.upload_id)]
-        self.assertEquals(expected, self.mock_layer1.list_parts.call_args_list)
-        self.assertEquals(EXAMPLE_PART_LIST_COMPLETE, parts_result)
+        self.assertEqual(expected, self.mock_layer1.list_parts.call_args_list)
+        self.assertEqual(EXAMPLE_PART_LIST_COMPLETE, parts_result)
 
     def test_list_all_parts_two_pages(self):
         self.mock_layer1.list_parts.side_effect = [
@@ -270,8 +270,8 @@ class TestVault(GlacierLayer2Base):
         expected = [call('examplevault', sentinel.upload_id),
                     call('examplevault', sentinel.upload_id,
                          marker=EXAMPLE_PART_LIST_RESULT_PAGE_1['Marker'])]
-        self.assertEquals(expected, self.mock_layer1.list_parts.call_args_list)
-        self.assertEquals(EXAMPLE_PART_LIST_COMPLETE, parts_result)
+        self.assertEqual(expected, self.mock_layer1.list_parts.call_args_list)
+        self.assertEqual(EXAMPLE_PART_LIST_COMPLETE, parts_result)
 
     @patch('boto.glacier.vault.resume_file_upload')
     def test_resume_archive_from_file(self, mock_resume_file_upload):
@@ -313,7 +313,7 @@ class TestJob(GlacierLayer2Base):
 
 class TestRangeStringParsing(unittest.TestCase):
     def test_simple_range(self):
-        self.assertEquals(
+        self.assertEqual(
             Vault._range_string_to_part_index('0-3', 4), 0)
 
     def test_range_one_too_big(self):
@@ -321,7 +321,7 @@ class TestRangeStringParsing(unittest.TestCase):
         # See: https://forums.aws.amazon.com/thread.jspa?threadID=106866&tstart=0
         # Workaround is to assume that if a (start, end] range appears to be
         # returned then that is what it is.
-        self.assertEquals(
+        self.assertEqual(
             Vault._range_string_to_part_index('0-4', 4), 0)
 
     def test_range_too_big(self):
@@ -334,5 +334,5 @@ class TestRangeStringParsing(unittest.TestCase):
 
     def test_range_end_mismatch(self):
         # End mismatch is OK, since the last part might be short
-        self.assertEquals(
+        self.assertEqual(
             Vault._range_string_to_part_index('0-2', 4), 0)

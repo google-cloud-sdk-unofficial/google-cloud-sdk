@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Search Principal Access Boundary Policy Bindings.
     description: |
@@ -34,6 +33,7 @@
         Format:
          `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:organization_location_principal_access_boundary_policy
       required: true
   request:

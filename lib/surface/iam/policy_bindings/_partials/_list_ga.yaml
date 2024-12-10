@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List PolicyBinding instances.
     description: |
@@ -39,6 +38,7 @@
         * `folders/{folder_id}/locations/{location}`
         * `organizations/{organization_id}/locations/{location}`
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:folder_or_organization_or_project_location
       required: true
   request:

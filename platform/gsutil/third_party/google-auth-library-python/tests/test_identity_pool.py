@@ -13,17 +13,18 @@
 # limitations under the License.
 
 import datetime
+import http.client as http_client
 import json
 import os
+import urllib
 
 import mock
 import pytest  # type: ignore
-from six.moves import http_client
-from six.moves import urllib
 
 from google.auth import _helpers
 from google.auth import exceptions
 from google.auth import identity_pool
+from google.auth import metrics
 from google.auth import transport
 
 
@@ -66,6 +67,7 @@ WORKFORCE_AUDIENCE = (
 WORKFORCE_SUBJECT_TOKEN_TYPE = "urn:ietf:params:oauth:token-type:id_token"
 WORKFORCE_POOL_USER_PROJECT = "WORKFORCE_POOL_USER_PROJECT_NUMBER"
 
+DEFAULT_UNIVERSE_DOMAIN = "googleapis.com"
 
 VALID_TOKEN_URLS = [
     "https://sts.googleapis.com",
@@ -267,6 +269,21 @@ class TestCredentials(object):
         if basic_auth_encoding:
             token_headers["Authorization"] = "Basic " + basic_auth_encoding
 
+        metrics_options = {}
+        if credentials._service_account_impersonation_url:
+            metrics_options["sa-impersonation"] = "true"
+        else:
+            metrics_options["sa-impersonation"] = "false"
+        metrics_options["config-lifetime"] = "false"
+        if credentials._credential_source_file:
+            metrics_options["source"] = "file"
+        else:
+            metrics_options["source"] = "url"
+
+        token_headers["x-goog-api-client"] = metrics.byoid_metrics_header(
+            metrics_options
+        )
+
         if service_account_impersonation_url:
             token_scopes = "https://www.googleapis.com/auth/iam"
         else:
@@ -285,6 +302,9 @@ class TestCredentials(object):
                 json.dumps({"userProject": workforce_pool_user_project})
             )
 
+        metrics_header_value = (
+            "gl-python/3.7 auth/1.1 auth-request-type/at cred-type/imp"
+        )
         if service_account_impersonation_url:
             # Service account impersonation request/response.
             expire_time = (
@@ -298,6 +318,8 @@ class TestCredentials(object):
             impersonation_headers = {
                 "Content-Type": "application/json",
                 "authorization": "Bearer {}".format(token_response["access_token"]),
+                "x-goog-api-client": metrics_header_value,
+                "x-allowed-locations": "0x0",
             }
             impersonation_request_data = {
                 "delegates": None,
@@ -320,7 +342,11 @@ class TestCredentials(object):
 
         request = cls.make_mock_request(*[el for req in requests for el in req])
 
-        credentials.refresh(request)
+        with mock.patch(
+            "google.auth.metrics.token_request_access_token_impersonate",
+            return_value=metrics_header_value,
+        ):
+            credentials.refresh(request)
 
         assert len(request.call_args_list) == len(requests)
         if credential_data:
@@ -410,6 +436,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=QUOTA_PROJECT_ID,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(identity_pool.Credentials, "__init__", return_value=None)
@@ -437,6 +464,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=None,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(identity_pool.Credentials, "__init__", return_value=None)
@@ -465,6 +493,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=None,
             workforce_pool_user_project=WORKFORCE_POOL_USER_PROJECT,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(identity_pool.Credentials, "__init__", return_value=None)
@@ -499,6 +528,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=QUOTA_PROJECT_ID,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(identity_pool.Credentials, "__init__", return_value=None)
@@ -527,6 +557,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=None,
             workforce_pool_user_project=None,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     @mock.patch.object(identity_pool.Credentials, "__init__", return_value=None)
@@ -556,6 +587,7 @@ class TestCredentials(object):
             credential_source=self.CREDENTIAL_SOURCE_TEXT,
             quota_project_id=None,
             workforce_pool_user_project=WORKFORCE_POOL_USER_PROJECT,
+            universe_domain=DEFAULT_UNIVERSE_DOMAIN,
         )
 
     def test_constructor_nonworkforce_with_workforce_pool_user_project(self):
@@ -639,6 +671,7 @@ class TestCredentials(object):
             "token_info_url": TOKEN_INFO_URL,
             "credential_source": self.CREDENTIAL_SOURCE_TEXT_URL,
             "workforce_pool_user_project": WORKFORCE_POOL_USER_PROJECT,
+            "universe_domain": DEFAULT_UNIVERSE_DOMAIN,
         }
 
     def test_info_with_file_credential_source(self):
@@ -653,6 +686,7 @@ class TestCredentials(object):
             "token_url": TOKEN_URL,
             "token_info_url": TOKEN_INFO_URL,
             "credential_source": self.CREDENTIAL_SOURCE_TEXT_URL,
+            "universe_domain": DEFAULT_UNIVERSE_DOMAIN,
         }
 
     def test_info_with_url_credential_source(self):
@@ -667,6 +701,7 @@ class TestCredentials(object):
             "token_url": TOKEN_URL,
             "token_info_url": TOKEN_INFO_URL,
             "credential_source": self.CREDENTIAL_SOURCE_JSON_URL,
+            "universe_domain": DEFAULT_UNIVERSE_DOMAIN,
         }
 
     def test_retrieve_subject_token_missing_subject_token(self, tmpdir):

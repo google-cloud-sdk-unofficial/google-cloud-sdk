@@ -221,6 +221,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
   _support_host_error_timeout_seconds = True
   _support_max_run_duration = True
   _support_local_ssd_recovery_timeout = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -244,6 +245,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+    flags.AddGracefulShutdownArgs(parser)
 
   def Run(self, args):
     return self._Run(args)

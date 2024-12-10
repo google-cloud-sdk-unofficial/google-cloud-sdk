@@ -5,57 +5,82 @@
 #
 # Copyright (c) 2003,2016, Paul McGuire
 #
-from pyparsing import Word, delimitedList, Optional, \
-    Group, alphas, alphanums, Forward, oneOf, quotedString, \
-    infixNotation, opAssoc, \
-    ZeroOrMore, restOfLine, CaselessKeyword, pyparsing_common as ppc
+from pyparsing import (
+    Word,
+    delimitedList,
+    Optional,
+    Group,
+    alphas,
+    alphanums,
+    Forward,
+    oneOf,
+    quotedString,
+    infixNotation,
+    opAssoc,
+    restOfLine,
+    CaselessKeyword,
+    ParserElement,
+    pyparsing_common as ppc,
+)
+
+ParserElement.enablePackrat()
 
 # define SQL tokens
 selectStmt = Forward()
-SELECT, FROM, WHERE, AND, OR, IN, IS, NOT, NULL = map(CaselessKeyword, 
-    "select from where and or in is not null".split())
+SELECT, FROM, WHERE, AND, OR, IN, IS, NOT, NULL = map(
+    CaselessKeyword, "select from where and or in is not null".split()
+)
 NOT_NULL = NOT + NULL
 
-ident          = Word( alphas, alphanums + "_$" ).setName("identifier")
-columnName     = delimitedList(ident, ".", combine=True).setName("column name")
+ident = Word(alphas, alphanums + "_$").setName("identifier")
+columnName = delimitedList(ident, ".", combine=True).setName("column name")
 columnName.addParseAction(ppc.upcaseTokens)
-columnNameList = Group( delimitedList(columnName))
-tableName      = delimitedList(ident, ".", combine=True).setName("table name")
+columnNameList = Group(delimitedList(columnName).setName("column_list"))
+tableName = delimitedList(ident, ".", combine=True).setName("table name")
 tableName.addParseAction(ppc.upcaseTokens)
-tableNameList  = Group(delimitedList(tableName))
+tableNameList = Group(delimitedList(tableName).setName("table_list"))
 
-binop = oneOf("= != < > >= <= eq ne lt le gt ge", caseless=True)
-realNum = ppc.real()
+binop = oneOf("= != < > >= <= eq ne lt le gt ge", caseless=True).setName("binop")
+realNum = ppc.real().setName("real number")
 intNum = ppc.signed_integer()
 
-columnRval = realNum | intNum | quotedString | columnName # need to add support for alg expressions
+columnRval = (
+    realNum | intNum | quotedString | columnName
+).setName("column_rvalue")  # need to add support for alg expressions
 whereCondition = Group(
-    ( columnName + binop + columnRval ) |
-    ( columnName + IN + Group("(" + delimitedList( columnRval ) + ")" )) |
-    ( columnName + IN + Group("(" + selectStmt + ")" )) |
-    ( columnName + IS + (NULL | NOT_NULL))
-    )
+    (columnName + binop + columnRval)
+    | (columnName + IN + Group("(" + delimitedList(columnRval).setName("in_values_list") + ")"))
+    | (columnName + IN + Group("(" + selectStmt + ")"))
+    | (columnName + IS + (NULL | NOT_NULL))
+).setName("where_condition")
 
-whereExpression = infixNotation(whereCondition,
+whereExpression = infixNotation(
+    whereCondition,
     [
         (NOT, 1, opAssoc.RIGHT),
         (AND, 2, opAssoc.LEFT),
         (OR, 2, opAssoc.LEFT),
-    ])
+    ],
+).setName("where_expression")
 
 # define the grammar
-selectStmt <<= (SELECT + ('*' | columnNameList)("columns") +
-                FROM + tableNameList( "tables" ) +
-                Optional(Group(WHERE + whereExpression), "")("where"))
+selectStmt <<= (
+    SELECT
+    + ("*" | columnNameList)("columns")
+    + FROM
+    + tableNameList("tables")
+    + Optional(Group(WHERE + whereExpression), "")("where")
+).setName("select_statement")
 
 simpleSQL = selectStmt
 
 # define Oracle comment format, and ignore them
 oracleSqlComment = "--" + restOfLine
-simpleSQL.ignore( oracleSqlComment )
+simpleSQL.ignore(oracleSqlComment)
 
 if __name__ == "__main__":
-    simpleSQL.runTests("""\
+    simpleSQL.runTests(
+        """\
 
         # multiple tables
         SELECT * from XYZZY, ABC
@@ -92,4 +117,5 @@ if __name__ == "__main__":
 
         # where clause with comparison operator
         Select A,b from table1,table2 where table1.id eq table2.id
-        """)
+        """
+    )

@@ -27,8 +27,10 @@ def run_gcloud_command(
     cmd: List[str], stderr: Optional[int] = None
 ) -> subprocess.Popen:  # pylint: disable=g-bare-generic
   """Runs the given gcloud command and returns the Popen object."""
+  gcloud_path = _get_gcloud_path()
+  logging.info('Running gcloud command: %s %s', gcloud_path, ' '.join(cmd))
   return subprocess.Popen(
-      [_get_gcloud_path()] + cmd,
+      [gcloud_path] + cmd,
       stdout=subprocess.PIPE,
       stderr=stderr,
       universal_newlines=True,

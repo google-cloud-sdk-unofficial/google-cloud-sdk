@@ -38,9 +38,9 @@ class TestTypes(unittest.TestCase):
         execution = wf_type.start(task_list='hello_world')
 
         self.assertIsInstance(execution, WorkflowExecution)
-        self.assertEquals(wf_type.name, execution.name)
-        self.assertEquals(wf_type.version, execution.version)
-        self.assertEquals(run_id, execution.runId)
+        self.assertEqual(wf_type.name, execution.name)
+        self.assertEqual(wf_type.version, execution.version)
+        self.assertEqual(run_id, execution.runId)
 
 if __name__ == '__main__':
     unittest.main()

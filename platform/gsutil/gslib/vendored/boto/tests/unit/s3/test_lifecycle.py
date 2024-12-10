@@ -90,7 +90,7 @@ class TestS3LifeCycle(AWSMockServiceTestCase):
 
     def test_parse_lifecycle_no_prefix(self):
         rule = self._get_bucket_lifecycle_config()[2]
-        self.assertEquals(rule.prefix, '')
+        self.assertEqual(rule.prefix, '')
 
     def test_parse_lifecycle_enabled(self):
         rule = self._get_bucket_lifecycle_config()[0]
@@ -114,22 +114,22 @@ class TestS3LifeCycle(AWSMockServiceTestCase):
 
     def test_parse_transition_days(self):
         transition = self._get_bucket_lifecycle_config()[0].transition[0]
-        self.assertEquals(transition.days, 30)
+        self.assertEqual(transition.days, 30)
         self.assertIsNone(transition.date)
 
     def test_parse_transition_days_deprecated(self):
         transition = self._get_bucket_lifecycle_config()[0].transition
-        self.assertEquals(transition.days, 30)
+        self.assertEqual(transition.days, 30)
         self.assertIsNone(transition.date)
 
     def test_parse_transition_date(self):
         transition = self._get_bucket_lifecycle_config()[1].transition[0]
-        self.assertEquals(transition.date, '2012-12-31T00:00:000Z')
+        self.assertEqual(transition.date, '2012-12-31T00:00:000Z')
         self.assertIsNone(transition.days)
 
     def test_parse_transition_date_deprecated(self):
         transition = self._get_bucket_lifecycle_config()[1].transition
-        self.assertEquals(transition.date, '2012-12-31T00:00:000Z')
+        self.assertEqual(transition.date, '2012-12-31T00:00:000Z')
         self.assertIsNone(transition.days)
 
     def test_parse_storage_class_standard_ia(self):

@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.batch import resource_args
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List tasks for a specified Batch job.
 
@@ -61,8 +63,65 @@ class List(base.ListCommand):
         client.messages.BatchProjectsLocationsJobsTaskGroupsTasksListRequest(
             parent=job_ref.RelativeName() + '/taskGroups/group0',
             pageSize=args.page_size,
-            filter=args.filter),
+            filter=args.filter,
+        ),
         batch_size=args.page_size,
         field='tasks',
         limit=args.limit,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class ListAlpha(base.ListCommand):
+  """List tasks for a specified Batch job.
+
+  Currently, since Batch only supports one taskGroup, group0, the command
+  takes --job as the required argument and will list all tasks
+  in group0 of the job.
+
+  This command can fail for the following reasons:
+  * The job specified does not exist.
+  * The active account does not have permission to access the given job
+
+  ## EXAMPLES
+
+  To print all tasks in the job with name
+  `projects/foo/locations/us-central1/jobs/bar`, run:
+
+    $ {command} --job projects/foo/locations/us-central1/jobs/bar
+  """
+
+  @staticmethod
+  def Args(parser):
+    resource_args.AddJobFlagResourceArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
+    parser.display_info.AddFormat('table(name, status.state)')
+
+  def Run(self, args):
+    """Alpha version method to list tasks for a specified Batch job.
+
+    Args:
+      args: The command line arguments of the list command including job
+        resource, page size, filter, limit and sort-by.
+    Returns:
+      The list of tasks for the job.
+
+    """
+    release_track = self.ReleaseTrack()
+
+    client = tasks.TasksClient(release_track)
+    job_ref = args.CONCEPTS.job.Parse()
+
+    return list_pager.YieldFromList(
+        client.service,
+        client.messages.BatchProjectsLocationsJobsTaskGroupsTasksListRequest(
+            parent=job_ref.RelativeName() + '/taskGroups/group0',
+            pageSize=args.page_size,
+        ),
+        batch_size=args.page_size,
+        field='tasks',
+        limit=args.limit,
+        batch_size_attribute='pageSize',
+    )

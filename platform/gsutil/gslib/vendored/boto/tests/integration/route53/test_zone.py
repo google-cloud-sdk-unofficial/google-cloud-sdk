@@ -47,14 +47,14 @@ class TestRoute53Zone(unittest.TestCase):
     def test_a(self):
         self.zone.add_a(self.base_domain, '102.11.23.1', 80)
         record = self.zone.get_a(self.base_domain)
-        self.assertEquals(record.name, u'%s.' % self.base_domain)
-        self.assertEquals(record.resource_records, [u'102.11.23.1'])
-        self.assertEquals(record.ttl, u'80')
+        self.assertEqual(record.name, u'%s.' % self.base_domain)
+        self.assertEqual(record.resource_records, [u'102.11.23.1'])
+        self.assertEqual(record.ttl, u'80')
         self.zone.update_a(self.base_domain, '186.143.32.2', '800')
         record = self.zone.get_a(self.base_domain)
-        self.assertEquals(record.name, u'%s.' % self.base_domain)
-        self.assertEquals(record.resource_records, [u'186.143.32.2'])
-        self.assertEquals(record.ttl, u'800')
+        self.assertEqual(record.name, u'%s.' % self.base_domain)
+        self.assertEqual(record.resource_records, [u'186.143.32.2'])
+        self.assertEqual(record.ttl, u'800')
 
     def test_cname(self):
         self.zone.add_cname(
@@ -63,22 +63,22 @@ class TestRoute53Zone(unittest.TestCase):
             200
         )
         record = self.zone.get_cname('www.%s' % self.base_domain)
-        self.assertEquals(record.name, u'www.%s.' % self.base_domain)
-        self.assertEquals(record.resource_records, [
+        self.assertEqual(record.name, u'www.%s.' % self.base_domain)
+        self.assertEqual(record.resource_records, [
             u'webserver.%s.' % self.base_domain
         ])
-        self.assertEquals(record.ttl, u'200')
+        self.assertEqual(record.ttl, u'200')
         self.zone.update_cname(
             'www.%s' % self.base_domain,
             'web.%s' % self.base_domain,
             45
         )
         record = self.zone.get_cname('www.%s' % self.base_domain)
-        self.assertEquals(record.name, u'www.%s.' % self.base_domain)
-        self.assertEquals(record.resource_records, [
+        self.assertEqual(record.name, u'www.%s.' % self.base_domain)
+        self.assertEqual(record.resource_records, [
             u'web.%s.' % self.base_domain
         ])
-        self.assertEquals(record.ttl, u'45')
+        self.assertEqual(record.ttl, u'45')
 
     def test_mx(self):
         self.zone.add_mx(
@@ -90,10 +90,10 @@ class TestRoute53Zone(unittest.TestCase):
             1000
         )
         record = self.zone.get_mx(self.base_domain)
-        self.assertEquals(set(record.resource_records),
+        self.assertEqual(set(record.resource_records),
                           set([u'10 mx1.%s.' % self.base_domain,
                                u'20 mx2.%s.' % self.base_domain]))
-        self.assertEquals(record.ttl, u'1000')
+        self.assertEqual(record.ttl, u'1000')
         self.zone.update_mx(
             self.base_domain,
             [
@@ -103,10 +103,10 @@ class TestRoute53Zone(unittest.TestCase):
             50
         )
         record = self.zone.get_mx(self.base_domain)
-        self.assertEquals(set(record.resource_records),
+        self.assertEqual(set(record.resource_records),
                           set([u'10 mail1.%s.' % self.base_domain,
                                '20 mail2.%s.' % self.base_domain]))
-        self.assertEquals(record.ttl, u'50')
+        self.assertEqual(record.ttl, u'50')
 
     def test_get_records(self):
         self.zone.get_records()
@@ -128,7 +128,7 @@ class TestRoute53Zone(unittest.TestCase):
             'A',
             all=True
         )
-        self.assertEquals(len(wrrs), 2)
+        self.assertEqual(len(wrrs), 2)
         self.zone.delete_a('wrr.%s' % self.base_domain, all=True)
 
     def test_identifiers_lbrs(self):
@@ -141,7 +141,7 @@ class TestRoute53Zone(unittest.TestCase):
             'A',
             all=True
         )
-        self.assertEquals(len(lbrs), 2)
+        self.assertEqual(len(lbrs), 2)
         self.zone.delete_a('lbr.%s' % self.base_domain,
                            identifier=('bam', 'us-west-1'))
         self.zone.delete_a('lbr.%s' % self.base_domain,

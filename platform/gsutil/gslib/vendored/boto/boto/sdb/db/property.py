@@ -262,7 +262,7 @@ class S3KeyProperty(Property):
 
     data_type = boto.s3.key.Key
     type_name = 'S3Key'
-    validate_regex = "^s3:\/\/([^\/]*)\/(.*)$"
+    validate_regex = r"^s3://([^/]*)/(.*)$"
 
     def __init__(self, verbose_name=None, name=None, default=None,
                  required=False, validator=None, choices=None, unique=False):
@@ -421,7 +421,7 @@ class DateTimeProperty(Property):
         return super(DateTimeProperty, self).get_value_for_datastore(model_instance)
 
     def now(self):
-        return datetime.datetime.utcnow()
+        return datetime.datetime.now(tz=datetime.timezone.utc).replace(tzinfo=None)
 
 
 class DateProperty(Property):

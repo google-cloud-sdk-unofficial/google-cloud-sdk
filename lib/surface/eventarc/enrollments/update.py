@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import enrollments
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -44,6 +45,7 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     flags.AddUpdateEnrollmentResourceArgs(parser)
     flags.AddCelMatchArg(parser, required=False)
+    labels_util.AddUpdateLabelsFlags(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -60,9 +62,15 @@ class Update(base.UpdateCommand):
         )
     )
 
+    original_enrollment = client.Get(enrollment_ref)
+    labels_update_result = labels_util.Diff.FromUpdateArgs(args).Apply(
+        client.LabelsValueClass(), original_enrollment.labels
+    )
+
     update_mask = client.BuildUpdateMask(
         cel_match=args.IsSpecified('cel_match'),
         destination=args.IsSpecified('destination_pipeline'),
+        labels=labels_update_result.needs_update,
     )
 
     operation = client.Patch(
@@ -72,6 +80,7 @@ class Update(base.UpdateCommand):
             cel_match=args.cel_match,
             message_bus_ref=None,
             destination_ref=args.CONCEPTS.destination_pipeline.Parse(),
+            labels=labels_update_result.GetOrNone(),
         ),
         update_mask,
     )

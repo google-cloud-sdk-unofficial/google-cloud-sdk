@@ -3,6 +3,10 @@
 
 import bq_utils
 from frontend import bigquery_command
+from gcloud_wrapper import gcloud_runner
+
+# The usage string acts as the docstring for the class.
+# pylint: disable=missing-class-docstring
 
 
 class Info(bigquery_command.BigqueryCmd):
@@ -15,3 +19,8 @@ class Info(bigquery_command.BigqueryCmd):
   def RunWithArgs(self) -> None:
     """Return the execution information of bq."""
     print(bq_utils.GetInfoString())
+
+    proc = gcloud_runner.run_gcloud_command(['info'])
+    if proc.stdout:
+      print('With the following gcloud configuration:\n')
+      print(''.join(proc.stdout.readlines()))

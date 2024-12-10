@@ -1,5 +1,7 @@
-# These helpers are copied from test_support.py in the Python 2.7 standard
+# These helpers are copied from test/support/socket_helper.py in the Python 3.9 standard
 # library test suite.
+
+from __future__ import annotations
 
 import socket
 
@@ -9,7 +11,10 @@ HOST = "127.0.0.1"
 HOSTv6 = "::1"
 
 
-def find_unused_port(family=socket.AF_INET, socktype=socket.SOCK_STREAM):
+def find_unused_port(
+    family: socket.AddressFamily = socket.AF_INET,
+    socktype: socket.SocketKind = socket.SOCK_STREAM,
+) -> int:
     """Returns an unused port that should be suitable for binding.  This is
     achieved by creating a temporary socket with the same family and type as
     the 'sock' parameter (default is AF_INET, SOCK_STREAM), and binding it to
@@ -36,7 +41,7 @@ def find_unused_port(family=socket.AF_INET, socktype=socket.SOCK_STREAM):
     the SO_REUSEADDR socket option having different semantics on Windows versus
     Unix/Linux.  On Unix, you can't have two AF_INET SOCK_STREAM sockets bind,
     listen and then accept connections on identical host/ports.  An EADDRINUSE
-    socket.error will be raised at some point (depending on the platform and
+    OSError will be raised at some point (depending on the platform and
     the order bind and listen were called on each socket).
 
     However, on Windows, if SO_REUSEADDR is set on the sockets, no EADDRINUSE
@@ -63,15 +68,15 @@ def find_unused_port(family=socket.AF_INET, socktype=socket.SOCK_STREAM):
     other process when we close and delete our temporary socket but before our
     calling code has a chance to bind the returned port.  We can deal with this
     issue if/when we come across it."""
-    tempsock = socket.socket(family, socktype)
-    port = bind_port(tempsock)
-    tempsock.close()
+
+    with socket.socket(family, socktype) as tempsock:
+        port = bind_port(tempsock)
     del tempsock
     return port
 
 
-def bind_port(sock, host=HOST):
-    """Bind the socket to a free port and return the port number.  Relies on
+def bind_port(sock: socket.socket, host: str = HOST) -> int:
+    """Bind the socket to a free port and return the port number. Relies on
     ephemeral ports in order to ensure we are using an unbound port.  This is
     important as many tests may be running simultaneously, especially in a
     buildbot environment.  This method raises an exception if the sock.family
@@ -84,6 +89,7 @@ def bind_port(sock, host=HOST):
     on Windows), it will be set on the socket.  This will prevent anyone else
     from bind()'ing to our host/port for the duration of the test.
     """
+
     if sock.family == socket.AF_INET and sock.type == socket.SOCK_STREAM:
         if hasattr(socket, "SO_REUSEADDR"):
             if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR) == 1:
@@ -92,14 +98,21 @@ def bind_port(sock, host=HOST):
                     "socket option on TCP/IP sockets!"
                 )
         if hasattr(socket, "SO_REUSEPORT"):
-            if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) == 1:
-                raise ValueError(
-                    "tests should never set the SO_REUSEPORT "
-                    "socket option on TCP/IP sockets!"
-                )
+            try:
+                if sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT) == 1:
+                    raise ValueError(
+                        "tests should never set the SO_REUSEPORT "
+                        "socket option on TCP/IP sockets!"
+                    )
+            except OSError:
+                # Python's socket module was compiled using modern headers
+                # thus defining SO_REUSEPORT but this process is running
+                # under an older kernel that does not support SO_REUSEPORT.
+                pass
         if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
 
     sock.bind((host, 0))
     port = sock.getsockname()[1]
+    assert isinstance(port, int)
     return port

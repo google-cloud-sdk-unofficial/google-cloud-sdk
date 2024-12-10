@@ -1,3 +1,5 @@
+:tocdepth: 3
+
 *********************************************************************
 :mod:`cachetools` --- Extensible memoizing collections and decorators
 *********************************************************************
@@ -19,11 +21,12 @@ method calls.
 
 .. testsetup:: *
 
-   import operator
    from cachetools import cached, cachedmethod, LRUCache, TLRUCache, TTLCache
 
    from unittest import mock
    urllib = mock.MagicMock()
+
+   import time
 
 
 Cache implementations
@@ -95,6 +98,12 @@ computed when the item is inserted into the cache.
    This class discards the most recently used items first to make
    space when necessary.
 
+   .. deprecated:: 5.4
+
+   `MRUCache` has been deprecated due to lack of use, to reduce
+   maintenance.  Please choose another cache implementation that suits
+   your needs.
+
 .. autoclass:: RRCache(maxsize, choice=random.choice, getsizeof=None)
    :members: choice, popitem
 
@@ -116,18 +125,24 @@ computed when the item is inserted into the cache.
    will be discarded first to make space when necessary.
 
    By default, the time-to-live is specified in seconds and
-   :func:`time.monotonic` is used to retrieve the current time.  A
-   custom `timer` function can also be supplied:
+   :func:`time.monotonic` is used to retrieve the current time.
+
+   .. testcode::
+
+      cache = TTLCache(maxsize=10, ttl=60)
+
+   A custom `timer` function can also be supplied, which does not have
+   to return seconds, or even a numeric value.  The expression
+   `timer() + ttl` at the time of insertion defines the expiration
+   time of a cache item and must be comparable against later results
+   of `timer()`, but `ttl` does not necessarily have to be a number,
+   either.
 
    .. testcode::
 
       from datetime import datetime, timedelta
 
       cache = TTLCache(maxsize=10, ttl=timedelta(hours=12), timer=datetime.now)
-
-   The expression `timer() + ttl` at the time of insertion defines the
-   expiration time of a cache item, and must be comparable against
-   later results of `timer()`.
 
    .. method:: expire(self, time=None)
 
@@ -140,6 +155,8 @@ computed when the item is inserted into the cache.
       items that have expired by the current value returned by
       :attr:`timer`.
 
+      :returns: An iterable of expired `(key, value)` pairs.
+
 .. autoclass:: TLRUCache(maxsize, ttu, timer=time.monotonic, getsizeof=None)
    :members: popitem, timer, ttu
 
@@ -151,18 +168,29 @@ computed when the item is inserted into the cache.
    value of `timer()`.
 
    .. testcode::
-
-      from datetime import datetime, timedelta
-
+   
       def my_ttu(_key, value, now):
-          # assume value.ttl contains the item's time-to-live in hours
-          return now + timedelta(hours=value.ttl)
+          # assume value.ttu contains the item's time-to-use in seconds
+          # note that the _key argument is ignored in this example
+          return now + value.ttu
 
-      cache = TLRUCache(maxsize=10, ttu=my_ttu, timer=datetime.now)
+      cache = TLRUCache(maxsize=10, ttu=my_ttu)
 
    The expression `ttu(key, value, timer())` defines the expiration
    time of a cache item, and must be comparable against later results
-   of `timer()`.
+   of `timer()`.  As with :class:`TTLCache`, a custom `timer` function
+   can be supplied, which does not have to return a numeric value.
+
+   .. testcode::
+
+      from datetime import datetime, timedelta
+
+      def datetime_ttu(_key, value, now):
+          # assume now to be of type datetime.datetime, and
+          # value.hours to contain the item's time-to-use in hours
+          return now + timedelta(hours=value.hours)
+
+      cache = TLRUCache(maxsize=10, ttu=datetime_ttu, timer=datetime.now)
 
    Items that expire because they have exceeded their time-to-use will
    be no longer accessible, and will be removed eventually.  If no
@@ -180,9 +208,11 @@ computed when the item is inserted into the cache.
       items that have expired by the current value returned by
       :attr:`timer`.
 
+      :returns: An iterable of expired `(key, value)` pairs.
+
 
 Extending cache classes
------------------------
+=======================
 
 Sometimes it may be desirable to notice when and what cache items are
 evicted, i.e. removed from a cache to make room for new items.  Since
@@ -203,6 +233,31 @@ cache, this can be achieved by overriding this method in a subclass:
    >>> c['b'] = 2
    >>> c['c'] = 3
    Key "a" evicted with value "1"
+
+With :class:`TTLCache` and :class:`TLRUCache`, items may also be
+removed after they expire.  In this case, :meth:`popitem` will *not*
+be called, but :meth:`expire` will be called from the next mutating
+operation and will return an iterable of the expired `(key, value)`
+pairs.  By overrding :meth:`expire`, a subclass will be able to track
+expired items:
+
+.. doctest::
+   :pyversion: >= 3
+
+   >>> class ExpCache(TTLCache):
+   ...     def expire(self, time=None):
+   ...         items = super().expire(time)
+   ...         print(f"Expired items: {items}")
+   ...         return items
+
+   >>> c = ExpCache(maxsize=10, ttl=1.0)
+   >>> c['a'] = 1
+   Expired items: []
+   >>> c['b'] = 2
+   Expired items: []
+   >>> time.sleep(1.5)
+   >>> c['c'] = 3
+   Expired items: [('a', 1), ('b', 2)]
 
 Similar to the standard library's :class:`collections.defaultdict`,
 subclasses of :class:`Cache` may implement a :meth:`__missing__`
@@ -250,7 +305,7 @@ often called with the same arguments:
    >>> fib(42)
    267914296
 
-.. decorator:: cached(cache, key=cachetools.keys.hashkey, lock=None)
+.. decorator:: cached(cache, key=cachetools.keys.hashkey, lock=None, info=False)
 
    Decorator to wrap a function with a memoizing callable that saves
    results in a cache.
@@ -280,26 +335,18 @@ often called with the same arguments:
       cache object.  The underlying wrapped function will be called
       outside the `with` statement, and must be thread-safe by itself.
 
-   The original underlying function is accessible through the
-   :attr:`__wrapped__` attribute of the memoizing wrapper function.
-   This can be used for introspection or for bypassing the cache.
-
-   To perform operations on the cache object, for example to clear the
-   cache during runtime, the cache should be assigned to a variable.
-   When a `lock` object is used, any access to the cache from outside
-   the function wrapper should also be performed within an appropriate
-   `with` statement:
+   The decorator's `cache`, `key` and `lock` parameters are also
+   available as :attr:`cache`, :attr:`cache_key` and
+   :attr:`cache_lock` attributes of the memoizing wrapper function.
+   These can be used for clearing the cache or invalidating individual
+   cache items, for example.
 
    .. testcode::
 
-      from cachetools.keys import hashkey
       from threading import Lock
 
       # 640K should be enough for anyone...
-      cache = LRUCache(maxsize=640*1024, getsizeof=len)
-      lock = Lock()
-
-      @cached(cache, key=hashkey, lock=lock)
+      @cached(cache=LRUCache(maxsize=640*1024, getsizeof=len), lock=Lock())
       def get_pep(num):
           'Retrieve text of a Python Enhancement Proposal'
           url = 'http://www.python.org/dev/peps/pep-%04d/' % num
@@ -307,12 +354,50 @@ often called with the same arguments:
               return s.read()
 
       # make sure access to cache is synchronized
-      with lock:
-          cache.clear()
+      with get_pep.cache_lock:
+          get_pep.cache.clear()
 
       # always use the key function for accessing cache items
-      with lock:
-          cache.pop(hashkey(42), None)
+      with get_pep.cache_lock:
+          get_pep.cache.pop(get_pep.cache_key(42), None)
+
+   For the common use case of clearing or invalidating the cache, the
+   decorator also provides a :func:`cache_clear()` function which
+   takes care of locking automatically, if needed:
+
+   .. testcode::
+
+      # no need for get_pep.cache_lock here
+      get_pep.cache_clear()
+
+   If `info` is set to :const:`True`, the wrapped function is
+   instrumented with a :func:`cache_info()` function that returns a
+   named tuple showing `hits`, `misses`, `maxsize` and `currsize`, to
+   help measure the effectiveness of the cache.
+
+   .. note::
+
+      Note that this will inflict a - probably minor - performance
+      penalty, so it has to be explicitly enabled.
+
+   .. doctest::
+      :pyversion: >= 3
+
+      >>> @cached(cache=LRUCache(maxsize=32), info=True)
+      ... def get_pep(num):
+      ...     url = 'http://www.python.org/dev/peps/pep-%04d/' % num
+      ...     with urllib.request.urlopen(url) as s:
+      ...         return s.read()
+
+      >>> for n in 8, 290, 308, 320, 8, 218, 320, 279, 289, 320, 9991:
+      ...     pep = get_pep(n)
+
+      >>> get_pep.cache_info()
+      CacheInfo(hits=3, misses=8, maxsize=32, currsize=8)
+
+   The original underlying function is accessible through the
+   :attr:`__wrapped__` attribute.  This can be used for introspection
+   or for bypassing the cache.
 
    It is also possible to use a single shared cache object with
    multiple functions.  However, care must be taken that different
@@ -346,7 +431,7 @@ often called with the same arguments:
       [..., (('fib', 42), 267914296), ..., (('luc', 42), 599074578)]
 
 
-.. decorator:: cachedmethod(cache, key=cachetools.keys.hashkey, lock=None)
+.. decorator:: cachedmethod(cache, key=cachetools.keys.methodkey, lock=None)
 
    Decorator to wrap a class or instance method with a memoizing
    callable that saves results in a (possibly shared) cache.
@@ -364,18 +449,27 @@ often called with the same arguments:
       is the user's responsibility to handle concurrent calls to the
       underlying wrapped method in a multithreaded environment.
 
+   The `key` function will be called as `key(self, *args, **kwargs)`
+   to retrieve a suitable cache key.  Note that the default `key`
+   function, :func:`cachetools.keys.methodkey`, ignores its first
+   argument, i.e. :const:`self`.  This has mostly historical reasons,
+   but also ensures that :const:`self` does not have to be hashable.
+   You may provide a different `key` function,
+   e.g. :func:`cachetools.keys.hashkey`, if you need :const:`self` to
+   be part of the cache key.
+
    One advantage of :func:`cachedmethod` over the :func:`cached`
    function decorator is that cache properties such as `maxsize` can
    be set at runtime:
 
    .. testcode::
 
-      class CachedPEPs(object):
+      class CachedPEPs:
 
           def __init__(self, cachesize):
               self.cache = LRUCache(maxsize=cachesize)
 
-          @cachedmethod(operator.attrgetter('cache'))
+          @cachedmethod(lambda self: self.cache)
           def get(self, num):
               """Retrieve text of a Python Enhancement Proposal"""
               url = 'http://www.python.org/dev/peps/pep-%04d/' % num
@@ -391,7 +485,6 @@ often called with the same arguments:
 
       PEP #1: ...
 
-
    When using a shared cache for multiple methods, be aware that
    different cache keys must be created for each method even when
    function arguments are the same, just as with the `@cached`
@@ -399,7 +492,7 @@ often called with the same arguments:
 
    .. testcode::
 
-      class CachedReferences(object):
+      class CachedReferences:
 
           def __init__(self, cachesize):
               self.cache = LRUCache(maxsize=cachesize)
@@ -444,12 +537,24 @@ functions with the :func:`cached` and :func:`cachedmethod` decorators:
    This function returns a :class:`tuple` instance suitable as a cache
    key, provided the positional and keywords arguments are hashable.
 
+.. autofunction:: methodkey
+
+   This function is similar to :func:`hashkey`, but ignores its
+   first positional argument, i.e. `self` when used with the
+   :func:`cachedmethod` decorator.
+
 .. autofunction:: typedkey
 
    This function is similar to :func:`hashkey`, but arguments of
    different types will yield distinct cache keys.  For example,
    ``typedkey(3)`` and ``typedkey(3.0)`` will return different
    results.
+
+.. autofunction:: typedmethodkey
+
+   This function is similar to :func:`typedkey`, but ignores its
+   first positional argument, i.e. `self` when used with the
+   :func:`cachedmethod` decorator.
 
 These functions can also be helpful when implementing custom key
 functions for handling some non-hashable arguments.  For example,
@@ -546,6 +651,11 @@ all the decorators in this module are thread-safe by default.
    Decorator that wraps a function with a memoizing callable that
    saves up to `maxsize` results based on a Most Recently Used (MRU)
    algorithm.
+
+   .. deprecated:: 5.4
+
+   The `mru_cache` decorator has been deprecated due to lack of use.
+   Please choose a decorator based on some other algorithm.
 
 .. decorator:: rr_cache(user_function)
                rr_cache(maxsize=128, choice=random.choice, typed=False)

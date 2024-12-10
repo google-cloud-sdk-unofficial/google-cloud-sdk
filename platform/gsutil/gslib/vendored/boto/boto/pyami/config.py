@@ -95,7 +95,7 @@ class Config(object):
     def load_from_path(self, path):
         file = open(path)
         for line in file.readlines():
-            match = re.match("^#import[\s\t]*([^\s^\t]*)[\s\t]*$", line)
+            match = re.match(r"^#import[\s\t]*([^\s^\t]*)[\s\t]*$", line)
             if match:
                 extended_file = match.group(1)
                 (dir, file) = os.path.split(path)

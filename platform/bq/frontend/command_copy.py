@@ -9,8 +9,6 @@ import datetime
 import time
 from typing import List, Optional, Tuple
 
-
-
 from absl import flags
 
 import bq_flags
@@ -21,6 +19,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 from utils import bq_error
 from utils import bq_id_utils
@@ -278,7 +277,7 @@ class Copy(bigquery_command.BigqueryCmd):
     kwds = {
         'write_disposition': write_disposition,
         'ignore_already_exists': ignore_already_exists,
-        'job_id': frontend_utils.GetJobIdFromFlags(),
+        'job_id': utils_flags.get_job_id_from_flags(),
         'operation_type': operation_type,
     }
     if bq_flags.LOCATION.value:

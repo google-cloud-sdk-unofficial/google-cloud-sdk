@@ -42,7 +42,7 @@ class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_port_mapping_neg = False
+  support_port_mapping_neg = True
 
   @classmethod
   def Args(cls, parser):

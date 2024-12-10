@@ -417,7 +417,7 @@ class RedshiftConnection(AWSQueryConnection):
         + Must contain at least one lowercase letter.
         + Must contain one number.
         + Can be any printable ASCII character (ASCII code 33 to 126) except '
-              (single quote), " (double quote), \, /, @, or space.
+              (single quote), " (double quote), \\, /, @, or space.
 
         :type cluster_security_groups: list
         :param cluster_security_groups: A list of security groups to be
@@ -2189,7 +2189,7 @@ class RedshiftConnection(AWSQueryConnection):
 
         + Cannot exceed 512 characters
         + Cannot contain spaces( ), double quotes ("), single quotes ('), a
-              backslash (\), or control characters. The hexadecimal codes for
+              backslash (\\), or control characters. The hexadecimal codes for
               invalid characters are:
 
             + x00 to x20
@@ -2363,7 +2363,7 @@ class RedshiftConnection(AWSQueryConnection):
         + Must contain at least one lowercase letter.
         + Must contain one number.
         + Can be any printable ASCII character (ASCII code 33 to 126) except '
-              (single quote), " (double quote), \, /, @, or space.
+              (single quote), " (double quote), \\, /, @, or space.
 
         :type cluster_parameter_group_name: string
         :param cluster_parameter_group_name: The name of the cluster parameter

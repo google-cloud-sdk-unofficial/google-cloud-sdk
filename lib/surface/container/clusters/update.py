@@ -368,9 +368,7 @@ class Update(base.UpdateCommand):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
-    flags.AddClusterDNSFlags(
-        group, release_track=base.ReleaseTrack.GA, hidden=False
-    )
+    flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddLoggingVariantFlag(group)
     group_add_pod_ipv4_ranges = group.add_group(hidden=False)
@@ -475,6 +473,8 @@ class Update(base.UpdateCommand):
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
+    opts.disable_additive_vpc_scope = args.disable_additive_vpc_scope
+    opts.additive_vpc_scope_dns_domain = args.additive_vpc_scope_dns_domain
     opts.enable_service_externalips = args.enable_service_externalips
     opts.enable_identity_service = args.enable_identity_service
     opts.enable_private_endpoint = args.enable_private_endpoint
@@ -995,9 +995,7 @@ class UpdateBeta(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(
-        group, release_track=base.ReleaseTrack.BETA, hidden=False
-    )
+    flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)
@@ -1316,9 +1314,7 @@ class UpdateAlpha(Update):
     flags.AddKubernetesObjectsExportConfig(group)
     flags.AddDisableAutopilotFlag(group)
     flags.AddILBSubsettingFlags(group, hidden=False)
-    flags.AddClusterDNSFlags(
-        group, release_track=base.ReleaseTrack.ALPHA, hidden=False
-    )
+    flags.AddClusterDNSFlags(group, hidden=False)
     flags.AddCrossConnectSubnetworksMutationFlags(group)
     flags.AddEnableServiceExternalIPs(group)
     flags.AddAuthenticatorSecurityGroupFlags(group)

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import pipelines
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -115,6 +116,7 @@ class Create(base.CreateCommand):
     flags.AddLoggingConfigArg(parser, 'The logging config of the pipeline.')
     flags.AddRetryPolicyArgs(parser)
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
+    labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -143,6 +145,7 @@ class Create(base.CreateCommand):
             min_retry_delay=args.min_retry_delay,
             max_retry_delay=args.max_retry_delay,
             crypto_key_name=args.crypto_key,
+            labels=labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
         ),
     )
 

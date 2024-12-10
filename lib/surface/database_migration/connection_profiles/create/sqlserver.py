@@ -65,6 +65,7 @@ class _SQLServer(base.Command):
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
     sqlserver_flags.AddCpDetailsFlag(parser)
+    sqlserver_flags.AddDatabaseFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

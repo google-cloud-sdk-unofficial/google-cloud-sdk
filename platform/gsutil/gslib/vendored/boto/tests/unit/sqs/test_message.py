@@ -67,8 +67,8 @@ class TestEncodeMessage(unittest.TestCase):
         with self.assertRaises(SQSDecodeError) as context:
             xml.sax.parseString(body.encode('utf-8'), h)
         message = context.exception.message
-        self.assertEquals(message.id, sample_value)
-        self.assertEquals(message.receipt_handle, sample_value)
+        self.assertEqual(message.id, sample_value)
+        self.assertEqual(message.receipt_handle, sample_value)
 
     @attr(sqs=True)
     def test_encode_bytes_message(self):
@@ -92,20 +92,20 @@ class TestBigMessage(unittest.TestCase):
         msg = BigMessage()
         # Try just a bucket name
         bucket, key = msg._get_bucket_key('s3://foo')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, None)
+        self.assertEqual(bucket, 'foo')
+        self.assertEqual(key, None)
         # Try just a bucket name with trailing "/"
         bucket, key = msg._get_bucket_key('s3://foo/')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, None)
+        self.assertEqual(bucket, 'foo')
+        self.assertEqual(key, None)
         # Try a bucket and a key
         bucket, key = msg._get_bucket_key('s3://foo/bar')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, 'bar')
+        self.assertEqual(bucket, 'foo')
+        self.assertEqual(key, 'bar')
         # Try a bucket and a key with "/"
         bucket, key = msg._get_bucket_key('s3://foo/bar/fie/baz')
-        self.assertEquals(bucket, 'foo')
-        self.assertEquals(key, 'bar/fie/baz')
+        self.assertEqual(bucket, 'foo')
+        self.assertEqual(key, 'bar/fie/baz')
         # Try it with no s3:// prefix
         with self.assertRaises(SQSDecodeError) as context:
             bucket, key = msg._get_bucket_key('foo/bar')

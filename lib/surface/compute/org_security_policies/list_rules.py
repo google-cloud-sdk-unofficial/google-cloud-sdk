@@ -29,7 +29,8 @@ from googlecloudsdk.core import log
 import six
 
 LIST_NOTICE = """\
-To show all fields of the firewall, please show in JSON format: --format=json
+To show all fields of the organization security policy rules, please show in
+JSON format: --format=json
 To show more fields in table format, please see the examples in --help.
 """
 
@@ -38,12 +39,15 @@ DEFAULT_LIST_FORMAT = """\
     priority,
     direction,
     action,
+    preview,
+    match.expr.expression:label=EXPRESSION,
     match.config.srcIpRanges.list():label=SRC_RANGES,
     match.config.destIpRanges.list():label=DEST_RANGES,
     match.config.layer4Configs.map().org_firewall_rule().list():label=PORT_RANGES
   )"""
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListRules(base.DescribeCommand, base.ListCommand):
   """List the rules of a Compute Engine organization security policy.
@@ -92,12 +96,12 @@ ListRules.detailed_help = {
     'EXAMPLES':
         """\
     To list the rules of an organization security policy with ID
-    ``123456789", run:
+    "123456789", run:
 
       $ {command} list-rules 123456789
 
     To list all the fields of the rules of an organization security policy with
-    ID ``123456789", run:
+    ID "123456789", run:
 
       $ {command} list-rules 123456789 --format="table(
         priority,

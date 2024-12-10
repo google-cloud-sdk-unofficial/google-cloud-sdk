@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import pipelines
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
@@ -51,6 +52,7 @@ class Update(base.UpdateCommand):
     flags.AddLoggingConfigArg(parser, 'The logging config of the pipeline.')
     flags.AddRetryPolicyArgs(parser)
     flags.AddCryptoKeyArg(parser, with_clear=True, hidden=False)
+    labels_util.AddUpdateLabelsFlags(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -65,6 +67,11 @@ class Update(base.UpdateCommand):
             pipeline_ref.projectsId,
             pipeline_ref.locationsId,
         )
+    )
+
+    original_pipeline = client.Get(pipeline_ref)
+    labels_update_result = labels_util.Diff.FromUpdateArgs(args).Apply(
+        client.LabelsValueClass(), original_pipeline.labels
     )
 
     update_mask = client.BuildUpdateMask(
@@ -83,6 +90,7 @@ class Update(base.UpdateCommand):
         max_retry_delay=args.IsSpecified('max_retry_delay'),
         crypto_key=args.IsSpecified('crypto_key'),
         clear_crypto_key=args.clear_crypto_key,
+        labels=labels_update_result.needs_update,
     )
 
     operation = client.Patch(
@@ -99,6 +107,7 @@ class Update(base.UpdateCommand):
             min_retry_delay=args.min_retry_delay,
             max_retry_delay=args.max_retry_delay,
             crypto_key_name=args.crypto_key,
+            labels=labels_update_result.GetOrNone(),
         ),
         update_mask,
     )

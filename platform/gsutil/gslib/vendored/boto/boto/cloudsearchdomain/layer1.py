@@ -270,7 +270,7 @@ class CloudSearchDomainConnection(AWSAuthConnection):
               ~ operator to perform a sloppy phrase search. Disabling the `fuzzy`
               operator disables the ability to use the ~ operator to perform a
               fuzzy search. `escape` disables the ability to use a backslash (
-              `\`) to escape special characters within the search string.
+              `\\`) to escape special characters within the search string.
               Disabling whitespace is an advanced option that prevents the parser
               from tokenizing on whitespace, which can be useful for Vietnamese.
               (It prevents Vietnamese words from being split incorrectly.) For

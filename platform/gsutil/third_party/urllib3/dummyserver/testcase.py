@@ -1,32 +1,46 @@
+from __future__ import annotations
+
+import contextlib
+import socket
+import ssl
 import threading
-from contextlib import contextmanager
+import typing
+from test import LONG_TIMEOUT
 
+import hypercorn
 import pytest
-from tornado import ioloop, web
 
-from dummyserver.handlers import TestingApp
-from dummyserver.proxy import ProxyHandler
-from dummyserver.server import (
-    DEFAULT_CERTS,
-    HAS_IPV6,
-    SocketServerThread,
-    run_loop_in_thread,
-    run_tornado_app,
-)
+from dummyserver.app import hypercorn_app
+from dummyserver.asgi_proxy import ProxyApp
+from dummyserver.hypercornserver import run_hypercorn_in_thread
+from dummyserver.socketserver import DEFAULT_CERTS, HAS_IPV6, SocketServerThread
 from urllib3.connection import HTTPConnection
+from urllib3.util.ssltransport import SSLTransport
+from urllib3.util.url import parse_url
 
 
-def consume_socket(sock, chunks=65536):
+def consume_socket(
+    sock: SSLTransport | socket.socket,
+    chunks: int = 65536,
+    quit_event: threading.Event | None = None,
+) -> bytearray:
     consumed = bytearray()
+    sock.settimeout(LONG_TIMEOUT)
     while True:
-        b = sock.recv(chunks)
+        if quit_event and quit_event.is_set():
+            break
+        try:
+            b = sock.recv(chunks)
+        except (TimeoutError, socket.timeout):
+            continue
+        assert isinstance(b, bytes)
         consumed += b
         if b.endswith(b"\r\n\r\n"):
             break
     return consumed
 
 
-class SocketDummyServerTestCase(object):
+class SocketDummyServerTestCase:
     """
     A simple socket-based server is created for this class that is good for
     exactly one request.
@@ -35,11 +49,33 @@ class SocketDummyServerTestCase(object):
     scheme = "http"
     host = "localhost"
 
+    server_thread: typing.ClassVar[SocketServerThread]
+    port: typing.ClassVar[int]
+
+    tmpdir: typing.ClassVar[str]
+    ca_path: typing.ClassVar[str]
+    cert_combined_path: typing.ClassVar[str]
+    cert_path: typing.ClassVar[str]
+    key_path: typing.ClassVar[str]
+    password_key_path: typing.ClassVar[str]
+
+    server_context: typing.ClassVar[ssl.SSLContext]
+    client_context: typing.ClassVar[ssl.SSLContext]
+
+    proxy_server: typing.ClassVar[SocketDummyServerTestCase]
+
     @classmethod
-    def _start_server(cls, socket_handler):
+    def _start_server(
+        cls,
+        socket_handler: typing.Callable[[socket.socket], None],
+        quit_event: threading.Event | None = None,
+    ) -> None:
         ready_event = threading.Event()
         cls.server_thread = SocketServerThread(
-            socket_handler=socket_handler, ready_event=ready_event, host=cls.host
+            socket_handler=socket_handler,
+            ready_event=ready_event,
+            host=cls.host,
+            quit_event=quit_event,
         )
         cls.server_thread.start()
         ready_event.wait(5)
@@ -48,56 +84,107 @@ class SocketDummyServerTestCase(object):
         cls.port = cls.server_thread.port
 
     @classmethod
-    def start_response_handler(cls, response, num=1, block_send=None):
+    def start_response_handler(
+        cls,
+        response: bytes,
+        num: int = 1,
+        block_send: threading.Event | None = None,
+    ) -> threading.Event:
         ready_event = threading.Event()
+        quit_event = threading.Event()
 
-        def socket_handler(listener):
+        def socket_handler(listener: socket.socket) -> None:
             for _ in range(num):
                 ready_event.set()
 
-                sock = listener.accept()[0]
-                consume_socket(sock)
+                listener.settimeout(LONG_TIMEOUT)
+                while True:
+                    if quit_event.is_set():
+                        return
+                    try:
+                        sock = listener.accept()[0]
+                        break
+                    except (TimeoutError, socket.timeout):
+                        continue
+                consume_socket(sock, quit_event=quit_event)
+                if quit_event.is_set():
+                    sock.close()
+                    return
                 if block_send:
-                    block_send.wait()
+                    while not block_send.wait(LONG_TIMEOUT):
+                        if quit_event.is_set():
+                            sock.close()
+                            return
                     block_send.clear()
                 sock.send(response)
                 sock.close()
 
-        cls._start_server(socket_handler)
+        cls._start_server(socket_handler, quit_event=quit_event)
         return ready_event
 
     @classmethod
-    def start_basic_handler(cls, **kw):
+    def start_basic_handler(
+        cls, num: int = 1, block_send: threading.Event | None = None
+    ) -> threading.Event:
         return cls.start_response_handler(
-            b"HTTP/1.1 200 OK\r\n" b"Content-Length: 0\r\n" b"\r\n", **kw
+            b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n",
+            num,
+            block_send,
         )
 
+    @staticmethod
+    def quit_server_thread(server_thread: SocketServerThread) -> None:
+        if server_thread.quit_event:
+            server_thread.quit_event.set()
+        # in principle the maximum time that the thread can take to notice
+        # the quit_event is LONG_TIMEOUT and the thread should terminate
+        # shortly after that, we give 5 seconds leeway just in case
+        server_thread.join(LONG_TIMEOUT * 2 + 5.0)
+        if server_thread.is_alive():
+            raise Exception("server_thread did not exit")
+
     @classmethod
-    def teardown_class(cls):
+    def teardown_class(cls) -> None:
         if hasattr(cls, "server_thread"):
-            cls.server_thread.join(0.1)
+            cls.quit_server_thread(cls.server_thread)
+
+    def teardown_method(self) -> None:
+        if hasattr(self, "server_thread"):
+            self.quit_server_thread(self.server_thread)
 
     def assert_header_received(
-        self, received_headers, header_name, expected_value=None
-    ):
-        header_name = header_name.encode("ascii")
-        if expected_value is not None:
-            expected_value = expected_value.encode("ascii")
+        self,
+        received_headers: typing.Iterable[bytes],
+        header_name: str,
+        expected_value: str | None = None,
+    ) -> None:
+        header_name_bytes = header_name.encode("ascii")
+        if expected_value is None:
+            expected_value_bytes = None
+        else:
+            expected_value_bytes = expected_value.encode("ascii")
         header_titles = []
         for header in received_headers:
             key, value = header.split(b": ")
             header_titles.append(key)
-            if key == header_name and expected_value is not None:
-                assert value == expected_value
-        assert header_name in header_titles
+            if key == header_name_bytes and expected_value_bytes is not None:
+                assert value == expected_value_bytes
+        assert header_name_bytes in header_titles
 
 
 class IPV4SocketDummyServerTestCase(SocketDummyServerTestCase):
     @classmethod
-    def _start_server(cls, socket_handler):
+    def _start_server(
+        cls,
+        socket_handler: typing.Callable[[socket.socket], None],
+        quit_event: threading.Event | None = None,
+    ) -> None:
         ready_event = threading.Event()
         cls.server_thread = SocketServerThread(
-            socket_handler=socket_handler, ready_event=ready_event, host=cls.host
+            socket_handler=socket_handler,
+            ready_event=ready_event,
+            host=cls.host,
+            quit_event=quit_event,
         )
         cls.server_thread.USE_IPV6 = False
         cls.server_thread.start()
@@ -107,109 +194,130 @@ class IPV4SocketDummyServerTestCase(SocketDummyServerTestCase):
         cls.port = cls.server_thread.port
 
 
-class HTTPDummyServerTestCase(object):
-    """A simple HTTP server that runs when your test class runs
-
-    Have your test class inherit from this one, and then a simple server
-    will start when your tests run, and automatically shut down when they
-    complete. For examples of what test requests you can send to the server,
-    see the TestingApp in dummyserver/handlers.py.
-    """
-
-    scheme = "http"
+class HypercornDummyServerTestCase:
     host = "localhost"
-    host_alt = "127.0.0.1"  # Some tests need two hosts
-    certs = DEFAULT_CERTS
+    host_alt = "127.0.0.1"
+    port: typing.ClassVar[int]
+    base_url: typing.ClassVar[str]
+    base_url_alt: typing.ClassVar[str]
+    certs: typing.ClassVar[dict[str, typing.Any]] = {}
+
+    _stack: typing.ClassVar[contextlib.ExitStack]
 
     @classmethod
-    def _start_server(cls):
-        cls.io_loop = ioloop.IOLoop.current()
-        app = web.Application([(r".*", TestingApp)])
-        cls.server, cls.port = run_tornado_app(
-            app, cls.io_loop, cls.certs, cls.scheme, cls.host
-        )
-        cls.server_thread = run_loop_in_thread(cls.io_loop)
+    def setup_class(cls) -> None:
+        with contextlib.ExitStack() as stack:
+            config = hypercorn.Config()
+            if cls.certs:
+                config.certfile = cls.certs["certfile"]
+                config.keyfile = cls.certs["keyfile"]
+                config.verify_mode = cls.certs["cert_reqs"]
+                config.ca_certs = cls.certs["ca_certs"]
+                config.alpn_protocols = cls.certs["alpn_protocols"]
+            config.bind = [f"{cls.host}:0"]
+            stack.enter_context(run_hypercorn_in_thread(config, hypercorn_app))
+            cls._stack = stack.pop_all()
+            cls.port = typing.cast(int, parse_url(config.bind[0]).port)
 
     @classmethod
-    def _stop_server(cls):
-        cls.io_loop.add_callback(cls.server.stop)
-        cls.io_loop.add_callback(cls.io_loop.stop)
-        cls.server_thread.join()
-
-    @classmethod
-    def setup_class(cls):
-        cls._start_server()
-
-    @classmethod
-    def teardown_class(cls):
-        cls._stop_server()
+    def teardown_class(cls) -> None:
+        cls._stack.close()
 
 
-class HTTPSDummyServerTestCase(HTTPDummyServerTestCase):
+class HTTPSHypercornDummyServerTestCase(HypercornDummyServerTestCase):
     scheme = "https"
     host = "localhost"
     certs = DEFAULT_CERTS
+    certs_dir = ""
+    bad_ca_path = ""
 
 
-class HTTPDummyProxyTestCase(object):
+class HypercornDummyProxyTestCase:
+    http_host: typing.ClassVar[str] = "localhost"
+    http_host_alt: typing.ClassVar[str] = "127.0.0.1"
+    http_port: typing.ClassVar[int]
+    http_url: typing.ClassVar[str]
+    http_url_alt: typing.ClassVar[str]
 
-    http_host = "localhost"
-    http_host_alt = "127.0.0.1"
+    https_host: typing.ClassVar[str] = "localhost"
+    https_host_alt: typing.ClassVar[str] = "127.0.0.1"
+    https_certs: typing.ClassVar[dict[str, typing.Any]] = DEFAULT_CERTS
+    https_port: typing.ClassVar[int]
+    https_url: typing.ClassVar[str]
+    https_url_alt: typing.ClassVar[str]
+    https_url_fqdn: typing.ClassVar[str]
 
-    https_host = "localhost"
-    https_host_alt = "127.0.0.1"
-    https_certs = DEFAULT_CERTS
+    proxy_host: typing.ClassVar[str] = "localhost"
+    proxy_host_alt: typing.ClassVar[str] = "127.0.0.1"
+    proxy_port: typing.ClassVar[int]
+    proxy_url: typing.ClassVar[str]
+    https_proxy_port: typing.ClassVar[int]
+    https_proxy_url: typing.ClassVar[str]
 
-    proxy_host = "localhost"
-    proxy_host_alt = "127.0.0.1"
+    certs_dir: typing.ClassVar[str] = ""
+    bad_ca_path: typing.ClassVar[str] = ""
 
-    @classmethod
-    def setup_class(cls):
-        cls.io_loop = ioloop.IOLoop.current()
-
-        app = web.Application([(r".*", TestingApp)])
-        cls.http_server, cls.http_port = run_tornado_app(
-            app, cls.io_loop, None, "http", cls.http_host
-        )
-
-        app = web.Application([(r".*", TestingApp)])
-        cls.https_server, cls.https_port = run_tornado_app(
-            app, cls.io_loop, cls.https_certs, "https", cls.http_host
-        )
-
-        app = web.Application([(r".*", ProxyHandler)])
-        cls.proxy_server, cls.proxy_port = run_tornado_app(
-            app, cls.io_loop, None, "http", cls.proxy_host
-        )
-
-        upstream_ca_certs = cls.https_certs.get("ca_certs", None)
-        app = web.Application(
-            [(r".*", ProxyHandler)], upstream_ca_certs=upstream_ca_certs
-        )
-        cls.https_proxy_server, cls.https_proxy_port = run_tornado_app(
-            app, cls.io_loop, cls.https_certs, "https", cls.proxy_host
-        )
-
-        cls.server_thread = run_loop_in_thread(cls.io_loop)
+    server_thread: typing.ClassVar[threading.Thread]
+    _stack: typing.ClassVar[contextlib.ExitStack]
 
     @classmethod
-    def teardown_class(cls):
-        cls.io_loop.add_callback(cls.http_server.stop)
-        cls.io_loop.add_callback(cls.https_server.stop)
-        cls.io_loop.add_callback(cls.proxy_server.stop)
-        cls.io_loop.add_callback(cls.https_proxy_server.stop)
-        cls.io_loop.add_callback(cls.io_loop.stop)
-        cls.server_thread.join()
+    def setup_class(cls) -> None:
+        with contextlib.ExitStack() as stack:
+            http_server_config = hypercorn.Config()
+            http_server_config.bind = [f"{cls.http_host}:0"]
+            stack.enter_context(
+                run_hypercorn_in_thread(http_server_config, hypercorn_app)
+            )
+            cls.http_port = typing.cast(int, parse_url(http_server_config.bind[0]).port)
+
+            https_server_config = hypercorn.Config()
+            https_server_config.certfile = cls.https_certs["certfile"]
+            https_server_config.keyfile = cls.https_certs["keyfile"]
+            https_server_config.verify_mode = cls.https_certs["cert_reqs"]
+            https_server_config.ca_certs = cls.https_certs["ca_certs"]
+            https_server_config.alpn_protocols = cls.https_certs["alpn_protocols"]
+            https_server_config.bind = [f"{cls.https_host}:0"]
+            stack.enter_context(
+                run_hypercorn_in_thread(https_server_config, hypercorn_app)
+            )
+            cls.https_port = typing.cast(
+                int, parse_url(https_server_config.bind[0]).port
+            )
+
+            http_proxy_config = hypercorn.Config()
+            http_proxy_config.bind = [f"{cls.proxy_host}:0"]
+            stack.enter_context(run_hypercorn_in_thread(http_proxy_config, ProxyApp()))
+            cls.proxy_port = typing.cast(int, parse_url(http_proxy_config.bind[0]).port)
+
+            https_proxy_config = hypercorn.Config()
+            https_proxy_config.certfile = cls.https_certs["certfile"]
+            https_proxy_config.keyfile = cls.https_certs["keyfile"]
+            https_proxy_config.verify_mode = cls.https_certs["cert_reqs"]
+            https_proxy_config.ca_certs = cls.https_certs["ca_certs"]
+            https_proxy_config.alpn_protocols = cls.https_certs["alpn_protocols"]
+            https_proxy_config.bind = [f"{cls.proxy_host}:0"]
+            upstream_ca_certs = cls.https_certs.get("ca_certs")
+            stack.enter_context(
+                run_hypercorn_in_thread(https_proxy_config, ProxyApp(upstream_ca_certs))
+            )
+            cls.https_proxy_port = typing.cast(
+                int, parse_url(https_proxy_config.bind[0]).port
+            )
+
+            cls._stack = stack.pop_all()
+
+    @classmethod
+    def teardown_class(cls) -> None:
+        cls._stack.close()
 
 
 @pytest.mark.skipif(not HAS_IPV6, reason="IPv6 not available")
-class IPv6HTTPDummyServerTestCase(HTTPDummyServerTestCase):
+class IPv6HypercornDummyServerTestCase(HypercornDummyServerTestCase):
     host = "::1"
 
 
 @pytest.mark.skipif(not HAS_IPV6, reason="IPv6 not available")
-class IPv6HTTPDummyProxyTestCase(HTTPDummyProxyTestCase):
-
+class IPv6HypercornDummyProxyTestCase(HypercornDummyProxyTestCase):
     http_host = "localhost"
     http_host_alt = "127.0.0.1"
 
@@ -221,7 +329,7 @@ class IPv6HTTPDummyProxyTestCase(HTTPDummyProxyTestCase):
     proxy_host_alt = "127.0.0.1"
 
 
-class ConnectionMarker(object):
+class ConnectionMarker:
     """
     Marks an HTTP(S)Connection's socket after a request was made.
 
@@ -232,32 +340,33 @@ class ConnectionMarker(object):
     MARK_FORMAT = b"$#MARK%04x*!"
 
     @classmethod
-    @contextmanager
-    def mark(cls, monkeypatch):
+    @contextlib.contextmanager
+    def mark(
+        cls, monkeypatch: pytest.MonkeyPatch
+    ) -> typing.Generator[None, None, None]:
         """
         Mark connections under in that context.
         """
 
         orig_request = HTTPConnection.request
-        orig_request_chunked = HTTPConnection.request_chunked
 
-        def call_and_mark(target):
-            def part(self, *args, **kwargs):
-                result = target(self, *args, **kwargs)
+        def call_and_mark(
+            target: typing.Callable[..., None]
+        ) -> typing.Callable[..., None]:
+            def part(
+                self: HTTPConnection, *args: typing.Any, **kwargs: typing.Any
+            ) -> None:
+                target(self, *args, **kwargs)
                 self.sock.sendall(cls._get_socket_mark(self.sock, False))
-                return result
 
             return part
 
         with monkeypatch.context() as m:
             m.setattr(HTTPConnection, "request", call_and_mark(orig_request))
-            m.setattr(
-                HTTPConnection, "request_chunked", call_and_mark(orig_request_chunked)
-            )
             yield
 
     @classmethod
-    def consume_request(cls, sock, chunks=65536):
+    def consume_request(cls, sock: socket.socket, chunks: int = 65536) -> bytearray:
         """
         Consume a socket until after the HTTP request is sent.
         """
@@ -273,7 +382,7 @@ class ConnectionMarker(object):
         return consumed
 
     @classmethod
-    def _get_socket_mark(cls, sock, server):
+    def _get_socket_mark(cls, sock: socket.socket, server: bool) -> bytes:
         if server:
             port = sock.getpeername()[1]
         else:

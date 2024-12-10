@@ -9,8 +9,6 @@ import datetime
 import time
 from typing import Optional
 
-
-
 from absl import flags
 
 import bq_flags
@@ -20,6 +18,7 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_formatting
 
 # These aren't relevant for user-facing docstrings:
@@ -462,7 +461,7 @@ class Load(bigquery_command.BigqueryCmd):
         'encoding': self.encoding,
         'skip_leading_rows': self.skip_leading_rows,
         'allow_quoted_newlines': self.allow_quoted_newlines,
-        'job_id': frontend_utils.GetJobIdFromFlags(),
+        'job_id': utils_flags.get_job_id_from_flags(),
         'source_format': self.source_format,
         'projection_fields': self.projection_fields,
     }

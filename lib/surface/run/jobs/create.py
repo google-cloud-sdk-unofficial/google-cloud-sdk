@@ -246,7 +246,9 @@ class BetaCreate(Create):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser)
+    cls.CommonArgs(parser, add_container_args=False)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

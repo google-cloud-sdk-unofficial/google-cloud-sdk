@@ -1,14 +1,10 @@
 #
 # This file is part of pyasn1 software.
 #
-# Copyright (c) 2005-2017, Ilya Etingof <etingof@gmail.com>
-# License: http://snmplabs.com/pyasn1/license.html
+# Copyright (c) 2005-2020, Ilya Etingof <etingof@gmail.com>
+# License: https://pyasn1.readthedocs.io/en/latest/license.html
 #
-try:
-    import unittest2 as unittest
-
-except ImportError:
-    import unittest
+import unittest
 
 suite = unittest.TestLoader().loadTestsFromNames(
     ['tests.codec.der.test_encoder.suite',
