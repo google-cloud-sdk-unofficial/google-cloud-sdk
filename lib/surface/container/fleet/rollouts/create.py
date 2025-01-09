@@ -34,6 +34,7 @@ $ {command} ROLLOUT
 """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a rollout resource."""
@@ -49,7 +50,7 @@ class Create(base.CreateCommand):
     flags.AddLabels()
     flags.AddManagedRolloutConfig()
     flags.AddAsync()
-    flags.AddFeatureUpdate()
+    flags.AddRolloutTypeConfig()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
     """Runs the describe command."""

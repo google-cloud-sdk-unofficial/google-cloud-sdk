@@ -23,7 +23,9 @@ from googlecloudsdk.command_lib.network_services import flags
 from googlecloudsdk.command_lib.network_services import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   r"""Route View for a Mesh or Gateway.
@@ -54,4 +56,4 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     name = args.CONCEPTS.route_view.Parse().result.RelativeName()
 
-    return util.GetRouteView(base.ReleaseTrack.ALPHA, name)
+    return util.GetRouteView(self.ReleaseTrack(), name)

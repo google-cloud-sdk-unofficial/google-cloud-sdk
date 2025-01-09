@@ -1,0 +1,35 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    List BackendAuthenticationConfigs.
+  description: |
+    List all BackendAuthenticationConfigs in the specified location of the current project.
+  examples: |
+      To list BackendAuthenticationConfigs in the current project, run:
+
+        $ {command} --location=global
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+  collection: networksecurity.projects.locations.backendAuthenticationConfigs
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:globalDefaultLocation
+    help_text: |
+      The project of the BackendAuthenticationConfigs to display.
+
+response:
+  id_field: name
+
+output:
+  format: |
+     table(
+        name.basename():label=NAME:sort=1,
+        wellKnownRoots:label=WELL_KNOWN_ROOTS,
+        description:label=DESCRIPTION,
+        createTime:label=CREATE_TIME,
+        updateTime:label=UPDATE_TIME
+      )

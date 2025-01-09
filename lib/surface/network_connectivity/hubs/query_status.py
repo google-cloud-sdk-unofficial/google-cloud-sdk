@@ -22,8 +22,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_arguments
+from googlecloudsdk.command_lib.network_connectivity import filter_rewrite
 from googlecloudsdk.command_lib.network_connectivity import flags
-from googlecloudsdk.core.resource import resource_expr_rewrite
 
 
 @base.DefaultUniverseOnly
@@ -94,8 +94,9 @@ class QueryStatus(base.ListCommand):
     # this extracts the filter expression from the args.filter string
     # then sets it to an empty string to bypass client-side filtering
     if args.filter:
-      filter_rewriter = resource_expr_rewrite.Backend()
-      _, filter_expression = filter_rewriter.Rewrite(args.filter)
+      _, filter_expression = filter_rewrite.BackendFilterRewrite().Rewrite(
+          args.filter
+      )
     args.filter = ''
 
     sort_by_fields = []

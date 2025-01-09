@@ -62,6 +62,13 @@ class Create(base.CreateCommand):
           multiple variants of a Release.""",
     )
     parser.add_argument(
+        '--use-nested-variants',
+        required=False,
+        action='store_true',
+        help="""Whether to use nested variants. If true, the Release will create
+          variants as nested resources.""",
+    )
+    parser.add_argument(
         '--clh-variants',
         required=False,
         hidden=True,
@@ -86,5 +93,6 @@ class Create(base.CreateCommand):
         location=flags.GetLocation(args),
         lifecycle=args.lifecycle,
         variants=variants,
+        use_nested_variants=args.use_nested_variants,
         clh_variants=args.clh_variants,
     )

@@ -403,9 +403,7 @@ class Update(base.UpdateCommand):
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
-    flags.AddDisableL4LbFirewallReconciliationFlag(
-        group, hidden=True, is_update=True
-    )
+    flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     group_for_control_plane_endpoints = group.add_group()
@@ -1048,9 +1046,7 @@ class UpdateBeta(Update):
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
-    flags.AddDisableL4LbFirewallReconciliationFlag(
-        group, hidden=True, is_update=True
-    )
+    flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     group_for_control_plane_endpoints = group.add_group()
@@ -1366,9 +1362,7 @@ class UpdateAlpha(Update):
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
-    flags.AddDisableL4LbFirewallReconciliationFlag(
-        group, hidden=True, is_update=True
-    )
+    flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     group_for_control_plane_endpoints = group.add_group()

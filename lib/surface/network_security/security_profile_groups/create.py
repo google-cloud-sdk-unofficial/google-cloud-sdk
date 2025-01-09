@@ -43,7 +43,10 @@ _CUSTOM_MIRRORING_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
 )
-_CUSTOM_INTERCEPT_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+_CUSTOM_INTERCEPT_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
+)
 
 
 @base.DefaultUniverseOnly

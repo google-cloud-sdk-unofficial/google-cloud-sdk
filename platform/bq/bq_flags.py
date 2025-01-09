@@ -92,6 +92,11 @@ BIGQUERYRC = flags.DEFINE_string(
         ' the path "~/.bigqueryrc" is used.'
     ),
 )
+BIGQUERY_DISCOVERY_API_KEY_FLAG = flags.DEFINE_string(
+    'bigquery_discovery_api_key',
+    None,
+    'API key to use for discovery doc requests.',
+)
 DISCOVERY_FILE = flags.DEFINE_string(
     'discovery_file',
     '',

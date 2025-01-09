@@ -30,19 +30,25 @@
 
       $ {command} my-table --instance=my-instance --column-families="my-family" --no-deletion-protection
 
-      To create a table `my-table` with automated backup policy (retention_period=72h, frequency=24h) enabled in instance `my-instance` with a column family `my-family`, run:
+      To create a table `my-table` with the default automated backup policy (retention_period=7d, frequency=1d) enabled in instance `my-instance` with a column family `my-family`, run:
 
       $ {command} my-table --instance=my-instance --column-families="my-family" --enable-automated-backup
+
+      To create a table `my-table` with a custom automated backup policy configured to retain backups for 30 days in instance `my-instance` with a column family `my-family`, run:
+
+      $ {command} my-table --instance=my-instance --column-families="my-family" --automated-backup-retention_period=30d
 
   request:
     collection: bigtableadmin.projects.instances.tables
     modify_request_hooks:
     - googlecloudsdk.api_lib.bigtable.tables:UpdateRequestWithInput
+    - googlecloudsdk.api_lib.bigtable.tables:HandleAutomatedBackupPolicyCreateTableArgs
 
   arguments:
     resource:
       help_text: Cloud Bigtable table to create.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
+    additional_arguments_hook: googlecloudsdk.api_lib.bigtable.tables:AddAutomatedBackupPolicyCreateTableArgs
 
     params:
     - api_field: createTableRequest.table.columnFamilies
@@ -67,16 +73,9 @@
         [1 day, 7 days]. Acceptable units are days (d), hours (h), minutes (m), and seconds (s).
         Passing in a value for this option enables a change stream for the table. Examples: `5d` or
         `48h`.
-      processor: googlecloudsdk.api_lib.bigtable.tables:ConvertDurationToSeconds
+      processor: googlecloudsdk.api_lib.bigtable.tables:ParseChangeStreamRetentionPeriod
     - api_field: createTableRequest.table.deletionProtection
       arg_name: deletion-protection
       type: bool
       help_text: |
         Once specified, the table is deletion protected.
-    - api_field: createTableRequest.table.automatedBackupPolicy
-      arg_name: enable-automated-backup
-      action: store_true
-      help_text: |
-        Once set, enables the default automated backup policy (retention_period=72h, frequency=24h)
-        for the table.
-      processor: googlecloudsdk.api_lib.bigtable.tables:EnableDefaultAutomatedBackupPolicy

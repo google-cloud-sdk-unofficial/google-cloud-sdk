@@ -63,7 +63,6 @@ def _DetailedHelp():
 def _Args(
     parser,
     traffic_director_security=False,
-    certificate_map=False,
     list_format=None,
 ):
   """Add the target https proxies command line flags to the parser."""
@@ -87,15 +86,14 @@ def _Args(
       'to attach', name='server-tls-policy', region_fallthrough=True
   ).AddToParser(parser)
 
-  if certificate_map:
-    cm_resource_args.AddCertificateMapResourceArg(
-        parser,
-        'to attach',
-        name='certificate-map',
-        positional=False,
-        required=False,
-        with_location=False,
-    )
+  cm_resource_args.AddCertificateMapResourceArg(
+      parser,
+      'to attach',
+      name='certificate-map',
+      positional=False,
+      required=False,
+      with_location=False,
+  )
 
 
 def _Run(
@@ -174,7 +172,6 @@ class Create(base.CreateCommand):
   """Create a target HTTPS proxy."""
 
   _traffic_director_security = False
-  _certificate_map = True
   _list_format = flags.DEFAULT_LIST_FORMAT
 
   SSL_CERTIFICATES_ARG = None
@@ -224,7 +221,6 @@ class Create(base.CreateCommand):
     _Args(
         parser,
         traffic_director_security=cls._traffic_director_security,
-        certificate_map=cls._certificate_map,
         list_format=cls._list_format,
     )
 
@@ -255,9 +251,8 @@ class Create(base.CreateCommand):
       )
     else:
       ssl_policy_ref = None
-    certificate_map_ref = (
-        args.CONCEPTS.certificate_map.Parse() if self._certificate_map else None
-    )
+    certificate_map_ref = args.CONCEPTS.certificate_map.Parse()
+
     server_tls_policy_ref = None
     if args.IsKnownAndSpecified('server_tls_policy'):
       server_tls_policy_ref = args.CONCEPTS.server_tls_policy.Parse()

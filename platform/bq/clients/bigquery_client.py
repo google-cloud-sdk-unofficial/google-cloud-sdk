@@ -32,6 +32,7 @@ from discovery_documents import discovery_document_cache
 from discovery_documents import discovery_document_loader
 from utils import bq_api_utils
 from utils import bq_error
+from utils import bq_logging
 
 
 try:
@@ -417,6 +418,7 @@ class BigqueryClient:
         discovery_document=discovery_document, service=service
     )
 
+
     built_client = None
     try:
       # If the underlying credentials object used for authentication is of type
@@ -502,6 +504,11 @@ class BigqueryClient:
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
           path, api_version='v1'
       )
+      discovery_url = bq_api_utils.add_api_key_to_discovery_url(
+          discovery_url=discovery_url,
+          universe_domain=bq_flags.UNIVERSE_DOMAIN.value,
+          inputted_flags=bq_flags,
+      )
       self._op_transfer_client = self.BuildApiClient(
           discovery_url=discovery_url,
           service=Service.DTS,
@@ -527,6 +534,13 @@ class BigqueryClient:
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
           path, api_version=reservation_version
       )
+      labels = None
+      discovery_url = bq_api_utils.add_api_key_to_discovery_url(
+          discovery_url=discovery_url,
+          universe_domain=bq_flags.UNIVERSE_DOMAIN.value,
+          inputted_flags=bq_flags,
+          labels=labels,
+      )
       self._op_reservation_client = self.BuildApiClient(
           discovery_url=discovery_url,
           service=Service.RESERVATIONS,
@@ -549,6 +563,11 @@ class BigqueryClient:
       )
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
           path, api_version='v1'
+      )
+      discovery_url = bq_api_utils.add_api_key_to_discovery_url(
+          discovery_url=discovery_url,
+          universe_domain=bq_flags.UNIVERSE_DOMAIN.value,
+          inputted_flags=bq_flags,
       )
       self._op_connection_service_client = self.BuildApiClient(
           discovery_url=discovery_url,

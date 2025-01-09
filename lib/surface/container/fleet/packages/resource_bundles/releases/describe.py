@@ -27,6 +27,9 @@ _DETAILED_HELP = {
         """,
 }
 
+_VARIANT_STORAGE_STRATEGY_LABEL_KEY = 'configdelivery-variant-storage-strategy'
+_VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED = 'nested'
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -44,9 +47,23 @@ class Describe(base.DescribeCommand):
   def Run(self, args):
     """Run the describe command."""
     client = apis.ReleasesClient()
-    return client.Describe(
+    release = client.Describe(
         release=args.release,
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
         resource_bundle=args.resource_bundle,
     )
+    # Don't show variants if they are nested resources.
+    if (
+        release.variants
+        and release.labels
+        and release.labels.additionalProperties
+    ):
+      for label in release.labels.additionalProperties:
+        if (
+            label.key == _VARIANT_STORAGE_STRATEGY_LABEL_KEY
+            and label.value == _VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED
+        ):
+          release.variants = None
+          break
+    return release

@@ -71,12 +71,7 @@ class UpdateHelper(object):
   def Args(
       cls,
       parser,
-      support_failover,
-      support_client_only,
-      support_subsetting,
       support_subsetting_subset_size,
-      support_unspecified_protocol,
-      support_advanced_load_balancing,
       support_external_managed_migration,
       support_custom_metrics,
   ):
@@ -110,10 +105,7 @@ class UpdateHelper(object):
     cls.EDGE_SECURITY_POLICY_ARG.AddArgument(parser)
     flags.AddTimeout(parser, default=None)
     flags.AddPortName(parser)
-    flags.AddProtocol(
-        parser,
-        default=None,
-        support_unspecified_protocol=support_unspecified_protocol)
+    flags.AddProtocol(parser, default=None)
 
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddEnableCdn(parser)
@@ -125,21 +117,17 @@ class UpdateHelper(object):
     flags.AddSessionAffinity(
         parser,
         support_stateful_affinity=True,
-        support_client_only=support_client_only,
     )
     flags.AddAffinityCookie(parser, support_stateful_affinity=True)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
-    if support_subsetting:
-      flags.AddSubsettingPolicy(parser)
-      if support_subsetting_subset_size:
-        flags.AddSubsettingSubsetSize(parser)
+    flags.AddSubsettingPolicy(parser)
+    if support_subsetting_subset_size:
+      flags.AddSubsettingSubsetSize(parser)
 
-    if support_failover:
-      flags.AddConnectionDrainOnFailover(parser, default=None)
-      flags.AddDropTrafficIfUnhealthy(parser, default=None)
-      flags.AddFailoverRatio(parser)
-
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     flags.AddEnableLogging(parser)
     flags.AddLoggingSampleRate(parser)
     flags.AddLoggingOptional(parser)
@@ -153,9 +141,7 @@ class UpdateHelper(object):
     flags.AddConnectionTrackingPolicy(parser)
     flags.AddCompressionMode(parser)
 
-    if support_advanced_load_balancing:
-      flags.AddServiceLoadBalancingPolicy(
-          parser, required=False, is_update=True)
+    flags.AddServiceLoadBalancingPolicy(parser, required=False, is_update=True)
 
     flags.AddServiceBindings(parser, required=False, is_update=True)
     flags.AddLocalityLbPolicy(parser)
@@ -169,21 +155,15 @@ class UpdateHelper(object):
 
   def __init__(
       self,
-      support_failover,
-      support_subsetting,
       support_subsetting_subset_size,
       support_external_managed_migration=False,
-      support_advanced_load_balancing=False,
       support_custom_metrics=False,
       release_track=None,
   ):
-    self._support_failover = support_failover
-    self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_external_managed_migration = (
         support_external_managed_migration
     )
-    self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_custom_metrics = support_custom_metrics
     self._release_track = release_track
 
@@ -259,9 +239,9 @@ class UpdateHelper(object):
       replacement.connectionDraining = client.messages.ConnectionDraining(
           drainingTimeoutSec=args.connection_draining_timeout)
 
-    if self._support_subsetting:
-      backend_services_utils.ApplySubsettingArgs(
-          client, args, replacement, self._support_subsetting_subset_size)
+    backend_services_utils.ApplySubsettingArgs(
+        client, args, replacement, self._support_subsetting_subset_size
+    )
 
     if args.locality_lb_policy is not None:
       replacement.localityLbPolicy = (
@@ -287,10 +267,8 @@ class UpdateHelper(object):
     self._ApplyIapArgs(client, args.iap, existing, replacement)
 
     backend_services_utils.ApplyFailoverPolicyArgs(
-        client.messages,
-        args,
-        replacement,
-        support_failover=self._support_failover)
+        client.messages, args, replacement
+    )
 
     backend_services_utils.ApplyLogConfigArgs(
         client.messages,
@@ -299,16 +277,16 @@ class UpdateHelper(object):
         cleared_fields=cleared_fields,
     )
 
-    if self._support_advanced_load_balancing:
-      if args.service_lb_policy is not None:
-        replacement.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
-            project_name=backend_service_ref.project,
-            location=location,
-            policy_name=args.service_lb_policy,
-            release_track=self._release_track)
-      if args.no_service_lb_policy is not None:
-        replacement.serviceLbPolicy = None
-        cleared_fields.append('serviceLbPolicy')
+    if args.service_lb_policy is not None:
+      replacement.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
+          project_name=backend_service_ref.project,
+          location=location,
+          policy_name=args.service_lb_policy,
+          release_track=self._release_track,
+      )
+    if args.no_service_lb_policy is not None:
+      replacement.serviceLbPolicy = None
+      cleared_fields.append('serviceLbPolicy')
 
     if args.service_bindings is not None:
       replacement.serviceBindings = [
@@ -378,13 +356,9 @@ class UpdateHelper(object):
         args.IsSpecified('edge_security_policy'),
         args.IsSpecified('session_affinity'),
         args.IsSpecified('timeout'),
-        args.IsSpecified('connection_drain_on_failover')
-        if self._support_failover
-        else False,
-        args.IsSpecified('drop_traffic_if_unhealthy')
-        if self._support_failover
-        else False,
-        args.IsSpecified('failover_ratio') if self._support_failover else False,
+        args.IsSpecified('connection_drain_on_failover'),
+        args.IsSpecified('drop_traffic_if_unhealthy'),
+        args.IsSpecified('failover_ratio'),
         args.IsSpecified('enable_logging'),
         args.IsSpecified('logging_sample_rate'),
         args.IsSpecified('logging_optional'),
@@ -392,9 +366,7 @@ class UpdateHelper(object):
         args.IsSpecified('health_checks'),
         args.IsSpecified('https_health_checks'),
         args.IsSpecified('no_health_checks'),
-        args.IsSpecified('subsetting_policy')
-        if self._support_subsetting
-        else False,
+        args.IsSpecified('subsetting_policy'),
         args.IsSpecified('subsetting_subset_size')
         if self._support_subsetting_subset_size
         else False,
@@ -420,12 +392,8 @@ class UpdateHelper(object):
         args.IsSpecified('idle_timeout_sec'),
         args.IsSpecified('enable_strong_affinity'),
         args.IsSpecified('compression_mode'),
-        args.IsSpecified('service_lb_policy')
-        if self._support_advanced_load_balancing
-        else False,
-        args.IsSpecified('no_service_lb_policy')
-        if self._support_advanced_load_balancing
-        else False,
+        args.IsSpecified('service_lb_policy'),
+        args.IsSpecified('no_service_lb_policy'),
         args.IsSpecified('service_bindings'),
         args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy'),
@@ -460,7 +428,6 @@ class UpdateHelper(object):
 
     if (
         backend_service_ref.Collection() == 'compute.backendServices'
-        and self._support_failover
         and replacement.failoverPolicy
         ):
       raise exceptions.InvalidArgumentException(
@@ -613,12 +580,7 @@ class UpdateGA(base.UpdateCommand):
   *{command}* is used to update backend services.
   """
 
-  _support_failover = True
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_advanced_load_balancing = True
   _support_external_managed_migration = False
   _support_custom_metrics = False
 
@@ -626,12 +588,7 @@ class UpdateGA(base.UpdateCommand):
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_failover=cls._support_failover,
-        support_client_only=cls._support_client_only,
-        support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_external_managed_migration=(
             cls._support_external_managed_migration
         ),
@@ -642,11 +599,8 @@ class UpdateGA(base.UpdateCommand):
     """Issues requests necessary to update the Backend Services."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(
-        self._support_failover,
-        self._support_subsetting,
         self._support_subsetting_subset_size,
         self._support_external_managed_migration,
-        support_advanced_load_balancing=self._support_advanced_load_balancing,
         support_custom_metrics=self._support_custom_metrics,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
@@ -659,11 +613,7 @@ class UpdateBeta(UpdateGA):
   *{command}* is used to update backend services.
   """
 
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = True
   _support_external_managed_migration = True
   _support_custom_metrics = True
 
@@ -675,10 +625,6 @@ class UpdateAlpha(UpdateBeta):
   *{command}* is used to update backend services.
   """
 
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = True
   _support_external_managed_migration = True
   _support_custom_metrics = True

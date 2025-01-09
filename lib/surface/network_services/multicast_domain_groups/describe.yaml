@@ -1,0 +1,18 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Describe a multicast domain group.
+  description: |
+    Show details of a multicast domain group in the specified location of the current project.
+  examples: |
+    To describe a multicast domain group in the current project, run:
+
+      $ {command} my-multicast-domain-group --location=global
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastDomainGroup
+    help_text: |
+      The multicast domain group to display.
+request: &request
+  api_version: v1alpha1
+  collection: networkservices.projects.locations.multicastDomainGroups

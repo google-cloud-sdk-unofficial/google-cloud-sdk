@@ -32,7 +32,7 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Export(base.SilentCommand):
   """Export data from an AlloyDB cluster to Google Cloud Storage."""
 
@@ -43,7 +43,7 @@ class Export(base.SilentCommand):
           """\
         To export a cluster, run:
 
-          $ {command} my-cluster --region=us-central1 --database=my-database --gcs-uri=gs://my-bucket/my-export-file-path --select-query="SELECT * FROM my-table"
+          $ {command} my-cluster --region=us-central1 --database=my-database --gcs-uri=gs://my-bucket/my-export-file-path --csv --select-query="SELECT * FROM my-table"
         """,
   }
 
@@ -99,3 +99,13 @@ class Export(base.SilentCommand):
       )
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ExportAlpha(Export):
+  """Export data from an AlloyDB cluster to Google Cloud Storage."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ExportBeta(Export):
+  """Export data from an AlloyDB cluster to Google Cloud Storage."""

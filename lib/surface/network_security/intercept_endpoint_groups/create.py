@@ -48,6 +48,12 @@ DETAILED_HELP = {
             $ {command} projects/my-project/locations/global/interceptEndpointGroups/my-endpoint-group
             --intercept-deployment-group=projects/my-project/locations/global/interceptDeploymentGroups/my-deployment-group
 
+            OR
+
+            $ {command} my-endpoint-group --project=my-project --location=global
+            --mirroring-deployment-group=projects/my-project/locations/global/interceptDeploymentGroups/my-deployment-group
+            --description='new description'
+
         """,
 }
 
@@ -67,6 +73,7 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    endpoint_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -92,6 +99,7 @@ class Create(base.CreateCommand):
         parent=endpoint_group.Parent().RelativeName(),
         intercept_deployment_group=intercept_deployment_group.RelativeName(),
         labels=labels,
+        description=getattr(args, 'description', ''),
     )
     # Return the in-progress operation if async is requested.
     if is_async:

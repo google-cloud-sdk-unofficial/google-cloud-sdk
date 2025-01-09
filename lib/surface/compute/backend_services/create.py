@@ -91,13 +91,7 @@ class CreateHelper(object):
   def Args(
       cls,
       parser,
-      support_failover,
-      support_multinic,
-      support_client_only,
-      support_unspecified_protocol,
-      support_subsetting,
       support_subsetting_subset_size,
-      support_advanced_load_balancing,
       support_custom_metrics,
   ):
     """Add flags to create a backend service to the parser."""
@@ -114,21 +108,13 @@ class CreateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG = flags.HttpsHealthCheckArgument()
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
-    if support_advanced_load_balancing:
-      flags.AddServiceLoadBalancingPolicy(parser)
+    flags.AddServiceLoadBalancingPolicy(parser)
     flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
-    flags.AddProtocol(
-        parser,
-        default=None,
-        support_unspecified_protocol=support_unspecified_protocol)
+    flags.AddProtocol(parser, default=None)
     flags.AddEnableCdn(parser)
-    flags.AddSessionAffinity(
-        parser,
-        support_stateful_affinity=True,
-        support_client_only=support_client_only,
-    )
+    flags.AddSessionAffinity(parser, support_stateful_affinity=True)
     flags.AddAffinityCookie(parser, support_stateful_affinity=True)
     flags.AddConnectionDrainingTimeout(parser)
     flags.AddLoadBalancingScheme(parser)
@@ -142,24 +128,18 @@ class CreateHelper(object):
     parser.display_info.AddCacheUpdater(flags.BackendServicesCompleter)
     signed_url_flags.AddSignedUrlCacheMaxAge(parser, required=False)
 
-    if support_subsetting:
-      flags.AddSubsettingPolicy(parser)
-      if support_subsetting_subset_size:
-        flags.AddSubsettingSubsetSize(parser)
+    flags.AddSubsettingPolicy(parser)
+    if support_subsetting_subset_size:
+      flags.AddSubsettingSubsetSize(parser)
 
-    if support_failover:
-      flags.AddConnectionDrainOnFailover(parser, default=None)
-      flags.AddDropTrafficIfUnhealthy(parser, default=None)
-      flags.AddFailoverRatio(parser)
-
+    flags.AddConnectionDrainOnFailover(parser, default=None)
+    flags.AddDropTrafficIfUnhealthy(parser, default=None)
+    flags.AddFailoverRatio(parser)
     flags.AddEnableLogging(parser)
     flags.AddLoggingSampleRate(parser)
     flags.AddLoggingOptional(parser)
     flags.AddLoggingOptionalFields(parser)
-
-    if support_multinic:
-      flags.AddNetwork(parser)
-
+    flags.AddNetwork(parser)
     flags.AddLocalityLbPolicy(parser)
 
     cdn_flags.AddCdnPolicyArgs(parser, 'backend service')
@@ -172,19 +152,11 @@ class CreateHelper(object):
 
   def __init__(
       self,
-      support_failover,
-      support_multinic,
-      support_subsetting,
       support_subsetting_subset_size,
-      support_advanced_load_balancing,
       release_track,
       support_custom_metrics,
   ):
-    self._support_failover = support_failover
-    self._support_multinic = support_multinic
-    self._support_subsetting = support_subsetting
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_advanced_load_balancing = support_advanced_load_balancing
     self._support_custom_metrics = support_custom_metrics
     self._release_track = release_track
 
@@ -194,10 +166,7 @@ class CreateHelper(object):
     if args.load_balancing_scheme == 'INTERNAL':
       raise exceptions.RequiredArgumentException(
           '--region', 'Must specify --region for internal load balancer.')
-    if (
-        self._support_failover and
-        backend_services_utils.HasFailoverPolicyArgs(args)
-        ):
+    if backend_services_utils.HasFailoverPolicyArgs(args):
       raise exceptions.InvalidArgumentException(
           '--global',
           'failover policy parameters are only for regional passthrough '
@@ -221,8 +190,7 @@ class CreateHelper(object):
         is_update=False,
         apply_signed_url_cache_max_age=True)
 
-    if (self._support_advanced_load_balancing and
-        args.service_lb_policy is not None):
+    if args.service_lb_policy is not None:
       backend_service.serviceLbPolicy = reference_utils.BuildServiceLbPolicyUrl(
           project_name=backend_services_ref.project,
           location='global',
@@ -239,9 +207,10 @@ class CreateHelper(object):
       backend_service.compressionMode = (
           client.messages.BackendService.CompressionModeValueValuesEnum(
               args.compression_mode))
-    if self._support_subsetting:
-      backend_services_utils.ApplySubsettingArgs(
-          client, args, backend_service, self._support_subsetting_subset_size)
+
+    backend_services_utils.ApplySubsettingArgs(
+        client, args, backend_service, self._support_subsetting_subset_size
+    )
     if args.session_affinity is not None:
       backend_service.sessionAffinity = (
           client.messages.BackendService.SessionAffinityValueValuesEnum(
@@ -302,11 +271,7 @@ class CreateHelper(object):
           'Custom cache key flags cannot be used for regional requests.'
       )
 
-    if (
-        self._support_multinic
-        and args.IsSpecified('network')
-        and args.load_balancing_scheme != 'INTERNAL'
-    ):
+    if args.IsSpecified('network') and args.load_balancing_scheme != 'INTERNAL':
       raise exceptions.InvalidArgumentException(
           '--network', 'can only specify network for INTERNAL backend service.'
       )
@@ -325,12 +290,9 @@ class CreateHelper(object):
     if args.custom_response_header is not None:
       backend_service.customResponseHeaders = args.custom_response_header
     backend_services_utils.ApplyFailoverPolicyArgs(
-        client.messages, args, backend_service, self._support_failover
+        client.messages, args, backend_service
     )
-    if (
-        self._support_advanced_load_balancing
-        and args.service_lb_policy is not None
-    ):
+    if args.service_lb_policy is not None:
       raise compute_exceptions.ArgumentError(
           '--service-lb-policy flag cannot be used for regional backend'
           ' service.'
@@ -344,10 +306,9 @@ class CreateHelper(object):
           for binding_name in args.service_bindings
       ]
 
-    if self._support_subsetting:
-      backend_services_utils.ApplySubsettingArgs(
-          client, args, backend_service, self._support_subsetting_subset_size)
-
+    backend_services_utils.ApplySubsettingArgs(
+        client, args, backend_service, self._support_subsetting_subset_size
+    )
     backend_services_utils.ApplyConnectionTrackingPolicyArgs(
         client, args, backend_service)
 
@@ -361,7 +322,7 @@ class CreateHelper(object):
     if args.port_name is not None:
       backend_service.portName = args.port_name
 
-    if self._support_multinic and args.IsSpecified('network'):
+    if args.IsSpecified('network'):
       backend_service.network = flags.NETWORK_ARG.ResolveAsResource(
           args, holder.resources).SelfLink()
 
@@ -464,26 +425,14 @@ class CreateGA(base.CreateCommand):
 
   """
 
-  _support_failover = True
-  _support_multinic = True
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = False
-  _support_advanced_load_balancing = True
   _support_custom_metrics = False
 
   @classmethod
   def Args(cls, parser):
     CreateHelper.Args(
         parser,
-        support_failover=cls._support_failover,
-        support_multinic=cls._support_multinic,
-        support_client_only=cls._support_client_only,
-        support_unspecified_protocol=cls._support_unspecified_protocol,
-        support_subsetting=cls._support_subsetting,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_advanced_load_balancing=cls._support_advanced_load_balancing,
         support_custom_metrics=cls._support_custom_metrics,
     )
 
@@ -492,11 +441,7 @@ class CreateGA(base.CreateCommand):
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
-        support_failover=self._support_failover,
-        support_multinic=self._support_multinic,
-        support_subsetting=self._support_subsetting,
         support_subsetting_subset_size=self._support_subsetting_subset_size,
-        support_advanced_load_balancing=self._support_advanced_load_balancing,
         support_custom_metrics=self._support_custom_metrics,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
@@ -520,12 +465,7 @@ class CreateBeta(CreateGA):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-  _support_multinic = True
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = True
   _support_custom_metrics = True
 
 
@@ -547,9 +487,5 @@ class CreateAlpha(CreateBeta):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-  _support_client_only = True
-  _support_unspecified_protocol = True
-  _support_subsetting = True
   _support_subsetting_subset_size = True
-  _support_advanced_load_balancing = True
   _support_custom_metrics = True

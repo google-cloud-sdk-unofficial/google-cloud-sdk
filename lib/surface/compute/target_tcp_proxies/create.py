@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.backend_services import (
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a target TCP proxy."""
@@ -35,18 +36,17 @@ class Create(base.CreateCommand):
   BACKEND_SERVICE_ARG = None
   TARGET_TCP_PROXY_ARG = None
 
-  _enable_region_target_tcp_proxy = True
-
   @classmethod
   def Args(cls, parser):
     target_proxies_utils.AddProxyHeaderRelatedCreateArgs(parser)
 
     cls.BACKEND_SERVICE_ARG = (
         backend_service_flags.BackendServiceArgumentForTargetTcpProxy(
-            allow_regional=cls._enable_region_target_tcp_proxy))
+            allow_regional=True
+        )
+    )
     cls.BACKEND_SERVICE_ARG.AddArgument(parser)
-    cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(
-        allow_regional=cls._enable_region_target_tcp_proxy)
+    cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(allow_regional=True)
     cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='create')
 
     flags.AddProxyBind(parser)
@@ -55,19 +55,15 @@ class Create(base.CreateCommand):
         '--description',
         help='An optional, textual description for the target TCP proxy.')
 
-    if cls._enable_region_target_tcp_proxy:
-      parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
-    else:
-      parser.display_info.AddCacheUpdater(flags.GATargetTcpProxiesCompleter)
+    parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
 
-    if self._enable_region_target_tcp_proxy:
-      if not (args.backend_service_region or args.global_backend_service):
-        # infer scope from proxy if not explicitly specified
-        args.backend_service_region = getattr(args, 'region', None)
-        args.global_backend_service = getattr(args, 'global', None)
+    if not (args.backend_service_region or args.global_backend_service):
+      # infer scope from proxy if not explicitly specified
+      args.backend_service_region = getattr(args, 'region', None)
+      args.global_backend_service = getattr(args, 'global', None)
 
     backend_service_ref = self.BACKEND_SERVICE_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
@@ -132,9 +128,10 @@ class Create(base.CreateCommand):
     return resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlphaBeta(Create):
-  _enable_region_target_tcp_proxy = True
+  pass
 
 
 Create.detailed_help = {

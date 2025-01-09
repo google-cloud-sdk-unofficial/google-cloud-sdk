@@ -55,7 +55,7 @@ class Update(base.UpdateCommand):
   _include_external_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
-  _update_purpose_to_private = False
+  _update_purpose_to_private = True
   _include_ip_collection = False
   detailed_help = _DetailedHelp()
 

@@ -220,6 +220,7 @@ class AddAppOperatorBinding(base.CreateCommand):
     return fleetclient.CreateScopeRBACRoleBinding(
         name=scope_rrb,
         role=args.role,
+        custom_role=None,
         user=args.user,
         group=args.group,
         labels=labels,

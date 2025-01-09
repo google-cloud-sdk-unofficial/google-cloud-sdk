@@ -149,7 +149,7 @@ class Deploy(base.Command):
               model_name=f'publishers/{publisher_name}/models/{model_name}',
               is_hugging_face_model=True,
           )
-        except apitools_exceptions.HttpUnauthorizedError:
+        except apitools_exceptions.HttpNotFoundError:
           raise c_exceptions.UnknownArgumentException(
               '--hugging-face-model',
               f'{args.hugging_face_model} is not a supported Hugging Face model'

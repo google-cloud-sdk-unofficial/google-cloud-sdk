@@ -97,7 +97,7 @@ class DescribeAlpha(Describe):
   @staticmethod
   def Args(parser):
     _add_common_args(parser)
-    flags.add_soft_deleted_flag(parser, hidden=True)
+    flags.add_soft_deleted_flag(parser)
 
   def Run(self, args):
     _validate_url_does_not_contain_wildcards(args.url)

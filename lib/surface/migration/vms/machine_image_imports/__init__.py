@@ -19,12 +19,12 @@ from googlecloudsdk.calliope import base
 
 # We could have multiple tracks here, e.g.
 #   @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class MachineImageImports(base.Group):
   r"""Imports machine images to Google Compute Engine from Google Cloud Storage.
 
-  gcloud alpha migration vms machine-image-imports provides a more robust and better
+  gcloud migration vms machine-image-imports provides a more robust and better
   supported method for importing machine images to Google Compute Engine.
   Other image-related operations (for example, list) can be done using
   gcloud compute images, as usual.
@@ -33,7 +33,7 @@ class MachineImageImports(base.Group):
   a Google Cloud Storage file (gs://...) to a target project.
   VM Migration API must be enabled in your project.
 
-  gcloud alpha migration vms machine-image-imports create creates a machine Image Import resource
+  `gcloud migration vms machine-image-imports create` creates a machine Image Import resource
   with a nested Image Import Job resource. The Image Import Job resource tracks
   the machine image import progress. After the Image Import Job completes, successfully
   or otherwise, there's no further use for the Image Import resource.
@@ -53,13 +53,13 @@ class MachineImageImports(base.Group):
   https://cloud.google.com/migrate/virtual-machines/docs/5.0/migrate/image_import.
 
   ## Import Image
-  $ gcloud alpha migration vms machine-image-imports create MACHINE_IMAGE_IMPORT_NAME \
+  $ gcloud migration vms machine-image-imports create MACHINE_IMAGE_IMPORT_NAME \
     --source-file=GCS_FILE_NAME \
     --image-name=IMPORTED_IMAGE_NAME \
     --location=REGION \
     --target-project=TARGET_PROJECT_RESOURCE_PATH
 
   ## Delete Image Import resource
-  $ gcloud alpha migration vms machine-image-imports delete MACHINE_IMAGE_IMPORT_NAME \
+  $ gcloud migration vms machine-image-imports delete MACHINE_IMAGE_IMPORT_NAME \
     --location=REGION
   """

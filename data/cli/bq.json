@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.10",
+  "CLI_VERSION": "2.1.11",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -520,6 +520,20 @@
       "is_hidden": false,
       "is_required": false,
       "name": "--apilog",
+      "nargs": "1",
+      "type": "string",
+      "value": "VALUE"
+    },
+    "--bigquery_discovery_api_key": {
+      "attr": {},
+      "category": "",
+      "default": "",
+      "description": "API key to use for discovery doc requests.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--bigquery_discovery_api_key",
       "nargs": "1",
       "type": "string",
       "value": "VALUE"

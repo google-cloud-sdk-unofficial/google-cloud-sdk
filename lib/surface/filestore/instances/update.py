@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.filestore.instances import dp_util
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-
 import six
 
 
@@ -88,33 +87,39 @@ class Update(base.CreateCommand):
           labels=labels,
           file_share=args.file_share,
           performance=args.performance,
-          clear_performance=args.clear_performance,
           clear_nfs_export_options=args.clear_nfs_export_options,
           deletion_protection_enabled=args.deletion_protection,
-          deletion_protection_reason=args.deletion_protection_reason)
+          deletion_protection_reason=args.deletion_protection_reason,
+      )
     except filestore_client.Error as e:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(e))
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(e)
+      )
 
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels') or
-        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
-    if args.IsSpecified('performance') or args.IsSpecified('clear_performance'):
+    if args.IsSpecified('performance'):
       updated_fields.append('performanceConfig')
     updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)
     update_mask = ','.join(updated_fields)
 
-    result = client.UpdateInstance(instance_ref, instance, update_mask,
-                                   args.async_)
+    result = client.UpdateInstance(
+        instance_ref, instance, update_mask, args.async_
+    )
     if args.async_:
       log.status.Print(
           'To check the status of the operation, run `gcloud filestore '
-          'operations describe {}`'.format(result.name))
+          'operations describe {}`'.format(result.name)
+      )
     return result
 
 
@@ -170,27 +175,34 @@ class UpdateAlpha(Update):
           description=args.description,
           labels=labels,
           file_share=args.file_share,
-          clear_nfs_export_options=args.clear_nfs_export_options)
+          clear_nfs_export_options=args.clear_nfs_export_options,
+      )
     except filestore_client.Error as e:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(e))
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(e)
+      )
 
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels') or
-        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
     update_mask = ','.join(updated_fields)
 
-    result = client.UpdateInstance(instance_ref, instance, update_mask,
-                                   args.async_)
+    result = client.UpdateInstance(
+        instance_ref, instance, update_mask, args.async_
+    )
     if args.async_:
       log.status.Print(
           'To check the status of the operation, run `gcloud alpha filestore '
-          'operations describe {}`'.format(result.name))
+          'operations describe {}`'.format(result.name)
+      )
     return result
 
 
@@ -248,25 +260,29 @@ class UpdateBeta(Update):
           labels=labels,
           file_share=args.file_share,
           performance=args.performance,
-          clear_performance=args.clear_performance,
           managed_ad=args.managed_ad,
           disconnect_managed_ad=args.disconnect_managed_ad,
           clear_nfs_export_options=args.clear_nfs_export_options,
           deletion_protection_enabled=args.deletion_protection,
-          deletion_protection_reason=args.deletion_protection_reason)
+          deletion_protection_reason=args.deletion_protection_reason,
+      )
     except filestore_client.Error as e:
-      raise exceptions.InvalidArgumentException('--file-share',
-                                                six.text_type(e))
+      raise exceptions.InvalidArgumentException(
+          '--file-share', six.text_type(e)
+      )
 
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
-    if (args.IsSpecified('update_labels') or
-        args.IsSpecified('remove_labels') or args.IsSpecified('clear_labels')):
+    if (
+        args.IsSpecified('update_labels')
+        or args.IsSpecified('remove_labels')
+        or args.IsSpecified('clear_labels')
+    ):
       updated_fields.append('labels')
     if args.IsSpecified('file_share'):
       updated_fields.append('fileShares')
-    if args.IsSpecified('performance') or args.IsSpecified('clear_performance'):
+    if args.IsSpecified('performance'):
       updated_fields.append('performanceConfig')
     if args.IsSpecified('managed_ad') or args.IsSpecified(
         'disconnect_managed_ad'
@@ -276,20 +292,20 @@ class UpdateBeta(Update):
     updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)
     update_mask = ','.join(updated_fields)
 
-    result = client.UpdateInstance(instance_ref, instance, update_mask,
-                                   args.async_)
+    result = client.UpdateInstance(
+        instance_ref, instance, update_mask, args.async_
+    )
     if args.async_:
       log.status.Print(
           'To check the status of the operation, run `gcloud beta filestore '
-          'operations describe {}`'.format(result.name))
+          'operations describe {}`'.format(result.name)
+      )
     return result
 
 
 Update.detailed_help = {
-    'DESCRIPTION':
-        'Update a Filestore instance.',
-    'EXAMPLES':
-        """\
+    'DESCRIPTION': 'Update a Filestore instance.',
+    'EXAMPLES': """\
 The following command updates the Filestore instance NAME to change the
 description to "A new description."
 
@@ -329,4 +345,5 @@ capacity to CAPACITY.
 
   $ {command} NAME --project=PROJECT_ID --zone=ZONE\
     --file-share=name=VOLUME_NAME,capacity=CAPACITY
-"""}
+""",
+}

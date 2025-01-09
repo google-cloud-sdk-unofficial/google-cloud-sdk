@@ -35,42 +35,22 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(
-    parser,
-    support_global_access,
-    support_psc_google_apis,
-    support_all_protocol,
-    support_target_service_attachment,
-    support_l3_default,
-    support_source_ip_range,
-    support_disable_automate_dns_zone,
-    support_regional_tcp_proxy,
-):
+def _Args(parser, support_all_protocol):
   """Add the flags to create a forwarding rule."""
 
   flags.AddCreateArgs(
       parser,
-      include_psc_google_apis=support_psc_google_apis,
-      include_target_service_attachment=support_target_service_attachment,
-      include_regional_tcp_proxy=support_regional_tcp_proxy,
+      include_psc_google_apis=True,
+      include_target_service_attachment=True,
   )
-  flags.AddIPProtocols(parser, support_all_protocol, support_l3_default)
+  flags.AddIPProtocols(parser, support_all_protocol)
   flags.AddDescription(parser)
   flags.AddPortsAndPortRange(parser)
-  flags.AddNetworkTier(
-      parser, supports_network_tier_flag=True, for_update=False)
-
-  if support_global_access:
-    flags.AddAllowGlobalAccess(parser)
-
+  flags.AddNetworkTier(parser, for_update=False)
+  flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
-
-  if support_source_ip_range:
-    flags.AddSourceIpRanges(parser)
-
-  if support_disable_automate_dns_zone:
-    flags.AddDisableAutomateDnsZone(parser)
-
+  flags.AddSourceIpRanges(parser)
+  flags.AddDisableAutomateDnsZone(parser)
   flags.AddIsMirroringCollector(parser)
   flags.AddServiceDirectoryRegistration(parser)
 
@@ -100,54 +80,19 @@ class CreateHelper(object):
   def __init__(
       self,
       holder,
-      support_global_access,
-      support_psc_google_apis,
       support_all_protocol,
-      support_target_service_attachment,
       support_sd_registration_for_regional,
-      support_l3_default,
-      support_source_ip_range,
-      support_disable_automate_dns_zone,
-      support_regional_tcp_proxy,
   ):
     self._holder = holder
-    self._support_global_access = support_global_access
-    self._support_psc_google_apis = support_psc_google_apis
     self._support_all_protocol = support_all_protocol
-    self._support_target_service_attachment = support_target_service_attachment
     self._support_sd_registration_for_regional = (
         support_sd_registration_for_regional
     )
-    self._support_l3_default = support_l3_default
-    self._support_source_ip_range = support_source_ip_range
-    self._support_disable_automate_dns_zone = support_disable_automate_dns_zone
-    self._support_regional_tcp_proxy = support_regional_tcp_proxy
 
   @classmethod
-  def Args(
-      cls,
-      parser,
-      support_global_access,
-      support_psc_google_apis,
-      support_all_protocol,
-      support_target_service_attachment,
-      support_l3_default,
-      support_source_ip_range,
-      support_disable_automate_dns_zone,
-      support_regional_tcp_proxy,
-  ):
+  def Args(cls, parser, support_all_protocol):
     """Inits the class args for supported features."""
-    cls.FORWARDING_RULE_ARG = _Args(
-        parser,
-        support_global_access,
-        support_psc_google_apis,
-        support_all_protocol,
-        support_target_service_attachment,
-        support_l3_default,
-        support_source_ip_range,
-        support_disable_automate_dns_zone,
-        support_regional_tcp_proxy,
-    )
+    cls.FORWARDING_RULE_ARG = _Args(parser, support_all_protocol)
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -176,16 +121,10 @@ class CreateHelper(object):
   def _CreateGlobalRequests(self, client, resources, args, forwarding_rule_ref):
     """Create a globally scoped request."""
 
-    is_psc_google_apis = False
-    if hasattr(args,
-               'target_google_apis_bundle') and args.target_google_apis_bundle:
-      if not self._support_psc_google_apis:
-        raise exceptions.InvalidArgumentException(
-            '--target-google-apis-bundle',
-            'Private Service Connect for Google APIs (the target-google-apis-bundle option '
-            'for forwarding rules) is not supported in this API version.')
-      else:
-        is_psc_google_apis = True
+    is_psc_google_apis = (
+        hasattr(args, 'target_google_apis_bundle')
+        and args.target_google_apis_bundle
+    )
 
     sd_registration = None
     if hasattr(args, 'service_directory_registration'
@@ -308,7 +247,7 @@ class CreateHelper(object):
     if sd_registration:
       forwarding_rule.serviceDirectoryRegistrations.append(sd_registration)
 
-    if self._support_global_access and args.IsSpecified('allow_global_access'):
+    if args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
 
     request = client.messages.ComputeGlobalForwardingRulesInsertRequest(
@@ -319,25 +258,14 @@ class CreateHelper(object):
   def _CreateRegionalRequests(self, client, resources, args,
                               forwarding_rule_ref):
     """Create a regionally scoped request."""
-    is_psc_ilb = False
-    if hasattr(args,
-               'target_service_attachment') and args.target_service_attachment:
-      if not self._support_target_service_attachment:
-        raise exceptions.InvalidArgumentException(
-            '--target-service-attachment',
-            'Private Service Connect for ILB (the target-service-attachment '
-            'option) is not supported in this API version.')
-      else:
-        is_psc_ilb = True
+    is_psc_ilb = (
+        hasattr(args, 'target_service_attachment')
+        and args.target_service_attachment
+    )
 
     target_ref, region_ref = utils.GetRegionalTarget(
-        client,
-        resources,
-        args,
-        forwarding_rule_ref,
-        include_regional_tcp_proxy=self._support_regional_tcp_proxy,
-        include_target_service_attachment=self
-        ._support_target_service_attachment)
+        client, resources, args, forwarding_rule_ref
+    )
 
     if not args.region and region_ref:
       args.region = region_ref
@@ -378,7 +306,7 @@ class CreateHelper(object):
         IPProtocol=protocol,
         networkTier=_ConstructNetworkTier(client.messages, args),
         loadBalancingScheme=load_balancing_scheme)
-    if self._support_source_ip_range and args.source_ip_ranges:
+    if args.source_ip_ranges:
       forwarding_rule.sourceIpRanges = args.source_ip_ranges
 
     self._ProcessCommonArgs(client, resources, args, forwarding_rule_ref,
@@ -478,7 +406,7 @@ class CreateHelper(object):
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
 
-    if self._support_global_access and args.IsSpecified('allow_global_access'):
+    if args.IsSpecified('allow_global_access'):
       forwarding_rule.allowGlobalAccess = args.allow_global_access
 
     if args.IsSpecified('allow_psc_global_access'):
@@ -488,8 +416,7 @@ class CreateHelper(object):
       forwarding_rule.ipCollection = flags.IP_COLLECTION_ARG.ResolveAsResource(
           args, resources).SelfLink()
 
-    if self._support_disable_automate_dns_zone and args.IsSpecified(
-        'disable_automate_dns_zone'):
+    if args.IsSpecified('disable_automate_dns_zone'):
       forwarding_rule.noAutomateDnsZone = args.disable_automate_dns_zone
 
     if hasattr(args, 'is_mirroring_collector'):
@@ -612,70 +539,34 @@ class CreateHelper(object):
 class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
 
-  _support_global_access = True
-  _support_psc_google_apis = True
   _support_all_protocol = False
-  _support_target_service_attachment = True
   _support_sd_registration_for_regional = False
-  _support_l3_default = True
-  _support_source_ip_range = True
-  _support_disable_automate_dns_zone = True
-  _support_regional_tcp_proxy = True
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(
-        parser,
-        cls._support_global_access,
-        cls._support_psc_google_apis,
-        cls._support_all_protocol,
-        cls._support_target_service_attachment,
-        cls._support_l3_default,
-        cls._support_source_ip_range,
-        cls._support_disable_automate_dns_zone,
-        cls._support_regional_tcp_proxy,
-    )
+    CreateHelper.Args(parser, cls._support_all_protocol)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
         holder,
-        self._support_global_access,
-        self._support_psc_google_apis,
         self._support_all_protocol,
-        self._support_target_service_attachment,
         self._support_sd_registration_for_regional,
-        self._support_l3_default,
-        self._support_source_ip_range,
-        self._support_disable_automate_dns_zone,
-        self._support_regional_tcp_proxy,
     ).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-  _support_global_access = True
   _support_all_protocol = False
-  _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
-  _support_l3_default = True
-  _support_source_ip_range = True
-  _support_disable_automate_dns_zone = True
-  _support_regional_tcp_proxy = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-  _support_global_access = True
   _support_all_protocol = True
-  _support_target_service_attachment = True
   _support_sd_registration_for_regional = True
-  _support_l3_default = True
-  _support_source_ip_range = True
-  _support_disable_automate_dns_zone = True
-  _support_regional_tcp_proxy = True
 
 
 Create.detailed_help = {

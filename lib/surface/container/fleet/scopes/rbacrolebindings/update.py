@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a fleet scope RBAC RoleBinding.
 
@@ -67,11 +68,19 @@ class Update(base.UpdateCommand):
         type=str,
         help='Group for the RBACRoleBinding to update to.',
     )
-    parser.add_argument(
+    roledef = parser.add_mutually_exclusive_group()
+    roledef.add_argument(
         '--role',
         choices=['admin', 'edit', 'view'],
-        help='Role for the RBACRoleBinding to update to.',
+        help='Predefined role to assign to principal (admin, edit, view).',
     )
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      roledef.add_argument(
+          '--custom-role',
+          type=str,
+          hidden=True,
+          help='Custom role to assign to principal.',
+      )
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -80,9 +89,13 @@ class Update(base.UpdateCommand):
     current_rbac_rolebinding = fleetclient.GetScopeRBACRoleBinding(
         resources.RBACResourceName(args)
     )
-    for flag in ['role', 'user', 'group']:
+    for flag in ['role', 'custom_role', 'user', 'group']:
       if args.IsKnownAndSpecified(flag):
-        mask.append(flag)
+        # Both the role and custom_role can be updated with the "role" mask.
+        if flag == 'role' or flag == 'custom_role':
+          mask.append('role')
+        else:
+          mask.append(flag)
 
     # update GCP labels for namespace resource
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
@@ -96,11 +109,18 @@ class Update(base.UpdateCommand):
     # if there's nothing to update, then return
     if not mask:
       return
+    # Only set the custom role field if the release track is alpha.
+    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      custom_role = args.custom_role
+    else:
+      custom_role = None
+
     return fleetclient.UpdateScopeRBACRoleBinding(
         resources.RBACResourceName(args),
         user=args.user,
         group=args.group,
         role=args.role,
+        custom_role=custom_role,
         labels=new_labels,
         mask=','.join(mask),
     )

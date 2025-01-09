@@ -20,7 +20,7 @@
 
       $ {command} my-table --instance=my-instance --clear-change-stream-retention-period
 
-      To enable default automated backup policy (retention_period=72h, frequency=24h), run:
+      To enable the default automated backup policy on a table, or update a table to use the default policy (retention_period=7d, frequency=1d), run:
 
       $ {command} my-table --instance=my-instance --enable-automated-backup
 
@@ -28,12 +28,16 @@
 
       $ {command} my-table --instance=my-instance --disable-automated-backup
 
+      To enable or update a custom automated backup policy and configure it to retain backups for 30 days, run:
+
+      $ {command} my-table --instance=my-instance --automated-backup-retention_period=30d
+
   request:
     collection: bigtableadmin.projects.instances.tables
     method: patch
     modify_request_hooks:
     - googlecloudsdk.api_lib.bigtable.tables:HandleChangeStreamArgs
-    - googlecloudsdk.api_lib.bigtable.tables:HandleAutomatedBackupPolicyArgs
+    - googlecloudsdk.api_lib.bigtable.tables:HandleAutomatedBackupPolicyUpdateTableArgs
     - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
 
   arguments:

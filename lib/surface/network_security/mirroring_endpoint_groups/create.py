@@ -48,6 +48,11 @@ DETAILED_HELP = {
             $ {command} projects/my-project/locations/global/mirroringEndpointGroups/my-endpoint-group
             --mirroring-deployment-group=projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
 
+            OR
+
+            $ {command} my-endpoint-group --project=my-project --location=global
+            --mirroring-deployment-group=projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
+            --description='new description'
         """,
 }
 
@@ -67,6 +72,10 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    # TODO(b/381836581): Remove this check once the description field is
+    # available in beta.
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      endpoint_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -91,6 +100,7 @@ class Create(base.CreateCommand):
         endpoint_group_id=endpoint_group.Name(),
         parent=endpoint_group.Parent().RelativeName(),
         mirroring_deployment_group=mirroring_deployment_group.RelativeName(),
+        description=getattr(args, 'description', None),
         labels=labels,
     )
     # Return the in-progress operation if async is requested.

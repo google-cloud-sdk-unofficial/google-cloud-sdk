@@ -14,5 +14,5 @@
 
   arguments:
     resource:
-      help_text: The access level you want to delete.
+      help_text: The access policy you want to delete.
       spec: !REF googlecloudsdk.command_lib.accesscontextmanager.resources:policy

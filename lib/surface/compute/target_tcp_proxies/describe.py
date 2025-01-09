@@ -25,18 +25,16 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Display detailed information about a target TCP proxy."""
 
   TARGET_TCP_PROXY_ARG = None
 
-  _enable_region_target_tcp_proxy = True
-
   @classmethod
   def Args(cls, parser):
-    cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(
-        allow_regional=cls._enable_region_target_tcp_proxy)
+    cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(allow_regional=True)
     cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='describe')
 
   def Run(self, args):
@@ -80,9 +78,10 @@ class Describe(base.DescribeCommand):
     return resources[0]
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DescribeAlphaBeta(Describe):
-  _enable_region_target_tcp_proxy = True
+  pass
 
 
 Describe.detailed_help = {

@@ -301,6 +301,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddGpuTypeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
+    flags.AddOverflowScalingFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

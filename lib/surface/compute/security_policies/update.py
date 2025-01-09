@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.security_policies import security_polici
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class UpdateGa(base.UpdateCommand):
   """Update a Compute Engine security policy.
 
@@ -110,7 +111,12 @@ class UpdateGa(base.UpdateCommand):
         args.IsSpecified('user_ip_request_headers')):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config))
+              holder.client,
+              args,
+              advanced_options_config,
+              enable_large_body_size=False,
+          )
+      )
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
@@ -132,6 +138,7 @@ class UpdateGa(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class UpdateBeta(UpdateGa):
   """Update a Compute Engine security policy.
 
@@ -156,7 +163,7 @@ class UpdateBeta(UpdateGa):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
-    flags.AddAdvancedOptions(parser)
+    flags.AddAdvancedOptions(parser, enable_large_body_size=True)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
 
@@ -167,30 +174,40 @@ class UpdateBeta(UpdateGa):
       args: The arguments given to the update command.
     """
     if not (
-        args.IsSpecified('description') or
-        args.IsSpecified('enable_layer7_ddos_defense') or
-        args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-        args.IsSpecified('json_parsing') or
-        args.IsSpecified('json_custom_content_types') or
-        args.IsSpecified('log_level') or
-        args.IsSpecified('user_ip_request_headers') or
-        args.IsSpecified('recaptcha_redirect_site_key') or
-        args.IsSpecified('network_ddos_protection') or
-        args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold') or
-        args.IsSpecified('layer7_ddos_defense_auto_deploy_confidence_threshold')
+        args.IsSpecified('description')
+        or args.IsSpecified('enable_layer7_ddos_defense')
+        or args.IsSpecified('layer7_ddos_defense_rule_visibility')
+        or args.IsSpecified('json_parsing')
+        or args.IsSpecified('json_custom_content_types')
+        or args.IsSpecified('log_level')
+        or args.IsSpecified('request_body_inspection_size')
+        or args.IsSpecified('user_ip_request_headers')
+        or args.IsSpecified('recaptcha_redirect_site_key')
+        or args.IsSpecified('network_ddos_protection')
+        or args.IsSpecified('layer7_ddos_defense_auto_deploy_load_threshold')
         or args.IsSpecified(
-            'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold') or
-        args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')):
+            'layer7_ddos_defense_auto_deploy_confidence_threshold'
+        )
+        or args.IsSpecified(
+            'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold'
+        )
+        or args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')
+    ):
       parameter_names = [
-          '--description', '--enable-layer7-ddos-defense',
-          '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--json-custom-content-types', '--log-level',
+          '--description',
+          '--enable-layer7-ddos-defense',
+          '--layer7-ddos-defense-rule-visibility',
+          '--json-parsing',
+          '--json-custom-content-types',
+          '--log-level',
           '--user-ip-request-headers',
-          '--recaptcha-redirect-site-key', '--network-ddos-protection',
+          '--request-body-inspection-size',
+          '--recaptcha-redirect-site-key',
+          '--network-ddos-protection',
           '--layer7-ddos-defense-auto-deploy-load-threshold',
           '--layer7-ddos-defense-auto-deploy-confidence-threshold',
           '--layer7-ddos-defense-auto-deploy-impacted-baseline-threshold',
-          '--layer7-ddos-defense-auto-deploy-expiration-sec'
+          '--layer7-ddos-defense-auto-deploy-expiration-sec',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -224,13 +241,21 @@ class UpdateBeta(UpdateGa):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
-    if (args.IsSpecified('json_parsing') or
-        args.IsSpecified('json_custom_content_types') or
-        args.IsSpecified('log_level') or
-        args.IsSpecified('user_ip_request_headers')):
+    if (
+        args.IsSpecified('json_parsing')
+        or args.IsSpecified('json_custom_content_types')
+        or args.IsSpecified('log_level')
+        or args.IsSpecified('request_body_inspection_size')
+        or args.IsSpecified('user_ip_request_headers')
+    ):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config))
+              holder.client,
+              args,
+              advanced_options_config,
+              enable_large_body_size=True,
+          )
+      )
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(
@@ -252,6 +277,7 @@ class UpdateBeta(UpdateGa):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine security policy.
 
@@ -276,7 +302,7 @@ class UpdateAlpha(UpdateBeta):
 
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddCloudArmorAdaptiveProtectionAutoDeploy(parser)
-    flags.AddAdvancedOptions(parser)
+    flags.AddAdvancedOptions(parser, enable_large_body_size=True)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
     flags.AddDdosProtectionConfigOld(parser)
@@ -294,23 +320,33 @@ class UpdateAlpha(UpdateBeta):
       args: The arguments given to the update command.
     """
 
-    if not (args.IsSpecified('description') or args.IsSpecified('enable_ml') or
-            args.IsSpecified('enable_layer7_ddos_defense') or
-            args.IsSpecified('layer7_ddos_defense_rule_visibility') or
-            args.IsSpecified('json_parsing') or
-            args.IsSpecified('json_custom_content_types') or
-            args.IsSpecified('log_level') or
-            args.IsSpecified('user_ip_request_headers') or
-            args.IsSpecified('recaptcha_redirect_site_key') or
-            args.IsSpecified('network_ddos_protection') or
-            args.IsSpecified('ddos_protection')):
+    if not (
+        args.IsSpecified('description')
+        or args.IsSpecified('enable_ml')
+        or args.IsSpecified('enable_layer7_ddos_defense')
+        or args.IsSpecified('layer7_ddos_defense_rule_visibility')
+        or args.IsSpecified('json_parsing')
+        or args.IsSpecified('json_custom_content_types')
+        or args.IsSpecified('log_level')
+        or args.IsSpecified('request_body_inspection_size')
+        or args.IsSpecified('user_ip_request_headers')
+        or args.IsSpecified('recaptcha_redirect_site_key')
+        or args.IsSpecified('network_ddos_protection')
+        or args.IsSpecified('ddos_protection')
+    ):
       parameter_names = [
-          '--description', '--enable-ml', '--enable-layer7-ddos-defense',
-          '--layer7-ddos-defense-rule-visibility', '--json-parsing',
-          '--json-custom-content-types', '--log-level',
+          '--description',
+          '--enable-ml',
+          '--enable-layer7-ddos-defense',
+          '--layer7-ddos-defense-rule-visibility',
+          '--json-parsing',
+          '--json-custom-content-types',
+          '--log-level',
+          '--request-body-inspection-size',
           '--user-ip-request-headers',
-          '--recaptcha-redirect-site-key', '--network-ddos-protection',
-          '--ddos-protection'
+          '--recaptcha-redirect-site-key',
+          '--network-ddos-protection',
+          '--ddos-protection',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -348,13 +384,21 @@ class UpdateAlpha(UpdateBeta):
           security_policies_utils
           .CreateAdaptiveProtectionConfigWithAutoDeployConfig(
               holder.client, args, adaptive_protection_config))
-    if (args.IsSpecified('json_parsing') or
-        args.IsSpecified('json_custom_content_types') or
-        args.IsSpecified('log_level') or
-        args.IsSpecified('user_ip_request_headers')):
+    if (
+        args.IsSpecified('json_parsing')
+        or args.IsSpecified('json_custom_content_types')
+        or args.IsSpecified('log_level')
+        or args.IsSpecified('request_body_inspection_size')
+        or args.IsSpecified('user_ip_request_headers')
+    ):
       advanced_options_config = (
           security_policies_utils.CreateAdvancedOptionsConfig(
-              holder.client, args, advanced_options_config))
+              holder.client,
+              args,
+              advanced_options_config,
+              enable_large_body_size=True,
+          )
+      )
     if args.IsSpecified('recaptcha_redirect_site_key'):
       recaptcha_options_config = (
           security_policies_utils.CreateRecaptchaOptionsConfig(

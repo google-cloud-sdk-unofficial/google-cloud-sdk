@@ -30,17 +30,14 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder, include_regional_tcp_proxy):
+  def __init__(self, holder):
     self._holder = holder
-    self._include_regional_tcp_proxy = include_regional_tcp_proxy
 
   @classmethod
-  def Args(cls, parser, include_regional_tcp_proxy):
+  def Args(cls, parser):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddSetTargetArgs(
-        parser,
-        include_regional_tcp_proxy=include_regional_tcp_proxy)
+    flags.AddSetTargetArgs(parser)
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -79,11 +76,8 @@ class SetTargetHelper(object):
                              args):
     """Create a regionally scoped request."""
     target_ref, _ = utils.GetRegionalTarget(
-        client,
-        resources,
-        args,
-        forwarding_rule_ref=forwarding_rule_ref,
-        include_regional_tcp_proxy=self._include_regional_tcp_proxy)
+        client, resources, args, forwarding_rule_ref=forwarding_rule_ref
+    )
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
@@ -96,12 +90,12 @@ class SetTargetHelper(object):
     return [(client.apitools_client.forwardingRules, 'SetTarget', request)]
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
-  _include_regional_tcp_proxy = True
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -118,20 +112,22 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser, cls._include_regional_tcp_proxy)
+    SetTargetHelper.Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder, self._include_regional_tcp_proxy).Run(args)
+    return SetTargetHelper(holder).Run(args)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  _include_regional_tcp_proxy = True
+  pass
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  _include_regional_tcp_proxy = True
+  pass

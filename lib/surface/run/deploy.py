@@ -371,7 +371,7 @@ class Deploy(base.Command):
         service.run_functions_annotations if service else (None, None, None)
     )
 
-    # Only one container can deployed from source
+    # Only one container can be deployed from source
     name, container_args = next(iter(build_from_source.items()))
     # If service exists and it's GCF's worker container, use the name.
     if not name and service:
@@ -619,6 +619,7 @@ class Deploy(base.Command):
     repo_to_create = None
     is_function = False
     base_image = None
+    kms_key = getattr(args, 'key', None)
     build_service_account = None
     build_env_vars = None
     build_worker_pool = None
@@ -716,6 +717,7 @@ class Deploy(base.Command):
             enable_automatic_updates=enable_automatic_updates,
             is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
             source_bucket=source_bucket,
+            kms_key=kms_key,
         )
 
       self._DisplaySuccessMessage(service, args)
@@ -971,6 +973,7 @@ class AlphaDeploy(BetaDeploy):
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)
+    flags.AddOverflowScalingFlag(parser)
 
   def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     if self.__is_multi_region:

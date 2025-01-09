@@ -101,4 +101,4 @@ class ListAlpha(List):
   @staticmethod
   def Args(parser):
     _add_common_args(parser)
-    flags.add_soft_deleted_flag(parser, hidden=True)
+    flags.add_soft_deleted_flag(parser)

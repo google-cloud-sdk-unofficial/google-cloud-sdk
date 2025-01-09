@@ -63,12 +63,9 @@ class List(base.ListCommand):
     )
     parser.display_info.AddFormat("""
             table(
-              name.basename():label=NAME,
               source_object,
               state:label=STATE,
               phase:label=PHASE,
-              created_time:label=CREATED_TIME,
-              updated_time:label=UPDATED_TIME,
               error:label=ERROR
             )
           """)

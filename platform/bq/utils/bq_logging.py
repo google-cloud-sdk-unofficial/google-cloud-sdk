@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """Utility functions for BQ CLI logging."""
 
+import datetime
 import logging
 import os
 import sys
-import time
-from typing import Optional, TextIO
+from typing import Optional, TextIO, Union
 
 from absl import flags
 from absl import logging as absl_logging
@@ -17,8 +17,21 @@ _UNIQUE_SUFFIX: str = ''
 def GetUniqueSuffix() -> str:
   global _UNIQUE_SUFFIX
   if not _UNIQUE_SUFFIX:
-    _UNIQUE_SUFFIX = str(time.time_ns() // 1_000_000)
+    _UNIQUE_SUFFIX = datetime.datetime.now().strftime('%z_%Y%m%d_%H%M%S.%f')
   return _UNIQUE_SUFFIX
+
+
+def SaveStringToLogDirectoryIfTest(
+    file_prefix: str, content: Union[str, bytes]
+):
+  """Saves string content to a file in the log directory."""
+  if 'TEST_UNDECLARED_OUTPUTS_DIR' in os.environ:
+    if isinstance(content, bytes):
+      content = content.decode('utf-8')
+    filename = f'{file_prefix}_{GetUniqueSuffix()}.log'
+    path = os.path.join(os.environ['TEST_UNDECLARED_OUTPUTS_DIR'], filename)
+    with open(path, 'w') as f:
+      f.write(content)
 
 
 def _SetLogFile(logfile: TextIO):

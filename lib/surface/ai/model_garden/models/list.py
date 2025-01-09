@@ -26,8 +26,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 
 _DEFAULT_FORMAT = """
         table(
-            format("{0:s}/{1:s}", name, versionId).sub("publishers/", "").sub("models/", "").if(NOT include_supported_hugging_face_models):sort=1:label=MODEL,
-            name.sub("publishers/hf-", "").sub("models/", "").if(include_supported_hugging_face_models):sort=1:label=HUGGING_FACE_MODEL,
+            format("{0:s}/{1:s}/{2:s}", name, versionId, name.regex("publishers/hf-.*", "@hf", "@mg")).sub("publishers/hf-", "").sub("publishers/", "").sub("models/", "").sub("/001/@hf", ""). sub("/@mg", ""):sort=1:label=MODEL_ID,
             supportedActions.multiDeployVertex.yesno(yes=Yes):label=SUPPORTS_DEPLOYMENT
         )
     """
@@ -36,26 +35,45 @@ _DEFAULT_FORMAT = """
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
-  """List the publisher models in Model Garden."""
+  """List the publisher models in Model Garden.
+
+  This command lists either all models in Model Garden or all Hugging
+  Face models supported by Model Garden.
+
+  Note: Since the number of Hugging Face models is large, the default limit is
+  set to 500 with a page size of 100 when listing supported Hugging Face models.
+  To override the limit or page size, specify the --limit or --page-size flags,
+  respectively. To list all models in Model Garden, use `--limit=unlimited`.
+  """
 
   @staticmethod
   def Args(parser):
     parser.display_info.AddFormat(_DEFAULT_FORMAT)
     parser.add_argument(
-        '--include-supported-hugging-face-models',
+        '--list-supported-hugging-face-models',
         action='store_true',
         default=False,
         required=False,
-        help='Whether to also list supported Hugging Face models.',
+        help='Whether to only list supported Hugging Face models.',
     )
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     version = constants.BETA_VERSION
+    # Set the default limit to 500 if the user requests to list supported
+    # Hugging Face models, since there are tens of thousands of Hugging Face
+    # models and the call will take a long time.
+    if args.list_supported_hugging_face_models:
+      if args.limit is None:
+        args.limit = 500
+      if args.page_size is None:
+        args.page_size = 100
+
     with endpoint_util.AiplatformEndpointOverrides(
         version, region='us-central1'
     ):
       mg_client = client_mg.ModelGardenClient(version)
       return mg_client.ListPublisherModels(
           limit=args.limit,
-          include_hf_models=args.include_supported_hugging_face_models,
+          list_hf_models=args.list_supported_hugging_face_models,
       )

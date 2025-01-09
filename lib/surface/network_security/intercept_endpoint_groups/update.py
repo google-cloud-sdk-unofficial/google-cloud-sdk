@@ -49,6 +49,10 @@ DETAILED_HELP = {
             To clear all labels from the intercept endpoint group, run:
 
             $ {command} my-endpoint-group --project=my-project --location=us-central1-a --clear-labels
+
+            To update description to 'new description', run:
+
+            $ {command} my-endpoint-group --project=my-project --location=us-central1-a --description='new description'
         """,
 }
 
@@ -71,6 +75,7 @@ class Update(base.UpdateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    endpoint_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -97,6 +102,7 @@ class Update(base.UpdateCommand):
 
     operation = client.UpdateEndpointGroup(
         name=eg.RelativeName(),
+        description=getattr(args, 'description', ''),
         update_fields=update_fields,
     )
 

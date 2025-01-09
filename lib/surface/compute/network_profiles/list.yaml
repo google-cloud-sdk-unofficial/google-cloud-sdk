@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA, BETA]
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
     brief: "List network profiles."
     description: "List network profiles."
@@ -12,6 +12,8 @@
       api_version: alpha
     BETA:
       api_version: beta
+    GA:
+      api_version: v1
     collection: compute.networkProfiles
 
   response:

@@ -206,6 +206,54 @@ def get_tpc_root_url_from_flags(
   return root_url
 
 
+def add_api_key_to_discovery_url(
+    discovery_url: str,
+    universe_domain: Optional[str],
+    inputted_flags: NamedTuple(
+        'InputtedFlags',
+        [
+            (
+                'BIGQUERY_DISCOVERY_API_KEY_FLAG',
+                flags.FlagHolder[Optional[str]],
+            ),
+        ],
+    ),
+    key: Optional[str] = None,
+    labels: Optional[str] = None,
+) -> str:
+  """Adds an API key to the URL."""
+  # TODO: b/361181701 - Clean up the duplicate key check logic when cleaning up
+  # discovery_url_extra handling.
+  if key and f'key={key}' in discovery_url:
+    logging.info(
+        'API key %s has already been added, presumably from'
+        ' --discovery_url_extra',
+        key,
+    )
+    return discovery_url
+  if 'key=' in discovery_url:
+    logging.info(
+        'An API key already exists in the URL, presumably from'
+        ' --discovery_url_extra, so not adding any new key'
+    )
+    return discovery_url
+
+  if not key:
+    key = inputted_flags.BIGQUERY_DISCOVERY_API_KEY_FLAG.value
+    logging.info('No API key has been set, using flag value provided (%s)', key)
+
+  if key:
+    if '?' in discovery_url:
+      delimiter = '&'
+    else:
+      delimiter = '?'
+    discovery_url += f'{delimiter}key={key}'
+    if labels:
+      discovery_url += f'&labels={labels}'
+    logging.info('Discovery URL has been updated (%s)', discovery_url)
+  return discovery_url
+
+
 def get_discovery_url_from_root_url(
     root_url: str, api_version: str = 'v2'
 ) -> str:

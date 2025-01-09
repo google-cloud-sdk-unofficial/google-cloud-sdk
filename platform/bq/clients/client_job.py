@@ -1217,7 +1217,9 @@ def Query(
   )
   request = {'query': query_config}
   reservation_path = None
-  if reservation_id is not None:
+  if reservation_id == 'none':
+    reservation_path = 'none'
+  elif reservation_id is not None:
     reference = bq_client_utils.GetReservationReference(
         id_fallbacks=bqclient,
         identifier=reservation_id,

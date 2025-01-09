@@ -25,24 +25,20 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.target_tcp_proxies import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete target TCP proxy."""
 
   TARGET_TCP_PROXY_ARG = None
 
-  _enable_region_target_tcp_proxy = True
-
   @classmethod
   def Args(cls, parser):
     cls.TARGET_TCP_PROXY_ARG = flags.TargetTcpProxyArgument(
-        plural=True, allow_regional=cls._enable_region_target_tcp_proxy)
+        plural=True, allow_regional=True
+    )
     cls.TARGET_TCP_PROXY_ARG.AddArgument(parser, operation_type='delete')
-
-    if cls._enable_region_target_tcp_proxy:
-      parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
-    else:
-      parser.display_info.AddCacheUpdater(flags.GATargetTcpProxiesCompleter)
+    parser.display_info.AddCacheUpdater(flags.TargetTcpProxiesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -74,9 +70,10 @@ class Delete(base.DeleteCommand):
     return resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class DeleteAlphaBeta(Delete):
-  _enable_region_target_tcp_proxy = True
+  pass
 
 
 Delete.detailed_help = {

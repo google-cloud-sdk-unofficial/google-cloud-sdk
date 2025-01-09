@@ -40,8 +40,7 @@ def _Args(
   cls.FORWARDING_RULE_ARG.AddArgument(parser)
   labels_util.AddUpdateLabelsFlags(parser)
   if support_network_tier:
-    flags.AddNetworkTier(
-        parser, supports_network_tier_flag=True, for_update=True)
+    flags.AddNetworkTier(parser, for_update=True)
   flags.AddSourceIpRanges(parser)
   flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
