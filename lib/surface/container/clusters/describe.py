@@ -18,12 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 from surface.container.clusters.upgrade import UpgradeHelpText
 from surface.container.clusters.upgrade import VersionVerifier
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe an existing cluster for running containers."""
 
@@ -76,6 +78,9 @@ class Describe(base.DescribeCommand):
 
     if ver_status != VersionVerifier.UP_TO_DATE:
       self._upgrade_hint += UpgradeHelpText.UPGRADE_COMMAND.format(name=c.name)
+
+    for node_pool in c.nodePools:
+      util.CheckForCgroupModeV1(node_pool)
 
     return c
 

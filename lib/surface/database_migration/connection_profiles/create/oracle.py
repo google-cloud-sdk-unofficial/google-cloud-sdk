@@ -41,6 +41,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Oracle(base.Command):
   """Create a Database Migration Service connection profile for Oracle."""
 
@@ -63,6 +64,7 @@ class Oracle(base.Command):
     cp_flags.AddHostFlag(parser, required=True)
     cp_flags.AddPortFlag(parser, required=True)
     cp_flags.AddSslServerOnlyConfigGroup(parser)
+    cp_flags.AddRoleFlag(parser)
     oracle_flags.AddDatabaseServiceFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 

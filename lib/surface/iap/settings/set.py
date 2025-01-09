@@ -60,15 +60,15 @@ class Set(base.Command):
 
           To set the IAP setting for all backend services within a project, run:
 
-            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=backend-services
 
           To set the IAP setting for a backend service within a project, run:
 
-            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
 
           To set the IAP setting for a region backend service within a project, run:
 
-            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
                 --region=REGION_ID
 
           """,

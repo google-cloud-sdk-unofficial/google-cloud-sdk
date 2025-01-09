@@ -46,6 +46,10 @@ DETAILED_HELP = {
             To clear all labels from the mirroring deployment group, run:
 
             $ {command} my-deployment-group --project=my-project --location=global --clear-labels
+
+            To update description to 'new description', run:
+
+            $ {command} my-deployment-group --project=my-project --location=global --description="new description"
         """,
 }
 
@@ -70,6 +74,10 @@ class Update(base.UpdateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    # TODO(b/381836581): Remove this check once the description field is
+    # available in beta.
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      deployment_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -92,6 +100,7 @@ class Update(base.UpdateCommand):
     operation = client.UpdateDeploymentGroup(
         name=deployment_group.RelativeName(),
         update_fields=update_fields,
+        description=getattr(args, 'description', None),
     )
 
     # Returns the in-progress operation if async is requested.

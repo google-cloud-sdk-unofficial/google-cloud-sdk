@@ -87,6 +87,7 @@ class Update(base.UpdateCommand):
           parser
       )
       workstations_flags.AddBoostConfigs(parser)
+      workstations_flags.AddDisableLocalhostReplacementToggleFlag(parser)
 
   def Collection(self):
     return (

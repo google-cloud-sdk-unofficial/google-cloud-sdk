@@ -31,6 +31,7 @@ from googlecloudsdk.core.console import console_io
 import six
 
 
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete an existing cluster for running containers.
 
@@ -82,6 +83,7 @@ class Delete(base.DeleteCommand):
         hidden=True,
         help='Timeout (seconds) for waiting on the operation to complete.')
     flags.AddAsyncFlag(parser)
+    flags.AddKubecontextOverrideFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -131,9 +133,12 @@ class Delete(base.DeleteCommand):
               timeout_s=args.timeout)
           # Purge cached config files
           try:
-            util.ClusterConfig.Purge(cluster_ref.clusterId,
-                                     adapter.Zone(cluster_ref),
-                                     cluster_ref.projectId)
+            util.ClusterConfig.Purge(
+                cluster_ref.clusterId,
+                adapter.Zone(cluster_ref),
+                cluster_ref.projectId,
+                args.kubecontext_override,
+            )
           except kconfig.MissingEnvVarError as error:
             log.warning(error)
 

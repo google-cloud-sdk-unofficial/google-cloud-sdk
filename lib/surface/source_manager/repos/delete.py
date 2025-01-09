@@ -28,7 +28,8 @@ DETAILED_HELP = {
           Delete a Secure Source Manager repository.
         """,
     "EXAMPLES": """
-            To delete a repository called `my-repo` in location `us-central1`, run:
+            To delete a repository called `my-repo` in location `us-central1`,
+            run the following command:
 
             $ {command} my-repo --region=us-central1
         """,

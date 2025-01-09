@@ -48,6 +48,11 @@ DETAILED_HELP = {
             $ {command} projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
             --network=projects/my-project/global/networks/my-network
 
+            OR
+
+            $ {command} projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
+            --network=projects/my-project/global/networks/my-network --description="my-description"
+
         """,
 }
 
@@ -67,6 +72,10 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    # TODO(b/381836581): Remove this check once the description field is
+    # available in beta.
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      deployment_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -90,6 +99,7 @@ class Create(base.CreateCommand):
         parent=deployment_group.Parent().RelativeName(),
         network=network.RelativeName(),
         labels=labels,
+        description=getattr(args, 'description', None),
     )
     # Return the in-progress operation if async is requested.
     if is_async:

@@ -4,7 +4,7 @@
     brief: Describe a Secure Source Manager repository.
     description: Get metadata of a Secure Source Manager repository.
     examples: |
-      To describe a repository called `my-repo` in location `us-central1`, run:
+      To describe a repository called `my-repo` in location `us-central1`, run the following command:
 
       $ {command} my-repo --region=us-central1
 

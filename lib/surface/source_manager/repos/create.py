@@ -28,7 +28,8 @@ DETAILED_HELP = {
           Create a Secure Source Manager repository.
         """,
     "EXAMPLES": """
-            To create a repository called 'my-repo' in location 'us-central1' in instance 'my-instance', run:
+            To create a repository called 'my-repo' in location 'us-central1' in
+            instance 'my-instance', run the following command:
 
             $ {command} my-repo --region=us-central1 --instance=my-instance
         """,

@@ -166,6 +166,17 @@ class CreateAlpha(CreateBeta):
     super(CreateAlpha, CreateAlpha).Args(parser)
     flags.AddPSCNetworkAttachmentUrl(parser)
 
+    # Connection pooling flags.
+    flags.AddEnableConnectionPooling(parser)
+    flags.AddConnectionPoolingPoolMode(parser)
+    flags.AddConnectionPoolingMinPoolSize(parser)
+    flags.AddConnectionPoolingMaxPoolSize(parser)
+    flags.AddConnectionPoolingMaxClientConnections(parser)
+    flags.AddConnectionPoolingServerIdleTimeout(parser)
+    flags.AddConnectionPoolingQueryWaitTimeout(parser)
+    flags.AddConnectionPoolingStatsUsers(parser)
+    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
   ):

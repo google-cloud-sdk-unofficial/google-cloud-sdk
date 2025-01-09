@@ -31,11 +31,11 @@
       type: arg_object
       spec:
       - api_field: connections
-        arg_name: psc-connection
+        json_name: psc-connection
         type: arg_object
         spec:
         - api_field: pscConnection.pscConnectionId
-          arg_name: psc-connection-id
+          json_name: psc-connection-id
 
   async:
     collection: redis.projects.locations.operations

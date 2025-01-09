@@ -69,10 +69,15 @@ class AddMembers(base.UpdateCommand):
         ref, project, compute_client=holder.client, resources=holder.resources
     )
 
-    interconnects = set(
-        property.key
-        for property in interconnect_group.Describe().interconnects.additionalProperties
+    interconnects = set()
+    interconnect_group_interconnects = (
+        interconnect_group.Describe().interconnects
     )
+    if interconnect_group_interconnects is not None:
+      interconnects = set(
+          property.key
+          for property in interconnect_group_interconnects.additionalProperties
+      )
     interconnects |= set(args.interconnects)
 
     return interconnect_group.Patch(

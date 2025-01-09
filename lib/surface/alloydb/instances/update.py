@@ -165,6 +165,17 @@ class UpdateAlpha(UpdateBeta):
     flags.AddPSCNetworkAttachmentUrl(parser)
     flags.ClearPSCNetworkAttachmentUrl(parser)
 
+    # Connection pooling flags.
+    flags.AddEnableConnectionPooling(parser)
+    flags.AddConnectionPoolingPoolMode(parser)
+    flags.AddConnectionPoolingMinPoolSize(parser)
+    flags.AddConnectionPoolingMaxPoolSize(parser)
+    flags.AddConnectionPoolingMaxClientConnections(parser)
+    flags.AddConnectionPoolingServerIdleTimeout(parser)
+    flags.AddConnectionPoolingQueryWaitTimeout(parser)
+    flags.AddConnectionPoolingStatsUsers(parser)
+    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(
         alloydb_messages, instance_ref, args

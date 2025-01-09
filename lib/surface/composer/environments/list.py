@@ -35,6 +35,8 @@ DETAILED_HELP = {
 }
 
 
+# TODO(b/371178112): Remove this annotation once the command is ready for TPC.
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List the Cloud Composer environments under a project and location.
 
@@ -64,6 +66,9 @@ class List(base.ListCommand):
                                   'state:label=STATE,'
                                   'createTime:reverse'
                                   ')')
+    parser.display_info.AddUriFunc(
+        lambda x: f'https://www.googleapis.com/composer/v1/{x.name}'
+    )
 
   def Run(self, args):
     location_refs = flags.FallthroughToLocationProperty(

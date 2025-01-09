@@ -743,6 +743,7 @@ flags_to_add = {
         'enableAuthorizedNetworksOnPrivateEndpoint': (
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
+        'kubecontextOverride': flags.AddKubecontextOverrideFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -927,6 +928,7 @@ flags_to_add = {
         'enableAuthorizedNetworksOnPrivateEndpoint': (
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
+        'kubecontextOverride': flags.AddKubecontextOverrideFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1120,6 +1122,7 @@ flags_to_add = {
         'enableAuthorizedNetworksOnPrivateEndpoint': (
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
+        'kubecontextOverride': flags.AddKubecontextOverrideFlag,
     },
 }
 
@@ -1264,6 +1267,9 @@ class Create(base.CreateCommand):
                                                cluster_ref.zone),
           timeout_s=args.timeout)
       cluster = adapter.GetCluster(cluster_ref)
+      for node_pool in cluster.nodePools:
+        util.CheckForCgroupModeV1(node_pool)
+
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
@@ -1277,7 +1283,11 @@ class Create(base.CreateCommand):
       log.warning(operation.detail)
 
     try:
-      util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
+      util.ClusterConfig.Persist(
+          cluster,
+          cluster_ref.projectId,
+          kubecontext_override=args.kubecontext_override,
+      )
     except kconfig.MissingEnvVarError as error:
       log.warning(error)
 
@@ -1285,6 +1295,7 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateBeta(Create):
   """Create a cluster for running containers."""
 
@@ -1411,6 +1422,7 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class CreateAlpha(Create):
   """Create a cluster for running containers."""
 

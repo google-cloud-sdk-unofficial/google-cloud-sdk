@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,3 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""The gcloud workbench executions command group."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+from googlecloudsdk.calliope import base
+
+
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class Instances(base.Group):
+  """Workbench executions command group."""

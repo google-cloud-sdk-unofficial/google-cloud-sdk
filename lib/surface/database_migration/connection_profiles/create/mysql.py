@@ -112,3 +112,4 @@ class MySQLGA(_MySQL, base.Command):
     _MySQL.Args(parser)
     cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
     cp_flags.AddCloudSQLInstanceFlag(parser)
+    cp_flags.AddRoleFlag(parser)

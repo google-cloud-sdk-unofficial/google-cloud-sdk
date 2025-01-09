@@ -48,6 +48,7 @@ EXP_BACKOFF_MULTIPLIER = 1.75
 POLL_JITTER_SECONDS = 0.5
 
 
+@base.DefaultUniverseOnly
 class Run(base.Command):
   """Run an Airflow sub-command remotely in a Cloud Composer environment.
 
@@ -340,7 +341,9 @@ class Run(base.Command):
 
     tty = 'no-tty' not in args
 
-    with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
+    with command_util.TemporaryKubeconfig(
+        cluster_location_id, cluster_id, None
+    ):
       try:
         image_version = env_obj.config.softwareConfig.imageVersion
         airflow_version = self._ExtractAirflowVersion(image_version)

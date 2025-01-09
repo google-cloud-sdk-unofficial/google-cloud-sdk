@@ -51,6 +51,7 @@ class Create(base.CreateCommand):
     flags.AddManagedRolloutConfig()
     flags.AddAsync()
     flags.AddRolloutTypeConfig()
+    flags.AddScheduledStartTime()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
     """Runs the describe command."""

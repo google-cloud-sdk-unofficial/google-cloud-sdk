@@ -51,6 +51,12 @@ DETAILED_HELP = {
             --forwarding-rule=projects/my-project/regions/us-central1/forwardingRules/my-forwarding-rule
             --mirroring-deployment-group=projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
 
+            OR
+
+            $ {command} projects/my-project/locations/us-central1/mirroringDeployments/my-deployment
+            --forwarding-rule=projects/my-project/regions/us-central1/forwardingRules/my-forwarding-rule
+            --mirroring-deployment-group=projects/my-project/locations/global/mirroringDeploymentGroups/my-deployment-group
+            --description="my-description"
         """,
 }
 
@@ -71,6 +77,10 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    # TODO(b/381836581): Remove this check once the description field is
+    # available in beta.
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      deployment_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -91,9 +101,11 @@ class Create(base.CreateCommand):
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
     operation = client.CreateDeployment(
+        release_track=self.ReleaseTrack(),
         deployment_id=deployment.Name(),
         parent=deployment.Parent().RelativeName(),
         forwarding_rule=forwarding_rule.RelativeName(),
+        description=getattr(args, 'description', None),
         mirroring_deployment_group=mirroring_deployment_group.RelativeName(),
         labels=labels,
     )

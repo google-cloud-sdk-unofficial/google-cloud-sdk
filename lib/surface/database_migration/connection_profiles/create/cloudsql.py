@@ -128,6 +128,7 @@ class CloudSQLGA(_CloudSQL, base.Command):
         parser, support_new_versions=True, support_version_name=True
     )
     resource_args.AddCmekResourceArgs(parser)
+    cp_flags.AddRoleFlag(parser)
     cs_flags.AddAllocatedIpRangeFlag(parser)
     cs_flags.AddEditionFlag(parser)
     cs_flags.AddEnableDataCacheFlag(parser)

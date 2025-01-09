@@ -4,7 +4,8 @@
     brief: Set the IAM policy for a Secure Source Manager repository.
     description: Set the IAM policy for a Secure Source Manager repository.
     examples: |
-      To set the IAM policy for an repository named `my-repo` in location `us-central` to content of `policy.json` , run:
+      To set the IAM policy for a repository named `my-repo` in location `us-central` to the
+      content of `policy.json` , run the following command:
 
         $ {command} my-repo --region=us-central1 policy.json
 
@@ -13,5 +14,5 @@
 
   arguments:
     resource:
-      help_text: Secure Source Manager repository for which to set the IAM policy.
+      help_text: Secure Source Manager repository to set the IAM policy on.
       spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository

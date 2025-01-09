@@ -74,7 +74,7 @@ class Describe(base.DescribeCommand):
       )
       setting_value = settings_service.Get(get_request)
 
-      return setting_value.value
+      return setting_value
     else:
       settings_service = api_utils.GetServiceFromArgs(args)
       setting_name = utils.GetSettingsPathFromArgs(args)
@@ -84,4 +84,4 @@ class Describe(base.DescribeCommand):
       )
       setting_value = settings_service.Get(get_request)
 
-      return setting_value.value
+      return setting_value

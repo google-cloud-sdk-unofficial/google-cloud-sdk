@@ -72,10 +72,13 @@ class AddMembers(base.UpdateCommand):
         ref, project, compute_client=holder.client, resources=holder.resources
     )
 
-    attachments = set(
-        property.key
-        for property in attachment_group.Describe().attachments.additionalProperties
-    )
+    attachments = set()
+    attachment_group_attachments = attachment_group.Describe().attachments
+    if attachment_group_attachments is not None:
+      attachments = set(
+          property.key
+          for property in attachment_group_attachments.additionalProperties
+      )
     attachments |= set(args.attachments)
 
     return attachment_group.Patch(

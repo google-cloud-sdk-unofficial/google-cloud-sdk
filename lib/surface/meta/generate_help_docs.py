@@ -127,8 +127,9 @@ class GenerateHelpDocs(base.Command):
       restrict_dir = [re.sub(r'_', r'-', p) for p in args.restrict]
       console_attr.ResetConsoleAttr(encoding)
       if not args.update:
-        generator(self._cli_power_users_only, directory).Walk(
-            hidden, restrict_dir)
+        generator(
+            self._cli_power_users_only, directory, restrict=restrict_dir
+        ).Walk(hidden, restrict_dir)
       elif help_util.HelpUpdater(
           self._cli_power_users_only, directory, generator,
           test=args.test, hidden=hidden).Update(restrict_dir):

@@ -47,6 +47,7 @@ def _Args(
     support_disk_labels=False,
     support_ipv6_only=False,
     support_reservation_bound=False,
+    support_graceful_shutdown=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -103,6 +104,8 @@ def _Args(
   instances_flags.AddInternalIPv6PrefixLengthArgs(parser)
   instances_flags.AddMaxRunDurationVmArgs(parser)
   instances_flags.AddDiscardLocalSsdVmArgs(parser)
+  if support_graceful_shutdown:
+    instances_flags.AddGracefulShutdownArgs(parser, is_create=True)
 
   instances_flags.AddReservationAffinityGroup(
       parser,
@@ -145,6 +148,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_specific_then_x_affinity = False
   _support_disk_labels = False
   _support_max_run_duration = True
+  _support_graceful_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -157,7 +161,6 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
-        support_reservation_bound=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -262,6 +265,7 @@ class CreateWithContainer(base.CreateCommand):
         support_host_error_timeout_seconds=self._support_host_error_timeout_seconds,
         support_max_run_duration=self._support_max_run_duration,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
+        support_graceful_shutdown=self._support_graceful_shutdown,
     )
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
@@ -442,6 +446,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
         support_reservation_bound=True,
+        support_graceful_shutdown=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -486,6 +491,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_disk_labels=True,
         support_ipv6_only=True,
         support_reservation_bound=True,
+        support_graceful_shutdown=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

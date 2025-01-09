@@ -26,7 +26,8 @@ DETAILED_HELP = {
           List Secure Source Manager repositories.
         """,
     "EXAMPLES": """
-            To list repositories in location `us-central1` under instance `my-instance`, run:
+            To list repositories in location `us-central1` under instance
+            `my-instance`, run the following command:
             $ {command} --region=us-central1 --instance=my-instance
         """,
 }

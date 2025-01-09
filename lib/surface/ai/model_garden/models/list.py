@@ -57,15 +57,14 @@ class List(base.ListCommand):
         help='Whether to only list supported Hugging Face models.',
     )
     base.URI_FLAG.RemoveFromParser(parser)
+    base.LIMIT_FLAG.SetDefault(parser, 1000)
 
   def Run(self, args):
     version = constants.BETA_VERSION
-    # Set the default limit to 500 if the user requests to list supported
+    # Set the default page size to 100 if the user requests to list supported
     # Hugging Face models, since there are tens of thousands of Hugging Face
     # models and the call will take a long time.
     if args.list_supported_hugging_face_models:
-      if args.limit is None:
-        args.limit = 500
       if args.page_size is None:
         args.page_size = 100
 
@@ -75,5 +74,6 @@ class List(base.ListCommand):
       mg_client = client_mg.ModelGardenClient(version)
       return mg_client.ListPublisherModels(
           limit=args.limit,
+          batch_size=args.page_size,
           list_hf_models=args.list_supported_hugging_face_models,
       )

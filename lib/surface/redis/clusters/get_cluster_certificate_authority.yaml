@@ -11,7 +11,7 @@
         * The active account does not have permission to access the given
           cluster.
     examples: |
-      To get the metadata for a cluster with the name `my-redie-cluster`
+      To get the metadata for a cluster with the name `my-redis-cluster`
       in the default region, run:
 
         $ {command} my-redis-cluster

@@ -105,6 +105,7 @@ class GetCredentials(base.Command):
     """
     flags.AddGetCredentialsArgs(parser)
     flags.AddDnsEndpointFlag(parser)
+    flags.AddKubecontextOverrideFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -123,6 +124,7 @@ class GetCredentials(base.Command):
         args.internal_ip,
         use_dns_endpoint=args.dns_endpoint,
         impersonate_service_account=args.impersonate_service_account,
+        kubecontext_override=args.kubecontext_override,
     )
 
 
@@ -171,6 +173,7 @@ class GetCredentialsBeta(base.Command):
     flags.AddCrossConnectSubnetworkFlag(parser)
     flags.AddPrivateEndpointFQDNFlag(parser)
     flags.AddDnsEndpointFlag(parser)
+    flags.AddKubecontextOverrideFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -184,10 +187,15 @@ class GetCredentialsBeta(base.Command):
     """
     flags.VerifyGetCredentialsFlags(args)
     cluster, cluster_ref = _BaseRun(args, self.context)
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip,
-                               args.cross_connect_subnetwork,
-                               args.private_endpoint_fqdn,
-                               args.dns_endpoint)
+    util.ClusterConfig.Persist(
+        cluster,
+        cluster_ref.projectId,
+        args.internal_ip,
+        args.cross_connect_subnetwork,
+        args.private_endpoint_fqdn,
+        args.dns_endpoint,
+        kubecontext_override=args.kubecontext_override,
+    )
 
 
 @base.UniverseCompatible
@@ -240,6 +248,7 @@ class GetCredentialsAlpha(base.Command):
     flags.AddCrossConnectSubnetworkFlag(parser)
     flags.AddPrivateEndpointFQDNFlag(parser)
     flags.AddDnsEndpointFlag(parser)
+    flags.AddKubecontextOverrideFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -253,7 +262,12 @@ class GetCredentialsAlpha(base.Command):
     """
     flags.VerifyGetCredentialsFlags(args)
     cluster, cluster_ref = _BaseRun(args, self.context)
-    util.ClusterConfig.Persist(cluster, cluster_ref.projectId, args.internal_ip,
-                               args.cross_connect_subnetwork,
-                               args.private_endpoint_fqdn,
-                               args.dns_endpoint)
+    util.ClusterConfig.Persist(
+        cluster,
+        cluster_ref.projectId,
+        args.internal_ip,
+        args.cross_connect_subnetwork,
+        args.private_endpoint_fqdn,
+        args.dns_endpoint,
+        kubecontext_override=args.kubecontext_override,
+    )

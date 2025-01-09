@@ -60,10 +60,12 @@ class _SQLServer(base.Command):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    resource_args.AddConnectionProfileResourceArg(parser, 'to create')
+    resource_args.AddSqlServerConnectionProfileResourceArg(parser, 'to create')
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
+    cp_flags.AddRoleFlag(parser)
+    cp_flags.AddSslServerOnlyOrRequiredConfigGroup(parser, hidden=True)
     sqlserver_flags.AddCpDetailsFlag(parser)
     sqlserver_flags.AddDatabaseFlag(parser)
     flags.AddLabelsCreateFlags(parser)

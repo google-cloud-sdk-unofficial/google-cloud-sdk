@@ -66,6 +66,7 @@ class Enable(
     manual_flags.add_log_denies_enabled()
     manual_flags.add_monitoring()
     manual_flags.add_mutation()
+    manual_flags.add_no_content()
     manual_flags.add_no_default_bundles()
     manual_flags.add_referential_rules()
     manual_flags.add_version()
@@ -104,8 +105,9 @@ class Enable(
     hub_cfg = parser.update_constraint_violation_limit(hub_cfg)
     hub_cfg = parser.update_exemptable_namespaces(hub_cfg)
     hub_cfg = parser.update_log_denies(hub_cfg)
-    hub_cfg = parser.update_mutation(hub_cfg)
     hub_cfg = parser.update_monitoring(hub_cfg)
+    hub_cfg = parser.update_mutation(hub_cfg)
+    hub_cfg = parser.update_no_content(hub_cfg)
     hub_cfg = parser.update_referential_rules(hub_cfg)
     hub_cfg.installSpec = (
         self.messages.PolicyControllerHubConfig.InstallSpecValueValuesEnum.INSTALL_SPEC_ENABLED

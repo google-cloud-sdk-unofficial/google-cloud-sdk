@@ -42,6 +42,7 @@ DETAILED_HELP = {
 }
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List existing node pools for a cluster."""
 
@@ -75,6 +76,9 @@ class List(base.ListCommand):
 
     try:
       res = adapter.ListNodePools(cluster_ref)
+      for node_pool in res.nodePools:
+        util.CheckForCgroupModeV1(node_pool)
+
       return res.nodePools
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

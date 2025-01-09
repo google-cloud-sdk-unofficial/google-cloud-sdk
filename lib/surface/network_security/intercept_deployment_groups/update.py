@@ -46,6 +46,10 @@ DETAILED_HELP = {
             To clear all labels from the intercept deployment group, run:
 
             $ {command} my-deployment-group --project=my-project --location=global --clear-labels
+
+            To update description to 'new description', run:
+
+            $ {command} my-deployment-group --project=my-project --location=global --description='new description'
         """,
 }
 
@@ -70,6 +74,7 @@ class Update(base.UpdateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    deployment_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)
@@ -91,6 +96,7 @@ class Update(base.UpdateCommand):
 
     operation = client.UpdateDeploymentGroup(
         name=deployment_group.RelativeName(),
+        description=getattr(args, 'description', None),
         update_fields=update_fields,
     )
 

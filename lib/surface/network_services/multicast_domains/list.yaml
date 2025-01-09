@@ -20,5 +20,5 @@ response:
 output:
   format: |
      table(
-        name.basename():label=NAME, create_time, connection, adminNetwork, nccHub
+        name.basename():label=NAME, create_time, connection, adminNetwork, nccHub, multicastDomainGroup
       )

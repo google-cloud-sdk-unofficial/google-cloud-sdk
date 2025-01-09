@@ -287,7 +287,7 @@ class Login(base.Command):
     # No valid creds, do the web flow.
     flow_params = dict(
         no_launch_browser=not args.launch_browser,
-        no_browser=args.no_browser,
+        no_browser=not args.browser,
         remote_bootstrap=args.remote_bootstrap)
 
     # 1. Try the 3PI web flow with --no-browser:

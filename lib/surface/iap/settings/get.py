@@ -60,15 +60,15 @@ class Get(base.Command):
 
           To get the IAP setting for all backend services within a project, run:
 
-            $ {command} --project=PROJECT_ID --resource-type=compute
+            $ {command} --project=PROJECT_ID --resource-type=backend-services
 
           To get the IAP setting for a backend service within a project, run:
 
-            $ {command} --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+            $ {command} --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
 
           To get the IAP setting for a regional backend service within a project, run:
 
-            $ {command} --project=PROJECT_ID --resource-type=compute --service=SERVICE_ID
+            $ {command} --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
               --region=REGION_ID
 
           """,

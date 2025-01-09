@@ -22,7 +22,6 @@ from __future__ import unicode_literals
 import textwrap
 
 from apitools.base.py import list_pager
-
 from googlecloudsdk.api_lib.iam import exceptions
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.calliope import base
@@ -31,6 +30,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 class ListGrantableRoles(base.Command):
   """List IAM grantable roles for a resource.
 
@@ -61,7 +61,7 @@ class ListGrantableRoles(base.Command):
     flags.GetResourceNameFlag('get the list of roles for').AddToParser(parser)
     base.FILTER_FLAG.AddToParser(parser)
     base.PAGE_SIZE_FLAG.AddToParser(parser)
-    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 300)
 
   def Run(self, args):
     resource = None
@@ -75,7 +75,8 @@ class ListGrantableRoles(base.Command):
 
     if not resource:
       raise exceptions.InvalidResourceException(
-          'The given resource is not a valid full resource name or URL.')
+          'The given resource is not a valid full resource name or URL.'
+      )
 
     client, messages = util.GetClientAndMessages()
     return list_pager.YieldFromList(
@@ -84,4 +85,5 @@ class ListGrantableRoles(base.Command):
         field='roles',
         method='QueryGrantableRoles',
         batch_size=args.page_size,
-        batch_size_attribute='pageSize')
+        batch_size_attribute='pageSize',
+    )

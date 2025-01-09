@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.cross_site_networks import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags
+from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
@@ -55,7 +56,6 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     cls.CROSS_SITE_NETWORK_ARG = flags.CrossSiteNetworkArgument(plural=False)
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser, operation_type='create')
-    flags.AddProject(parser)
     flags.AddDescription(parser)
 
   def Collection(self):
@@ -64,12 +64,15 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.CROSS_SITE_NETWORK_ARG.ResolveAsResource(args, holder.resources)
+    project = properties.VALUES.core.project.GetOrFail()
     cross_site_network = client.CrossSiteNetwork(
-        ref, compute_client=holder.client, resources=holder.resources
+        ref,
+        project,
+        compute_client=holder.client,
+        resources=holder.resources,
     )
 
     return cross_site_network.Create(
-        project=args.project,
         description=args.description,
     )
 

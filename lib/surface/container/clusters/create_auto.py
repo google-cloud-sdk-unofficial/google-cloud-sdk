@@ -101,9 +101,11 @@ def AddAutoFlags(parser, release_track):
   else:
     flags.AddAutoMonitoringScopeFlags(parser, hidden=True)
   flags.AddClusterTierFlag(parser)
+  flags.AddKubecontextOverrideFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(create.Create):
   """Create an Autopilot cluster for running containers."""
 
@@ -117,6 +119,7 @@ class Create(create.Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class CreateBeta(create.CreateBeta):
   """Create an Autopilot cluster for running containers."""
 
@@ -130,6 +133,7 @@ class CreateBeta(create.CreateBeta):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class CreateAlpha(create.CreateAlpha):
   """Create an Autopilot cluster for running containers."""
 

@@ -1,13 +1,14 @@
 release_tracks: [ALPHA]
 help_text:
-  brief: Remove an IAM policy binding to a Secure Source Manager repository.
+  brief: Remove an IAM policy binding from a Secure Source Manager repository.
   description: Remove an IAM policy binding to a Secure Source Manager repository.
 
   examples: |
-    To remove an IAM policy binding for the role of `roles/editor` for the user `test-user@gmail.com`
-    with repository named `my-repo` and location `us-central1`, run:
+    To remove the Repository Admin IAM role (`roles/securesourcemanager.repoAdmin`) binding from the
+    user `test-user@gmail.com` in a repository named `my-repo` and location `us-central1`, run the
+    following command:
 
-      $ {command} my-repo --region='us-central1' --member='user:test-user@gmail.com' --role='roles/editor'
+      $ {command} my-repo --region='us-central1' --member='user:test-user@gmail.com' --role='roles/securesourcemanager.repoAdmin'
 
     See https://cloud.google.com/iam/docs/managing-policies for details of policy role and member types.
 
@@ -17,7 +18,7 @@ request:
 
 arguments:
   resource:
-    help_text: Secure Source Manager repository for which to remove the IAM policy binding.
+    help_text: Secure Source Manager repository to remove the IAM policy binding from.
     spec: !REF googlecloudsdk.command_lib.source_manager.resources:repository
 
 iam:

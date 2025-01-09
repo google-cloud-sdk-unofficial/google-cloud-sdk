@@ -60,6 +60,7 @@ class AlloyDB(base.Command):
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
+    cp_flags.AddRoleFlag(parser)
     ad_flags.AddPasswordFlag(parser)
     ad_flags.AddNetworkFlag(parser)
     ad_flags.AddClusterLabelsFlag(parser)

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute.packet_mirrorings import utils
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine packet mirroring policy."""
 
@@ -160,6 +161,7 @@ class Update(base.UpdateCommand):
 
     if args.clear_filter_protocols:
       resource.filter.IPProtocols[:] = []
+      cleared_fields.append('filter.IPProtocols')
     elif args.add_filter_protocols:
       resource.filter.IPProtocols.extend(args.add_filter_protocols)
     elif args.set_filter_protocols:
@@ -176,6 +178,7 @@ class Update(base.UpdateCommand):
 
     if args.clear_filter_cidr_ranges:
       resource.filter.cidrRanges[:] = []
+      cleared_fields.append('filter.cidrRanges')
     elif args.add_filter_cidr_ranges:
       resource.filter.cidrRanges.extend(args.add_filter_cidr_ranges)
     elif args.set_filter_cidr_ranges:

@@ -35,10 +35,10 @@ class Update(base.UpdateCommand):
   detailed_help = {
       'EXAMPLES':
           textwrap.dedent("""\
-          The following command updates the IAM policy defined at the resource
-          project ``123'' of kind ``denypolicies'' and id ``my-deny-policy'':
+          The following command updates the IAM policy ``my-deny-policy'', which
+          is attached to the resource project ``123'' and has the etag ``abc'':
 
-            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json
+            $ {command} my-deny-policy --attachment-point=cloudresourcemanager.googleapis.com/projects/123 --kind=denypolicies --policy-file=policy.json --etag=abc
           """),
   }
 
@@ -48,6 +48,7 @@ class Update(base.UpdateCommand):
     flags.GetKindFlag().AddToParser(parser)
     flags.GetPolicyIDFlag().AddToParser(parser)
     flags.GetPolicyFileFlag().AddToParser(parser)
+    flags.GetEtagFlag().AddToParser(parser)
 
   def Run(self, args):
     release_track = args.calliope_command.ReleaseTrack()
@@ -75,6 +76,11 @@ class Update(base.UpdateCommand):
 
     policy.name = 'policies/{}/{}/{}'.format(attachment_point, args.kind,
                                              args.policy_id)
+
+    etag = args.etag
+    if etag is None:
+      etag = policy.etag
+    policy.etag = etag
 
     result = client.policies.Update(policy)
     log.UpdatedResource(result.name, kinds[args.kind], is_async=True)

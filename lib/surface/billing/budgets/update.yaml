@@ -231,17 +231,25 @@
         even if they have the required IAM permissions.
     - group:
         mutex: true
+        help_text: |
+            Specify either the calendar-period or custom-period, not both.
         params:
-        - arg_name: calendar-period
-          ALPHA:
-            api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.calendarPeriod
-          BETA:
-            api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.calendarPeriod
-          GA:
-            api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.calendarPeriod
-          help_text: |
-            Specifies to track usage over recurring calendar period. If you're creating a budget with a custom time period, omit this flag.
         - group:
+            help_text: |
+              Calendar Period
+            params:
+            - arg_name: calendar-period
+              ALPHA:
+                api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.calendarPeriod
+              BETA:
+                api_field: googleCloudBillingBudgetsV1beta1UpdateBudgetRequest.budget.budgetFilter.calendarPeriod
+              GA:
+                api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.calendarPeriod
+              help_text: |
+                Specified to track usage over recurring calendar period. If you're creating a budget with a custom time period, omit this flag.
+        - group:
+            help_text: |
+              Custom Period
             params:
             - arg_name: start-date
               ALPHA:
@@ -255,7 +263,7 @@
                 processor: googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseToDateTypeV1
               required: true
               help_text: |
-                Specifies to track usage after any start date. This time period is static, it does not
+                Specified to track usage after any start date. This time period is static, it does not
                 recur.
             - arg_name: end-date
               ALPHA:
@@ -268,7 +276,7 @@
                 api_field: googleCloudBillingBudgetsV1Budget.budgetFilter.customPeriod.endDate
                 processor: googlecloudsdk.command_lib.billingbudgets.hooks:UpdateParseToDateTypeV1
               help_text: |
-                Specifies to track usage before any end date. This time period is static, it does not
+                Specified to track usage before any end date. This time period is static, it does not
                 recur. If specified, --start-date must also be specified.
     - arg_name: all-updates-rule-pubsub-topic
       release_tracks: [ALPHA, BETA]

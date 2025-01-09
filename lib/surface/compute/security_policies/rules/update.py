@@ -50,12 +50,7 @@ class UpdateHelper(object):
   def Args(
       cls,
       parser,
-      support_redirect,
-      support_rate_limit,
-      support_header_action,
       support_fairshare,
-      support_multiple_rate_limit_keys,
-      support_recaptcha_options,
   ):
     """Generates the flagset for an Update command."""
     cls.NAME_ARG = (flags.PriorityArgument('update'))
@@ -70,36 +65,23 @@ class UpdateHelper(object):
     flags.AddAction(
         parser,
         required=False,
-        support_redirect=support_redirect,
-        support_rate_limit=support_rate_limit,
         support_fairshare=support_fairshare)
     flags.AddDescription(parser)
     flags.AddPreview(parser, default=None)
-    if support_redirect:
-      flags.AddRedirectOptions(parser)
-    if support_rate_limit:
-      flags.AddRateLimitOptions(
-          parser,
-          support_exceed_redirect=support_redirect,
-          support_fairshare=support_fairshare,
-          support_multiple_rate_limit_keys=support_multiple_rate_limit_keys,
-      )
-    if support_header_action:
-      flags.AddRequestHeadersToAdd(parser)
-    if support_recaptcha_options:
-      flags.AddRecaptchaOptions(parser)
+    flags.AddRedirectOptions(parser)
+    flags.AddRateLimitOptions(
+        parser,
+        support_fairshare=support_fairshare,
+    )
+    flags.AddRequestHeadersToAdd(parser)
+    flags.AddRecaptchaOptions(parser)
 
   @classmethod
   def Run(
       cls,
       release_track,
       args,
-      support_redirect,
-      support_rate_limit,
-      support_header_action,
       support_fairshare,
-      support_multiple_rate_limit_keys,
-      support_recaptcha_options,
   ):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
@@ -114,7 +96,21 @@ class UpdateHelper(object):
         args.network_src_ports,
         args.network_dest_ports,
         args.network_src_region_codes,
-        args.network_src_asns
+        args.network_src_asns,
+        args.redirect_type,
+        args.redirect_target,
+        args.request_headers_to_add,
+        args.rate_limit_threshold_count,
+        args.rate_limit_threshold_interval_sec,
+        args.conform_action,
+        args.exceed_action,
+        args.enforce_on_key,
+        args.enforce_on_key_name,
+        args.ban_threshold_count,
+        args.ban_threshold_interval_sec,
+        args.ban_duration_sec,
+        args.recaptcha_action_site_keys,
+        args.recaptcha_session_site_keys,
     ]
     min_args = [
         '--description',
@@ -129,46 +125,29 @@ class UpdateHelper(object):
         '--network-src-ports',
         '--network-dest-ports',
         '--network-src-region-codes',
-        '--network-src-asns'
+        '--redirect-type',
+        '--redirect-target',
+        '--request-headers-to-add',
+        '--rate-limit-threshold-count',
+        '--rate-limit-threshold-interval-sec',
+        '--conform-action',
+        '--exceed-action',
+        '--enforce-on-key',
+        '--enforce-on-key-name',
+        '--ban-threshold-count',
+        '--ban-threshold-interval-sec',
+        '--ban-duration-sec',
+        '--recaptcha_action_site_keys',
+        '--recaptcha_session_site_keys',
     ]
-    if support_redirect:
-      modified_fields.extend([args.redirect_type, args.redirect_target])
-      min_args.extend(['--redirect-type', '--redirect-target'])
-    if support_header_action:
-      modified_fields.extend([args.request_headers_to_add])
-      min_args.extend(['--request-headers-to-add'])
-    if support_rate_limit:
+    if support_fairshare:
       modified_fields.extend([
-          args.rate_limit_threshold_count,
-          args.rate_limit_threshold_interval_sec, args.conform_action,
-          args.exceed_action, args.enforce_on_key, args.enforce_on_key_name,
-          args.ban_threshold_count, args.ban_threshold_interval_sec,
-          args.ban_duration_sec
-      ])
-
-      min_args.extend([
-          '--rate-limit-threshold-count', '--rate-limit-threshold-interval-sec',
-          '--conform-action', '--exceed-action', '--enforce-on-key',
-          '--enforce-on-key-name', '--ban-threshold-count',
-          '--ban-threshold-interval-sec', '--ban-duration-sec'
-      ])
-      if support_fairshare:
-        modified_fields.extend([
-            args.exceed_action_rpc_status_code,
-            args.exceed_action_rpc_status_message
-        ])
-        min_args.extend([
-            '--exceed-action-rpc-status-code',
-            '--exceed-action-rpc-status-message'
-        ])
-    if support_recaptcha_options:
-      modified_fields.extend([
-          args.recaptcha_action_site_keys,
-          args.recaptcha_session_site_keys,
+          args.exceed_action_rpc_status_code,
+          args.exceed_action_rpc_status_message,
       ])
       min_args.extend([
-          '--recaptcha_action_site_keys',
-          '--recaptcha_session_site_keys',
+          '--exceed-action-rpc-status-code',
+          '--exceed-action-rpc-status-message',
       ])
     if not any(
         [args.IsSpecified(field[2:].replace('-', '_')) for field in min_args]):
@@ -223,34 +202,40 @@ class UpdateHelper(object):
     security_policy_rule = client.SecurityPolicyRule(
         ref, compute_client=holder.client)
 
-    redirect_options = None
-    rate_limit_options = None
-    if support_redirect:
-      redirect_options = (
-          security_policies_utils.CreateRedirectOptions(holder.client, args))
-    if support_rate_limit:
-      rate_limit_options = security_policies_utils.CreateRateLimitOptions(
-          holder.client,
-          args,
-          support_fairshare,
-          support_multiple_rate_limit_keys,
-      )
+    redirect_options = security_policies_utils.CreateRedirectOptions(
+        holder.client, args
+    )
+    rate_limit_options = security_policies_utils.CreateRateLimitOptions(
+        holder.client, args, support_fairshare
+    )
 
-    request_headers_to_add = None
-    if support_header_action:
-      request_headers_to_add = args.request_headers_to_add
+    request_headers_to_add = args.request_headers_to_add
 
-    expression_options = None
-    if support_recaptcha_options:
-      expression_options = security_policies_utils.CreateExpressionOptions(
-          holder.client, args
-      )
+    expression_options = security_policies_utils.CreateExpressionOptions(
+        holder.client, args
+    )
 
     result = security_policies_utils.CreateNetworkMatcher(
         holder.client, args
     )
     network_matcher = result[0]
     update_mask = result[1]
+
+    if args.IsSpecified('action') and args.action not in ['redirect']:
+      update_mask.append('redirect_options')
+
+    if args.IsSpecified('action') and args.action not in [
+        'throttle',
+        'rate-based-ban',
+        'fairshare',
+    ]:
+      update_mask.append('rate_limit_options')
+    elif args.IsSpecified('exceed_action') and args.exceed_action not in [
+        'redirect'
+    ]:
+      update_mask.append('rate_limit_options.exceed_redirect_options')
+
+    update_mask_str = ','.join(update_mask)
 
     return security_policy_rule.Patch(
         src_ip_ranges=args.src_ip_ranges,
@@ -263,10 +248,11 @@ class UpdateHelper(object):
         redirect_options=redirect_options,
         rate_limit_options=rate_limit_options,
         request_headers_to_add=request_headers_to_add,
-        update_mask=update_mask,
+        update_mask=update_mask_str if update_mask_str else None,
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
@@ -287,38 +273,24 @@ class UpdateGA(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
   NAME_ARG = None
 
-  _support_redirect = True
-  _support_rate_limit = True
-  _support_multiple_rate_limit_keys = True
-  _support_header_action = True
   _support_fairshare = False
-  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_redirect=cls._support_redirect,
-        support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
-        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_redirect,
-        self._support_rate_limit,
-        self._support_header_action,
         self._support_fairshare,
-        self._support_multiple_rate_limit_keys,
-        self._support_recaptcha_options,
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
@@ -338,38 +310,24 @@ class UpdateBeta(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_redirect = True
-  _support_rate_limit = True
-  _support_multiple_rate_limit_keys = True
-  _support_header_action = True
   _support_fairshare = False
-  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_redirect=cls._support_redirect,
-        support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
-        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_redirect,
-        self._support_rate_limit,
-        self._support_header_action,
         self._support_fairshare,
-        self._support_multiple_rate_limit_keys,
-        self._support_recaptcha_options,
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
@@ -389,33 +347,18 @@ class UpdateAlpha(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_redirect = True
-  _support_rate_limit = True
-  _support_multiple_rate_limit_keys = True
-  _support_header_action = True
   _support_fairshare = True
-  _support_recaptcha_options = True
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_redirect=cls._support_redirect,
-        support_rate_limit=cls._support_rate_limit,
-        support_header_action=cls._support_header_action,
         support_fairshare=cls._support_fairshare,
-        support_multiple_rate_limit_keys=cls._support_multiple_rate_limit_keys,
-        support_recaptcha_options=cls._support_recaptcha_options,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_redirect,
-        self._support_rate_limit,
-        self._support_header_action,
         self._support_fairshare,
-        self._support_multiple_rate_limit_keys,
-        self._support_recaptcha_options,
     )

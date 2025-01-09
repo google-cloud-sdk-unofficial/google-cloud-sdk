@@ -18,12 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from apitools.base.py import encoding
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import migration_jobs
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.database_migration.migration_jobs import flags as mj_flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -36,6 +34,19 @@ DETAILED_HELP = {
           $ {command} MIGRATION_JOB --region=us-central1
         """,
 }
+
+
+class _MigrationJobObjectInfo:
+  """Container for migration job object data using in list display."""
+
+  def __init__(self, message):
+    self.name = message.name
+    self.source_object = message.sourceObject
+    self.error = message.error if message.error is not None else None
+    self.state = message.state
+    self.phase = message.phase
+    self.create_time = message.createTime
+    self.update_time = message.updateTime
 
 
 @base.DefaultUniverseOnly
@@ -53,7 +64,14 @@ class FetchSourceObjects(base.Command):
         the command line after this command. Positional arguments are allowed.
     """
     resource_args.AddOnlyMigrationJobResourceArgs(parser, 'to restart')
-    mj_flags.AddNoAsyncFlag(parser)
+    parser.display_info.AddFormat("""
+            table(
+              source_object,
+              state:label=STATE,
+              phase:label=PHASE,
+              error:label=ERROR
+            )
+          """)
 
   def Run(self, args):
     """Fetch source objects for a Database Migration Service migration job.
@@ -74,56 +92,25 @@ class FetchSourceObjects(base.Command):
     )
 
     client = api_util.GetClientInstance(self.ReleaseTrack())
-    messages = api_util.GetMessagesModule(self.ReleaseTrack())
-    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
 
-    if args.IsKnownAndSpecified('no_async'):
-      log.status.Print(
-          'Waiting for migration job [{}] to fetch source objects with [{}]'
-          .format(migration_job_ref.migrationJobsId, result_operation.name)
-      )
-
-      api_util.HandleLRO(
-          client,
-          result_operation,
-          client.projects_locations_migrationJobs,
-          no_resource=True,
-      )
-
-      operation_ref = resource_parser.Create(
-          'datamigration.projects.locations.operations',
-          operationsId=result_operation.name,
-          projectsId=migration_job_ref.projectsId,
-          locationsId=migration_job_ref.locationsId,
-      )
-
-      operation_response = client.projects_locations_operations.Get(
-          messages.DatamigrationProjectsLocationsOperationsGetRequest(
-              name=operation_ref.operationsId
-          )
-      )
-
-      log.status.Print(
-          'Fetched source objects for migration job {} [{}]'.format(
-              migration_job_ref.migrationJobsId, result_operation.name
-          )
-      )
-      response_dict = encoding.MessageToPyValue(operation_response.response)
-
-      for objects in response_dict['sourceObjects']:
-        log.status.Print(objects)
-
-      return
-
-    operation_ref = resource_parser.Create(
-        'datamigration.projects.locations.operations',
-        operationsId=result_operation.name,
-        projectsId=migration_job_ref.projectsId,
-        locationsId=migration_job_ref.locationsId,
+    log.status.Print(
+        'Waiting for migration job [{}] to fetch source objects with [{}]'
+        .format(migration_job_ref.migrationJobsId, result_operation.name)
     )
 
-    return client.projects_locations_operations.Get(
-        messages.DatamigrationProjectsLocationsOperationsGetRequest(
-            name=operation_ref.operationsId
+    api_util.HandleLRO(
+        client,
+        result_operation,
+        client.projects_locations_migrationJobs,
+        no_resource=True,
+    )
+
+    log.status.Print(
+        'Fetched source objects for migration job {} [{}]'.format(
+            migration_job_ref.migrationJobsId, result_operation.name
         )
     )
+
+    obj = mj_client.ListObjects(migration_job_ref)
+
+    return [_MigrationJobObjectInfo(o) for o in obj]

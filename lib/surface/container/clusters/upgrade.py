@@ -146,6 +146,7 @@ def MaybeLog122UpgradeWarning(cluster):
       'APIs prior to upgrading to GKE 1.22.')
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Upgrade(base.Command):
   """Upgrade the Kubernetes version of an existing container cluster."""
@@ -219,6 +220,17 @@ class Upgrade(base.Command):
           'Upgrading {0}'.format(cluster_ref.clusterId),
           timeout_s=args.timeout)
 
+      try:
+        cluster = adapter.GetCluster(cluster_ref)
+        for node_pool in cluster.nodePools:
+          util.CheckForCgroupModeV1(node_pool)
+      except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
+              util.Error) as error:
+        log.warning(
+            util.CGROUPV1_CHECKING_FAILURE_MSG.format(
+                console_attr.SafeText(error)
+            )
+        )
       log.UpdatedResource(cluster_ref)
 
 

@@ -32,6 +32,7 @@
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.flags:source_file
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:machine_image_name
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:target_project
+    - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.flags:kms_key
     - group:
         help_text: OS adaptation parameters.
         required: false

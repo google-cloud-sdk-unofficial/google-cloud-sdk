@@ -39,6 +39,9 @@ arguments:
       - arg_name: ncc-hub
         api_field: multicastDomain.connection.nccHub
         help_text: The URI of the NCC hub to be used.
+  - arg_name: multicast-domain-group
+    api_field: multicastDomain.multicastDomainGroup
+    help_text: The URI of the multicast domain group to be used.
   labels:
     api_field: multicastDomain.labels
 

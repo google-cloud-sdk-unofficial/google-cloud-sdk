@@ -60,13 +60,11 @@ Container Flags
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
 
-  if release_track == base.ReleaseTrack.ALPHA:
-    group.AddArgument(flags.BaseImageArg())
-
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
     group.AddArgument(flags.StartupProbeFlag())
     group.AddArgument(flags.LivenessProbeFlag())
+    group.AddArgument(flags.BaseImageArg())
 
   return group
 

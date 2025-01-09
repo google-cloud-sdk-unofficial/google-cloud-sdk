@@ -187,19 +187,27 @@ class AddBackend(base.UpdateCommand):
     group_ref = self._GetGroupRef(args, resources, client)
     group_uri = group_ref.SelfLink()
 
+    scope = ''
     for backend in existing.backends:
       if group_uri == backend.group:
-        if (group_ref.Collection() == 'compute.instanceGroups'
-            or group_ref.Collection() == 'compute.networkEndpointGroups'):
-          scope = 'zone'
-        elif group_ref.Collection() == 'compute.regionInstanceGroups':
-          scope = 'region'
+        if (
+            group_ref.Collection() == 'compute.instanceGroups'
+            or group_ref.Collection() == 'compute.networkEndpointGroups'
+        ):
+          scope = 'zone [' + getattr(group_ref, 'zone') + ']'
+        elif (
+            group_ref.Collection() == 'compute.regionInstanceGroups'
+            or group_ref.Collection() == 'compute.regionNetworkEndpointGroups'
+        ):
+          scope = 'region [' + getattr(group_ref, 'region') + ']'
+        elif group_ref.Collection() == 'compute.globalNetworkEndpointGroups':
+          scope = 'global'
+
         raise exceptions.ArgumentError(
-            'Backend [{}] in {} [{}] already exists in backend service '
-            '[{}].'.format(group_ref.Name(),
-                           scope,
-                           getattr(group_ref, scope),
-                           backend_service_ref.Name()))
+            'Backend [{}] in {} already exists in backend service [{}].'.format(
+                group_ref.Name(), scope, backend_service_ref.Name()
+            )
+        )
 
     if args.balancing_mode:
       balancing_mode = client.messages.Backend.BalancingModeValueValuesEnum(

@@ -21,7 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Workbench(base.Group):
   """Workbench Command Group."""
 

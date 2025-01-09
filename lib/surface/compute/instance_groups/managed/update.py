@@ -74,6 +74,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddMigSizeFlag(parser)
     managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
+    managed_flags.AddStandbyPolicyFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(
@@ -371,6 +372,19 @@ class UpdateGA(base.UpdateCommand):
     )
     if args.IsSpecified('size'):
       patch_instance_group_manager.targetSize = args.size
+
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages,
+        args.standby_policy_initial_delay,
+        args.standby_policy_mode,
+    )
+    if standby_policy:
+      patch_instance_group_manager.standbyPolicy = standby_policy
+    if args.suspended_size:
+      patch_instance_group_manager.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      patch_instance_group_manager.targetStoppedSize = args.stopped_size
+
     return patch_instance_group_manager
 
   def Run(self, args):
@@ -444,7 +458,6 @@ class UpdateBeta(UpdateGA):
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
-    managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder
@@ -454,17 +467,6 @@ class UpdateBeta(UpdateGA):
     )._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder
     )
-    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
-        client.messages,
-        args.standby_policy_initial_delay,
-        args.standby_policy_mode,
-    )
-    if standby_policy:
-      patch_instance_group_manager.standbyPolicy = standby_policy
-    if args.suspended_size:
-      patch_instance_group_manager.targetSuspendedSize = args.suspended_size
-    if args.stopped_size:
-      patch_instance_group_manager.targetStoppedSize = args.stopped_size
     return patch_instance_group_manager
 
 

@@ -201,6 +201,7 @@ class Create(base.BinaryBackedCommand):
     flags.AddFixedParallelismArgs(parser)
     flags.AddElasticParallelismArgs(parser)
     flags.AddNetworkConfigArgs(parser)
+    flags.AddWorkloadIdentityArgument(parser)
     flags.AddJobArgsCollector(parser)
     flags.AddPythonVirtualEnvArgument(parser)
     flags.AddExtraArchivesArgument(parser)
@@ -236,6 +237,12 @@ class Create(base.BinaryBackedCommand):
             '--network-config-vpc must be set if --network-config-subnetwork is'
             ' set.',
         )
+
+    if args.workload_identity and args.deployment:
+      raise exceptions.InvalidArgumentException(
+          'workload-identity',
+          '--workload-identity cannot be set if --deployment is set.',
+      )
 
     # Validate that autotuning arguments are consistent
     flink_backend.ValidateAutotuning(

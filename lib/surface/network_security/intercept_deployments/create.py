@@ -51,6 +51,13 @@ DETAILED_HELP = {
             --forwarding-rule=projects/my-project/regions/us-central1/forwardingRules/my-forwarding-rule
             --intercept-deployment-group=projects/my-project/locations/global/interceptDeploymentGroups/my-deployment-group
 
+            OR
+
+            $ {command} projects/my-project/locations/us-central1/interceptDeployments/my-deployment
+            --forwarding-rule=projects/my-project/regions/us-central1/forwardingRules/my-forwarding-rule
+            --intercept-deployment-group=projects/my-project/locations/global/interceptDeploymentGroups/my-deployment-group
+            --description="my-description"
+
         """,
 }
 
@@ -71,6 +78,7 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
+    deployment_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -95,6 +103,7 @@ class Create(base.CreateCommand):
         parent=deployment.Parent().RelativeName(),
         forwarding_rule=forwarding_rule.RelativeName(),
         intercept_deployment_group=intercept_deployment_group.RelativeName(),
+        description=getattr(args, 'description', None),
         labels=labels,
     )
     # Return the in-progress operation if async is requested.

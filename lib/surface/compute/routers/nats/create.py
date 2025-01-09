@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
 
@@ -109,8 +109,8 @@ class Create(base.CreateCommand):
                                                     router_ref.Name()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Add a NAT to a Compute Engine router."""
 
   _with_nat64 = True

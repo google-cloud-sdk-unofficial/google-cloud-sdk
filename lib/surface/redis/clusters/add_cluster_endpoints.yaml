@@ -34,19 +34,19 @@
       type: arg_object
       spec:
       - api_field: connections
-        arg_name: psc-connection
+        json_name: psc-connection
         type: arg_object
         spec:
         - api_field: pscConnection.pscConnectionId
-          arg_name: psc-connection-id
+          json_name: psc-connection-id
         - api_field: pscConnection.network
-          arg_name: network
+          json_name: network
         - api_field: pscConnection.address
-          arg_name: address
+          json_name: address
         - api_field: pscConnection.forwardingRule
-          arg_name: forwarding-rule
+          json_name: forwarding-rule
         - api_field: pscConnection.serviceAttachment
-          arg_name: service-attachment
+          json_name: service-attachment
 
   async:
     collection: redis.projects.locations.operations

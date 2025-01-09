@@ -35,6 +35,8 @@ DETAILED_HELP = {
 }
 
 
+# TODO(b/371178112): Remove this annotation once the command is ready for TPC.
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """Lists environment operations.
 
@@ -68,6 +70,9 @@ class List(base.ListCommand):
         'metadata.state:label=STATE,'
         'metadata.createTime:label=CREATE_TIME:reverse'
         ')')
+    parser.display_info.AddUriFunc(
+        lambda x: f'https://www.googleapis.com/composer/v1/{x.name}'
+    )
 
   def Run(self, args):
     location_refs = flags.FallthroughToLocationProperty(

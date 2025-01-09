@@ -129,6 +129,7 @@ class CreateGA(base.CreateCommand):
       managed_flags.AddMigResourceManagerTagsFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
+    managed_flags.AddStandbyPolicyFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -360,6 +361,18 @@ class CreateGA(base.CreateCommand):
                                         instance_group_manager.statefulPolicy,
                                         client)
 
+    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
+        client.messages,
+        args.standby_policy_initial_delay,
+        args.standby_policy_mode,
+    )
+    if standby_policy:
+      instance_group_manager.standbyPolicy = standby_policy
+    if args.suspended_size:
+      instance_group_manager.targetSuspendedSize = args.suspended_size
+    if args.stopped_size:
+      instance_group_manager.targetStoppedSize = args.stopped_size
+
     return instance_group_manager
 
   def _PostProcessOutput(self, holder, migs):
@@ -446,7 +459,6 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
-    managed_flags.AddStandbyPolicyFlags(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
                                   holder):
@@ -454,17 +466,6 @@ class CreateBeta(CreateGA):
                                    self)._CreateInstanceGroupManager(
                                        args, group_ref, template_ref, client,
                                        holder)
-    standby_policy = managed_instance_groups_utils.CreateStandbyPolicy(
-        client.messages,
-        args.standby_policy_initial_delay,
-        args.standby_policy_mode,
-    )
-    if standby_policy:
-      instance_group_manager.standbyPolicy = standby_policy
-    if args.suspended_size:
-      instance_group_manager.targetSuspendedSize = args.suspended_size
-    if args.stopped_size:
-      instance_group_manager.targetStoppedSize = args.stopped_size
     return instance_group_manager
 
 

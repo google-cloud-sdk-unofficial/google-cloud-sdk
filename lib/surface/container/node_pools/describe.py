@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 
 
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe an existing node pool for a cluster.
 
@@ -70,6 +71,8 @@ class Describe(base.DescribeCommand):
     location = location_get(args)
 
     try:
-      return adapter.GetNodePool(adapter.ParseNodePool(args.name, location))
+      nodepool = adapter.GetNodePool(adapter.ParseNodePool(args.name, location))
+      util.CheckForCgroupModeV1(nodepool)
+      return nodepool
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

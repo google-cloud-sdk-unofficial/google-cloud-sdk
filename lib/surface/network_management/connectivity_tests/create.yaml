@@ -125,6 +125,13 @@
       api_field: connectivityTest.protocol
       help_text: |
         Type of protocol for the test. When not provided, "TCP" is assumed.
+    - arg_name: round-trip
+      type: bool
+      api_field: connectivityTest.roundTrip
+      help_text: |
+        This boolean controls whether return traces (from the destination to the
+        source) will be additionally calculated if packet successfully reaches
+        the destination from the source.
     - arg_name: other-projects
       api_field: connectivityTest.relatedProjects
       repeated: true

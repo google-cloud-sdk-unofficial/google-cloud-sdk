@@ -48,6 +48,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
+_PROJECT_TOML_FILE_NAME = 'project.toml'
+
 
 class BuildType(enum.Enum):
   DOCKERFILE = 'Dockerfile'
@@ -64,7 +66,6 @@ Container Flags
   specified after a --container flag. Otherwise they will apply to the primary ingress container.
 """
   group = base.ArgumentGroup(help=help_text)
-  group.AddArgument(flags.SourceAndImageFlags())
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.Http2Flag())
   group.AddArgument(flags.MutexEnvVarsFlags())
@@ -87,8 +88,10 @@ Container Flags
     group.AddArgument(flags.MutexBuildEnvVarsFlags())
     group.AddArgument(flags.StartupProbeFlag())
     group.AddArgument(flags.LivenessProbeFlag())
+    group.AddArgument(flags.SourceAndImageFlags(mutex=False))
   else:
     group.AddArgument(flags.CommandFlag())
+    group.AddArgument(flags.SourceAndImageFlags())
 
   return group
 
@@ -251,7 +254,8 @@ class Deploy(base.Command):
     build_from_source = {
         name: container
         for name, container in containers.items()
-        if not container.IsSpecified('image')
+        if (not container.IsSpecified('image')
+            or flags.FlagIsExplicitlySet(container, 'source'))
     }
     if len(build_from_source) > 1:
       needs_image = [
@@ -367,9 +371,10 @@ class Deploy(base.Command):
         annotated_build_service_account,
         annotated_build_worker_pool,
         annotated_build_env_vars,
-    ) = (
-        service.run_functions_annotations if service else (None, None, None)
-    )
+        annotated_build_image_uri,
+    ) = (service.run_functions_annotations
+         if service
+         else (None, None, None, None))
 
     # Only one container can be deployed from source
     name, container_args = next(iter(build_from_source.items()))
@@ -378,11 +383,12 @@ class Deploy(base.Command):
       name = service.template.container.name or ''
     pack = None
     changes = []
-    repo_to_create = None
     source = container_args.source
-    source_bucket = self._GetSourceBucketFromSourceLocation(
-        service.source_location
-    ) if service else None
+    source_bucket = (
+        self._GetSourceBucketFromSourceLocation(service.source_location)
+        if service
+        else None
+    )
     logging.debug('source_bucket: %s', source_bucket)
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
@@ -390,26 +396,16 @@ class Deploy(base.Command):
         self.ReleaseTrack() != base.ReleaseTrack.GA and container_args.function
     )
 
-    ar_repo = docker_util.DockerRepo(
-        project_id=properties.VALUES.core.project.Get(required=True),
-        location_id=artifact_registry.RepoRegion(
-            args,
-            cluster_location=(
-                conn_context.cluster_location
-                if platform == platforms.PLATFORM_GKE
-                else None
-            ),
-        ),
-        repo_id='cloud-run-source-deploy',
-    )
-    if artifact_registry.ShouldCreateRepository(
-        ar_repo, skip_activation_prompt=already_activated_services
-    ):
-      repo_to_create = ar_repo
+    # Get the AR repo from flags or annotations if they exist, otherwise return
+    # the repository to create by default.
+    docker_string, repo_to_create = self._GetArtifactRegistryRepository(
+        args, conn_context, platform, already_activated_services,
+        container_args, annotated_build_image_uri)
+
     # The image is built with latest tag. After build, the image digest
     # from the build result will be added to the image of the service spec.
     container_args.image = '{repo}/{service}'.format(
-        repo=ar_repo.GetDockerString(), service=service_ref.servicesId
+        repo=docker_string, service=service_ref.servicesId
     )
     # Use GCP Buildpacks if Dockerfile doesn't exist
     docker_file = source + '/Dockerfile'
@@ -478,6 +474,61 @@ class Deploy(base.Command):
         automatic_updates,
         source_bucket,
     )
+
+  def _GetArtifactRegistryRepository(
+      self,
+      args,
+      conn_context,
+      platform,
+      already_activated_services,
+      container_args,
+      annotated_build_image_uri):
+    """Gets the AR repo from flags or annotations if they exist, otherwise return the repository to create.
+
+    Args:
+      args: argparse.Namespace, Command line arguments
+      conn_context: ConnectionInfo object, context to get project location.
+      platform: properties.VALUES.run.platform, platform to run on
+        and to check if it is GKE.
+      already_activated_services: bool, True if the user has already activated
+        the required APIs.
+      container_args: base.ArgumentGroup, Container arguments using
+        source build.
+      annotated_build_image_uri: str, build image uri from service annotations.
+
+    Returns:
+      A string location of the AR repository and the docker_util.DockerRepo
+      object to create by default if none provided.
+    """
+    repo_to_create = None
+    if container_args.image and self.ReleaseTrack() != base.ReleaseTrack.GA:
+      docker_string = _ValidateArRepository(
+          container_args.image, already_activated_services)
+      return docker_string, repo_to_create
+    elif (annotated_build_image_uri
+          and self.ReleaseTrack() != base.ReleaseTrack.GA):
+      docker_string = _ValidateArRepository(
+          annotated_build_image_uri, already_activated_services)
+      return docker_string, repo_to_create
+    else:
+      ar_repo = docker_util.DockerRepo(
+          project_id=properties.VALUES.core.project.Get(required=True),
+          location_id=artifact_registry.RepoRegion(
+              args,
+              cluster_location=(
+                  conn_context.cluster_location
+                  if platform == platforms.PLATFORM_GKE
+                  else None
+              ),
+          ),
+          repo_id='cloud-run-source-deploy',
+      )
+      if artifact_registry.ShouldCreateRepository(
+          ar_repo, skip_activation_prompt=already_activated_services
+      ):
+        repo_to_create = ar_repo
+      docker_string = ar_repo.GetDockerString()
+    return docker_string, repo_to_create
 
   def _GetSourceBucketFromSourceLocation(self, source_location):
     logging.debug('source_location: %s', source_location)
@@ -575,9 +626,12 @@ class Deploy(base.Command):
 
     required_apis = self._GetRequiredApis(args)
     if build_from_source:
-      if flags.FlagIsExplicitlySet(
-          args, 'key'
-      ) and not flags.FlagIsExplicitlySet(args, 'allow_unencrypted_build'):
+      is_cmek_consent_required = (
+          self.ReleaseTrack() == base.ReleaseTrack.GA
+          and flags.FlagIsExplicitlySet(args, 'key')
+          and not flags.FlagIsExplicitlySet(args, 'allow_unencrypted_build')
+      )
+      if is_cmek_consent_required:
         if not console_io.CanPrompt():
           raise c_exceptions.ConflictingArgumentsException(
               '--key',
@@ -590,13 +644,11 @@ class Deploy(base.Command):
           )
         if not console_io.PromptContinue(
             message=(
-                (
-                    'This source deployment involves a build process which does'
-                    ' not support customer-managed encryption keys (CMEK). If'
-                    ' you choose to continue, compliance will be limited to'
-                    ' only the deployed container, and will not apply to the'
-                    ' build sources and artifacts. Would you like to continue?'
-                ),
+                'This source deployment involves a build process which does'
+                ' not support customer-managed encryption keys (CMEK). If'
+                ' you choose to continue, compliance will be limited to'
+                ' only the deployed container, and will not apply to the'
+                ' build sources and artifacts. Would you like to continue?'
             )
         ):
           return None
@@ -724,10 +776,49 @@ class Deploy(base.Command):
       return service
 
 
+def _ValidateArRepository(
+    annotated_build_image_uri, already_activated_services):
+  """Checks the format and existence of the repository in Artifact Registry."""
+  image_uri_regex = r'([\w-]+)-docker\.pkg\.dev/([\w-]+)/([\w-]+)'
+  match = re.match(image_uri_regex, annotated_build_image_uri)
+
+  if not match:
+    raise c_exceptions.InvalidArgumentException(
+        '--image',
+        'The artifact repository found for the function '
+        'was not in the expected format '
+        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME], please try again. \n'
+        f'Retrieved value was: {annotated_build_image_uri}',
+    )
+  region = match.group(1)
+  project_id = match.group(2)
+  repo_id = match.group(3)
+  ar_repo = docker_util.DockerRepo(
+      project_id=project_id,
+      location_id=region,
+      repo_id=repo_id,
+      )
+  # Raise an error if the repo doesn't exist, will not attempt to create it.
+  if artifact_registry.ShouldCreateRepository(
+      ar_repo,
+      skip_activation_prompt=already_activated_services,
+      skip_console_prompt=True
+  ):
+    raise c_exceptions.InvalidArgumentException(
+        '--image',
+        'The artifact repository provided does not exist: '
+        f'{annotated_build_image_uri}.'
+        ' Please create the repository and try again.',
+    )
+  return ar_repo.GetDockerString()
+
+
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
   changes = []
+  source = container.source
+  project_toml_file = source + '/' + _PROJECT_TOML_FILE_NAME
   if release_track != base.ReleaseTrack.GA:
     command_arg = getattr(container, 'command', None)
     function_arg = getattr(container, 'function', None)
@@ -743,6 +834,8 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
               'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
           ]
       })
+    if os.path.exists(project_toml_file):
+      pack[0].update({'project_descriptor': _PROJECT_TOML_FILE_NAME})
   return pack, changes
 
 

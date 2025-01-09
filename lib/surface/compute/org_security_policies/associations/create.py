@@ -60,6 +60,11 @@ class Create(base.CreateCommand):
     if args.IsSpecified('name'):
       name = args.name
 
+    if args.IsSpecified('project_number'):
+      attachment_id = 'projects/' + args.project_number
+      if name is None:
+        name = 'project-' + args.project_number
+
     if args.IsSpecified('folder'):
       attachment_id = 'folders/' + args.folder
       if name is None:
@@ -73,7 +78,7 @@ class Create(base.CreateCommand):
     if attachment_id is None:
       log.error(
           'Must specify attachment ID with --organization=ORGANIZATION or '
-          '--folder=FOLDER')
+          '--folder=FOLDER or --project-number=PROJECT.')
       sys.exit()
 
     if args.IsSpecified('excluded_projects'):

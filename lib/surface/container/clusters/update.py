@@ -406,6 +406,8 @@ class Update(base.UpdateCommand):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
     flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
@@ -539,6 +541,9 @@ class Update(base.UpdateCommand):
     opts.enable_ip_access = args.enable_ip_access
     opts.enable_authorized_networks_on_private_endpoint = (
         args.enable_authorized_networks_on_private_endpoint
+    )
+    opts.enable_autopilot_compatibility_auditing = (
+        args.enable_autopilot_compatibility_auditing
     )
     return opts
 
@@ -915,6 +920,20 @@ to completion."""
           util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
         except kconfig.MissingEnvVarError as error:
           log.warning(error)
+        for node_pool in cluster.nodePools:
+          util.CheckForCgroupModeV1(node_pool)
+      else:
+        try:
+          cluster = adapter.GetCluster(cluster_ref)
+          for node_pool in cluster.nodePools:
+            util.CheckForCgroupModeV1(node_pool)
+        except (exceptions.HttpException,
+                apitools_exceptions.HttpForbiddenError, util.Error) as error:
+          log.warning(
+              util.CGROUPV1_CHECKING_FAILURE_MSG.format(
+                  console_attr.SafeText(error)
+              )
+          )
 
   def IsClusterRequired(self, args):
     """Returns if failure getting the cluster should be an error."""
@@ -1049,6 +1068,8 @@ class UpdateBeta(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(
         group_for_control_plane_endpoints)
@@ -1241,6 +1262,9 @@ class UpdateBeta(Update):
     opts.enable_authorized_networks_on_private_endpoint = (
         args.enable_authorized_networks_on_private_endpoint
     )
+    opts.enable_autopilot_compatibility_auditing = (
+        args.enable_autopilot_compatibility_auditing
+    )
     return opts
 
 
@@ -1365,6 +1389,8 @@ class UpdateAlpha(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(
         group_for_control_plane_endpoints)
@@ -1552,5 +1578,8 @@ class UpdateAlpha(Update):
     opts.enable_ip_access = args.enable_ip_access
     opts.enable_authorized_networks_on_private_endpoint = (
         args.enable_authorized_networks_on_private_endpoint
+    )
+    opts.enable_autopilot_compatibility_auditing = (
+        args.enable_autopilot_compatibility_auditing
     )
     return opts

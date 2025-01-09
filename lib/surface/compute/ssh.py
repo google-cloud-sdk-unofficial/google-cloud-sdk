@@ -154,37 +154,52 @@ def AddInternalIPArg(group):
         """)
 
 
+def TroubleshootHelp():
+  """Generate the help text for troubleshot argument."""
+  help_text = """\
+          If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the `--troubleshoot` flag:
+
+            $ {command} VM_NAME --zone=ZONE --troubleshoot"""
+  if base_classes.SupportIAP():
+    help_text += """ [--tunnel-through-iap]"""
+  help_text += """
+
+          The troubleshoot flag runs tests and returns recommendations for the following types of issues:
+          - VM status"""
+  if base_classes.SupportNetworkConnectivityTest():
+    help_text += """
+          - Network connectivity"""
+  help_text += """
+          - User permissions
+          - Virtual Private Cloud (VPC) settings
+          - VM boot"""
+  if base_classes.SupportIAP():
+    help_text += """
+
+          If you specify the `--tunnel-through-iap` flag, the tool also checks IAP port forwarding."""
+  return help_text + """
+          """
+
+
 def AddTroubleshootArg(parser):
   parser.add_argument(
       '--troubleshoot',
       action='store_true',
-      help="""\
-          If you can't connect to a virtual machine (VM) instance using SSH, you can investigate the problem using the `--troubleshoot` flag:
-
-            $ {command} VM_NAME --zone=ZONE --troubleshoot [--tunnel-through-iap]
-
-          The troubleshoot flag runs tests and returns recommendations for four types of issues:
-          - VM status
-          - Network connectivity
-          - User permissions
-          - Virtual Private Cloud (VPC) settings
-          - VM boot
-
-          If you specify the `--tunnel-through-iap` flag, the tool also checks IAP port forwarding.
-          """)
+      help=TroubleshootHelp())
 
 
 # pylint: disable=unused-argument
 def RunTroubleshooting(project=None, zone=None, instance=None,
                        iap_tunnel_args=None):
   """Run each category of troubleshoot action."""
-  network_args = {
-      'project': project,
-      'zone': zone,
-      'instance': instance,
-  }
-  network = network_troubleshooter.NetworkTroubleshooter(**network_args)
-  network()
+  if base_classes.SupportNetworkConnectivityTest():
+    network_args = {
+        'project': project,
+        'zone': zone,
+        'instance': instance,
+    }
+    network = network_troubleshooter.NetworkTroubleshooter(**network_args)
+    network()
 
   user_permission_args = {
       'project': project,
@@ -242,7 +257,8 @@ class Ssh(base.Command):
     AddSSHArgs(parser)
     AddContainerArg(parser)
     AddTroubleshootArg(parser)
-    iap_tunnel.AddHostBasedTunnelArgs(parser)
+    if base_classes.SupportIAP():
+      iap_tunnel.AddHostBasedTunnelArgs(parser)
 
     flags.AddZoneFlag(
         parser, resource_type='instance', operation_type='connect to')
@@ -250,7 +266,8 @@ class Ssh(base.Command):
 
     routing_group = parser.add_mutually_exclusive_group()
     AddInternalIPArg(routing_group)
-    iap_tunnel.AddSshTunnelArgs(parser, routing_group)
+    if base_classes.SupportIAP():
+      iap_tunnel.AddSshTunnelArgs(parser, routing_group)
 
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
@@ -269,12 +286,15 @@ class Ssh(base.Command):
     ssh_helper = ssh_utils.BaseSSHCLIHelper()
     ssh_helper.Run(args)
 
+    iap_tunnel_args = None
     if on_prem:
       user, ip = ssh_utils.GetUserAndInstance(args.user_host)
       remote = ssh.Remote(ip, user)
 
-      iap_tunnel_args = iap_tunnel.CreateOnPremSshTunnelArgs(
-          args, self.ReleaseTrack(), ip)
+      if base_classes.SupportIAP():
+        iap_tunnel_args = iap_tunnel.CreateOnPremSshTunnelArgs(
+            args, self.ReleaseTrack(), ip
+        )
       instance_address = ip
       internal_address = ip
       oslogin_state = ssh.OsloginState()
@@ -291,9 +311,14 @@ class Ssh(base.Command):
       else:
         host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
             client, instance_ref, instance, project)
-      iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
-          args, self.ReleaseTrack(), instance_ref,
-          ssh_utils.GetExternalInterface(instance, no_raise=True))
+
+      if base_classes.SupportIAP():
+        iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
+            args,
+            self.ReleaseTrack(),
+            instance_ref,
+            ssh_utils.GetExternalInterface(instance, no_raise=True),
+        )
 
       internal_address = ssh_utils.GetInternalIPAddress(instance)
 
@@ -470,7 +495,8 @@ class Ssh(base.Command):
     if args.force_key_file_overwrite:
       command += '--force-key-file-overwrite '
     command += '--troubleshoot'
-    command_iap = command + ' --tunnel-through-iap'
+    if base_classes.SupportIAP():
+      command_iap = command + ' --tunnel-through-iap'
     return RECOMMEND_MESSAGE.format(command, command_iap)
 
 

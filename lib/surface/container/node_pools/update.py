@@ -240,6 +240,7 @@ class Update(base.UpdateCommand):
           'Updating node pool {0}'.format(pool_ref.nodePoolId),
           timeout_s=args.timeout)
       pool = adapter.GetNodePool(pool_ref)
+      util.CheckForCgroupModeV1(pool)
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 

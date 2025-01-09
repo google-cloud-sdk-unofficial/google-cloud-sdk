@@ -181,6 +181,7 @@ class Create(base.Command):
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
   _support_reservation_bound = False
+  _support_graceful_shutdown = True
 
   _log_async = False
 
@@ -269,6 +270,7 @@ class Create(base.Command):
         self._support_custom_hostnames,
         self._support_specific_then_x_affinity,
         self._support_watchdog_timer,
+        self._support_graceful_shutdown,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -425,6 +427,7 @@ class CreateBeta(Create):
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
   _support_reservation_bound = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -454,6 +457,7 @@ class CreateBeta(Create):
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
         support_reservation_bound=cls._support_reservation_bound,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -489,6 +493,7 @@ class CreateAlpha(Create):
   _support_per_interface_stack_type = True
   _support_igmp_query = True
   _support_reservation_bound = True
+  _support_graceful_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -519,6 +524,7 @@ class CreateAlpha(Create):
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_igmp_query=cls._support_igmp_query,
         support_reservation_bound=cls._support_reservation_bound,
+        support_graceful_shutdown=cls._support_graceful_shutdown,
     )
 
     cls.AddSourceInstanceTemplate(parser)

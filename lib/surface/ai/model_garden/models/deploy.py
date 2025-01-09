@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai import operations
-from googlecloudsdk.api_lib.ai.endpoints import client as client_endpoints
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -31,7 +30,6 @@ from googlecloudsdk.command_lib.ai import model_garden_utils
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -88,9 +86,12 @@ class Deploy(base.Command):
             ' the model to deploy is gated.'
         ),
     )
-    flags.GetDisplayNameArg('deployed endpoint', required=False).AddToParser(
-        parser
-    )
+    base.Argument(
+        '--endpoint-display-name',
+        required=False,
+        help='Display name of the endpoint with the deployed model.',
+    ).AddToParser(parser)
+
     flags.AddRegionResourceArg(
         parser, 'to deploy the model', prompt_func=region_util.PromptForOpRegion
     )
@@ -124,22 +125,31 @@ class Deploy(base.Command):
         default=False,
         required=False,
     ).AddToParser(parser)
+    base.Argument(
+        '--asynchronous',
+        help=(
+            'If set to true, the command will terminate immediately and not'
+            ' keep polling the operation status.'
+        ),
+        action='store_true',
+        default=False,
+        required=False,
+    ).AddToParser(parser)
 
   def Run(self, args):
     validation.ValidateModelGardenModelArgs(args)
-    validation.ValidateDisplayName(args.display_name)
+    validation.ValidateDisplayName(args.endpoint_display_name)
     region_ref = args.CONCEPTS.region.Parse()
     args.region = region_ref.AsDict()['locationsId']
-    is_hf_model = args.hugging_face_model is not None
-    requires_hf_token = is_hf_model
     version = constants.BETA_VERSION
+    is_hf_model = args.hugging_face_model is not None
+    mg_client = client_mg.ModelGardenClient()
 
-    # Step 1: Fetch PublisherModel data, including deployment configs. Use
-    # us-central1 because all data are stored in us-central1.
     with endpoint_util.AiplatformEndpointOverrides(
         version, region='us-central1'
     ):
-      mg_client = client_mg.ModelGardenClient(version)
+      # Step 1: Fetch PublisherModel data, including deployment configs. Use
+      # us-central1 because all data are stored in us-central1.
       if is_hf_model:
         # Convert to lower case because API only takes in lower case.
         publisher_name, model_name = args.hugging_face_model.lower().split('/')
@@ -152,44 +162,40 @@ class Deploy(base.Command):
         except apitools_exceptions.HttpNotFoundError:
           raise c_exceptions.UnknownArgumentException(
               '--hugging-face-model',
-              f'{args.hugging_face_model} is not a supported Hugging Face model'
-              ' for deployment in Model Garden.',
-          )
-        # Only requires HF access token in argument when the model is gated.
-        requires_hf_token = model_garden_utils.IsHFModelGated(
-            publisher_name, model_name
-        )
-        if requires_hf_token:
-          if args.hugging_face_access_token is None:
-            args.hugging_face_access_token = console_io.PromptPassword(
-                'Please enter your Hugging Face read access token: '
-            )
-          model_garden_utils.VerifyHFTokenPermission(
-              args.hugging_face_access_token, publisher_name, model_name
+              f'{args.hugging_face_model} is not a supported Hugging Face'
+              ' model for deployment in Model Garden.',
           )
 
         default_endpoint_name = '-'.join(
             [publisher_name, model_name, 'hf', 'mg-cli-deploy']
         )
-        endpoint_label_value = model_garden_utils.GetCLIEndpointLabelValue(
-            is_hf_model, publisher_name, model_name=model_name
+        api_model_arg = (
+            f'publishers/hf-{publisher_name}/models/{model_name}@001'
         )
       else:
         # Convert to lower case because API only takes in lower case.
         publisher_name, model_name, model_version_name = (
             args.model.lower().split('/')
         )
-        publisher_model = mg_client.GetPublisherModel(
-            f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
-        )
+        try:
+          publisher_model = mg_client.GetPublisherModel(
+              f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
+          )
+        except apitools_exceptions.HttpNotFoundError:
+          raise c_exceptions.UnknownArgumentException(
+              '--model',
+              f'{args.model} is not a supported Model Garden model for'
+              ' deployment in Model Garden.',
+          )
+
         default_endpoint_name = '-'.join(
             [publisher_name, model_version_name, 'mg-cli-deploy']
         )
-        endpoint_label_value = model_garden_utils.GetCLIEndpointLabelValue(
-            is_hf_model, publisher_name, model_version_name=model_version_name
-        )
+        api_model_arg = f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
 
       deploy_config = model_garden_utils.GetDeployConfig(args, publisher_model)
+
+      # Step 2: Check accelerator quota.
       model_garden_utils.CheckAcceleratorQuota(
           args,
           machine_type=deploy_config.dedicatedResources.machineSpec.machineType,
@@ -201,40 +207,22 @@ class Deploy(base.Command):
       # Clear the aiplatform URI value so that new values can be set.
       properties.VALUES.api_endpoint_overrides.aiplatform.Set(None)
 
-    with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
-      operation_client = operations.OperationsClient(version=version)
-      endpoints_client = client_endpoints.EndpointsClient(version=version)
-      endpoint_name = (
-          args.display_name if args.display_name else default_endpoint_name
-      )
-      # Step 2: Create a Vertex Endpoint.
-      endpoint_id = model_garden_utils.CreateEndpoint(
-          endpoint_name,
-          endpoint_label_value,
-          region_ref,
-          operation_client,
-          endpoints_client,
-      )
+      # Step 3: Deploy the model.
+      with endpoint_util.AiplatformEndpointOverrides(
+          version, region=args.region
+      ):
+        operation_client = operations.OperationsClient(version=version)
+        endpoint_name = (
+            args.endpoint_display_name
+            if args.endpoint_display_name
+            else default_endpoint_name
+        )
 
-      # Step 3: Upload the model to Model Registry.
-      model_id = model_garden_utils.UploadModel(
-          deploy_config,
-          args,
-          requires_hf_token,
-          is_hf_model,
-          endpoint_name,
-          publisher_name,
-          model_name,
-      )
-
-      # Step 4: Deploy the model from Model Registry to the Endpoint.
-      model_garden_utils.DeployModel(
-          args,
-          deploy_config,
-          endpoint_id,
-          endpoint_name,
-          model_id,
-          endpoints_client,
-          operation_client,
-      )
-      return
+        model_garden_utils.DeployPublisherModel(
+            args,
+            deploy_config.dedicatedResources.machineSpec,
+            endpoint_name,
+            api_model_arg,
+            operation_client,
+            mg_client,
+        )

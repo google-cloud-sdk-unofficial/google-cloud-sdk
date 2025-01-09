@@ -59,6 +59,7 @@ POLL_JITTER_SECONDS = 0.5
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Run(base.Command):
   """List all PyPI modules installed in an Airflow worker."""
 
@@ -87,7 +88,9 @@ class Run(base.Command):
 
     tty = 'no-tty' not in args
 
-    with command_util.TemporaryKubeconfig(cluster_location_id, cluster_id):
+    with command_util.TemporaryKubeconfig(
+        cluster_location_id, cluster_id, None
+    ):
       try:
         image_version = env_obj.config.softwareConfig.imageVersion
 
@@ -192,6 +195,7 @@ class Run(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class RunBeta(Run):
   """List all PyPI modules installed in an Airflow worker.
 
