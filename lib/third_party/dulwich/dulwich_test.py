@@ -11,7 +11,6 @@ import sys
 import types
 import unittest
 
-import google3
 from absl import flags
 from dulwich import tests
 from dulwich.tests import utils
