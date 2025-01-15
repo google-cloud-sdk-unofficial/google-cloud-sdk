@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,38 +14,35 @@
 # limitations under the License.
 """Command to seed conversion workspaces for a database migration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+import argparse
+from typing import Optional
 
-from googlecloudsdk.api_lib.database_migration import api_util
-from googlecloudsdk.api_lib.database_migration import conversion_workspaces
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.database_migration.conversion_workspaces import command_mixin
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
-from googlecloudsdk.core import log
+from googlecloudsdk.generated_clients.apis.datamigration.v1 import datamigration_v1_messages as messages
 
-DETAILED_HELP = {
-    'DESCRIPTION': """
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Seed(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
+  """Seed a Database Migration Service conversion workspace."""
+
+  detailed_help = {
+      'DESCRIPTION': """
         Seed a Database Migration Service conversion workspace.
-        """,
-    'EXAMPLES': """\
+      """,
+      'EXAMPLES': """\
         To seed a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
             --source-connection-profile=cp1
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Seed(base.Command):
-  """Seed a Database Migration Service conversion workspace."""
-
-  detailed_help = DETAILED_HELP
+      """,
+  }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser) -> None:
     """Args is called by calliope to gather arguments for this command.
 
     Args:
@@ -56,7 +53,7 @@ class Seed(base.Command):
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddAutoCommitFlag(parser)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Seed a Database Migration Service conversion workspace.
 
     Args:
@@ -68,49 +65,16 @@ class Seed(base.Command):
       operation if the seed was successful.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-
-    source_connection_profile_ref = (
-        args.CONCEPTS.source_connection_profile.Parse()
+    result_operation = self.client.operations.Seed(
+        name=conversion_workspace_ref.RelativeName(),
+        src_connection_profile_ref=args.CONCEPTS.source_connection_profile.Parse(),
+        dest_connection_profile_ref=args.CONCEPTS.destination_connection_profile.Parse(),
+        auto_commit=args.auto_commit,
     )
-    destination_connection_profile_ref = (
-        args.CONCEPTS.destination_connection_profile.Parse()
+
+    return self.HandleOperationResult(
+        conversion_workspace_ref=conversion_workspace_ref,
+        result_operation=result_operation,
+        operation_name='Seeded',
+        sync=args.IsKnownAndSpecified('no_async'),
     )
-
-    cw_client = conversion_workspaces.ConversionWorkspacesClient(
-        self.ReleaseTrack())
-    result_operation = cw_client.Seed(conversion_workspace_ref.RelativeName(),
-                                      source_connection_profile_ref,
-                                      destination_connection_profile_ref, args)
-
-    client = api_util.GetClientInstance(self.ReleaseTrack())
-    messages = api_util.GetMessagesModule(self.ReleaseTrack())
-    resource_parser = api_util.GetResourceParser(self.ReleaseTrack())
-
-    if args.IsKnownAndSpecified('no_async'):
-      log.status.Print(
-          'Waiting for conversion workspace [{}] to be seeded with [{}]'.format(
-              conversion_workspace_ref.conversionWorkspacesId,
-              result_operation.name,
-          )
-      )
-
-      api_util.HandleLRO(client, result_operation,
-                         client.projects_locations_conversionWorkspaces)
-
-      log.status.Print(
-          'Seeded conversion workspace {} [{}]'.format(
-              conversion_workspace_ref.conversionWorkspacesId,
-              result_operation.name,
-          )
-      )
-      return
-
-    operation_ref = resource_parser.Create(
-        'datamigration.projects.locations.operations',
-        operationsId=result_operation.name,
-        projectsId=conversion_workspace_ref.projectsId,
-        locationsId=conversion_workspace_ref.locationsId)
-
-    return client.projects_locations_operations.Get(
-        messages.DatamigrationProjectsLocationsOperationsGetRequest(
-            name=operation_ref.operationsId))

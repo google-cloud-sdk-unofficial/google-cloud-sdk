@@ -98,6 +98,7 @@ def _Run(
       getattr(args, 'pubsub_export_topic', None) if enable_push_to_cps else None
   )
   pubsub_export_topic_region = getattr(args, 'pubsub_export_topic_region', None)
+  message_transforms_file = getattr(args, 'message_transforms_file', None)
 
   no_expiration = False
   expiration_period = getattr(args, 'expiration_period', None)
@@ -159,6 +160,7 @@ def _Run(
           cloud_storage_service_account_email=cloud_storage_service_account_email,
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
+          message_transforms_file=message_transforms_file,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -211,7 +213,7 @@ class Create(base.CreateCommand):
     return _Run(args, enable_labels=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Creates one or more Cloud Pub/Sub subscriptions."""
 
@@ -243,3 +245,13 @@ class CreateBeta(Create):
         legacy_output=legacy_output,
         enable_push_to_cps=True,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Creates one or more Cloud Pub/Sub subscriptions."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    flags.AddMessageTransformsFlags(parser)

@@ -30,6 +30,7 @@
     - help_text: |-
         Identifier. name of resource
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.model_armor.v1alpha_resources:project_location_template
       required: true
     - arg_name: labels
@@ -43,11 +44,15 @@
       - api_field: key
       - api_field: value
     - group:
+        api_field: template.filterConfig
+        arg_name: filter-config
+        clearable: true
         required: false
         help_text: |-
           Filters configuration.
         params:
         - group:
+            api_field: template.filterConfig.raiSettings
             required: false
             help_text: |-
               Responsible AI Filter settings.
@@ -71,6 +76,7 @@
                   match is reported. If the confidence level is unspecified (i.e., 0), the
                   system will use a reasonable default level based on the `filter_type`.
         - group:
+            api_field: template.filterConfig.sdpSettings
             required: false
             help_text: |-
               Sensitive Data protection settings.
@@ -81,6 +87,7 @@
                   Arguments for the sdp configuration.
                 params:
                 - group:
+                    api_field: template.filterConfig.sdpSettings.basicConfig
                     required: false
                     help_text: |-
                       SDP Basic configuration.
@@ -100,6 +107,7 @@
                         help_text: |-
                           Disabled
                 - group:
+                    api_field: template.filterConfig.sdpSettings.advancedConfig
                     required: false
                     help_text: |-
                       SDP Advanced configuration.
@@ -130,8 +138,8 @@
                         If provided then DeidentifyContent action is performed during Sanitization
                         using this template and inspect template. The De-identified data will
                         be returned in SdpDeidentifyResult.
-                        Note that if only Deidentify template is provided then SDP will perform
-                        identification using all SDP built-in info types.
+                        Note that all info-types present in the deidentify template must be present
+                        in inspect template.
 
                         e.g.
                         `organizations/{organization}/deidentifyTemplates/{deidentify_template}`,
@@ -139,6 +147,7 @@
                         `organizations/{organization}/locations/{location}/deidentifyTemplates/{deidentify_template}`
                         `projects/{project}/locations/{location}/deidentifyTemplates/{deidentify_template}`
         - group:
+            api_field: template.filterConfig.piAndJailbreakFilterSettings
             required: false
             help_text: |-
               Prompt injection and Jailbreak Filter settings.
@@ -181,6 +190,7 @@
                 help_text: |-
                   Low chance of false positives.
         - group:
+            api_field: template.filterConfig.maliciousUriFilterSettings
             required: false
             help_text: |-
               Malicious URI filter settings.
@@ -199,6 +209,65 @@
                 enum_value: DISABLED
                 help_text: |-
                   Disabled
+    - group:
+        api_field: template.templateMetadata
+        arg_name: template-metadata
+        clearable: true
+        required: false
+        help_text: |-
+          Message describing TemplateMetadata
+        params:
+        - arg_name: template-metadata-ignore-partial-invocation-failures
+          api_field: template.templateMetadata.ignorePartialInvocationFailures
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            If true, partial detector failures should be ignored.
+        - arg_name: template-metadata-custom-prompt-safety-error-code
+          api_field: template.templateMetadata.customPromptSafetyErrorCode
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            Indicates the custom error code set by the user to be returned to the end
+            user by the service extension if the prompt trips Model Armor filters.
+        - arg_name: template-metadata-custom-prompt-safety-error-message
+          api_field: template.templateMetadata.customPromptSafetyErrorMessage
+          required: false
+          repeated: false
+          help_text: |-
+            Indicates the custom error message set by the user to be returned to the
+            end user if the prompt trips Model Armor filters.
+        - arg_name: template-metadata-custom-llm-response-safety-error-code
+          api_field: template.templateMetadata.customLlmResponseSafetyErrorCode
+          required: false
+          repeated: false
+          type: int
+          help_text: |-
+            Indicates the custom error code set by the user to be returned to the end
+            user if the LLM response trips Model Armor filters.
+        - arg_name: template-metadata-custom-llm-response-safety-error-message
+          api_field: template.templateMetadata.customLlmResponseSafetyErrorMessage
+          required: false
+          repeated: false
+          help_text: |-
+            Indicates the custom error message set by the user to be returned to the
+            end user if the LLM response trips Model Armor filters.
+        - arg_name: template-metadata-log-operations
+          api_field: template.templateMetadata.logTemplateOperations
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            If true, log template crud operations.
+        - arg_name: template-metadata-log-sanitize-operations
+          api_field: template.templateMetadata.logSanitizeOperations
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            If true, log sanitize operations.
     - arg_name: request-id
       api_field: requestId
       required: false

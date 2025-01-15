@@ -31,11 +31,11 @@ class CreateAlpha(base.CreateCommand):
   ## EXAMPLES
 
   To create a quota preference in region `us-central1` that applies to the
-  `default_limit` quota under service `example.googleapis.com` for
+  `default_limit` quota under service `example.$$UNIVERSE_DOMAIN$$` for
   `projects/12321`, run:
 
     $ {command}
-    --service=example.googleapis.com
+    --service=example.$$UNIVERSE_DOMAIN$$
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
@@ -43,12 +43,12 @@ class CreateAlpha(base.CreateCommand):
     --preference-id=example_default-limit_us-central1
 
 
-  To create a quota preference under service `example.googleapis.com` for
-  `organizations/123` with random preference ID, run:
+  To create a quota preference under service `example.$$UNIVERSE_DOMAIN$$` for
+  `organizations/789` with random preference ID, run:
 
     $ {command}
-    --service=example.googleapis.com
-    --organization=123
+    --service=example.$$UNIVERSE_DOMAIN$$
+    --organization=789
     --quota-id=default_limit
     --preferred-value=200
   """
@@ -103,7 +103,6 @@ class CreateAlpha(base.CreateCommand):
       )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class CreateBeta(base.CreateCommand):
@@ -112,11 +111,11 @@ class CreateBeta(base.CreateCommand):
   ## EXAMPLES
 
   To create a quota preference in region `us-central1` that applies to the
-  `default_limit` quota under service `example.googleapis.com` for
+  `default_limit` quota under service `example.$$UNIVERSE_DOMAIN$$` for
   `projects/12321`, run:
 
     $ {command}
-    --service=example.googleapis.com
+    --service=example.$$UNIVERSE_DOMAIN$$
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
@@ -124,12 +123,12 @@ class CreateBeta(base.CreateCommand):
     --preference-id=example_default-limit_us-central1
 
 
-  To create a quota preference under service `example.googleapis.com`` for
-  `organizations/123` with random preference ID, run:
+  To create a quota preference under service `example.$$UNIVERSE_DOMAIN$$`` for
+  `organizations/789` with random preference ID, run:
 
     $ {command}
-    --service=example.googleapis.com
-    --organization=123
+    --service=example.$$UNIVERSE_DOMAIN$$
+    --organization=789
     --quota-id=default_limit
     --preferred-value=200
   """

@@ -266,11 +266,10 @@
           release_tracks: [ALPHA, BETA]
     - arg_name: kms-key
       api_field: cluster.kmsKey
-      hidden: true
       release_tracks: [ALPHA, BETA]
       help_text: |
-        The resource name of the customer managed encryption key (CMEK) to use for the cluster.
-        It must use the format:
+        The resource name of the customer-managed encryption key (CMEK) to use for the cluster.
+        It must use this format:
         projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/CRYPTO_KEY.
         The key must be in the same region as the cluster. Otherwise, the create operation fails.
 

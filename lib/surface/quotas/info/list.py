@@ -26,17 +26,18 @@ class ListAlpha(base.ListCommand):
 
   ## EXAMPLES
 
-  To list all quota info for service `example.googleapis.com` and
+  To list all quota info for service `example.$$UNIVERSE_DOMAIN$$` and
   `projects/12321`, run:
 
-    $ {command} --service=example.googleapis.com --project=12321
-    $ {command} --service=example.googleapis.com --project=my-project-id
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=12321
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=my-project-id
 
    To list first 100 quota info ordered alphabetically for service
-   `example.googleapis.com` and `folders/12321`,
+   `example.$$UNIVERSE_DOMAIN$$` and `folders/123`,
    run:
 
-    $ {command} --service=example.googleapis.com --folder=12321 --page-size=100
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --folder=123
+    --page-size=100
   """
 
   @staticmethod
@@ -64,7 +65,6 @@ class ListAlpha(base.ListCommand):
     return quota_info.ListQuotaInfo(args, release_track=base.ReleaseTrack.GA)
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBeta(base.ListCommand):
@@ -72,17 +72,18 @@ class ListBeta(base.ListCommand):
 
   ## EXAMPLES
 
-  To list all quota info for service `example.googleapis.com` and
+  To list all quota info for service `example.$$UNIVERSE_DOMAIN$$` and
   `projects/12321`, run:
 
-    $ {command} --service=example.googleapis.com --project=12321
-    $ {command} --service=example.googleapis.com --project=my-project-id
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --project=12321
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$m --project=my-project-id
 
    To list first 100 quota info ordered alphabetically for service
-   `example.googleapis.com` and `folders/12321`,
+   `example.$$UNIVERSE_DOMAIN$$` and `folders/123`,
    run:
 
-    $ {command} --service=example.googleapis.com --folder=12321 --page-size=100
+    $ {command} --service=example.$$UNIVERSE_DOMAIN$$ --folder=123
+    --page-size=100
   """
 
   @staticmethod

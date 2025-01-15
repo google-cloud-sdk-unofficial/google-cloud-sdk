@@ -32,16 +32,16 @@ class ListAlpha(base.ListCommand):
     $ {command} --project=my-project-id
 
 
-  To list first 10 quota preferences ordered by create time for `folder/12345`,
+  To list first 10 quota preferences ordered by create time for `folder/123`,
   run:
 
-    $ {command} --folder=12345 --page-size=10 --sort-by=create_time
+    $ {command} --folder=123 --page-size=10 --sort-by=create_time
 
 
   To list all quota preferences in unresolved state in region `us-central1` for
-  `organization/987`, run:
+  `organization/789`, run:
 
-    $ {command} --organization=987 --filter=dimensions.region:us-central1
+    $ {command} --organization=789 --filter=dimensions.region:us-central1
     --reconciling-only
   """
 
@@ -72,7 +72,6 @@ class ListAlpha(base.ListCommand):
     )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBeta(base.ListCommand):
@@ -86,16 +85,16 @@ class ListBeta(base.ListCommand):
     $ {command} --project=my-project-id
 
 
-  To list first 10 quota preferences ordered by create time for `folder/12345`,
+  To list first 10 quota preferences ordered by create time for `folder/123`,
   run:
 
-    $ {command} --folder=12345 --page-size=10 --sort-by=create_time
+    $ {command} --folder=123 --page-size=10 --sort-by=create_time
 
 
   To list all quota preferences in unresolved state in region `us-central1` for
-  `organization/987`, run:
+  `organization/789`, run:
 
-    $ {command} --organization=987 --filter=dimensions.region:us-central1
+    $ {command} --organization=789 --filter=dimensions.region:us-central1
     --reconciling-only
   """
 

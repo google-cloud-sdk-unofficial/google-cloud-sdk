@@ -37,20 +37,19 @@ class Create(base.Command):
       serverless manner.
       """,
       "EXAMPLES": """
-      To create a batch job with the name `my-job` in location `us-central1` to
-      perform object deletion where the manifest file
+      To create a batch job with the name `my-job` to perform object deletion
+      where the manifest file
       `gs://my-bucket/manifest.csv` specifies the objects to be transformed:
 
-          $ {command} my-job --location=us-central1
-          --manifest-location=gs://my-bucket/manifest.csv --delete-object
+          $ {command} my-job --manifest-location=gs://my-bucket/manifest.csv
+          --delete-object
 
-      To create a batch job with the name `my-job` in location `us-central1` to
-      update object metadata `Content-Disposition` to `inline`
-      and `Content-Language` to `en` where the prefix list file
+      To create a batch job with the name `my-job` to update object metadata
+      `Content-Disposition` to `inline` and `Content-Language` to `en` where
+      the prefix list file
       `my-path/my-prefix-list.json` specifies the objects to be transformed:
 
-          $ {command} my-job --location=us-central1
-          --prefix-list-file=my-path/my-prefix-list.json
+          $ {command} my-job --prefix-list-file=my-path/my-prefix-list.json
           --put-metadata=Content-Disposition=inline,Content-Language=en
       """,
   }

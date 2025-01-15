@@ -31,6 +31,7 @@
         Represents resource name of template
         e.g. name=projects/sample-project/locations/us-central1/templates/templ01
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.model_armor.v1alpha_resources:project_location_template
       required: true
     - group:
@@ -45,6 +46,7 @@
           help_text: |-
             Plaintext string data for sanitization.
         - group:
+            api_field: sanitizeModelResponseRequest.modelResponseData.byteItem
             required: false
             help_text: |-
               Represents Byte Data item.
@@ -65,12 +67,14 @@
                   PDF
             - arg_name: model-response-data-byte-item-from-file
               api_field: sanitizeModelResponseRequest.modelResponseData.byteItem.byteData
+              json_name: byteDataFromFile
               required: true
               repeated: false
               type: file_type
               help_text: |-
                 Bytes Data
     - group:
+        api_field: sanitizeModelResponseRequest.filterConfig.raiSettings
         required: false
         help_text: |-
           Responsible AI Filter settings.
@@ -93,6 +97,7 @@
               match is reported. If the confidence level is unspecified (i.e., 0), the
               system will use a reasonable default level based on the `filter_type`.
     - group:
+        api_field: sanitizeModelResponseRequest.filterConfig.sdpSettings
         required: false
         help_text: |-
           Sensitive Data protection settings.
@@ -103,6 +108,7 @@
               Arguments for the sdp configuration.
             params:
             - group:
+                api_field: sanitizeModelResponseRequest.filterConfig.sdpSettings.basicConfig
                 required: false
                 help_text: |-
                   SDP Basic configuration.
@@ -122,6 +128,7 @@
                     help_text: |-
                       Disabled
             - group:
+                api_field: sanitizeModelResponseRequest.filterConfig.sdpSettings.advancedConfig
                 required: false
                 help_text: |-
                   SDP Advanced configuration.
@@ -152,8 +159,8 @@
                     If provided then DeidentifyContent action is performed during Sanitization
                     using this template and inspect template. The De-identified data will
                     be returned in SdpDeidentifyResult.
-                    Note that if only Deidentify template is provided then SDP will perform
-                    identification using all SDP built-in info types.
+                    Note that all info-types present in the deidentify template must be present
+                    in inspect template.
 
                     e.g.
                     `organizations/{organization}/deidentifyTemplates/{deidentify_template}`,
@@ -161,6 +168,7 @@
                     `organizations/{organization}/locations/{location}/deidentifyTemplates/{deidentify_template}`
                     `projects/{project}/locations/{location}/deidentifyTemplates/{deidentify_template}`
     - group:
+        api_field: sanitizeModelResponseRequest.filterConfig.piAndJailbreakFilterSettings
         required: false
         help_text: |-
           Prompt injection and Jailbreak Filter settings.
@@ -203,6 +211,7 @@
             help_text: |-
               Low chance of false positives.
     - group:
+        api_field: sanitizeModelResponseRequest.filterConfig.maliciousUriFilterSettings
         required: false
         help_text: |-
           Malicious URI filter settings.

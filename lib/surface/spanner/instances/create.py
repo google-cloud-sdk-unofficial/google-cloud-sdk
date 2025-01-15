@@ -87,7 +87,6 @@ class Create(base.CreateCommand):
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
-        hide_autoscaling_args=True,
         parser=parser,
     )
     base.ASYNC_FLAG.AddToParser(parser)
@@ -187,7 +186,6 @@ class BetaCreate(base.CreateCommand):
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
-        hide_autoscaling_args=False,
         parser=parser,
         add_asymmetric_option_flag=True,
     )
@@ -276,7 +274,6 @@ class AlphaCreate(Create):
     resource_args.AddDefaultStorageTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=True,
-        hide_autoscaling_args=False,
         parser=parser,
         add_asymmetric_option_flag=True,
     )

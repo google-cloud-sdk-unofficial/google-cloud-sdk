@@ -17,14 +17,13 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaAdjusterSettingsBeta(base.Group):
   """The command group for Cloud Quotas AdjusterSettings.
 
   A QuotaAdjusterSettings resource represents your adjuster setting for a
-  particular container. Enable this to automatically adjust quotas.
+  particular project. Enable this to automatically adjust quotas.
   """
 
 
@@ -35,5 +34,5 @@ class QuotaAdjusterSettingsAlpha(base.Group):
   """The command group for Cloud Quotas AdjusterSettings.
 
   A QuotaAdjusterSettings resource represents your adjuster setting for a
-  particular container. Enable this to automatically adjust quotas.
+  particular project. Enable this to automatically adjust quotas.
   """

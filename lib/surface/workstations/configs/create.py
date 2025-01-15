@@ -76,7 +76,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddGrantWorkstationAdminRoleOnCreate(parser)
     workstations_flags.AddBootDiskSize(parser)
     workstations_flags.AddPdDiskType(parser)
-    workstations_flags.AddPdDiskSize(parser)
+    workstations_flags.AddPdDiskSizeOrSnapshot(parser)
     workstations_flags.AddPdReclaimPolicy(parser)
     workstations_flags.AddContainerImageField(parser)
     workstations_flags.AddContainerCommandField(parser)

@@ -36,7 +36,6 @@ class _MigrationJobObjectInfo:
     self.update_time = message.updateTime
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):

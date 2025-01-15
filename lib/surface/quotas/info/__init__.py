@@ -43,7 +43,6 @@ class QuotaInfoAlpha(base.Group):
   """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaInfoBeta(base.Group):

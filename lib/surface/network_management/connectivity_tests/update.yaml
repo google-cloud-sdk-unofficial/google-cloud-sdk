@@ -222,6 +222,12 @@
         This boolean controls whether return traces (from the destination to the
         source) will be additionally calculated if packet successfully reaches
         the destination from the source. Use --no-round-trip to disable.
+    - arg_name: bypass-firewall-checks
+      type: bool
+      api_field: connectivityTest.bypassFirewallChecks
+      help_text: |
+        This boolean controls whether to skip firewall checking. Use
+        --no-bypass-firewall-checks to disable.
     - arg_name: other-projects
       api_field: connectivityTest.relatedProjects
       repeated: true

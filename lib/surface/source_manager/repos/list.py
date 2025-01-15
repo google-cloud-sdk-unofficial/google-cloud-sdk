@@ -28,13 +28,14 @@ DETAILED_HELP = {
     "EXAMPLES": """
             To list repositories in location `us-central1` under instance
             `my-instance`, run the following command:
+
             $ {command} --region=us-central1 --instance=my-instance
         """,
 }
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List all repositories under a Secure Source Manager instance."""
 

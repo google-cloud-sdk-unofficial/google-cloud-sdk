@@ -195,6 +195,7 @@ def _Run(args, legacy_output=False):
       args, 'confluent_cloud_ingestion_service_account', None
   )
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
+  message_transforms_file = getattr(args, 'message_transforms_file', None)
 
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
@@ -236,6 +237,7 @@ def _Run(args, legacy_output=False):
           confluent_cloud_ingestion_identity_pool_id=confluent_cloud_ingestion_identity_pool_id,
           confluent_cloud_ingestion_service_account=confluent_cloud_ingestion_service_account,
           ingestion_log_severity=ingestion_log_severity,
+          message_transforms_file=message_transforms_file,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -346,3 +348,4 @@ class CreateAlpha(CreateBeta):
         include_ingestion_from_aws_msk_flags=True,
         include_ingestion_from_confluent_cloud_flags=True,
     )
+    flags.AddMessageTransformsFlags(parser)

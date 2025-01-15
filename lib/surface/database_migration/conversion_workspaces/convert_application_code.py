@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,39 +14,40 @@
 # limitations under the License.
 """Command to convert conversion workspaces for a database migration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+import argparse
 
-from googlecloudsdk.api_lib.database_migration import conversion_workspaces
 from googlecloudsdk.api_lib.database_migration import resource_args
+from googlecloudsdk.api_lib.database_migration.conversion_workspaces.app_code_conversion import application_code_converter
+from googlecloudsdk.api_lib.database_migration.conversion_workspaces.app_code_conversion import conversion_params
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.database_migration.conversion_workspaces import command_mixin
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
-
-DETAILED_HELP = {
-    'DESCRIPTION': """
-        Convert the provided source code from accessing the source database to
-        accessing the destination database.
-        """,
-    'EXAMPLES': """\
-        To convert the application code:
-
-            $ {command} --source-file=Path/to/source --region=us-central1
-        """,
-}
 
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-class ConvertApplicationCode(base.Command):
+class ConvertApplicationCode(
+    command_mixin.ConversionWorkspacesCommandMixin,
+    base.Command,
+):
   """Convert the application code."""
 
-  detailed_help = DETAILED_HELP
+  detailed_help = {
+      'DESCRIPTION': """
+        Convert the provided source code from accessing the source database to
+        accessing the destination database.
+      """,
+      'EXAMPLES': """\
+        To convert the application code:
+
+            $ {command} --source-file=Path/to/source --region=us-central1
+      """,
+  }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser) -> None:
     """Args is called by calliope to gather arguments for this command.
 
     Args:
@@ -64,18 +65,23 @@ class ConvertApplicationCode(base.Command):
     cw_flags.AddSourceDetailsFlag(parser)
     cw_flags.AddTargetPathFlag(parser)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace):
     """Convert the application code.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
         with.
-
-    Returns:
-      None.
     """
-    region_ref = args.CONCEPTS.region.Parse()
-    cw_client = conversion_workspaces.ConversionWorkspacesClient(
-        self.ReleaseTrack()
+    params = conversion_params.ApplicationCodeConversionParams(
+        name=args.CONCEPTS.region.Parse().RelativeName(),
+        source_dialect=args.source_dialect,
+        target_dialect=args.target_dialect,
+        source_folder=args.source_folder,
+        target_path=args.target_path,
+        source_file=args.source_file,
     )
-    return cw_client.ConvertApplicationCode(region_ref.RelativeName(), args)
+    converter = application_code_converter.ApplicationCodeConverter(
+        params=params,
+        ai_client=self.client.ai,
+    )
+    converter.Convert()

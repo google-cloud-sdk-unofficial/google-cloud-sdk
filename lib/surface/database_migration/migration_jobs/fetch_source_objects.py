@@ -50,7 +50,6 @@ class _MigrationJobObjectInfo:
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class FetchSourceObjects(base.Command):
   """Fetch objects for a Database Migration Service migration job by connection to the source."""

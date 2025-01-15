@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,36 +14,39 @@
 # limitations under the License.
 """Command to commit conversion workspaces for a database migration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+import argparse
+from typing import Any, Dict, Generator
 
-from googlecloudsdk.api_lib.database_migration import conversion_workspaces
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.database_migration.conversion_workspaces import command_mixin
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
 
-DETAILED_HELP = {
-    'DESCRIPTION': (
-        'Describe database entity issues in a Database Migration '
-        'Services conversion workspace.'
-    ),
-    'EXAMPLES': (
-        'To describe the database entity issues in a conversion '
-        'workspace in a project and location `us-central1`, run: \n\n'
-        '$ {command} my-conversion-workspace --region=us-central1'
-    ),
-}
+_DEFAULT_PAGE_SIZE = 100
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class DescribeIssues(base.Command):
+@base.DefaultUniverseOnly
+class DescribeIssues(
+    command_mixin.ConversionWorkspacesCommandMixin,
+    base.ListCommand,
+):
   """Describe issues in a Database Migration Service conversion workspace."""
 
-  detailed_help = DETAILED_HELP
+  detailed_help = {
+      'DESCRIPTION': """
+        Describe database entity issues in a Database Migration Services conversion workspace.
+      """,
+      'EXAMPLES': """\
+          To describe the database entity issues in a conversion workspace
+          in a project and location `us-central1`, run:
+
+              $ {command} my-conversion-workspace --region=us-central1
+      """,
+  }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser) -> None:
     """Args is called by calliope to gather arguments for this command.
 
     Args:
@@ -54,8 +57,8 @@ class DescribeIssues(base.Command):
         parser, 'to describe issues'
     )
     cw_flags.AddCommitIdFlag(parser)
-    cw_flags.AddUncomittedFlag(parser)
-    cw_flags.AddFilterFlag(parser)
+    cw_flags.AddUncommittedFlag(parser)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, _DEFAULT_PAGE_SIZE)
 
     parser.display_info.AddFormat("""
           table(
@@ -69,7 +72,10 @@ class DescribeIssues(base.Command):
           )
         """)
 
-  def Run(self, args):
+  def Run(
+      self,
+      args: argparse.Namespace,
+  ) -> Generator[Dict[str, Any], None, None]:
     """Describe the database entity issues for a DMS conversion workspace.
 
     Args:
@@ -81,10 +87,10 @@ class DescribeIssues(base.Command):
       and arguments.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-
-    cw_client = conversion_workspaces.ConversionWorkspacesClient(
-        self.ReleaseTrack()
-    )
-    return cw_client.DescribeIssues(
-        conversion_workspace_ref.RelativeName(), args
+    return self.client.entities.DescribeIssues(
+        name=conversion_workspace_ref.RelativeName(),
+        commit_id=args.commit_id,
+        uncommitted=args.uncommitted,
+        filter_expr=self.ExtractBackendFilter(args),
+        page_size=args.GetValue('page_size'),
     )

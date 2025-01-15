@@ -64,7 +64,6 @@ Container Flags
     group.AddArgument(flags.GpuFlag(hidden=False))
     group.AddArgument(flags.StartupProbeFlag())
     group.AddArgument(flags.LivenessProbeFlag())
-    group.AddArgument(flags.BaseImageArg())
 
   return group
 

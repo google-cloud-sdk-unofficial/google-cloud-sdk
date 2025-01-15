@@ -61,7 +61,6 @@ class Update(base.Command):
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=False,
-        hide_autoscaling_args=True,
         parser=parser,
     )
     flags.Edition(None, True).AddToParser(parser)
@@ -150,7 +149,6 @@ class BetaUpdate(base.Command):
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=False,
-        hide_autoscaling_args=False,
         parser=parser,
         add_asymmetric_option_flag=True,
         asymmetric_options_group=True,
@@ -245,7 +243,6 @@ class AlphaUpdate(base.Command):
     resource_args.AddInstanceTypeArg(parser)
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=False,
-        hide_autoscaling_args=False,
         parser=parser,
         add_asymmetric_option_flag=True,
         asymmetric_options_group=True,

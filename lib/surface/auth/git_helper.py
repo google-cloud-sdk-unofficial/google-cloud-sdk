@@ -58,6 +58,7 @@ _BLANK_LINE_RE = re.compile(r'^ *$')
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 class GitHelper(base.Command):
   """A git credential helper to provide access to Google git repositories."""
 
@@ -98,6 +99,7 @@ class GitHelper(base.Command):
     credentialed_domains_suffix = [
         '.sourcemanager.dev',
         '.blueoryx.dev',
+        '.developerconnect.dev',
         '.'+GitHelper.GOOGLESOURCE,
     ]
     extra = properties.VALUES.core.credentialed_hosted_repo_domains.Get()

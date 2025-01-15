@@ -27,16 +27,17 @@ class DescribeAlpha(base.DescribeCommand):
   ## EXAMPLES
 
   To get the details about quota `CpusPerProject` for service
-  `example.googleapis.com` and `projects/my-project`, run:
+  `example.$$UNIVERSE_DOMAIN$$` and `projects/my-project`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com
+    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
     --project=my-project
 
 
   To get the details about quota `CpusPerProject` for service
-  `example.googleapis.com` and `folders/12345`, run:
+  `example.$$UNIVERSE_DOMAIN$$` and `folders/123`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
+    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    --folder=123
   """
 
   @staticmethod
@@ -72,7 +73,6 @@ class DescribeAlpha(base.DescribeCommand):
     )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
@@ -81,16 +81,17 @@ class DescribeBeta(base.DescribeCommand):
   ## EXAMPLES
 
   To get the details about quota `CpusPerProject` for service
-  `example.googleapis.com` and `projects/my-project`, run:
+  `example.$$UNIVERSE_DOMAIN$$` and `projects/my-project`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com
+    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
     --project=my-project
 
 
   To get the details about quota `CpusPerProject` for service
-  `example.googleapis.com` and `folders/12345`, run:
+  `example.$$UNIVERSE_DOMAIN$$` and `folders/123`, run:
 
-    $ {command} CpusPerProject --service=example.googleapis.com --folder=12345
+    $ {command} CpusPerProject --service=example.$$UNIVERSE_DOMAIN$$
+    --folder=123
   """
 
   @staticmethod

@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.storage import storage_batch_operations_api
 from googlecloudsdk.calliope import base
 
+_SBO_CLH_LOCATION_GLOBAL = "global"
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -36,32 +38,23 @@ class List(base.ListCommand):
 
           $ {command}
 
-      To list all batch jobs for location `us-central1`:
+      To list all batch jobs with a page size of `10`:
 
-          $ {command} --location=us-central1
+          $ {command} --page-size=10
 
-      To list all batch jobs for location `us-central1` with a page size of `10`:
+      To list a limit of `20` batch jobs:
 
-          $ {command} --location=us-central1 --page-size=10
+          $ {command} --limit=20
 
-      To list a limit of `20` batch jobs for location `us-central1`:
+      To list all batch jobs in `JSON` format:
 
-          $ {command} --location=us-central1 --limit=20
-
-      To list all batch jobs for location `us-central1` in `JSON` format:
-
-          $ {command} --location=us-central1 --format=json
+          $ {command} --format=json
       """,
   }
 
   @staticmethod
   def Args(parser):
     base.URI_FLAG.RemoveFromParser(parser)
-    parser.add_argument(
-        "--location",
-        type=str,
-        help="The location of the batch jobs.",
-    )
     parser.display_info.AddFormat("""
       table(
         name.basename():wrap=20:label=BATCH_JOB_ID,
@@ -76,5 +69,5 @@ class List(base.ListCommand):
 
   def Run(self, args):
     return storage_batch_operations_api.StorageBatchOperationsApi().list_batch_jobs(
-        args.location, args.limit, args.page_size
+        _SBO_CLH_LOCATION_GLOBAL, args.limit, args.page_size
     )

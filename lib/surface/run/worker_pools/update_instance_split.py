@@ -14,9 +14,15 @@
 # limitations under the License.
 """Command for updating instances split for worker-pool resource."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.command_lib.run.v2 import flags_parser
+from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
@@ -80,6 +86,46 @@ class AdjustInstanceSplit(base.Command):
   def Args(cls, parser):
     cls.CommonArgs(parser)
 
+  def _GetBaseChanges(self, args):
+    """Returns the worker pool config changes with some default settings."""
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    if not changes:
+      raise serverless_exceptions.NoConfigurationChangeError(
+          'No instance split configuration change requested.'
+      )
+    changes.insert(
+        0,
+        config_changes_mod.BinaryAuthorizationChange(
+            breakglass_justification=None
+        ),
+    )
+    changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
+    return changes
+
   def Run(self, args):
     """Update the instance split for the worker."""
-    raise NotImplementedError
+    # TODO: b/376904673 - Add progress tracker.
+    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
+    flags.ValidateResource(worker_pool_ref)
+
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.worker_pool.Parse().locationsId
+      return region + '-' + endpoint
+
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    config_changes = self._GetBaseChanges(args)
+    worker_pool = worker_pools_client.UpdateInstanceSplit(
+        worker_pool_ref,
+        config_changes,
+    )
+    if args.async_:
+      pretty_print.Success('Updating instance split asynchronously.')
+    else:
+      # TODO: b/366576967 - Support wait operation in sync mode.
+      # TODO: b/366115709 - Add printer class to show instance split status.
+      return worker_pool

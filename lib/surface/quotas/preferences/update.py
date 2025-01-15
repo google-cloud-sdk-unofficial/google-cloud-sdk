@@ -37,18 +37,18 @@ class UpdateAlpha(base.UpdateCommand):
   that applies to the `default_limit` quota for `projects/12321`, run:
 
     $ {command} my-preference
-    --service=example.googleapis.com
+    --service=example.$$UNIVERSE_DOMAIN$$
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
     --dimensions=region=us-central1
 
 
-  To create a new quota preference for `organizations/123`, run:
+  To create a new quota preference for `organizations/789`, run:
 
     $ {command} my-preference
-    --service=example.googleapis.com
-    --organization=123
+    --service=example.$$UNIVERSE_DOMAIN$$
+    --organization=789
     --quota-id=default_limit
     --preferred-value=200
     --allow-missing
@@ -108,7 +108,6 @@ class UpdateAlpha(base.UpdateCommand):
       )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
@@ -123,18 +122,18 @@ class UpdateBeta(base.UpdateCommand):
   that applies to the `default_limit` quota for `projects/12321`, run:
 
     $ {command} my-preference
-    --service=example.googleapis.com
+    --service=example.$$UNIVERSE_DOMAIN$$
     --project=12321
     --quota-id=default_limit
     --preferred-value=100
     --dimensions=region=us-central1
 
 
-  To create a new quota preference for `organizations/123`, run:
+  To create a new quota preference for `organizations/789`, run:
 
     $ {command} my-preference
-    --service=example.googleapis.com
-    --organization=123
+    --service=example.$$UNIVERSE_DOMAIN$$
+    --organization=789
     --quota-id=default_limit
     --preferred-value=200
     --allow-missing

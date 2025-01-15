@@ -165,6 +165,7 @@ def _sync_restore_task_iterator(args, fields_scope, user_request_args):
             url.url_string,
             fields_scope=fields_scope,
             object_state=cloud_api.ObjectState.SOFT_DELETED,
+            files_only=True,
         )
     )
     if not resources:
@@ -330,7 +331,8 @@ class Restore(base.Command):
     )
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
+    # TODO(b/190541521): Determine if command group works with project number.
+    # TODO(b/383682645): Add support for restoring managed folders.
     base.RequireProjectID(args)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 

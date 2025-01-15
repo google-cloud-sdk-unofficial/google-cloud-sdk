@@ -33,10 +33,10 @@ class DescribeAlpha(base.DescribeCommand):
     $ {command} my-preference --project=my-project-id
 
 
-  To get the details about quota preference `my-preference` for `folders/12345`,
+  To get the details about quota preference `my-preference` for `folders/123`,
   run:
 
-    $ {command} my-preference --folder=12345
+    $ {command} my-preference --folder=123
   """
 
   @staticmethod
@@ -66,7 +66,6 @@ class DescribeAlpha(base.DescribeCommand):
     )
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
@@ -81,10 +80,10 @@ class DescribeBeta(base.DescribeCommand):
     $ {command} my-preference --project=my-project-id
 
 
-  To get the details about quota preference `my-preference` for `folders/12345`,
+  To get the details about quota preference `my-preference` for `folders/123`,
   run:
 
-    $ {command} my-preference --folder=12345
+    $ {command} my-preference --folder=123
   """
 
   @staticmethod

@@ -9,6 +9,7 @@
 
         $ {command} my-regional-endpoint
           --region=us-central1
+          [--address=my-address]
           [--network=my-network]
           [--subnetwork=my-subnet]
           --target-google-api=my-target-endpoint
@@ -75,6 +76,7 @@
 
         $ {command} my-regional-endpoint
           --region=us-central1
+          [--address=my-address]
           [--network=my-network]
           [--subnetwork=my-subnet]
           --target-google-api=my-target-endpoint

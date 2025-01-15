@@ -182,6 +182,9 @@ class Update(base.UpdateCommand):
         args, 'enable_exactly_once_delivery', None
     )
 
+    message_transforms_file = getattr(args, 'message_transforms_file', None)
+    clear_message_transforms = getattr(args, 'clear_message_transforms', None)
+
     try:
       result = client.Patch(
           subscription_ref,
@@ -222,6 +225,8 @@ class Update(base.UpdateCommand):
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
           clear_pubsub_export_config=clear_pubsub_export_config,
+          message_transforms_file=message_transforms_file,
+          clear_message_transforms=clear_message_transforms,
       )
     except subscriptions.NoFieldsSpecifiedError:
       if not any(
@@ -236,7 +241,7 @@ class Update(base.UpdateCommand):
     return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class UpdateBeta(Update):
   """Updates an existing Cloud Pub/Sub subscription."""
 
@@ -250,3 +255,13 @@ class UpdateBeta(Update):
   @exceptions.CatchHTTPErrorRaiseHTTPException()
   def Run(self, args):
     return super(UpdateBeta, self).Run(args, enable_push_to_cps=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Updates an existing Cloud Pub/Sub subscription."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    flags.AddMessageTransformsFlags(parser, is_update=True)

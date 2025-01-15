@@ -42,15 +42,11 @@ class Update(base.UpdateCommand):
   """Update a Compute Engine network endpoint group."""
 
   detailed_help = DETAILED_HELP
-  support_port_mapping_neg = True
 
   @classmethod
   def Args(cls, parser):
     flags.MakeNetworkEndpointGroupsArg().AddArgument(parser)
-    flags.AddUpdateNegArgsToParser(
-        parser,
-        support_port_mapping_neg=cls.support_port_mapping_neg,
-    )
+    flags.AddUpdateNegArgsToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -82,11 +78,7 @@ class Update(base.UpdateCommand):
 class BetaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
 
-  support_port_mapping_neg = True
-
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(Update):
   """Update a Compute Engine network endpoint group."""
-
-  support_port_mapping_neg = True

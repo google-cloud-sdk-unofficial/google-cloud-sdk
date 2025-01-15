@@ -33,7 +33,6 @@ class QuotaPreferencesAlpha(base.Group):
   """
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class QuotaPreferencesBeta(base.Group):

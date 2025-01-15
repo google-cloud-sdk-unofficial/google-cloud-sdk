@@ -89,6 +89,7 @@ class Update(base.UpdateCommand):
     )
     parser.add_argument(
         '--description', help='A new description for the bucket.')
+    util.AddParentArgs(parser, 'bucket to update')
     util.AddBucketLocationArg(parser, True, 'Location of the bucket.')
     parser.add_argument(
         '--locked',
@@ -184,12 +185,17 @@ class Update(base.UpdateCommand):
         and must be consistent.
     """
     if not self._current_bucket:
-      return util.GetClient().projects_locations_buckets.Get(
+      self._current_bucket = util.GetClient().projects_locations_buckets.Get(
           util.GetMessages().LoggingProjectsLocationsBucketsGetRequest(
               name=util.CreateResourceName(
                   util.CreateResourceName(
-                      util.GetProjectResource(args.project).RelativeName(),
-                      'locations', args.location), 'buckets', args.BUCKET_ID)))
+                      util.GetParentFromArgs(args), 'locations', args.location
+                  ),
+                  'buckets',
+                  args.BUCKET_ID,
+              )
+          )
+      )
     return self._current_bucket
 
   def _Run(self, args):
@@ -280,7 +286,7 @@ class Update(base.UpdateCommand):
           util.GetMessages().LoggingProjectsLocationsBucketsUpdateAsyncRequest(
               name=util.CreateResourceName(
                   util.CreateResourceName(
-                      util.GetProjectResource(args.project).RelativeName(),
+                      util.GetParentFromArgs(args),
                       'locations',
                       args.location,
                   ),
@@ -298,7 +304,7 @@ class Update(base.UpdateCommand):
           util.GetMessages().LoggingProjectsLocationsBucketsPatchRequest(
               name=util.CreateResourceName(
                   util.CreateResourceName(
-                      util.GetProjectResource(args.project).RelativeName(),
+                      util.GetParentFromArgs(args),
                       'locations',
                       args.location,
                   ),

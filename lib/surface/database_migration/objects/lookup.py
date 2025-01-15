@@ -34,7 +34,6 @@ EXAMPLES = """\
    """
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Lookup(base.Command):

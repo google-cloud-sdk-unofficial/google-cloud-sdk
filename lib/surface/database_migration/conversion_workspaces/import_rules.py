@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2023 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,18 @@
 # limitations under the License.
 """Command to import rules in a conversion workspaces for a database migration from config files."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+import argparse
 
-from googlecloudsdk.api_lib.database_migration import conversion_workspaces
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.database_migration.conversion_workspaces import command_mixin
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
 from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-class ImportRules(base.Command):
+@base.DefaultUniverseOnly
+class ImportRules(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
   """Import mapping rules in a Database Migration Service conversion workspace."""
 
   detailed_help = {
@@ -34,7 +33,7 @@ class ImportRules(base.Command):
         Import mapping rules in a Database Migration Service conversion
         workspace from a configuration file. For example, for Oracle to
         PostgreSQL migrations that could be an Ora2Pg config file.
-        """,
+      """,
       'EXAMPLES': """\
         To import rules in a conversion workspace:
 
@@ -44,7 +43,7 @@ class ImportRules(base.Command):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser) -> None:
     """Args is called by calliope to gather arguments for this command.
 
     Args:
@@ -56,7 +55,7 @@ class ImportRules(base.Command):
     cw_flags.AddConfigFilesFlag(parser)
     cw_flags.AddAutoCommitFlag(parser)
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace) -> None:
     """Import rules in a Database Migration Service conversion workspace.
 
     Args:
@@ -64,26 +63,24 @@ class ImportRules(base.Command):
         with.
     """
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
-    cw_client = conversion_workspaces.ConversionWorkspacesClient(
-        self.ReleaseTrack()
-    )
+
     # Import mapping rules is a passthrough method and returns only done: true
     # along with the error (if any)
-    result_operation = cw_client.ImportRules(
-        conversion_workspace_ref.RelativeName(), args
+    result_operation = self.client.operations.ImportRules(
+        name=conversion_workspace_ref.RelativeName(),
+        config_files=args.config_files,
+        file_format=args.file_format,
+        auto_commit=args.auto_commit,
     )
 
     if result_operation.error is not None:
       log.status.Print(
-          'Imported mapping rules for conversion workspace {} failed with error'
-          ' [{}]'.format(
-              conversion_workspace_ref.conversionWorkspacesId,
-              result_operation.error.message,
-          )
+          'Imported mapping rules for conversion workspace'
+          f' {conversion_workspace_ref.conversionWorkspacesId} failed with'
+          f' error [{result_operation.error.message}]',
       )
     else:
       log.status.Print(
-          'Imported mapping rules for conversion workspace {}'.format(
-              conversion_workspace_ref.conversionWorkspacesId
-          )
+          'Imported mapping rules for conversion workspace'
+          f' {conversion_workspace_ref.conversionWorkspacesId}',
       )

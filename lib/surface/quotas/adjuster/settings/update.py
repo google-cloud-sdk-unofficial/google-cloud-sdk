@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.quotas import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
@@ -33,7 +32,7 @@ class UpdateBeta(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To update QuotaAdjusterSettings for `projects/123`, run:
+  To update QuotaAdjusterSettings for `projects/12321`, run:
 
     $ {command}
     --enablement=enabled
@@ -95,7 +94,7 @@ class UpdateAlpha(base.UpdateCommand):
 
   ## EXAMPLES
 
-  To update QuotaAdjusterSettings for `projects/123`, run:
+  To update QuotaAdjusterSettings for `projects/12321`, run:
 
     $ {command}
     --enablement=Enabled

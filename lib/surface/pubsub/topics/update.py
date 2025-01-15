@@ -278,6 +278,8 @@ def _Run(args):
   clear_ingestion_data_source_settings = getattr(
       args, 'clear_ingestion_data_source_settings', None
   )
+  message_transforms_file = getattr(args, 'message_transforms_file', None)
+  clear_message_transforms = getattr(args, 'clear_message_transforms', None)
 
   try:
     result = client.Patch(
@@ -321,6 +323,8 @@ def _Run(args):
         confluent_cloud_ingestion_service_account=confluent_cloud_ingestion_service_account,
         clear_ingestion_data_source_settings=clear_ingestion_data_source_settings,
         ingestion_log_severity=ingestion_log_severity,
+        message_transforms_file=message_transforms_file,
+        clear_message_transforms=clear_message_transforms,
     )
   except topics.NoFieldsSpecifiedError:
     operations = [
@@ -388,3 +392,4 @@ class UpdateAlpha(UpdateBeta):
         include_ingestion_from_aws_msk_flags=True,
         include_ingestion_from_confluent_cloud_flags=True,
     )
+    flags.AddMessageTransformsFlags(parser, is_update=True)

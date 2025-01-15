@@ -33,13 +33,13 @@ class Describe(base.DescribeCommand):
       Describe the batch operation job.
       """,
       "EXAMPLES": """
-      To describe a batch job with the name `my-job` in location `us-central1`:
+      To describe a batch job with the name `my-job`:
 
-          $ {command} my-job --location=us-central1
+          $ {command} my-job
 
       To describe the same batch job with fully specified name:
 
-          $ {command} projects/my-project/locations/us-central1/jobs/my-job
+          $ {command} projects/my-project/locations/global/jobs/my-job
       """,
   }
 

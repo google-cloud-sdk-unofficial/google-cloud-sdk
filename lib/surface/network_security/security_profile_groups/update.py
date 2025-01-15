@@ -39,6 +39,10 @@ _detailed_help = {
         """,
 }
 
+_URL_FILTERING_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -51,13 +55,42 @@ class UpdateProfileGroup(base.UpdateCommand):
   def Args(cls, parser):
     spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
     spg_flags.AddProfileGroupDescription(parser)
+    # TODO: b/349671332 - Remove this conditional once the group is released.
+    threat_prevention_group = None
+    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
+      threat_prevention_group = parser.add_group(mutex=True)
+      threat_prevention_group.add_argument(
+          '--clear-threat-prevention-profile',
+          action='store_true',
+          help='''\
+            Clear the threat-prevention-profile field.
+          ''',
+      )
     spg_flags.AddSecurityProfileResource(
         parser,
         cls.ReleaseTrack(),
         'threat-prevention-profile',
+        group=threat_prevention_group,
         required=False,
         arg_aliases=['security-profile'],
     )
+    # TODO: b/349671332 - Remove this conditional once the group is released.
+    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
+      url_filtering_group = parser.add_group(mutex=True)
+      url_filtering_group.add_argument(
+          '--clear-url-filtering-profile',
+          action='store_true',
+          help='''\
+            Clear the url-filtering-profile field.
+          ''',
+      )
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'url-filtering-profile',
+          group=url_filtering_group,
+          required=False
+      )
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -70,11 +103,18 @@ class UpdateProfileGroup(base.UpdateCommand):
   def Run(self, args):
     client = spg_api.Client(self.ReleaseTrack())
     security_profile_group = args.CONCEPTS.security_profile_group.Parse()
-    security_profile = (
+    threat_prevention_profile = (
         args.CONCEPTS.threat_prevention_profile.Parse()
         if args.threat_prevention_profile
         else None
     )
+    if (
+        self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
+        and args.url_filtering_profile
+    ):
+      url_filtering_profile = args.CONCEPTS.url_filtering_profile.Parse()
+    else:
+      url_filtering_profile = None
     description = args.description
     is_async = args.async_
 
@@ -90,8 +130,14 @@ class UpdateProfileGroup(base.UpdateCommand):
       )
 
     update_mask = []
-    if security_profile is not None:
+    if (threat_prevention_profile is not None
+        or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
+        and args.clear_threat_prevention_profile):
       update_mask.append('threatPreventionProfile')
+    if (url_filtering_profile is not None
+        or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
+        and args.clear_url_filtering_profile):
+      update_mask.append('urlFilteringProfile')
 
     if description is not None:
       update_mask.append('description')
@@ -106,8 +152,11 @@ class UpdateProfileGroup(base.UpdateCommand):
     response = client.UpdateSecurityProfileGroup(
         security_profile_group_name=security_profile_group.RelativeName(),
         description=description if description is not None else None,
-        threat_prevention_profile=security_profile.RelativeName()
-        if security_profile is not None
+        threat_prevention_profile=threat_prevention_profile.RelativeName()
+        if threat_prevention_profile is not None
+        else None,
+        url_filtering_profile=url_filtering_profile.RelativeName()
+        if url_filtering_profile is not None
         else None,
         update_mask=','.join(update_mask),
         labels=labels_update.GetOrNone(),

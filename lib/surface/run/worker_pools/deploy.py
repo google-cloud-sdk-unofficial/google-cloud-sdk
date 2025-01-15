@@ -127,8 +127,12 @@ class Deploy(base.Command):
   def _GetBaseChanges(self, args):
     """Returns the worker pool config changes with some default settings."""
     changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
-    # TODO(b/365790178): Removal of binauthz break glass justification comes
-    # here.
+    changes.insert(
+        0,
+        config_changes_mod.BinaryAuthorizationChange(
+            breakglass_justification=None
+        ),
+    )
     changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
     return changes
 
@@ -164,7 +168,7 @@ class Deploy(base.Command):
     )
     if not response:
       raise exceptions.ArgumentError(
-          'Cannot create WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+          'Cannot deploy WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
       )
     # TODO(b/366576967): Support wait operation in sync mode.
     return response.operation

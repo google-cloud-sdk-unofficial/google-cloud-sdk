@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute.firewall_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_policies import firewall_policies_utils
 from googlecloudsdk.command_lib.compute.firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 import six
 
 
@@ -56,6 +57,8 @@ class Create(base.CreateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
+    flags.AddSrcSecureTags(parser)
+    flags.AddTargetSecureTags(parser)
     flags.AddSrcThreatIntelligence(parser, support_network_scopes)
     flags.AddDestThreatIntelligence(parser, support_network_scopes)
     flags.AddSrcRegionCodes(parser, support_network_scopes)
@@ -100,6 +103,8 @@ class Create(base.CreateCommand):
     layer4_configs = []
     target_resources = []
     target_service_accounts = []
+    src_secure_tags = []
+    target_secure_tags = []
     src_address_groups = []
     dest_address_groups = []
     src_fqdns = []
@@ -126,6 +131,16 @@ class Create(base.CreateCommand):
       target_resources = args.target_resources
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
+    if args.IsSpecified('src_secure_tags'):
+      src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.src_secure_tags
+      )
+    if args.IsSpecified('target_secure_tags'):
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
     if args.IsSpecified('src_threat_intelligence'):
       src_threat_intelligence = args.src_threat_intelligence
     if args.IsSpecified('dest_threat_intelligence'):
@@ -208,6 +223,7 @@ class Create(base.CreateCommand):
           layer4Configs=layer4_config_list,
           srcAddressGroups=src_address_groups,
           destAddressGroups=dest_address_groups,
+          srcSecureTags=src_secure_tags,
           srcFqdns=src_fqdns,
           destFqdns=dest_fqdns,
           srcRegionCodes=src_region_codes,
@@ -225,6 +241,7 @@ class Create(base.CreateCommand):
           layer4Configs=layer4_config_list,
           srcAddressGroups=src_address_groups,
           destAddressGroups=dest_address_groups,
+          srcSecureTags=src_secure_tags,
           srcFqdns=src_fqdns,
           destFqdns=dest_fqdns,
           srcRegionCodes=src_region_codes,
@@ -252,6 +269,7 @@ class Create(base.CreateCommand):
         direction=traffic_direct,
         targetResources=target_resources,
         targetServiceAccounts=target_service_accounts,
+        targetSecureTags=target_secure_tags,
         securityProfileGroup=security_profile_group,
         tlsInspect=tls_inspect,
         description=args.description,

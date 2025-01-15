@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.compute.firewall_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_policies import firewall_policies_utils
 from googlecloudsdk.command_lib.compute.firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 import six
 
 
@@ -56,6 +57,8 @@ class Update(base.UpdateCommand):
     flags.AddDisabled(parser)
     flags.AddTargetResources(parser)
     flags.AddTargetServiceAccounts(parser)
+    flags.AddSrcSecureTags(parser)
+    flags.AddTargetSecureTags(parser)
     flags.AddSrcThreatIntelligence(parser, support_network_scopes)
     flags.AddDestThreatIntelligence(parser, support_network_scopes)
     flags.AddSrcRegionCodes(parser, support_network_scopes)
@@ -93,6 +96,8 @@ class Update(base.UpdateCommand):
         'security_profile_group': 'securityProfileGroup',
         'target_resources': 'targetResources',
         'target_service_accounts': 'targetServiceAccounts',
+        'src_secure_tags': 'srcSecureTags',
+        'target_secure_tags': 'targetSecureTags',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -117,6 +122,8 @@ class Update(base.UpdateCommand):
     layer4_config_list = []
     target_resources = []
     target_service_accounts = []
+    src_secure_tags = []
+    target_secure_tags = []
     src_address_groups = []
     dest_address_groups = []
     src_fqdns = []
@@ -155,6 +162,16 @@ class Update(base.UpdateCommand):
       target_resources = args.target_resources
     if args.IsSpecified('target_service_accounts'):
       target_service_accounts = args.target_service_accounts
+    if args.IsSpecified('src_secure_tags'):
+      src_secure_tags = secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+          holder.client, args.src_secure_tags
+      )
+    if args.IsSpecified('target_secure_tags'):
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
     if args.IsSpecified('src_threat_intelligence'):
       src_threat_intelligence = args.src_threat_intelligence
       should_setup_match = True
@@ -270,6 +287,7 @@ class Update(base.UpdateCommand):
             srcNetworkScope=src_network_scope,
             srcNetworks=src_networks,
             destNetworkScope=dest_network_scope,
+            srcSecureTags=src_secure_tags,
         )
       else:
         matcher = holder.client.messages.FirewallPolicyRuleMatcher(
@@ -284,6 +302,7 @@ class Update(base.UpdateCommand):
             destRegionCodes=dest_region_codes,
             srcThreatIntelligences=src_threat_intelligence,
             destThreatIntelligences=dest_threat_intelligence,
+            srcSecureTags=src_secure_tags,
         )
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
@@ -301,6 +320,7 @@ class Update(base.UpdateCommand):
         match=matcher,
         direction=traffic_direct,
         targetResources=target_resources,
+        targetSecureTags=target_secure_tags,
         targetServiceAccounts=target_service_accounts,
         description=args.description,
         enableLogging=enable_logging,

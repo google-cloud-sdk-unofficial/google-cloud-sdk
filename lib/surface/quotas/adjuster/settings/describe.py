@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.quotas import flags
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
@@ -29,7 +28,7 @@ class DescribeBeta(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To get the QuotaAdjusterSettings for container 'projects/123', run:
+  To get the QuotaAdjusterSettings for container 'projects/12321', run:
 
     $ {command} --project=12321
   """
@@ -69,7 +68,7 @@ class DescribeAlpha(base.DescribeCommand):
 
   ## EXAMPLES
 
-  To get the QuotaAdjusterSettings for container 'projects/123', run:
+  To get the QuotaAdjusterSettings for container 'projects/12321', run:
 
     $ {command} --project=12321
   """

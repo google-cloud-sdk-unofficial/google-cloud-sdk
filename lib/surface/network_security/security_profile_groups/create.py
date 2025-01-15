@@ -39,6 +39,10 @@ _DETAILED_HELP = {
         """,
 }
 
+_URL_FILTERING_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+)
+
 _CUSTOM_MIRRORING_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
@@ -46,6 +50,14 @@ _CUSTOM_MIRRORING_SUPPORTED = (
 _CUSTOM_INTERCEPT_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+)
+
+_INCOMPATIBLE_PAIRS = (
+    ('threat-prevention-profile', 'custom-mirroring-profile'),
+    ('threat-prevention-profile', 'custom-intercept-profile'),
+    ('url-filtering-profile', 'custom-mirroring-profile'),
+    ('url-filtering-profile', 'custom-intercept-profile'),
+    ('custom-mirroring-profile', 'custom-intercept-profile'),
 )
 
 
@@ -60,20 +72,34 @@ class CreateProfileGroup(base.CreateCommand):
   def Args(cls, parser):
     spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
     spg_flags.AddProfileGroupDescription(parser)
+    # TODO: b/349671332 - Remove this conditional once the group is released.
+    required_group = None
+    if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
+      required_group = parser.add_group(required=True)
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'url-filtering-profile',
+          group=required_group,
+          required=False,
+      )
     spg_flags.AddSecurityProfileResource(
         parser,
         cls.ReleaseTrack(),
         'threat-prevention-profile',
+        group=required_group,
         required=False,
         arg_aliases=['security-profile'],
     )
     if cls.ReleaseTrack() in _CUSTOM_MIRRORING_SUPPORTED:
       spg_flags.AddSecurityProfileResource(
-          parser, cls.ReleaseTrack(), 'custom-mirroring-profile', required=False
+          parser, cls.ReleaseTrack(), 'custom-mirroring-profile',
+          group=required_group, required=False
       )
     if cls.ReleaseTrack() in _CUSTOM_INTERCEPT_SUPPORTED:
       spg_flags.AddSecurityProfileResource(
-          parser, cls.ReleaseTrack(), 'custom-intercept-profile', required=False
+          parser, cls.ReleaseTrack(), 'custom-intercept-profile',
+          group=required_group, required=False
       )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -84,6 +110,11 @@ class CreateProfileGroup(base.CreateCommand):
     self.ValidateCompatibleProfiles(args)
     security_profile_group = args.CONCEPTS.security_profile_group.Parse()
     threat_prevention_profile = args.CONCEPTS.threat_prevention_profile.Parse()
+    url_filtering_profile = (
+        args.CONCEPTS.url_filtering_profile.Parse()
+        if hasattr(args.CONCEPTS, 'url_filtering_profile')
+        else None
+    )
     custom_mirroring_profile = (
         args.CONCEPTS.custom_mirroring_profile.Parse()
         if hasattr(args.CONCEPTS, 'custom_mirroring_profile')
@@ -115,6 +146,9 @@ class CreateProfileGroup(base.CreateCommand):
         threat_prevention_profile=threat_prevention_profile.RelativeName()
         if threat_prevention_profile is not None
         else None,
+        url_filtering_profile=url_filtering_profile.RelativeName()
+        if url_filtering_profile is not None
+        else None,
         custom_mirroring_profile=custom_mirroring_profile.RelativeName()
         if custom_mirroring_profile is not None
         else None,
@@ -145,28 +179,37 @@ class CreateProfileGroup(base.CreateCommand):
   # TODO: b/353974844 - remove hasattr checks once custom_mirroring and
   # custom_intercept profiles are fully rolled out to v1.
   def ValidateCompatibleProfiles(self, args):
-    profiles = []
+    profiles = {
+        'threat-prevention-profile': False,
+        'url-filtering-profile': False,
+        'custom-mirroring-profile': False,
+        'custom-intercept-profile': False,
+    }
     if args.CONCEPTS.threat_prevention_profile.Parse() is not None:
-      profiles.append('threat-prevention-profile')
+      profiles['threat-prevention-profile'] = True
+    if (
+        hasattr(args.CONCEPTS, 'url_filtering_profile')
+        and args.CONCEPTS.url_filtering_profile.Parse() is not None
+    ):
+      profiles['url-filtering-profile'] = True
     if (
         hasattr(args.CONCEPTS, 'custom_mirroring_profile')
         and args.CONCEPTS.custom_mirroring_profile.Parse() is not None
     ):
-      profiles.append('custom-mirroring-profile')
+      profiles['custom-mirroring-profile'] = True
     if (
         hasattr(args.CONCEPTS, 'custom_intercept_profile')
         and args.CONCEPTS.custom_intercept_profile.Parse() is not None
     ):
-      profiles.append('custom-intercept-profile')
+      profiles['custom-intercept-profile'] = True
 
-    # TODO: b/349673860 - when adding domain_filter profile, expand the check
-    # here to allow TPP+DF.
-    if len(profiles) > 1:
-      raise core_exceptions.Error(
-          'Only one of the following profiles can be specified at the same'
-          ' time: %s'
-          % ', '.join(profiles)
-      )
+    for pair in _INCOMPATIBLE_PAIRS:
+      if profiles[pair[0]] and profiles[pair[1]]:
+        raise core_exceptions.Error(
+            'Only one of the following profiles can be specified at the same'
+            ' time: %s'
+            % ', '.join(pair)
+        )
 
 
 CreateProfileGroup.detailed_help = _DETAILED_HELP

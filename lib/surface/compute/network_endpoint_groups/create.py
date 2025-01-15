@@ -77,7 +77,6 @@ class Create(base.CreateCommand):
   detailed_help = DETAILED_HELP
   support_neg_type = False
   support_serverless_deployment = False
-  support_port_mapping_neg = True
 
   @classmethod
   def Args(cls, parser):
@@ -85,7 +84,6 @@ class Create(base.CreateCommand):
     flags.AddCreateNegArgsToParser(
         parser,
         support_neg_type=cls.support_neg_type,
-        support_port_mapping_neg=cls.support_port_mapping_neg,
         support_serverless_deployment=cls.support_serverless_deployment,
     )
 
@@ -96,7 +94,7 @@ class Create(base.CreateCommand):
     messages = holder.client.messages
     resources = holder.resources
     neg_client = network_endpoint_groups.NetworkEndpointGroupsClient(
-        client, messages, resources, self.support_port_mapping_neg
+        client, messages, resources
     )
     neg_ref = flags.MakeNetworkEndpointGroupsArg().ResolveAsResource(
         args,
@@ -140,30 +138,12 @@ class Create(base.CreateCommand):
           serverless_deployment_url_mask=args.serverless_deployment_url_mask,
           psc_target_service=args.psc_target_service,
       )
-    elif self.support_port_mapping_neg:
-      result = neg_client.Create(
-          neg_ref,
-          args.network_endpoint_type,
-          default_port=args.default_port,
-          producer_port=args.producer_port,
-          network=args.network,
-          subnet=args.subnet,
-          cloud_run_service=args.cloud_run_service,
-          cloud_run_tag=args.cloud_run_tag,
-          cloud_run_url_mask=args.cloud_run_url_mask,
-          app_engine_app=args.app_engine_app,
-          app_engine_service=args.app_engine_service,
-          app_engine_version=args.app_engine_version,
-          app_engine_url_mask=args.app_engine_url_mask,
-          cloud_function_name=args.cloud_function_name,
-          cloud_function_url_mask=args.cloud_function_url_mask,
-          psc_target_service=args.psc_target_service,
-      )
     else:
       result = neg_client.Create(
           neg_ref,
           args.network_endpoint_type,
           default_port=args.default_port,
+          producer_port=args.producer_port,
           network=args.network,
           subnet=args.subnet,
           cloud_run_service=args.cloud_run_service,
@@ -190,8 +170,7 @@ class Create(base.CreateCommand):
     valid_scopes = collections.OrderedDict()
     valid_scopes['gce-vm-ip-port'] = ['zonal']
 
-    if self.support_port_mapping_neg:
-      valid_scopes['gce-vm-ip-portmap'] = ['regional']
+    valid_scopes['gce-vm-ip-portmap'] = ['regional']
 
     valid_scopes['internet-ip-port'] = ['global', 'regional']
     valid_scopes['internet-fqdn-port'] = ['global', 'regional']
@@ -270,7 +249,6 @@ class CreateBeta(Create):
         parser,
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
-        support_port_mapping_neg=cls.support_port_mapping_neg,
     )
 
 
@@ -287,5 +265,4 @@ class CreateAlpha(CreateBeta):
         parser,
         support_neg_type=cls.support_neg_type,
         support_serverless_deployment=cls.support_serverless_deployment,
-        support_port_mapping_neg=cls.support_port_mapping_neg,
     )

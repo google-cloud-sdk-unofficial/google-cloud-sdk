@@ -14,9 +14,14 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.command_lib.run.v2 import flags_parser
+from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
@@ -63,6 +68,11 @@ class Update(base.Command):
          """,
   }
 
+  input_flags = (
+      '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
+      ' `--connectivity`, `--image`'
+  )
+
   @classmethod
   def Args(cls, parser):
     flags.AddBinAuthzPolicyFlags(parser)
@@ -107,6 +117,58 @@ class Update(base.Command):
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
+  def _AssertChanges(self, changes, flags_text, ignore_empty):
+    if ignore_empty:
+      return
+    if not changes or (
+        len(changes) == 1
+        and isinstance(
+            changes[0],
+            config_changes_mod.SetClientNameAndVersionChange,
+        )
+    ):
+      raise exceptions.NoConfigurationChangeError(
+          'No configuration change requested. '
+          'Did you mean to include the flags {}?'.format(flags_text)
+      )
+
+  def _GetBaseChanges(self, args, ignore_empty=False):
+    """Returns the worker pool config changes with some default settings."""
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    self._AssertChanges(changes, self.input_flags, ignore_empty)
+    changes.insert(
+        0,
+        config_changes_mod.BinaryAuthorizationChange(
+            breakglass_justification=None
+        ),
+    )
+    changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
+    return changes
+
   def Run(self, args):
     """Update the worker-pool resource."""
-    raise NotImplementedError
+    # TODO(b/376904673): Add progress tracker.
+    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
+    flags.ValidateResource(worker_pool_ref)
+
+    def DeriveRegionalEndpoint(endpoint):
+      region = args.CONCEPTS.worker_pool.Parse().locationsId
+      return region + '-' + endpoint
+
+    run_client = apis.GetGapicClientInstance(
+        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    )
+    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
+        run_client
+    )
+    worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+    config_changes = self._GetBaseChanges(args)
+    response = worker_pools_client.ReleaseWorkerPool(
+        worker_pool_ref, worker_pool, config_changes
+    )
+    if not response:
+      raise exceptions.ArgumentError(
+          'Cannot update WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+      )
+    # TODO(b/366576967): Support wait operation in sync mode.
+    return response.operation

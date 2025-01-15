@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.compute.backend_services import flags
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetEffectiveSecurityPolicies(base.DescribeCommand, base.ListCommand):
   """Get the effective security policies of a Compute Engine backend service.
@@ -84,7 +85,10 @@ class GetEffectiveSecurityPolicies(base.DescribeCommand, base.ListCommand):
         'GetEffectiveSecurityPolicies',
         get_effective_sp_request,
     )]
-    if hasattr(get_response, 'edgeSecurityPolicy'):
+    if (
+        hasattr(get_response, 'edgeSecurityPolicy')
+        and get_response.edgeSecurityPolicy
+    ):
       get_edge_sp_request = client.messages.ComputeSecurityPoliciesGetRequest(
           project=backend_service_ref.project,
           securityPolicy=self._GetSecurityPolicyName(
@@ -97,7 +101,7 @@ class GetEffectiveSecurityPolicies(base.DescribeCommand, base.ListCommand):
           get_edge_sp_request,
       ))
       has_edge_sp = True
-    if hasattr(get_response, 'securityPolicy'):
+    if hasattr(get_response, 'securityPolicy') and get_response.securityPolicy:
       get_sp_request = client.messages.ComputeSecurityPoliciesGetRequest(
           project=backend_service_ref.project,
           securityPolicy=self._GetSecurityPolicyName(
