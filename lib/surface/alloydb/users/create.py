@@ -33,6 +33,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Creates a user in a given cluster.
 
@@ -63,6 +64,7 @@ class Create(base.CreateCommand):
     flags.AddUserType(parser)
     flags.AddCreateSuperuser(parser)
     flags.AddDBRoles(parser)
+    flags.AddKeepExtraRoles(parser)
 
   def Run(self, args):
     """Constructs and sends request.

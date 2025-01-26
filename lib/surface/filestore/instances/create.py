@@ -68,11 +68,11 @@ class Create(base.CreateCommand):
         "ip-ranges": [
           "192.168.0.0/24"
         ],
-        "squash-mode": "ROOT_SQUASH"
+        "squash-mode": "ROOT_SQUASH",
         "anon_uid": 1003,
         "anon_gid": 1003
       }
-    ],
+    ]
   }
   }
 

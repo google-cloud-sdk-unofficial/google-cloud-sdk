@@ -267,7 +267,7 @@ class Create(base.CreateCommand):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddMaxRunDurationFlag(parser, hidden=True)
+    flags.AddMaxRunDurationFlag(parser)
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)
@@ -408,7 +408,7 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddMaxRunDurationFlag(parser, hidden=True)
+    flags.AddMaxRunDurationFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)
@@ -568,7 +568,7 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddMaxRunDurationFlag(parser, hidden=True)
+    flags.AddMaxRunDurationFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)

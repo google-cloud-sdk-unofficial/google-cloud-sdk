@@ -87,7 +87,7 @@ class Register(base.CreateCommand):
     flags.AddFleetProject(parser)
     flags.AddDescription(parser)
     flags.AddLogging(parser, True)
-    flags.AddMonitoringConfig(parser, True)
+    flags.AddMonitoringConfig(parser, True, True)
     flags.AddBinauthzEvaluationMode(parser)
     flags.AddAdminGroups(parser)
     flags.AddWorkloadVulnerabilityScanning(parser)

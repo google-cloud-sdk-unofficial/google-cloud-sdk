@@ -31,7 +31,6 @@
         Environment variables passed to the Workstation.
     - arg_name: source-workstation
       api_field: workstation.sourceWorkstation
-      release_tracks: [ALPHA, BETA]
       type: str
       help_text: |
         Source workstation from which this workstations persistent directories are cloned on

@@ -20,6 +20,8 @@ from absl import flags
 import googleapiclient
 from googleapiclient import discovery
 import httplib2
+from typing_extensions import TypeAlias
+
 
 import bq_flags
 import bq_utils
@@ -34,16 +36,17 @@ from utils import bq_api_utils
 from utils import bq_error
 from utils import bq_logging
 
-
+# TODO(b/388312723): Review if we can remove this try/except block.
 try:
-  from google.auth import credentials as google_credentials
+  from google.auth import credentials as google_credentials  # pylint: disable=g-import-not-at-top
 
   _HAS_GOOGLE_AUTH = True
 except ImportError:
   _HAS_GOOGLE_AUTH = False
 
+# TODO(b/388312723): Review if we can remove this try/except block.
 try:
-  import google_auth_httplib2
+  import google_auth_httplib2  # pylint: disable=g-import-not-at-top
 
   _HAS_GOOGLE_AUTH_HTTPLIB2 = True
 except ImportError:
@@ -59,6 +62,15 @@ LegacyAndGoogleAuthCredentialsUnionType = Union[
 ]
 
 Service = bq_api_utils.Service
+
+Http: TypeAlias = Union[
+    httplib2.Http,
+]
+
+AuthorizedHttp: TypeAlias = Union[
+    httplib2.Http,
+    'google_auth_httplib2.AuthorizedHttp',
+]
 
 
 class BigqueryClient:
@@ -177,9 +189,7 @@ class BigqueryClient:
 
   def GetHttp(
       self,
-  ) -> Union[
-      httplib2.Http,
-  ]:
+  ) -> AuthorizedHttp:
     """Returns the httplib2 Http to use."""
 
     proxy_info = httplib2.proxy_info_from_environment
@@ -215,12 +225,19 @@ class BigqueryClient:
       )
     return http
 
-  def GetDiscoveryUrl(self, service: Service, api_version: str) -> str:
+  def GetDiscoveryUrl(
+      self,
+      service: Service,
+      api_version: str,
+      domain_root: Optional[str] = None,
+      labels: Optional[str] = None,
+  ) -> str:
     """Returns the url to the discovery document for bigquery."""
     discovery_url = None  # pylint:disable=unused-variable
     if not discovery_url:
       discovery_url = bq_api_utils.get_discovery_url_from_root_url(
-          bq_api_utils.get_tpc_root_url_from_flags(
+          domain_root
+          or bq_api_utils.get_tpc_root_url_from_flags(
               service=service, inputted_flags=bq_flags
           ),
           api_version=api_version,
@@ -230,13 +247,8 @@ class BigqueryClient:
   def GetAuthorizedHttp(
       self,
       credentials: LegacyAndGoogleAuthCredentialsUnionType,
-      http: Union[
-          'httplib2.Http',
-      ],
-  ) -> Union[
-      'httplib2.Http',
-      'google_auth_httplib2.AuthorizedHttp',
-  ]:
+      http: Http,
+  ) -> AuthorizedHttp:
     """Returns an http client that is authorized with the given credentials."""
 
     if self.use_google_auth:
@@ -275,40 +287,34 @@ class BigqueryClient:
     #     //depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_util.py:http_authorization,
     # )
 
-  def BuildApiClient(
+  def LoadDiscoveryDocument(
       self,
       service: Service,
+      http: AuthorizedHttp,
       discovery_url: Optional[str] = None,
-  ) -> discovery.Resource:
-    """Build and return BigQuery Dynamic client from discovery document."""
-    logging.info('BuildApiClient discovery_url: %s', discovery_url)
-    # If self.credentials is of type google.auth, it has to be cleared of the
-    # _quota_project_id value later on in this function for discovery requests.
-    # bigquery_model has to be built with the quota project retained, so in this
-    # version of the implementation, it's built before discovery requests take
-    # place.
-    bigquery_model = bigquery_http.BigqueryModel(
-        trace=self.trace,
-        quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
-            quota_project_id=self.quota_project_id,
-            project_id=self.project_id,
-            use_google_auth=self.use_google_auth,
-            credentials=self.credentials,
-        ),
-    )
-    bq_request_builder = bigquery_http.BigqueryHttp.Factory(
-        bigquery_model,
-        self.use_google_auth,
-    )
-    # Clean up quota project ID from Google Auth credentials.
-    # This is specifically needed to construct a http object used for discovery
-    # requests below as quota project ID shouldn't participate in discovery
-    # document retrieval, otherwise the discovery request would result in a
-    # permission error seen in b/321286043.
-    if self.use_google_auth and hasattr(self.credentials, '_quota_project_id'):
-      self.credentials._quota_project_id = None  # pylint: disable=protected-access
-    http_client = self.GetHttp()
-    http = self.GetAuthorizedHttp(self.credentials, http_client)
+      api_version: Optional[str] = None,
+      domain_root: Optional[str] = None,
+      labels: Optional[str] = None,
+  ) -> Optional[Union[str, bytes, object]]:
+    """Loads the discovery document for the given service.
+
+    This may be cached, remote, or local.
+
+    Args:
+      service: The BigQuery service being used.
+      http: Http object to be used to execute request.
+      discovery_url: The URL to load the discovery doc from.
+      api_version: The API version for the targeted discovery doc.
+      domain_root: If there is no discovery_url, then use this to construct it.
+      labels: The labels for the targeted discovery doc.
+
+    Returns:
+      discovery_document The loaded discovery document.
+
+    Raises:
+      bq_error.BigqueryClientError: If the request to load the discovery
+      document fails.
+    """
     discovery_document = None
     if self.discovery_document != _DEFAULT:
       discovery_document = self.discovery_document
@@ -324,12 +330,18 @@ class BigqueryClient:
           ' has a value',
           service,
       )
+    elif bq_flags.BIGQUERY_DISCOVERY_API_KEY_FLAG.present:
+      logging.info(
+          'Skipping local "%s" discovery document load since the'
+          ' bigquery_discovery_api_key flag was used',
+          service,
+      )
     else:
       # Load the local api description if one exists and is supported.
       try:
         discovery_document = (
             discovery_document_loader.load_local_discovery_doc_from_service(
-                service=service, api=self.api, api_version=self.api_version
+                service=service, api=self.api, api_version=api_version
             )
         )
       except FileNotFoundError as e:
@@ -359,7 +371,10 @@ class BigqueryClient:
         try:
           if discovery_url is None:
             discovery_url = self.GetDiscoveryUrl(
-                service=service, api_version=self.api_version
+                service=service,
+                api_version=api_version,
+                domain_root=domain_root,
+                labels=labels,
             )
           logging.info(
               'Requesting "%s" discovery document from %s',
@@ -413,6 +428,56 @@ class BigqueryClient:
           raise bq_error.BigqueryCommunicationError(
               'Invalid API name or version: %s' % (str(e),)
           )
+    return discovery_document
+
+  def BuildApiClient(
+      self,
+      service: Service,
+      discovery_url: Optional[str] = None,
+      api_version: Optional[str] = None,
+      domain_root: Optional[str] = None,
+      labels: Optional[str] = None,
+  ) -> discovery.Resource:
+    """Build and return BigQuery Dynamic client from discovery document."""
+    logging.info('BuildApiClient discovery_url: %s', discovery_url)
+    if api_version is None:
+      api_version = self.api_version
+    # If self.credentials is of type google.auth, it has to be cleared of the
+    # _quota_project_id value later on in this function for discovery requests.
+    # bigquery_model has to be built with the quota project retained, so in this
+    # version of the implementation, it's built before discovery requests take
+    # place.
+    bigquery_model = bigquery_http.BigqueryModel(
+        trace=self.trace,
+        quota_project_id=bq_utils.GetEffectiveQuotaProjectIDForHTTPHeader(
+            quota_project_id=self.quota_project_id,
+            project_id=self.project_id,
+            use_google_auth=self.use_google_auth,
+            credentials=self.credentials,
+        ),
+    )
+    bq_request_builder = bigquery_http.BigqueryHttp.Factory(
+        bigquery_model,
+        self.use_google_auth,
+    )
+    # Clean up quota project ID from Google Auth credentials.
+    # This is specifically needed to construct a http object used for discovery
+    # requests below as quota project ID shouldn't participate in discovery
+    # document retrieval, otherwise the discovery request would result in a
+    # permission error seen in b/321286043.
+    if self.use_google_auth and hasattr(self.credentials, '_quota_project_id'):
+      self.credentials._quota_project_id = None  # pylint: disable=protected-access
+    http_client = self.GetHttp()
+    http = self.GetAuthorizedHttp(self.credentials, http_client)
+
+    discovery_document = self.LoadDiscoveryDocument(
+        service=service,
+        http=http,
+        discovery_url=discovery_url,
+        api_version=api_version,
+        domain_root=domain_root,
+        labels=labels,
+    )
 
     discovery_document_to_build_client = self.OverrideEndpoint(
         discovery_document=discovery_document, service=service
@@ -501,16 +566,9 @@ class BigqueryClient:
       path = transferserver_address or bq_api_utils.get_tpc_root_url_from_flags(
           service=Service.DTS, inputted_flags=bq_flags
       )
-      discovery_url = bq_api_utils.get_discovery_url_from_root_url(
-          path, api_version='v1'
-      )
-      discovery_url = bq_api_utils.add_api_key_to_discovery_url(
-          discovery_url=discovery_url,
-          universe_domain=bq_flags.UNIVERSE_DOMAIN.value,
-          inputted_flags=bq_flags,
-      )
       self._op_transfer_client = self.BuildApiClient(
-          discovery_url=discovery_url,
+          domain_root=path,
+          api_version='v1',
           service=Service.DTS,
       )
     return self._op_transfer_client
@@ -530,20 +588,12 @@ class BigqueryClient:
           )
       )
       reservation_version = 'v1'
-      # TODO(b/302038541): Add support for query params.
-      discovery_url = bq_api_utils.get_discovery_url_from_root_url(
-          path, api_version=reservation_version
-      )
       labels = None
-      discovery_url = bq_api_utils.add_api_key_to_discovery_url(
-          discovery_url=discovery_url,
-          universe_domain=bq_flags.UNIVERSE_DOMAIN.value,
-          inputted_flags=bq_flags,
-          labels=labels,
-      )
       self._op_reservation_client = self.BuildApiClient(
-          discovery_url=discovery_url,
           service=Service.RESERVATIONS,
+          domain_root=path,
+          api_version=reservation_version,
+          labels=labels,
       )
     return self._op_reservation_client
 

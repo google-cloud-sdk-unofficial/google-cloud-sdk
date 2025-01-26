@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20241211",
+  "revision": "20250116",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -512,11 +512,11 @@
     },
     "ExternalCatalogDatasetOptions": {
       "id": "ExternalCatalogDatasetOptions",
-      "description": "Options defining open source compatible datasets living in the BigQuery catalog. Contains metadata of open source database, schema or namespace represented by the current dataset.",
+      "description": "Options defining open source compatible datasets living in the BigQuery catalog. Contains metadata of open source database, schema, or namespace represented by the current dataset.",
       "type": "object",
       "properties": {
         "parameters": {
-          "description": "Optional. A map of key value pairs defining the parameters and properties of the open source schema. Maximum size of 2Mib.",
+          "description": "Optional. A map of key value pairs defining the parameters and properties of the open source schema. Maximum size of 2MiB.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -6693,6 +6693,11 @@
           "description": "Auto-generated ID for the query. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
           "type": "string"
         },
+        "location": {
+          "description": "Output only. The geographic location of the query. For more information about BigQuery locations, see: https:\/\/cloud.google.com\/bigquery\/docs\/locations",
+          "readOnly": true,
+          "type": "string"
+        },
         "totalRows": {
           "description": "The total number of rows in the complete query result set, which can be more than the number of rows in this single page of results.",
           "type": "string",
@@ -6711,6 +6716,18 @@
         },
         "totalBytesProcessed": {
           "description": "The total number of bytes processed for this query. If this query was a dry run, this is the number of bytes that would be processed if the query were run.",
+          "type": "string",
+          "format": "int64"
+        },
+        "totalBytesBilled": {
+          "description": "Output only. If the project is configured to use on-demand pricing, then this field contains the total bytes billed for the job. If the project is configured to use flat-rate pricing, then you are not billed for bytes and this field is informational only.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "totalSlotMs": {
+          "description": "Output only. Number of slot ms the user is actually billed for.",
+          "readOnly": true,
           "type": "string",
           "format": "int64"
         },
@@ -6745,6 +6762,24 @@
           "description": "Output only. Detailed statistics for DML statements INSERT, UPDATE, DELETE, MERGE or TRUNCATE.",
           "readOnly": true,
           "$ref": "DmlStats"
+        },
+        "creationTime": {
+          "description": "Output only. Creation time of this query, in milliseconds since the epoch. This field will be present on all queries.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "startTime": {
+          "description": "Output only. Start time of this query, in milliseconds since the epoch. This field will be present when the query job transitions from the PENDING state to either RUNNING or DONE.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
+        "endTime": {
+          "description": "Output only. End time of this query, in milliseconds since the epoch. This field will be present whenever a query job is in the DONE state.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -7702,7 +7737,7 @@
           "format": "uint64"
         },
         "allowNonIncrementalDefinition": {
-          "description": "Optional. This option declares the intention to construct a materialized view that isn't refreshed incrementally.",
+          "description": "Optional. This option declares the intention to construct a materialized view that isn't refreshed incrementally. Non-incremental materialized views support an expanded range of SQL queries. The `allow_non_incremental_definition` option can't be changed after the materialized view is created.",
           "type": "boolean"
         }
       }
@@ -7937,11 +7972,11 @@
     },
     "ExternalCatalogTableOptions": {
       "id": "ExternalCatalogTableOptions",
-      "description": "Metadata about open source compatible table. The fields contained in these options correspond to hive metastore's table level properties.",
+      "description": "Metadata about open source compatible table. The fields contained in these options correspond to Hive metastore's table-level properties.",
       "type": "object",
       "properties": {
         "parameters": {
-          "description": "Optional. A map of key value pairs defining the parameters and properties of the open source table. Corresponds with hive meta store table parameters. Maximum size of 4Mib.",
+          "description": "Optional. A map of the key-value pairs defining the parameters and properties of the open source table. Corresponds with Hive metastore table parameters. Maximum size of 4MiB.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -7952,7 +7987,7 @@
           "$ref": "StorageDescriptor"
         },
         "connectionId": {
-          "description": "Optional. The connection specifying the credentials to be used to read external storage, such as Azure Blob, Cloud Storage, or S3. The connection is needed to read the open source table from BigQuery Engine. The connection_id can have the form `..` or `projects\/\/locations\/\/connections\/`.",
+          "description": "Optional. A connection ID that specifies the credentials to be used to read external storage, such as Azure Blob, Cloud Storage, or Amazon S3. This connection is needed to read the open source table from BigQuery. The connection_id format must be either `..` or `projects\/\/locations\/\/connections\/`.",
           "type": "string"
         }
       }

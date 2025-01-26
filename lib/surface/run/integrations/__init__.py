@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import cast
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.runapps import exceptions
@@ -27,6 +29,11 @@ from googlecloudsdk.command_lib.runapps import flags
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA)
+@base.Deprecate(
+    is_removed=True,
+    error='Cloud Run integrations are no longer supported.'
+)
+@base.DefaultUniverseOnly
 class Integrations(base.Group):
   """View and manage your Cloud Run (fully managed) integrations.
 

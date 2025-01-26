@@ -51,6 +51,9 @@ REGIONAL_SERIAL_PORT_GATEWAY_TEMPLATE = '{0}-ssh-serialport.{1}'
 REGIONAL_HOST_KEY_URL_TEMPLATE = (
     'https://www.gstatic.com/vm_serial_port/{0}/{0}.pub'
 )
+REGIONAL_HOST_KEY_URL_TEMPLATE_V2 = (
+    'https://www.gstatic.com/vm_serial_port_public_keys/{0}/{0}.pub'
+)
 
 
 @base.UniverseCompatible
@@ -80,6 +83,7 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
+  use_v2_host_key_endpoint = False
 
   @staticmethod
   def Args(parser):
@@ -189,34 +193,66 @@ class ConnectToSerialPort(base.Command):
         location, properties.GetUniverseDomain()
     )
     hostkey_url = REGIONAL_HOST_KEY_URL_TEMPLATE.format(location)
+    hostkey_url_v2 = REGIONAL_HOST_KEY_URL_TEMPLATE_V2.format(location)
     log.info('Connecting to serialport via server in {0}'.format(location))
 
     hostname = '[{0}]:{1}'.format(gateway, CONNECTION_PORT)
     # Update google_compute_known_hosts file with published host key
-    http_client = http.Http()
     known_hosts = ssh.KnownHosts.FromDefaultFile()
-    http_response = http_client.request(hostkey_url)
 
-    if int(http_response[0]['status']) == httplib.OK:
-      host_key = encoding.Decode(http_response[1]).strip()
-      known_hosts.Add(hostname, host_key, overwrite=True)
+    def _GetHostKey(endpoint):
+      """Get host key from endpoint."""
+      http_client = http.Http()
+      host_keys = []
+      http_response = http_client.request(endpoint)
+      log.info('http_response: {0}'.format(http_response))
+      if int(http_response[0]['status']) == httplib.OK:
+        # There can be multiple public host keys for the same region,
+        # in the response separated by newlines.
+        retrieved_host_keys = (
+            encoding.Decode(http_response[1]).strip().split('\n')
+        )
+        for host_key in retrieved_host_keys:
+          host_keys.append(host_key)
+        log.info(
+            'Successfully acquired hostkey for {0} from {1}'.format(
+                gateway, endpoint
+            )
+        )
+      else:
+        log.warning(
+            'Failed to acquire hostkey for {0} from {1}'.format(
+                gateway, endpoint
+            )
+        )
+      return host_keys
+
+    host_keys = []
+    if self.use_v2_host_key_endpoint:
+      host_keys.extend(_GetHostKey(hostkey_url_v2))
+    host_keys.extend(_GetHostKey(hostkey_url))
+
+    if host_keys:
+      if self.use_v2_host_key_endpoint:
+        known_hosts.AddMultiple(hostname, host_keys, overwrite=True)
+      else:
+        known_hosts.Add(hostname, host_keys[0], overwrite=True)
       known_hosts.Write()
-      log.info('Successfully acquired hostkey for {0}'.format(gateway))
+      log.info('Successfully written hostkey for {0}'.format(gateway))
     elif known_hosts.ContainsAlias(hostname):
       log.warning(
-          'Unable to download and update Host Key for [{0}] from [{1}]. '
-          'Attempting to connect using existing Host Key in [{2}]. If '
-          'the connection fails, please try again to update the Host '
-          'Key.'.format(gateway, hostkey_url, known_hosts.file_path)
+          'Unable to download and update Host Key for [{0}]'
+          ' . Attempting to connect using existing Host Key in [{1}]. If'
+          ' the connection fails, please try again to update the Host Key.'
+          .format(gateway, known_hosts.file_path)
       )
     else:
       log.warning(
-          'Unable to download Host Key for [{0}] from [{1}]. No Host Key found'
-          ' in known_hosts file [{2}]. gcloud does not have a fallback Host Key'
-          ' and will therefore terminate the connection attempt. If the problem'
-          ' persists, try updating gcloud and connecting again.'.format(
-              gateway, hostkey_url, known_hosts.file_path
-          )
+          'Unable to download Host Key for [{0}]. No Host'
+          ' Key found in known_hosts file [{1}]. gcloud does not have a'
+          ' fallback Host Key and will therefore terminate the connection'
+          ' attempt. If the problem persists, try updating gcloud and'
+          ' connecting again.'.format(gateway, known_hosts.file_path)
       )
       # We shouldn't allow a connection without the correct host key
       return
@@ -327,4 +363,5 @@ class ConnectToSerialPortAlphaBeta(ConnectToSerialPort):
 
   @classmethod
   def Args(cls, parser):
+    cls.use_v2_host_key_endpoint = True
     super(ConnectToSerialPortAlphaBeta, cls).Args(parser)

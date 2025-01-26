@@ -241,6 +241,7 @@
                 Enterprise instance.
         - group:
             required: false
+            hidden: true
             help_text: |-
               Configuration for connections to an instance of Bitbucket Data Center.
             params:
@@ -310,6 +311,7 @@
                 Center.
         - group:
             required: false
+            hidden: true
             help_text: |-
               Configuration for connections to an instance of Bitbucket Cloud.
             params:

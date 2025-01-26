@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AutokeyConfig(base.Group):

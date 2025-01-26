@@ -22,10 +22,13 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.v2 import deletion
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
@@ -86,10 +89,26 @@ class Delete(base.Command):
     worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
         run_client
     )
-    response = worker_pools_client.DeleteWorkerPool(worker_pool_ref)
-    if not response:
-      raise exceptions.ArgumentError(
-          'Cannot find WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+    def DeleteWithExistenceCheck(worker_pool_ref):
+      response = worker_pools_client.DeleteWorkerPool(worker_pool_ref)
+      if not response:
+        raise exceptions.ArgumentError(
+            'Cannot find worker pool [{}]'.format(worker_pool_ref.workerPoolsId)
+        )
+
+    # TODO: b/390067647 - Use response.result() once the issue is fixed
+    deletion.Delete(
+        worker_pool_ref,
+        worker_pools_client.GetWorkerPool,
+        DeleteWithExistenceCheck,
+        args.async_,
+    )
+
+    if args.async_:
+      pretty_print.Success(
+          'Worker pool [{}] is being deleted.'.format(
+              worker_pool_ref.workerPoolsId
+          )
       )
-    # TODO(b/366576967): Support wait operation in sync mode.
-    return response.operation
+    else:
+      log.DeletedResource(worker_pool_ref.workerPoolsId, 'worker pool')

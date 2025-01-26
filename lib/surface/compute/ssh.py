@@ -47,10 +47,11 @@ Recommendation: To check for possible causes of SSH connectivity issues and get
 recommendations, rerun the ssh command with the --troubleshoot option.
 
 {0}
-
+"""
+_RECOMMEND_IAP = """
 Or, to investigate an IAP tunneling issue:
 
-{1}
+{0}
 """
 
 ReleaseTrack = {
@@ -179,6 +180,30 @@ def TroubleshootHelp():
           If you specify the `--tunnel-through-iap` flag, the tool also checks IAP port forwarding."""
   return help_text + """
           """
+
+
+def RecommendMessage(
+    release_track: str,
+    project_name: str,
+    zone_name: str,
+    instance_name: str,
+    ssh_key_file: str,
+    force_key_file_overwrite: bool,
+) -> str:
+  """Generate the recommend message for troubleshot."""
+  command = 'gcloud {0}compute ssh {1} --project={2} --zone={3} '.format(
+      release_track, instance_name, project_name, zone_name
+  )
+  if ssh_key_file:
+    command += '--ssh-key-file={0} '.format(ssh_key_file)
+  if force_key_file_overwrite:
+    command += '--force-key-file-overwrite '
+  command += '--troubleshoot'
+  recommend_message = RECOMMEND_MESSAGE.format(command)
+  if not base_classes.SupportIAP():
+    return recommend_message
+  recommend_iap = _RECOMMEND_IAP.format(command + ' --tunnel-through-iap')
+  return recommend_message + recommend_iap
 
 
 def AddTroubleshootArg(parser):
@@ -487,17 +512,16 @@ class Ssh(base.Command):
   def createRecommendMessage(self, args, instance_name, instance_ref, project):
     release_track = ReleaseTrack.get(str(self.ReleaseTrack()).lower())
     release_track = release_track + ' ' if release_track else ''
-    command = 'gcloud {0}compute ssh {1} --project={2} --zone={3} '.format(
-        release_track, instance_name, project.name,
-        args.zone or instance_ref.zone)
-    if args.ssh_key_file:
-      command += '--ssh-key-file={0} '.format(args.ssh_key_file)
-    if args.force_key_file_overwrite:
-      command += '--force-key-file-overwrite '
-    command += '--troubleshoot'
-    if base_classes.SupportIAP():
-      command_iap = command + ' --tunnel-through-iap'
-    return RECOMMEND_MESSAGE.format(command, command_iap)
+    zone_name = args.zone or instance_ref.zone
+    project_name = project.name
+    return RecommendMessage(
+        release_track,
+        project_name,
+        zone_name,
+        instance_name,
+        args.ssh_key_file,
+        args.force_key_file_overwrite,
+    )
 
 
 @base.UniverseCompatible

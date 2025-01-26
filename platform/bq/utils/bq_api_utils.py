@@ -3,6 +3,7 @@
 
 import json
 import logging
+import re
 from typing import Dict, NamedTuple, Optional, Union
 import urllib
 from absl import flags
@@ -11,6 +12,11 @@ from utils import bq_error
 
 Service = bq_consts.Service
 
+# TODO(b/151445175) Remove Apiary formats.
+STATIC_HTTP_ENDPOINT_RE_PREFIX = (
+    'https?://(www|(staging-www|test-bigquery).sandbox|bigquery-sq|bigquery)'
+    '.(google|googleapis).com'
+)
 
 _GDU_DOMAIN = 'googleapis.com'
 
@@ -240,7 +246,12 @@ def add_api_key_to_discovery_url(
 
   if not key:
     key = inputted_flags.BIGQUERY_DISCOVERY_API_KEY_FLAG.value
-    logging.info('No API key has been set, using flag value provided (%s)', key)
+    logging.info(
+        'No API key has been set, using value from the'
+        ' `bigquery_discovery_api_key` flag targeting the universe_domain'
+        ' (%s)',
+        universe_domain,
+    )
 
   if key:
     if '?' in discovery_url:
@@ -286,5 +297,17 @@ def parse_discovery_doc(
   )
 
 
-def is_gdu(universe_domain: str) -> bool:
+def is_gdu_universe(universe_domain: Optional[str]) -> bool:
+  """Returns whether the universe domain is GDU."""
+  if not universe_domain:
+    return False
   return universe_domain == _GDU_DOMAIN
+
+
+def is_gdu_url(url: Optional[str]) -> bool:
+  """Returns whether the url is GDU."""
+  if not url:
+    return False
+  return _GDU_DOMAIN in url or (
+      re.compile(STATIC_HTTP_ENDPOINT_RE_PREFIX).match(url) is not None
+  )

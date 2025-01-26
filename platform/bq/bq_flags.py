@@ -269,8 +269,10 @@ ENABLE_GDRIVE = flags.DEFINE_boolean(
     'enable_gdrive',
     True,
     (
-        'When set to true, requests new OAuth token with GDrive scope. '
-        'When set to false, requests new OAuth token without GDrive scope.'
+        'When set to true, requests new OAuth token with GDrive scope. When set'
+        ' to false, requests new OAuth token without GDrive scope. Unless'
+        ' authenticated with a service account, to use this flag, the'
+        ' use_google_auth flag must be set to false.'
     ),
 )
 MTLS: flags.FlagHolder[bool] = flags.DEFINE_boolean(

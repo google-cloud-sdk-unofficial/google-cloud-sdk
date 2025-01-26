@@ -21,17 +21,34 @@ def GetUniqueSuffix() -> str:
   return _UNIQUE_SUFFIX
 
 
+def GetLogDirectory() -> Optional[str]:
+  """Returns a directory to log to."""
+  if 'TEST_UNDECLARED_OUTPUTS_DIR' in os.environ:
+    full_path = os.path.join(
+        os.environ['TEST_UNDECLARED_OUTPUTS_DIR'], 'bq_logs'
+    )
+  elif 'KOKORO_ARTIFACTS_DIR' in os.environ:
+    full_path = os.path.join(os.environ['KOKORO_ARTIFACTS_DIR'], 'bq_logs')
+  else:
+    return None
+  os.makedirs(full_path, exist_ok=True)
+  return full_path
+
+
 def SaveStringToLogDirectoryIfTest(
     file_prefix: str, content: Union[str, bytes]
 ):
   """Saves string content to a file in the log directory."""
-  if 'TEST_UNDECLARED_OUTPUTS_DIR' in os.environ:
-    if isinstance(content, bytes):
-      content = content.decode('utf-8')
-    filename = f'{file_prefix}_{GetUniqueSuffix()}.log'
-    path = os.path.join(os.environ['TEST_UNDECLARED_OUTPUTS_DIR'], filename)
-    with open(path, 'w') as f:
-      f.write(content)
+  log_dir = GetLogDirectory()
+  if not log_dir:
+    return
+
+  if isinstance(content, bytes):
+    content = content.decode('utf-8')
+  filename = f'{file_prefix}_{GetUniqueSuffix()}.log'
+  path = os.path.join(log_dir, filename)
+  with open(path, 'w') as f:
+    f.write(content)
 
 
 def _SetLogFile(logfile: TextIO):
@@ -53,18 +70,17 @@ def ConfigurePythonLogger(apilog: Optional[str] = None):
   """
   final_log_message = ''
   if apilog is None:
-    try:
+    log_dir = GetLogDirectory()
+    if log_dir:
       unique_suffix = GetUniqueSuffix()
       apilog = os.path.join(
-          os.environ['TEST_UNDECLARED_OUTPUTS_DIR'],
+          log_dir,
           f'bq_cli{unique_suffix}.log',
       )
       final_log_message = (
           'No logging set and TEST_UNDECLARED_OUTPUTS_DIR is set so we are'
           f' in a test environment and will log to file: {apilog}.'
       )
-    except KeyError:
-      pass  # Not in a test environment.
   if apilog is None:
     # Effectively turn off logging.
     logging.debug(

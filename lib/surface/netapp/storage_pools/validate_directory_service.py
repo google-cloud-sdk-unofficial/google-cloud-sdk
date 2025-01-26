@@ -24,7 +24,6 @@ def _CommonArgs(parser):
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class ValidateDirectoryService(base.Command):
   """Validate directory service for a Cloud Netapp storage pool."""

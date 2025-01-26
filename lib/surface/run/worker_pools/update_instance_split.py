@@ -20,11 +20,13 @@ from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import progress_tracker
 
 
 @base.Hidden
@@ -104,7 +106,6 @@ class AdjustInstanceSplit(base.Command):
 
   def Run(self, args):
     """Update the instance split for the worker."""
-    # TODO: b/376904673 - Add progress tracker.
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
@@ -119,13 +120,19 @@ class AdjustInstanceSplit(base.Command):
         run_client
     )
     config_changes = self._GetBaseChanges(args)
-    worker_pool = worker_pools_client.UpdateInstanceSplit(
-        worker_pool_ref,
-        config_changes,
-    )
-    if args.async_:
-      pretty_print.Success('Updating instance split asynchronously.')
-    else:
-      # TODO: b/366576967 - Support wait operation in sync mode.
-      # TODO: b/366115709 - Add printer class to show instance split status.
-      return worker_pool
+    with progress_tracker.StagedProgressTracker(
+        'Updating instance split...',
+        stages.UpdateInstanceSplitStages(),
+        failure_message='Updating instance split failed',
+        suppress_output=args.async_,
+    ):
+      response = worker_pools_client.UpdateInstanceSplit(
+          worker_pool_ref,
+          config_changes,
+      )
+      if args.async_:
+        pretty_print.Success('Updating instance split asynchronously.')
+      else:
+        response.result()  # Wait for the operation to complete.
+        # TODO: b/366115709 - Add printer class to show instance split status.
+        return response.operation

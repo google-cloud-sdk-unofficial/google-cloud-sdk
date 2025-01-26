@@ -12,24 +12,30 @@ import bq_flags
 import bq_utils
 from gcloud_wrapper import gcloud_runner
 from utils import bq_error
+from utils import bq_gcloud_utils
 
 ERROR_TEXT_PRODUCED_IF_GCLOUD_NOT_FOUND = "No such file or directory: 'gcloud'"
+
+_GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive'
+_GCP_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 
 
 def LoadCredential() -> google_oauth2.Credentials:
   """Loads credentials by calling gcloud commands."""
-  logging.info('Loading auth credentials from gcloud')
-  access_token = _GetAccessTokenAndPrintOutput()
+  gcloud_config = bq_gcloud_utils.load_config()
+  account = gcloud_config.get('core', {}).get('account', '')
+  logging.info('Loading auth credentials from gcloud for account: %s', account)
+
+  is_service_account = bq_utils.IsServiceAccount(account)
+  access_token = _GetAccessTokenAndPrintOutput(is_service_account)
   refresh_token = _GetRefreshTokenAndPrintOutput()
-  # When the credential type is user credential - determined by whether we can
-  # get a non-empty refresh token - set a fallback quota project ID to be the
-  # resource project ID. When the credential type is e.g. a service account,
-  # don't set any fallback quota project ID.
-  # TODO: b/367686512 - Check for service account by reading gcloud config.
-  fallback_quota_project_id = (
-      bq_flags.PROJECT_ID.value if refresh_token else None
+  fallback_quota_project_id = _GetFallbackQuotaProjectId(
+      is_service_account=is_service_account,
+      has_refresh_token=refresh_token is not None,
   )
+
   return google_oauth2.Credentials(
+      account=account,
       token=access_token,
       refresh_token=refresh_token,
       quota_project_id=bq_utils.GetResolvedQuotaProjectID(
@@ -38,7 +44,20 @@ def LoadCredential() -> google_oauth2.Credentials:
   )
 
 
-def _GetAccessTokenAndPrintOutput() -> Optional[str]:
+def _GetScopes() -> List[str]:
+  scopes = []
+  if bq_flags.ENABLE_GDRIVE.value:
+    drive_scope = _GDRIVE_SCOPE
+    scopes.extend([drive_scope, _GCP_SCOPE])
+  return scopes
+
+
+def _GetAccessTokenAndPrintOutput(is_service_account: bool) -> Optional[str]:
+  scopes = _GetScopes()
+  if is_service_account and scopes:
+    return _GetTokenFromGcloudAndPrintOtherOutput(
+        ['auth', 'print-access-token', '--scopes', ','.join(scopes)]
+    )
   return _GetTokenFromGcloudAndPrintOtherOutput(['auth', 'print-access-token'])
 
 
@@ -78,7 +97,8 @@ def _GetTokenFromGcloudAndPrintOtherOutput(
       return None
     else:
       raise bq_error.BigqueryError(
-          'Error retrieving auth credentials from gcloud: %s' % str(e)
+          'Error retrieving auth credentials from gcloud: %s'
+          % _UpdateReauthMessage(str(e))
       )
   except Exception as e:  # pylint: disable=broad-exception-caught
     single_line_error_msg = str(e).replace('\n', '')
@@ -117,3 +137,26 @@ def _GetReauthMessage() -> str:
       ' --enable-gdrive-access' if bq_flags.ENABLE_GDRIVE.value else ''
   )
   return 'To re-authenticate, run:\n\n%s' % gcloud_command
+
+
+def _UpdateReauthMessage(message: str) -> str:
+  if '$ gcloud auth login' not in message or not bq_flags.ENABLE_GDRIVE.value:
+    return message
+  return message.replace(
+      '$ gcloud auth login',
+      '$ gcloud auth login --enable-gdrive-access',
+  )
+
+
+def _GetFallbackQuotaProjectId(
+    is_service_account: bool, has_refresh_token: bool
+) -> Optional[str]:
+  # When the credential type is not a service account - determined by the
+  # account name or whether we can get a non-empty refresh token - set a
+  # fallback quota project ID to be the resource project ID. When the credential
+  # type is a service account, don't set any fallback quota project ID.
+  if is_service_account:
+    return None
+  if not has_refresh_token:
+    return None
+  return bq_flags.PROJECT_ID.value

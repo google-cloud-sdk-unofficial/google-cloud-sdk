@@ -66,7 +66,7 @@ class Client(object):
 
     if (
         bq_flags.UNIVERSE_DOMAIN.present
-        and not bq_api_utils.is_gdu(bq_flags.UNIVERSE_DOMAIN.value)
+        and not bq_api_utils.is_gdu_universe(bq_flags.UNIVERSE_DOMAIN.value)
         and not bq_auth_flags.USE_GOOGLE_AUTH.value
     ):
       logging.warning(
@@ -96,6 +96,9 @@ class Client(object):
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)
 
+    logging.info(
+        'Creating client for BQ CLI version: %s', bq_utils.VERSION_NUMBER
+    )
     logging.debug('Global args collected: %s', client_args)
 
     client_args['wait_printer_factory'] = _GetWaitPrinterFactoryFromFlags()

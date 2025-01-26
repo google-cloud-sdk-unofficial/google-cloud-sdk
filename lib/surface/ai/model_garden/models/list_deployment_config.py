@@ -43,36 +43,27 @@ class ListDeployMentConfig(base.ListCommand):
 
   ## EXAMPLES
 
-  To list the supported machine specifications for `google/gemma2/gemma2-9b`,
+  To list the supported machine specifications for `google/gemma2@gemma-2-9b`,
   run:
 
     $ gcloud ai model-garden models list-deployment-config
-    --model=google/gemma2/gemma2-9b
+    --model=google/gemma2@gemma-2-9b
 
   To list the supported machine specifications for a Hugging Face model
   `meta-llama/Meta-Llama-3-8B`, run:
 
     $ gcloud ai model-garden models list-deployment-config
-    --hugging-face-model=meta-llama/Meta-Llama-3-8B
+    --model=meta-llama/Meta-Llama-3-8B
   """
 
   def _GetMultiDeploy(self, args, version):
     mg_client = client_mg.ModelGardenClient(version)
-    if args.hugging_face_model is not None:
-      # Convert to lower case because API only takes in lower case.
-      publisher_name, model_name = args.hugging_face_model.lower().split('/')
-      publisher_model = mg_client.GetPublisherModel(
-          model_name=f'publishers/{publisher_name}/models/{model_name}',
-          is_hugging_face_model=True,
-      )
-    else:
-      # Convert to lower case because API only takes in lower case.
-      publisher_name, model_name, model_version_name = args.model.lower().split(
-          '/'
-      )
-      publisher_model = mg_client.GetPublisherModel(
-          f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
-      )
+    # Convert to lower case because API only takes in lower case.
+    publisher_name, model_name = args.model.lower().split('/')
+    publisher_model = mg_client.GetPublisherModel(
+        model_name=f'publishers/{publisher_name}/models/{model_name}',
+        is_hugging_face_model='@' not in args.model,
+    )
 
     try:
       multi_deploy = (
@@ -95,22 +86,17 @@ class ListDeployMentConfig(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
     parser.display_info.AddFormat(_DEFAULT_FORMAT)
-    model_group = parser.add_group(mutex=True, required=True)
-    model_group.add_argument(
+    base.Argument(
         '--model',
         help=(
-            'The Model Garden model to be deployed, in the format of'
-            ' `{publisher_name}/{model_name}/{model_version_name}, e.g.'
-            ' `google/gemma2/gemma-2-2b`.'
+            'The model to be deployed. If it is a Model Garden model, it should'
+            ' be in the format of'
+            ' `{publisher_name}/{model_name}@{model_version_name}, e.g.'
+            ' `google/gemma2@gemma-2-2b`. If it is a Hugging Face model, it'
+            ' should be in the convention of Hugging Face models, e.g.'
+            ' `meta-llama/Meta-Llama-3-8B`.'
         ),
-    )
-    model_group.add_argument(
-        '--hugging-face-model',
-        help=(
-            'The Hugging Face model to be deployed, in the format of Hugging'
-            ' Face URL path, e.g. `meta-llama/Meta-Llama-3-8B`.'
-        ),
-    )
+    ).AddToParser(parser)
 
   def Run(self, args):
     validation.ValidateModelGardenModelArgs(args)

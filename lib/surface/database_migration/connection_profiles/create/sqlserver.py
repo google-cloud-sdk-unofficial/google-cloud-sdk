@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.connection_profiles import create_helper
 from googlecloudsdk.command_lib.database_migration.connection_profiles import flags as cp_flags
@@ -66,6 +67,7 @@ class _SQLServer(base.Command):
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddRoleFlag(parser)
     cp_flags.AddSslServerOnlyOrRequiredConfigGroup(parser, hidden=True)
+    sqlserver_flags.AddCloudSqlInstanceFlags(parser)
     sqlserver_flags.AddCpDetailsFlag(parser)
     sqlserver_flags.AddDatabaseFlag(parser)
     flags.AddLabelsCreateFlags(parser)
@@ -81,6 +83,7 @@ class _SQLServer(base.Command):
       A dict object representing the operations resource describing the create
       operation if the create was successful.
     """
+    self._ValidateArgs(args)
     connection_profile_ref = args.CONCEPTS.connection_profile.Parse()
     parent_ref = connection_profile_ref.Parent().RelativeName()
 
@@ -95,3 +98,50 @@ class _SQLServer(base.Command):
         args,
         'SQLSERVER',
     )
+
+  def _ValidateArgs(self, args):
+    """Validates the arguments for the command."""
+    self._ValidateHeterogeneousArgs(args)
+    self._ValidateHomeogeneousDestinationArgs(args)
+
+  def _ValidateHeterogeneousArgs(self, args):
+    """Validates the arguments for heterogeneous source connection profiles."""
+    if args.IsKnownAndSpecified('host'):
+      if args.username is None:
+        raise exceptions.BadArgumentException(
+            '--username',
+            'Username must be specified with --host.',
+        )
+      if args.password is None:
+        raise exceptions.BadArgumentException(
+            '--password',
+            'Password must be specified with --host.',
+        )
+      if args.IsKnownAndSpecified('cloudsql_instance'):
+        raise exceptions.BadArgumentException(
+            '--cloudsql-instance',
+            'Cloud SQL instance can not be used with --host.',
+        )
+      if args.IsKnownAndSpecified('cloudsql_project_id'):
+        raise exceptions.BadArgumentException(
+            '--cloudsql-project-id',
+            'Cloud SQL project ID can not be used with --host.',
+        )
+
+  def _ValidateHomeogeneousDestinationArgs(self, args):
+    """Validates the arguments for homeogeneous destination connection profiles."""
+    if (
+        not args.IsKnownAndSpecified('host')
+        and args.IsKnownAndSpecified('role')
+        and args.role == 'DESTINATION'
+    ):
+      if args.cloudsql_instance is None:
+        raise exceptions.BadArgumentException(
+            '--cloudsql-instance',
+            'Cloud SQL instance must be specified with --role=DESTINATION.',
+        )
+      if args.IsKnownAndSpecified('gcs_bucket'):
+        raise exceptions.BadArgumentException(
+            '--gcs-bucket',
+            'GCS bucket can not be used with --role=DESTINATION.',
+        )

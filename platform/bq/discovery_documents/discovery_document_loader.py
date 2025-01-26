@@ -17,6 +17,8 @@ PKG_NAME = 'bigquery_client'
 DISCOVERY_NEXT_BIGQUERY = 'discovery_next/bigquery.json'
 # Latest version of the IAM Policy API discovery_document from discovery_next.
 DISCOVERY_NEXT_IAM_POLICY = 'discovery_next/iam-policy.json'
+# Latest version of the Reservations discovery_document from discovery_next.
+DISCOVERY_NEXT_RESERVATIONS = 'discovery_next/bigqueryreservation_service.json'
 
 SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://www.googleapis.com',
@@ -26,7 +28,7 @@ SUPPORTED_BIGQUERY_APIS = frozenset([
 SERVICES_TO_LOCAL_DISCOVERY_DOC_MAP = {
     bq_consts.Service.BIGQUERY: DISCOVERY_NEXT_BIGQUERY,
     bq_consts.Service.CONNECTIONS: DISCOVERY_NEXT_BIGQUERY,
-    bq_consts.Service.RESERVATIONS: DISCOVERY_NEXT_BIGQUERY,
+    bq_consts.Service.RESERVATIONS: DISCOVERY_NEXT_RESERVATIONS,
     bq_consts.Service.BQ_IAM: DISCOVERY_NEXT_IAM_POLICY,
 }
 

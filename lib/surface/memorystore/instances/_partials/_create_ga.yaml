@@ -291,14 +291,14 @@
       help_text: |-
         The mode config for the instance.
       choices:
-      - arg_value: standalone
-        enum_value: STANDALONE
-        help_text: |-
-          Instance is in standalone mode.
       - arg_value: cluster
         enum_value: CLUSTER
         help_text: |-
           Instance is in cluster mode.
+      - arg_value: cluster-disabled
+        enum_value: CLUSTER_DISABLED
+        help_text: |-
+          Cluster mode is disabled for the instance.
     - arg_name: request-id
       api_field: requestId
       required: false

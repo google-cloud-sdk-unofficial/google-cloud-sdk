@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.resource_manager.settings import utils as api_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager.settings import arguments
 from googlecloudsdk.command_lib.resource_manager.settings import utils
+from googlecloudsdk.core.console import console_io
 
 
 @base.Hidden
@@ -60,6 +61,11 @@ class Clear(base.DescribeCommand):
 
     settings_service = api_utils.GetServiceFromArgs(args)
     setting_name = utils.GetSettingsPathFromArgs(args)
+
+    if not console_io.PromptContinue(
+        message=('Your setting will be cleared.'),
+    ):
+      return None
 
     get_request = api_utils.GetDeleteValueRequestFromArgs(args, setting_name)
     setting_value = settings_service.Clear(get_request)

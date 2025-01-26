@@ -25,7 +25,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import filter_rewrite
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
+from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
@@ -35,8 +35,14 @@ from googlecloudsdk.core.resource import resource_projection_spec
 class List(base.ListCommand):
   """List wire groups."""
 
+  CROSS_SITE_NETWORK_ARG = None
+
   @classmethod
   def Args(cls, parser):
+    cls.CROSS_SITE_NETWORK_ARG = (
+        cross_site_network_flags.CrossSiteNetworkArgumentForOtherResource()
+    )
+    cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
     parser.display_info.AddFormat("""
         table(
           name,
@@ -51,7 +57,6 @@ class List(base.ListCommand):
           adminEnabled:label=ADMIN_ENABLED
         )
     """)
-    flags.AddCrossSiteNetwork(parser)
 
   def Run(self, args: Any):
     """Run the list command.
@@ -64,7 +69,6 @@ class List(base.ListCommand):
     """
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-
     client = holder.client.apitools_client
     messages = client.MESSAGES_MODULE
 

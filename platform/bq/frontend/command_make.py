@@ -11,8 +11,6 @@ from typing import Optional
 from absl import app
 from absl import flags
 
-from pyglib import appcommands
-
 import bq_flags
 import bq_utils
 from clients import client_connection

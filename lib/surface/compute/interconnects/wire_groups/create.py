@@ -63,12 +63,12 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls.WIRE_GROUP_ARG = flags.WireGroupArgument(plural=False)
-    cls.WIRE_GROUP_ARG.AddArgument(parser, operation_type='create')
     cls.CROSS_SITE_NETWORK_ARG = (
         cross_site_network_flags.CrossSiteNetworkArgumentForOtherResource()
     )
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
+    cls.WIRE_GROUP_ARG = flags.WireGroupArgument(plural=False)
+    cls.WIRE_GROUP_ARG.AddArgument(parser, operation_type='create')
     flags.AddDescription(parser)
     flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser)
@@ -85,20 +85,17 @@ class Create(base.CreateCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.WIRE_GROUP_ARG.ResolveAsResource(args, holder.resources)
-    cross_site_network_ref = self.CROSS_SITE_NETWORK_ARG.ResolveAsResource(
-        args, holder.resources
-    )
 
     project = properties.VALUES.core.project.GetOrFail()
     wire_group = client.WireGroup(
         ref,
         project,
+        args.cross_site_network,
         compute_client=holder.client
     )
 
     return wire_group.Create(
         description=args.description,
-        cross_site_network=cross_site_network_ref.SelfLink(),
         # Need to rename type as it conflicts with python built in type()
         wire_group_type=args.type,
         bandwidth_unmetered=args.bandwidth_unmetered,

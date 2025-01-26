@@ -21,7 +21,6 @@ from clients import client_job
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
-from pyglib import appcommands
 
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils

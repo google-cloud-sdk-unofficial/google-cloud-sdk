@@ -62,6 +62,8 @@ class Update(base.Command):
     flags.AddCapacityArgsForInstance(
         require_all_autoscaling_args=False,
         parser=parser,
+        add_asymmetric_option_flag=True,
+        asymmetric_options_group=True,
     )
     flags.Edition(None, True).AddToParser(parser)
     flags.DefaultBackupScheduleType(
@@ -105,6 +107,8 @@ class Update(base.Command):
         autoscaling_max_processing_units=args.autoscaling_max_processing_units,
         autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
+        asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        clear_asymmetric_autoscaling_options=args.clear_asymmetric_autoscaling_option,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,

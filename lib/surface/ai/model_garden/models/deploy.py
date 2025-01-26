@@ -44,7 +44,7 @@ class Deploy(base.Command):
   `us-central1`, run:
 
     $ gcloud ai model-garden models deploy
-    --model=google/gemma2/gemma2-9b
+    --model=google/gemma2@gemma-2-9b
     --project=example
     --region=us-central1
 
@@ -52,7 +52,7 @@ class Deploy(base.Command):
   `example` in region `us-central1`, run:
 
     $ gcloud ai model-garden models deploy
-    --hugging-face-model=meta-llama/Meta-Llama-3-8B
+    --model=meta-llama/Meta-Llama-3-8B
     --hugging-face-access-token={hf_token}
     --project=example
     --region=us-central1
@@ -60,32 +60,27 @@ class Deploy(base.Command):
 
   @staticmethod
   def Args(parser):
-    model_group = parser.add_group(mutex=True, required=True)
-    model_group.add_argument(
+    base.Argument(
         '--model',
-        help=(
-            'The Model Garden model to be deployed, in the format of'
-            ' `{publisher_name}/{model_name}/{model_version_name}, e.g.'
-            ' `google/gemma2/gemma2-2b`.'
-        ),
-    )
-    hf_model_group = model_group.add_group()
-    hf_model_group.add_argument(
-        '--hugging-face-model',
         required=True,
         help=(
-            'The Hugging Face model to be deployed, in the format of Hugging'
-            ' Face URL path, e.g. `meta-llama/Meta-Llama-3-8B`.'
+            'The model to be deployed. If it is a Model Garden model, it should'
+            ' be in the format of'
+            ' `{publisher_name}/{model_name}@{model_version_name}, e.g.'
+            ' `google/gemma2@gemma-2-2b`. If it is a Hugging Face model, it'
+            ' should be in the convention of Hugging Face models, e.g.'
+            ' `meta-llama/Meta-Llama-3-8B`.'
         ),
-    )
-    hf_model_group.add_argument(
+    ).AddToParser(parser)
+    base.Argument(
         '--hugging-face-access-token',
+        required=False,
         help=(
             'The access token from Hugging Face needed to read the'
             ' model artifacts of gated models. It is only needed when'
-            ' the model to deploy is gated.'
+            ' the Hugging Face model to deploy is gated.'
         ),
-    )
+    ).AddToParser(parser)
     base.Argument(
         '--endpoint-display-name',
         required=False,
@@ -142,7 +137,7 @@ class Deploy(base.Command):
     region_ref = args.CONCEPTS.region.Parse()
     args.region = region_ref.AsDict()['locationsId']
     version = constants.BETA_VERSION
-    is_hf_model = args.hugging_face_model is not None
+    is_hf_model = '@' not in args.model
     mg_client = client_mg.ModelGardenClient()
 
     with endpoint_util.AiplatformEndpointOverrides(
@@ -152,7 +147,7 @@ class Deploy(base.Command):
       # us-central1 because all data are stored in us-central1.
       if is_hf_model:
         # Convert to lower case because API only takes in lower case.
-        publisher_name, model_name = args.hugging_face_model.lower().split('/')
+        publisher_name, model_name = args.model.lower().split('/')
 
         try:
           publisher_model = mg_client.GetPublisherModel(
@@ -161,8 +156,8 @@ class Deploy(base.Command):
           )
         except apitools_exceptions.HttpNotFoundError:
           raise c_exceptions.UnknownArgumentException(
-              '--hugging-face-model',
-              f'{args.hugging_face_model} is not a supported Hugging Face'
+              '--model',
+              f'{args.model} is not a supported Hugging Face'
               ' model for deployment in Model Garden.',
           )
 
@@ -174,12 +169,11 @@ class Deploy(base.Command):
         )
       else:
         # Convert to lower case because API only takes in lower case.
-        publisher_name, model_name, model_version_name = (
-            args.model.lower().split('/')
-        )
+        publisher_name, model_and_version_name = args.model.lower().split('/')
+
         try:
           publisher_model = mg_client.GetPublisherModel(
-              f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
+              f'publishers/{publisher_name}/models/{model_and_version_name}'
           )
         except apitools_exceptions.HttpNotFoundError:
           raise c_exceptions.UnknownArgumentException(
@@ -188,10 +182,14 @@ class Deploy(base.Command):
               ' deployment in Model Garden.',
           )
 
-        default_endpoint_name = '-'.join(
-            [publisher_name, model_version_name, 'mg-cli-deploy']
+        default_endpoint_name = '-'.join([
+            publisher_name,
+            model_and_version_name.split('@')[1],
+            'mg-cli-deploy',
+        ])
+        api_model_arg = (
+            f'publishers/{publisher_name}/models/{model_and_version_name}'
         )
-        api_model_arg = f'publishers/{publisher_name}/models/{model_name}@{model_version_name}'
 
       deploy_config = model_garden_utils.GetDeployConfig(args, publisher_model)
 

@@ -89,6 +89,6 @@ class Describe(base.Command):
     worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
     if not worker_pool:
       raise exceptions.ArgumentError(
-          'Cannot find WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+          'Cannot find worker pool [{}]'.format(worker_pool_ref.workerPoolsId)
       )
     return worker_pool

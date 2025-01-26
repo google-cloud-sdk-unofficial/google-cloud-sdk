@@ -357,7 +357,7 @@ class TablePrinter(object):
       # fractional seconds then call isoformat with a space separator.
       date = date.replace(microsecond=0)
       return date.isoformat(' ')
-    except ValueError:
+    except (ValueError, OverflowError):
       return '<date out of range for display>'
 
   @staticmethod

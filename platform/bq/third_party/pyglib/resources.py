@@ -50,7 +50,8 @@ import typing
 from typing import Any, BinaryIO, Callable, Dict, Iterable, Iterator, List, Literal, Optional, TextIO, Tuple, Union
 import zipfile  # Must import zipfile at startup because of b/135941387
 
-# TODO(b/270392982): Code needs to be py3.8 compatible due to FDU dependency.
+# TODO(b/270392982): Code needs to be py3.8 compatible due to FDU dependency
+# with continued py3.9 support (See b/386790696, go/bq-cli-python-versions).
 _Path = Union[str, 'os.PathLike[str]']
 
 # Check for the special module provided by Hermetic Python. Don't try

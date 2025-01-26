@@ -334,8 +334,8 @@ Example json configuration file:
         "squash-mode": "ROOT_SQUASH",
         "anon_uid": 1003,
         "anon_gid": 1003
-      },
-    ],
+      }
+    ]
   }
   }
 

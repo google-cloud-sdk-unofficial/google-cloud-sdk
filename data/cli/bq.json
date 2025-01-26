@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.11",
+  "CLI_VERSION": "2.1.12",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -626,7 +626,7 @@
       "attr": {},
       "category": "",
       "default": "'true'",
-      "description": "When set to true, requests new OAuth token with GDrive scope. When set to false, requests new OAuth token without GDrive scope.",
+      "description": "When set to true, requests new OAuth token with GDrive scope. When set to false, requests new OAuth token without GDrive scope. Unless authenticated with a service account, to use this flag, the use_google_auth flag must be set to false.",
       "group": "",
       "is_global": true,
       "is_hidden": false,

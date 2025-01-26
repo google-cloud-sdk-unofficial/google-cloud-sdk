@@ -121,7 +121,7 @@ class Update(base.UpdateCommand):
         group, for_node_pool=True, for_create=False)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddMaxRunDurationFlag(group, hidden=True)
+    flags.AddMaxRunDurationFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -310,7 +310,7 @@ class UpdateBeta(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddMaxRunDurationFlag(group, hidden=True)
+    flags.AddMaxRunDurationFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -433,7 +433,7 @@ class UpdateAlpha(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddMaxRunDurationFlag(group, hidden=True)
+    flags.AddMaxRunDurationFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')

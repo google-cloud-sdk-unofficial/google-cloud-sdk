@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks import flags
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Compute Engine networks."""
 
@@ -45,6 +47,18 @@ class List(base.ListCommand):
 
     return (networks_utils.AddModesForListFormat(resource)
             for resource in lister.Invoke(request_data, list_implementation))
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Compute Engine networks."""
+
+  @staticmethod
+  def Args(parser):
+    lister.AddBaseListerArgs(parser)
+    parser.display_info.AddFormat(flags.LIST_FORMAT_WITH_ULA_IPV6)
+    parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('networks')

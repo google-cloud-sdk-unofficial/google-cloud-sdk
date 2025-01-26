@@ -50,9 +50,10 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
   """Processes the user configs from gcloud and sets flag values accordingly."""
   configs = load_config()
 
-  core_config = configs.get('core')
-  billing_config = configs.get('billing')
-  auth_config = configs.get('auth')
+  core_config = configs.get('core', {})
+  billing_config = configs.get('billing', {})
+  auth_config = configs.get('auth', {})
+  api_endpoint_overrides = configs.get('api_endpoint_overrides', {})
 
   _use_gcloud_value_if_exists_and_flag_is_default_value(
       flag_values=flag_values,
@@ -80,6 +81,20 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
       flag_name='request_reason',
       gcloud_config_section=core_config,
       gcloud_property_name='request_reason',
+  )
+
+  _use_gcloud_value_if_exists_and_flag_is_default_value(
+      flag_values=flag_values,
+      flag_name='api',
+      gcloud_config_section=api_endpoint_overrides,
+      gcloud_property_name='bigquery',
+  )
+
+  _use_gcloud_value_if_exists_and_flag_is_default_value(
+      flag_values=flag_values,
+      flag_name='bigquery_discovery_api_key',
+      gcloud_config_section=core_config,
+      gcloud_property_name='api_key',
   )
 
   if not auth_config or not core_config:

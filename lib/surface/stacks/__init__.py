@@ -24,6 +24,11 @@ from googlecloudsdk.command_lib.runapps import flags
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Deprecate(
+    is_removed=True,
+    error='Stacks is no longer supported.'
+)
+@base.DefaultUniverseOnly
 class Stacks(base.Group):
   """View and manage your Stacks resources.
 

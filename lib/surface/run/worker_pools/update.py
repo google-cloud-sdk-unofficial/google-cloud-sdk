@@ -18,12 +18,15 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.console import progress_tracker
 
 
 def ContainerArgGroup():
@@ -147,7 +150,6 @@ class Update(base.Command):
 
   def Run(self, args):
     """Update the worker-pool resource."""
-    # TODO(b/376904673): Add progress tracker.
     worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
     flags.ValidateResource(worker_pool_ref)
 
@@ -163,12 +165,52 @@ class Update(base.Command):
     )
     worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
     config_changes = self._GetBaseChanges(args)
-    response = worker_pools_client.ReleaseWorkerPool(
-        worker_pool_ref, worker_pool, config_changes
-    )
-    if not response:
-      raise exceptions.ArgumentError(
-          'Cannot update WorkerPool [{}]'.format(worker_pool_ref.workerPoolsId)
+    if worker_pool:
+      header = 'Updating...'
+      failure_message = 'Update failed'
+      result_message = 'updating'
+    else:
+      header = 'Deploying new worker pool...'
+      failure_message = 'Deployment failed'
+      result_message = 'deploying'
+    with progress_tracker.StagedProgressTracker(
+        header,
+        stages.WorkerPoolStages(),
+        failure_message=failure_message,
+        suppress_output=args.async_,
+    ):
+      response = worker_pools_client.ReleaseWorkerPool(
+          worker_pool_ref, worker_pool, config_changes
       )
-    # TODO(b/366576967): Support wait operation in sync mode.
-    return response.operation
+      if not response:
+        raise exceptions.ArgumentError(
+            'Cannot update worker pool [{}]'.format(
+                worker_pool_ref.workerPoolsId
+            )
+        )
+      if args.async_:
+        pretty_print.Success(
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
+            'asynchronously.'.format(
+                worker_pool=worker_pool_ref.workerPoolsId,
+                result_message=result_message,
+            )
+        )
+      else:
+        response.result()  # Wait for the operation to complete.
+        if worker_pool:
+          pretty_print.Success(
+              'Worker pool [{{bold}}{worker_pool}{{reset}}] '
+              'has been updated.'.format(
+                  worker_pool=worker_pool_ref.workerPoolsId,
+              )
+          )
+        else:
+          # TODO(b/366115709): Add latest revision name to the output.
+          pretty_print.Success(
+              'Worker pool [{{bold}}{worker_pool}{{reset}}] '
+              'has been deployed.'.format(
+                  worker_pool=worker_pool_ref.workerPoolsId,
+              )
+          )
+        return response.operation
