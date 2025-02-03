@@ -64,7 +64,7 @@
               spec:
               - api_field: filterType
                 help_text: |-
-                  Type of Responsible AI filter.
+                  Type of responsible AI filter.
               - api_field: confidenceLevel
                 help_text: |-
                   Confidence level for this RAI filter.
@@ -76,7 +76,7 @@
             api_field: template.filterConfig.sdpSettings
             required: false
             help_text: |-
-              Sensitive Data protection settings.
+              Sensitive Data Protection settings.
             params:
             - group:
                 mutex: true
@@ -87,13 +87,14 @@
                     api_field: template.filterConfig.sdpSettings.basicConfig
                     required: false
                     help_text: |-
-                      SDP Basic configuration.
+                      Sensitive Data Protection basic configuration.
                     params:
                     - arg_name: basic-config-filter-enforcement
                       api_field: template.filterConfig.sdpSettings.basicConfig.filterEnforcement
                       required: false
                       help_text: |-
-                        Tells whether the SDP basic config is enabled or disabled.
+                        Tells whether the Sensitive Data Protection basic config is enabled or
+                        disabled.
                       choices:
                       - arg_value: enabled
                         enum_value: ENABLED
@@ -107,20 +108,19 @@
                     api_field: template.filterConfig.sdpSettings.advancedConfig
                     required: false
                     help_text: |-
-                      SDP Advanced configuration.
+                      Sensitive Data Protection Advanced configuration.
                     params:
                     - arg_name: advanced-config-inspect-template
                       api_field: template.filterConfig.sdpSettings.advancedConfig.inspectTemplate
                       required: false
                       repeated: false
                       help_text: |-
-                        SDP inspect template resource name
+                        Sensitive Data Protection inspect template resource name
 
                         If only inspect template is provided (de-identify template not provided),
-                        then SDP InspectContent action is performed during Sanitization.
-                        All DLP findings identified during inspection will be returned as
-                        SdpFinding in SdpInsepctionResult
-                        e.g.
+                        then Sensitive Data Protection InspectContent action is performed during
+                        Sanitization. All Sensitive Data Protection findings identified during
+                        inspection will be returned as SdpFinding in SdpInsepctionResult e.g.
                         `organizations/{organization}/inspectTemplates/{inspect_template}`,
                         `projects/{project}/inspectTemplates/{inspect_template}`
                         `organizations/{organization}/locations/{location}/inspectTemplates/{inspect_template}`
@@ -130,7 +130,7 @@
                       required: false
                       repeated: false
                       help_text: |-
-                        Optional SDP Deidentify template resource name.
+                        Optional Sensitive Data Protection Deidentify template resource name.
 
                         If provided then DeidentifyContent action is performed during Sanitization
                         using this template and inspect template. The De-identified data will
@@ -273,8 +273,8 @@
       help_text: |-
         An optional request ID to identify requests. Specify a unique request ID
         so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
+        the request if it has already been completed. The server stores the request
+        ID for 60 minutes after the first request.
 
         For example, consider a situation where you make an initial request and the
         request times out. If you make the request again with the same request

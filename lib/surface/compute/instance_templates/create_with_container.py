@@ -147,6 +147,7 @@ class CreateWithContainer(base.CreateCommand):
         support_region_instance_template=False,
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
+        support_ipv6_only=True,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -401,6 +402,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_region_instance_template=False,
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
+        support_ipv6_only=True,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)

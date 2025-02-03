@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     Describe a multicast producer associations.
@@ -14,5 +14,8 @@ arguments:
     help_text: |
       The multicast producer association to display.
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.multicastProducerAssociations

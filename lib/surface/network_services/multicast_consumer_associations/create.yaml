@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     Create a multicast consumer association.
@@ -35,5 +35,7 @@ async:
 request: &request
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.multicastConsumerAssociations
   method: create

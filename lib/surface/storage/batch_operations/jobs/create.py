@@ -46,10 +46,9 @@ class Create(base.Command):
 
       To create a batch job with the name `my-job` to update object metadata
       `Content-Disposition` to `inline` and `Content-Language` to `en` where
-      the prefix list file
-      `my-path/my-prefix-list.json` specifies the objects to be transformed:
+      you want to match objects with the prefix `prefix1` or `prefix2`:
 
-          $ {command} my-job --prefix-list-file=my-path/my-prefix-list.json
+          $ {command} my-job --included-object-prefixes=prefix1,prefix2
           --put-metadata=Content-Disposition=inline,Content-Language=en
       """,
   }

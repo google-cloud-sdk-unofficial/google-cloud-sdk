@@ -138,13 +138,13 @@ class Deploy(base.Command):
     args.region = region_ref.AsDict()['locationsId']
     version = constants.BETA_VERSION
     is_hf_model = '@' not in args.model
-    mg_client = client_mg.ModelGardenClient()
 
     with endpoint_util.AiplatformEndpointOverrides(
         version, region='us-central1'
     ):
       # Step 1: Fetch PublisherModel data, including deployment configs. Use
       # us-central1 because all data are stored in us-central1.
+      mg_client = client_mg.ModelGardenClient()
       if is_hf_model:
         # Convert to lower case because API only takes in lower case.
         publisher_name, model_name = args.model.lower().split('/')

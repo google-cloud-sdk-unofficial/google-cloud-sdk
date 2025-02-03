@@ -110,6 +110,8 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     Returns:
       A global settings value object.
     """
+    if args.global_settings is None:
+      args.global_settings = {}
     args.global_settings.update(filter='*', v2='true')
     return labels_util.ParseCreateArgs(
         args=args,

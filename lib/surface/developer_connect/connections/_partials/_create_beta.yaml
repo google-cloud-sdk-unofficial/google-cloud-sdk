@@ -34,6 +34,7 @@
           Arguments for the connection config.
         params:
         - group:
+            api_field: connection.githubConfig
             required: false
             help_text: |-
               Configuration for connections to github.com.
@@ -54,6 +55,7 @@
                 help_text: |-
                   The Firebase GitHub Application.
             - group:
+                api_field: connection.githubConfig.authorizerCredential
                 required: false
                 help_text: |-
                   Represents an OAuth token of the account that authorized the Connection,
@@ -77,6 +79,7 @@
               help_text: |-
                 GitHub App installation id.
         - group:
+            api_field: connection.githubEnterpriseConfig
             required: false
             help_text: |-
               Configuration for connections to an instance of GitHub Enterprise.
@@ -122,6 +125,7 @@
               help_text: |-
                 ID of the installation of the GitHub App.
             - group:
+                api_field: connection.githubEnterpriseConfig.serviceDirectoryConfig
                 required: false
                 help_text: |-
                   ServiceDirectoryConfig represents Service Directory configuration for a
@@ -145,6 +149,7 @@
               help_text: |-
                 SSL certificate to use for requests to GitHub Enterprise.
         - group:
+            api_field: connection.gitlabConfig
             required: false
             help_text: |-
               Configuration for connections to gitlab.com.
@@ -161,6 +166,7 @@
                 connection.gitlabConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: true
             - group:
+                api_field: connection.gitlabConfig.readAuthorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -178,6 +184,7 @@
                     connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.gitlabConfig.authorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -195,6 +202,7 @@
                     connection.gitlabConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
         - group:
+            api_field: connection.gitlabEnterpriseConfig
             required: false
             help_text: |-
               Configuration for connections to an instance of GitLab Enterprise.
@@ -217,6 +225,7 @@
                 connection.gitlabEnterpriseConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: true
             - group:
+                api_field: connection.gitlabEnterpriseConfig.readAuthorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -234,6 +243,7 @@
                     connection.gitlabEnterpriseConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.gitlabEnterpriseConfig.authorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -251,6 +261,7 @@
                     connection.gitlabEnterpriseConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.gitlabEnterpriseConfig.serviceDirectoryConfig
                 required: false
                 help_text: |-
                   ServiceDirectoryConfig represents Service Directory configuration for a
@@ -275,6 +286,7 @@
                 SSL Certificate Authority certificate to use for requests to GitLab
                 Enterprise instance.
         - group:
+            api_field: connection.bitbucketDataCenterConfig
             required: false
             hidden: true
             help_text: |-
@@ -298,6 +310,7 @@
                 connection.bitbucketDataCenterConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: true
             - group:
+                api_field: connection.bitbucketDataCenterConfig.readAuthorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -315,6 +328,7 @@
                     connection.bitbucketDataCenterConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.bitbucketDataCenterConfig.authorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -332,6 +346,7 @@
                     connection.bitbucketDataCenterConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.bitbucketDataCenterConfig.serviceDirectoryConfig
                 required: false
                 help_text: |-
                   ServiceDirectoryConfig represents Service Directory configuration for a
@@ -356,6 +371,7 @@
                 SSL certificate authority to trust when making requests to Bitbucket Data
                 Center.
         - group:
+            api_field: connection.bitbucketCloudConfig
             required: false
             hidden: true
             help_text: |-
@@ -379,6 +395,7 @@
                 connection.bitbucketCloudConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: true
             - group:
+                api_field: connection.bitbucketCloudConfig.readAuthorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -396,6 +413,7 @@
                     connection.bitbucketCloudConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
             - group:
+                api_field: connection.bitbucketCloudConfig.authorizerCredential
                 required: true
                 help_text: |-
                   Represents a personal access token that authorized the Connection,
@@ -457,6 +475,7 @@
         fields, and may be sent on update and delete requests to ensure the
         client has an up-to-date value before proceeding.
     - group:
+        api_field: connection.cryptoKeyConfig
         required: false
         help_text: |-
           The crypto key configuration. This field is used by the Customer-managed
@@ -473,6 +492,22 @@
           resource_method_params:
             connection.cryptoKeyConfig.keyReference: '{__relative_name__}'
           required: true
+    - group:
+        api_field: connection.gitProxyConfig
+        required: false
+        hidden: true
+        help_text: |-
+          The git proxy configuration.
+        params:
+        - arg_name: git-proxy-config-enabled
+          api_field: connection.gitProxyConfig.enabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Setting this to true allows the git proxy to be used for performing git
+            operations on the repositories linked in the connection.
+          default: null
     - arg_name: request-id
       api_field: requestId
       required: false

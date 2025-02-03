@@ -400,7 +400,7 @@ class Deploy(base.Command):
     # the repository to create by default.
     docker_string, repo_to_create = self._GetArtifactRegistryRepository(
         args, conn_context, platform, already_activated_services,
-        container_args, annotated_build_image_uri)
+        container_args, annotated_build_image_uri, service_ref)
 
     # The image is built with latest tag. After build, the image digest
     # from the build result will be added to the image of the service spec.
@@ -482,7 +482,8 @@ class Deploy(base.Command):
       platform,
       already_activated_services,
       container_args,
-      annotated_build_image_uri):
+      annotated_build_image_uri,
+      service_ref):
     """Gets the AR repo from flags or annotations if they exist, otherwise return the repository to create.
 
     Args:
@@ -495,6 +496,7 @@ class Deploy(base.Command):
       container_args: base.ArgumentGroup, Container arguments using
         source build.
       annotated_build_image_uri: str, build image uri from service annotations.
+      service_ref: ServiceRef, reference to the existing Cloud run service.
 
     Returns:
       A string location of the AR repository and the docker_util.DockerRepo
@@ -504,6 +506,8 @@ class Deploy(base.Command):
     if container_args.image and self.ReleaseTrack() != base.ReleaseTrack.GA:
       docker_string = _ValidateArRepository(
           container_args.image, already_activated_services)
+      _ValidateServiceNameFromImage(container_args.image,
+                                    service_ref.servicesId)
       return docker_string, repo_to_create
     elif (annotated_build_image_uri
           and self.ReleaseTrack() != base.ReleaseTrack.GA):
@@ -787,7 +791,9 @@ def _ValidateArRepository(
         '--image',
         'The artifact repository found for the function '
         'was not in the expected format '
-        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME], please try again. \n'
+        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME] or\n'
+        '[REGION]-docker.pkg.dev/[PROJECT-ID]/[REPO-NAME]/[SERVICE-NAME],\n'
+        ' please try again. \n'
         f'Retrieved value was: {annotated_build_image_uri}',
     )
   region = match.group(1)
@@ -811,6 +817,22 @@ def _ValidateArRepository(
         ' Please create the repository and try again.',
     )
   return ar_repo.GetDockerString()
+
+
+def _ValidateServiceNameFromImage(image_uri, service_id):
+  """Checks the service extracted from the image uri matches the service id."""
+  image_uri_regex = (
+      r'(?P<region>[\w-]+)-docker\.pkg\.dev/(?P<project_id>[\w-]+)/'
+      r'(?P<repo_name>[\w-]+)/(?P<service_name>[\w-]+)(?:/(.+))?$'
+  )
+  match = re.match(image_uri_regex, image_uri)
+  if (match and match.group('service_name') and
+      match.group('service_name') != service_id):
+    raise c_exceptions.InvalidArgumentException(
+        '--image',
+        'The service name found in the Artifact Registry repository path, '
+        f'{image_uri}, does not match the service name, {service_id}.',
+    )
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
@@ -936,6 +958,7 @@ class BetaDeploy(Deploy):
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.ZonalGpuRedundancyFlag(parser, hidden=True)
     flags.AddRegionsArg(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -1061,6 +1084,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddRegionsArg(parser)
     flags.AddDomainArg(parser)
     flags.AddGpuTypeFlag(parser)
+    flags.ZonalGpuRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())

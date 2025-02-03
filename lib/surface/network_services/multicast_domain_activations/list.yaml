@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [BETA, ALPHA]
 help_text:
   brief: |
     List multicast domain activations.
@@ -9,7 +9,10 @@ help_text:
 
       $ {command} --location=zone
 request: &request
-  api_version: v1alpha1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networkservices.projects.locations.multicastDomainActivations
 arguments:
   resource:

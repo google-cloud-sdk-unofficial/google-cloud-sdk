@@ -103,6 +103,7 @@ OVERRIDE_FLAGS_SET = (
     'disk_encryption_key_project',
     'psc_auto_connections',
     'server_ca_mode',
+    'region',
 )
 
 

@@ -37,6 +37,7 @@ def _AddArgsCommon(parser):
   flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class CreateGA(base.UpdateCommand):
   r"""Creates a new Cloud DNS policy.
@@ -78,7 +79,10 @@ class CreateGA(base.UpdateCommand):
     policy_name = policy_ref.Name()
 
     policy = messages.Policy(
-        name=policy_name, enableLogging=False, enableInboundForwarding=False)
+        name=policy_name,
+        enableLogging=False,
+        enableInboundForwarding=False,
+    )
 
     if args.IsSpecified('networks'):
       if args.networks == ['']:
@@ -123,6 +127,7 @@ class CreateGA(base.UpdateCommand):
     return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(CreateGA):
   r"""Creates a new Cloud DNS policy.
@@ -145,7 +150,8 @@ class CreateBeta(CreateGA):
         --alternative-name-servers=192.168.1.1,192.168.1.2 \
         --private-alternative-name-servers=100.64.0.1 \
         --enable-inbound-forwarding \
-        --enable-logging
+        --enable-logging \
+        --enable-dns64-all-queries
   """
 
   @staticmethod
@@ -153,6 +159,7 @@ class CreateBeta(CreateGA):
     resource_args.AddPolicyResourceArg(
         parser, verb='to create', api_version='v1beta2')
     _AddArgsCommon(parser)
+    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -165,7 +172,10 @@ class CreateBeta(CreateGA):
     policy_name = policy_ref.Name()
 
     policy = messages.Policy(
-        name=policy_name, enableLogging=False, enableInboundForwarding=False)
+        name=policy_name,
+        enableLogging=False,
+        enableInboundForwarding=False,
+    )
 
     if args.IsSpecified('networks'):
       if args.networks == ['']:
@@ -197,6 +207,17 @@ class CreateBeta(CreateGA):
     if args.IsSpecified('enable_logging'):
       policy.enableLogging = args.enable_logging
 
+    if args.IsSpecified('enable_dns64_all_queries'):
+      policy.dns64Config = messages.PolicyDns64Config(
+          scope=messages.PolicyDns64ConfigScope(
+              allQueries=args.enable_dns64_all_queries
+          )
+      )
+    else:
+      policy.dns64Config = messages.PolicyDns64Config(
+          scope=messages.PolicyDns64ConfigScope(allQueries=False)
+      )
+
     if args.IsSpecified('description'):
       policy.description = args.description
 
@@ -210,6 +231,7 @@ class CreateBeta(CreateGA):
     return result
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   r"""Creates a new Cloud DNS policy.
@@ -232,7 +254,8 @@ class CreateAlpha(CreateBeta):
         --alternative-name-servers=192.168.1.1,192.168.1.2 \
         --private-alternative-name-servers=100.64.0.1 \
         --enable-inbound-forwarding \
-        --enable-logging
+        --enable-logging \
+        --enable-dns64-all-queries
   """
 
   @staticmethod
@@ -240,4 +263,5 @@ class CreateAlpha(CreateBeta):
     resource_args.AddPolicyResourceArg(
         parser, verb='to create', api_version='v1alpha2')
     _AddArgsCommon(parser)
+    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')

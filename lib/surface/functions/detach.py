@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Detach GCF 2nd gen function from GCF and make it a native Cloud run function."""
+"""Detach GCF 2nd gen function from GCF and make it a native Cloud Run function."""
 
 from googlecloudsdk.api_lib.functions.v2 import client as client_v2
 from googlecloudsdk.api_lib.functions.v2 import exceptions
@@ -26,9 +26,9 @@ from googlecloudsdk.core.console import console_io
 
 @base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DetachAlpha(base.Command):
-  """Detach a GCF 2nd gen function from GCF and make it a native Cloud run function."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DetachBeta(base.Command):
+  """Detach a GCF 2nd gen function from GCF and make it a native Cloud Run function."""
 
   @staticmethod
   def Args(parser):
@@ -77,3 +77,8 @@ class DetachAlpha(base.Command):
         ' continue to work and can be managed through Eventarc API.\n'
         'Reminder, your function can now be managed through the Cloud Run API. '
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DetachAlpha(DetachBeta):
+  """Detach a GCF 2nd gen function from GCF and make it a native Cloud Run function."""

@@ -14,7 +14,7 @@ request: &request
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_services.resources:location
-    help_text: The location of the multicast domains to display.
+    help_text: The location of the multicast group definitions to display.
 response:
   id_field: name
 output:

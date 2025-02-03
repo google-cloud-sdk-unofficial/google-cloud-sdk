@@ -161,6 +161,7 @@ class CreateWithContainer(base.CreateCommand):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
+        support_ipv6_only=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -447,6 +448,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_disk_labels=True,
         support_reservation_bound=True,
         support_graceful_shutdown=True,
+        support_ipv6_only=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)

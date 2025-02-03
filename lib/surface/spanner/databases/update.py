@@ -27,9 +27,12 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Cloud Spanner database."""
 
+  # TODO(b/331587247): Add example for `add-kms-keys` flag after hidden field
+  # is removed.
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
         To enable database deletion protection on a Cloud Spanner database
@@ -55,6 +58,7 @@ class Update(base.UpdateCommand):
     resource_args.AddDatabaseResourceArg(parser, 'to update')
     group_parser = parser.add_argument_group(mutex=True)
     flags.EnableDropProtection().AddToParser(group_parser)
+    flags.EnableAddKmsKeys().AddToParser(group_parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -68,7 +72,9 @@ class Update(base.UpdateCommand):
       Database update response.
     """
     op = databases.Update(
-        args.CONCEPTS.database.Parse(), args.enable_drop_protection
+        args.CONCEPTS.database.Parse(),
+        args.enable_drop_protection,
+        args.add_kms_keys,
     )
     if args.async_:
       return op

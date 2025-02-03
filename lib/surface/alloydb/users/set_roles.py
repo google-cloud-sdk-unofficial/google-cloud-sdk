@@ -28,6 +28,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update an AlloyDB user's database roles within a given cluster and region."""
 
@@ -51,6 +52,7 @@ class Update(base.UpdateCommand):
     flags.AddRegion(parser)
     flags.AddCluster(parser, False)
     flags.AddDBRoles(parser, True)
+    flags.AddKeepExtraRoles(parser)
 
   def Run(self, args):
     """Constructs and sends request.

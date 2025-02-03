@@ -110,8 +110,8 @@ class List(base.ListCommand):
     elif stream_object.sourceObject.postgresqlIdentifier:
       identifier = stream_object.sourceObject.postgresqlIdentifier
       return "%s.%s" % (identifier.schema, identifier.table)
-    elif stream_object.sourceObject.sqlserverIdentifier:
-      identifier = stream_object.sourceObject.sqlserverIdentifier
+    elif stream_object.sourceObject.sqlServerIdentifier:
+      identifier = stream_object.sourceObject.sqlServerIdentifier
       return "%s.%s" % (identifier.schema, identifier.table)
     else:
       return None

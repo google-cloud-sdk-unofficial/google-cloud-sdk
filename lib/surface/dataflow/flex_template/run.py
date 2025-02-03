@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class Run(base.Command):
   """Runs a job from the specified path."""
 
@@ -104,6 +105,11 @@ class Run(base.Command):
         '--worker-machine-type',
         help='Type of machine to use for workers. Defaults to '
         'server-specified.')
+
+    parser.add_argument(
+        '--launcher-machine-type',
+        help='The machine type to use for launching the job. The default is'
+        'n1-standard-1.')
 
     parser.add_argument(
         '--subnetwork',
@@ -196,6 +202,7 @@ class Run(base.Command):
         network=args.network,
         subnetwork=args.subnetwork,
         worker_machine_type=args.worker_machine_type,
+        launcher_machine_type=args.launcher_machine_type,
         kms_key_name=args.dataflow_kms_key,
         staging_location=args.staging_location,
         temp_location=args.temp_location,

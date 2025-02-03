@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 
 _DEFAULT_FORMAT = """
         table(
-            format("{0:s}/{1:s}/{2:s}", name, versionId, name.regex("publishers/hf-.*", "@hf", "@mg")).sub("publishers/hf-", "").sub("publishers/", "").sub("models/", "").sub("/001/@hf", ""). sub("/@mg", ""):sort=1:label=MODEL_ID,
-            supportedActions.multiDeployVertex.yesno(yes=Yes):label=SUPPORTS_DEPLOYMENT
+            format("{0:s}@{1:s}/{2:s}", name, versionId, name.regex("publishers/hf-.*", "@hf", "@mg")).sub("publishers/hf-", "").sub("publishers/", "").sub("models/", "").sub("@001/@hf", ""). sub("/@mg", ""):sort=1:label=MODEL_ID,
+            supportedActions.multiDeployVertex.if(NOT list_supported_hugging_face_models).yesno(yes=Yes):label=SUPPORTS_DEPLOYMENT
         )
     """
 

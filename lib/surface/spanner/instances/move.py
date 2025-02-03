@@ -18,10 +18,12 @@ from __future__ import division
 from __future__ import unicode_literals
 import textwrap
 from googlecloudsdk.api_lib.spanner import instances
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Move(base.Command):
   """Move the Cloud Spanner instance to the specified instance config."""
@@ -53,9 +55,10 @@ class Move(base.Command):
       args: an argparse namespace. From `Args`, we extract command line
         arguments
     """
-    instances.Move(args.instance, args.target_config)
+    instances.Move(args.instance, args.target_config, None)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaMove(base.Command):
   """Move the Cloud Spanner instance to the specified instance config."""
@@ -87,17 +90,24 @@ class BetaMove(base.Command):
       args: an argparse namespace. From `Args`, we extract command line
         arguments
     """
-    instances.Move(args.instance, args.target_config)
+    instances.Move(args.instance, args.target_config, None)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaMove(base.Command):
   """Move the Cloud Spanner instance to the specified instance config."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-        To move the Cloud Spanner instance to the target instance configuration, run:
-          $ {command} my-instance-id --target-config=nam3
+          To move the Cloud Spanner instance, which has two CMEK databases db1
+          and db2 and a database db3 with Google managed encryption keys, to
+          the target instance configuration nam3
+          (us-east4, us-east1, us-central1), run:
+          $ gcloud alpha spanner instances move my-instance-id \
+            --target-config=nam3
+            --target-database-move-configs=^:^database-id=db1:kms-keys=projects/myproject/locations/us-east4/keyRings/mykeyring/cryptoKeys/cmek-key,projects/myproject/locations/us-east1/keyRings/mykeyring/cryptoKeys/cmek-key,projects/myproject/locations/us-central1/keyRings/mykeyring/cryptoKeys/cmek-key
+            --target-database-move-configs=^:^database-id=db2:kms-keys=projects/myproject/locations/us-east4/keyRings/mykeyring/cryptoKeys/cmek-key,projects/myproject/locations/us-east1/keyRings/mykeyring/cryptoKeys/cmek-key,projects/myproject/locations/us-central1/keyRings/mykeyring/cryptoKeys/cmek-key
         """),
   }
 
@@ -113,6 +123,24 @@ class AlphaMove(base.Command):
     """
     flags.Instance().AddToParser(parser)
     flags.TargetConfig().AddToParser(parser)
+    parser.add_argument(
+        '--target-database-move-configs',
+        metavar='^:^database-id=DATABASE_ID:kms-keys=KEY1,KEY2',
+        type=arg_parsers.ArgObject(
+            spec={
+                'database-id': str,
+                'kms-keys': str,
+            },
+            required_keys=['database-id'],
+            repeated=True,
+        ),
+        action=arg_parsers.FlattenAction(),
+        help=(
+            'Database level configurations for each database to be moved.'
+            ' Currently only used for CMEK databases to specificy the target'
+            ' database KMS keys.'
+        ),
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -121,4 +149,6 @@ class AlphaMove(base.Command):
       args: an argparse namespace. From `Args`, we extract command line
         arguments
     """
-    instances.Move(args.instance, args.target_config)
+    instances.Move(
+        args.instance, args.target_config, args.target_database_move_configs
+    )
