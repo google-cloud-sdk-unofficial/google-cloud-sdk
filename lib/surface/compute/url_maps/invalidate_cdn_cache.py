@@ -44,12 +44,12 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser):
+def _Args(parser, path_required):
   """Add invalidate-cdn-cache arguments to the parser."""
 
   parser.add_argument(
       '--path',
-      required=True,
+      required=path_required,
       help="""\
       A path specifying which objects to invalidate. PATH must start with
       ``/'' and the only place a ``*'' is allowed is at the end following a
@@ -148,10 +148,10 @@ class InvalidateCdnCache(base.SilentCommand):
   URL_MAP_ARG = None
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, path_required=True):
     cls.URL_MAP_ARG = flags.GlobalUrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
-    _Args(parser)
+    _Args(parser, path_required)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -161,12 +161,6 @@ class InvalidateCdnCache(base.SilentCommand):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InvalidateCdnCacheBeta(InvalidateCdnCache):
-  pass
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InvalidateCdnCacheAlpha(InvalidateCdnCacheBeta):
   """Invalidate specified objects for a URL map in Cloud CDN caches."""
 
   @classmethod
@@ -177,9 +171,15 @@ class InvalidateCdnCacheAlpha(InvalidateCdnCacheBeta):
         default=None,
         help="""\
         A single tag or a comma-delimited list of tags. When multiple tags are
-        specified, the invalidation will apply them using boolean OR logic.
+        specified, the invalidation applies them using boolean OR logic.
 
         Example:
         - ``--tags=abcd,user123''
         """)
-    super().Args(parser)
+    super().Args(parser, False)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class InvalidateCdnCacheAlpha(InvalidateCdnCacheBeta):
+  pass

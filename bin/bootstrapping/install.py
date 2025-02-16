@@ -277,12 +277,12 @@ the Google Cloud Platform.
   )
 
 
-MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.11/'
-MACOS_PYTHON = 'python-3.11.6-macos11.tar.gz'
+MACOS_PYTHON_INSTALL_PATH = '/Library/Frameworks/Python.framework/Versions/3.12/'
+MACOS_PYTHON = 'python-3.12.8-macos11.tar.gz'
 MACOS_PYTHON_URL = (
     'https://dl.google.com/dl/cloudsdk/channels/rapid/' + MACOS_PYTHON
 )
-PYTHON_VERSION = '3.11'
+PYTHON_VERSION = '3.12'
 
 
 def MaybeInstallPythonOnMac():
@@ -320,7 +320,7 @@ def MaybeInstallPythonOnMac():
             else:
               exit_code = execution_utils.Exec([
                   'sudo', 'installer', '-target', '/', '-pkg',
-                  './python-3.11.6-macos11.pkg'
+                  './python-3.12.8-macos11.pkg'
               ],
                                                no_exit=True)
               if exit_code != 0:

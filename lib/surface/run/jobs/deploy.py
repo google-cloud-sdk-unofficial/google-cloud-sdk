@@ -382,6 +382,7 @@ class AlphaDeploy(BetaDeploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
+    flags.AddGpuTypeFlag(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

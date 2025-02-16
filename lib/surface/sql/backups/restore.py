@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
+from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
@@ -61,18 +62,8 @@ OVERRIDE_FLAGS_SET = (
     'insights_config_record_application_tags',
     'insights_config_record_client_address',
     'insights_config_query_plans_per_minute',
-    'master_instance_name',
     'memory',
-    'password_policy_min_length',
-    'password_policy_complexity',
-    'password_policy_reuse_interval',
-    'password_policy_disallow_username_substring',
-    'password_policy_password_change_interval',
-    'enable_password_policy',
-    'replica_type',
-    'replication',
     'require_ssl',
-    'root_password',
     'storage_auto_increase',
     'storage_size',
     'storage_provisioned_iops',
@@ -88,10 +79,7 @@ OVERRIDE_FLAGS_SET = (
     'connector_enforcement',
     'timeout',
     'enable_google_private_path',
-    'threads_per_core',
-    'cascadable_replica',
     'enable_data_cache',
-    'recreate_replicas_on_primary_crash',
     'enable_private_service_connect',
     'allowed_psc_projects',
     'ssl_mode',
@@ -110,7 +98,6 @@ OVERRIDE_FLAGS_SET = (
 def AddInstanceSettingsArgs(parser):
   """Declare flag for instance settings."""
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
-  # (-- LINT.IfChange(instance_settings) --)
   flags.AddActivationPolicy(parser, hidden=True)
   flags.AddActiveDirectoryDomain(parser, hidden=True)
   flags.AddAssignIp(parser, hidden=True)
@@ -137,18 +124,8 @@ def AddInstanceSettingsArgs(parser):
   flags.AddInsightsConfigRecordApplicationTags(parser, hidden=True)
   flags.AddInsightsConfigRecordClientAddress(parser, hidden=True)
   flags.AddInsightsConfigQueryPlansPerMinute(parser, hidden=True)
-  flags.AddMasterInstanceName(parser, hidden=True)
   flags.AddMemory(parser, hidden=True)
-  flags.AddPasswordPolicyMinLength(parser, hidden=True)
-  flags.AddPasswordPolicyComplexity(parser, hidden=True)
-  flags.AddPasswordPolicyReuseInterval(parser, hidden=True)
-  flags.AddPasswordPolicyDisallowUsernameSubstring(parser, hidden=True)
-  flags.AddPasswordPolicyPasswordChangeInterval(parser, hidden=True)
-  flags.AddPasswordPolicyEnablePasswordPolicy(parser, hidden=True)
-  flags.AddReplicaType(parser, hidden=True)
-  flags.AddReplication(parser, hidden=True)
   flags.AddRequireSsl(parser, hidden=True)
-  flags.AddRootPassword(parser, hidden=True)
   flags.AddStorageAutoIncrease(parser, hidden=True)
   flags.AddStorageSize(parser, hidden=True)
   flags.AddStorageProvisionedIops(parser)
@@ -175,10 +152,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddEnableGooglePrivatePath(
       parser, show_negated_in_help=False, hidden=True
   )
-  flags.AddThreadsPerCore(parser, hidden=True)
-  flags.AddCascadableReplica(parser, hidden=True)
   flags.AddEnableDataCache(parser, hidden=True)
-  flags.AddRecreateReplicasOnPrimaryCrash(parser, hidden=True)
   psc_setup_group = parser.add_group(hidden=True)
   flags.AddEnablePrivateServiceConnect(psc_setup_group, hidden=True)
   flags.AddAllowedPscProjects(psc_setup_group, hidden=True)
@@ -188,13 +162,50 @@ def AddInstanceSettingsArgs(parser):
   flags.AddEnableDataplexIntegration(parser, hidden=True)
   flags.AddLocationGroup(parser, hidden=True, specify_default_region=False)
   flags.AddDatabaseVersion(
-      parser, restrict_choices=False, hidden=True, support_default_version=False
+      parser,
+      restrict_choices=False,
+      hidden=True,
+      support_default_version=False,
+      additional_help_text=(
+          ' Note for restore to new instance major version upgrades are not'
+          ' supported. Only minor version upgrades are allowed.'
+      ),
   )
   flags.AddServerCaMode(parser, hidden=True)
-  # (--
-  # LINT.ThenChange(
-  #     ../instances/create.py:instance_settings)
-  # --)
+
+
+def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
+  """Get the restore backup request.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    sql_messages: sql_v1beta4_messages.SqlMessagesV1Beta4, The SQL API messages.
+    instance_ref: base.ResourceParse, The parsed instance reference.
+
+  Returns:
+    A SqlInstancesRestoreBackupRequest.
+  """
+  if command_validate.IsBackupDrBackupRequest(args.id):
+    if args.backup_project or args.backup_instance:
+      raise exceptions.ArgumentError(
+          ' --backup-project and --backup-instance cannot be specified for'
+          ' backupdr backups in restore command.'
+      )
+    return sql_messages.SqlInstancesRestoreBackupRequest(
+        project=instance_ref.project,
+        instance=instance_ref.instance,
+        instancesRestoreBackupRequest=sql_messages.InstancesRestoreBackupRequest(
+            backupdrBackup=args.id
+        ),
+    )
+  else:
+    return sql_messages.SqlInstancesRestoreBackupRequest(
+        project=instance_ref.project,
+        instance=instance_ref.instance,
+        instancesRestoreBackupRequest=sql_messages.InstancesRestoreBackupRequest(
+            backup=args.id
+        ),
+    )
 
 
 @base.DefaultUniverseOnly
@@ -268,13 +279,9 @@ class RestoreBackup(base.RestoreCommand):
     specified_args_dict = getattr(args, '_specified_args', None)
     override = any(key in OVERRIDE_FLAGS_SET for key in specified_args_dict)
     if command_validate.IsProjectLevelBackupRequest(args.id):
-      restore_backup_request = sql_messages.SqlInstancesRestoreBackupRequest(
-          project=instance_ref.project,
-          instance=instance_ref.instance,
-          instancesRestoreBackupRequest=sql_messages.InstancesRestoreBackupRequest(
-              backup=args.id
-              )
-          )
+      restore_backup_request = _GetRestoreBackupRequest(
+          args, sql_messages, instance_ref
+      )
       if override:
         instance_resource = (
             command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(

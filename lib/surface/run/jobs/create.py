@@ -261,5 +261,6 @@ class AlphaCreate(BetaCreate):
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
     flags.AddRuntimeFlag(parser)
+    flags.AddGpuTypeFlag(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)

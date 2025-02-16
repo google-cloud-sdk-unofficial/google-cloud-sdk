@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface.
 
@@ -42,7 +43,9 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   Compute Engine virtual machine "example-instance" in zone
   us-central1-a
   """
+
   _support_network_firewall_policy = True
+  _support_packet_mirroring_rules = False
 
   @staticmethod
   def Args(parser):
@@ -50,10 +53,14 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     parser.add_argument(
         '--network-interface',
         default='nic0',
-        help='The name of the network interface to get the effective firewalls '
-        'for.')
+        help=(
+            'The name of the network interface to get the effective firewalls '
+            'for.'
+        ),
+    )
     parser.display_info.AddFormat(
-        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
+        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT
+    )
     lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
@@ -64,10 +71,12 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(holder.client))
+        scope_lister=flags.GetDefaultScopeLister(holder.client),
+    )
 
     instance = client.apitools_client.instances.Get(
-        messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+        messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+    )
     for i in instance.networkInterfaces:
       if i.name == args.network_interface:
         break
@@ -77,13 +86,16 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
           'Instance does not have a network interface [{}], '
           'present interfaces are [{}].'.format(
               args.network_interface,
-              ', '.join([i.name for i in instance.networkInterfaces])))
+              ', '.join([i.name for i in instance.networkInterfaces]),
+          ),
+      )
 
     request = messages.ComputeInstancesGetEffectiveFirewallsRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,
         zone=instance_ref.zone,
-        networkInterface=args.network_interface)
+        networkInterface=args.network_interface,
+    )
     res = client.apitools_client.instances.GetEffectiveFirewalls(request)
     org_firewall = []
     network_firewall = []
@@ -91,47 +103,72 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
 
     if hasattr(res, 'firewalls'):
       network_firewall = firewalls_utils.SortNetworkFirewallRules(
-          client, res.firewalls)
+          client, res.firewalls
+      )
 
     if hasattr(res, 'firewallPolicys') and res.firewallPolicys:
       for fp in res.firewallPolicys:
         firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
-            client, fp.rules)
-        fp_response = (
-            client.messages
-            .InstancesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
-                name=fp.name, rules=firewall_policy_rule, type=fp.type))
+            client, fp.rules
+        )
+        if self._support_packet_mirroring_rules:
+          packet_mirroring_rules = firewalls_utils.SortFirewallPolicyRules(
+              client, fp.packetMirroringRules
+          )
+          fp_response = client.messages.InstancesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name,
+              rules=firewall_policy_rule,
+              packetMirroringRules=packet_mirroring_rules,
+              type=fp.type,
+          )
+        else:
+          fp_response = client.messages.InstancesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name, rules=firewall_policy_rule, type=fp.type
+          )
         all_firewall_policy.append(fp_response)
     elif hasattr(res, 'organizationFirewalls'):
       for sp in res.organizationFirewalls:
         org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
-            client, sp.rules)
+            client, sp.rules
+        )
         org_firewall.append(
-            client.messages
-            .InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
-                id=sp.id, rules=org_firewall_rule))
+            client.messages.InstancesGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+                id=sp.id, rules=org_firewall_rule
+            )
+        )
 
     if args.IsSpecified('format') and args.format == 'json':
       if org_firewall:
         return client.messages.InstancesGetEffectiveFirewallsResponse(
             organizationFirewalls=org_firewall,
             firewalls=network_firewall,
-            firewallPolicys=all_firewall_policy)
+            firewallPolicys=all_firewall_policy,
+        )
       else:
         return client.messages.InstancesGetEffectiveFirewallsResponse(
-            firewalls=network_firewall, firewallPolicys=all_firewall_policy)
+            firewalls=network_firewall, firewallPolicys=all_firewall_policy
+        )
 
     result = []
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client, fp, self._support_network_firewall_policy))
+              client,
+              fp,
+              self._support_network_firewall_policy,
+              True,
+              self._support_packet_mirroring_rules,
+          )
+      )
     for sp in org_firewall:
       result.extend(
-          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
+          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp)
+      )
     result.extend(
         firewalls_utils.ConvertNetworkFirewallRulesToEffectiveFwRules(
-            network_firewall))
+            network_firewall
+        )
+    )
     return result
 
   def Epilog(self, resources_were_displayed):
@@ -139,11 +176,20 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetEffectiveFirewallsAlpha(GetEffectiveFirewalls):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetEffectiveFirewallsBeta(GetEffectiveFirewalls):
   r"""Get the effective firewalls for a Compute Engine virtual machine network interface."""
 
   _support_network_firewall_policy = True
+  _support_packet_mirroring_rules = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetEffectiveFirewallsAlpha(GetEffectiveFirewallsBeta):
+  r"""Get the effective firewalls for a Compute Engine virtual machine network interface."""
+
+  _support_network_firewall_policy = True
+  _support_packet_mirroring_rules = True
 
 
 GetEffectiveFirewalls.detailed_help = {
@@ -151,8 +197,7 @@ GetEffectiveFirewalls.detailed_help = {
         *{command}* is used to get the effective firewalls applied to the
          network interfaces of a Compute Engine virtual machine.
     """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To get the effective firewalls of instance with name example-instance, run:
 
       $ {command} example-instance
@@ -166,6 +211,80 @@ GetEffectiveFirewalls.detailed_help = {
       $ {command} example-instance --format="table(
         type,
         firewall_policy_name,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
+}
+
+GetEffectiveFirewallsBeta.detailed_help = {
+    'DESCRIPTION': """
+        *{command}* is used to get the effective firewalls applied to the
+         network interfaces of a Compute Engine virtual machine.
+    """,
+    'EXAMPLES': """\
+    To get the effective firewalls of instance with name example-instance, run:
+
+      $ {command} example-instance
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To see more firewall rule fields in table format, run the following for
+    "example-instance":
+
+      $ {command} example-instance --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
+}
+
+GetEffectiveFirewallsAlpha.detailed_help = {
+    'DESCRIPTION': """
+        *{command}* is used to get the effective firewalls applied to the
+         network interfaces of a Compute Engine virtual machine.
+    """,
+    'EXAMPLES': """\
+    To get the effective firewalls of instance with name example-instance, run:
+
+      $ {command} example-instance
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To see more firewall rule fields in table format, run the following for
+    "example-instance":
+
+      $ {command} example-instance --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
         priority,
         action,
         direction,

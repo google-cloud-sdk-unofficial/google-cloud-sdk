@@ -32,8 +32,7 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Import(base.SilentCommand):
   """Import data into an AlloyDB cluster from Google Cloud Storage."""
 
@@ -99,3 +98,13 @@ class Import(base.SilentCommand):
       )
     log.status.Print('Operation ID: {}'.format(op_ref.Name()))
     return op
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ImportAlpha(Import):
+  """Import data to an AlloyDB cluster from Google Cloud Storage."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ImportBeta(Import):
+  """Import data to an AlloyDB cluster from Google Cloud Storage."""

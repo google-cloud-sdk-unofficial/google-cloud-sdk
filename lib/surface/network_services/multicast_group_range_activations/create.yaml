@@ -28,6 +28,10 @@ arguments:
   - arg_name: description
     api_field: multicastGroupRangeActivation.description
     help_text: The description for the multicast group.
+  - arg_name: enable-logging
+    api_field: multicastGroupRangeActivation.logConfig.enabled
+    help_text: Whether to enable logging for this multicast group range activation.
+    action: store_true_false
   labels:
     api_field: multicastGroupRangeActivation.labels
 async:

@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a new snooze."""
 
@@ -45,6 +46,7 @@ class Create(base.CreateCommand):
           To create a snooze with command-line options, run:
 
             $ {command} --criteria-policies=LIST_OF_POLICIES
+            --criteria-filter=FILTER
             --display-name=DISPLAY_NAME --start-time=START_TIME
             --end-time=END_TIME
 
@@ -57,11 +59,12 @@ class Create(base.CreateCommand):
             criteria:
               policies:
               - projects/MY-PROJECT/alertPolicies/MY-POLICY
+              filter: 'resource.labels.zone="us-central1-a" AND resource.labels.instance_id="1234567890"'
             interval:
               startTime: '2024-03-01T08:00:00Z'
               endTime: '2024-03-08T04:59:59.500Z'
             displayName: New Snooze
-       """
+       """,
   }
 
   @staticmethod

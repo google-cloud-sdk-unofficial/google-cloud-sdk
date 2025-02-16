@@ -30,6 +30,7 @@ from googlecloudsdk.core import resources
 import six
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine router.
@@ -39,14 +40,17 @@ class Create(base.CreateCommand):
   """
 
   ROUTER_ARG = None
+  _support_ncc_gateway = False
 
   @classmethod
   def _Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
-        'The network for this router'
-    )
-    cls.NETWORK_ARG.AddArgument(parser)
+    parser.display_info.AddFormat(flags.DEFAULT_CREATE_FORMAT)
+
+    if not cls._support_ncc_gateway:
+      cls.add_network_arg(parser)
+    else:
+      cls.add_ncc_gateway_and_network_arg(parser)
+
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser, operation_type='create')
     base.ASYNC_FLAG.AddToParser(parser)
@@ -56,6 +60,23 @@ class Create(base.CreateCommand):
     flags.AddEncryptedInterconnectRouter(parser)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'router')
     parser.display_info.AddCacheUpdater(flags.RoutersCompleter)
+
+  @classmethod
+  def add_ncc_gateway_and_network_arg(cls, parser):
+    link_parser = parser.add_mutually_exclusive_group(required=True)
+    flags.AddNccGatewayArg(link_parser)
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        required=False,
+        short_help='The network for this router'
+    )
+    cls.NETWORK_ARG.AddArgument(link_parser)
+
+  @classmethod
+  def add_network_arg(cls, parser):
+    cls.NETWORK_ARG = network_flags.NetworkArgumentForOtherResource(
+        'The network for this router'
+    )
+    cls.NETWORK_ARG.AddArgument(parser)
 
   @classmethod
   def Args(cls, parser):
@@ -68,13 +89,19 @@ class Create(base.CreateCommand):
     service = holder.client.apitools_client.routers
 
     router_ref = self.ROUTER_ARG.ResolveAsResource(args, holder.resources)
-    network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
 
     router_resource = messages.Router(
         name=router_ref.Name(),
         description=args.description,
-        network=network_ref.SelfLink(),
     )
+
+    if self._support_ncc_gateway:
+      if args.ncc_gateway is not None:
+        router_resource.nccGateway = args.ncc_gateway
+
+    if args.network is not None:
+      network_ref = self.NETWORK_ARG.ResolveAsResource(args, holder.resources)
+      router_resource.network = network_ref.SelfLink()
 
     # Add bgp field with the assigned asn and/or keepalive_interval
     if args.asn is not None or args.keepalive_interval is not None:
@@ -179,3 +206,4 @@ class CreateAlpha(CreateBeta):
   *{command}* is used to create a router to provide dynamic routing to VPN
   tunnels and interconnects.
   """
+  _support_ncc_gateway = True

@@ -25,6 +25,8 @@ from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   """Get the effective firewalls for a network.
 
@@ -42,16 +44,21 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   network firewall policies in region us-central1.
   """
 
+  _support_packet_mirroring_rules = False
+
   @staticmethod
   def Args(parser):
     parser.add_argument(
         '--network',
         required=True,
-        help='The network to get the effective firewalls for.')
+        help='The network to get the effective firewalls for.',
+    )
     parser.add_argument(
-        '--region', help='The region to get the effective regional firewalls.')
+        '--region', help='The region to get the effective regional firewalls.'
+    )
     parser.display_info.AddFormat(
-        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
+        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -69,52 +76,120 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
       region = properties.VALUES.compute.region.GetOrFail()
 
     network = network_flags.NetworkArgumentForOtherResource(
-        short_help=None).ResolveAsResource(args, holder.resources)
+        short_help=None
+    ).ResolveAsResource(args, holder.resources)
     network_ref = network.SelfLink() if network else None
 
     request = messages.ComputeRegionNetworkFirewallPoliciesGetEffectiveFirewallsRequest(
-        project=project, region=region, network=network_ref)
+        project=project, region=region, network=network_ref
+    )
 
-    responses = client.MakeRequests([
-        (client.apitools_client.regionNetworkFirewallPolicies,
-         'GetEffectiveFirewalls', request)
-    ])
+    responses = client.MakeRequests([(
+        client.apitools_client.regionNetworkFirewallPolicies,
+        'GetEffectiveFirewalls',
+        request,
+    )])
     res = responses[0]
     network_firewall = []
     all_firewall_policy = []
 
     if hasattr(res, 'firewalls'):
       network_firewall = firewalls_utils.SortNetworkFirewallRules(
-          client, res.firewalls)
+          client, res.firewalls
+      )
 
     if hasattr(res, 'firewallPolicys') and res.firewallPolicys:
       for fp in res.firewallPolicys:
         firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
-            client, fp.rules)
-        fp_response = (
-            client.messages.
-            RegionNetworkFirewallPoliciesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
-                name=fp.name, rules=firewall_policy_rule, type=fp.type))
+            client, fp.rules
+        )
+        if self._support_packet_mirroring_rules:
+          packet_mirroring_rules = firewalls_utils.SortFirewallPolicyRules(
+              client, fp.packetMirroringRules
+          )
+          fp_response = client.messages.RegionNetworkFirewallPoliciesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name,
+              rules=firewall_policy_rule,
+              packetMirroringRules=packet_mirroring_rules,
+              type=fp.type,
+          )
+        else:
+          fp_response = client.messages.RegionNetworkFirewallPoliciesGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name,
+              rules=firewall_policy_rule,
+              type=fp.type,
+          )
+
         all_firewall_policy.append(fp_response)
 
     if args.IsSpecified('format') and args.format == 'json':
       return client.messages.RegionNetworkFirewallPoliciesGetEffectiveFirewallsResponse(
-          firewalls=network_firewall, firewallPolicys=all_firewall_policy)
+          firewalls=network_firewall, firewallPolicys=all_firewall_policy
+      )
 
     result = []
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client, fp, True, support_region_network_firewall_policy=True))
+              client,
+              fp,
+              True,
+              support_region_network_firewall_policy=True,
+              support_packet_mirroring_rules=self._support_packet_mirroring_rules,
+          )
+      )
     result.extend(
         firewalls_utils.ConvertNetworkFirewallRulesToEffectiveFwRules(
-            network_firewall))
+            network_firewall
+        )
+    )
     return result
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetEffectiveFirewallsBeta(GetEffectiveFirewalls):
+  """Get the effective firewalls for a network.
+
+  *{command}* is used to get the effective firewalls applied to the network,
+  including regional firewalls in a specified region.
+
+  ## EXAMPLES
+
+  To get the effective firewalls for a network, run:
+
+    $ {command} --network=network-a --region=us-central1
+
+  gets the effective firewalls applied on the network network-a, including
+  organization firewall policies, global network firewall policies, and regional
+  network firewall policies in region us-central1.
+  """
+
+  _support_packet_mirroring_rules = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetEffectiveFirewallsAlpha(GetEffectiveFirewallsBeta):
+  """Get the effective firewalls for a network.
+
+  *{command}* is used to get the effective firewalls applied to the network,
+  including regional firewalls in a specified region.
+
+  ## EXAMPLES
+
+  To get the effective firewalls for a network, run:
+
+    $ {command} --network=network-a --region=us-central1
+
+  gets the effective firewalls applied on the network network-a, including
+  organization firewall policies, global network firewall policies, and regional
+  network firewall policies in region us-central1.
+  """
+
+  _support_packet_mirroring_rules = True
+
+
 GetEffectiveFirewalls.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To get the effective firewalls of network with name ``example-network'',
     including effective regional firewalls for that network, in region
     ``region-a'', run:
@@ -130,6 +205,76 @@ GetEffectiveFirewalls.detailed_help = {
       $ {command} --network=example-network --region=region-a --format="table(
         type,
         firewall_policy_name,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)" """,
+}
+
+
+GetEffectiveFirewallsBeta.detailed_help = {
+    'EXAMPLES': """\
+    To get the effective firewalls of network with name ``example-network'',
+    including effective regional firewalls for that network, in region
+    ``region-a'', run:
+
+      $ {command} --network=example-network --region=region-a
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To list more the fields of the rules of network ``example-network'' in table
+    format, run:
+
+      $ {command} --network=example-network --region=region-a --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)" """,
+}
+
+
+GetEffectiveFirewallsAlpha.detailed_help = {
+    'EXAMPLES': """\
+    To get the effective firewalls of network with name ``example-network'',
+    including effective regional firewalls for that network, in region
+    ``region-a'', run:
+
+      $ {command} --network=example-network --region=region-a
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To list more the fields of the rules of network ``example-network'' in table
+    format, run:
+
+      $ {command} --network=example-network --region=region-a --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
         priority,
         action,
         direction,

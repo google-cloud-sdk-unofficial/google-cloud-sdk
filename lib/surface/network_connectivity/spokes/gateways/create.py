@@ -76,6 +76,16 @@ class Create(base.Command):
           )
           for ip_range in args.ip_range_reservations
       ]
+
+      if args.landing_network:
+        landing_network = (
+            client.messages.GoogleCloudNetworkconnectivityV1betaLandingNetwork(
+                network=args.landing_network
+            )
+        )
+      else:
+        landing_network = None
+
       spoke = client.messages.GoogleCloudNetworkconnectivityV1betaSpoke(
           hub=args.hub,
           group=args.group,
@@ -83,9 +93,7 @@ class Create(base.Command):
               capacity=flags.GetCapacityArg(
                   client.messages.GoogleCloudNetworkconnectivityV1betaGateway
               ).GetEnumForChoice(args.capacity),
-              landingNetwork=client.messages.GoogleCloudNetworkconnectivityV1betaLandingNetwork(
-                  network=args.landing_network
-              ),
+              landingNetwork=landing_network,
               ipRangeReservations=range_reservations,
           ),
           description=args.description,
@@ -102,6 +110,13 @@ class Create(base.Command):
           for ip_range in args.ip_range_reservations
       ]
 
+      if args.landing_network:
+        landing_network = client.messages.LandingNetwork(
+            network=args.landing_network
+        )
+      else:
+        landing_network = None
+
       spoke = client.messages.Spoke(
           hub=args.hub,
           group=args.group,
@@ -109,9 +124,7 @@ class Create(base.Command):
               capacity=flags.GetCapacityArg(
                   client.messages.Gateway
               ).GetEnumForChoice(args.capacity),
-              landingNetwork=client.messages.LandingNetwork(
-                  network=args.landing_network
-              ),
+              landingNetwork=landing_network,
               ipRangeReservations=range_reservations,
           ),
           description=args.description,

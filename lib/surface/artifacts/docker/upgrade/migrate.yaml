@@ -72,6 +72,12 @@
       hidden: true
       help_text: >
         Skip the initial copy before enable redirection. The image copy would happen at pulling time so performance may be impacted if images are not pre-copied.
+    - arg_name: use-analyze-iam
+      type: bool
+      hidden: true
+      default: true
+      help_text: >
+        Use analyzeIAMPolicy to get IAM bindings.
 
   request:
     api_version: v1

@@ -77,7 +77,7 @@ class Update(base.UpdateCommand):
     workstations_flags.AddContainerEnvField(parser)
     workstations_flags.AddContainerWorkingDirField(parser)
     workstations_flags.AddContainerRunAsUserField(parser)
-    workstations_flags.AddPdSourceSnapshot(parser)
+    workstations_flags.AddPersistentDirectories(parser, use_default=False)
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddAcceleratorFields(parser)
     workstations_flags.AddVmTags(parser)

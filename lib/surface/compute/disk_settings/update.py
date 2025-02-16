@@ -20,8 +20,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.disk_settings import flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
@@ -50,7 +53,7 @@ class Update(base.UpdateCommand):
     # 1. Get the updated disk settings, we only support updating access
     # locations for now.
     new_locations_values = []
-
+    access_location = client.messages.DiskSettingsAccessLocation()
     if args.add_access_locations:
       for location in args.add_access_locations:
         new_locations_values.append(
@@ -71,36 +74,121 @@ class Update(base.UpdateCommand):
             )
         )
 
+    access_location.locations = (
+        client.messages.DiskSettingsAccessLocation.LocationsValue(
+            additionalProperties=new_locations_values
+        )
+    )
+    if args.access_location_policy:
+      new_policy = (
+          client.messages.DiskSettingsAccessLocation.PolicyValueValuesEnum(
+              args.access_location_policy.upper().replace('-', '_')
+          )
+      )
+      access_location.policy = new_policy
+
     # 2. Patch the disk settings
     if args.zone:
       service = client.apitools_client.diskSettings
       patch_request = client.messages.ComputeDiskSettingsPatchRequest(
           diskSettings=client.messages.DiskSettings(
-              accessLocation=client.messages.DiskSettingsAccessLocation(
-                  locations=client.messages.DiskSettingsAccessLocation.LocationsValue(
-                      additionalProperties=new_locations_values
-                  )
-              )
+              accessLocation=access_location
           ),
           project=properties.VALUES.core.project.GetOrFail(),
           updateMask='accessLocation',
           zone=args.zone,
       )
+      result = client.MakeRequests(
+          [(service, 'Patch', patch_request)], no_followup=True
+      )[0]
+      operation_ref = holder.resources.Parse(
+          result.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail(),
+              'zone': args.zone,
+          },
+          collection='compute.zoneOperations',
+      )
+      disk_settings_ref = holder.resources.Parse(
+          None,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'zone': args.zone,
+          },
+          collection='compute.diskSettings',
+      )
+      operation_poller = poller.Poller(
+          holder.client.apitools_client.diskSettings,
+          disk_settings_ref,
+      )
+      waiter.WaitFor(
+          operation_poller,
+          operation_ref,
+          'Waiting for operation [projects/{0}/zones/{1}/operations/{2}] to'
+          ' complete'.format(
+              properties.VALUES.core.project.GetOrFail(),
+              args.zone,
+              operation_ref.Name(),
+          ),
+      )
+
+      log.status.Print(
+          'Updated zonal disk settings for compute_project [{0}] in zone [{1}].'
+          .format(
+              properties.VALUES.core.project.GetOrFail(),
+              args.zone,
+          )
+      )
+      return result
     else:
       service = client.apitools_client.regionDiskSettings
       patch_request = client.messages.ComputeRegionDiskSettingsPatchRequest(
           diskSettings=client.messages.DiskSettings(
-              accessLocation=client.messages.DiskSettingsAccessLocation(
-                  locations=client.messages.DiskSettingsAccessLocation.LocationsValue(
-                      additionalProperties=new_locations_values
-                  )
-              )
+              accessLocation=access_location
           ),
           project=properties.VALUES.core.project.GetOrFail(),
           region=args.region,
           updateMask='accessLocation',
       )
+      result = client.MakeRequests(
+          [(service, 'Patch', patch_request)], no_followup=True
+      )[0]
+      operation_ref = holder.resources.Parse(
+          result.name,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail(),
+              'region': args.region,
+          },
+          collection='compute.regionOperations',
+      )
+      disk_settings_ref = holder.resources.Parse(
+          None,
+          params={
+              'project': properties.VALUES.core.project.GetOrFail,
+              'region': args.region,
+          },
+          collection='compute.regionDiskSettings',
+      )
+      operation_poller = poller.Poller(
+          holder.client.apitools_client.regionDiskSettings,
+          disk_settings_ref,
+      )
+      waiter.WaitFor(
+          operation_poller,
+          operation_ref,
+          'Waiting for operation [projects/{0}/regions/{1}/operations/{2}] to'
+          ' complete'.format(
+              properties.VALUES.core.project.GetOrFail(),
+              args.region,
+              operation_ref.Name(),
+          ),
+      )
 
-    return client.MakeRequests(
-        [(service, 'Patch', patch_request)], no_followup=True
-    )[0]
+      log.status.Print(
+          'Updated regional disk settings for compute_project [{0}] in region'
+          ' [{1}].'.format(
+              properties.VALUES.core.project.GetOrFail(),
+              args.region,
+          )
+      )
+      return result

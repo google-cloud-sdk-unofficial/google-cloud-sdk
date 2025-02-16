@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List Model Armor Templates.
     description: Lists Templates in a given project and location.

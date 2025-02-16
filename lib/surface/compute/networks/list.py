@@ -33,7 +33,7 @@ class List(base.ListCommand):
   @staticmethod
   def Args(parser):
     lister.AddBaseListerArgs(parser)
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
+    parser.display_info.AddFormat(flags.LIST_FORMAT_WITH_ULA_IPV6)
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)
 
   def Run(self, args):

@@ -38,19 +38,19 @@ class Create(base.CreateCommand):
           To create a Dataplex entry with name `my-dataplex-entry` in location
           `us-central1` in entry group `my-entry-group` and with entry type projects/my-project/locations/us-central1/entryTypes/my-type, run:
 
-            $ {command} my-dataplex-entry --location=us-central --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type
+            $ {command} my-dataplex-entry --location=us-central1 --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type
 
           To create a Dataplex Entry with name `my-child-entry` and set its parent to an existing entry `my-parent-entry`, run:
 
-            $ {command} my-child-entry --location=us-central --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --parent-entry projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/my-parent-entry
+            $ {command} my-child-entry --location=us-central1 --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --parent-entry projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/my-parent-entry
 
           To create a Dataplex Entry with its description, display name, ancestors, labels and timestamps populated in its EntrySource, run:
 
-            $ {command} my-entry --location=us-central --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --entry-source-description 'This is a description of the Entry.' --entry-source-display-name 'display name' --entry-source-ancestors '{"type":"projects/my-project/locations/us-central1/entryTypes/some-type", "name":"projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/ancestor-entry"}, {"type":"projects/my-project/locations/us-central1/entryTypes/another-type", "name":"projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/another-ancestor-entry"}' --entry-source-labels key1=value1,key2=value2 --entry-source-create-time 2024-01-01T09:39:25.160173Z --entry-source-update-time 2024-01-01T09:39:25.160173Z
+            $ {command} my-entry --location=us-central1 --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --entry-source-description 'This is a description of the Entry.' --entry-source-display-name 'display name' --entry-source-ancestors '{"type":"projects/my-project/locations/us-central1/entryTypes/some-type", "name":"projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/ancestor-entry"}, {"type":"projects/my-project/locations/us-central1/entryTypes/another-type", "name":"projects/my-project/locations/us-central1/entryGroups/my-entry-group/entries/another-ancestor-entry"}' --entry-source-labels key1=value1,key2=value2 --entry-source-create-time 2024-01-01T09:39:25.160173Z --entry-source-update-time 2024-01-01T09:39:25.160173Z
 
           To create a Dataplex Entry reading its aspects from a YAML file, run:
 
-            $ {command} my-entry --location=us-central --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --aspects aspects.yaml
+            $ {command} my-entry --location=us-central1 --entry_group=my-entry-group --entry-type projects/my-project/locations/us-central1/entryTypes/my-type --aspects aspects.yaml
 
           The file containing the aspects has the following format:
 

@@ -243,3 +243,4 @@ class AlphaUpdate(BetaUpdate):
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
+    flags.AddGpuTypeFlag(parser)

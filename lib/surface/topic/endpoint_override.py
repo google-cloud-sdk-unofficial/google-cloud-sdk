@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 # references to it in error messages and other help messages as there are no
 # tests to catch such changes.
 class EndpointOverride(base.TopicCommand):
+  # pylint: disable=line-too-long
   r"""gcloud endpoint override supplementary help.
 
   Use API endpoint overrides to override the API endpoints used by the `gcloud`
@@ -36,15 +37,14 @@ class EndpointOverride(base.TopicCommand):
   `gcloud` API endpoints are defined as `gcloud` CLI properties and can be
   overridden through `gcloud` CLI properties or environment variables. For
   example, to override the API endpoint for the `gcloud storage` command to use
-  the private `storage-vialink1.p.googleapis.com` endpoint, you can use one of
-  the following commands:
+  the private `storage-vialink1.p.googleapis.com` endpoint with either `http://`
+  or `https://` prefix, you can use one of the following commands:
 
     # Override using a property:
-    $ gcloud config set api_endpoint_overrides/storage
-    storage-vialink1.p.googleapis.com
+    $ gcloud config set api_endpoint_overrides/storage https://storage-vialink1.p.googleapis.com/
 
     # Override using an environment variable
-    $ CLOUDSDK_API_ENDPOINT_OVERRIDES_STORAGE=storage-vialink1.p.googleapis.com
+    $ CLOUDSDK_API_ENDPOINT_OVERRIDES_STORAGE=https://storage-vialink1.p.googleapis.com/
     gcloud storage objects list gs://my-bucket
 
   # Default API endpoints

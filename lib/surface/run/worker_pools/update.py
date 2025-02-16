@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
@@ -44,7 +45,8 @@ Container Flags
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.CommandFlag())
   group.AddArgument(flags.ArgsFlag())
-  group.AddArgument(flags.SecretsFlags())
+  group.AddArgument(flags_parser.SecretsFlags())
+  group.AddArgument(flags.DependsOnFlag())
   # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
@@ -94,13 +96,14 @@ class Update(base.Command):
     flags.AddRevisionSuffixArg(parser)
     flags.AddSessionAffinityFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
+    flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup()
-    container_args.AddToParser(parser)
+    container_parser.AddContainerFlags(parser, container_args)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddGeneralAnnotationFlags(parser)

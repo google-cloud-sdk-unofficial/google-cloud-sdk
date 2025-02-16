@@ -4,11 +4,11 @@ help_text:
   brief: |
     List BackendAuthenticationConfigs.
   description: |
-    List all BackendAuthenticationConfigs in the specified location of the current project.
+    List all BackendAuthenticationConfigs in the current project.
   examples: |
       To list BackendAuthenticationConfigs in the current project, run:
 
-        $ {command} --location=global
+        $ {command}
 
 request: &request
   ALPHA:
@@ -17,9 +17,9 @@ request: &request
 
 arguments:
   resource:
-    spec: !REF googlecloudsdk.command_lib.network_security.resources:globalDefaultLocation
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:allDefaultLocation
     help_text: |
-      The project of the BackendAuthenticationConfigs to display.
+      The location of the BackendAuthenticationConfigs to display.
 
 response:
   id_field: name
@@ -28,6 +28,7 @@ output:
   format: |
      table(
         name.basename():label=NAME:sort=1,
+        name.segment(3):label=LOCATION,
         wellKnownRoots:label=WELL_KNOWN_ROOTS,
         description:label=DESCRIPTION,
         createTime:label=CREATE_TIME,

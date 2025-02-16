@@ -69,7 +69,6 @@ def AddBaseArgs(parser):
   # TODO(b/35705305): move common flags to command_lib.sql.flags
   base.ASYNC_FLAG.AddToParser(parser)
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
-  # (-- LINT.IfChange(instance_settings) --)
   flags.AddActivationPolicy(parser)
   flags.AddActiveDirectoryDomain(parser)
   flags.AddAssignIp(parser)
@@ -149,9 +148,11 @@ def AddBaseArgs(parser):
   flags.AddEnableDataplexIntegration(parser)
   flags.AddPscAutoConnections(parser)
   flags.AddServerCaMode(parser)
-  # (--
-  # LINT.ThenChange(../backups/restore.py:instance_settings)
-  # --)
+  # When adding a new field for instance creation, determine if it should also
+  # be included in the restore to new instance command. This command uses backup
+  # settings to create a new instance, allowing users to override some settings.
+  # If the new field should be user-overridable during restore, add it to the
+  # restore command.
 
 
 def AddBetaArgs(parser):
@@ -171,7 +172,7 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingClientIdleTimeout(parser)
   flags.AddConnectionPoolingServerIdleTimeout(parser)
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
-  flags.AddCustomSubjectAlternativeNames(parser, hidden=True)
+  flags.AddCustomSubjectAlternativeNames(parser)
   flags.AddServerCaPool(parser)
   flags.AddTags(parser)
 

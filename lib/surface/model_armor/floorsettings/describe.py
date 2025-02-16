@@ -21,6 +21,29 @@ from googlecloudsdk.command_lib.model_armor import args as model_armor_args
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(base.DescribeCommand):
+  """Describe the FloorSetting resource.
+
+  Displays the floor setting resource with the given name.
+  """
+
+  @staticmethod
+  def Args(parser):
+    model_armor_args.AddFullUri(
+        parser,
+        positional=False,
+        help_text='Full uri of the floor setting',
+    )
+
+  def Run(self, args):
+    api_version = model_armor_api.GetApiFromTrack(self.ReleaseTrack())
+    return model_armor_api.FloorSettings(api_version=api_version).Get(
+        args.full_uri
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe the FloorSetting resource.
 

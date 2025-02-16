@@ -127,7 +127,7 @@ _DETAILED_HELP_ALPHA = {'EXAMPLES': """
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create an API key."""
   _support_service_account = False
@@ -212,8 +212,8 @@ class Create(base.CreateCommand):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateALPHA(Create):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class CreateAlphaBeta(Create):
   """Create an API key."""
 
   _support_service_account = True

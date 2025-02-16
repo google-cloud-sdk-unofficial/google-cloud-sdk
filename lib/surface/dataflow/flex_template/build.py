@@ -127,9 +127,30 @@ def _CommonArgs(parser):
       help='Default service account to run the workers as.')
 
   parser.add_argument(
+      '--cloud-build-service-account',
+      type=arg_parsers.RegexpValidator(
+          r'.*@.*\..*', 'must provide a valid email address'
+      ),
+      help=(
+          'Service account to run the Cloud Build in the format'
+          ' projects/{project}/serviceAccounts/{service_account}. Ensure that'
+          " the account you are using to run 'gcloud dataflow flex-template"
+          " build' has 'ServiceAccountUser' role on the specified Cloud"
+          ' Build service account you provide with the'
+          ' --cloud-build-service-account flag. The specified service account'
+          ' must have required permissions to build the image. If the specified'
+          ' service account is in a project that is different from the project'
+          ' where you are starting builds, see'
+          ' https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts#cross-project_set_up'
+          ' to grant the necessary access.'
+      ),
+  )
+
+  parser.add_argument(
       '--max-workers',
       type=int,
-      help='Default maximum number of workers to run.')
+      help='Default maximum number of workers to run.',
+  )
 
   parser.add_argument(
       '--disable-public-ips',
@@ -316,12 +337,17 @@ def _CommonRun(args):
   image_path = args.image
   if not args.image:
     image_path = args.image_gcr_path
-    apis.Templates.BuildAndStoreFlexTemplateImage(args.image_gcr_path,
-                                                  args.flex_template_base_image,
-                                                  args.jar, args.py_path,
-                                                  args.go_binary_path, args.env,
-                                                  args.sdk_language,
-                                                  args.gcs_log_dir)
+    apis.Templates.BuildAndStoreFlexTemplateImage(
+        args.image_gcr_path,
+        args.flex_template_base_image,
+        args.jar,
+        args.py_path,
+        args.go_binary_path,
+        args.env,
+        args.sdk_language,
+        args.gcs_log_dir,
+        args.cloud_build_service_account,
+    )
 
   return apis.Templates.BuildAndStoreFlexTemplateFile(
       args.template_file_gcs_path, image_path, args.metadata_file,

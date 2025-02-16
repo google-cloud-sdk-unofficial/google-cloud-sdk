@@ -113,6 +113,7 @@ def _PrintAndConfirmWarningMessage(args, database_version):
 
 
 def WithoutKind(message, inline=False):
+  """Remove the kind field from a proto message."""
   result = message if inline else copy.deepcopy(message)
   for field in result.all_fields():
     if field.name == 'kind':
@@ -328,14 +329,9 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingClientIdleTimeout(parser)
   flags.AddConnectionPoolingServerIdleTimeout(parser)
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
-  ip_update_custom_sans_group = parser.add_mutually_exclusive_group(
-      hidden=True
-  )
-  flags.AddCustomSubjectAlternativeNames(
-      ip_update_custom_sans_group, hidden=True)
-  flags.AddClearCustomSubjectAlternativeNames(
-      ip_update_custom_sans_group, hidden=True
-  )
+  ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
+  flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
+  flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)
 
 
 def AddAlphaArgs(unused_parser):

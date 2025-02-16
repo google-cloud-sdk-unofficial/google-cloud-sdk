@@ -31,6 +31,10 @@ class DescribeAlpha(base.DescribeCommand):
   def Args(parser):
     flags.AddDiskSettingArg(parser)
     flags.detailed_help = detailed_help
+    parser.display_info.AddFormat(
+        'yaml(accessLocation.policy,'
+        'accessLocation.locations.list(show="keys"),defaultResourcePolicies)'
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

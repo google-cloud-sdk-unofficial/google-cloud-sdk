@@ -28,6 +28,16 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.core import properties
 
 
+def _GetListPage(client, request):
+  response = client.networkFirewallPolicies.AggregatedList(request)
+  firewall_policy_lists = []
+  for attachment_in_scope in response.items.additionalProperties:
+    firewall_policy_lists += (
+        attachment_in_scope.value.firewallPolicies)
+  return firewall_policy_lists, response.nextPageToken
+
+
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine network firewall policies.
 
@@ -81,28 +91,19 @@ class List(base.ListCommand):
           batch_size=None)
 
     # Aggregated global NFPs and RNFPs for all regions defined in project
-    request = messages.ComputeRegionsListRequest(project=project)
-    regions = list_pager.YieldFromList(
-        client.regions, request, field='items', batch_size=None)
-    aggregated_generators = []
-    aggregated_generators.append(
-        list_pager.YieldFromList(
-            client.networkFirewallPolicies,
-            messages.ComputeNetworkFirewallPoliciesListRequest(project=project),
-            field='items',
-            limit=args.limit,
-            batch_size=None))
-    for region in regions:
-      aggregated_generators.append(
-          list_pager.YieldFromList(
-              client.regionNetworkFirewallPolicies,
-              messages.ComputeRegionNetworkFirewallPoliciesListRequest(
-                  project=project, region=region.name),
-              field='items',
-              limit=args.limit,
-              batch_size=None))
-    return itertools.chain.from_iterable(aggregated_generators)
+    request = messages.ComputeNetworkFirewallPoliciesAggregatedListRequest(
+        project=project,
+        returnPartialSuccess=True)
 
+    firewall_policies, next_page_token = _GetListPage(
+        client, request)
+    while next_page_token:
+      request.pageToken = next_page_token
+      list_page, next_page_token = _GetListPage(
+          client, request)
+      firewall_policies += list_page
+
+    return firewall_policies
 
 List.detailed_help = {
     'EXAMPLES':

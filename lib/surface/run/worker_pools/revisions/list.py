@@ -45,7 +45,7 @@ class List(base.Command):
   @classmethod
   def CommonArgs(cls, parser):
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
-        'WORKER_POOL',
+        '--worker-pool',
         resource_args.GetWorkerPoolResourceSpec(),
         'WorkerPool to list revisions in.',
         required=True,

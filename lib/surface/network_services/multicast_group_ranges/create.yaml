@@ -32,6 +32,10 @@ arguments:
   - arg_name: require-explicit-accept
     api_field: multicastGroupRange.requireExplicitAccept
     help_text: Whether an empty consumer accept list will reject all consumer projects.
+  - arg_name: enable-logging
+    api_field: multicastGroupRange.logConfig.enabled
+    help_text: Whether to enable logging for this multicast group range.
+    action: store_true_false
   - arg_name: description
     api_field: multicastGroupRange.description
     help_text: The description for the multicast group range.

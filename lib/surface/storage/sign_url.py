@@ -49,6 +49,14 @@ _PROVIDE_SERVICE_ACCOUNT_MESSAGE = (
     " '--impersonate-service-account' flag."
 )
 
+_INVALID_DURATION_WITH_SYSTEM_MANAGED_KEY_MESSAGE = (
+    'Max valid duration allowed is 12h when system-managed key is used. For'
+    ' longer duration, consider using the private-key-file or an account'
+    ' authorized with `gcloud auth activate-service-account`.'
+)
+
+_MAX_EXPIRATION_TIME_WITH_SYSTEM_MANAGED_KEY = 12 * 60 * 60
+
 
 @functools.lru_cache(maxsize=None)
 def _get_region_with_cache(scheme, bucket_name):
@@ -253,6 +261,17 @@ class SignUrl(base.Command):
           client_id = properties.VALUES.core.account.Get()
         else:
           raise
+
+    # This restriction comes from the IAM SignBlob API. The SignBlob
+    # API uses a system-managed key which can guarantee validation only
+    # up to 12 hours. b/356197316
+    if (
+        key is None
+        and args.duration > _MAX_EXPIRATION_TIME_WITH_SYSTEM_MANAGED_KEY
+    ):
+      raise command_errors.Error(
+          _INVALID_DURATION_WITH_SYSTEM_MANAGED_KEY_MESSAGE
+      )
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.

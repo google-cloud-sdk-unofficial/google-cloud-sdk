@@ -437,12 +437,21 @@ class UpdateGA(features_base.UpdateCommand, mf_base.UpdateCommand):
         choices=['fleet'],
         help='Changing the origin of the membership.',
     )
-    membership_configs_group.add_argument(
+    membership_controlplane_group = (
+        membership_configs_group.add_mutually_exclusive_group()
+    )
+
+    membership_controlplane_group.add_argument(
+        '--config-api',
+        choices=['istio', 'gateway'],
+        help='The API to use for mesh configuration.',
+    )
+    membership_controlplane_group.add_argument(
         '--management',
         choices=['automatic', 'manual'],
         help='The management mode to update to.',
     )
-    membership_configs_group.add_argument(
+    membership_controlplane_group.add_argument(
         '--control-plane',
         choices=['automatic', 'manual', 'unspecified'],
         help='Control plane management to update to.',

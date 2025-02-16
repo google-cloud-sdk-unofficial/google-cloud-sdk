@@ -19,6 +19,10 @@ from surface.model_armor.templates import _init_extensions as extensions
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class FloorSettingsAlpha(extensions.TemplatesAlpha):
+  """Manage FloorSettings resources."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class FloorSettingsGA(extensions.TemplatesGa):
   """Manage FloorSettings resources."""

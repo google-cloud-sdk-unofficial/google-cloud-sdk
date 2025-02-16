@@ -27,6 +27,8 @@ from googlecloudsdk.command_lib.compute.networks import flags
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   """Get the effective firewalls of a Compute Engine network.
 
@@ -41,12 +43,16 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
   gets the effective firewalls applied on the network 'example-network'.
   """
 
+  _support_packet_mirroring_rules = False
+
   @staticmethod
   def Args(parser):
     flags.NetworkArgument().AddArgument(
-        parser, operation_type='get effective firewalls')
+        parser, operation_type='get effective firewalls'
+    )
     parser.display_info.AddFormat(
-        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT)
+        firewalls_utils.EFFECTIVE_FIREWALL_LIST_FORMAT
+    )
     lister.AddBaseListerArgs(parser)
 
   def Run(self, args):
@@ -56,12 +62,15 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     network_ref = flags.NetworkArgument().ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+    )
 
     request = client.messages.ComputeNetworksGetEffectiveFirewallsRequest(
-        **network_ref.AsDict())
-    responses = client.MakeRequests([(client.apitools_client.networks,
-                                      'GetEffectiveFirewalls', request)])
+        **network_ref.AsDict()
+    )
+    responses = client.MakeRequests(
+        [(client.apitools_client.networks, 'GetEffectiveFirewalls', request)]
+    )
     res = responses[0]
     org_firewall = []
     network_firewall = []
@@ -69,47 +78,68 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
 
     if hasattr(res, 'firewalls'):
       network_firewall = firewalls_utils.SortNetworkFirewallRules(
-          client, res.firewalls)
+          client, res.firewalls
+      )
 
     if hasattr(res, 'firewallPolicys') and res.firewallPolicys:
       for fp in res.firewallPolicys:
         firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
-            client, fp.rules)
-        fp_response = (
-            client.messages
-            .NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
-                name=fp.name, rules=firewall_policy_rule, type=fp.type))
+            client, fp.rules
+        )
+        if self._support_packet_mirroring_rules:
+          packet_mirroring_rule = firewalls_utils.SortFirewallPolicyRules(
+              client, fp.packetMirroringRules
+          )
+          fp_response = client.messages.NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name,
+              rules=firewall_policy_rule,
+              packetMirroringRules=packet_mirroring_rule,
+              type=fp.type,
+          )
+        else:
+          fp_response = client.messages.NetworksGetEffectiveFirewallsResponseEffectiveFirewallPolicy(
+              name=fp.name, rules=firewall_policy_rule, type=fp.type
+          )
         all_firewall_policy.append(fp_response)
     elif hasattr(res, 'organizationFirewalls'):
       for sp in res.organizationFirewalls:
         org_firewall_rule = firewalls_utils.SortOrgFirewallRules(
-            client, sp.rules)
+            client, sp.rules
+        )
         org_firewall.append(
-            client.messages
-            .NetworksGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
-                id=sp.id, rules=org_firewall_rule))
+            client.messages.NetworksGetEffectiveFirewallsResponseOrganizationFirewallPolicy(
+                id=sp.id, rules=org_firewall_rule
+            )
+        )
 
     if args.IsSpecified('format') and args.format == 'json':
       if org_firewall:
         return client.messages.NetworksGetEffectiveFirewallsResponse(
             organizationFirewalls=org_firewall,
             firewalls=network_firewall,
-            firewallPolicys=all_firewall_policy)
+            firewallPolicys=all_firewall_policy,
+        )
       else:
         return client.messages.NetworksGetEffectiveFirewallsResponse(
-            firewalls=network_firewall, firewallPolicys=all_firewall_policy)
+            firewalls=network_firewall, firewallPolicys=all_firewall_policy
+        )
 
     result = []
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client, fp, True))
+              client, fp, True, True, self._support_packet_mirroring_rules
+          )
+      )
     for sp in org_firewall:
       result.extend(
-          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp))
+          firewalls_utils.ConvertOrgSecurityPolicyRulesToEffectiveFwRules(sp)
+      )
     result.extend(
         firewalls_utils.ConvertNetworkFirewallRulesToEffectiveFwRules(
-            network_firewall))
+            network_firewall
+        )
+    )
     return result
 
   def Epilog(self, resources_were_displayed):
@@ -117,9 +147,44 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     log.status.Print('\n' + firewalls_utils.LIST_NOTICE)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class GetEffectiveFirewallsBeta(GetEffectiveFirewalls):
+  """Get the effective firewalls of a Compute Engine network.
+
+  *{command}* is used to get the effective firewalls applied to the network.
+
+  ## EXAMPLES
+
+  To get the effective firewalls for a network, run:
+
+    $ {command} example-network
+
+  gets the effective firewalls applied on the network 'example-network'.
+  """
+
+  _support_packet_mirroring_rules = True
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetEffectiveFirewallsAlpha(GetEffectiveFirewallsBeta):
+  """Get the effective firewalls of a Compute Engine network.
+
+  *{command}* is used to get the effective firewalls applied to the network.
+
+  ## EXAMPLES
+
+  To get the effective firewalls for a network, run:
+
+    $ {command} example-network
+
+  gets the effective firewalls applied on the network 'example-network'.
+  """
+
+  _support_packet_mirroring_rules = True
+
+
 GetEffectiveFirewalls.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To get the effective firewalls of network with name example-network, run:
 
       $ {command} example-network
@@ -133,6 +198,72 @@ GetEffectiveFirewalls.detailed_help = {
       $ {command} example-network --format="table(
         type,
         firewall_policy_name,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
+}
+
+GetEffectiveFirewallsBeta.detailed_help = {
+    'EXAMPLES': """\
+    To get the effective firewalls of network with name example-network, run:
+
+      $ {command} example-network
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To list more the fields of the rules of network example-network in table
+    format, run:
+
+      $ {command} example-network --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
+        priority,
+        action,
+        direction,
+        ip_ranges.list():label=IP_RANGES,
+        target_svc_acct,
+        enableLogging,
+        description,
+        name,
+        disabled,
+        target_tags,
+        src_svc_acct,
+        src_tags,
+        ruleTupleCount,
+        targetResources:label=TARGET_RESOURCES)"
+        """,
+}
+
+GetEffectiveFirewallsAlpha.detailed_help = {
+    'EXAMPLES': """\
+    To get the effective firewalls of network with name example-network, run:
+
+      $ {command} example-network
+
+    To show all fields of the firewall rules, please show in JSON format with
+    option --format=json
+
+    To list more the fields of the rules of network example-network in table
+    format, run:
+
+      $ {command} example-network --format="table(
+        type,
+        firewall_policy_name,
+        rule_type,
         priority,
         action,
         direction,
