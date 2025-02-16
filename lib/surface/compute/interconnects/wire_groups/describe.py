@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.wire_groups import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
@@ -52,7 +52,8 @@ class Describe(base.DescribeCommand):
     ref = self.WIRE_GROUP_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(holder.client)
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+        additional_params={'crossSiteNetwork': args.cross_site_network},
     )
 
     project = properties.VALUES.core.project.GetOrFail()

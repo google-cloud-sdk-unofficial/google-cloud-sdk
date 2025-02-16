@@ -100,7 +100,7 @@ class RestartGA(_Restart, base.Command):
     """
     _Restart.Args(parser)
     mj_flags.AddSkipValidationFlag(parser)
-    mj_flags.AddMigrationJobObjectsConfigFlag(parser, is_sqlserver=True)
+    mj_flags.AddMigrationJobObjectsConfigFlagForRestartAndPromote(parser)
     mj_flags.AddRestartFailedObjectsFlag(parser)
 
 

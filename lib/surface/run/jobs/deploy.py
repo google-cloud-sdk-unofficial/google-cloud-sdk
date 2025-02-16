@@ -50,7 +50,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container deploy args."""
 
   help_text = """
@@ -68,6 +68,8 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags())
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -368,7 +370,7 @@ class BetaDeploy(Deploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
 
@@ -380,6 +382,6 @@ class AlphaDeploy(BetaDeploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

@@ -15,7 +15,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hubDefaultAll
       help_text: Parent hub of the route tables to display.
 
   request: &request

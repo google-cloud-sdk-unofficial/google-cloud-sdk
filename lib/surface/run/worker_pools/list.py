@@ -17,7 +17,9 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.printers.v2 import printer_util
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -50,6 +52,23 @@ class List(base.Command):
         prefixes=False,
     )
     concept_parsers.ConceptParser([region_presentation]).AddToParser(parser)
+    parser.display_info.AddFormat(
+        f'table(ready_symbol().{pretty_print.READY_COLUMN_COLOR},'
+        'name():label="WORKER POOL",region():label=REGION,'
+        'last_modifier:label="LAST DEPLOYED BY",'
+        'last_transition_time().date("%Y-%m-%d %H:%M:%S %Z"):'
+        'label="LAST DEPLOYED AT")'
+    )
+    parser.display_info.AddTransforms(
+        {'ready_symbol': printer_util.GetReadySymbolFromDict}
+    )
+    parser.display_info.AddTransforms({'name': printer_util.GetNameFromDict})
+    parser.display_info.AddTransforms(
+        {'region': printer_util.GetRegionFromDict}
+    )
+    parser.display_info.AddTransforms(
+        {'last_transition_time': printer_util.GetLastTransitionTimeFromDict}
+    )
 
   @classmethod
   def Args(cls, parser):

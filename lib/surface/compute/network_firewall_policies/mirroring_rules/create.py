@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_ut
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
 @base.UniverseCompatible
@@ -53,6 +54,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddGlobalFirewallPolicy(parser)
     flags.AddMirroringSecurityProfileGroup(parser)
+    flags.AddTargetSecureTags(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
@@ -71,6 +73,7 @@ class Create(base.CreateCommand):
     dest_ip_ranges = []
     layer4_configs = []
     security_profile_group = None
+    target_secure_tags = []
     disabled = False
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
@@ -82,6 +85,12 @@ class Create(base.CreateCommand):
       disabled = args.disabled
     if args.IsSpecified('security_profile_group'):
       security_profile_group = args.security_profile_group
+    if args.IsSpecified('target_secure_tags'):
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
 
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
@@ -112,6 +121,7 @@ class Create(base.CreateCommand):
         description=args.description,
         disabled=disabled,
         securityProfileGroup=security_profile_group,
+        targetSecureTags=target_secure_tags,
     )
 
     return network_firewall_policy_rule_client.CreateRule(

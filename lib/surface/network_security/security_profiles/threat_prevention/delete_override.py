@@ -118,7 +118,7 @@ class DeleteOverride(base.UpdateCommand):
     # TODO: b/384033890 - Remove this check once the field is
     # available in BETA and GA (and b/379282262 is fixed).
     elif args.IsSpecified('antivirus') and self.enable_antivirus:
-      update_mask = 'antivirusThreatOverrides'
+      update_mask = 'antivirusOverrides'
       overrides = args.antivirus
     else:
       raise core_exceptions.Error(

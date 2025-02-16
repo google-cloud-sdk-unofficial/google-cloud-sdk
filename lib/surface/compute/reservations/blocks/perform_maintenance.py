@@ -28,9 +28,9 @@ from googlecloudsdk.command_lib.compute.reservations.blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PerformMaintenance(base.UpdateCommand):
-  """Perform maintenance on a reservation block."""
+  """Perform maintenance on a reservation block within a reservation."""
 
   @staticmethod
   def Args(parser):

@@ -104,8 +104,8 @@ class Deploy(base.Command):
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddRevisionSuffixArg(parser)
     flags.AddRuntimeFlag(parser)
-    flags.AddMinInstancesFlag(parser, resource_kind='worker')
-    flags.AddMaxInstancesFlag(parser, resource_kind='worker')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
     flags.AddMaxSurgeFlag(parser, resource_kind='worker')
     flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
     flags.AddScalingFlag(parser)
@@ -258,7 +258,6 @@ class Deploy(base.Command):
 
   def Run(self, args):
     """Deploy a WorkerPool container to Cloud Run."""
-    # TODO(b/376904673): Add progress tracker.
     containers = self._ValidateAndGetContainers(args)
     build_from_source = self._ValidateAndGetBuildFromSource(containers)
 
@@ -326,14 +325,18 @@ class Deploy(base.Command):
     header += '...'
     with progress_tracker.StagedProgressTracker(
         header,
-        stages.WorkerPoolStages(),
+        stages.WorkerPoolStages(
+            include_build=bool(build_from_source),
+            include_create_repo=repo_to_create is not None,
+        ),
         failure_message='Deployment failed',
         suppress_output=args.async_,
-    ):
+    ) as tracker:
       response = worker_pools_client.ReleaseWorkerPool(
           worker_pool_ref,
           config_changes,
           self.ReleaseTrack(),
+          tracker=tracker,
           prefetch=worker_pool,
           build_image=build_image,
           build_pack=build_pack,

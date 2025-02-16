@@ -31,7 +31,8 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
-    'EXAMPLES': """\
+    'EXAMPLES':
+        """\
         To list operations for instances with ID "prod-instance" , run:
 
           $ {command} --instance=prod-instance
@@ -57,7 +58,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddOptionalInstance(parser)
+    flags.AddInstance(parser)
     parser.display_info.AddFormat(flags.OPERATION_FORMAT_BETA)
     parser.display_info.AddCacheUpdater(None)
 
@@ -76,31 +77,14 @@ class List(base.ListCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    if not args.instance:
-      # For project-level operations, this command updates the output table.
-      # pylint:disable=protected-access
-      args._GetParser().ai.display_info.AddFormat(
-          flags.OPERATION_FORMAT_BETA_WITH_INSERT_TIME
-      )
-      return list_pager.YieldFromList(
-          sql_client.operations,
-          sql_messages.SqlOperationsListRequest(
-              project=properties.VALUES.core.project.GetOrFail(),
-              filter=args.filter,
-          ),
-          limit=args.limit,
-      )
-    validate.ValidateInstanceName(args.instance)
     instance_ref = client.resource_parser.Parse(
         args.instance,
         params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances',
-    )
+        collection='sql.instances')
+    validate.ValidateInstanceName(args.instance)
 
     return list_pager.YieldFromList(
         sql_client.operations,
         sql_messages.SqlOperationsListRequest(
-            project=instance_ref.project, instance=instance_ref.instance
-        ),
-        limit=args.limit,
-    )
+            project=instance_ref.project, instance=instance_ref.instance),
+        limit=args.limit)

@@ -33,6 +33,7 @@
         The instance resource name, in the format
         `projects/{project_id}/locations/{location}/instances/{instance_id}`.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_location_instance
       required: true
   request:

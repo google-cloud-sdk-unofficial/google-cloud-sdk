@@ -15,7 +15,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hub
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:hubDefaultAll
       help_text: Parent hub of the groups to display.
 
   request: &request
@@ -27,4 +27,4 @@
 
   output:
     # Columns: NAME, HUB, DESCRIPTION
-    format: table(name.basename(), name.segment(5):label=HUB, description)
+    format: table(name.basename():sort=2, name.segment(5):label=HUB:sort=1, description)

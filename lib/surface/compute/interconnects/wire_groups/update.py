@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.wire_groups import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
@@ -73,7 +74,12 @@ class Update(base.UpdateCommand):
     ):
       raise exceptions.MinimumArgumentException([])
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    ref = self.WIRE_GROUP_ARG.ResolveAsResource(args, holder.resources)
+    ref = self.WIRE_GROUP_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+        additional_params={'crossSiteNetwork': args.cross_site_network},
+    )
 
     project = properties.VALUES.core.project.GetOrFail()
     wire_group = client.WireGroup(

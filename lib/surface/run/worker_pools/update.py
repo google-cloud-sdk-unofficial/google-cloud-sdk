@@ -86,8 +86,8 @@ class Update(base.Command):
     flags.AddCustomAudiencesFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
-    flags.AddMinInstancesFlag(parser, resource_kind='worker')
-    flags.AddMaxInstancesFlag(parser, resource_kind='worker')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
     flags.AddMaxSurgeFlag(parser, resource_kind='worker')
     flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
     flags.AddScalingFlag(parser)
@@ -180,7 +180,7 @@ class Update(base.Command):
         suppress_output=args.async_,
     ):
       response = worker_pools_client.ReleaseWorkerPool(
-          worker_pool_ref, worker_pool, config_changes
+          worker_pool_ref, config_changes, prefetch=worker_pool
       )
       if not response:
         raise exceptions.ArgumentError(

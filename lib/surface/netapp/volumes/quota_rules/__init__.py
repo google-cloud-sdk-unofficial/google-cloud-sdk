@@ -20,13 +20,11 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class QuotaRules(base.Group):
   """Create and manage Cloud NetApp Volume QuotaRules."""
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class QuotaRulesBeta(QuotaRules):
   """Create and manage Cloud NetApp Volume QuotaRules."""

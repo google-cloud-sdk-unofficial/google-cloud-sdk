@@ -72,6 +72,8 @@ class CreateBeta(base.CreateCommand):
   _support_require_specific_reservation = True
   _support_gsc = True
   _support_dws_gpu = False
+  _support_cuds = True
+  _support_dws_tpu = False
 
   @classmethod
   def Args(cls, parser):
@@ -89,6 +91,7 @@ class CreateBeta(base.CreateCommand):
         support_require_specific_reservation=cls._support_require_specific_reservation,
         support_gsc=cls._support_gsc,
         support_dws_gpu=cls._support_dws_gpu,
+        support_cuds=cls._support_cuds,
     )
 
   def Run(self, args):
@@ -111,6 +114,7 @@ class CreateAlpha(CreateBeta):
   _support_gsc = True
   _support_cuds = True
   _support_dws_gpu = True
+  _support_dws_tpu = True
 
   @classmethod
   def Args(cls, parser):
@@ -129,6 +133,7 @@ class CreateAlpha(CreateBeta):
         support_gsc=cls._support_gsc,
         support_cuds=cls._support_cuds,
         support_dws_gpu=cls._support_dws_gpu,
+        support_dws_tpu=cls._support_dws_tpu,
     )
 
   def Run(self, args):

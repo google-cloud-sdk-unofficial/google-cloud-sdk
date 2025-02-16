@@ -120,19 +120,6 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
     )
     feature_spec = self.messages.MembershipFeatureSpec()
     if args.origin:
-      # TODO(b/361345385): Remove this redundant FDC check once the v1 CLH error
-      # message is more explicit.
-      # Alternatively, remove FDC check once it is added to v2 CLH and gcloud
-      # uses Hub v2 API for FDC.
-      if not self._get_feature_cache().fleetDefaultMemberConfig:
-        project = core.properties.VALUES.core.project.GetOrFail()
-        raise core.exceptions.Error((
-            'Fleet-default membership configuration is not enabled on the {}'
-            ' feature for project [{}].'
-            ' Enable fleet-default membership configuration to apply it to'
-            ' memberships.'
-            " See the 'enable' command for more details"
-        ).format(self.feature.display_name, project))
       feature_spec.origin = self.messages.Origin(
           type=self.messages.Origin.TypeValueValuesEnum.FLEET
       )

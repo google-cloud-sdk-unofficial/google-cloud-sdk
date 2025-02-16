@@ -56,6 +56,16 @@ class List(base.ListCommand):
         required=False,
         help='Whether to only list supported Hugging Face models.',
     )
+    parser.add_argument(
+        '--model-filter',
+        action='store',
+        default=None,
+        required=False,
+        help=(
+            'Filter to apply to the model names or the display names of the'
+            ' list of models.'
+        ),
+    )
     base.URI_FLAG.RemoveFromParser(parser)
     base.LIMIT_FLAG.SetDefault(parser, 1000)
 
@@ -76,4 +86,5 @@ class List(base.ListCommand):
           limit=args.limit,
           batch_size=args.page_size,
           list_hf_models=args.list_supported_hugging_face_models,
+          model_filter=args.model_filter,
       )

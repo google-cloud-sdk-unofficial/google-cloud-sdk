@@ -32,6 +32,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a cluster."""
 

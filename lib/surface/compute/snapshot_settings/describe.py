@@ -60,8 +60,9 @@ class DescribeAlpha(Describe):
   def Args(parser):
     flags.AddSnapshotSettingArg(parser)
     parser.display_info.AddFormat(
-        'yaml(accessLocation.locations.list(show="keys"),'
-        'storageLocation.policy, storageLocation.locations.list(show="keys"))'
+        'yaml(accessLocation.policy,'
+        'accessLocation.locations.list(show="keys"),storageLocation.policy,'
+        'storageLocation.locations.list(show="keys"))'
     )
 
   def Run(self, args):

@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DetachBeta(base.Command):
@@ -38,12 +37,13 @@ class DetachBeta(base.Command):
     client = client_v2.FunctionsClient(self.ReleaseTrack())
     function_ref = args.CONCEPTS.name.Parse()
     function_name = function_ref.RelativeName()
+
     message = (  # gcloud-disable-gdu-domain
-        f'WARNING: This will detach function {function_name} from'
-        ' cloudfunctions.googleapis.com. This is a permanent operation and can'
-        ' not be undone. After detach, you cannot manage the function with the'
-        ' Cloud Functions API or `gcloud functions <command>`. You will need'
-        ' to use the Cloud Run API or `gcloud run <command>` instead.'
+        f'WARNING: This command detaches your function {function_name} from the'
+        ' Cloud Functions API (cloudfunctions.googleapis.com). Detached'
+        ' functions continue to serve traffic, and retain the'
+        ' `cloudfunctions.net` URL. You can only manage your detached'
+        ' functions using the Cloud Run API or the `gcloud run <command>`. '
     )
     if console_io.CanPrompt():
       console_io.PromptContinue(message, default=True, cancel_on_no=True)
@@ -55,7 +55,10 @@ class DetachBeta(base.Command):
       )
 
     operation = client.DetachFunction(function_name)
-    description = 'Detaching function from Cloud Functions.'
+    description = (  # gcloud-disable-gdu-domain
+        'Detaching function from Google Cloud Functions API'
+        ' (cloudfunctions.googleapis.com)'
+    )
     api_util.WaitForOperation(
         client.client, client.messages, operation, description
     )

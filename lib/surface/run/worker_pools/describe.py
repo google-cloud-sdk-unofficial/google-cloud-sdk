@@ -20,9 +20,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.printers import export_printer
+from googlecloudsdk.command_lib.run.printers.v2 import worker_pool_printer
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.Hidden
@@ -63,7 +66,21 @@ class Describe(base.Command):
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
-    # TODO(b/366115709): Add WorkerPool printer.
+
+    formatter = worker_pool_printer.WorkerPoolV2Printer
+    resource_printer.RegisterFormatter(
+        worker_pool_printer.WORKER_POOL_PRINTER_FORMAT,
+        formatter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(
+        worker_pool_printer.WORKER_POOL_PRINTER_FORMAT
+    )
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter,
+        hidden=True,
+    )
 
   @staticmethod
   def Args(parser):

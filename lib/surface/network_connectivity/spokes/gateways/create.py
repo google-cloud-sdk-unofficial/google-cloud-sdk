@@ -178,9 +178,13 @@ class CreateBETA(Create):
 
 Create.detailed_help = {
     'EXAMPLES': """ \
-  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10Gbps, IP range reservations of 10.1.1.0/24 and 10.1.2.0/24, and a landing network of my-vpc, run:
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps and IP range reservations of 10.1.1.0/24
 
-    $ {command} myspoke --hub=my-hub --region us-central1 --group untrusted --capacity 10g --ip-range-reservations 10.1.1.0/24,10.1.2.0/24  --landing-network my-vpc
+    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.1.0/24
+
+  To create a Gateway spoke named ``myspoke'' in us-central1, with a capacity of 10 Gbps, IP range reservations of 10.1.1.0/24 and 10.1.2.0/24, and a landing network of my-vpc, run:
+
+    $ {command} myspoke --hub=my-hub --region us-central1 --group gateways --capacity 10g --ip-range-reservations 10.1.1.0/24,10.1.2.0/24  --landing-network my-vpc
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation

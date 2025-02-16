@@ -35,7 +35,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import progress_tracker
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container update args."""
 
   help_text = """
@@ -54,6 +54,8 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags())
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -225,7 +227,7 @@ class BetaUpdate(Update):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
 
@@ -237,7 +239,7 @@ class AlphaUpdate(BetaUpdate):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)

@@ -66,7 +66,7 @@ class PerformMaintenance(base.UpdateCommand):
       utils.RaiseException(
           errors,
           PerformMaintenanceError,
-          error_message='Could not set named ports for resource:',
+          error_message='Could not perform maintenance for resource:',
       )
 
 

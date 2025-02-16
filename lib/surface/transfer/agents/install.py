@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.transfer import agents_util
 from googlecloudsdk.command_lib.transfer import creds_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import gce_cache
 from googlecloudsdk.core.util import platforms
 from oauth2client import client as oauth2_client
 
@@ -189,11 +190,13 @@ def _expand_path(path):
   """Converts relative and symbolic paths to absolute paths.
 
   Args:
-    path (str): The path to expand.
+    path (str|None): The path to expand. If None, returns None.
 
   Returns:
-    str: The absolute path.
+    str|None: The absolute path or None if path is None.
   """
+  if path is None:
+    return None
   return os.path.abspath(os.path.expanduser(path))
 
 
@@ -215,11 +218,11 @@ def _log_created_agent(command):
   log.info('Created agent with command:\n{}'.format(' '.join(command)))
 
 
-def _authenticate_and_get_creds_file_path(existing_creds_file=None):
+def _authenticate_and_get_creds_file_path(creds_file_supplied_by_user=None):
   """Ensures agent will be able to authenticate and returns creds.
 
   Args:
-    existing_creds_file (str): The path to the credentials file.
+    creds_file_supplied_by_user (str): The path to the credentials file.
 
   Returns:
     str: The path to the credentials file.
@@ -229,8 +232,8 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
   """
   # Can't disable near "else" (https://github.com/PyCQA/pylint/issues/872).
   # pylint:disable=protected-access
-  if existing_creds_file:
-    creds_file_path = _expand_path(existing_creds_file)
+  if creds_file_supplied_by_user:
+    creds_file_path = _expand_path(creds_file_supplied_by_user)
     if not os.path.exists(creds_file_path):
       fix_suggestion = (
           'Check for typos and ensure a creds file exists at the path')
@@ -239,19 +242,24 @@ def _authenticate_and_get_creds_file_path(existing_creds_file=None):
               creds_file_path=creds_file_path,
               fix_suggestion=fix_suggestion,
               executed_command=_get_executed_command()))
-  else:
-    creds_file_path = oauth2_client._get_well_known_file()
-    # pylint:enable=protected-access
-    if not os.path.exists(creds_file_path):
-      fix_suggestion = ('To generate a credentials file, please run'
-                        ' `gcloud auth application-default login`')
-      raise OSError(
-          MISSING_CREDENTIALS_ERROR_TEXT.format(
-              creds_file_path=creds_file_path,
-              fix_suggestion=fix_suggestion,
-              executed_command=_get_executed_command()))
+    return creds_file_path
 
-  return creds_file_path
+  creds_file_path = oauth2_client._get_well_known_file()
+  # pylint:enable=protected-access
+  if os.path.exists(creds_file_path):
+    return creds_file_path
+
+  if gce_cache.GetOnGCE(check_age=False):
+    # GCE VMs allow user to authenticate via GCE metadata server.
+    return None
+
+  fix_suggestion = ('To generate a credentials file, please run'
+                    ' `gcloud auth application-default login`')
+  raise OSError(
+      MISSING_CREDENTIALS_ERROR_TEXT.format(
+          creds_file_path=creds_file_path,
+          fix_suggestion=fix_suggestion,
+          executed_command=_get_executed_command()))
 
 
 def _check_if_container_manager_is_installed(
@@ -367,9 +375,12 @@ def _get_container_run_command(
     # Mount mandatory directories.
     mount_flags = [
         '-v={}:/tmp'.format(expanded_logs_directory_path),
-        '-v={creds_file_path}:{creds_file_path}'.format(
-            creds_file_path=expanded_creds_file_path),
     ]
+    if expanded_creds_file_path is not None:
+      mount_flags.append(
+          '-v={creds_file_path}:{creds_file_path}'.format(
+              creds_file_path=expanded_creds_file_path),
+      )
     for path in args.mount_directories:
       # Mount custom directory.
       mount_flags.append('-v={path}:{path}'.format(path=path))
@@ -382,11 +393,12 @@ def _get_container_run_command(
   agent_args = [
       'gcr.io/cloud-ingest/tsop-agent:latest',
       '--agent-pool={}'.format(args.pool),
-      '--creds-file={}'.format(expanded_creds_file_path),
       '--hostname={}'.format(socket.gethostname()),
       '--log-dir={}'.format(expanded_logs_directory_path),
       '--project-id={}'.format(project),
   ]
+  if expanded_creds_file_path is not None:
+    agent_args.append('--creds-file={}'.format(expanded_creds_file_path))
   if mount_entire_filesystem:
     agent_args.append('--enable-mount-directory')
   if args.id_prefix:

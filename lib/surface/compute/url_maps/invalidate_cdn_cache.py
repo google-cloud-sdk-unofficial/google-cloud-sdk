@@ -99,6 +99,10 @@ def _CreateRequests(holder, args, url_map_arg):
   if args.host is not None:
     cache_invalidation_rule.host = args.host
 
+  if hasattr(args, 'tags') and args.tags is not None:
+    cache_invalidation_rule.cacheTags.extend(
+        [tag.strip() for tag in args.tags.split(',')])
+
   messages = holder.client.messages
   request = messages.ComputeUrlMapsInvalidateCacheRequest(
       project=url_map_ref.project,
@@ -163,4 +167,19 @@ class InvalidateCdnCacheBeta(InvalidateCdnCache):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InvalidateCdnCacheAlpha(InvalidateCdnCacheBeta):
-  pass
+  """Invalidate specified objects for a URL map in Cloud CDN caches."""
+
+  @classmethod
+  def Args(cls, parser):
+    parser.add_argument(
+        '--tags',
+        required=False,
+        default=None,
+        help="""\
+        A single tag or a comma-delimited list of tags. When multiple tags are
+        specified, the invalidation will apply them using boolean OR logic.
+
+        Example:
+        - ``--tags=abcd,user123''
+        """)
+    super().Args(parser)

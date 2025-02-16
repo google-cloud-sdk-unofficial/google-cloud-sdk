@@ -580,6 +580,8 @@ class Deploy(base.Command):
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
+        include_validate_service=bool(build_from_source)
+        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_build=bool(build_from_source),
         include_create_repo=repo_to_create is not None,
     )
@@ -960,6 +962,7 @@ class BetaDeploy(Deploy):
     flags.AddGpuTypeFlag(parser, hidden=False)
     flags.ZonalGpuRedundancyFlag(parser, hidden=True)
     flags.AddRegionsArg(parser)
+    flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

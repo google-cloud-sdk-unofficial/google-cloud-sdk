@@ -28,6 +28,23 @@ from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.buckets import create_bucket_task
 
+_LIFECYCLE_HELP_TEXT = """
+Sets the lifecycle management configuration on a bucket. For example,
+The following lifecycle management configuration JSON document
+specifies that all objects in this bucket that are more than 365 days
+old are deleted automatically:
+
+  {
+    "rule":
+    [
+      {
+        "action": {"type": "Delete"},
+        "condition": {"age": 365}
+      }
+    ]
+  }
+"""
+
 
 @base.UniverseCompatible
 class Create(base.Command):
@@ -148,6 +165,8 @@ class Create(base.Command):
             ' flag, you must also use --uniform-bucket-level-access'
         ),
     )
+
+    parser.add_argument('--lifecycle-file', help=_LIFECYCLE_HELP_TEXT)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
       flags.add_ip_filter_file_flag(parser)

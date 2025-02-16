@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_ut
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
+from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
 
 @base.UniverseCompatible
@@ -54,12 +55,14 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddNewPriority(parser, operation='update')
     flags.AddMirroringSecurityProfileGroup(parser)
+    flags.AddTargetSecureTags(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
         'src_ip_ranges': 'match.srcIpRanges',
         'dest_ip_ranges': 'match.destIpRanges',
         'security_profile_group': 'securityProfileGroup',
+        'target_secure_tags': 'targetSecureTags',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -76,6 +79,7 @@ class Update(base.UpdateCommand):
     dest_ip_ranges = []
     layer4_config_list = []
     security_profile_group = None
+    target_secure_tags = []
     disabled = None
     should_setup_match = False
     traffic_direct = None
@@ -125,6 +129,12 @@ class Update(base.UpdateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
+    if args.IsSpecified('target_secure_tags'):
+      target_secure_tags = (
+          secure_tags_utils.TranslateSecureTagsForFirewallPolicy(
+              holder.client, args.target_secure_tags
+          )
+      )
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=new_priority,
@@ -134,6 +144,7 @@ class Update(base.UpdateCommand):
         description=args.description,
         disabled=disabled,
         securityProfileGroup=security_profile_group,
+        targetSecureTags=target_secure_tags,
     )
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):

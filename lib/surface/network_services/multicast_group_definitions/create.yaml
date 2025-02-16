@@ -29,6 +29,9 @@ arguments:
     repeated: true
     api_field: multicastGroupDefinition.consumerAcceptList
     help_text: An optional list of consumer projects that can use this multicast group definition.
+  - arg_name: require-explicit-accept
+    api_field: multicastGroupDefinition.requireExplicitAccept
+    help_text: Whether an empty consumer accept list will reject all consumer projects.
   - arg_name: description
     api_field: multicastGroupDefinition.description
     help_text: The description for the multicast group definition.

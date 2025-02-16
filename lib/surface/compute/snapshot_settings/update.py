@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
       # 1. Get the updated regional snapshot settings, we only support updating
       # access locations for now.
       new_locations_values = []
+      access_location = client.messages.SnapshotSettingsAccessLocation()
 
       if args.add_access_locations:
         for location in args.add_access_locations:
@@ -78,15 +79,23 @@ class Update(base.UpdateCommand):
               )
           )
 
+      access_location.locations = (
+          client.messages.SnapshotSettingsAccessLocation.LocationsValue(
+              additionalProperties=new_locations_values
+          )
+      )
+
+      if args.access_location_policy:
+        new_policy = client.messages.SnapshotSettingsAccessLocation.PolicyValueValuesEnum(
+            args.access_location_policy.upper().replace('-', '_')
+        )
+        access_location.policy = new_policy
+
       # 2. Patch the snapshot settings
       service = client.apitools_client.regionSnapshotSettings
       patch_request = client.messages.ComputeRegionSnapshotSettingsPatchRequest(
           snapshotSettings=client.messages.SnapshotSettings(
-              accessLocation=client.messages.SnapshotSettingsAccessLocation(
-                  locations=client.messages.SnapshotSettingsAccessLocation.LocationsValue(
-                      additionalProperties=new_locations_values
-                  )
-              )
+              accessLocation=access_location
           ),
           project=properties.VALUES.core.project.GetOrFail(),
           region=args.region,
@@ -288,8 +297,9 @@ class UpdateAlpha(Update):
     flags.AddUpdateSnapshotSettingsStorageLocationFlags(parser)
     flags.AddSnapshotSettingArg(parser)
     parser.display_info.AddFormat(
-        'yaml(accessLocation.locations.list(show="keys"),'
-        'storageLocation.policy, storageLocation.locations.list(show="keys"))'
+        'yaml(accessLocation.policy,'
+        'accessLocation.locations.list(show="keys"),storageLocation.policy,'
+        'storageLocation.locations.list(show="keys"))'
     )
 
   def Run(self, args):

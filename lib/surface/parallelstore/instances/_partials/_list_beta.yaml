@@ -36,6 +36,7 @@
         To retrieve instance information for all locations, use "-" as the value of
         `{location}`.
       is_positional: false
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_location
       required: true
   request:

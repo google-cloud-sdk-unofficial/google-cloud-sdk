@@ -41,7 +41,7 @@ from googlecloudsdk.core.console import progress_tracker
 EXAMPLE_JOB_IMAGE = 'us-docker.pkg.dev/cloudrun/container/job:latest'
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all per-container deploy args."""
 
   help_text = """
@@ -55,6 +55,8 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags())
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
+  if release_track in [base.ReleaseTrack.ALPHA]:
+    group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -247,7 +249,7 @@ class BetaCreate(Create):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
 
 
@@ -259,5 +261,5 @@ class AlphaCreate(BetaCreate):
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
     flags.AddRuntimeFlag(parser)
-    container_args = ContainerArgGroup()
+    container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)

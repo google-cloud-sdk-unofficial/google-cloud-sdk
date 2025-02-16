@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.DefaultUniverseOnly
 class SetManagedCluster(base.UpdateCommand):
   """Set a managed cluster for the workflow template."""
 

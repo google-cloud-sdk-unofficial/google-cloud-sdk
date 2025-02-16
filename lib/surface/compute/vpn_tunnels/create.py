@@ -79,6 +79,7 @@ def ValidateSimpleSharedSecret(possible_secret):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class CreateGA(base.CreateCommand):
   """Create a VPN tunnel.
 
@@ -264,6 +265,10 @@ class CreateGA(base.CreateCommand):
             '--peer-address',
             'When creating Classic VPN tunnels, the peer address '
             'must be specified.')
+      if args.IsSpecified('router'):
+        raise exceptions.InvalidArgumentException(
+            '--router',
+            'Cannot specify router with Classic VPN tunnels.')
 
   def _GetPeerGcpGateway(self, api_resource_registry, args):
     if args.IsSpecified('peer_gcp_gateway'):
@@ -332,7 +337,6 @@ class CreateGA(base.CreateCommand):
           peer_ip=args.peer_address,
           shared_secret=args.shared_secret,
           target_vpn_gateway=target_vpn_gateway,
-          router=router_link,
           local_traffic_selector=args.local_traffic_selector,
           remote_traffic_selector=args.remote_traffic_selector)
     else:

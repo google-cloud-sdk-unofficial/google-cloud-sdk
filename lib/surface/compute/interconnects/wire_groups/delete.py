@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.interconnects.wire_groups import client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
@@ -52,7 +53,12 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    refs = self.WIRE_GROUPS_ARG.ResolveAsResource(args, holder.resources)
+    refs = self.WIRE_GROUPS_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.GLOBAL,
+        additional_params={'crossSiteNetwork': args.cross_site_network},
+    )
 
     project = properties.VALUES.core.project.GetOrFail()
     utils.PromptForDeletion(refs)

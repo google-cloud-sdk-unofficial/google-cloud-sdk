@@ -17,7 +17,9 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
+from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run.printers.v2 import printer_util
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -56,6 +58,26 @@ class List(base.Command):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    parser.display_info.AddFormat(
+        f'table(ready_symbol().{pretty_print.READY_COLUMN_COLOR},'
+        'name():label="REVISION",'
+        'active().yesno(yes="yes", no=""):label="ACTIVE",'
+        'parent():label="WORKER POOL",'
+        'create_time.date("%Y-%m-%d %H:%M:%S %Z"):'
+        'label=DEPLOYED:sort=2:reverse)'
+    )
+    parser.display_info.AddTransforms(
+        {'ready_symbol': printer_util.GetReadySymbolFromDict}
+    )
+    parser.display_info.AddTransforms(
+        {'name': printer_util.GetChildNameFromDict}
+    )
+    parser.display_info.AddTransforms(
+        {'active': printer_util.GetActiveStateFromDict}
+    )
+    parser.display_info.AddTransforms(
+        {'parent': printer_util.GetParentFromDict}
+    )
 
   def Run(self, args):
     """List available revisions in a worker pool in a region."""

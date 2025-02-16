@@ -19,7 +19,7 @@
 
   arguments:
     resource:
-      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:routeTable
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:routeTableDefaultAll
       help_text: Parent route table of the routes to display.
     params:
     - arg_name: effective-location
@@ -32,6 +32,7 @@
       api_version: v1
     collection: networkconnectivity.projects.locations.global.hubs.routeTables.routes
     modify_request_hooks:
+    - googlecloudsdk.command_lib.network_connectivity.util:CheckForRouteTableAndHubWildcardMismatch
     - googlecloudsdk.command_lib.network_connectivity.util:AppendEffectiveLocationFilter
 
   output:
@@ -49,6 +50,6 @@
           firstof(nextHopVpnTunnel.siteToSiteDataTransfer, nextHopRouterApplianceInstance.siteToSiteDataTransfer, nextHopInterconnectAttachment.siteToSiteDataTransfer).yesno(yes="ON", no="")
         ).yesno(no="OFF"):label=SITE_TO_SITE,
         firstof(nextHopVpcNetwork.uri, nextHopVpnTunnel.uri, nextHopRouterApplianceInstance.uri, nextHopInterconnectAttachment.uri).basename():label=NEXT_HOP,
-        name.segment(5):label=HUB,
-        name.segment(7):label=ROUTE_TABLE
+        name.segment(5):label=HUB:sort=1,
+        name.segment(7):label=ROUTE_TABLE:sort=2
       )

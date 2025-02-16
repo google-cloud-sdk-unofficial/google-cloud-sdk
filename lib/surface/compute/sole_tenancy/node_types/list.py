@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA,
                     base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Compute Engine node types."""
 
@@ -47,6 +48,7 @@ class List(base.ListCommand):
           zone.basename(),
           guestCpus:label=CPUs,
           memoryMb,
+          maxVms,
           deprecated.state:label=DEPRECATED
         )""")
 

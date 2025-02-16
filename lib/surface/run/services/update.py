@@ -272,6 +272,7 @@ class BetaUpdate(Update):
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

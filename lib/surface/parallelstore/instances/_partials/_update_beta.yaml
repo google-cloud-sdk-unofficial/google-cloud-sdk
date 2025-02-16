@@ -33,6 +33,7 @@
         Identifier. The resource name of the instance, in the format
         `projects/{project}/locations/{location}/instances/{instance_id}`.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.parallelstore.v1beta_resources:project_location_instance
       required: true
     - arg_name: description
@@ -103,6 +104,23 @@
         enum_value: DIRECTORY_STRIPE_LEVEL_MAX
         help_text: |-
           Maximum directory striping
+    - arg_name: deployment-type
+      api_field: instance.deploymentType
+      required: false
+      help_text: |-
+        The deployment type of the instance. Allowed values are:
+
+        * `SCRATCH`: the instance is a scratch instance.
+        * `PERSISTENT`: the instance is a persistent instance.
+      choices:
+      - arg_value: scratch
+        enum_value: SCRATCH
+        help_text: |-
+          Scratch
+      - arg_value: persistent
+        enum_value: PERSISTENT
+        help_text: |-
+          Persistent
     - arg_name: request-id
       api_field: requestId
       required: false

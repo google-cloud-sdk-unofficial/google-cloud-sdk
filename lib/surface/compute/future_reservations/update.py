@@ -65,6 +65,7 @@ class UpdateBeta(base.UpdateCommand):
         support_auto_delete=True,
         support_require_specific_reservation=True,
         support_gsc=True,
+        support_cuds=True,
     )
 
   def _ValidateArgs(self, update_mask):

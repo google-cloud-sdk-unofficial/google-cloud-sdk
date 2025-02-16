@@ -253,7 +253,6 @@
         - group:
             api_field: connection.bitbucketDataCenterConfig
             required: false
-            hidden: true
             help_text: |-
               Configuration for connections to an instance of Bitbucket Data Center.
             params:
@@ -327,7 +326,6 @@
         - group:
             api_field: connection.bitbucketCloudConfig
             required: false
-            hidden: true
             help_text: |-
               Configuration for connections to an instance of Bitbucket Cloud.
             params:
