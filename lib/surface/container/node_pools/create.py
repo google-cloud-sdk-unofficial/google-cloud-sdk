@@ -81,9 +81,16 @@ def _Args(parser):
   parser.add_argument(
       '--num-nodes',
       type=int,
-      help='The number of nodes in the node pool in each of the '
-      'cluster\'s zones.',
-      default=3)
+      help="""\
+The number of nodes in the node pool in each of the cluster's zones. Defaults to
+3.
+
+Exception: when `--tpu-topology` is specified for multi-host TPU machine types
+the number of nodes will be defaulted to `(product of topology)/(# of chips per
+VM)`.
+""",
+      default=None,
+  )
   flags.AddMachineTypeFlag(parser)
   parser.add_argument(
       '--disk-size',

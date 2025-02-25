@@ -15,16 +15,15 @@
 """Create a backup of a Looker instance."""
 
 from googlecloudsdk.api_lib.looker import backups
+from googlecloudsdk.api_lib.looker import utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.looker import flags
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        'Create a backup of a Looker instance.',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': 'Create a backup of a Looker instance.',
+    'EXAMPLES': """ \
         To create a backup of an instance with the name my-looker-instance, in
         region us-central1 run:
 
@@ -33,7 +32,8 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class CreateInstanceBackup(base.CreateCommand):
   """Create a backup of a Looker instance."""
 
@@ -46,21 +46,21 @@ class CreateInstanceBackup(base.CreateCommand):
     parser.add_argument(
         '--region',
         required=True,
-        help=(
-            """ \
+        help=(""" \
             The name of the Looker region of the instance. Overrides the
             default looker/region property value for this command invocation.
-            """
-        ))
+            """),
+    )
 
   def Run(self, args):
     parent = resources.REGISTRY.Parse(
         args.instance,
         params={
             'projectsId': properties.VALUES.core.project.GetOrFail,
-            'locationsId': args.region
+            'locationsId': args.region,
         },
-        api_version=backups.API_VERSION_DEFAULT,
-        collection='looker.projects.locations.instances').RelativeName()
+        api_version=utils.VERSION_MAP[self.ReleaseTrack()],
+        collection='looker.projects.locations.instances',
+    ).RelativeName()
 
-    return backups.CreateBackup(parent)
+    return backups.CreateBackup(parent, self.ReleaseTrack())

@@ -27,20 +27,20 @@ from googlecloudsdk.command_lib.kms import resource_args
 
 @base.UniverseCompatible
 class List(base.ListCommand):
-  """List keyhandles within a project and location.
+  """List KeyHandle resources within a project and location.
 
-  Lists all keyhandles within a given project and location. Addtionally,
-  can filter the list.
+  Lists all KeyHandle resources within a given project and location.
+  Addtionally, can filter the list.
 
   ## EXAMPLES
 
-  The following command lists a maximum of five key handles in the location
-  `global`:
+  The following command lists a maximum of five KeyHandle resources in the
+  location `global`:
 
     $ {command} --location=global --limit=5
 
-  The following command lists all key handles in the location `global` that
-  have a resource type selector of `compute.googleapis.com/Instance`:
+  The following command lists all KeyHandle resources in the location `global`
+  that have a resource type selector of `compute.googleapis.com/Instance`:
 
     $ {command} --location=global
     --resource-type=compute.googleapis.com/Instance

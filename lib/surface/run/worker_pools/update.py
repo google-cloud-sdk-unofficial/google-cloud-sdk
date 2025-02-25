@@ -56,7 +56,6 @@ Container Flags
   return group
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.Command):
@@ -82,7 +81,7 @@ class Update(base.Command):
   def Args(cls, parser):
     flags.AddBinAuthzPolicyFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
-    flags.AddCloudSQLFlags(parser)
+    flags_parser.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
     flags.AddCustomAudiencesFlag(parser)

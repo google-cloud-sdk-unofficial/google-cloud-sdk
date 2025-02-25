@@ -23,6 +23,7 @@
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveDockerRootDiskConfig
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAcceleratorConfig
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveAutoscale
+    - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:RemoveNetworkAllowlist
     - googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:UpdateLabels
 
   async:
@@ -226,4 +227,17 @@
         first user account in the chain should be granted roles/iam.serviceAccountTokenCreator on
         the second user account in the chain, and so on. If user service account is empty then the
         user code will use the VM's service account.
+    - group:
+        mutex: true
+        params:
+        - api_field: googleDevtoolsRemotebuildexecutionAdminV1alphaUpdateWorkerPoolRequest.workerPool.workerConfig.networkAllowlist
+          arg_name: network-allowlist
+          required: false
+          help_text: |
+            The network allowlist mode for the worker pool. If per_action, the network allowlist will be applied per action.
+        - arg_name: clear-network-allowlist
+          action: store_true
+          processor: googlecloudsdk.command_lib.scheduler.util:ClearFlag
+          help_text: |
+            Clear the network allowlist mode.
     additional_arguments_hook: googlecloudsdk.command_lib.remote_build_execution.workerpool_update_util:AddLabelsFlags

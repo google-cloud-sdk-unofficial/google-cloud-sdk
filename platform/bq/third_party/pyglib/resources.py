@@ -1063,7 +1063,7 @@ def WalkResources(path: _Path) -> Iterator[Tuple[str, List[str], List[str]]]:
         # pylint: enable=protected-access
 
   if _par_file_index:
-    return _par_file_index.Walk(path)
+    return _par_file_index.Walk(str(path))
   return iter([])
 
 

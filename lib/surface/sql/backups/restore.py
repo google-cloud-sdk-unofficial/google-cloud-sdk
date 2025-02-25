@@ -98,41 +98,40 @@ OVERRIDE_FLAGS_SET = (
 def AddInstanceSettingsArgs(parser):
   """Declare flag for instance settings."""
   parser.display_info.AddFormat(flags.GetInstanceListFormat())
-  flags.AddActivationPolicy(parser, hidden=True)
-  flags.AddActiveDirectoryDomain(parser, hidden=True)
-  flags.AddAssignIp(parser, hidden=True)
-  flags.AddAuthorizedNetworks(parser, hidden=True)
-  flags.AddAvailabilityType(parser, hidden=True)
-  flags.AddBackup(parser, hidden=True)
-  flags.AddBackupStartTime(parser, hidden=True)
-  flags.AddBackupLocation(parser, allow_empty=False, hidden=True)
-  flags.AddCPU(parser, hidden=True)
-  flags.AddInstanceCollation(parser, hidden=True)
-  flags.AddDatabaseFlags(parser, hidden=True)
-  flags.AddEnableBinLog(parser, hidden=True)
-  flags.AddRetainedBackupsCount(parser, hidden=True)
-  flags.AddRetainedTransactionLogDays(parser, hidden=True)
-  flags.AddFailoverReplicaName(parser, hidden=True)
-  flags.AddMaintenanceReleaseChannel(parser, hidden=True)
-  flags.AddMaintenanceWindowDay(parser, hidden=True)
-  flags.AddMaintenanceWindowHour(parser, hidden=True)
-  flags.AddDenyMaintenancePeriodStartDate(parser, hidden=True)
-  flags.AddDenyMaintenancePeriodEndDate(parser, hidden=True)
-  flags.AddDenyMaintenancePeriodTime(parser, hidden=True)
-  flags.AddInsightsConfigQueryInsightsEnabled(parser, hidden=True)
-  flags.AddInsightsConfigQueryStringLength(parser, hidden=True)
-  flags.AddInsightsConfigRecordApplicationTags(parser, hidden=True)
-  flags.AddInsightsConfigRecordClientAddress(parser, hidden=True)
-  flags.AddInsightsConfigQueryPlansPerMinute(parser, hidden=True)
-  flags.AddMemory(parser, hidden=True)
-  flags.AddRequireSsl(parser, hidden=True)
-  flags.AddStorageAutoIncrease(parser, hidden=True)
-  flags.AddStorageSize(parser, hidden=True)
+  flags.AddActivationPolicy(parser)
+  flags.AddActiveDirectoryDomain(parser)
+  flags.AddAssignIp(parser)
+  flags.AddAuthorizedNetworks(parser)
+  flags.AddAvailabilityType(parser)
+  flags.AddBackup(parser)
+  flags.AddBackupStartTime(parser)
+  flags.AddBackupLocation(parser, allow_empty=False)
+  flags.AddCPU(parser)
+  flags.AddInstanceCollation(parser)
+  flags.AddDatabaseFlags(parser)
+  flags.AddEnableBinLog(parser)
+  flags.AddRetainedBackupsCount(parser)
+  flags.AddRetainedTransactionLogDays(parser)
+  flags.AddMaintenanceReleaseChannel(parser)
+  flags.AddMaintenanceWindowDay(parser)
+  flags.AddMaintenanceWindowHour(parser)
+  flags.AddDenyMaintenancePeriodStartDate(parser)
+  flags.AddDenyMaintenancePeriodEndDate(parser)
+  flags.AddDenyMaintenancePeriodTime(parser)
+  flags.AddInsightsConfigQueryInsightsEnabled(parser)
+  flags.AddInsightsConfigQueryStringLength(parser)
+  flags.AddInsightsConfigRecordApplicationTags(parser)
+  flags.AddInsightsConfigRecordClientAddress(parser)
+  flags.AddInsightsConfigQueryPlansPerMinute(parser)
+  flags.AddMemory(parser)
+  flags.AddRequireSsl(parser)
+  flags.AddStorageAutoIncrease(parser)
+  flags.AddStorageSize(parser)
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
-  flags.AddStorageType(parser, hidden=True)
-  flags.AddTier(parser, hidden=True)
-  flags.AddEdition(parser, hidden=True)
+  flags.AddStorageType(parser)
+  flags.AddTier(parser)
+  flags.AddEdition(parser)
   kms_flag_overrides = {
       'kms-key': '--disk-encryption-key',
       'kms-keyring': '--disk-encryption-key-keyring',
@@ -140,31 +139,29 @@ def AddInstanceSettingsArgs(parser):
       'kms-project': '--disk-encryption-key-project',
   }
   kms_resource_args.AddKmsKeyResourceArg(
-      parser, 'instance', flag_overrides=kms_flag_overrides, hidden=True
+      parser, 'instance', flag_overrides=kms_flag_overrides
   )
-  flags.AddEnablePointInTimeRecovery(parser, hidden=True)
-  flags.AddNetwork(parser, hidden=True)
-  flags.AddSqlServerAudit(parser, hidden=True)
-  flags.AddDeletionProtection(parser, hidden=True)
-  flags.AddSqlServerTimeZone(parser, hidden=True)
-  flags.AddConnectorEnforcement(parser, hidden=True)
-  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS, hidden=True)
-  flags.AddEnableGooglePrivatePath(
-      parser, show_negated_in_help=False, hidden=True
-  )
+  flags.AddEnablePointInTimeRecovery(parser)
+  flags.AddNetwork(parser)
+  flags.AddSqlServerAudit(parser)
+  flags.AddDeletionProtection(parser)
+  flags.AddSqlServerTimeZone(parser)
+  flags.AddConnectorEnforcement(parser)
+  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
+  flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
   flags.AddEnableDataCache(parser, hidden=True)
-  psc_setup_group = parser.add_group(hidden=True)
-  flags.AddEnablePrivateServiceConnect(psc_setup_group, hidden=True)
-  flags.AddAllowedPscProjects(psc_setup_group, hidden=True)
+  psc_setup_group = parser.add_group()
+  flags.AddEnablePrivateServiceConnect(psc_setup_group)
+  flags.AddAllowedPscProjects(psc_setup_group)
   flags.AddPscAutoConnections(parser, hidden=True)
-  flags.AddSslMode(parser, hidden=True)
+  flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser, hidden=True)
   flags.AddEnableDataplexIntegration(parser, hidden=True)
-  flags.AddLocationGroup(parser, hidden=True, specify_default_region=False)
+  flags.AddLocationGroup(parser, hidden=False, specify_default_region=False)
   flags.AddDatabaseVersion(
       parser,
       restrict_choices=False,
-      hidden=True,
+      hidden=False,
       support_default_version=False,
       additional_help_text=(
           ' Note for restore to new instance major version upgrades are not'
@@ -172,6 +169,37 @@ def AddInstanceSettingsArgs(parser):
       ),
   )
   flags.AddServerCaMode(parser, hidden=True)
+  flags.AddTags(parser, hidden=True)
+
+
+def _ValidateBackupRequest(is_project_backup, args, overrides):
+  """Validates the backup request.
+
+  Args:
+    is_project_backup: bool, Whether the backup request is for a project level
+      backup.
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    overrides: list[str], The list of flags that were overridden.
+  """
+  validate.ValidateInstanceName(args.restore_instance)
+  if command_validate.IsBackupDrBackupRequest(args.id) or is_project_backup:
+    if args.backup_project:
+      raise exceptions.ArgumentError(
+          ' --backup-project is not supported when using backup name based'
+          ' restore command.'
+      )
+
+    if args.backup_instance:
+      raise exceptions.ArgumentError(
+          ' --backup-instance is not supported when using backup name based'
+          ' restore command.'
+      )
+  else:
+    if overrides:
+      raise exceptions.ArgumentError(
+          'Overrides are only supported for backup name based restore to new'
+          f' instance. Unsupported flags: {overrides}'
+      )
 
 
 def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
@@ -186,11 +214,6 @@ def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
     A SqlInstancesRestoreBackupRequest.
   """
   if command_validate.IsBackupDrBackupRequest(args.id):
-    if args.backup_project or args.backup_instance:
-      raise exceptions.ArgumentError(
-          ' --backup-project and --backup-instance cannot be specified for'
-          ' backupdr backups in restore command.'
-      )
     return sql_messages.SqlInstancesRestoreBackupRequest(
         project=instance_ref.project,
         instance=instance_ref.instance,
@@ -209,42 +232,65 @@ def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class RestoreBackup(base.RestoreCommand):
-  """Restores a backup of a Cloud SQL instance."""
+  """Restores a backup of a Cloud SQL instance.
+
+  The command lets you restore to an existing instance using ID. When backup
+  Name is used for restore it lets you restore to an existing instance or a new
+  instance. When restoring to new instance, optional flags can be used to
+  customize the new instance.
+  """
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     flags.AddBackupId(
-        parser, help_text='The ID of the backup run to restore from.'
+        parser,
+        help_text=(
+            'The ID of the backup run to restore from or the backup NAME for'
+            ' restore to existing/new instance. To find the NAME, run the'
+            ' following command:'
+            ' $ gcloud sql backups list --filter=instance:{instance}'
+        ),
     )
     parser.add_argument(
         '--restore-instance',
         required=True,
         completer=flags.InstanceCompleter,
-        help='The ID of the target Cloud SQL instance that the backup is '
-        'restored to.')
+        help=(
+            'The ID of the target Cloud SQL instance that the backup is '
+            'restored to.'
+        ),
+    )
     parser.add_argument(
         '--backup-instance',
         completer=flags.InstanceCompleter,
-        help='The ID of the instance that the backup was taken from. This '
-        'argument must be specified when the backup instance is different '
-        'from the restore instance. If it is not specified, the backup '
-        'instance is considered the same as the restore instance.')
+        help=(
+            'The ID of the instance that the backup was taken from. This'
+            ' argument must be specified when the backup instance is different'
+            ' from the restore instance. If it is not specified, the backup'
+            ' instance is considered the same as the restore instance. This'
+            ' flag is not supported when restore happens from backup name, only'
+            ' supported when restore happens from backup ID in timestamp'
+            ' format.'
+        ),
+    )
     parser.add_argument(
         '--backup-project',
         help=(
             'The project of the instance to which the backup belongs. If it'
-            ' isn\'t specified, backup and restore instances are in the same '
-            'project.'
+            " isn't specified, backup and restore instances are in the same"
+            ' project. This flag is not supported when restore happens from'
+            ' backup name, only supported when restore happens from backup ID'
+            ' in timestamp format.'
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)
@@ -266,23 +312,32 @@ class RestoreBackup(base.RestoreCommand):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
-    validate.ValidateInstanceName(args.restore_instance)
+    specified_args_dict = getattr(args, '_specified_args', None)
+    overrides = [
+        key for key in specified_args_dict if key in OVERRIDE_FLAGS_SET
+    ]
+
+    is_project_backup = command_validate.IsProjectLevelBackupRequest(
+        args.id
+    )
+    _ValidateBackupRequest(is_project_backup, args, overrides)
+
     instance_ref = client.resource_parser.Parse(
         args.restore_instance,
         params={'project': properties.VALUES.core.project.GetOrFail},
-        collection='sql.instances')
+        collection='sql.instances',
+    )
     if not console_io.PromptContinue(
         'All current data on the instance will be lost when the backup is '
-        'restored.'):
+        'restored.'
+    ):
       return None
 
-    specified_args_dict = getattr(args, '_specified_args', None)
-    override = any(key in OVERRIDE_FLAGS_SET for key in specified_args_dict)
-    if command_validate.IsProjectLevelBackupRequest(args.id):
+    if is_project_backup:
       restore_backup_request = _GetRestoreBackupRequest(
           args, sql_messages, instance_ref
       )
-      if override:
+      if overrides:
         instance_resource = (
             command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
                 sql_messages, args, instance_ref=instance_ref
@@ -293,7 +348,7 @@ class RestoreBackup(base.RestoreCommand):
         )
       result_operation = sql_client.instances.RestoreBackup(
           restore_backup_request
-          )
+      )
     else:
       if not args.backup_instance:
         args.backup_instance = args.restore_instance

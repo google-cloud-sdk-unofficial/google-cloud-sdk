@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The command group for key-handles."""
+"""The command group for KeyHandle resources."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,11 +25,13 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class KeyHandles(base.Group):
-  """Create and manage key-handles.
+  """Create and manage KeyHandle resources.
 
-  A key-handle is a resource which contains a reference to a KMS CryptoKey
+  A KeyHandle is a resource which contains a reference to a KMS CryptoKey
   resource that can be used through existing CMEK channels
   """
 

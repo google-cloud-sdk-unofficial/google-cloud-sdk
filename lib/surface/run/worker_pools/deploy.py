@@ -71,7 +71,6 @@ Container Flags
   return group
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Deploy(base.Command):
@@ -97,7 +96,7 @@ class Deploy(base.Command):
   def Args(cls, parser):
     flags.AddBinAuthzPolicyFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
-    flags.AddCloudSQLFlags(parser)
+    flags_parser.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
     flags.AddDescriptionFlag(parser)
@@ -344,6 +343,7 @@ class Deploy(base.Command):
           build_from_source_container_name=container_name,
           repo_to_create=repo_to_create,
           already_activated_services=already_activated_services,
+          force_new_revision=True,
       )
       if not response:
         raise exceptions.ArgumentError(

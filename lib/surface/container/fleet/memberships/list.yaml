@@ -21,8 +21,8 @@
 
   arguments:
     resource:
-      help_text: The project to list cluster memberships for.
-      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:project
+      help_text: The project and location to list cluster memberships for.
+      spec: !REF googlecloudsdk.command_lib.container.fleet.resources:locationDefaultToAll
       override_resource_collection: true
 
   response:

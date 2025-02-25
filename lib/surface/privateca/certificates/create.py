@@ -63,6 +63,7 @@ def _WritePemChain(pem_cert, issuing_chain, cert_file):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   r"""Create a new certificate.
 
@@ -118,9 +119,24 @@ class Create(base.CreateCommand):
     cert_generation_group = parser.add_group(
         mutex=True, required=True, help='Certificate generation method.'
     )
+
+    csr_group = cert_generation_group.add_group(
+        help='To issue a certificate from a CSR use the following:',
+    )
     base.Argument(
-        '--csr', help='A PEM-encoded certificate signing request file path.'
-    ).AddToParser(cert_generation_group)
+        '--csr', help='A PEM-encoded certificate signing request file path.',
+        required=True,
+    ).AddToParser(csr_group)
+
+    base.Argument(
+        '--rdn-sequence-subject',
+        help=(
+            'If this value is set then the issued certificate will use the '
+            'subject found in the CSR preserving the exact RDN sequence.'
+        ),
+        hidden=True,
+        action='store_true',
+    ).AddToParser(csr_group)
 
     non_csr_group = cert_generation_group.add_group(
         help='Alternatively, you may describe the certificate and key to use.'
@@ -338,6 +354,10 @@ class Create(base.CreateCommand):
 
     if args.csr:
       request.certificate.pemCsr = _ReadCsr(args.csr)
+      if args.rdn_sequence_subject:
+        request.certificate.subjectMode = (
+            self.messages.Certificate.SubjectModeValueValuesEnum.RDN_SEQUENCE
+        )
     else:
       request.certificate.config = self._GenerateCertificateConfig(
           request, args

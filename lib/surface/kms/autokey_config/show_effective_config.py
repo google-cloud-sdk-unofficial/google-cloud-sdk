@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Gets the effective Cloud KMS Autokey configuration for a given project."""
+"""Gets the effective Cloud KMS AutokeyConfig for a given project."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,15 +25,15 @@ from googlecloudsdk.command_lib.kms import resource_args
 
 @base.UniverseCompatible
 class ShowEffectiveConfig(base.Command):
-  r"""Gets the effective Cloud KMS Autokey configuration for a given project.
+  r"""Gets the effective Cloud KMS AutokeyConfig for a given project.
 
-  {command} can be used to get the effective Cloud KMS Autokey configuration
-  for a given project.
+  {command} can be used to get the effective Cloud KMS AutokeyConfig for a given
+  project.
 
   ## EXAMPLES
 
-  The following command retrieves the effective Cloud KMS Autokey configuration
-  for a given project `my-project`:
+  The following command retrieves the effective Cloud KMS AutokeyConfig for a
+  given project `my-project`:
 
   $ {command} --project=my-project
 

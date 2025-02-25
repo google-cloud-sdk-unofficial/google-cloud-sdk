@@ -18,32 +18,36 @@
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Backups(base.Group):
   """Manage Looker instances.
 
   ## EXAMPLES
 
-  To create a backup of an instance with the name `my-looker-instance`, run:
+  To create a backup of an instance with the name `my-looker-instance` and in
+  the region `us-central1`, run:
 
-    $ {command} create --instance='my-looker-instance'
+    $ {command} create --instance='my-looker-instance --region=us-central1'
 
   To delete a backup with the name `looker-backup` that is a backup of an
-  instance instance with the name `my-looker-instance`, run:
+  instance with the name `my-looker-instance` and in the region `us-central1`,
+  run:
 
     $ {command} delete looker-backup --instance=my-looker-instance
+    --region=us-central1
 
   To display the details for a backup with the name `looker-backup` that is a
-  backup of an instance instance with the name `my-looker-instance`, run:
+  backup of an instance with the name `my-looker-instance` and in the region
+  `us-central1`, run:
 
     $ {command} describe looker-backup --instance=my-looker-instance
+    --region=us-central1
 
-  To list all backups of an instance instance with the name
-  `my-looker-instance`, run:
+  To list all backups of an instance with the name
+  `my-looker-instance` and in the region `us-central1`, run:
 
-    $ {command} list --instance=my-looker-instance
-
+    $ {command} list --instance=my-looker-instance  --region=us-central1
   """
+
   pass

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """All the BigQuery CLI IAM commands."""
 
-# TODO(b/324243535): Split this file into individual commands.
 
 from __future__ import absolute_import
 from __future__ import division
@@ -17,6 +16,7 @@ import bq_flags
 import bq_utils
 from clients import client_connection
 from clients import client_dataset
+from clients import client_reservation
 from clients import client_routine
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
@@ -84,7 +84,6 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         self.t,
         self.connection,
     ):
-      # TODO(b/343587607): Add routine in the usage error message.
       raise app.UsageError(
           'Cannot specify more than one of -d, -t or -connection.'
       )
@@ -124,7 +123,6 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     return reference
 
   def GetPolicyForReference(self, client, reference):
-    # TODO(b/343587607): Add routine support in the help text.
     """Get the IAM policy for a table or dataset.
 
     Args:
@@ -151,7 +149,6 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     )
 
   def SetPolicyForReference(self, client, reference, policy):
-    # TODO(b/343587607): Add routine support in the help text.
     """Set the IAM policy for a table or dataset.
 
     Args:
@@ -182,7 +179,6 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
 
 class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  # TODO(b/343587607): Add routine support in the usage text.
   usage = """get-iam-policy [(-d|-t|-connection)] <identifier>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
@@ -190,7 +186,6 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str) -> Optional[int]:
-    # TODO(b/343587607): Add routine support in the help text.
     """Get the IAM policy for a resource.
 
     Gets the IAM policy for a dataset, table or connection resource, and prints
@@ -217,7 +212,6 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
 
 class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  # TODO(b/343587607): Add routine support in the usage text.
   usage = """set-iam-policy [(-d|-t|-connection)] <identifier> <filename>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
@@ -225,7 +219,6 @@ class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str, filename: str) -> Optional[int]:
-    # TODO(b/343587607): Add routine support in the help text.
     """Set the IAM policy for a resource.
 
     Sets the IAM policy for a dataset, table or connection resource. After

@@ -54,6 +54,7 @@ class List(commands.List):
         'Namespace to list worker revisions in.',
         required=True,
         prefixes=False,
+        hidden=True,
     )
     concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
     flags.AddWorkerFlag(parser)

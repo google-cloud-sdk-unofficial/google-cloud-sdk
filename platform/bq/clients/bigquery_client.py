@@ -17,6 +17,7 @@ import urllib
 
 # To configure apiclient logging.
 from absl import flags
+import certifi
 import googleapiclient
 from googleapiclient import discovery
 import httplib2
@@ -210,7 +211,7 @@ class BigqueryClient:
 
     http = httplib2.Http(
         proxy_info=proxy_info,
-        ca_certs=flags.FLAGS.ca_certificates_file or None,
+        ca_certs=flags.FLAGS.ca_certificates_file or certifi.where(),
         disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation,
     )
 
@@ -483,6 +484,11 @@ class BigqueryClient:
         discovery_document=discovery_document, service=service
     )
 
+    bq_logging.SaveStringToLogDirectoryIfAvailable(
+        file_prefix='discovery_document',
+        content=discovery_document_to_build_client,
+        apilog=bq_flags.APILOG.value,
+    )
 
     built_client = None
     try:
@@ -647,8 +653,11 @@ class BigqueryClient:
     discovery_document = bq_api_utils.parse_discovery_doc(discovery_document)
 
     logging.info(
-        'Discovery doc loaded, considering overriding rootUrl: %s',
+        'Discovery doc routing values being considered for updates: rootUrl:'
+        ' (%s), basePath: (%s), baseUrl: (%s)',
         discovery_document['rootUrl'],
+        discovery_document['basePath'],
+        discovery_document['baseUrl'],
     )
 
     is_prod = True
@@ -661,6 +670,14 @@ class BigqueryClient:
 
     discovery_document['baseUrl'] = urllib.parse.urljoin(
         discovery_document['rootUrl'], discovery_document['servicePath']
+    )
+
+    logging.info(
+        'Discovery doc routing values post updates: rootUrl: (%s), basePath:'
+        ' (%s), baseUrl: (%s)',
+        discovery_document['rootUrl'],
+        discovery_document['basePath'],
+        discovery_document['baseUrl'],
     )
 
     return json.dumps(discovery_document)

@@ -57,6 +57,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAvailabilityType(parser)
     flags.AddInstance(parser)
     flags.AddRegion(parser)
+    flags.AddDatabaseFlags(parser)
     flags.AddSSLMode(parser, default_from_primary=True)
     flags.AddRequireConnectors(parser)
     flags.AddAssignInboundPublicIp(parser)

@@ -27,7 +27,6 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
@@ -43,11 +42,9 @@ class Patch(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     flags.AddBackupName(parser)
-    update_group = parser.add_group(required=True, hidden=True)
+    update_group = parser.add_group(required=True)
     flags.AddBackupDescription(update_group)
-    expiration_group = update_group.add_mutually_exclusive_group(
-        required=False, hidden=True
-    )
+    expiration_group = update_group.add_mutually_exclusive_group(required=False)
     flags.AddBackupExpiryTime(expiration_group)
     flags.AddBackupTtlDays(expiration_group)
 

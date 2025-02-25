@@ -52,7 +52,7 @@
           required: false
           repeated: false
           type: int
-          help_text: |
+          help_text: |-
             Number of replica nodes per shard. If omitted the default is 0 replicas.
     - group:
         mutex: true
@@ -64,7 +64,7 @@
           action: store_true
           required: false
           type: bool
-          help_text: |
+          help_text: |-
             If set to true deletion of the instance will fail.
           default: null
     - help_text: |-
@@ -142,6 +142,7 @@
         help_text: |-
           Standard small.
     - group:
+        api_field: instance.persistenceConfig
         required: false
         help_text: |-
           Represents persistence configuration for a instance.
@@ -165,6 +166,7 @@
             help_text: |-
               AOF based persistence is enabled.
         - group:
+            api_field: instance.persistenceConfig.rdbConfig
             required: false
             help_text: |-
               Configuration for RDB based persistence.
@@ -202,6 +204,7 @@
                 snapshots will be aligned. If not provided, the current time will be
                 used.
         - group:
+            api_field: instance.persistenceConfig.aofConfig
             required: false
             help_text: |-
               Configuration for AOF based persistence.
@@ -231,7 +234,7 @@
       api_field: instance.engineVersion
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         Engine version of the instance.
     - arg_name: engine-configs
       api_field: instance.engineConfigs
@@ -243,6 +246,7 @@
       - api_field: key
       - api_field: value
     - group:
+        api_field: instance.zoneDistributionConfig
         required: false
         help_text: |-
           Zone distribution configuration for allocation of instance resources.
@@ -271,26 +275,57 @@
               Provision resources in a single zone. Zone field must be specified.
     - arg_name: psc-auto-connections
       api_field: instance.pscAutoConnections
-      required: true
+      required: false
       repeated: true
-      help_text: |2-
-
+      help_text: |-
         User inputs and resource details of the auto-created PSC connections.
       spec:
       - api_field: projectId
-        help_text: |
-          The consumer project_id where the forwarding rule is created from.
+        help_text: |-
+          The consumer project_id where PSC connections are established.
+          This should be the same project_id that the instance is being created in.
       - api_field: network
         resource_pattern: projects/{project}/global/networks/{network}
         help_text: |-
-          The consumer network where the IP address resides, in the form of
+          The network where the PSC endpoints are created, in the form of
           projects/{project_id}/global/networks/{network_id}.
+    - arg_name: endpoints
+      api_field: instance.endpoints
+      required: false
+      repeated: true
+      help_text: |-
+        Endpoints for the instance.
+      spec:
+      - api_field: connections
+        help_text: |-
+          A group of PSC connections. They are created in the same VPC network, one
+          for each service attachment in the cluster.
+        spec:
+        - api_field: pscAutoConnection
+          one_of_index: 0
+          help_text: |-
+            Detailed information of a PSC connection that is created through
+            service connectivity automation.
+          spec:
+          - api_field: projectId
+            help_text: |-
+              The consumer project_id where PSC connections are established.
+              This should be the same project_id that the instance is being created in.
+          - api_field: network
+            resource_pattern: projects/{project}/global/networks/{network}
+            help_text: |-
+              The network where the PSC endpoints are created, in the form of
+              projects/{project_id}/global/networks/{network_id}.
     - arg_name: mode
       api_field: instance.mode
       required: false
       help_text: |-
         The mode config for the instance.
       choices:
+      - arg_value: standalone
+        enum_value: STANDALONE
+        help_text: |-
+          Deprecated: Use CLUSTER_DISABLED instead.
       - arg_value: cluster
         enum_value: CLUSTER
         help_text: |-

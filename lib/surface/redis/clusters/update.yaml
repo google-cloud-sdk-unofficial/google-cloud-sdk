@@ -21,6 +21,19 @@
       help_text: |
         Arguments and flags that specify the Memorystore Redis cluster you want to update.
     params:
+    - arg_name: node-type
+      api_field: cluster.nodeType
+      help_text: Node Type of the redis cluster Node.
+      choices:
+      - enum_value: REDIS_HIGHMEM_MEDIUM
+        arg_value: redis-highmem-medium
+      - enum_value: REDIS_HIGHMEM_XLARGE
+        arg_value: redis-highmem-xlarge
+      - enum_value: REDIS_STANDARD_SMALL
+        arg_value: redis-standard-small
+      - enum_value: REDIS_SHARED_CORE_NANO
+        arg_value: redis-shared-core-nano
+      hidden: true
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
@@ -156,7 +169,6 @@
               processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField
     - arg_name: ondemand-maintenance
       hidden: true
-      release_tracks: [ALPHA]
       action: store_true
       help_text: |
         Trigger an on-demand maintenance.
@@ -180,6 +192,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
     BETA:
       api_version: v1beta1
       modify_request_hooks:
@@ -191,7 +204,9 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
     GA:
       api_version: v1
       modify_request_hooks:
@@ -203,6 +218,8 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRedisConfigs
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
     collection: redis.projects.locations.clusters
 
   update:

@@ -16,6 +16,7 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
@@ -25,6 +26,37 @@ from surface.run.services import replace
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MultiRegionReplace(replace.Replace):
   """Create or Update multi-region service from YAML."""
+
+  @classmethod
+  def Args(cls, parser):
+    replace.Replace.Args(parser)
+    flags.AddRegionsArg(parser)
+    flags.AddAddRegionsArg(parser)
+    flags.AddRemoveRegionsArg(parser)
+
+  def _GetBaseChanges(self, new_service, args):
+    added_or_removed = flags.FlagIsExplicitlySet(
+        args, 'add_regions'
+    ) or flags.FlagIsExplicitlySet(args, 'remove_regions')
+    all_regions = flags.FlagIsExplicitlySet(args, 'regions')
+    if added_or_removed and all_regions:
+      raise c_exceptions.InvalidArgumentException(
+          parameter_name='--regions',
+          message=(
+              'Cannot specify --add-regions or --remove-regions with --regions'
+          ),
+      )
+    changes = super()._GetBaseChanges(new_service, args)
+    if added_or_removed:
+      changes.append(
+          config_changes.RegionsChangeAnnotationChange(
+              to_add=args.add_regions,
+              to_remove=args.remove_regions,
+          )
+      )
+    if all_regions:
+      changes.append(config_changes.SetRegionsAnnotationChange(args.regions))
+    return changes
 
   def _ConnectionContext(self, args, region_label):
     return connection_context.GetConnectionContext(

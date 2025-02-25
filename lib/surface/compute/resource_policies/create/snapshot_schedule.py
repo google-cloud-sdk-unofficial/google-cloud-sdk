@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import flags
 from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
-def _CommonArgs(parser, api_version):
+def _CommonArgs(parser, api_version, support_snapshot_region=False):
   """A helper function to build args based on different API version."""
   messages = apis.GetMessagesModule('compute', api_version)
   flags.MakeResourcePolicyArg().AddArgument(parser)
@@ -41,11 +41,12 @@ Start time for the disk snapshot schedule in UTC. For example, `--start-time="15
       cadence_help='Snapshot schedule',
       supports_weekly=True,
       supports_hourly=True)
-  flags.AddSnapshotScheduleArgs(parser, messages)
+  flags.AddSnapshotScheduleArgs(parser, messages, support_snapshot_region)
   parser.display_info.AddCacheUpdater(None)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class CreateSnapshotSchedule(base.CreateCommand):
   """Create a Compute Engine Snapshot Schedule Resource Policy."""
 
@@ -54,6 +55,9 @@ class CreateSnapshotSchedule(base.CreateCommand):
     _CommonArgs(parser, api_version=compute_api.COMPUTE_BETA_API_VERSION)
 
   def Run(self, args):
+    return self._Run(args)
+
+  def _Run(self, args, support_snapshot_region=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
@@ -64,7 +68,7 @@ class CreateSnapshotSchedule(base.CreateCommand):
 
     messages = holder.client.messages
     resource_policy = util.MakeDiskSnapshotSchedulePolicy(
-        policy_ref, args, messages)
+        policy_ref, args, messages, support_snapshot_region)
     create_request = messages.ComputeResourcePoliciesInsertRequest(
         resourcePolicy=resource_policy,
         project=policy_ref.project,
@@ -89,7 +93,16 @@ class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, api_version=compute_api.COMPUTE_ALPHA_API_VERSION)
+    _CommonArgs(
+        parser,
+        api_version=compute_api.COMPUTE_ALPHA_API_VERSION,
+        support_snapshot_region=True)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_snapshot_region=True,
+    )
 
 
 CreateSnapshotSchedule.detailed_help = {

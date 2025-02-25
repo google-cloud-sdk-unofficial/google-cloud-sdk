@@ -438,7 +438,6 @@
         arg_name: git-proxy-config
         clearable: true
         required: false
-        hidden: true
         help_text: |-
           The git proxy configuration.
         params:

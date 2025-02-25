@@ -30,9 +30,9 @@ APILOG = flags.DEFINE_string(
     'apilog',
     None,
     (
-        'Log all API requests and responses to the file specified by this flag.'
-        ' Also accepts "stdout" and "stderr". Specifying the empty string will'
-        ' direct to stdout.'
+        'Log all API requests and responses to the file or directory specified'
+        ' by this flag. Also accepts "stdout" and "stderr". Specifying the'
+        ' empty string will direct to stdout.'
     ),
 )
 
@@ -47,6 +47,32 @@ flags.register_validator(
     lambda val: val is None or not (val.startswith("'") or val.startswith('"')),
     message=(
         'The parsed api flag value should not still be wrapped with quotes.'
+    ),
+)
+
+_ALLOWED_API_PREFIXES = (
+    [
+        'https://',
+        'http://',
+    ]
+)
+
+
+def _validate_api_prefix(val: str) -> bool:
+  if not val:
+    return True
+  for prefix in _ALLOWED_API_PREFIXES:
+    if val.startswith(prefix):
+      return True
+  return False
+
+
+flags.register_validator(
+    'api',
+    _validate_api_prefix,
+    message=(
+        'The parsed api flag value must have a supported prefix:'
+        f' {", ".join(_ALLOWED_API_PREFIXES)}'
     ),
 )
 

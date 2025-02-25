@@ -69,7 +69,6 @@
       help_text: |
         Level of execution history to apply during execution.
       release_tracks: [GA]
-      hidden: true
       choices:
       - enum_value: EXECUTION_HISTORY_LEVEL_UNSPECIFIED
         arg_value: none
@@ -78,11 +77,11 @@
       - enum_value: EXECUTION_HISTORY_BASIC
         arg_value: execution-history-basic
         help_text: |
-          Enable execution history basic feature.
+          Enable basic execution history.
       - enum_value:  EXECUTION_HISTORY_DETAILED
         arg_value: execution-history-detailed
         help_text: |
-          Enable execution history detailed feature.
+          Enable detailed execution history, including expected iterations and in-scope variable values.
       default: none
     - arg_name: labels
       metavar: KEY=VALUE

@@ -82,7 +82,9 @@ class List(commands.List):
         resource_args.GetNamespaceResourceSpec(),
         'Namespace to list executions in.',
         required=True,
-        prefixes=False)
+        prefixes=False,
+        hidden=True,
+    )
     flags.AddJobFlag(parser)
     concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(

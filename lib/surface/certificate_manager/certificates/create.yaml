@@ -123,6 +123,10 @@
         help_text: |
           Certificates with scope ALL_REGIONS are currently used for
           Cross-region Internal Application Load Balancer only.
+      - arg_value: "client-auth"
+        enum_value: CLIENT_AUTH
+        help_text: |
+          Certificates with scope CLIENT_AUTH are used for client authentication.
     - arg_name: description
       api_field: certificate.description
       help_text: |

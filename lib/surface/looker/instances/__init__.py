@@ -53,6 +53,13 @@ class Instances(base.Group):
 
     $ {command} update my-looker-instance --async
 
+  To restore a backup with id of `7e504e66-c389-4d8d` that
+  belongs to an instance named `my-looker-instance`, in the region
+  `us-central1`, run:
+
+  $ {command} restore my-looker-instance --backup="7e504e66-c389-4d8"
+  --region="us-central1" --async
+
   To export an instance with the name `my-looker-instance`, run:
 
     $ {command} export my-looker-instance

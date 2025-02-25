@@ -474,6 +474,12 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
       enable_secret_manager=get_default('enable_secret_manager'),
+      enable_secret_manager_rotation=get_default(
+          'enable_secret_manager_rotation'
+      ),
+      secret_manager_rotation_interval=get_default(
+          'secret_manager_rotation_interval'
+      ),
       enable_cilium_clusterwide_network_policy=get_default(
           'enable_cilium_clusterwide_network_policy'
       ),
@@ -718,7 +724,7 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
@@ -908,7 +914,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1102,7 +1108,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlag,
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1399,6 +1405,12 @@ class CreateBeta(Create):
     ops.storage_pools = get_default('storage_pools')
     ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
     ops.enable_secret_manager = get_default('enable_secret_manager')
+    ops.enable_secret_manager_rotation = get_default(
+        'enable_secret_manager_rotation'
+    )
+    ops.secret_manager_rotation_interval = get_default(
+        'secret_manager_rotation_interval'
+    )
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
     )
@@ -1538,6 +1550,12 @@ class CreateAlpha(Create):
     ops.storage_pools = get_default('storage_pools')
     ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
     ops.enable_secret_manager = get_default('enable_secret_manager')
+    ops.enable_secret_manager_rotation = get_default(
+        'enable_secret_manager_rotation'
+    )
+    ops.secret_manager_rotation_interval = get_default(
+        'secret_manager_rotation_interval'
+    )
     ops.enable_cilium_clusterwide_networkpolicy = get_default(
         'enable_cilium_clusterwide_networkpolicy'
     )

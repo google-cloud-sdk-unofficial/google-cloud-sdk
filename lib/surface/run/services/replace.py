@@ -98,6 +98,12 @@ class Replace(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label
     )
 
+  def _GetBaseChanges(self, new_service, args):  # used by child - pylint: disable=unused-argument
+    return [
+        config_changes.ReplaceServiceChange(new_service),
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()),
+    ]
+
   def Run(self, args):
     """Create or Update service from YAML."""
     run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
@@ -149,10 +155,7 @@ class Replace(base.Command):
               'Cloud Run (fully managed).'.format(project, project_number))
     new_service.metadata.namespace = namespace
 
-    changes = [
-        config_changes.ReplaceServiceChange(new_service),
-        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
-    ]
+    changes = self._GetBaseChanges(new_service, args)
     service_ref = resources.REGISTRY.Parse(
         new_service.metadata.name,
         params={'namespacesId': new_service.metadata.namespace},

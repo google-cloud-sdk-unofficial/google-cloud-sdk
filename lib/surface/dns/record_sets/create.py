@@ -99,7 +99,6 @@ class Create(base.CreateCommand):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup(
         use_deprecated_names=cls._BetaOrAlpha(),
-        enable_internet_health_checks=cls._BetaOrAlpha(),
     ).AddToParser(parser)
     flags.GetLocationArg().AddToParser(parser)
 
@@ -127,7 +126,6 @@ class Create(base.CreateCommand):
             zone_ref.project,
             api_version,
             allow_extended_records=self._BetaOrAlpha(),
-            gcloud_version=self.ReleaseTrack(),
         ),
     )
 

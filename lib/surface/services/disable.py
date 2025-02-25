@@ -89,7 +89,7 @@ class DisableAlpha(base.SilentCommand):
     common_flags.consumer_service_flag(suffix='to disable').AddToParser(parser)
     common_flags.add_resource_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    common_flags.validate_only_args(parser)
+    common_flags.validate_only_args(parser, suffix='disable')
     parser.add_argument(
         '--force',
         action='store_true',
@@ -113,18 +113,15 @@ class DisableAlpha(base.SilentCommand):
     Returns:
       Nothing.
     """
-    if args.IsSpecified('project'):
-      project = args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-    if args.IsSpecified('folder'):
-      folder = args.folder
-    else:
-      folder = None
-    if args.IsSpecified('organization'):
-      organization = args.organization
-    else:
-      organization = None
+    project = (
+        args.project
+        if args.IsSpecified('project')
+        else properties.VALUES.core.project.Get(required=True)
+    )
+    folder = args.folder if args.IsSpecified('folder') else None
+    organization = (
+        args.organization if args.IsSpecified('organization') else None
+    )
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
@@ -146,18 +143,21 @@ class DisableAlpha(base.SilentCommand):
           validate_only=args.validate_only,
       )
 
-      if not args.validate_only:
-        if op.done:
-          continue
-        if args.async_:
-          cmd = OP_WAIT_CMD.format(op.name)
-          log.status.Print(
-              'Asynchronous operation is in progress... '
-              'Use the following command to wait for its '
-              'completion:\n {0}'.format(cmd)
-          )
-          continue
-    log.status.Print('Operation finished successfully')
+      if args.async_:
+        cmd = OP_WAIT_CMD.format(op.name)
+        log.status.Print(
+            'Asynchronous operation is in progress... Use the following'
+            f' command to wait for its completion:\n {cmd}'
+        )
+        continue
+      op = services_util.WaitOperation(
+          op.name, serviceusage.GetOperationV2Alpha
+      )
+
+      if args.validate_only:
+        services_util.PrintOperation(op)
+      else:
+        services_util.PrintOperationWithResponse(op)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
@@ -240,7 +240,7 @@ class Disable(base.SilentCommand):
         log.status.Print(
             'Asynchronous operation is in progress... '
             'Use the following command to wait for its '
-            'completion:\n {0}'.format(cmd)
+            f'completion:\n {cmd}'
         )
         continue
       op = services_util.WaitOperation(op.name, serviceusage.GetOperation)

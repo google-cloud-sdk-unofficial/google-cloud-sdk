@@ -133,9 +133,14 @@ class UpdateAlpha(base.Command):
     self._validateArgs(messages, args)
     floor_setting_updated = original
 
+    if floor_setting_updated.filterConfig is None:
+      floor_setting_updated.filterConfig = messages.FilterConfig()
+
     # Collect the list of update masks
     update_mask = []
-    if args.IsSpecified('pi_and_jailbreak_filter_settings_enforcement'):
+    if args.IsSpecified(
+        'pi_and_jailbreak_filter_settings_enforcement'
+    ) or args.IsSpecified('pi_and_jailbreak_filter_settings_confidence_level'):
       update_mask.append('filter_config.pi_and_jailbreak_filter_settings')
     if args.IsSpecified('malicious_uri_filter_settings_enforcement'):
       update_mask.append('filter_config.malicious_uri_filter_settings')
@@ -168,7 +173,7 @@ class UpdateAlpha(base.Command):
               '--add-rai-settings-filters',
               '--remove-rai-settings-filters',
               '--clear-rai-settings-filters',
-              '--enable-floor-setting-enforcement'
+              '--enable-floor-setting-enforcement',
           ],
           self.NO_CHANGES_MESSAGE.format(floor_setting=args.full_uri),
       )
@@ -210,9 +215,7 @@ class UpdateAlpha(base.Command):
               )
           )
           for _, rai_filter in enumerate(rai_filters):
-            if (
-                arg_filter_type == rai_filter.filterType
-            ):
+            if arg_filter_type == rai_filter.filterType:
               already_exists = True
               rai_filters.remove(rai_filter)
               rai_filters.append(
@@ -306,6 +309,10 @@ class UpdateAlpha(base.Command):
                   )
               )
           )
+        else:
+          floor_setting_updated.filterConfig.maliciousUriFilterSettings.filterEnforcement = messages.MaliciousUriFilterSettings.FilterEnforcementValueValuesEnum(
+              self._GetEnumValue(args.malicious_uri_filter_settings_enforcement)
+          )
 
     if 'filter_config.sdp_settings' in update_mask:
       if args.IsSpecified('basic_config_filter_enforcement'):
@@ -329,35 +336,53 @@ class UpdateAlpha(base.Command):
               )
           )
       if args.IsSpecified('advanced_config_inspect_template'):
-        floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
-        if (
-            floor_setting_updated.filterConfig.sdpSettings.advancedConfig
-            is None
-        ):
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
-              messages.SdpAdvancedConfig(
-                  inspectTemplate=args.advanced_config_inspect_template
+        if floor_setting_updated.filterConfig.sdpSettings is None:
+          floor_setting_updated.filterConfig.sdpSettings = (
+              messages.SdpFilterSettings(
+                  advancedConfig=messages.SdpAdvancedConfig(
+                      inspectTemplate=args.advanced_config_inspect_template
+                  )
               )
           )
         else:
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig.inspectTemplate = (
-              args.advanced_config_inspect_template
-          )
+          floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
+          if (
+              floor_setting_updated.filterConfig.sdpSettings.advancedConfig
+              is None
+          ):
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
+                messages.SdpAdvancedConfig(
+                    inspectTemplate=args.advanced_config_inspect_template
+                )
+            )
+          else:
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig.inspectTemplate = (
+                args.advanced_config_inspect_template
+            )
       if args.IsSpecified('advanced_config_deidentify_template'):
-        floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
-        if (
-            floor_setting_updated.filterConfig.sdpSettings.advancedConfig
-            is None
-        ):
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
-              messages.SdpAdvancedConfig(
-                  deidentifyTemplate=args.advanced_config_deidentify_template
+        if floor_setting_updated.filterConfig.sdpSettings is None:
+          floor_setting_updated.filterConfig.sdpSettings = (
+              messages.SdpFilterSettings(
+                  advancedConfig=messages.SdpAdvancedConfig(
+                      deidentifyTemplate=args.advanced_config_deidentify_template
+                  )
               )
           )
         else:
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig.deidentifyTemplate = (
-              args.advanced_config_deidentify_template
-          )
+          floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
+          if (
+              floor_setting_updated.filterConfig.sdpSettings.advancedConfig
+              is None
+          ):
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
+                messages.SdpAdvancedConfig(
+                    deidentifyTemplate=args.advanced_config_deidentify_template
+                )
+            )
+          else:
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig.deidentifyTemplate = (
+                args.advanced_config_deidentify_template
+            )
 
     if 'enable_floor_setting_enforcement' in update_mask:
       if args.IsSpecified('enable_floor_setting_enforcement'):
@@ -489,9 +514,14 @@ class Update(base.Command):
     self._validateArgs(messages, args)
     floor_setting_updated = original
 
+    if floor_setting_updated.filterConfig is None:
+      floor_setting_updated.filterConfig = messages.FilterConfig()
+
     # Collect the list of update masks
     update_mask = []
-    if args.IsSpecified('pi_and_jailbreak_filter_settings_enforcement'):
+    if args.IsSpecified(
+        'pi_and_jailbreak_filter_settings_enforcement'
+    ) or args.IsSpecified('pi_and_jailbreak_filter_settings_confidence_level'):
       update_mask.append('filter_config.pi_and_jailbreak_filter_settings')
     if args.IsSpecified('malicious_uri_filter_settings_enforcement'):
       update_mask.append('filter_config.malicious_uri_filter_settings')
@@ -524,7 +554,7 @@ class Update(base.Command):
               '--add-rai-settings-filters',
               '--remove-rai-settings-filters',
               '--clear-rai-settings-filters',
-              '--enable-floor-setting-enforcement'
+              '--enable-floor-setting-enforcement',
           ],
           self.NO_CHANGES_MESSAGE.format(floor_setting=args.full_uri),
       )
@@ -566,9 +596,7 @@ class Update(base.Command):
               )
           )
           for _, rai_filter in enumerate(rai_filters):
-            if (
-                arg_filter_type == rai_filter.filterType
-            ):
+            if arg_filter_type == rai_filter.filterType:
               already_exists = True
               rai_filters.remove(rai_filter)
               rai_filters.append(
@@ -662,6 +690,10 @@ class Update(base.Command):
                   )
               )
           )
+        else:
+          floor_setting_updated.filterConfig.maliciousUriFilterSettings.filterEnforcement = messages.MaliciousUriFilterSettings.FilterEnforcementValueValuesEnum(
+              self._GetEnumValue(args.malicious_uri_filter_settings_enforcement)
+          )
 
     if 'filter_config.sdp_settings' in update_mask:
       if args.IsSpecified('basic_config_filter_enforcement'):
@@ -685,35 +717,53 @@ class Update(base.Command):
               )
           )
       if args.IsSpecified('advanced_config_inspect_template'):
-        floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
-        if (
-            floor_setting_updated.filterConfig.sdpSettings.advancedConfig
-            is None
-        ):
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
-              messages.SdpAdvancedConfig(
-                  inspectTemplate=args.advanced_config_inspect_template
+        if floor_setting_updated.filterConfig.sdpSettings is None:
+          floor_setting_updated.filterConfig.sdpSettings = (
+              messages.SdpFilterSettings(
+                  advancedConfig=messages.SdpAdvancedConfig(
+                      inspectTemplate=args.advanced_config_inspect_template
+                  )
               )
           )
         else:
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig.inspectTemplate = (
-              args.advanced_config_inspect_template
-          )
+          floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
+          if (
+              floor_setting_updated.filterConfig.sdpSettings.advancedConfig
+              is None
+          ):
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
+                messages.SdpAdvancedConfig(
+                    inspectTemplate=args.advanced_config_inspect_template
+                )
+            )
+          else:
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig.inspectTemplate = (
+                args.advanced_config_inspect_template
+            )
       if args.IsSpecified('advanced_config_deidentify_template'):
-        floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
-        if (
-            floor_setting_updated.filterConfig.sdpSettings.advancedConfig
-            is None
-        ):
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
-              messages.SdpAdvancedConfig(
-                  deidentifyTemplate=args.advanced_config_deidentify_template
+        if floor_setting_updated.filterConfig.sdpSettings is None:
+          floor_setting_updated.filterConfig.sdpSettings = (
+              messages.SdpFilterSettings(
+                  advancedConfig=messages.SdpAdvancedConfig(
+                      deidentifyTemplate=args.advanced_config_deidentify_template
+                  )
               )
           )
         else:
-          floor_setting_updated.filterConfig.sdpSettings.advancedConfig.deidentifyTemplate = (
-              args.advanced_config_deidentify_template
-          )
+          floor_setting_updated.filterConfig.sdpSettings.basicConfig = None
+          if (
+              floor_setting_updated.filterConfig.sdpSettings.advancedConfig
+              is None
+          ):
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig = (
+                messages.SdpAdvancedConfig(
+                    deidentifyTemplate=args.advanced_config_deidentify_template
+                )
+            )
+          else:
+            floor_setting_updated.filterConfig.sdpSettings.advancedConfig.deidentifyTemplate = (
+                args.advanced_config_deidentify_template
+            )
 
     if 'enable_floor_setting_enforcement' in update_mask:
       if args.IsSpecified('enable_floor_setting_enforcement'):

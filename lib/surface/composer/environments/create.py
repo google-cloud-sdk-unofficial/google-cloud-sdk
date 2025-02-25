@@ -259,7 +259,7 @@ information on how to structure KEYs and VALUEs, run
   flags.ENABLE_TRIGGERER.AddToParser(triggerer_params_group)
 
   flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
-      parser.add_argument_group(hidden=True))
+      parser.add_argument_group())
 
 
 @base.DefaultUniverseOnly

@@ -341,13 +341,7 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'schedule',
         None,
-        'Data transfer schedule. If the data source does not support a custom '
-        'schedule, this should be empty. If empty, the default '
-        'value for the data source will be used. The specified times are in '
-        'UTC. Examples of valid format: 1st,3rd monday of month 15:30, '
-        'every wed,fri of jan,jun 13:15, and first sunday of quarter 00:00. '
-        'See more explanation about the format here: '
-        'https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format',  # pylint: disable=line-too-long
+        'Data transfer schedule. If the data source does not support a custom schedule, this should be empty. If empty, the default value for the data source will be used. The specified times are in UTC. Examples of valid format: 1st,3rd monday of month 15:30, every wed,fri of jan,jun 13:15, and first sunday of quarter 00:00. See more explanation about the format here: https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format',  # pylint: disable=line-too-long
         flag_values=fv,
     )
     flags.DEFINE_bool(
@@ -460,7 +454,8 @@ class Update(bigquery_command.BigqueryCmd):
         'staleness is allowed. Examples of valid max_staleness values: '
         '1 day: "0-0 1 0:0:0"; 1 hour: "0-0 0 1:0:0".'
         'See more explanation about the INTERVAL values: '
-        'https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type',  # pylint: disable=line-too-long
+        'https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type. '  # pylint: disable=line-too-long
+        'To use this flag, the external_table_definition flag must be set.',
         flag_values=fv,
     )
     flags.DEFINE_string(
@@ -476,9 +471,10 @@ class Update(bigquery_command.BigqueryCmd):
         'metadata_cache_mode',
         None,
         ['AUTOMATIC', 'MANUAL'],
-        'Enables metadata cache for an external table with a connection. '
-        'Specify AUTOMATIC to automatically refresh the cached metadata. '
-        'Specify MANUAL to stop the automatic refresh.',
+        'Enables metadata cache for an external table with a connection.'
+        ' Specify AUTOMATIC to automatically refresh the cached metadata.'
+        ' Specify MANUAL to stop the automatic refresh. To use this flag, the'
+        ' external_table_definition flag must be set.',
         flag_values=fv,
     )
     flags.DEFINE_enum(
@@ -665,9 +661,7 @@ class Update(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'add_tags',
         None,
-        'Tags to attach to the dataset or table.'
-        'The format is namespaced key:value pair '
-        'like "1234567/my_tag_key:my_tag_value,test-project123/environment:production"',  # pylint: disable=line-too-long
+        'Tags to attach to the dataset or table.The format is namespaced key:value pair like "1234567/my_tag_key:my_tag_value,test-project123/environment:production"',  # pylint: disable=line-too-long
         flag_values=fv,
     )
     flags.DEFINE_string(

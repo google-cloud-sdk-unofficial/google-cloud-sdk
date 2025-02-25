@@ -513,7 +513,7 @@ class BaseRecognizer(object):
     pass
 
   def computeErrorRecoverySet(self):
-    """
+    r"""
         Compute the error recovery set for the current rule.  During
         rule invocation, the parser pushes the set of tokens that can
         follow that rule reference on the stack; this amounts to

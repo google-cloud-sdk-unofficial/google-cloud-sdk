@@ -28,7 +28,7 @@ from googlecloudsdk.core import resources
 
 @base.UniverseCompatible
 class Create(base.CreateCommand):
-  """Create a new key handle.
+  """Create a new KeyHandle.
 
   Creates a new KeyHandle, triggering the provisioning of a new CryptoKey for
   CMEK use with the given resource type in the configured key project and the
@@ -36,13 +36,13 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  The following command creates a key handle named `my-key-handle` within the
+  The following command creates a KeyHandle named `my-key-handle` within the
   location `global` for the resource type `compute.googleapis.com/Disk`:
 
     $ {command} --key-handle-id=my-key-handle --my-key-handle --location=global
     --resource-type=compute.googleapis.com/Disk
 
-  In case we want to generate a random key handle id, we can use the
+  In case we want to generate a random KeyHandle id, we can use the
   `--generate-key-handle-id` flag instead of the `--key-handle-id` flag.
   """
 
@@ -80,7 +80,7 @@ class Create(base.CreateCommand):
             client.projects_locations_operations,
         ),
         operation_ref,
-        'Waiting for key handle to be created.',
+        'Waiting for KeyHandle to be created.',
     )
 
     log.CreatedResource(created_key_handle.name, kind='KeyHandle')

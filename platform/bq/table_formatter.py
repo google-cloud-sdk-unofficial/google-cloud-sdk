@@ -295,8 +295,10 @@ class PrettyFormatter(TableFormatter):
       FormatterException: If there are too many lines in entry.
       ValueError: If the valign is invalid.
     """
-    entry_lines = [PrettyFormatter.Abbreviate(line, cell_width)
-                   for line in entry.split('\n')]
+    entry_lines = [
+        PrettyFormatter.Abbreviate(line, cell_width)
+        for line in (entry.splitlines() or [''])
+    ]
     if len(entry_lines) > cell_height:
       raise FormatterException('Too many lines (%s) for a cell of size %s' % (
           len(entry_lines), cell_height))
@@ -398,7 +400,7 @@ class PrettyFormatter(TableFormatter):
     """
     if len(row) != len(self.column_names):
       raise FormatterException('Invalid row length: %s' % (len(row),))
-    split_rows = [str(entry).split('\n') for entry in row]
+    split_rows = [(str(entry).splitlines() or ['']) for entry in row]
     self.row_heights.append(max(len(lines) for lines in split_rows))
     column_widths = (
         max(wcwidth.wcswidth(line) for line in entry) for entry in split_rows)
@@ -424,7 +426,7 @@ class PrettyFormatter(TableFormatter):
           'Cannot add a new column to an initialized table')
     if align not in ('l', 'c', 'r'):
       raise FormatterException('Invalid column alignment: %s' % (align,))
-    lines = str(column_name).split('\n')
+    lines = str(column_name).splitlines() or ['']
     self.column_widths.append(max(wcwidth.wcswidth(line) for line in lines))
     self.column_alignments.append(align)
     self.column_names.append(column_name)

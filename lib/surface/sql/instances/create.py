@@ -148,6 +148,8 @@ def AddBaseArgs(parser):
   flags.AddEnableDataplexIntegration(parser)
   flags.AddPscAutoConnections(parser)
   flags.AddServerCaMode(parser)
+  flags.AddTags(parser)
+
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
   # settings to create a new instance, allowing users to override some settings.
@@ -174,7 +176,6 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolingQueryWaitTimeout(parser)
   flags.AddCustomSubjectAlternativeNames(parser)
   flags.AddServerCaPool(parser)
-  flags.AddTags(parser)
 
 
 def AddAlphaArgs(unused_parser):

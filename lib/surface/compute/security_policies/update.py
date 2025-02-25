@@ -54,7 +54,7 @@ class UpdateGa(base.UpdateCommand):
     flags.AddCloudArmorAdaptiveProtection(parser)
     flags.AddAdvancedOptions(parser)
     flags.AddRecaptchaOptions(parser)
-    flags.AddDdosProtectionConfig(parser)
+    flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.

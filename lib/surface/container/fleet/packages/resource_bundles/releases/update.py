@@ -59,19 +59,23 @@ class Update(base.UpdateCommand):
           Can optionally be paired with the ``--variants-pattern'' arg to create
           multiple variants of a Release.""",
     )
-    parser.add_argument(
-        '--update-mask',
-        required=False,
-        help='Mask denoting which fields to update.',
-    )
 
   def Run(self, args):
     """Run the update command."""
     client = apis.ReleasesClient()
-    glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
-        args.source, args.variants_pattern
-    )
-    variants = utils.VariantsFromGlobPattern(glob_pattern)
+    update_mask_attrs = []
+    if args.source:
+      glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
+          args.source, args.variants_pattern
+      )
+      variants = utils.VariantsFromGlobPattern(glob_pattern)
+      update_mask_attrs.append('variants')
+    else:
+      variants = None
+
+    if args.lifecycle:
+      update_mask_attrs.append('lifecycle')
+    update_mask = ','.join(update_mask_attrs)
 
     return client.Update(
         release=args.release,
@@ -80,5 +84,5 @@ class Update(base.UpdateCommand):
         resource_bundle=args.resource_bundle,
         lifecycle=args.lifecycle,
         variants=variants,
-        update_mask=args.update_mask,
+        update_mask=update_mask,
     )

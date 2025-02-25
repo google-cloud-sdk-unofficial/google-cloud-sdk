@@ -21,12 +21,18 @@ def GetUniqueSuffix() -> str:
   return _UNIQUE_SUFFIX
 
 
-def GetLogDirectory() -> Optional[str]:
+def GetLogDirectory(apilog: Optional[str] = None) -> Optional[str]:
   """Returns a directory to log to."""
-  if 'TEST_UNDECLARED_OUTPUTS_DIR' in os.environ:
+  if apilog and os.path.isdir(apilog):
+    full_path = apilog
+  # If this is a blaze test put the logs in a directory that will be seen in the
+  # artifact tab in the sponge UI.
+  elif 'TEST_UNDECLARED_OUTPUTS_DIR' in os.environ:
     full_path = os.path.join(
         os.environ['TEST_UNDECLARED_OUTPUTS_DIR'], 'bq_logs'
     )
+  # If this is a Kokoro test put the logs in a directory that will be seen in
+  # the artifact tab in the sponge UI.
   elif 'KOKORO_ARTIFACTS_DIR' in os.environ:
     full_path = os.path.join(os.environ['KOKORO_ARTIFACTS_DIR'], 'bq_logs')
   else:
@@ -35,11 +41,13 @@ def GetLogDirectory() -> Optional[str]:
   return full_path
 
 
-def SaveStringToLogDirectoryIfTest(
-    file_prefix: str, content: Union[str, bytes]
-):
+def SaveStringToLogDirectoryIfAvailable(
+    file_prefix: str,
+    content: Union[str, bytes],
+    apilog: Optional[str] = None,
+) -> None:
   """Saves string content to a file in the log directory."""
-  log_dir = GetLogDirectory()
+  log_dir = GetLogDirectory(apilog)
   if not log_dir:
     return
 
@@ -68,19 +76,13 @@ def ConfigurePythonLogger(apilog: Optional[str] = None):
       log to sys.stderr, specify 'stderr'. To log to a file, specify the file
       path. Specify None to disable logging.
   """
-  final_log_message = ''
+  log_messages = []
   if apilog is None:
-    log_dir = GetLogDirectory()
-    if log_dir:
-      unique_suffix = GetUniqueSuffix()
-      apilog = os.path.join(
-          log_dir,
-          f'bq_cli{unique_suffix}.log',
-      )
-      final_log_message = (
-          'No logging set and TEST_UNDECLARED_OUTPUTS_DIR is set so we are'
-          f' in a test environment and will log to file: {apilog}.'
-      )
+    apilog = GetLogDirectory()
+    log_messages.append(
+        'No logging set and we are in a test environment, logs will be in a'
+        ' directory based on the test environment.'
+    )
   if apilog is None:
     # Effectively turn off logging.
     logging.debug(
@@ -93,6 +95,12 @@ def ConfigurePythonLogger(apilog: Optional[str] = None):
     elif apilog == 'stderr':
       _SetLogFile(sys.stderr)
     elif apilog:
+      if os.path.isdir(apilog):
+        log_messages.append(f'Logging to directory: {apilog}')
+        apilog = os.path.join(
+            apilog,
+            f'bq_cli_{GetUniqueSuffix()}.log',
+        )
       _SetLogFile(open(apilog, 'a'))
     else:
       logging.basicConfig(level=logging.INFO)
@@ -103,8 +111,8 @@ def ConfigurePythonLogger(apilog: Optional[str] = None):
       flags.FLAGS.dump_request_response = True
     else:
       model.dump_request_response = True
-  if final_log_message:
-    logging.info(final_log_message)
+  for log in log_messages:
+    logging.info(log)
 
 
 def EncodeForPrinting(o: object) -> str:

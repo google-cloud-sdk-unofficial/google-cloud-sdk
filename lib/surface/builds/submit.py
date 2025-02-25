@@ -43,16 +43,18 @@ def _CommonArgs(parser):
       default='.',  # By default, the current directory is used.
       help=(
           'The location of the source to build. The location can be a directory'
-          ' on a local disk, a gzipped archive file (.tar.gz) in Google Cloud'
-          ' Storage, or a Git repo url starting with http:// or https://. If'
-          ' the source is a local directory, this command skips the files'
-          ' specified in the `--ignore-file`. If `--ignore-file` is not'
-          ' specified, use`.gcloudignore` file. If a `.gcloudignore` file is'
-          ' absent and a `.gitignore` file is present in the local source'
-          ' directory, gcloud will use a generated Git-compatible'
-          ' `.gcloudignore` file that respects your .gitignored files. The'
-          ' global `.gitignore` is not respected. For more information on'
-          ' `.gcloudignore`, see `gcloud topic gcloudignore`.'
+          ' on a local disk, an archive file (e.g., .zip, .tar.gz) or a'
+          ' manifest file (.json) in Google Cloud Storage, a Git repo url'
+          ' starting with http:// or https://, a 2nd-gen Cloud Build repository'
+          ' resource, or a Developer Connect GitRepositoryLink resource. If the'
+          ' source is a local directory, this command skips the files specified'
+          ' in the `--ignore-file`. If `--ignore-file` is not specified,'
+          ' use`.gcloudignore` file. If a `.gcloudignore` file is absent and a'
+          ' `.gitignore` file is present in the local source directory, gcloud'
+          ' will use a generated Git-compatible `.gcloudignore` file that'
+          ' respects your .gitignored files. The global `.gitignore` is not'
+          ' respected. For more information on `.gcloudignore`, see `gcloud'
+          ' topic gcloudignore`.'
       ),
   )
   source.add_argument(
@@ -143,6 +145,7 @@ https://git-scm.com/docs/gitrevisions#_specifying_revisions. For information on
   return worker_pools
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Submit(base.CreateCommand):
   """Submit a build using Cloud Build.
@@ -170,6 +173,10 @@ class Submit(base.CreateCommand):
       using config file `config.yaml`:
 
         $ {command} "gs://bucket/object.zip" --tag=gcr.io/my-project/image --config=config.yaml
+
+      To submit a build with source from a source manifest:
+
+        $ {command} "gs://bucket/manifest.json" --tag=gcr.io/my-project/image --config=config.yaml
 
       To submit a build with local source `source.tgz` asynchronously:
 

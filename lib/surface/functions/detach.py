@@ -25,13 +25,18 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DetachBeta(base.Command):
-  """Detach a GCF 2nd gen function from GCF and make it a native Cloud Run function."""
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Detach(base.Command):
+  """Detach a Cloud Functions v2 function from its existing environment and make it a native Cloud Run function."""
 
   @staticmethod
   def Args(parser):
-    flags.AddFunctionResourceArg(parser, 'to detach')
+    flags.AddFunctionResourceArg(
+        parser,
+        help_text_override=(
+            'The name of the Cloud Functions v2 function to detach.'
+        ),
+    )
 
   def Run(self, args):
     client = client_v2.FunctionsClient(self.ReleaseTrack())
@@ -43,7 +48,8 @@ class DetachBeta(base.Command):
         ' Cloud Functions API (cloudfunctions.googleapis.com). Detached'
         ' functions continue to serve traffic, and retain the'
         ' `cloudfunctions.net` URL. You can only manage your detached'
-        ' functions using the Cloud Run API or the `gcloud run <command>`. '
+        ' functions using the Cloud Run Admin API or the `gcloud run'
+        ' <command>`. '
     )
     if console_io.CanPrompt():
       console_io.PromptContinue(message, default=True, cancel_on_no=True)
@@ -82,6 +88,11 @@ class DetachBeta(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DetachBeta(Detach):
+  """Detach a Cloud Functions v2 function from its existing environment and make it a native Cloud Run function."""
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DetachAlpha(DetachBeta):
-  """Detach a GCF 2nd gen function from GCF and make it a native Cloud Run function."""
+  """Detach a Cloud Functions v2 function from its existing environment and make it a native Cloud Run function."""

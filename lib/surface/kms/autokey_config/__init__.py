@@ -25,9 +25,11 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class AutokeyConfig(base.Group):
-  """Update and retrieve the Autokey Config.
+  """Update and retrieve the AutokeyConfig.
 
   Autokey config is a folder level resource which configures the key project
   for the folder and the resources inside it.

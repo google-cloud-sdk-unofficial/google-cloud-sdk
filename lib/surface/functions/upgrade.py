@@ -63,10 +63,10 @@ _SETUP_CONFIG_ACTION = UpgradeAction(
         ' function.'
     ),
     success_msg=(
-        'The 2nd gen function is now ready for testing. View the function'
-        ' upgrade testing guide for steps on how to test the function before'
-        ' redirecting traffic to it.\n\nOnce you are ready to redirect traffic,'
-        ' rerun this command with the --redirect-traffic flag.'
+        'The 2nd gen function is now ready for testing:\n  {}.\nView the'
+        ' function upgrade testing guide for steps on how to test the function'
+        ' before redirecting traffic to it.\n\nOnce you are ready to redirect'
+        ' traffic, rerun this command with the --redirect-traffic flag.'
     )
     + '\n\n'
     + _ABORT_GUIDANCE_MSG,
@@ -159,7 +159,7 @@ _VALID_TRANSITION_ACTIONS = {
         _ABORT_ACTION,
     ],
     'COMMIT_FUNCTION_UPGRADE_SUCCESSFUL': [],
-    'COMMIT_FUNCTION_UPGRADE_ERROR': [_COMMIT_ACTION, _ABORT_ACTION],
+    'COMMIT_FUNCTION_UPGRADE_ERROR': [_COMMIT_ACTION],
 }  # type: dict[str, UpgradeAction]
 
 
@@ -289,16 +289,31 @@ class UpgradeAlpha(base.Command):
           'artifactregistry.googleapis.com'
       )
       trigger = function.eventTrigger
+      if not trigger and args.trigger_service_account:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--trigger-service-account',
+            'Trigger service account can only be specified for'
+            ' event-triggered functions.',
+        )
       if trigger and trigger_types.IsPubsubType(trigger.eventType):
         deploy_util.ensure_pubsub_sa_has_token_creator_role()
       if trigger and trigger_types.IsAuditLogType(trigger.eventType):
         deploy_util.ensure_data_access_logs_are_enabled(trigger.eventFilters)
+      operation = action_fn(function_name, args.trigger_service_account)
+    else:
+      operation = action_fn(function_name)
 
-    operation = action_fn(function_name)
     description = action.op_description
     api_util.WaitForOperation(
         client.client, client.messages, operation, description
     )
 
     log.status.Print()
-    log.status.Print(action.success_msg)
+
+    if action == _SETUP_CONFIG_ACTION:
+      function = client.GetFunction(function_name)
+      log.status.Print(
+          action.success_msg.format(function.upgradeInfo.serviceConfig.uri)
+      )
+    else:
+      log.status.Print(action.success_msg)

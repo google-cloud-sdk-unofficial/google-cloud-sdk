@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.12",
+  "CLI_VERSION": "2.1.13",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -514,7 +514,7 @@
       "attr": {},
       "category": "",
       "default": "",
-      "description": "Log all API requests and responses to the file specified by this flag. Also accepts \"stdout\" and \"stderr\". Specifying the empty string will direct to stdout.",
+      "description": "Log all API requests and responses to the file or directory specified by this flag. Also accepts \"stdout\" and \"stderr\". Specifying the empty string will direct to stdout.",
       "group": "",
       "is_global": true,
       "is_hidden": false,

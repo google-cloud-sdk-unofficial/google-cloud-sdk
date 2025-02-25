@@ -55,6 +55,7 @@ class List(commands.List):
         'Namespace to list workers in.',
         required=True,
         prefixes=False,
+        hidden=True,
     )
     concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
 

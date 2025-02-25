@@ -55,6 +55,8 @@ auto_flags = [
     'containerdConfig',
     'labels',
     'secretManagerConfig',
+    'secretManagerRotationConfig',
+    'secretManagerRotationPeriod',
     'enableCiliumClusterwideNetworkPolicy',
     'cpDiskEncryptionKey',
     'disableL4LbFirewallReconciliation',

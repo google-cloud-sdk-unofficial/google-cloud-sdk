@@ -38,6 +38,10 @@ arguments:
   - arg_name: description
     api_field: multicastGroupConsumerActivation.description
     help_text: The description for the multicast group consumer activation.
+  - arg_name: enable-logging
+    api_field: multicastGroupConsumerActivation.logConfig.enabled
+    help_text: Whether to enable logging for this multicast group consumer activation.
+    action: store_true_false
   labels:
     api_field: multicastGroupConsumerActivation.labels
 async:

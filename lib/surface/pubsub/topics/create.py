@@ -260,20 +260,11 @@ def _Run(args, legacy_output=False):
 
 def _Args(
     parser,
-    include_ingestion_from_azure_event_hubs_flags=False,
-    include_ingestion_from_aws_msk_flags=False,
-    include_ingestion_from_confluent_cloud_flags=False,
 ):
   """Custom args implementation.
 
   Args:
     parser: The current parser.
-    include_ingestion_from_azure_event_hubs_flags: Whether to include ingestion
-      from Azure Event Hubs.
-    include_ingestion_from_aws_msk_flags: Whether to include ingestion from AWS
-      MSK flags.
-    include_ingestion_from_confluent_cloud_flags: Whether to include ingestion
-      from Confluent Cloud flags.
   """
 
   resource_args.AddResourceArgs(
@@ -284,9 +275,6 @@ def _Args(
   flags.AddIngestionDatasourceFlags(
       parser,
       is_update=False,
-      include_ingestion_from_azure_event_hubs_flags=include_ingestion_from_azure_event_hubs_flags,
-      include_ingestion_from_aws_msk_flags=include_ingestion_from_aws_msk_flags,
-      include_ingestion_from_confluent_cloud_flags=include_ingestion_from_confluent_cloud_flags,
   )
 
   labels_util.AddCreateLabelsFlags(parser)
@@ -309,9 +297,6 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=False,
-        include_ingestion_from_aws_msk_flags=False,
-        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -326,9 +311,6 @@ class CreateBeta(Create):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=False,
-        include_ingestion_from_aws_msk_flags=False,
-        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -344,8 +326,5 @@ class CreateAlpha(CreateBeta):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=True,
-        include_ingestion_from_aws_msk_flags=True,
-        include_ingestion_from_confluent_cloud_flags=True,
     )
     flags.AddMessageTransformsFlags(parser)

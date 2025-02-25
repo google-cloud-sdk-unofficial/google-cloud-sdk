@@ -21,15 +21,17 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import stages
+from googlecloudsdk.command_lib.run.printers.v2 import instance_split_printer
 from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
+from googlecloudsdk.command_lib.run.v2 import instance_split
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
+from googlecloudsdk.core.resource import resource_printer
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AdjustInstanceSplit(base.Command):
@@ -84,6 +86,15 @@ class AdjustInstanceSplit(base.Command):
     flags.AddUpdateInstanceSplitFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
 
+    resource_printer.RegisterFormatter(
+        instance_split_printer.INSTANCE_SPLIT_PRINTER_FORMAT,
+        instance_split_printer.InstanceSplitPrinter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(
+        instance_split_printer.INSTANCE_SPLIT_PRINTER_FORMAT
+    )
+
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
@@ -134,5 +145,4 @@ class AdjustInstanceSplit(base.Command):
         pretty_print.Success('Updating instance split asynchronously.')
       else:
         response.result()  # Wait for the operation to complete.
-        # TODO: b/366115709 - Add printer class to show instance split status.
-        return response.operation
+        return instance_split.GetInstanceSplitPairs(response.metadata)

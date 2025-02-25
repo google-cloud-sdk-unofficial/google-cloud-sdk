@@ -101,7 +101,6 @@ def _prompt_user_to_confirm_advancing_the_relocation(bucket_name):
 
 # TODO: b/361729720 - Make bucket-relocate command group universe compatible.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Relocate(base.Command):
   """Relocates bucket between different locations."""
 

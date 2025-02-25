@@ -89,7 +89,7 @@ class Update(base.Command):
         Update.update_type_group)
 
     flags.AIRFLOW_DATABASE_RETENTION_DAYS.AddToParser(
-        Update.update_type_group.add_argument_group(hidden=True)
+        Update.update_type_group.add_argument_group()
     )
 
     flags.AddScheduledSnapshotFlagsToGroup(Update.update_type_group)

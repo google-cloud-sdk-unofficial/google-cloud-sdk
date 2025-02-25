@@ -64,7 +64,6 @@ class Update(base.UpdateCommand):
     flags.GetResourceRecordSetsTtlArg(False).AddToParser(parser)
     flags.GetResourceRecordSetsRrdatasArgGroup(
         use_deprecated_names=cls._IsBetaOrAlpha(),
-        enable_internet_health_checks=cls._IsBetaOrAlpha(),
     ).AddToParser(parser)
 
     parser.display_info.AddCacheUpdater(None)
@@ -88,7 +87,6 @@ class Update(base.UpdateCommand):
         zone_ref.project,
         api_version,
         allow_extended_records=self._IsBetaOrAlpha(),
-        gcloud_version=self.ReleaseTrack(),
     )
 
     request = messages.DnsResourceRecordSetsPatchRequest(

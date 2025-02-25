@@ -44,14 +44,12 @@ class Create(base.CreateCommand):
   A VPN Gateway can reference one or more VPN tunnels that connect it to
   external VPN gateways or Cloud VPN Gateways.
   """
-  detailed_help = {
-      'EXAMPLES':
-          """\
+
+  detailed_help = {'EXAMPLES': """\
           To create a VPN gateway, run:
 
               $ {command} my-vpn-gateway --region=us-central1 --network=default
-          """
-  }
+          """}
 
   @classmethod
   def Args(cls, parser):
@@ -90,8 +88,9 @@ class Create(base.CreateCommand):
         gateway_ip_version=args.gateway_ip_version,
     )
     operation_ref = helper.Create(vpn_gateway_ref, vpn_gateway_to_insert)
-    return helper.WaitForOperation(vpn_gateway_ref, operation_ref,
-                                   'Creating VPN Gateway')
+    return helper.WaitForOperation(
+        vpn_gateway_ref, operation_ref, 'Creating VPN Gateway'
+    )
 
   def _mapInterconnectAttachments(self, args, resources, region, project):
     """Returns dict {interfaceId : interconnectAttachmentUrl} based on initial order of names in input interconnectAttachmentName and region and project of VPN Gateway.
@@ -103,15 +102,21 @@ class Create(base.CreateCommand):
       project: VPN Gateway project.
     """
     attachment_refs = args.interconnect_attachments
-    result = {
-        0:
-            flags.GetInterconnectAttachmentRef(resources, attachment_refs[0],
-                                               region, project).SelfLink(),
-        1:
-            flags.GetInterconnectAttachmentRef(resources, attachment_refs[1],
-                                               region, project).SelfLink()
-    }
-    return result
+    if len(attachment_refs) == 1:
+      return {
+          0: flags.GetInterconnectAttachmentRef(
+              resources, attachment_refs[0], region, project
+          ).SelfLink()
+      }
+    else:
+      return {
+          0: flags.GetInterconnectAttachmentRef(
+              resources, attachment_refs[0], region, project
+          ).SelfLink(),
+          1: flags.GetInterconnectAttachmentRef(
+              resources, attachment_refs[1], region, project
+          ).SelfLink(),
+      }
 
   def Run(self, args):
     """See base.CreateCommand."""

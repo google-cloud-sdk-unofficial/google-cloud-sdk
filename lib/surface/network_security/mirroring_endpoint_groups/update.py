@@ -55,7 +55,8 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Mirroring Endpoint Group."""
 
@@ -72,10 +73,7 @@ class Update(base.UpdateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
-    # TODO(b/381836581): Remove this check once the description field is
-    # available in beta.
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      endpoint_group_flags.AddDescriptionArg(parser)
+    endpoint_group_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddUpdateLabelsFlags(parser)

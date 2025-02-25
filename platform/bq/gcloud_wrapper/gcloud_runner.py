@@ -10,15 +10,25 @@ import bq_utils
 from pyglib import resources
 
 
+_gcloud_path = None
+
+
 def _get_gcloud_path() -> str:
   """Returns the string to use to call gcloud."""
+  global _gcloud_path
+  if _gcloud_path:
+    logging.info('Found cached gcloud path: %s', _gcloud_path)
+    return _gcloud_path
+
   if 'nt' == os.name:
     binary = 'gcloud.cmd'
   else:
     binary = 'gcloud'
   if bq_utils.IS_TPC_BINARY:
     binary = resources.GetResourceFilename('google3/cloud/sdk/gcloud/' + binary)
+
   logging.info('Found gcloud path: %s', binary)
+  _gcloud_path = binary
   return binary
 
 

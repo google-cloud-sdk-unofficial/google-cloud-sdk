@@ -2771,7 +2771,7 @@ TableInfo = _reflection.GeneratedProtocolMessageType('TableInfo', (_message.Mess
   
   Attributes:
       friendly_name:
-          A short name for the table, such as\ ``"Analytics Data - Jan
+          A short name for the table, such as ``"Analytics Data - Jan
           2011"``.
       description:
           A long description, perhaps several paragraphs, describing the
@@ -2842,7 +2842,7 @@ DatasetInfo = _reflection.GeneratedProtocolMessageType('DatasetInfo', (_message.
   
   Attributes:
       friendly_name:
-          A short name for the dataset, such as\ ``"Analytics Data
+          A short name for the dataset, such as ``"Analytics Data
           2011"``.
       description:
           A long description, perhaps several paragraphs, describing the

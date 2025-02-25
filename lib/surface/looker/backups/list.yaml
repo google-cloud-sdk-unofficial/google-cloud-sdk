@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
@@ -8,9 +8,9 @@
 
       To specify the maximum number of backups to list, use the --limit flag.
     examples: |
-      To list up to five backups, of a Looker instance named `my-looker-instance` run:
+      To list up to five backups, of a Looker instance named `my-looker-instance` in the region `us-central1` run:
 
-      $ {command} --instance='my-looker-instance' --limit=5
+      $ {command} --instance='my-looker-instance' --limit=5 --region='us-central1'
 
   arguments:
     resource:
@@ -19,7 +19,10 @@
         The instance of the backups to display.
 
   request:
-    api_version: v1alpha2
+    ALPHA:
+      api_version: v1alpha2
+    GA:
+      api_version: v1
     collection: looker.projects.locations.instances.backups
 
   response:
@@ -30,6 +33,6 @@
       table(
         name.basename():label=NAME:sort=2,
         state:label=STATUS,
-        createTime.date(),
+        createTime.date():sort=1:reverse,
         expireTime.date()
       )

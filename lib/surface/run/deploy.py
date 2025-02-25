@@ -41,7 +41,6 @@ from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_change_validators
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
-from googlecloudsdk.command_lib.run.integrations import run_apps_operations
 from googlecloudsdk.command_lib.util.args import map_util
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
@@ -78,21 +77,18 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
+  group.AddArgument(flags.AddCommandAndFunctionFlag())
+  group.AddArgument(flags.BaseImageArg())
+  group.AddArgument(flags.AutomaticUpdatesFlag())
+  group.AddArgument(flags.BuildServiceAccountMutexGroup())
+  group.AddArgument(flags.BuildWorkerPoolMutexGroup())
+  group.AddArgument(flags.MutexBuildEnvVarsFlags())
+  group.AddArgument(flags.SourceAndImageFlags(mutex=False))
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
-    group.AddArgument(flags.AddCommandAndFunctionFlag())
-    group.AddArgument(flags.BaseImageArg())
-    group.AddArgument(flags.AutomaticUpdatesFlag())
-    group.AddArgument(flags.BuildServiceAccountMutexGroup())
-    group.AddArgument(flags.BuildWorkerPoolMutexGroup())
-    group.AddArgument(flags.MutexBuildEnvVarsFlags())
     group.AddArgument(flags.StartupProbeFlag())
     group.AddArgument(flags.LivenessProbeFlag())
-    group.AddArgument(flags.SourceAndImageFlags(mutex=False))
-  else:
-    group.AddArgument(flags.CommandFlag())
-    group.AddArgument(flags.SourceAndImageFlags())
 
   return group
 
@@ -397,9 +393,7 @@ class Deploy(base.Command):
     logging.debug('source_bucket: %s', source_bucket)
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
-    is_function = (
-        self.ReleaseTrack() != base.ReleaseTrack.GA and container_args.function
-    )
+    is_function = container_args.function
 
     # Get the AR repo from flags or annotations if they exist, otherwise return
     # the repository to create by default.
@@ -442,7 +436,7 @@ class Deploy(base.Command):
             ' the base image.',
         )
     else:
-      pack, changes = _CreateBuildPack(container_args, self.ReleaseTrack())
+      pack, changes = _CreateBuildPack(container_args)
       build_type = BuildType.BUILDPACKS
     image = None if pack else container_args.image
 
@@ -515,7 +509,7 @@ class Deploy(base.Command):
       object to create by default if none provided.
     """
     repo_to_create = None
-    if container_args.image and self.ReleaseTrack() != base.ReleaseTrack.GA:
+    if container_args.image:
       docker_string = _ValidateArRepository(
           container_args.image, already_activated_services
       )
@@ -523,10 +517,7 @@ class Deploy(base.Command):
           container_args.image, service_ref.servicesId
       )
       return docker_string, repo_to_create
-    elif (
-        annotated_build_image_uri
-        and self.ReleaseTrack() != base.ReleaseTrack.GA
-    ):
+    elif annotated_build_image_uri:
       docker_string = _ValidateArRepository(
           annotated_build_image_uri, already_activated_services
       )
@@ -594,11 +585,16 @@ class Deploy(base.Command):
       allow_unauth,
       has_latest,
   ):
+    include_validate_service = bool(
+        build_from_source
+    ) and self.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
-        include_validate_service=bool(build_from_source)
-        and self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+        include_validate_service=include_validate_service,
         include_build=bool(build_from_source),
         include_create_repo=repo_to_create is not None,
     )
@@ -732,14 +728,11 @@ class Deploy(base.Command):
             already_activated_services,
             service,
         )
-        # TODO(b/378743067): remove this check once the validation is promoted
-        # to GA.
-        if self.ReleaseTrack() != base.ReleaseTrack.GA:
-          build_util.ValidateBuildServiceAccountAndPromptWarning(
-              project_id=properties.VALUES.core.project.Get(required=True),
-              region=flags.GetRegion(args),
-              build_service_account=build_service_account,
-          )
+        build_util.ValidateBuildServiceAccountAndPromptWarning(
+            project_id=properties.VALUES.core.project.Get(required=True),
+            region=flags.GetRegion(args),
+            build_service_account=build_service_account,
+        )
       # Deploy a container with an image
       changes = self._GetBaseChanges(args)
       changes.extend(build_changes)
@@ -867,29 +860,28 @@ def _ValidateServiceNameFromImage(image_uri, service_id):
     )
 
 
-def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
+def _CreateBuildPack(container):
   """A helper method to cofigure buildpack."""
   pack = [{'image': container.image}]
   changes = []
   source = container.source
   project_toml_file = source + '/' + _PROJECT_TOML_FILE_NAME
-  if release_track != base.ReleaseTrack.GA:
-    command_arg = getattr(container, 'command', None)
-    function_arg = getattr(container, 'function', None)
-    if command_arg is not None:
-      command = ' '.join(command_arg)
-      pack[0].update(
-          {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
-      )
-    elif function_arg is not None:
-      pack[0].update({
-          'envs': [
-              'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
-              'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
-          ]
-      })
-    if os.path.exists(project_toml_file):
-      pack[0].update({'project_descriptor': _PROJECT_TOML_FILE_NAME})
+  command_arg = getattr(container, 'command', None)
+  function_arg = getattr(container, 'function', None)
+  if command_arg is not None:
+    command = ' '.join(command_arg)
+    pack[0].update(
+        {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
+    )
+  elif function_arg is not None:
+    pack[0].update({
+        'envs': [
+            'GOOGLE_FUNCTION_SIGNATURE_TYPE=http',
+            'GOOGLE_FUNCTION_TARGET={target}'.format(target=function_arg),
+        ]
+    })
+  if os.path.exists(project_toml_file):
+    pack[0].update({'project_descriptor': _PROJECT_TOML_FILE_NAME})
   return pack, changes
 
 
@@ -1115,7 +1107,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.AddRegionsArg(parser)
-    flags.AddDomainArg(parser)
     flags.AddGpuTypeFlag(parser)
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
@@ -1124,85 +1115,6 @@ class AlphaDeploy(BetaDeploy):
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)
-
-  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
-    if self.__is_multi_region:
-      allow_unauth = flags.GetAllowUnauthenticated(
-          args,
-          operations,
-          service_ref,
-          not service_exists,
-          region_override=self.__is_multi_region.split(',')[0],
-      )
-      # Avoid failure removing a policy binding for a service that
-      # doesn't exist.
-      if not service_exists and not allow_unauth:
-        return None
-      return allow_unauth
-    return super().GetAllowUnauth(args, operations, service_ref, service_exists)
-
-  def _MaybeGetDomain(self, args):
-    if self.__is_multi_region and flags.FlagIsExplicitlySet(args, 'domain'):
-      return getattr(args, 'domain', None)
-
-  def _GetRequiredApis(self, args):
-    required_apis = super()._GetRequiredApis(args)
-    if self._MaybeGetDomain(args):
-      required_apis.append('runapps.googleapis.com')
-      required_apis.append('compute.googleapis.com')
-    return required_apis
-
-  def _MaybeCreateDomainIntegration(self, service, args):
-    domain_name = self._MaybeGetDomain(args)
-    if not domain_name:
-      return
-    # We need to choose a single region, Stacks has no multi-region entry.
-    first_region = flags.GetMultiRegion(args).split(',')[0]
-    service_name = service.metadata.name
-    params = {
-        'set-mapping': '%s/*:%s' % (
-            domain_name,
-            service_name,
-        ),
-    }
-    pretty_print.Info(
-        'Mapping multi-region Service {svc} to domain {domain}',
-        svc=service_name,
-        domain=domain_name,
-    )
-
-    with run_apps_operations.ConnectWithRegion(
-        first_region, None, self.ReleaseTrack()
-    ) as stacks_client:
-      stacks_client.VerifyLocation()
-      if stacks_client.MaybeGetIntegrationGeneric('custom-domains', 'router'):
-        stacks_client.UpdateIntegration('custom-domains', params)
-        pretty_print.Success(
-            'Successfully updated mapping {svc} to domain {domain}',
-            svc=service_name,
-            domain=domain_name,
-        )
-      else:
-        stacks_client.CreateIntegration(
-            'custom-domains',
-            params,
-            None,
-        )
-        pretty_print.Success(
-            'Successfully created mapping {svc} to domain {domain}',
-            svc=service_name,
-            domain=domain_name,
-        )
-
-  def Run(self, args):
-    """Deploy a container to Cloud Run."""
-    # If this is a multi-region Service, we will use the global endpoint
-    # for all operations, and append a regions annotation to the Service.
-    self.__is_multi_region = flags.GetMultiRegion(args)
-    service = super().Run(args)
-    # TODO(b/364446529) - Remove from gcloud alpha.
-    self._MaybeCreateDomainIntegration(service, args)
-    return service
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

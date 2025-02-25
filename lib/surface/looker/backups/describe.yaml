@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
 
   help_text:
     brief: |
@@ -15,9 +15,9 @@
         * The active account does not have permission to access the given
           instance and backups.
     examples: |
-      To display the metadata for a backup with id of `c24ad631-ad83-42f0-9f98-41e2b493263e` on instance with name `my-looker-instance`, run:
+      To display the metadata for a backup with id of `c24ad631-ad83-42f0-9f98-41e2b493263e` on instance with name `my-looker-instance`, and in the region `us-central1`, run:
 
-        $ {command} c24ad631-ad83-42f0-9f98-41e2b493263e  --instance='my-looker-instance'
+        $ {command} c24ad631-ad83-42f0-9f98-41e2b493263e  --instance='my-looker-instance' --region='us-central1'
 
   arguments:
     resource:
@@ -28,6 +28,8 @@
   request:
     ALPHA:
       api_version: v1alpha2
+    GA:
+      api_version: v1
     collection: looker.projects.locations.instances.backups
 
   output:

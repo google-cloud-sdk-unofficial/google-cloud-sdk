@@ -270,6 +270,10 @@
             "type": "string"
           }
         },
+        "reservationGroup": {
+          "description": "Optional. The reservation group this reservation belongs to. You can set this property when inserting or updating a reservation. Reservations do not need to belong to a reservation group. Format: projects\/{project}\/locations\/{location}\/reservationGroups\/{reservation_group}",
+          "type": "string"
+        },
         "replicationStatus": {
           "description": "Output only. The Disater Recovery(DR) replication status of the reservation. This is only available for the primary replica of DR\/failover reservations and provides information about the both the staleness of the secondary and the last error encountered while trying to replicate changes from the primary to the secondary.",
           "readOnly": true,
@@ -312,13 +316,19 @@
           "$ref": "Status"
         },
         "lastErrorTime": {
-          "description": "Output only. The time at which the last error was encountered while trying to replicate changes from the primary to the secondary. This field is only available if the replication has not succeeded since. This is not visible to external users.",
+          "description": "Output only. The time at which the last error was encountered while trying to replicate changes from the primary to the secondary. This field is only available if the replication has not succeeded since.",
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
         },
         "lastReplicationTime": {
           "description": "Output only. A timestamp corresponding to the last change on the primary that was successfully replicated to the secondary.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "softFailoverStartTime": {
+          "description": "Output only. The time at which a soft failover for the reservation and its associated datasets was initiated. After this field is set, all subsequent changes to the reservation will be rejected unless a hard failover overrides this operation. This field will be cleared once the failover is complete.",
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
@@ -1421,6 +1431,24 @@
           "type": "string"
         }
       }
+    },
+    "ListReservationGroupsResponse": {
+      "id": "ListReservationGroupsResponse",
+      "description": "The response for ReservationService.ListReservationGroups.",
+      "type": "object",
+      "properties": {
+        "reservationGroups": {
+          "description": "List of reservations visible to the user.",
+          "type": "array",
+          "items": {
+            "$ref": "ReservationGroup"
+          }
+        },
+        "nextPageToken": {
+          "description": "Token to retrieve the next page of results, or empty if there are no more results in the list.",
+          "type": "string"
+        }
+      }
     }
   },
   "resources": {
@@ -2365,6 +2393,92 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
                   "description": "Creates a new reservation group."
+                },
+                "get": {
+                  "id": "bigqueryreservation.projects.locations.reservationGroups.get",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/reservationGroups/{reservationGroupsId}",
+                  "httpMethod": "GET",
+                  "parameters": {
+                    "name": {
+                      "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/reservationGroups\/[^\/]+$",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "response": {
+                    "$ref": "ReservationGroup"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/bigquery",
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ],
+                  "description": "Returns information about the reservation group."
+                },
+                "delete": {
+                  "id": "bigqueryreservation.projects.locations.reservationGroups.delete",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/reservationGroups/{reservationGroupsId}",
+                  "httpMethod": "DELETE",
+                  "parameters": {
+                    "name": {
+                      "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/reservationGroups\/[^\/]+$",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "response": {
+                    "$ref": "Empty"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/bigquery",
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ],
+                  "description": "Deletes a reservation. Returns `google.rpc.Code.FAILED_PRECONDITION` when reservation has assignments."
+                },
+                "list": {
+                  "id": "bigqueryreservation.projects.locations.reservationGroups.list",
+                  "path": "v1/{+parent}/reservationGroups",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/reservationGroups",
+                  "httpMethod": "GET",
+                  "parameters": {
+                    "parent": {
+                      "pattern": "^projects\/[^\/]+\/locations\/[^\/]+$",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "The maximum number of items to return per page.",
+                      "location": "query",
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "pageToken": {
+                      "description": "The next_page_token value returned from a previous List request, if any.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "response": {
+                    "$ref": "ListReservationGroupsResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/bigquery",
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ],
+                  "description": "Lists all the reservation groups for the project in the specified location."
                 }
               }
             }

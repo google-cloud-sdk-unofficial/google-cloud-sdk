@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import flags
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Revisions(base.Group):

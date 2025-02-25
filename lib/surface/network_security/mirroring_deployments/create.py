@@ -62,7 +62,8 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Mirroring Deployment."""
 
@@ -77,10 +78,7 @@ class Create(base.CreateCommand):
         parser,
         '20m',  # default to 20 minutes wait.
     )
-    # TODO(b/381836581): Remove this check once the description field is
-    # available in beta.
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      deployment_flags.AddDescriptionArg(parser)
+    deployment_flags.AddDescriptionArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -101,7 +99,6 @@ class Create(base.CreateCommand):
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
     operation = client.CreateDeployment(
-        release_track=self.ReleaseTrack(),
         deployment_id=deployment.Name(),
         parent=deployment.Parent().RelativeName(),
         forwarding_rule=forwarding_rule.RelativeName(),

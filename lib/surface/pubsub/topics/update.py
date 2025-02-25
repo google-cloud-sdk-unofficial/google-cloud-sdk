@@ -113,9 +113,6 @@ def _GetKmsKeyNameFromArgs(args):
 
 def _Args(
     parser,
-    include_ingestion_from_azure_event_hubs_flags=False,
-    include_ingestion_from_aws_msk_flags=False,
-    include_ingestion_from_confluent_cloud_flags=False,
 ):
   """Registers flags for this command."""
   resource_args.AddTopicResourceArg(parser, 'to update.')
@@ -138,9 +135,6 @@ def _Args(
   flags.AddIngestionDatasourceFlags(
       parser,
       is_update=True,
-      include_ingestion_from_azure_event_hubs_flags=include_ingestion_from_azure_event_hubs_flags,
-      include_ingestion_from_aws_msk_flags=include_ingestion_from_aws_msk_flags,
-      include_ingestion_from_confluent_cloud_flags=include_ingestion_from_confluent_cloud_flags,
   )
 
 
@@ -354,9 +348,6 @@ class Update(base.UpdateCommand):
     """Registers flags for this command."""
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=False,
-        include_ingestion_from_aws_msk_flags=False,
-        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -371,9 +362,6 @@ class UpdateBeta(Update):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=False,
-        include_ingestion_from_aws_msk_flags=False,
-        include_ingestion_from_confluent_cloud_flags=False,
     )
 
   def Run(self, args):
@@ -388,8 +376,5 @@ class UpdateAlpha(UpdateBeta):
   def Args(parser):
     _Args(
         parser,
-        include_ingestion_from_azure_event_hubs_flags=True,
-        include_ingestion_from_aws_msk_flags=True,
-        include_ingestion_from_confluent_cloud_flags=True,
     )
     flags.AddMessageTransformsFlags(parser, is_update=True)

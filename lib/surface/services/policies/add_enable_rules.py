@@ -19,8 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import collections
-
+from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
@@ -94,14 +93,8 @@ class AddEnableRules(base.SilentCommand):
         default='default',
     )
     common_flags.add_resource_args(parser)
-    common_flags.validate_only_args(parser)
+    common_flags.validate_only_args(parser, suffix='add enable rule')
     base.ASYNC_FLAG.AddToParser(parser)
-
-    parser.display_info.AddFormat("""
-        table(
-            services:label=''
-        )
-      """)
 
   def Run(self, args):
     """Run services policies add-enable-rule.
@@ -113,21 +106,15 @@ class AddEnableRules(base.SilentCommand):
     Returns:
       The services in the consumer policy.
     """
-    if args.IsSpecified('project'):
-      project = args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-    resource_name = _PROJECT_RESOURCE.format(project)
-    if args.IsSpecified('folder'):
-      folder = args.folder
-      resource_name = _FOLDER_RESOURCE.format(folder)
-    else:
-      folder = None
-    if args.IsSpecified('organization'):
-      organization = args.organization
-      resource_name = _ORGANIZATION_RESOURCE.format(organization)
-    else:
-      organization = None
+    project = (
+        args.project
+        if args.IsSpecified('project')
+        else properties.VALUES.core.project.Get(required=True)
+    )
+    folder = args.folder if args.IsSpecified('folder') else None
+    organization = (
+        args.organization if args.IsSpecified('organization') else None
+    )
 
     op = serviceusage.AddEnableRule(
         args.service,
@@ -137,32 +124,20 @@ class AddEnableRules(base.SilentCommand):
         organization,
         args.validate_only,
     )
-    if args.validate_only:
-      return
 
     if args.async_:
       cmd = _OP_WAIT_CMD.format(op.name)
       log.status.Print(
           'Asynchronous operation is in progress... '
           'Use the following command to wait for its '
-          'completion:\n {0}'.format(cmd)
+          f'completion:\n {cmd}'
       )
-
-    update_policy = serviceusage.GetConsumerPolicyV2Alpha(
-        resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name)
-    )
-
-    resources = collections.namedtuple('Values', ['services'])
-    result = []
-    for value in update_policy.enableRules[0].services:
-      result.append(resources(value))
-    log.status.Print(
-        'Consumer policy ('
-        + resource_name
-        + _CONSUMER_POLICY_DEFAULT.format(args.policy_name)
-        + ') has been updated to:',
-    )
-    return result
+      return
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Alpha)
+    if args.validate_only:
+      services_util.PrintOperation(op)
+    else:
+      services_util.PrintOperationWithResponse(op)
 
 
 AddEnableRules.detailed_help = _DETAILED_HELP

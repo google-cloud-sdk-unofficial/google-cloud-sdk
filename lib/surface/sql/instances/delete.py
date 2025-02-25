@@ -53,9 +53,7 @@ class Delete(base.Command):
         help='Cloud SQL instance ID.')
     flags.AddEnableFinalBackup(parser)
     flags.AddFinalbackupDescription(parser)
-    expiration = parser.add_mutually_exclusive_group(
-        required=False, hidden=True
-    )
+    expiration = parser.add_mutually_exclusive_group(required=False)
     flags.AddFinalBackupExpiryTimeArgument(expiration)
     flags.AddFinalbackupRetentionDays(expiration)
 

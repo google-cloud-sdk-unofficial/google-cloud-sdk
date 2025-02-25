@@ -838,6 +838,13 @@ def format_routine_argument_info(routine_type, argument) -> str:
     display_type = format_routine_data_type(argument['dataType'])
   elif argument.get('argumentKind') == 'ANY_TYPE':
     display_type = 'ANY TYPE'
+  elif routine_type == 'TABLE_VALUED_FUNCTION' and 'tableType' in argument:
+    display_type = format_routine_table_type(argument['tableType'])
+  elif (
+      routine_type == 'TABLE_VALUED_FUNCTION'
+      and argument.get('argumentKind') == 'ANY_TABLE'
+  ):
+    display_type = 'ANY TABLE'
 
   if 'name' in argument:
     argument_mode = ''

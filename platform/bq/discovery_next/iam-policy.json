@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250116",
+  "revision": "20250211",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -1340,7 +1340,7 @@
             "Ukraine",
             "United States",
             "Venezuela",
-            "Viet Nam",
+            "Vietnam",
             "South Africa"
           ],
           "enum": [
@@ -1488,7 +1488,7 @@
               "Ukraine",
               "United States",
               "Venezuela",
-              "Viet Nam",
+              "Vietnam",
               "South Africa"
             ],
             "enum": [
@@ -1575,6 +1575,16 @@
             "type": "string"
           }
         },
+        "forecastLimitLowerBound": {
+          "description": "The forecast limit lower bound that was used during ARIMA model training with limits. To see more details of the algorithm: https:\/\/otexts.com\/fpp2\/limits.html",
+          "type": "number",
+          "format": "double"
+        },
+        "forecastLimitUpperBound": {
+          "description": "The forecast limit upper bound that was used during ARIMA model training with limits.",
+          "type": "number",
+          "format": "double"
+        },
         "horizon": {
           "description": "The number of periods ahead that need to be forecasted.",
           "type": "string",
@@ -1617,7 +1627,7 @@
               "Recall is the fraction of actual positive labels that were given a positive prediction. For multiclass this is a macro-averaged metric.",
               "Accuracy is the fraction of predictions given the correct label. For multiclass this is a globally micro-averaged metric.",
               "The F1 score is an average of recall and precision. For multiclass this is a macro-averaged metric.",
-              "Logorithmic Loss. For multiclass this is a macro-averaged metric.",
+              "Logarithmic Loss. For multiclass this is a macro-averaged metric.",
               "Area Under an ROC Curve. For multiclass this is a macro-averaged metric.",
               "Davies-Bouldin Index.",
               "Mean Average Precision.",
@@ -2239,7 +2249,7 @@
           "format": "double"
         },
         "threshold": {
-          "description": "Threshold at which the metrics are computed. For binary classification models this is the positive class threshold. For multi-class classfication models this is the confidence threshold.",
+          "description": "Threshold at which the metrics are computed. For binary classification models this is the positive class threshold. For multi-class classification models this is the confidence threshold.",
           "type": "number",
           "format": "double"
         },
@@ -3451,6 +3461,10 @@
         "continuous": {
           "description": "Optional. Whether to run the query as continuous or a regular query. Continuous query is currently in experimental stage and not ready for general usage.",
           "type": "boolean"
+        },
+        "writeIncrementalResults": {
+          "description": "Optional. This is only supported for a SELECT query using a temporary table. If set, the query is allowed to write results incrementally to the temporary result table. This may incur a performance penalty. This option cannot be used with Legacy SQL. This feature is not yet available.",
+          "type": "boolean"
         }
       }
     },
@@ -3527,7 +3541,7 @@
           "type": "string"
         },
         "decimalTargetTypes": {
-          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exceeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
           "type": "array",
           "items": {
             "type": "string",
@@ -3553,7 +3567,7 @@
           "description": "Optional. Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
           "type": "string",
           "enumDescriptions": [
-            "The default if provided value is not one included in the enum, or the value is not specified. The source formate is parsed without any modification.",
+            "The default if provided value is not one included in the enum, or the value is not specified. The source format is parsed without any modification.",
             "Use GeoJSON variant of JSON. See https:\/\/tools.ietf.org\/html\/rfc7946."
           ],
           "enum": [
@@ -4378,7 +4392,7 @@
           "$ref": "HivePartitioningOptions"
         },
         "decimalTargetTypes": {
-          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exeeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
+          "description": "Defines the list of possible SQL data types to which the source decimal values are converted. This list and the precision and the scale parameters of the decimal field determine the target type. In the order of NUMERIC, BIGNUMERIC, and STRING, a type is picked if it is in the specified list and if it supports the precision and the scale. STRING supports all precision and scale values. If none of the listed types supports the precision and the scale, the type supporting the widest range in the specified list is picked, and if a value exceeds the supported range when reading the data, an error will be thrown. Example: Suppose the value of this field is [\"NUMERIC\", \"BIGNUMERIC\"]. If (precision,scale) is: * (38,9) -> NUMERIC; * (39,9) -> BIGNUMERIC (NUMERIC cannot hold 30 integer digits); * (38,10) -> BIGNUMERIC (NUMERIC cannot hold 10 fractional digits); * (76,38) -> BIGNUMERIC; * (77,38) -> BIGNUMERIC (error if value exceeds supported range). This field cannot contain duplicate types. The order of the types in this field is ignored. For example, [\"BIGNUMERIC\", \"NUMERIC\"] is the same as [\"NUMERIC\", \"BIGNUMERIC\"] and NUMERIC always takes precedence over BIGNUMERIC. Defaults to [\"NUMERIC\", \"STRING\"] for ORC and [\"NUMERIC\"] for the other file formats.",
           "type": "array",
           "items": {
             "type": "string",
@@ -4404,7 +4418,7 @@
           "description": "Optional. Load option to be used together with source_format newline-delimited JSON to indicate that a variant of JSON is being loaded. To load newline-delimited GeoJSON, specify GEOJSON (and source_format must be set to NEWLINE_DELIMITED_JSON).",
           "type": "string",
           "enumDescriptions": [
-            "The default if provided value is not one included in the enum, or the value is not specified. The source formate is parsed without any modification.",
+            "The default if provided value is not one included in the enum, or the value is not specified. The source format is parsed without any modification.",
             "Use GeoJSON variant of JSON. See https:\/\/tools.ietf.org\/html\/rfc7946."
           ],
           "enum": [
@@ -5762,6 +5776,75 @@
           "items": {
             "$ref": "IndexUnusedReason"
           }
+        },
+        "storedColumnsUsages": {
+          "description": "Specifies the usage of stored columns in the query when stored columns are used in the query.",
+          "type": "array",
+          "items": {
+            "$ref": "StoredColumnsUsage"
+          }
+        }
+      }
+    },
+    "StoredColumnsUsage": {
+      "id": "StoredColumnsUsage",
+      "description": "Indicates the stored columns usage in the query.",
+      "type": "object",
+      "properties": {
+        "isQueryAccelerated": {
+          "description": "Specifies whether the query was accelerated with stored columns.",
+          "type": "boolean"
+        },
+        "baseTable": {
+          "description": "Specifies the base table.",
+          "$ref": "TableReference"
+        },
+        "storedColumnsUnusedReasons": {
+          "description": "If stored columns were not used, explain why.",
+          "type": "array",
+          "items": {
+            "$ref": "StoredColumnsUnusedReason"
+          }
+        }
+      }
+    },
+    "StoredColumnsUnusedReason": {
+      "id": "StoredColumnsUnusedReason",
+      "description": "If the stored column was not used, explain why.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Specifies the high-level reason for the unused scenario, each reason must have a code associated.",
+          "type": "string",
+          "enumDescriptions": [
+            "Default value.",
+            "If stored columns do not fully cover the columns.",
+            "If the base table has RLS (Row Level Security).",
+            "If the base table has CLS (Column Level Security).",
+            "If the provided prefilter is not supported.",
+            "If an internal error is preventing stored columns from being used.",
+            "Indicates that the reason stored columns cannot be used in the query is not covered by any of the other StoredColumnsUnusedReason options."
+          ],
+          "enum": [
+            "CODE_UNSPECIFIED",
+            "STORED_COLUMNS_COVER_INSUFFICIENT",
+            "BASE_TABLE_HAS_RLS",
+            "BASE_TABLE_HAS_CLS",
+            "UNSUPPORTED_PREFILTER",
+            "INTERNAL_ERROR",
+            "OTHER_REASON"
+          ]
+        },
+        "message": {
+          "description": "Specifies the detailed description for the scenario.",
+          "type": "string"
+        },
+        "uncoveredColumns": {
+          "description": "Specifies which columns were not covered by the stored columns for the specified code up to 20 columns. This is populated when the code is STORED_COLUMNS_COVER_INSUFFICIENT and BASE_TABLE_HAS_CLS.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -6069,7 +6152,7 @@
     },
     "MetadataCacheStatistics": {
       "id": "MetadataCacheStatistics",
-      "description": "Statistics for metadata caching in BigLake tables.",
+      "description": "Statistics for metadata caching in queried tables.",
       "type": "object",
       "properties": {
         "tableMetadataCacheUsage": {
@@ -6576,6 +6659,15 @@
           "type": "integer",
           "format": "uint32"
         },
+        "jobTimeoutMs": {
+          "description": "Optional. Job timeout in milliseconds. If this time limit is exceeded, BigQuery will attempt to stop a longer job, but may not always succeed in canceling it before the job completes. For example, a job that takes more than 60 seconds to complete has a better chance of being stopped than a job that takes 10 seconds to complete. This timeout applies to the query even if a job does not need to be created.",
+          "type": "string",
+          "format": "int64"
+        },
+        "destinationEncryptionConfiguration": {
+          "description": "Optional. Custom encryption configuration (e.g., Cloud KMS keys)",
+          "$ref": "EncryptionConfiguration"
+        },
         "dryRun": {
           "description": "Optional. If set to true, BigQuery doesn't run the job. Instead, if the query is valid, BigQuery returns statistics about the job such as how many bytes would be processed. If the query is invalid, an error returns. The default value is false.",
           "type": "boolean"
@@ -6654,6 +6746,10 @@
             "JOB_CREATION_REQUIRED",
             "JOB_CREATION_OPTIONAL"
           ]
+        },
+        "writeIncrementalResults": {
+          "description": "Optional. This is only supported for SELECT query. If set, the query is allowed to write results incrementally to the temporary result table. This may incur a performance penalty. This option cannot be used with Legacy SQL. This feature is not yet available.",
+          "type": "boolean"
         }
       }
     },
@@ -7231,6 +7327,31 @@
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
+        },
+        "grantees": {
+          "description": "Optional. Input only. The optional list of iam_member users or groups that specifies the initial members that the row-level access policy should be created with. grantees types: - \"user:alice@example.com\": An email address that represents a specific Google account. - \"serviceAccount:my-other-app@appspot.gserviceaccount.com\": An email address that represents a service account. - \"group:admins@example.com\": An email address that represents a Google group. - \"domain:example.com\":The Google Workspace domain (primary) that represents all the users of that domain. - \"allAuthenticatedUsers\": A special identifier that represents all service accounts and all users on the internet who have authenticated with a Google Account. This identifier includes accounts that aren't connected to a Google Workspace or Cloud Identity domain, such as personal Gmail accounts. Users who aren't authenticated, such as anonymous visitors, aren't included. - \"allUsers\":A special identifier that represents anyone who is on the internet, including authenticated and unauthenticated users. Because BigQuery requires authentication before a user can access the service, allUsers includes only authenticated users.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "BatchDeleteRowAccessPoliciesRequest": {
+      "id": "BatchDeleteRowAccessPoliciesRequest",
+      "description": "Request message for the BatchDeleteRowAccessPoliciesRequest method.",
+      "type": "object",
+      "properties": {
+        "policyIds": {
+          "description": "Required. Policy IDs of the row access policies.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "force": {
+          "description": "If set to true, it deletes the row access policy even if it's the last row access policy on the table and the deletion will widen the access rather narrowing it.",
+          "type": "boolean"
         }
       }
     },
@@ -7567,7 +7688,7 @@
           "type": "boolean"
         },
         "privacyPolicy": {
-          "description": "Optional. Specifices the privacy policy for the view.",
+          "description": "Optional. Specifies the privacy policy for the view.",
           "$ref": "PrivacyPolicy"
         },
         "foreignDefinitions": {
@@ -8114,7 +8235,7 @@
                     "type": "boolean"
                   },
                   "privacyPolicy": {
-                    "description": "Specifices the privacy policy for the view.",
+                    "description": "Specifies the privacy policy for the view.",
                     "$ref": "PrivacyPolicy"
                   }
                 }
@@ -8717,7 +8838,7 @@
               "type": "boolean"
             },
             "filter": {
-              "description": "An expression for filtering the results of the request by label. The syntax is `labels.[:]`. Multiple filters can be ANDed together by connecting with a space. Example: `labels.department:receiving labels.active`. See [Filtering datasets using labels](https:\/\/cloud.google.com\/bigquery\/docs\/filtering-labels#filtering_datasets_using_labels) for details.",
+              "description": "An expression for filtering the results of the request by label. The syntax is `labels.[:]`. Multiple filters can be AND-ed together by connecting with a space. Example: `labels.department:receiving labels.active`. See [Filtering datasets using labels](https:\/\/cloud.google.com\/bigquery\/docs\/filtering-labels#filtering_datasets_using_labels) for details.",
               "location": "query",
               "type": "string"
             }
@@ -9800,6 +9921,253 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Lists all row access policies on the specified table."
+        },
+        "get": {
+          "id": "bigquery.rowAccessPolicies.get",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies/{+policyId}",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}",
+          "httpMethod": "GET",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "policyId": {
+              "description": "Required. Policy ID of the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId",
+            "policyId"
+          ],
+          "response": {
+            "$ref": "RowAccessPolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Gets the specified row access policy by policy ID."
+        },
+        "insert": {
+          "id": "bigquery.rowAccessPolicies.insert",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies",
+          "httpMethod": "POST",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId"
+          ],
+          "request": {
+            "$ref": "RowAccessPolicy"
+          },
+          "response": {
+            "$ref": "RowAccessPolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Creates a row access policy."
+        },
+        "update": {
+          "id": "bigquery.rowAccessPolicies.update",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies/{+policyId}",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}",
+          "httpMethod": "PUT",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to get the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "policyId": {
+              "description": "Required. Policy ID of the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId",
+            "policyId"
+          ],
+          "request": {
+            "$ref": "RowAccessPolicy"
+          },
+          "response": {
+            "$ref": "RowAccessPolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Updates a row access policy."
+        },
+        "delete": {
+          "id": "bigquery.rowAccessPolicies.delete",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies/{+policyId}",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies/{rowAccessPoliciesId}",
+          "httpMethod": "DELETE",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the table to delete the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of the table to delete the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to delete the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "policyId": {
+              "description": "Required. Policy ID of the row access policy.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "force": {
+              "description": "If set to true, it deletes the row access policy even if it's the last row access policy on the table and the deletion will widen the access rather narrowing it.",
+              "location": "query",
+              "type": "boolean"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId",
+            "policyId"
+          ],
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Deletes a row access policy."
+        },
+        "batchDelete": {
+          "id": "bigquery.rowAccessPolicies.batchDelete",
+          "path": "bigquery/v2/projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies:batchDelete",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}/rowAccessPolicies:batchDelete",
+          "httpMethod": "POST",
+          "parameters": {
+            "projectId": {
+              "description": "Required. Project ID of the table to delete the row access policies.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "datasetId": {
+              "description": "Required. Dataset ID of the table to delete the row access policies.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            },
+            "tableId": {
+              "description": "Required. Table ID of the table to delete the row access policies.",
+              "pattern": "^[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "projectId",
+            "datasetId",
+            "tableId"
+          ],
+          "request": {
+            "$ref": "BatchDeleteRowAccessPoliciesRequest"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Deletes provided row access policies."
         },
         "getIamPolicy": {
           "id": "bigquery.rowAccessPolicies.getIamPolicy",
