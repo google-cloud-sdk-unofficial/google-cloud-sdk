@@ -52,8 +52,11 @@ def _MakeRequests(client, requests, is_async):
   return responses
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
+)
 class Create(base.Command):
   r"""Create a Compute Engine network peering.
 
@@ -77,6 +80,8 @@ class Create(base.Command):
   """
 
   _support_stack_type = False
+
+  _support_update_strategy = False
 
   @classmethod
   def ArgsCommon(cls, parser):
@@ -110,43 +115,69 @@ class Create(base.Command):
 
     flags.AddStackType(parser)
 
+    if cls._support_update_strategy:
+      flags.AddUpdateStrategy(parser)
+
   @classmethod
   def Args(cls, parser):
     cls.ArgsCommon(parser)
     action = actions.DeprecationAction(
         'auto-create-routes',
-        warn='Flag --auto-create-routes is deprecated and will '
-        'be removed in a future release.',
-        action='store_true')
+        warn=(
+            'Flag --auto-create-routes is deprecated and will '
+            'be removed in a future release.'
+        ),
+        action='store_true',
+    )
     parser.add_argument(
         '--auto-create-routes',
         action=action,
         default=False,
         required=False,
-        help='If set, will automatically create routes for the network '
-        'peering. Flag auto-create-routes is deprecated. Peer network subnet '
-        'routes are always created in a network when peered.')
+        help=(
+            'If set, will automatically create routes for the network peering.'
+            ' Flag auto-create-routes is deprecated. Peer network subnet routes'
+            ' are always created in a network when peered.'
+        ),
+    )
 
   def _CreateNetworkPeeringForRequest(self, client, args):
     peer_network_ref = resources.REGISTRY.Parse(
         args.peer_network,
         params={
-            'project':
+            'project': (
                 args.peer_project or properties.VALUES.core.project.GetOrFail
+            )
         },
-        collection='compute.networks')
+        collection='compute.networks',
+    )
     network_peering = client.messages.NetworkPeering(
         name=args.name,
         network=peer_network_ref.RelativeName(),
-        exchangeSubnetRoutes=True)
+        exchangeSubnetRoutes=True,
+    )
     network_peering.exportCustomRoutes = args.export_custom_routes
     network_peering.importCustomRoutes = args.import_custom_routes
-    network_peering.exportSubnetRoutesWithPublicIp = args.export_subnet_routes_with_public_ip
-    network_peering.importSubnetRoutesWithPublicIp = args.import_subnet_routes_with_public_ip
+    network_peering.exportSubnetRoutesWithPublicIp = (
+        args.export_subnet_routes_with_public_ip
+    )
+    network_peering.importSubnetRoutesWithPublicIp = (
+        args.import_subnet_routes_with_public_ip
+    )
 
     if getattr(args, 'stack_type'):
-      network_peering.stackType = client.messages.NetworkPeering.StackTypeValueValuesEnum(
-          args.stack_type)
+      network_peering.stackType = (
+          client.messages.NetworkPeering.StackTypeValueValuesEnum(
+              args.stack_type
+          )
+      )
+
+    if self._support_update_strategy and getattr(args, 'update_strategy'):
+      network_peering.updateStrategy = (
+          client.messages.NetworkPeering.UpdateStrategyValueValuesEnum(
+              args.update_strategy
+          )
+      )
 
     return network_peering
 
@@ -163,3 +194,29 @@ class Create(base.Command):
 
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
     return _MakeRequests(client, requests, args.async_)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  r"""Create a Compute Engine network peering.
+
+  *{command}* is used to create peerings between virtual networks. Each side of
+  a peering association is set up independently. Peering will be active only
+  when the configuration from both sides matches.
+
+  ## EXAMPLES
+
+  To create a network peering with the name 'peering-name' between the network
+  'local-network' and the network 'peer-network' which exports and imports
+  custom routes and subnet routes with public IPs, run:
+
+    $ {command} peering-name \
+      --network=local-network \
+      --peer-network=peer-network \
+      --export-custom-routes \
+      --import-custom-routes \
+      --export-subnet-routes-with-public-ip \
+      --import-subnet-routes-with-public-ip
+  """
+
+  _support_update_strategy = True

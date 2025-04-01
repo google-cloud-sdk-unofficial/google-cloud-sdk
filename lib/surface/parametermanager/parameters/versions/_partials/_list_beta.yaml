@@ -34,7 +34,7 @@
         `projects/*/locations/*/parameters/*`.
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.parametermanager.v1_resources:project_location_parameter
+      resource_spec: !REF googlecloudsdk.command_lib.parametermanager.v1_resources:projects_locations_parameters
       required: true
   request:
     api_version: v1

@@ -40,7 +40,7 @@ from googlecloudsdk.core.util import scaled_integer
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
-  """Creates an Artifact registry attachment in a repository."""
+  """Creates an Artifact Registry attachment in a repository."""
 
   api_version = 'v1'
 

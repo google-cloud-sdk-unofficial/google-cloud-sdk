@@ -331,6 +331,8 @@ def AddBetaArgs(parser):
   ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
   flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)
+  flags.AddInstanceType(parser)
+  flags.AddNodeCount(parser)
 
 
 def AddAlphaArgs(unused_parser):

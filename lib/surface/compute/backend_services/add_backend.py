@@ -53,7 +53,6 @@ class AddBackend(base.UpdateCommand):
   support_global_neg = True
   support_region_neg = True
   support_failover = True
-  support_custom_metrics = False
 
   @classmethod
   def Args(cls, parser):
@@ -79,8 +78,7 @@ class AddBackend(base.UpdateCommand):
     backend_flags.AddPreference(parser)
     if cls.support_failover:
       backend_flags.AddFailover(parser, default=None)
-    if cls.support_custom_metrics:
-      backend_flags.AddCustomMetrics(parser)
+    backend_flags.AddCustomMetrics(parser)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -227,11 +225,10 @@ class AddBackend(base.UpdateCommand):
         preference,
         args,
     )
-    if self.support_custom_metrics:
-      if args.custom_metrics:
-        backend.customMetrics = args.custom_metrics
-      if args.custom_metrics_file:
-        backend.customMetrics = args.custom_metrics_file
+    if args.custom_metrics:
+      backend.customMetrics = args.custom_metrics
+    if args.custom_metrics_file:
+      backend.customMetrics = args.custom_metrics_file
 
     replacement.backends.append(backend)
     return replacement
@@ -277,7 +274,6 @@ class AddBackendBeta(AddBackend):
   """
 
   # Allow --preference flag to be set when updating the backend.
-  support_custom_metrics = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -299,4 +295,3 @@ class AddBackendAlpha(AddBackend):
   or `gcloud compute backend-services edit` command.
   """
   # Allow --preference flag to be set when updating the backend.
-  support_custom_metrics = True

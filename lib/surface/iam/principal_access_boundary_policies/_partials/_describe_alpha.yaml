@@ -36,7 +36,7 @@
           `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:organization_location_principal_access_boundary_policy
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:organizations_locations_principal_access_boundary_policies
       required: true
   request:
     api_version: v3alpha

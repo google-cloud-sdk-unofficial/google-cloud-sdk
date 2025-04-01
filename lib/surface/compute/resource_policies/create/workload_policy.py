@@ -51,8 +51,8 @@ def ValidateWorkloadPolicy(resource_policy, messages, args):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateWorkloadPolicyAlpha(base.CreateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateWorkloadPolicyBeta(base.CreateCommand):
   """Create a Compute Engine workload resource policy."""
 
   @staticmethod
@@ -82,5 +82,10 @@ class CreateWorkloadPolicyAlpha(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
-CreateWorkloadPolicyAlpha.detailed_help = {'DESCRIPTION': """
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateWorkloadPolicyAlpha(CreateWorkloadPolicyBeta):
+  """Create a Compute Engine workload resource policy."""
+
+
+CreateWorkloadPolicyBeta.detailed_help = {'DESCRIPTION': """
 Create a Compute Engine workload resource policy."""}

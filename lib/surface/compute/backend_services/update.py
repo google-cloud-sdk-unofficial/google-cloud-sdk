@@ -73,7 +73,7 @@ class UpdateHelper(object):
       parser,
       support_subsetting_subset_size,
       support_external_managed_migration,
-      support_custom_metrics,
+      support_tls_settings,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
   ):
@@ -152,8 +152,9 @@ class UpdateHelper(object):
     if support_external_managed_migration:
       flags.AddExternalMigration(parser)
 
-    if support_custom_metrics:
-      flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
+    if support_tls_settings:
+      flags.AddBackendServiceTlsSettings(parser, add_clear_argument=True)
+    flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
     if support_ip_port_dynamic_forwarding:
       flags.AddIpPortDynamicForwarding(parser)
     if support_zonal_affinity:
@@ -163,7 +164,7 @@ class UpdateHelper(object):
       self,
       support_subsetting_subset_size,
       support_external_managed_migration=False,
-      support_custom_metrics=False,
+      support_tls_settings=False,
       support_ip_port_dynamic_forwarding=False,
       support_zonal_affinity=False,
       release_track=None,
@@ -172,7 +173,7 @@ class UpdateHelper(object):
     self._support_external_managed_migration = (
         support_external_managed_migration
     )
-    self._support_custom_metrics = support_custom_metrics
+    self._support_tls_settings = support_tls_settings
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
     )
@@ -333,13 +334,24 @@ class UpdateHelper(object):
                 args.load_balancing_scheme
             )
         )
-    if self._support_custom_metrics:
-      if args.custom_metrics:
-        replacement.customMetrics = args.custom_metrics
-      if args.custom_metrics_file:
-        replacement.customMetrics = args.custom_metrics_file
-      if args.clear_custom_metrics:
-        replacement.customMetrics = []
+    if self._support_tls_settings and args.tls_settings is not None:
+      backend_services_utils.ApplyTlsSettingsArgs(
+          client,
+          args,
+          replacement,
+          backend_service_ref.project,
+          location,
+          self._release_track,
+      )
+    if self._support_tls_settings and args.no_tls_settings is not None:
+      replacement.tlsSettings = None
+      cleared_fields.append('tlsSettings')
+    if args.custom_metrics:
+      replacement.customMetrics = args.custom_metrics
+    if args.custom_metrics_file:
+      replacement.customMetrics = args.custom_metrics_file
+    if args.clear_custom_metrics:
+      replacement.customMetrics = []
     if self._support_ip_port_dynamic_forwarding:
       backend_services_utils.IpPortDynamicForwarding(client, args, replacement)
     if self._support_zonal_affinity:
@@ -425,15 +437,15 @@ class UpdateHelper(object):
         args.IsSpecified('load_balancing_scheme')
         if self._support_external_managed_migration
         else False,
-        args.IsSpecified('custom_metrics')
-        if self._support_custom_metrics
+        args.IsSpecified('tls_settings')
+        if self._support_tls_settings
         else False,
-        args.IsSpecified('custom_metrics_file')
-        if self._support_custom_metrics
+        args.IsSpecified('no_tls_settings')
+        if self._support_tls_settings
         else False,
-        args.IsSpecified('clear_custom_metrics')
-        if self._support_custom_metrics
-        else False,
+        args.IsSpecified('custom_metrics'),
+        args.IsSpecified('custom_metrics_file'),
+        args.IsSpecified('clear_custom_metrics'),
         args.IsSpecified('ip_port_dynamic_forwarding')
         if self._support_ip_port_dynamic_forwarding
         else False,
@@ -606,7 +618,7 @@ class UpdateGA(base.UpdateCommand):
 
   _support_subsetting_subset_size = False
   _support_external_managed_migration = False
-  _support_custom_metrics = False
+  _support_tls_settings = False
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
 
@@ -618,7 +630,7 @@ class UpdateGA(base.UpdateCommand):
         support_external_managed_migration=(
             cls._support_external_managed_migration
         ),
-        support_custom_metrics=cls._support_custom_metrics,
+        support_tls_settings=cls._support_tls_settings,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
     )
@@ -629,7 +641,7 @@ class UpdateGA(base.UpdateCommand):
     return UpdateHelper(
         self._support_subsetting_subset_size,
         self._support_external_managed_migration,
-        support_custom_metrics=self._support_custom_metrics,
+        support_tls_settings=self._support_tls_settings,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=self._support_zonal_affinity,
         release_track=self.ReleaseTrack(),
@@ -645,7 +657,7 @@ class UpdateBeta(UpdateGA):
 
   _support_subsetting_subset_size = True
   _support_external_managed_migration = True
-  _support_custom_metrics = True
+  _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
 
 
@@ -658,6 +670,6 @@ class UpdateAlpha(UpdateBeta):
 
   _support_subsetting_subset_size = True
   _support_external_managed_migration = True
-  _support_custom_metrics = True
+  _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True

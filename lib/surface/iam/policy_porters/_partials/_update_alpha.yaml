@@ -39,7 +39,7 @@
         projects/{project}/locations/{location}/policyPorters/{policy_porter}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:project_location_policy_porter
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:projects_locations_policy_porters
       required: true
     - arg_name: labels
       api_field: googleIamV3alphaPolicyPorter.labels
@@ -94,14 +94,25 @@
                   help_text: |-
                     Name of file from which policy json got imported. This helps user to
                     recognize the source of policies.
-                - arg_name: inline-policy-json-content-from-file
-                  api_field: googleIamV3alphaPolicyPorter.policyConfig.inlinePolicyJson.content
-                  json_name: contentFromFile
-                  required: true
-                  repeated: false
-                  type: file_type
-                  help_text: |-
-                    Content of the file containing policies in json format.
+                - group:
+                    mutex: true
+                    required: true
+                    params:
+                    - arg_name: inline-policy-json-content-from-file
+                      api_field: googleIamV3alphaPolicyPorter.policyConfig.inlinePolicyJson.content
+                      json_name: contentFromFile
+                      required: false
+                      repeated: false
+                      type: file_type
+                      help_text: |-
+                        Content of the file containing policies in json format.
+                    - arg_name: inline-policy-json-content
+                      api_field: googleIamV3alphaPolicyPorter.policyConfig.inlinePolicyJson.content
+                      required: false
+                      repeated: false
+                      type: bytes
+                      help_text: |-
+                        Content of the file containing policies in json format.
         - group:
             mutex: true
             help_text: |-

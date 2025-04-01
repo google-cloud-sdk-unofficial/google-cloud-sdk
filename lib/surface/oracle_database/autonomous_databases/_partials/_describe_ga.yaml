@@ -32,7 +32,7 @@
         projects/{project}/locations/{location}/autonomousDatabases/{autonomous_database}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_location_autonomous_database
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_databases
       required: true
   request:
     api_version: v1

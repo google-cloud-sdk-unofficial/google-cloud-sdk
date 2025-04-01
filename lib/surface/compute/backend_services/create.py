@@ -92,7 +92,7 @@ class CreateHelper(object):
       cls,
       parser,
       support_subsetting_subset_size,
-      support_custom_metrics,
+      support_tls_settings,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
   ):
@@ -111,6 +111,8 @@ class CreateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddServiceLoadBalancingPolicy(parser)
+    if support_tls_settings:
+      flags.AddBackendServiceTlsSettings(parser)
     flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
@@ -149,8 +151,7 @@ class CreateHelper(object):
     flags.AddConnectionTrackingPolicy(parser)
     flags.AddCompressionMode(parser)
     flags.AddIpAddressSelectionPolicy(parser)
-    if support_custom_metrics:
-      flags.AddBackendServiceCustomMetrics(parser)
+    flags.AddBackendServiceCustomMetrics(parser)
     if support_ip_port_dynamic_forwarding:
       flags.AddIpPortDynamicForwarding(parser)
     if support_zonal_affinity:
@@ -160,12 +161,12 @@ class CreateHelper(object):
       self,
       support_subsetting_subset_size,
       release_track,
-      support_custom_metrics,
+      support_tls_settings,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_custom_metrics = support_custom_metrics
+    self._support_tls_settings = support_tls_settings
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
     )
@@ -208,6 +209,15 @@ class CreateHelper(object):
           location='global',
           policy_name=args.service_lb_policy,
           release_track=self._release_track,
+      )
+    if self._support_tls_settings and args.tls_settings is not None:
+      backend_services_utils.ApplyTlsSettingsArgs(
+          client,
+          args,
+          backend_service,
+          backend_services_ref.project,
+          'global',
+          self._release_track,
       )
     if args.service_bindings is not None:
       backend_service.serviceBindings = [
@@ -260,8 +270,7 @@ class CreateHelper(object):
         client, args, backend_service
     )
 
-    if self._support_custom_metrics:
-      backend_services_utils.ApplyCustomMetrics(args, backend_service)
+    backend_services_utils.ApplyCustomMetrics(args, backend_service)
 
     if self._support_ip_port_dynamic_forwarding:
       backend_services_utils.IpPortDynamicForwarding(
@@ -315,11 +324,23 @@ class CreateHelper(object):
           ' service.'
       )
 
+    if self._support_tls_settings and args.tls_settings is not None:
+      backend_services_utils.ApplyTlsSettingsArgs(
+          client,
+          args,
+          backend_service,
+          backend_services_ref.project,
+          backend_services_ref.region,
+          self._release_track,
+      )
+
     if args.service_bindings is not None:
-      region = backend_services_ref.region
       backend_service.serviceBindings = [
-          reference_utils.BuildServiceBindingUrl(backend_services_ref.project,
-                                                 region, binding_name)
+          reference_utils.BuildServiceBindingUrl(
+              backend_services_ref.project,
+              backend_services_ref.region,
+              binding_name,
+          )
           for binding_name in args.service_bindings
       ]
 
@@ -446,7 +467,7 @@ class CreateGA(base.CreateCommand):
   """
 
   _support_subsetting_subset_size = False
-  _support_custom_metrics = False
+  _support_tls_settings = False
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
 
@@ -455,7 +476,7 @@ class CreateGA(base.CreateCommand):
     CreateHelper.Args(
         parser,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_custom_metrics=cls._support_custom_metrics,
+        support_tls_settings=cls._support_tls_settings,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
     )
@@ -466,7 +487,7 @@ class CreateGA(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
         support_subsetting_subset_size=self._support_subsetting_subset_size,
-        support_custom_metrics=self._support_custom_metrics,
+        support_tls_settings=self._support_tls_settings,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=self._support_zonal_affinity,
         release_track=self.ReleaseTrack(),
@@ -492,7 +513,7 @@ class CreateBeta(CreateGA):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_subsetting_subset_size = True
-  _support_custom_metrics = True
+  _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
 
 
@@ -515,6 +536,6 @@ class CreateAlpha(CreateBeta):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
   _support_subsetting_subset_size = True
-  _support_custom_metrics = True
+  _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True

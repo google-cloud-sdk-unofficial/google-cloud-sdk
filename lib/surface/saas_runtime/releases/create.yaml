@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Release
     description: Create a Release
@@ -29,21 +28,21 @@
         release.unitKind: '{__relative_name__}'
       required: true
     - group:
-        api_field: release.artifact
-        required: false
+        api_field: release.blueprint
+        required: true
         help_text: |-
-          Artifacts are OCI Images that contain all of the artifacts needed to
+          Blueprints are OCI Images that contain all of the artifacts needed to
           provision a unit. Metadata such as, type of the engine used to actuate the
-          artifact (e.g. terraform, helm etc) and version will come from the image
+          blueprint (e.g. terraform, helm etc) and version will come from the image
           manifest. If the hostname is omitted, it will be assumed to be the regional
           path to Artifact Registry (eg. us-east1-docker.pkg.dev).
         params:
-        - arg_name: artifact-package
-          api_field: release.artifact.package
+        - arg_name: blueprint-package
+          api_field: release.blueprint.package
           required: true
           repeated: false
           help_text: |-
-            URI to an artifact used by the Unit (required unless unitKind is set).
+            URI to a blueprint used by the Unit.
     - arg_name: upgradeable-from-releases
       api_field: release.releaseRequirements.upgradeableFromReleases
       required: false
@@ -80,9 +79,13 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.releases
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

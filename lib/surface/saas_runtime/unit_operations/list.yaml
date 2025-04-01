@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: List Unit Operations
     description: List Unit Operations
@@ -13,7 +12,10 @@
         The parent of the unit operation.
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.unitOperations
   response:

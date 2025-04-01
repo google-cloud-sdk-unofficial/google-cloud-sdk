@@ -1,0 +1,33 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Add an acl entry to a Managed Service for Apache Kafka acl.
+  description: |
+    Add an acl entry to a Managed Service for Apache Kafka acl.
+
+  examples: |
+    To add an acl entry in a cluster named mycluster located in us-central1,
+    run the following:
+
+      $ {command} cluster \
+          --cluster=mycluster \
+          --location=us-central1 \
+          --principal='User:admin@project.iam.gserviceaccount.com' --operation=ALL \
+          --permission_type=ALLOW --host='*'
+
+request:
+  collection: managedkafka.projects.locations.clusters.acls
+  method: addAclEntry
+
+arguments:
+  resource:
+    help_text: Identifies the name of the acl that this command updates.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:acl
+
+  params:
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:acl-entry-principal
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:acl-entry-operation
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:acl-entry-permission-type
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:acl-entry-host

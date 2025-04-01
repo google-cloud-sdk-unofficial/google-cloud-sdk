@@ -31,13 +31,13 @@
        --properties-shape=Exadata.FOO --properties-compute-count=2 --properties-storage-count=3
   arguments:
     params:
-    - help_text: |
+    - help_text: |-
         Identifier. The name of the Exadata Infrastructure resource with the format:
         projects/{project}/locations/{region}/cloudExadataInfrastructures/{cloud_exadata_infrastructure}
       is_positional: true
       is_primary_resource: true
       request_id_field: cloudExadataInfrastructureId
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_location_cloud_exadata_infrastructure
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_cloud_exadata_infrastructures
       required: true
     - arg_name: display-name
       api_field: cloudExadataInfrastructure.displayName
@@ -52,8 +52,9 @@
       help_text: |-
         Google Cloud Platform location where Oracle Exadata is hosted.
     - group:
+        api_field: cloudExadataInfrastructure.properties
         required: false
-        help_text: |
+        help_text: |-
           Various properties of Exadata Infrastructure.
         params:
         - arg_name: properties-compute-count
@@ -79,8 +80,9 @@
             The total storage allocated to the Exadata Infrastructure
             resource, in gigabytes (GB).
         - group:
+            api_field: cloudExadataInfrastructure.properties.maintenanceWindow
             required: false
-            help_text: |
+            help_text: |-
               Maintenance window as defined by Oracle.
               https://docs.oracle.com/en-us/iaas/api/#/en/database/20160918/datatypes/MaintenanceWindow
             params:
@@ -224,7 +226,7 @@
               required: false
               help_text: |-
                 Cloud CloudExadataInfrastructure node patching method, either "ROLLING"
-                 or "NONROLLING". Default value is ROLLING.
+                or "NONROLLING". Default value is ROLLING.
               choices:
               - arg_value: rolling
                 enum_value: ROLLING

@@ -34,7 +34,7 @@ class Describe(base.DescribeCommand):
       'EXAMPLES': """
           The following command describes storage intelligence config for the sub-folder with
           id `123456`. \n
-            ${command} --sub-folder=123456
+            $ {command} --sub-folder=123456
       """,
   }
 

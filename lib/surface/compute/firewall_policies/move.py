@@ -28,6 +28,8 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 from googlecloudsdk.core import log
 import six
 
+@base.DefaultUniverseOnly
+
 
 class Move(base.UpdateCommand):
   """Move a Compute Engine organization firewall policy.
@@ -78,4 +80,11 @@ Move.detailed_help = {
 
       $ {command} 123456789 --folder=987654321
     """,
+    'IAM PERMISSIONS': """\
+    To move a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.move`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

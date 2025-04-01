@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.eventarc import google_channels
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import flags
+from googlecloudsdk.command_lib.util.args import labels_util
 
 _DETAILED_HELP = {
     'DESCRIPTION':
@@ -40,6 +41,7 @@ _DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update an Eventarc Google channel."""
 
@@ -50,23 +52,36 @@ class Update(base.UpdateCommand):
     flags.AddLocationResourceArg(
         parser, 'The location of the Google Channel.', required=True)
     flags.AddCryptoKeyArg(parser, with_clear=True)
+    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     """Run the update command."""
     client = google_channels.GoogleChannelConfigClientV1()
+    location_name = args.CONCEPTS.location.Parse().RelativeName()
+    config_name = f'{location_name}/googleChannelConfig'
+
+    original_google_channel = client.Get(config_name)
+    labels_update_result = labels_util.Diff.FromUpdateArgs(args).Apply(
+        client.LabelsValueClass(), original_google_channel.labels
+    )
 
     update_mask = client.BuildUpdateMask(
         crypto_key=args.IsSpecified('crypto_key'),
-        clear_crypto_key=args.clear_crypto_key)
+        clear_crypto_key=args.clear_crypto_key,
+        labels=labels_update_result.needs_update,
+    )
 
     crypto_key_name = ''
     if args.IsSpecified('crypto_key'):
       crypto_key_name = args.crypto_key
-    config_name = '%s/googleChannelConfig' % (
-        args.CONCEPTS.location.Parse().RelativeName())
     response = client.Update(
         config_name,
-        client.BuildGoogleChannelConfig(config_name, crypto_key_name),
-        update_mask)
+        client.BuildGoogleChannelConfig(
+            config_name,
+            crypto_key_name,
+            labels=labels_update_result.GetOrNone(),
+        ),
+        update_mask,
+    )
 
     return response

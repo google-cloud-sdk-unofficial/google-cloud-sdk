@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.scc.remediation_intents import sps_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.scc.remediation_intents import flags
+from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -47,6 +48,8 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
+    base.ASYNC_FLAG.SetDefault(parser, False)
     flags.PARENT_NAME_FLAG.AddToParser(parser)
     flags.FINDING_NAME_FLAG.AddToParser(parser)
     flags.WORKFLOW_TYPE_FLAG.AddToParser(parser)
@@ -86,8 +89,20 @@ class Create(base.CreateCommand):
         ),
     )
     # call the create remediation intent API
-    response = client.organizations_locations_remediationIntents.Create(
+    operation = client.organizations_locations_remediationIntents.Create(
         request=request
     )
+    operation_id = operation.name
 
-    return response
+    if args.async_:   # Return the in-progress operation if async is requested.
+      log.status.Print(
+          "Check for operation completion status using operation ID:",
+          operation_id,
+      )
+      return operation
+    else:   # Poll the operation until it completes and return resource
+      return sps_api.WaitForOperation(
+          operation_ref=sps_api.GetOperationsRef(operation_id),
+          message="Waiting for remediation intent to be created",
+          has_result=True,
+      )

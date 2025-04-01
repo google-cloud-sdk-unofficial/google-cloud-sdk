@@ -277,6 +277,7 @@ class Create(base.CreateCommand):
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
     flags.AddMaxRunDurationFlag(parser)
+    flags.AddFlexStartFlag(parser)
     flags.AddBestEffortProvisionFlags(parser)
     flags.AddPlacementPolicyFlag(parser)
     flags.AddTPUTopologyFlag(parser)
@@ -297,6 +298,7 @@ class Create(base.CreateCommand):
     ops.placement_policy = args.placement_policy
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
@@ -420,6 +422,7 @@ class CreateBeta(Create):
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
     flags.AddMaxRunDurationFlag(parser)
+    flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)
@@ -463,6 +466,7 @@ class CreateBeta(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
@@ -514,6 +518,7 @@ class CreateAlpha(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
     ops.enable_best_effort_provision = args.enable_best_effort_provision
@@ -586,6 +591,7 @@ class CreateAlpha(Create):
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
     flags.AddMaxRunDurationFlag(parser)
+    flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)
     flags.AddEnableNestedVirtualizationFlag(
         parser, for_node_pool=True, hidden=False)

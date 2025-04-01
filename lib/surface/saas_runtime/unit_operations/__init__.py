@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Saas(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Manage SaaS Runtime unit-operations.'}

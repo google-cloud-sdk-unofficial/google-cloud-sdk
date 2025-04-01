@@ -25,7 +25,6 @@ _SBO_CLH_LOCATION_GLOBAL = "global"
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List batch-operations jobs."""
 

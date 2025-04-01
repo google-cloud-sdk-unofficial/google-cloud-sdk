@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update a Unit Kind
     description: Update a Unit Kind
@@ -141,13 +140,17 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.unitKinds
     modify_request_hooks:
     - googlecloudsdk.command_lib.saas_runtime.unit_kinds:AddParentToDependencies
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations
   update:
     read_modify_update: true

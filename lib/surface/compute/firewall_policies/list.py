@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.firewall_policies import flags
 
 
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Compute Engine organization firewall policies.
 
@@ -65,4 +66,11 @@ List.detailed_help = {
 
       $ {command} --folder=123456789
     """,
+    'IAM PERMISSIONS': """\
+    To list firewall policies, the user must have the following
+    permission: *`compute.firewallPolicies.list`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

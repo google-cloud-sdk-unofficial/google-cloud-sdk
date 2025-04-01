@@ -33,7 +33,7 @@
         projects/{project}/locations/{location}/cloudExadataInfrastructures/{cloud_exadata_infrastructure}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_exadata_infrastructure
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_exadata_infrastructures
       required: true
   request:
     api_version: v1alpha

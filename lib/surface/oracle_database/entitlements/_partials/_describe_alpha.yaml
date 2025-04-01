@@ -33,7 +33,7 @@
         projects/{project}/locations/{location}/entitlements/{entitlement}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_entitlement
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_entitlements
       required: true
   request:
     api_version: v1alpha

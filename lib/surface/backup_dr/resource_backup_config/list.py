@@ -25,7 +25,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
@@ -89,7 +88,6 @@ class List(base.ListCommand):
     flags.AddLocationResourceArg(
         parser,
         'Location for which the resource backup config should be listed.',
-        default='-',
     )
 
   def _Validate_and_Parse_SortBy(self, args):

@@ -44,6 +44,7 @@ Container Flags
     If the --container or --remove-containers flag is specified the following
     arguments may only be specified after a --container flag.
     """
+  del release_track  # Unused.
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.ImageArg(required=False))
   group.AddArgument(flags.PortArg())
@@ -61,9 +62,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
-
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    group.AddArgument(flags.GpuFlag(hidden=False))
+  group.AddArgument(flags.GpuFlag(hidden=False))
 
   return group
 
@@ -101,6 +100,7 @@ class Update(base.Command):
     flags.AddCustomAudiencesFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
     flags.AddRevisionSuffixArg(parser)
     flags.AddSandboxArg(parser)
     flags.AddSessionAffinityFlag(parser)
@@ -283,9 +283,8 @@ class BetaUpdate(Update):
     # Flags specific to managed CR
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.AddScalingFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -314,9 +313,8 @@ class AlphaUpdate(BetaUpdate):
     flags.AddServiceMaxInstancesFlag(parser)
     flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     flags.AddMaxUnavailableFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

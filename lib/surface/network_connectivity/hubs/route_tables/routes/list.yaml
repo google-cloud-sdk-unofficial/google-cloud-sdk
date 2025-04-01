@@ -47,9 +47,9 @@
         format(
           "{0}{1}",
           nextHopVpcNetwork.yesno(yes="N/A", no=""),
-          firstof(nextHopVpnTunnel.siteToSiteDataTransfer, nextHopRouterApplianceInstance.siteToSiteDataTransfer, nextHopInterconnectAttachment.siteToSiteDataTransfer).yesno(yes="ON", no="")
+          firstof(nextHopVpnTunnel.siteToSiteDataTransfer, nextHopRouterApplianceInstance.siteToSiteDataTransfer, nextHopInterconnectAttachment.siteToSiteDataTransfer, nextHopSpoke.siteToSiteDataTransfer).yesno(yes="ON", no="")
         ).yesno(no="OFF"):label=SITE_TO_SITE,
-        firstof(nextHopVpcNetwork.uri, nextHopVpnTunnel.uri, nextHopRouterApplianceInstance.uri, nextHopInterconnectAttachment.uri).basename():label=NEXT_HOP,
+        firstof(nextHopVpcNetwork.uri, nextHopVpnTunnel.uri, nextHopRouterApplianceInstance.uri, nextHopInterconnectAttachment.uri, nextHopSpoke.uri).basename():label=NEXT_HOP,
         name.segment(5):label=HUB:sort=1,
         name.segment(7):label=ROUTE_TABLE:sort=2
       )

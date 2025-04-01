@@ -1,0 +1,24 @@
+release_tracks: [ALPHA]
+hidden: true
+
+help_text:
+  brief: |
+    Describe a Managed Service for Apache Kafka acl.
+  description: |
+    Describe a Managed Service for Apache Kafka acl.
+
+  examples: |
+    To describe an acl in a cluster named mycluster located in us-central1,
+    run the following:
+
+      $ {command} myacl \
+          --cluster=mycluster \
+          --location=us-central1
+
+request:
+  collection: managedkafka.projects.locations.clusters.acls
+
+arguments:
+  resource:
+    help_text: The describe command displays properties of the acl specified by this parameter.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:acl

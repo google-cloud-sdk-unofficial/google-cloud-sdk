@@ -66,6 +66,7 @@ The following flags apply to a single container. If the --container flag is
 specified these flags may only be specified after a --container flag. Otherwise
 they will apply to the primary ingress container.
 """
+  del release_track  # Unused.
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.Http2Flag())
@@ -87,9 +88,7 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.SourceAndImageFlags(mutex=False))
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
-
-  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    group.AddArgument(flags.GpuFlag(hidden=False))
+  group.AddArgument(flags.GpuFlag(hidden=False))
 
   return group
 
@@ -133,6 +132,7 @@ class Deploy(base.Command):
     flags.AddDescriptionFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
     flags.AddRevisionSuffixArg(parser)
     flags.AddSandboxArg(parser)
     flags.AddSessionAffinityFlag(parser)
@@ -994,9 +994,8 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.AddRegionsArg(parser)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
@@ -1123,9 +1122,8 @@ class AlphaDeploy(BetaDeploy):
     flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     flags.AddRegionsArg(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

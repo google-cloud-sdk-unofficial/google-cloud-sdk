@@ -157,7 +157,6 @@ class CreateBeta(Create):
   LOCATION_ARG = None
   REMOTE_LOCATION_ARG = None
   is_cci = False
-  supports_400g = False
 
   @classmethod
   def Args(cls, parser):
@@ -170,7 +169,7 @@ class CreateBeta(Create):
     cls.REMOTE_LOCATION_ARG.AddArgument(parser)
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateAlphaBetaArgs(parser, supports_400g=cls.supports_400g)
+    flags.AddCreateAlphaBetaArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -216,8 +215,6 @@ class CreateAlpha(CreateBeta):
   *{command}* is used to create interconnects. An interconnect represents a
   single specific connection between Google and the customer.
   """
-
-  supports_400g = True
 
 
 Create.detailed_help = DETAILED_HELP

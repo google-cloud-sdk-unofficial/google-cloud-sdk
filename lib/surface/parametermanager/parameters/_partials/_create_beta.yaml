@@ -30,13 +30,28 @@
       $ {command} my-parameter --location=global
   arguments:
     params:
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  kms key.
+        params:
+        - arg_name: kms-key
+          api_field: parameter.kmsKey
+          required: false
+          repeated: false
+          help_text: |-
+            Customer managed encryption key (CMEK) to use for encrypting the
+            Parameter Versions. If not set, the default Google-managed encryption key
+            will be used. Cloud KMS CryptoKeys must reside in the same location as the
+            Parameter. The expected format is
+            `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
     - help_text: |-
         Identifier. [Output only] The resource name of the Parameter in the format
         `projects/*/locations/*/parameters/*`.
       is_positional: true
       is_primary_resource: true
       request_id_field: parameterId
-      resource_spec: !REF googlecloudsdk.command_lib.parametermanager.v1_resources:project_location_parameter
+      resource_spec: !REF googlecloudsdk.command_lib.parametermanager.v1_resources:projects_locations_parameters
       required: true
     - arg_name: labels
       api_field: parameter.labels

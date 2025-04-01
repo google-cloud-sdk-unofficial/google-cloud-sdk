@@ -21,7 +21,7 @@
   request:
     collection: vmmigration.projects.locations.imageImports
     modify_request_hooks:
-    - googlecloudsdk.command_lib.migration.vms.hooks:FixCreateMachineImageImportRequest
+    - googlecloudsdk.command_lib.migration.vms.image_import.hooks:FixCreateMachineImageImportRequest
 
   arguments:
     resource:

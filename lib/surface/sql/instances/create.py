@@ -171,6 +171,8 @@ def AddBetaArgs(parser):
   flags.AddEnableConnectionPooling(parser)
   flags.AddConnectionPoolFlags(parser)
   flags.AddCustomSubjectAlternativeNames(parser)
+  flags.AddInstanceType(parser)
+  flags.AddNodeCount(parser)
 
 
 def AddAlphaArgs(unused_parser):

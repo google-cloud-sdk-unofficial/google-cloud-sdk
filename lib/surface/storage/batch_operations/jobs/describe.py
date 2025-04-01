@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_ar
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a batch-operations job."""
 

@@ -36,9 +36,6 @@ DESCRIPTION = ("""\
     *{command}* retrieves the latest recovery time for a Cloud SQL instance.
     This is the latest time that can be used to perform point in time recovery
     for the Cloud SQL instance.
-
-    This is currently limited to PostgreSQL instances that are PITR enabled with
-    logs stored in cloud storage.
     """)
 
 EXAMPLES_GA = ("""\

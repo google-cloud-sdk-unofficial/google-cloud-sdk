@@ -493,7 +493,6 @@
     - group:
         api_field: connection.gitProxyConfig
         required: false
-        hidden: true
         help_text: |-
           The git proxy configuration.
         params:

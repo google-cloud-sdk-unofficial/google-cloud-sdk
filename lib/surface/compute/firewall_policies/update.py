@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Compute Engine organization firewall policy.
 
@@ -73,4 +74,11 @@ Update.detailed_help = {
 
       $ {command} 123456789 --description='New description'
     """,
+    'IAM PERMISSIONS': """\
+    To update a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.update`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

@@ -78,7 +78,6 @@ class Update(base.UpdateCommand):
       roledef.add_argument(
           '--custom-role',
           type=str,
-          hidden=True,
           help='Custom role to assign to principal.',
       )
     labels_util.AddUpdateLabelsFlags(parser)

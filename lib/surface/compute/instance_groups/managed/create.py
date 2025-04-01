@@ -458,6 +458,7 @@ class CreateBeta(CreateGA):
 
   @classmethod
   def Args(cls, parser):
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(CreateBeta, cls).Args(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
@@ -480,7 +481,6 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(CreateAlpha, cls).Args(parser)
     managed_flags.AddTargetSizePolicyModeFlag(parser)
 

@@ -80,7 +80,6 @@ class Create(base.CreateCommand):
       roledef.add_argument(
           '--custom-role',
           type=str,
-          hidden=True,
           help='Custom role to assign to principal.',
       )
     labels_util.AddCreateLabelsFlags(parser)

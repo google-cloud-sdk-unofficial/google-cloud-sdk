@@ -46,7 +46,6 @@ class UpdateBackend(base.UpdateCommand):
   To add, remove, or swap backends, use the `gcloud compute backend-services
   remove-backend` and `gcloud compute backend-services add-backend` commands.
   """
-  support_custom_metrics = False
 
   @staticmethod
   def Args(parser):
@@ -58,6 +57,7 @@ class UpdateBackend(base.UpdateCommand):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
+    backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -144,11 +144,11 @@ class UpdateBackend(base.UpdateCommand):
           client.messages.Backend.PreferenceValueValuesEnum(args.preference)
       )
 
-    if self.support_custom_metrics and args.custom_metrics:
+    if args.custom_metrics:
       backend_to_update.customMetrics = args.custom_metrics
-    if self.support_custom_metrics and args.custom_metrics_file:
+    if args.custom_metrics_file:
       backend_to_update.customMetrics = args.custom_metrics_file
-    if self.support_custom_metrics and args.clear_custom_metrics:
+    if args.clear_custom_metrics:
       backend_to_update.customMetrics = []
 
     return replacement
@@ -237,8 +237,6 @@ class UpdateBackendBeta(UpdateBackend):
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
 
-  support_custom_metrics = True
-
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
@@ -295,7 +293,6 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   For more information about the available settings, see
   https://cloud.google.com/load-balancing/docs/backend-service.
   """
-  support_custom_metrics = True
 
   @classmethod
   def Args(cls, parser):

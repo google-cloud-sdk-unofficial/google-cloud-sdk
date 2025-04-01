@@ -8,9 +8,9 @@ help_text:
   examples: |
     The following command creates a new partner gateway named `my-gateway` in the location `us-central1`.
 
-      $ {command} my-gateway --location=us-central1 --gateway-reference=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX --partner-subnet-range=100.64.4.0/24
+      $ {command} my-gateway --location=us-central1 --gateway-reference=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX --partner-subnet-range=100.64.4.0/24 --sse-subnet-range=100.88.255.0/24
 
-    The customer gateway whose reference ID is `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` will be supported by the partner-owned subnet with CIDR range `100.64.4.0/24`.
+    The customer gateway backed by partner facing subnet with CIDR range `100.88.255.0/24` whose reference ID is `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` will be supported by the partner-owned subnet with CIDR range `100.64.4.0/24`.
 
 arguments:
   resource:
@@ -28,6 +28,10 @@ arguments:
     api_field: partnerSSEGateway.partnerSubnetRange
     help_text: |
       Address range (in CIDR format) for the partner-owned subnet which will support this gateway.
+  - arg_name: sse-subnet-range
+    api_field: partnerSSEGateway.sseSubnetRange
+    help_text: |
+      Subnet range where partner facing side of NCCGW is deployed. Default value is set to "100.88.255.0/24". The CIDR suffix should be less than or equal to 25.
 
 async:
   collection: networksecurity.projects.locations.operations

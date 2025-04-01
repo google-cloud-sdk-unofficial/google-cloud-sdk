@@ -457,6 +457,7 @@ class UpdateBeta(UpdateGA):
 
   @classmethod
   def Args(cls, parser):
+    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(UpdateBeta, cls).Args(parser)
 
   def _CreateInstanceGroupManagerPatch(
@@ -479,7 +480,6 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     super(UpdateAlpha, cls).Args(parser)
 
   def _CreateInstanceGroupManagerPatch(

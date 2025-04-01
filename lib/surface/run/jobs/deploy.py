@@ -68,7 +68,7 @@ Container Flags
   group.AddArgument(flags.MutexEnvVarsFlags())
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
-  if release_track in [base.ReleaseTrack.ALPHA]:
+  if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
@@ -370,6 +370,7 @@ class BetaDeploy(Deploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
+    flags.AddGpuTypeFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

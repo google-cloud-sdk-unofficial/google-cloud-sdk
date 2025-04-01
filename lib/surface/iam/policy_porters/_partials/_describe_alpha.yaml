@@ -35,7 +35,7 @@
         projects/{project}/locations/{location}/policyPorters/{policy_porter}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:project_location_policy_porter
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:projects_locations_policy_porters
       required: true
   request:
     api_version: v3alpha

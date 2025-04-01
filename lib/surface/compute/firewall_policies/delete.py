@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine organization firewall policy.
 
@@ -67,4 +68,11 @@ Delete.detailed_help = {
 
       $ {command} 123456789
     """,
+    'IAM PERMISSIONS': """\
+    To delete a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.delete`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

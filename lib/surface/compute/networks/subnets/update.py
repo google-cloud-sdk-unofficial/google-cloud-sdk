@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
 
   _include_alpha_logging = False
   _include_external_ipv6_prefix = False
+  _include_internal_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _update_purpose_to_private = True
@@ -74,6 +75,7 @@ class Update(base.UpdateCommand):
         parser,
         cls._include_alpha_logging,
         cls._include_external_ipv6_prefix,
+        cls._include_internal_ipv6_prefix,
         cls._include_allow_cidr_routes_overlap,
         cls._api_version,
         cls._update_purpose_to_private,
@@ -121,6 +123,7 @@ class Update(base.UpdateCommand):
         args, 'add_secondary_ranges_with_reserved_internal_range', None)
 
     external_ipv6_prefix = getattr(args, 'external_ipv6_prefix', None)
+    internal_ipv6_prefix = getattr(args, 'internal_ipv6_prefix', None)
 
     ip_collection = None
     if args.ip_collection:
@@ -149,6 +152,7 @@ class Update(base.UpdateCommand):
         stack_type=stack_type,
         ipv6_access_type=ipv6_access_type,
         external_ipv6_prefix=external_ipv6_prefix,
+        internal_ipv6_prefix=internal_ipv6_prefix,
         ip_collection=ip_collection,
     )
 
@@ -158,6 +162,7 @@ class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_external_ipv6_prefix = False
+  _include_internal_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
@@ -168,6 +173,7 @@ class UpdateAlpha(UpdateBeta):
 
   _include_alpha_logging = True
   _include_external_ipv6_prefix = True
+  _include_internal_ipv6_prefix = True
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _update_purpose_to_private = True

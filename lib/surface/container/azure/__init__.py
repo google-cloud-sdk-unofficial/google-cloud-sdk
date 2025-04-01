@@ -23,6 +23,20 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        "This command is deprecated. See"
+        " https://cloud.google.com/kubernetes-engine/multi-cloud/docs/azure/deprecations/deprecation-announcement"
+        " for more details."
+    ),
+    error=(
+        "This command has been removed. See"
+        " https://cloud.google.com/kubernetes-engine/multi-cloud/docs/azure/deprecations/deprecation-announcement"
+        " for more details."
+    ),
+)
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Azure(base.Group):
   """Deploy and manage clusters of machines on Azure for running containers."""

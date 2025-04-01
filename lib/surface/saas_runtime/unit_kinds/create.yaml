@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Unit Kind
     description: Create a Unit Kind
@@ -38,6 +37,7 @@
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       resource_method_params:
         unitKind.saas: '{__relative_name__}'
+      required: true
     - arg_name: dependencies
       api_field: unitKind.dependencies
       required: false
@@ -136,11 +136,15 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.unitKinds
     modify_request_hooks:
     - googlecloudsdk.command_lib.saas_runtime.unit_kinds:AddParentToDependencies
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

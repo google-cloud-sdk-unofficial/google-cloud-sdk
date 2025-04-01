@@ -33,7 +33,7 @@ class Disable(base.Command):
       """,
       'EXAMPLES': """
           The following command disables storage intelligence for the project. \n
-            ${command} --project=my-project
+            $ {command} --project=my-project
       """,
   }
 

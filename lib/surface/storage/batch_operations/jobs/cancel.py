@@ -25,7 +25,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Cancel(base.Command):
   """Cancel a batch-operations job."""
 

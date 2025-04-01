@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Delete a Unit
     description: Delete a Unit
@@ -15,9 +14,13 @@
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:unit
       required: true
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.units
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

@@ -35,13 +35,13 @@
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
   arguments:
     params:
-    - help_text: |
+    - help_text: |-
         Identifier. The name of the Autonomous Database resource in the following format:
         projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
       is_positional: true
       is_primary_resource: true
       request_id_field: autonomousDatabaseId
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_location_autonomous_database
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_databases
       required: true
     - arg_name: database
       api_field: autonomousDatabase.database
@@ -65,6 +65,7 @@
       help_text: |-
         The password for the default ADMIN user.
     - group:
+        api_field: autonomousDatabase.properties
         required: false
         help_text: |-
           The properties of an Autonomous Database.
@@ -268,13 +269,13 @@
         projects/{project}/global/networks/{network}
       is_positional: false
       is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_global_network
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_none_networks
       resource_method_params:
         autonomousDatabase.network: '{__relative_name__}'
-      required: true
+      required: false
     - arg_name: cidr
       api_field: autonomousDatabase.cidr
-      required: true
+      required: false
       repeated: false
       help_text: |-
         The subnet CIDR range for the Autonmous Database.

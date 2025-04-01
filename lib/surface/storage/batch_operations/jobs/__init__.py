@@ -23,6 +23,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Jobs(base.Group):
   """Manage Cloud Storage batch operations jobs."""

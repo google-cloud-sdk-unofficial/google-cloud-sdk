@@ -21,5 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
+
+
 class FirewallPolicyAssociations(base.Group):
   """Read and manipulate Compute Engine organization firewall policy associations."""

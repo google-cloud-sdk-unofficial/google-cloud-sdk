@@ -90,10 +90,13 @@ class Update(base.Command):
           description=description, labels=labels
       )
       if include_export_ranges is not None or exclude_export_ranges is not None:
-        spoke.linkedVpcNetwork = client.messages.GoogleCloudNetworkconnectivityV1betaLinkedVpcNetwork(
-            includeExportRanges=include_export_ranges,
-            excludeExportRanges=exclude_export_ranges,
+        spoke.linkedVpcNetwork = (
+            client.messages.GoogleCloudNetworkconnectivityV1betaLinkedVpcNetwork()
         )
+        if include_export_ranges is not None:
+          spoke.linkedVpcNetwork.includeExportRanges = include_export_ranges
+        if exclude_export_ranges is not None:
+          spoke.linkedVpcNetwork.excludeExportRanges = exclude_export_ranges
       op_ref = client.UpdateSpokeBeta(spoke_ref, spoke, update_mask)
     else:
       if labels_diff.MayHaveUpdates():
@@ -107,10 +110,11 @@ class Update(base.Command):
 
       spoke = client.messages.Spoke(description=description, labels=labels)
       if include_export_ranges is not None or exclude_export_ranges is not None:
-        spoke.linkedVpcNetwork = client.messages.LinkedVpcNetwork(
-            includeExportRanges=include_export_ranges,
-            excludeExportRanges=exclude_export_ranges,
-        )
+        spoke.linkedVpcNetwork = client.messages.LinkedVpcNetwork()
+        if include_export_ranges is not None:
+          spoke.linkedVpcNetwork.includeExportRanges = include_export_ranges
+        if exclude_export_ranges is not None:
+          spoke.linkedVpcNetwork.excludeExportRanges = exclude_export_ranges
       op_ref = client.UpdateSpoke(spoke_ref, spoke, update_mask)
 
     log.status.Print('Update request issued for: [{}]'.format(spoke_ref.Name()))

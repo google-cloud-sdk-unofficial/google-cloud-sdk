@@ -123,6 +123,7 @@ class Update(base.UpdateCommand):
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group)
+    flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     node_config_group = group.add_argument_group('Node config')
     flags.AddMachineTypeFlag(node_config_group, update=True)
@@ -170,6 +171,7 @@ class Update(base.UpdateCommand):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
@@ -314,6 +316,7 @@ class UpdateBeta(Update):
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group)
+    flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -365,6 +368,7 @@ class UpdateBeta(Update):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
@@ -439,6 +443,7 @@ class UpdateAlpha(Update):
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
     flags.AddMaxRunDurationFlag(group)
+    flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
 
     node_config_group = group.add_argument_group('Node config')
@@ -490,6 +495,7 @@ class UpdateAlpha(Update):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
         enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,

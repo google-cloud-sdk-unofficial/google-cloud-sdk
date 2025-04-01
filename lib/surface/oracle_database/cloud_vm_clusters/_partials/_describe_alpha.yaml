@@ -33,7 +33,7 @@
         projects/{project}/locations/{location}/cloudVmClusters/{cloud_vm_cluster}.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_cloud_vm_cluster
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_vm_clusters
       required: true
   request:
     api_version: v1alpha

@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Rollout
     description: Create a Rollout
@@ -39,6 +38,7 @@
             Required if no other type of release is specified.
           is_positional: false
           is_primary_resource: false
+          release_tracks: [ALPHA]
           resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
           resource_method_params:
             rollout.flagRelease: '{__relative_name__}'
@@ -132,9 +132,13 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.rollouts
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

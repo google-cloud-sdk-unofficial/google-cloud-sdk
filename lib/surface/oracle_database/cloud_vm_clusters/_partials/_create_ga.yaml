@@ -37,22 +37,22 @@
        --properties-cpu-core-count=4
   arguments:
     params:
-    - help_text: |
+    - help_text: |-
         Identifier. The name of the VM Cluster resource with the format:
         projects/{project}/locations/{region}/cloudVmClusters/{cloud_vm_cluster}
       is_positional: true
       is_primary_resource: true
       request_id_field: cloudVmClusterId
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_location_cloud_vm_cluster
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_cloud_vm_clusters
       required: true
     - arg_name: exadata-infrastructure
-      help_text: |
+      help_text: |-
         The name of the Exadata Infrastructure resource on which VM cluster
         resource is created, in the following format:
         projects/{project}/locations/{region}/cloudExadataInfrastuctures/{cloud_extradata_infrastructure}
       is_positional: false
       is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_location_cloud_exadata_infrastructure
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_cloud_exadata_infrastructures
       resource_method_params:
         cloudVmCluster.exadataInfrastructure: '{__relative_name__}'
       required: true
@@ -63,8 +63,9 @@
       help_text: |-
         User friendly name for this resource.
     - group:
+        api_field: cloudVmCluster.properties
         required: false
-        help_text: |
+        help_text: |-
           Various properties and settings associated with Exadata VM cluster.
         params:
         - arg_name: properties-license-type
@@ -88,6 +89,7 @@
           help_text: |-
             Grid Infrastructure Version.
         - group:
+            api_field: cloudVmCluster.properties.timeZone
             required: false
             help_text: |-
               Represents a time zone from the
@@ -98,13 +100,13 @@
               required: false
               repeated: false
               help_text: |-
-                IANA Time Zone Database time zone, e.g. "America/New_York".
+                IANA Time Zone Database time zone. For example "America/New_York".
             - arg_name: time-zone-version
               api_field: cloudVmCluster.properties.timeZone.version
               required: false
               repeated: false
               help_text: |-
-                IANA Time Zone Database version number, e.g. "2019a".
+                IANA Time Zone Database version number. For example "2019a".
         - arg_name: properties-ssh-public-keys
           api_field: cloudVmCluster.properties.sshPublicKeys
           required: false
@@ -183,6 +185,7 @@
           help_text: |-
             Prefix for VM cluster host names.
         - group:
+            api_field: cloudVmCluster.properties.diagnosticsDataCollectionOptions
             required: false
             help_text: |-
               Data collection options for diagnostics.
@@ -219,6 +222,12 @@
           type: int
           help_text: |-
             Number of enabled CPU cores.
+        - arg_name: properties-system-version
+          api_field: cloudVmCluster.properties.systemVersion
+          required: false
+          repeated: false
+          help_text: |-
+            Operating system version of the image.
         - arg_name: properties-db-server-ocids
           api_field: cloudVmCluster.properties.dbServerOcids
           required: false
@@ -229,7 +238,7 @@
           api_field: cloudVmCluster.properties.clusterName
           required: false
           repeated: false
-          help_text: |
+          help_text: |-
             OCI Cluster name.
     - arg_name: labels
       api_field: cloudVmCluster.labels
@@ -258,7 +267,7 @@
         Format: projects/{project}/global/networks/{network}
       is_positional: false
       is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:project_global_network
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_none_networks
       resource_method_params:
         cloudVmCluster.network: '{__relative_name__}'
       required: true

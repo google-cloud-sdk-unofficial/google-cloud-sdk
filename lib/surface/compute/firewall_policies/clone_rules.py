@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.DefaultUniverseOnly
 class CloneRules(base.UpdateCommand):
   """Replace the rules of a Compute Engine organization firewall policy with rules from another policy.
 
@@ -39,34 +40,44 @@ class CloneRules(base.UpdateCommand):
   @classmethod
   def Args(cls, parser):
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyArgument(
-        required=True, operation='clone the rules to')
-    cls.FIREWALL_POLICY_ARG.AddArgument(
-        parser, operation_type='clone-rules')
+        required=True, operation='clone the rules to'
+    )
+    cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='clone-rules')
     flags.AddArgsCloneRules(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, with_project=False)
+        args, holder.resources, with_project=False
+    )
     org_firewall_policy = client.OrgFirewallPolicy(
         ref=ref,
         compute_client=holder.client,
         resources=holder.resources,
-        version=six.text_type(self.ReleaseTrack()).lower())
+        version=six.text_type(self.ReleaseTrack()).lower(),
+    )
     dest_fp_id = firewall_policies_utils.GetFirewallPolicyId(
-        org_firewall_policy, ref.Name(), organization=args.organization)
+        org_firewall_policy, ref.Name(), organization=args.organization
+    )
     return org_firewall_policy.CloneRules(
         only_generate_request=False,
         dest_fp_id=dest_fp_id,
-        source_firewall_policy=args.source_firewall_policy)
+        source_firewall_policy=args.source_firewall_policy,
+    )
 
 
 CloneRules.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To clone the rules of an organization firewall policy with ID ``123456789",
     from another organization firewall policy with ID ``987654321", run:
 
       $ {command} 123456789 --source-firewall-policy=987654321
     """,
+    'IAM PERMISSIONS': """\
+    To clone rules to a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.cloneRules`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+      """,
 }

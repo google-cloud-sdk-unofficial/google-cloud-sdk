@@ -36,7 +36,7 @@
         projects/{project}/locations/{location}/policyPorters/{policy_porter}/translations/{translation}.
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:project_location_policy_porter_translation
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:projects_locations_policy_porters_translations
       required: true
   request:
     api_version: v3alpha

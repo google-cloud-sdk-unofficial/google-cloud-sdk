@@ -155,18 +155,22 @@ cloudNatTemplate = string.Template(
     '--network default --project=$PROJECT_ID \n'
     'gcloud beta compute routers nats create nat --router=my-router '
     '--region=$REGION --auto-allocate-nat-external-ips '
-    '--nat-all-subnet-ip-ranges --project=$PROJECT_ID')
+    '--nat-all-subnet-ip-ranges --project=$PROJECT_ID'
+)
 
 
 def MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id):
-  if is_autopilot and (getattr(args, 'enable_private_nodes', False) and
-                       (hasattr(args, 'network') or hasattr('subnetwork'))):
+  if (is_autopilot
+      and getattr(args, 'enable_private_nodes', False)
+      and (hasattr(args, 'network') or hasattr(args, 'subnetwork'))):
     log.status.Print(
-        cloudNatTemplate.substitute(REGION=location, PROJECT_ID=project_id))
+        cloudNatTemplate.substitute(REGION=location, PROJECT_ID=project_id)
+    )
 
 
-def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
-                           project_id):
+def ParseCreateOptionsBase(
+    args, is_autopilot, get_default, location, project_id
+):
   """Parses the flags provided with the cluster creation command."""
   flags.MungeBasicAuthFlags(args)
 

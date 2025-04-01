@@ -31,7 +31,7 @@
     - help_text: |-
         The name of the operation resource to be deleted.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.default_resources:project_location_operation
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.default_resources:projects_locations_operations
       required: true
   request:
     api_version: v1alpha

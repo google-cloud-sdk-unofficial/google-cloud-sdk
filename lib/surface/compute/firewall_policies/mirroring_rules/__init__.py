@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.UniverseCompatible
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class FirewallPolicyPacketMirroringRules(base.Group):
   """Read and manipulate Compute Engine organization firewall policy packet mirroring rules."""

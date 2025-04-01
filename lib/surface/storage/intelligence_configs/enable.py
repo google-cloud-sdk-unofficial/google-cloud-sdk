@@ -32,20 +32,25 @@ class Enable(base.Command):
   detailed_help = {
       'DESCRIPTION': """
           Enable storage intelligence plan for the organization, sub-folder or project
-          along with filters.
+          along with filters. The command sets `STANDARD` edition by default if
+          no other edition flags like ``--trial-edition`` are specified.
       """,
       'EXAMPLES': """
           To remove buckets from the storage intelligence plan, Use the following
           command with ``--exclude-bucket-id-regexes'' flag.
           to specify list of bucket id regexes.,\n
-            ${command} --organization=my-org --exclude-bucket-id-regexes="my-bucket-.*"
+            $ {command} --organization=my-org --exclude-bucket-id-regexes="my-bucket-.*"
 
           To apply location based filters in the storage intelligence plan, Use
           ``--include-locations'' or ``--exclude-locations'' flags to specify allowed
           list of locations or excluded list of locations. The following
           command updates storage intelligence plan of sub-folder `123456` with the
           specified list of included locations.,\n
-            ${command} --sub-folder=123456 --include-locations="us-east1","us-west1"
+            $ {command} --sub-folder=123456 --include-locations="us-east1","us-west1"
+
+          The following command enables storage intelligence with Trial edition
+          for the given project,\n
+            $ {command} --project=my-project --trial-edition
       """,
   }
 
@@ -53,7 +58,8 @@ class Enable(base.Command):
   def Args(cls, parser):
     parser.SetSortArgs(False)
     flags.add_storage_intelligence_configs_level_flags(parser)
-    flags.add_storage_intelligence_configs_filter_flags(parser)
+    settings = parser.add_group(category='SETTINGS')
+    flags.add_storage_intelligence_configs_settings_flags(settings)
 
   def Run(self, args):
     client = storage_intelligence_api.StorageIntelligenceApi()
@@ -63,6 +69,7 @@ class Enable(base.Command):
           client.update_project_intelligence_config(
               args.project,
               inherit_from_parent=None,
+              trial_edition=args.trial_edition,
               include_locations=args.include_locations,
               exclude_locations=args.exclude_locations,
               include_bucket_id_regexes=args.include_bucket_id_regexes,
@@ -73,6 +80,7 @@ class Enable(base.Command):
       intelligence_config = client.update_sub_folder_intelligence_config(
           args.sub_folder,
           inherit_from_parent=None,
+          trial_edition=args.trial_edition,
           include_locations=args.include_locations,
           exclude_locations=args.exclude_locations,
           include_bucket_id_regexes=args.include_bucket_id_regexes,
@@ -82,6 +90,7 @@ class Enable(base.Command):
       intelligence_config = client.update_organization_intelligence_config(
           args.organization,
           inherit_from_parent=None,
+          trial_edition=args.trial_edition,
           include_locations=args.include_locations,
           exclude_locations=args.exclude_locations,
           include_bucket_id_regexes=args.include_bucket_id_regexes,

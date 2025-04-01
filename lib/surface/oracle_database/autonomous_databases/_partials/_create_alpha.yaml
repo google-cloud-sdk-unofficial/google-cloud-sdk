@@ -36,13 +36,13 @@
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW
   arguments:
     params:
-    - help_text: |
+    - help_text: |-
         Identifier. The name of the Autonomous Database resource in the following format:
         projects/{project}/locations/{region}/autonomousDatabases/{autonomous_database}
       is_positional: true
       is_primary_resource: true
       request_id_field: autonomousDatabaseId
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_autonomous_databases
       required: true
     - arg_name: database
       api_field: autonomousDatabase.database
@@ -66,6 +66,7 @@
       help_text: |-
         The password for the default ADMIN user.
     - group:
+        api_field: autonomousDatabase.properties
         required: false
         help_text: |-
           The properties of an Autonomous Database.
@@ -253,6 +254,12 @@
             The retention period for the Autonomous Database. This field is specified
             in days, can range from 1 day to 60 days, and has a default value of
             60 days.
+        - arg_name: properties-allowlisted-ips
+          api_field: autonomousDatabase.properties.allowlistedIps
+          required: false
+          repeated: true
+          help_text: |-
+            The list of allowlisted IP addresses for the Autonomous Database.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false
@@ -269,17 +276,40 @@
         projects/{project}/global/networks/{network}
       is_positional: false
       is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_global_network
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_none_networks
       resource_method_params:
         autonomousDatabase.network: '{__relative_name__}'
-      required: true
+      required: false
     - arg_name: cidr
       api_field: autonomousDatabase.cidr
-      required: true
+      required: false
       repeated: false
       help_text: |-
         The subnet CIDR range for the Autonmous Database.
+    - arg_name: odb-network
+      help_text: |-
+        The name of the OdbNetwork associated with the Autonomous Database.
+        Format: projects/{project}/locations/{location}/odbNetworks/{odb_network}
+        It is optional but if specified, this should match the parent ODBNetwork of
+        the OdbSubnet.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks
+      resource_method_params:
+        autonomousDatabase.odbNetwork: '{__relative_name__}'
+      required: false
+    - arg_name: odb-subnet
+      help_text: |-
+        The name of the OdbSubnet associated with the Autonomous Database. Format:
+        projects/{project}/locations/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks_odb_subnets
+      resource_method_params:
+        autonomousDatabase.odbSubnet: '{__relative_name__}'
+      required: false
     - group:
+        api_field: autonomousDatabase.sourceConfig
         required: false
         help_text: |-
           The source configuration for the standby Autonomnous Database.
@@ -290,7 +320,7 @@
             Autonomous Database from a source.
           is_positional: false
           is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:project_location_autonomous_database
+          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_autonomous_databases
           resource_method_params:
             autonomousDatabase.sourceConfig.autonomousDatabase: '{__relative_name__}'
           required: false

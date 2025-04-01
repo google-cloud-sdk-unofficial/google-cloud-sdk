@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ResourceBackupConfig(base.Group):
   """Show protection summary for resources in a particular location and project."""

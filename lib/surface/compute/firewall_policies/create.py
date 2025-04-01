@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine organization firewall policy.
 
@@ -66,4 +67,11 @@ Create.detailed_help = {
 
       $ {command} --short-name=my-policy --folder=123456789
     """,
+    'IAM PERMISSIONS': """\
+    To create rules to a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.create`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

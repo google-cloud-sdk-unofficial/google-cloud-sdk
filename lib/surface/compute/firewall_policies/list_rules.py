@@ -44,6 +44,9 @@ DEFAULT_LIST_FORMAT = """\
   )"""
 
 
+@base.DefaultUniverseOnly
+
+
 class ListRules(base.DescribeCommand, base.ListCommand):
   """List the rules of a Compute Engine organization firewall policy.
 
@@ -111,4 +114,11 @@ ListRules.detailed_help = {
         enableLogging,
         description)"
         """,
+    'IAM PERMISSIONS': """\
+    To list rules of a firewall policy, the user must have the following
+    permission: *`compute.firewallPolicies.get`.
+
+    To find predefined roles that contain those permissions, see the [Compute
+    Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
+    """
 }

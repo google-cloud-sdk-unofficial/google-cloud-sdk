@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update a Rollout Type
     description: Update a Rollout Type
@@ -55,6 +54,7 @@
         The strategy to use for executing rollouts.
     - arg_name: maintenance-policy-enforcement
       api_field: rolloutKind.maintenancePolicyEnforcement
+      release_tracks: [ALPHA]
       required: false
       help_text: |-
         CLI_DEFAULT_HELP_TEXT.
@@ -106,11 +106,15 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.rolloutKinds
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations
   update:
     read_modify_update: true

@@ -66,6 +66,41 @@ arguments:
       to failover backends if possible. This field should be set to a value between 1 and 99.
       The default value is 50 for Proxyless service mesh, and 70 for others.
     type: int
+  - arg_name: isolation-config-granularity
+    api_field: serviceLbPolicy.isolationConfig.isolationGranularity
+    release_tracks: [ALPHA]
+    help_text: |
+      The granularity of the isolation.
+    choices:
+    - enum_value: ISOLATION_GRANULARITY_UNSPECIFIED
+      arg_value: unspecified
+      help_text: |
+        No isolation is configured for the backend service. Traffic can overflow
+        based on the load balancing algorithm.
+    - enum_value: REGION
+      arg_value: region
+      help_text:  |
+        Traffic for this service will be isolated at the nearest cloud region.
+    default: unspecified
+  - arg_name: isolation-config-mode
+    api_field: serviceLbPolicy.isolationConfig.isolationMode
+    release_tracks: [ALPHA]
+    help_text: |
+      The granularity of the isolation.
+    choices:
+    - enum_value: ISOLATION_MODE_UNSPECIFIED
+      arg_value: unspecified
+      help_text: |
+        No isolation mode is configured for the backend service.
+    - enum_value: NEAREST
+      arg_value: nearest
+      help_text:  |
+        Traffic will be sent to the nearest location.
+    - enum_value: STRICT
+      arg_value: strict
+      help_text:  |
+        Traffic will fail if no serving backends are available in the same region as the load balancer.
+    default: unspecified
   - arg_name: description
     api_field: serviceLbPolicy.description
     help_text: The description for the service LB policy.

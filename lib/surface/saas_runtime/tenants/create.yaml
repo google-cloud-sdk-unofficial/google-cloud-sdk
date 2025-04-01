@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a Tenant
     description: Create a Tenant
@@ -27,7 +26,7 @@
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       resource_method_params:
         tenant.saas: '{__relative_name__}'
-      required: false
+      required: true
     - arg_name: consumer-resource
       api_field: tenant.consumerResource
       required: false
@@ -45,9 +44,13 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.tenants
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

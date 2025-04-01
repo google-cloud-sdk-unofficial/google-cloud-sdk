@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update a Unit Operation
     description: Update a Unit Operation
@@ -173,7 +172,10 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.unitOperations
     modify_request_hooks:
@@ -181,8 +183,9 @@
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleEmptyUpgrade
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleEmptyDeprovision
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleOneOfOperationTypeUpdate
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations
   update:
     read_modify_update: true

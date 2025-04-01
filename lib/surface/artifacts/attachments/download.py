@@ -33,7 +33,7 @@ from six.moves.urllib.parse import unquote
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Download(base.Command):
-  """Download an Artifact registry attachment from a repository."""
+  """Download an Artifact Registry attachment from a repository."""
 
   api_version = 'v1'
 

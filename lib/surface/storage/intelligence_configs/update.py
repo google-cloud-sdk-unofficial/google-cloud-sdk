@@ -30,29 +30,31 @@ class Update(base.Command):
   detailed_help = {
       'DESCRIPTION': """
           Update storage intelligence configuration for the organization, sub-folder
-           or project.
+          or project. The command sets `STANDARD` edition by default if no other
+          edition flags like ``--trial-edition`` or ``--inherit-from-parent``
+          are specified.
       """,
       'EXAMPLES': """
           To limit buckets in the storage intelligence configuration, Use the following
           command with ``--include-bucket-id-regexes'' flag.
           to specify list of bucket ids and bucket id regexes.,\n
-            ${command} --organization=my-org --include-bucket-id-regexes=my-bucket-.*
+            $ {command} --organization=my-org --include-bucket-id-regexes=my-bucket-.*
 
           To apply location based filters in the storage intelligence configuration, Use
           ``--include-locations'' or ``--exclude-locations'' flags to specify allowed
           list of locations or excluded list of locations. The following
           command updates storage intelligence configuration of sub-folder `123456` with the
           specified list of excluded locations.,\n
-            ${command} --sub-folder=123456 --exclude-locations=us-east1,us-west1
+            $ {command} --sub-folder=123456 --exclude-locations=us-east1,us-west1
 
           The following command updates storage intelligence for the given project by
           inheriting existing storage intelligence configuration from the hierarchical parent
           resource.,\n
-            ${command} --project=my-project --inherit-from-parent
+            $ {command} --project=my-project --inherit-from-parent
 
           To clear included locations from the project storage intelligence, Use the
           following command.,\n
-            ${command} --project=my-project --include-locations=
+            $ {command} --project=my-project --include-locations=
 
       """,
   }
@@ -71,8 +73,8 @@ class Update(base.Command):
             'Specifies storage intelligence config to be inherited from parent.'
         ),
     )
-    filters = update_group.add_group(category='FILTER')
-    flags.add_storage_intelligence_configs_filter_flags(filters)
+    settings = update_group.add_group(category='SETTINGS')
+    flags.add_storage_intelligence_configs_settings_flags(settings)
 
   def Run(self, args):
     client = storage_intelligence_api.StorageIntelligenceApi()
@@ -82,6 +84,7 @@ class Update(base.Command):
           client.update_project_intelligence_config(
               args.project,
               inherit_from_parent=args.inherit_from_parent,
+              trial_edition=args.trial_edition,
               include_locations=args.include_locations,
               exclude_locations=args.exclude_locations,
               include_bucket_id_regexes=args.include_bucket_id_regexes,
@@ -92,6 +95,7 @@ class Update(base.Command):
       intelligence_config = client.update_sub_folder_intelligence_config(
           args.sub_folder,
           inherit_from_parent=args.inherit_from_parent,
+          trial_edition=args.trial_edition,
           include_locations=args.include_locations,
           exclude_locations=args.exclude_locations,
           include_bucket_id_regexes=args.include_bucket_id_regexes,
@@ -101,6 +105,7 @@ class Update(base.Command):
       intelligence_config = client.update_organization_intelligence_config(
           args.organization,
           inherit_from_parent=args.inherit_from_parent,
+          trial_edition=args.trial_edition,
           include_locations=args.include_locations,
           exclude_locations=args.exclude_locations,
           include_bucket_id_regexes=args.include_bucket_id_regexes,
@@ -108,7 +113,7 @@ class Update(base.Command):
       )
 
     log.status.Print(
-        'Successfully enabled storage intelligence plan for {}.\n'.format(
+        'Successfully updated storage intelligence plan for {}.\n'.format(
             intelligence_config.name
         )
     )

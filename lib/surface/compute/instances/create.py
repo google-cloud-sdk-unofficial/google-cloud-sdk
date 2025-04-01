@@ -121,6 +121,7 @@ def _CommonArgs(
     support_igmp_query=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_source_snapshot_region=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -137,6 +138,7 @@ def _CommonArgs(
       enable_source_instant_snapshots=support_source_instant_snapshot,
       enable_confidential_compute=support_enable_confidential_compute,
       support_disk_labels=support_disk_labels,
+      support_source_snapshot_region=support_source_snapshot_region,
   )
   instances_flags.AddCanIpForwardArgs(parser)
   instances_flags.AddAddressArgs(
@@ -175,6 +177,7 @@ def _CommonArgs(
       enable_snapshots=True,
       support_image_family_scope=True,
       enable_instant_snapshots=support_source_instant_snapshot,
+      support_source_snapshot_region=support_source_snapshot_region,
   )
   instances_flags.AddDeletionProtectionFlag(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
@@ -313,6 +316,7 @@ class Create(base.CreateCommand):
   _support_watchdog_timer = False
   _support_disk_labels = False
   _support_ipv6_only = True
+  _support_source_snapshot_region = False
 
   @classmethod
   def Args(cls, parser):
@@ -339,6 +343,7 @@ class Create(base.CreateCommand):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_source_snapshot_region=cls._support_source_snapshot_region,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -497,6 +502,7 @@ class Create(base.CreateCommand):
             support_boot_instant_snapshot_uri=self._support_boot_instant_snapshot_uri,
             support_enable_confidential_compute=self._support_enable_confidential_compute,
             support_disk_labels=self._support_disk_labels,
+            support_source_snapshot_region=self._support_source_snapshot_region,
         )
 
       machine_type_uri = None
@@ -944,6 +950,7 @@ class CreateAlpha(CreateBeta):
   _support_igmp_query = True
   _support_watchdog_timer = True
   _support_disk_labels = True
+  _support_source_snapshot_region = True
 
   @classmethod
   def Args(cls, parser):
@@ -974,6 +981,7 @@ class CreateAlpha(CreateBeta):
         support_igmp_query=cls._support_igmp_query,
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
+        support_source_snapshot_region=cls._support_source_snapshot_region,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

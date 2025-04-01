@@ -32,7 +32,7 @@
         Example: `projects/123/locations/us`
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.bq.v2_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.bq.v2_resources:projects_locations
       required: true
   request:
     api_version: v2
