@@ -29,7 +29,11 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListInstancesRequest
+        The project and location for which to retrieve a list of instances, in
+        the format `projects/{projectId}/locations/{location}`.
+
+        To retrieve instance information for all locations, use "-" as the value
+        of `{location}`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location

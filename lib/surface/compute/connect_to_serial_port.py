@@ -83,7 +83,7 @@ class ConnectToSerialPort(base.Command):
   """
 
   category = base.TOOLS_CATEGORY
-  use_v2_host_key_endpoint = False
+  use_v2_host_key_endpoint = True
 
   @staticmethod
   def Args(parser):

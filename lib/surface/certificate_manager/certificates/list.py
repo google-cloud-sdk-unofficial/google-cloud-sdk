@@ -25,7 +25,8 @@ from googlecloudsdk.command_lib.certificate_manager import util
 
 _FORMAT = """\
 table(
-    name.scope(certificates),
+    name.scope(certificates):sort=1,
+    name.segment(3):label=LOCATION,
     san_dnsnames.sansToString(undefined=''):label=SUBJECT_ALTERNATIVE_NAMES,
     description,
     scope,
@@ -54,6 +55,7 @@ _TRANSFORMS = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -70,7 +72,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddLocationResourceArg(parser, 'to list certificates for')
+    resource_args.AddLocationResourceArg(
+        parser, verb='to list certificates for', all_default_location=True)
     parser.display_info.AddUriFunc(util.CertificateUriFunc)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddTransforms(_TRANSFORMS)

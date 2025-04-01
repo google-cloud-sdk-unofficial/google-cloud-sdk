@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -47,6 +48,7 @@ class Create(base.CreateCommand):
     labels_util.AddCreateLabelsFlags(parser)
     flags.AddDescriptionFlagToParser(parser, 'certificate map')
     flags.AddAsyncFlagToParser(parser)
+    flags.GetTags(parser)
 
   def Run(self, args):
     client = certificate_maps.CertificateMapClient()
@@ -54,12 +56,14 @@ class Create(base.CreateCommand):
     location_ref = map_ref.Parent()
     labels = labels_util.ParseCreateArgs(
         args, client.messages.CertificateMap.LabelsValue)
+    tags = flags.GetTagsFromArgs(args, client.messages.CertificateMap.TagsValue)
 
     response = client.Create(
         location_ref,
         map_ref.certificateMapsId,
         description=args.description,
-        labels=labels)
+        labels=labels,
+        tags=tags)
     operation_response = util.WaitForOperation(response, is_async=args.async_)
     log.CreatedResource(map_ref.Name(), 'certificate map', is_async=args.async_)
     return operation_response

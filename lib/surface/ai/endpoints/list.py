@@ -101,6 +101,12 @@ class ListBeta(base.ListCommand):
   run:
 
     $ {command} --project=example --region=us-central1
+
+  To list the endpoints under project ``example'' in region ``us-central1''
+  that are created from Model Garden, run:
+
+    $ {command} --project=example --region=us-central1
+    --list-model-garden-endpoints-only
   """
 
   @staticmethod
@@ -110,7 +116,6 @@ class ListBeta(base.ListCommand):
         '--list-model-garden-endpoints-only',
         action='store_true',
         default=False,
-        hidden=True,
         required=False,
         help='Whether to only list endpoints created from Model Garden.',
     )

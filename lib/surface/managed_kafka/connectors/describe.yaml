@@ -1,0 +1,23 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe a Managed Service for Apache Kafka connector.
+  description: |
+    Describe a Managed Service for Apache Kafka connector.
+
+  examples: |
+    To describe a connector named myconnector located in us-central1,
+    run the following:
+
+      $ {command} myconnector \
+          --location=us-central1
+          --connect_cluster=mycluster
+
+request:
+  collection: managedkafka.projects.locations.connectClusters.connectors
+
+arguments:
+  resource:
+    help_text: Identifies the connector for details to be displayed.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:connector

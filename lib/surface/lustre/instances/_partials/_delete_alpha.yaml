@@ -29,7 +29,8 @@
   arguments:
     params:
     - help_text: |-
-        Name of the resource
+        The resource name of the instance to delete, in the format
+        `projects/{projectId}/locations/{location}/instances/{instanceId}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location_instance

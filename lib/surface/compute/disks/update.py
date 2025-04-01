@@ -59,6 +59,7 @@ def _CommonArgs(
     parser,
     support_user_licenses=False,
     support_licenses=False,
+    support_add_guest_os_features=False,
 ):
   """Add arguments used for parsing in all command tracks."""
   cls.DISK_ARG = disks_flags.MakeDiskArg(plural=False)
@@ -142,6 +143,9 @@ def _CommonArgs(
             'type annotation from the disk.')
   )
 
+  if support_add_guest_os_features:
+    disks_flags.AddGuestOsFeatureArgs(parser, messages)
+
   disks_flags.AddAccessModeFlag(parser, messages)
 
   parser.add_argument(
@@ -212,6 +216,10 @@ def _SizeIncluded(args):
   return args.IsSpecified('size')
 
 
+def _GuestOsFeatureFlagsIncluded(args):
+  return args.IsKnownAndSpecified('add_guest_os_features')
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
@@ -243,7 +251,9 @@ class Update(base.UpdateCommand):
       return False
 
   def _UpdateRequiresDiskRead(self, args, support_licenses):
-    return support_licenses and _LicensesFlagsIncluded(args)
+    return (
+        support_licenses and _LicensesFlagsIncluded(args)
+    ) or _GuestOsFeatureFlagsIncluded(args)
 
   def _LicenseUpdateFormatIsCode(self, appended_licenses, removed_licenses):
     return all(self._isInt(license) for license in appended_licenses) and all(
@@ -334,9 +344,18 @@ class Update(base.UpdateCommand):
       )
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=False, support_licenses=False)
+    return self._Run(
+        args,
+        support_user_licenses=False,
+        support_licenses=False,
+    )
 
-  def _Run(self, args, support_user_licenses=False, support_licenses=False):
+  def _Run(
+      self,
+      args,
+      support_user_licenses=False,
+      support_licenses=False,
+  ):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
     messages = holder.client.messages
@@ -355,6 +374,7 @@ class Update(base.UpdateCommand):
         or (support_user_licenses and _UserLicensesFlagsIncluded(args))
         or (support_licenses and _LicensesFlagsIncluded(args))
         or _AccessModeFlagsIncluded(args)
+        or _GuestOsFeatureFlagsIncluded(args)
     ):
       disk_res = messages.Disk(name=disk_ref.Name())
       disk_update_request = None
@@ -420,6 +440,17 @@ class Update(base.UpdateCommand):
       if _SizeIncluded(args) and args.size:
         disk_res.sizeGb = utils.BytesToGb(args.size)
         disk_update_request.paths.append('sizeGb')
+
+      if _GuestOsFeatureFlagsIncluded(args):
+        if args.add_guest_os_features:
+          disk_res.guestOsFeatures = [
+              messages.GuestOsFeature(
+                  type=messages.GuestOsFeature.TypeValueValuesEnum(
+                      args.add_guest_os_features
+                  )
+              )
+          ] + disk.guestOsFeatures
+          disk_update_request.paths.append('guestOsFeatures')
 
       update_operation = service.Update(disk_update_request)
       update_operation_ref = holder.resources.Parse(
@@ -494,6 +525,7 @@ class UpdateAlpha(UpdateBeta):
         parser,
         support_user_licenses=True,
         support_licenses=True,
+        support_add_guest_os_features=True,
     )
 
   @classmethod

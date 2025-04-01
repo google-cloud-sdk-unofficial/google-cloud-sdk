@@ -131,6 +131,18 @@
       api_field: certificate.description
       help_text: |
         Human-readable description of the resource.
+    - arg_name: tags
+      hidden: true
+      api_field: certificate.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
 
     labels:
       api_field: certificate.labels

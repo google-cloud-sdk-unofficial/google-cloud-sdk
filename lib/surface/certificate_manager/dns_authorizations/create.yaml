@@ -35,6 +35,17 @@
       api_field: dnsAuthorization.type
       help_text: |
         Type of the DNS authorization.
-
+    - arg_name: tags
+      hidden: true
+      api_field: dnsAuthorization.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     labels:
       api_field: dnsAuthorization.labels

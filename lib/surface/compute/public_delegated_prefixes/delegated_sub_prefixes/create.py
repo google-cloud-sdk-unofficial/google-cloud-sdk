@@ -48,11 +48,10 @@ class Create(base.UpdateCommand):
 
   detailed_help = DETAILED_HELP
   _api_version = compute_api.COMPUTE_GA_API_VERSION
-  _include_subnetwork_creation_mode = False
 
   @classmethod
   def Args(cls, parser):
-    flags.AddCreateSubPrefixArgs(parser, cls._include_subnetwork_creation_mode)
+    flags.AddCreateSubPrefixArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -94,7 +93,6 @@ class CreateBeta(Create):
   r"""Creates a Compute Engine delegated sub prefix."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
-  _include_subnetwork_creation_mode = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -102,4 +100,3 @@ class CreateAlpha(CreateBeta):
   r"""Creates a Compute Engine delegated sub prefix."""
 
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
-  _include_subnetwork_creation_mode = True

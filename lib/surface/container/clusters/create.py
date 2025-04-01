@@ -431,9 +431,11 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       autopilot=is_autopilot,
       gvnic=get_default('enable_gvnic'),
       enable_confidential_nodes=get_default('enable_confidential_nodes'),
+      confidential_node_type=get_default('confidential_node_type'),
       enable_confidential_storage=get_default('enable_confidential_storage'),
       storage_pools=get_default('storage_pools'),
       local_ssd_encryption_mode=get_default('local_ssd_encryption_mode'),
+      data_cache_count=get_default('data_cache_count'),
       enable_image_streaming=get_default('enable_image_streaming'),
       spot=get_default('spot'),
       enable_service_externalips=get_default('enable_service_externalips'),
@@ -614,6 +616,7 @@ flags_to_add = {
         'clusterdns': flags.AddClusterDNSFlags,
         'clusterversion': flags.AddClusterVersionFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
+        'confidentialnodetype': flags.AddConfidentialNodeTypeFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
@@ -644,7 +647,7 @@ flags_to_add = {
             p, for_create=True
         ),
         'autoMonitoringScope': lambda p: flags.AddAutoMonitoringScopeFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'masterauth': flags.AddMasterAuthorizedNetworksFlags,
         'masterglobalaccess': flags.AddMasterGlobalAccessFlag,
@@ -776,6 +779,7 @@ flags_to_add = {
         'placementtype': flags.AddPlacementTypeFlag,
         'placementpolicy': flags.AddPlacementPolicyFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
+        'confidentialnodetype': flags.AddConfidentialNodeTypeFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
         'datapath': lambda p: flags.AddDatapathProviderFlag(p, hidden=True),
@@ -858,6 +862,7 @@ flags_to_add = {
         'stacktype': flags.AddStackTypeFlag,
         'storagePools': flags.AddStoragePoolsFlag,
         'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
+        'dataCacheCount': flags.AddDataCacheCountFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -963,6 +968,7 @@ flags_to_add = {
         'placementtype': flags.AddPlacementTypeFlag,
         'placementpolicy': flags.AddPlacementPolicyFlag,
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
+        'confidentialnodetype': flags.AddConfidentialNodeTypeFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
@@ -1055,6 +1061,7 @@ flags_to_add = {
         'stacktype': flags.AddStackTypeFlag,
         'storagePools': flags.AddStoragePoolsFlag,
         'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
+        'dataCacheCount': flags.AddDataCacheCountFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
@@ -1348,6 +1355,7 @@ class CreateBeta(Create):
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
+    ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
         'enable_nested_virtualization')
     ops.kubernetes_objects_changes_target = \
@@ -1404,6 +1412,7 @@ class CreateBeta(Create):
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.storage_pools = get_default('storage_pools')
     ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
+    ops.data_cache_count = get_default('data_cache_count')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_secret_manager_rotation = get_default(
         'enable_secret_manager_rotation'
@@ -1495,6 +1504,7 @@ class CreateAlpha(Create):
     ops.enable_master_metrics = get_default('enable_master_metrics')
     ops.master_logs = get_default('master_logs')
     ops.enable_confidential_nodes = get_default('enable_confidential_nodes')
+    ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
         'enable_nested_virtualization')
     ops.kubernetes_objects_changes_target = \
@@ -1549,6 +1559,7 @@ class CreateAlpha(Create):
     ops.enable_confidential_storage = get_default('enable_confidential_storage')
     ops.storage_pools = get_default('storage_pools')
     ops.local_ssd_encryption_mode = get_default('local_ssd_encryption_mode')
+    ops.data_cache_count = get_default('data_cache_count')
     ops.enable_secret_manager = get_default('enable_secret_manager')
     ops.enable_secret_manager_rotation = get_default(
         'enable_secret_manager_rotation'

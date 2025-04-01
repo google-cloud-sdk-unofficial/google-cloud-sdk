@@ -226,7 +226,16 @@ class CreateAlpha(CreateBeta):
     count_resize_by_group.add_argument(
         '--resize-by',
         type=int,
-        help="""The number of VMs to resize managed instance group by.""",
+        help="""The number of instances to be created by this resize request.
+        The group's target size will be increased by this number.""",
+    )
+    count_resize_by_group.add_argument(
+        '--instances',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='INSTANCE',
+        help="""The names of instances to be created by this resize request. The
+        number of names specified determines the number of instances to create.
+        The group's target size will be increased by this number.""",
     )
 
     valid_until_group = parser.add_group(
@@ -287,15 +296,27 @@ class CreateAlpha(CreateBeta):
           seconds=args.requested_run_duration
       )
 
+    resize_by = None
+    instances = []
     if args.IsKnownAndSpecified('resize_by'):
       resize_by = args.resize_by
-    else:
+    elif args.IsKnownAndSpecified('count'):
       resize_by = args.count
+    else:
+      instances = args.instances
 
     resize_request = holder.client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
         resizeBy=resize_by,
+        instances=self._CreatePerInstanceConfigList(holder, instances),
         queuingPolicy=queuing_policy,
         requestedRunDuration=requested_run_duration,
     )
     return self._MakeRequest(holder.client, igm_ref, resize_request)
+
+  def _CreatePerInstanceConfigList(self, holder, instances):
+    """Creates a list of per instance configs for the given instances."""
+    return [
+        holder.client.messages.PerInstanceConfig(name=instance)
+        for instance in instances
+    ]

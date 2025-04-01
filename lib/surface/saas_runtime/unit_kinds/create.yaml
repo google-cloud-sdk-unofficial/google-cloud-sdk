@@ -139,6 +139,8 @@
     api_version: v1alpha1
     collection:
     - saasservicemgmt.projects.locations.unitKinds
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.saas_runtime.unit_kinds:AddParentToDependencies
   async:
     collection:
     - saasservicemgmt.projects.locations.operations

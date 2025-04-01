@@ -92,6 +92,7 @@ OVERRIDE_FLAGS_SET = (
     'psc_auto_connections',
     'server_ca_mode',
     'region',
+    'retain_backups_on_delete',
 )
 
 
@@ -170,6 +171,7 @@ def AddInstanceSettingsArgs(parser):
   )
   flags.AddServerCaMode(parser, hidden=True)
   flags.AddTags(parser, hidden=True)
+  flags.AddRetainBackupsOnDelete(parser, hidden=True)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):

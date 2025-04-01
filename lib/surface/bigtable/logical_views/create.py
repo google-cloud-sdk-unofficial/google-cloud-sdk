@@ -43,7 +43,7 @@ class CreateLogicalView(base.CreateCommand):
   @staticmethod
   def Args(parser):
     arguments.AddLogicalViewResourceArg(parser, 'to create')
-    (arguments.ArgAdder(parser).AddViewQuery())
+    arguments.ArgAdder(parser).AddViewQuery().AddAsync()
 
   def _CreateLogicalView(self, logical_view_ref, args):
     """Creates a logical view with the given arguments.
@@ -69,10 +69,14 @@ class CreateLogicalView(base.CreateCommand):
       Created resource.
     """
     logical_view_ref = args.CONCEPTS.logical_view.Parse()
-    try:
-      result = self._CreateLogicalView(logical_view_ref, args)
-    except HttpError as e:
-      util.FormatErrorMessages(e)
-    else:
-      log.CreatedResource(logical_view_ref.Name(), kind='logical view')
-      return result
+    operation = self._CreateLogicalView(logical_view_ref, args)
+    if not args.async_:
+      operation_ref = util.GetOperationRef(operation)
+      return util.AwaitLogicalView(
+          operation_ref,
+          'Creating logical view {0}'.format(logical_view_ref.Name()),
+      )
+    log.CreatedResource(
+        logical_view_ref.Name(), kind='logical view', is_async=args.async_
+    )
+    return None

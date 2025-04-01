@@ -56,5 +56,17 @@
         enum_value: RSA_2048
       - arg_value: "ecdsa-p256"
         enum_value: ECDSA_P256
+    - arg_name: tags
+      hidden: true
+      api_field: certificateIssuanceConfig.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value
     labels:
       api_field: certificateIssuanceConfig.labels

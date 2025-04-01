@@ -75,13 +75,26 @@ def AddBaseArgs(parser):
       'described at https://cloud.google.com/spanner/docs/query-syntax')
 
   query_mode_choices = {
-      'NORMAL': 'Returns only the query result, without any information about '
-                'the query plan.',
-      'PLAN': 'Returns only the query plan, without any result rows or '
-              'execution statistics information.',
-      'PROFILE':
-          'Returns both the query plan and the execution statistics along '
-          'with the result rows.'
+      'NORMAL': (
+          'Returns only the query result, without any information about '
+          'the query plan.'
+      ),
+      'PLAN': (
+          'Returns only the query plan, without any result rows or '
+          'execution statistics information.'
+      ),
+      'PROFILE': (
+          'Returns the query plan, overall execution statistics, '
+          'operator-level execution statistics, along with the result rows.'
+      ),
+      'WITH_STATS': (
+          'Returns the overall (but not operator-level) execution statistics '
+          'along with the results.'
+      ),
+      'WITH_PLAN_AND_STATS': (
+          'Returns the query plan, overall (but not operator-level) execution '
+          'statistics, along with the results.'
+      ),
   }
 
   parser.add_argument(
@@ -137,6 +150,7 @@ def GetRequestPriorityMapper(messages):
   )
 
 
+@base.DefaultUniverseOnly
 @base.UnicodeIsSupported
 class Query(base.Command):
   """Executes a SQL query against a Cloud Spanner database."""
@@ -225,18 +239,18 @@ class Query(base.Command):
     Args:
       args: The arguments originally passed to the command.
       result: The output of the command before display.
-
-    Raises:
-      ValueError: The query mode is not valid.
     """
-    if args.query_mode == 'NORMAL':
-      sql.DisplayQueryResults(result, log.out)
-    elif args.query_mode == 'PLAN':
+    display_plan = (
+        args.query_mode == 'PLAN'
+        or args.query_mode == 'PROFILE'
+        or args.query_mode == 'WITH_PLAN_AND_STATS'
+    )
+    display_results = args.query_mode != 'PLAN'
+    if sql.QueryHasAggregateStats(result):
+      sql.DisplayQueryAggregateStats(result.stats.queryStats, log.out)
+    if display_plan:
       sql.DisplayQueryPlan(result, log.out)
-    elif args.query_mode == 'PROFILE':
-      if sql.QueryHasAggregateStats(result):
-        sql.DisplayQueryAggregateStats(result.stats.queryStats, log.out)
-      sql.DisplayQueryPlan(result, log.out)
-      sql.DisplayQueryResults(result, log.status)
-    else:
-      raise ValueError('Invalid query mode: {}'.format(args.query_mode))
+    if display_results:
+      sql.DisplayQueryResults(
+          result, log.status if args.query_mode == 'PROFILE' else log.out
+      )

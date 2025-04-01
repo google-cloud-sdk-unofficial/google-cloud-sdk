@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SaasRuntime(base.Group):
   category = base.SAAS_CATEGORY
   detailed_help = {'brief': 'Commands for SaaS Runtime.'}

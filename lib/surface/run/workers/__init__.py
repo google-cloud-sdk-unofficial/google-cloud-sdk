@@ -25,7 +25,13 @@ from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
+@base.Deprecate(
+    is_removed=True,
+    error=(
+        'This command is deprecated. Please use `gcloud alpha run worker-pools`'
+        ' instead for Cloud Run Worker Pools experience.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Workers(base.Group):

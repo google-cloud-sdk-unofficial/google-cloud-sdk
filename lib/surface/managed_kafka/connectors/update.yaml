@@ -1,0 +1,37 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Update a Managed Service for Apache Kafka connector.
+  description: |
+    Update a Managed Service for Apache Kafka connector.
+
+  examples: |
+    To update a connector name myconnector, run the following:
+
+      $ {command} myconnector \
+          --location=us-central1 \
+          --configs=KEY1=VALUE1,KEY2=VALUE2...
+          --connect_cluster=mycluster
+      OR
+      $ {command} myconnector \
+          --location=us-central1 \
+          --config-file=my-config-file.yaml
+          --connect_cluster=mycluster
+
+request:
+  collection: managedkafka.projects.locations.connectClusters.connectors
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:ConnectorUpdateReadConfigFile
+
+arguments:
+  resource:
+    help_text: Identifies the connector for which the command runs.
+    spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:connector
+  params:
+  - group:
+      mutex: true
+      required: true
+      params:
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:connector-configs
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:connector-config-file

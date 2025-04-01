@@ -85,11 +85,11 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.BuildWorkerPoolMutexGroup())
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
   group.AddArgument(flags.SourceAndImageFlags(mutex=False))
+  group.AddArgument(flags.StartupProbeFlag())
+  group.AddArgument(flags.LivenessProbeFlag())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
-    group.AddArgument(flags.StartupProbeFlag())
-    group.AddArgument(flags.LivenessProbeFlag())
 
   return group
 
@@ -146,7 +146,7 @@ class Deploy(base.Command):
 
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
-    flags.AddConfigMapsFlags(parser)
+    flags.CONFIG_MAP_FLAGS.AddToParser(parser)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -585,6 +585,7 @@ class Deploy(base.Command):
       repo_to_create,
       allow_unauth,
       has_latest,
+      iap,
   ):
     include_validate_service = bool(
         build_from_source
@@ -598,6 +599,7 @@ class Deploy(base.Command):
         include_validate_service=include_validate_service,
         include_build=bool(build_from_source),
         include_create_repo=repo_to_create is not None,
+        include_iap=iap is not None,
     )
     if build_from_source:
       header = 'Building and deploying'
@@ -631,6 +633,12 @@ class Deploy(base.Command):
               service, args.no_traffic
           )
       )
+
+  def _GetIap(self, args):
+    """Returns the IAP status of the service."""
+    if flags.FlagIsExplicitlySet(args, 'iap'):
+      return args.iap
+    return None
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
@@ -759,6 +767,8 @@ class Deploy(base.Command):
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
       )
 
+      iap = self._GetIap(args)
+
       with self._GetTracker(
           args,
           service,
@@ -767,6 +777,7 @@ class Deploy(base.Command):
           repo_to_create,
           allow_unauth,
           has_latest,
+          iap,
       ) as tracker:
         service = operations.ReleaseService(
             service_ref,
@@ -796,6 +807,7 @@ class Deploy(base.Command):
             is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
             source_bucket=source_bucket,
             kms_key=kms_key,
+            iap_enabled=iap,
         )
 
       self._DisplaySuccessMessage(service, args)
@@ -862,7 +874,7 @@ def _ValidateServiceNameFromImage(image_uri, service_id):
 
 
 def _CreateBuildPack(container):
-  """A helper method to cofigure buildpack."""
+  """A helper method to configure buildpack."""
   pack = [{'image': container.image}]
   changes = []
   source = container.source
@@ -1051,6 +1063,7 @@ class BetaDeploy(Deploy):
       repo_to_create,
       allow_unauth,
       has_latest,
+      iap,
   ):
     if not self.__is_multi_region:
       return super()._GetTracker(
@@ -1061,6 +1074,7 @@ class BetaDeploy(Deploy):
           repo_to_create,
           allow_unauth,
           has_latest,
+          iap,
       )
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
@@ -1068,6 +1082,7 @@ class BetaDeploy(Deploy):
         include_build=bool(build_from_source),
         include_create_repo=False,
         include_create_revision=True,
+        include_iap=iap is not None,
     )
     header = 'Deploying new Multi-Region service...'
     # new services default cpu boost on the client

@@ -15,9 +15,6 @@
 
 # TODO: b/300099033 - Capitalize and turn into a sentence.
 """services policies get-effective-policy command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 
@@ -99,7 +96,7 @@ class GetEffectivePolicy(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE.format(project)
 
-    response = serviceusage.GetEffectivePolicyV2Alpha(
+    response = serviceusage.GetEffectivePolicyV2Beta(
         resource_name + '/effectivePolicy', args.view
     )
 

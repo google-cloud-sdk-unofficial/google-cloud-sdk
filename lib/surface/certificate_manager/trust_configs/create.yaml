@@ -23,6 +23,18 @@ arguments:
     api_field: trustConfig.description
     help_text: |
       Human-readable description of the resource.
+  - arg_name: tags
+    hidden: true
+    api_field: trustConfig.tags.additionalProperties
+    metavar: KEY=VALUE
+    help_text: |
+      List of tag KEY=VALUE pairs to add.
+    type:
+      arg_dict:
+        flatten: true
+        spec:
+        - api_field: key
+        - api_field: value
   - group:
       required: true
       params:

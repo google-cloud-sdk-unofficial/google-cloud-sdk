@@ -66,6 +66,7 @@ class UpdateBeta(base.UpdateCommand):
         support_require_specific_reservation=True,
         support_gsc=True,
         support_cuds=True,
+        support_emergent_maintenance=False,
     )
 
   def _ValidateArgs(self, update_mask):
@@ -106,6 +107,8 @@ class UpdateBeta(base.UpdateCommand):
           '--commitment-plan',
           '--previous-commitment-terms',
           '--scheduling-type',
+          '--enable-emergent-maintenance',
+          '--no-enable-emergent-maintenance'
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update'
@@ -192,6 +195,9 @@ class UpdateBeta(base.UpdateCommand):
 
     if require_specific_reservation is not None:
       update_mask.append('specificReservationRequired')
+
+    if args.IsKnownAndSpecified('enable_emergent_maintenance'):
+      update_mask.append('enableEmergentMaintenance')
     self._ValidateArgs(update_mask=update_mask)
 
     fr_resource = util.MakeFutureReservationMessageFromArgs(
@@ -255,4 +261,5 @@ class UpdateAlpha(UpdateBeta):
         support_require_specific_reservation=True,
         support_gsc=True,
         support_cuds=True,
+        support_emergent_maintenance=True,
     )

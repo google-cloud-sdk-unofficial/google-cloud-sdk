@@ -203,6 +203,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_image_streaming=args.enable_image_streaming,
       spot=args.spot,
       enable_confidential_nodes=args.enable_confidential_nodes,
+      confidential_node_type=args.confidential_node_type,
       enable_confidential_storage=args.enable_confidential_storage,
       enable_blue_green_upgrade=args.enable_blue_green_upgrade,
       enable_surge_upgrade=args.enable_surge_upgrade,
@@ -260,6 +261,7 @@ class Create(base.CreateCommand):
     flags.AddEnableImageStreamingFlag(parser, for_node_pool=True)
     flags.AddSpotFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddConfidentialNodeTypeFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableSurgeUpgradeFlag(parser)
@@ -404,11 +406,13 @@ class CreateBeta(Create):
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddConfidentialNodeTypeFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
         parser, for_node_pool=True, for_create=True)
     flags.AddLocalSsdEncryptionModeFlag(
         parser, for_node_pool=True)
+    flags.AddDataCacheCountFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)
@@ -454,6 +458,7 @@ class CreateBeta(Create):
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
+    ops.confidential_node_type = args.confidential_node_type
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
@@ -466,6 +471,7 @@ class CreateBeta(Create):
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
+    ops.data_cache_count = args.data_cache_count
     return ops
 
 
@@ -503,6 +509,7 @@ class CreateAlpha(Create):
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
+    ops.confidential_node_type = args.confidential_node_type
     ops.disable_pod_cidr_overprovision = args.disable_pod_cidr_overprovision
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
@@ -518,6 +525,7 @@ class CreateAlpha(Create):
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
+    ops.data_cache_count = args.data_cache_count
     return ops
 
   @staticmethod
@@ -564,11 +572,13 @@ class CreateAlpha(Create):
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
     flags.AddEnableConfidentialNodesFlag(parser, for_node_pool=True)
+    flags.AddConfidentialNodeTypeFlag(parser, for_node_pool=True)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddStoragePoolsFlag(
         parser, for_node_pool=True, for_create=True)
     flags.AddLocalSsdEncryptionModeFlag(
         parser, for_node_pool=True)
+    flags.AddDataCacheCountFlag(parser, for_node_pool=True)
     flags.AddDisablePodCIDROverprovisionFlag(parser)
     flags.AddEnableFastSocketFlag(parser)
     flags.AddLoggingVariantFlag(parser, for_node_pool=True)

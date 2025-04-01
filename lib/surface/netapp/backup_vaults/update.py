@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Cloud NetApp Volumes Backup Vault."""
 
@@ -66,11 +67,14 @@ class Update(base.UpdateCommand):
         orig_backupvault,
         description=args.description,
         labels=labels,
+        backup_retention_policy=args.backup_retention_policy,
     )
 
     updated_fields = []
     if args.IsSpecified('description'):
       updated_fields.append('description')
+    if args.IsSpecified('backup_retention_policy'):
+      updated_fields.append('backupRetentionPolicy')
     if (
         args.IsSpecified('update_labels')
         or args.IsSpecified('remove_labels')

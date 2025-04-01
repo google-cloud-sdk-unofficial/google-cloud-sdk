@@ -155,6 +155,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append(
         'settings.ipConfiguration.customSubjectAlternativeNames'
     )
+  if args.IsKnownAndSpecified('clear_connection_pool_flags'):
+    cleared_fields.append('settings.connectionPoolConfig.flags')
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -307,6 +309,9 @@ def AddBaseArgs(parser):
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
   flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
+  flags.AddRetainBackupsOnDelete(parser)
+  flags.AddStorageProvisionedIops(parser)
+  flags.AddStorageProvisionedThroughput(parser)
 
 
 def AddBetaArgs(parser):
@@ -319,16 +324,10 @@ def AddBetaArgs(parser):
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
-  flags.AddRetainBackupsOnDelete(parser)
-  flags.AddStorageProvisionedIops(parser)
-  flags.AddStorageProvisionedThroughput(parser)
   flags.AddEnableConnectionPooling(parser)
-  flags.AddConnectionPoolingPoolMode(parser)
-  flags.AddConnectionPoolingPoolSize(parser)
-  flags.AddConnectionPoolingMaxClientConnections(parser)
-  flags.AddConnectionPoolingClientIdleTimeout(parser)
-  flags.AddConnectionPoolingServerIdleTimeout(parser)
-  flags.AddConnectionPoolingQueryWaitTimeout(parser)
+  connection_pool_flags_group = parser.add_mutually_exclusive_group()
+  flags.AddConnectionPoolFlags(connection_pool_flags_group)
+  flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
   ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
   flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)

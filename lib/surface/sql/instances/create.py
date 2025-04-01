@@ -41,25 +41,25 @@ _INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
 
 DETAILED_HELP = {
     'EXAMPLES': """\
-        To create a MySQL 5.7 instance with ID ``prod-instance'' that has 2
+        To create a MySQL 8.0 instance with ID ``prod-instance'' that has 2
         CPUs, 4 GB of RAM, and is in the region ``us-central1'' (a zone will be
         auto-assigned), where the 'root' user has its password set to
         ``password123'', run:
 
-          $ {command} prod-instance --database-version=MYSQL_5_7 --cpu=2 --memory=4GB --region=us-central1 --root-password=password123
+          $ {command} prod-instance --database-version=MYSQL_8_0 --cpu=2 --memory=4GB --region=us-central1 --root-password=password123
 
-        To create a Postgres 9.6 instance with ID ``prod-instance'' that has 2
+        To create a Postgres 15 instance with ID ``prod-instance'' that has 2
         CPUs, 8 GiB of RAM, and is in the zone ``us-central1-a'', where the
         'postgres' user has its password set to ``password123'', run:
 
-          $ {command} prod-instance --database-version=POSTGRES_9_6 --cpu=2 --memory=8GiB --zone=us-central1-a --root-password=password123
+          $ {command} prod-instance --database-version=POSTGRES_15 --cpu=2 --memory=8GiB --zone=us-central1-a --root-password=password123
 
-        To create a SQL Server 2017 Express instance with ID ``prod-instance''
+        To create a SQL Server 2022 Express instance with ID ``prod-instance''
         that has 2 CPUs, 3840MiB of RAM, and is in the zone ``us-central1-a'',
         where the 'sqlserver' user has its password set to ``password123'',
         run:
 
-          $ {command} prod-instance --database-version=SQLSERVER_2017_EXPRESS --cpu=2 --memory=3840MiB --zone=us-central1-a --root-password=password123
+          $ {command} prod-instance --database-version=SQLSERVER_2022_EXPRESS --cpu=2 --memory=3840MiB --zone=us-central1-a --root-password=password123
         """,
 }
 
@@ -149,6 +149,10 @@ def AddBaseArgs(parser):
   flags.AddPscAutoConnections(parser)
   flags.AddServerCaMode(parser)
   flags.AddTags(parser)
+  flags.AddRetainBackupsOnDelete(parser)
+  flags.AddServerCaPool(parser)
+  flags.AddStorageProvisionedIops(parser)
+  flags.AddStorageProvisionedThroughput(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -164,18 +168,9 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddRetainBackupsOnDelete(parser)
-  flags.AddStorageProvisionedIops(parser)
-  flags.AddStorageProvisionedThroughput(parser)
   flags.AddEnableConnectionPooling(parser)
-  flags.AddConnectionPoolingPoolMode(parser)
-  flags.AddConnectionPoolingPoolSize(parser)
-  flags.AddConnectionPoolingMaxClientConnections(parser)
-  flags.AddConnectionPoolingClientIdleTimeout(parser)
-  flags.AddConnectionPoolingServerIdleTimeout(parser)
-  flags.AddConnectionPoolingQueryWaitTimeout(parser)
+  flags.AddConnectionPoolFlags(parser)
   flags.AddCustomSubjectAlternativeNames(parser)
-  flags.AddServerCaPool(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -15,10 +15,6 @@
 
 """Update cluster command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
@@ -124,42 +120,134 @@ class Update(base.UpdateCommand):
     idle_delete_group.add_argument(
         '--max-idle',
         type=arg_parsers.Duration(),
+        # TODO: b/368979261 - Hide this flag when --delete-max-idle is GA.
+        # hidden=True,
         help="""\
-        The duration before cluster is auto-deleted after last job finished,
+        The duration after the last job completes to auto-delete the cluster,
         such as "2h" or "1d".
         See $ gcloud topic datetimes for information on duration formats.
         """)
     idle_delete_group.add_argument(
         '--no-max-idle',
         action='store_true',
+        # TODO: b/368979261 - Hide this flag when --no-delete-max-idle is GA.
+        # hidden=True,
         help="""\
         Cancels the cluster auto-deletion by cluster idle duration (configured
          by --max-idle flag)
+        """,
+    )
+    idle_delete_group.add_argument(
+        '--delete-max-idle',
+        type=arg_parsers.Duration(),
+        help="""\
+        The duration after the last job completes to auto-delete the cluster,
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    idle_delete_group.add_argument(
+        '--no-delete-max-idle',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-deletion by cluster idle duration (configured
+        by --delete-max-idle flag)
         """)
 
     auto_delete_group = parser.add_mutually_exclusive_group()
     auto_delete_group.add_argument(
         '--max-age',
         type=arg_parsers.Duration(),
+        # TODO: b/368979261 - Hide this flag when --delete-max-age is GA.
+        # hidden=True,
         help="""\
-        The lifespan of the cluster before it is auto-deleted, such as
+        The lifespan of the cluster, with auto-deletion upon completion,
         "2h" or "1d".
         See $ gcloud topic datetimes for information on duration formats.
         """)
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
+        # TODO: b/368979261 - Hide this flag when --delete-expiration-time is GA
+        # hidden=True,
         help="""\
-        The time when cluster will be auto-deleted, such as
+        The time when the cluster will be auto-deleted, such as
         "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
         information on time formats.
         """)
     auto_delete_group.add_argument(
         '--no-max-age',
         action='store_true',
+        # TODO: b/368979261 - Hide this flag when --no-delete-max-age is GA.
+        # hidden=True,
         help="""\
         Cancels the cluster auto-deletion by maximum cluster age (configured by
          --max-age or --expiration-time flags)
+        """)
+
+    auto_delete_group.add_argument(
+        '--delete-max-age',
+        type=arg_parsers.Duration(),
+        help="""\
+        The lifespan of the cluster with auto-deletion upon completion,
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    auto_delete_group.add_argument(
+        '--delete-expiration-time',
+        type=arg_parsers.Datetime.Parse,
+        help="""\
+        The time when the cluster will be auto-deleted, such as
+        "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
+        information on time formats.
+        """)
+    auto_delete_group.add_argument(
+        '--no-delete-max-age',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-deletion by maximum cluster age (configured
+        by --delete-max-age or --delete-expiration-time flags)
+        """)
+
+    idle_stop_group = parser.add_mutually_exclusive_group()
+    idle_stop_group.add_argument(
+        '--stop-max-idle',
+        type=arg_parsers.Duration(),
+        help="""\
+        The duration after the last job completes to auto-stop the cluster,
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    idle_stop_group.add_argument(
+        '--no-stop-max-idle',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-stop by cluster idle duration (configured
+        by --stop-max-idle flag)
+        """)
+
+    auto_stop_group = parser.add_mutually_exclusive_group()
+    auto_stop_group.add_argument(
+        '--stop-max-age',
+        type=arg_parsers.Duration(),
+        help="""\
+        The lifespan of the cluster, with auto-stop upon completion,
+        such as "2h" or "1d".
+        See $ gcloud topic datetimes for information on duration formats.
+        """)
+    auto_stop_group.add_argument(
+        '--stop-expiration-time',
+        type=arg_parsers.Datetime.Parse,
+        help="""\
+        The time when the cluster will be auto-stopped, such as
+        "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
+        information on time formats.
+        """)
+    auto_stop_group.add_argument(
+        '--no-stop-max-age',
+        action='store_true',
+        help="""\
+        Cancels the cluster auto-stop by maximum cluster age (configured by
+        --stop-max-age or --stop-expiration-time flags)
         """)
 
     # Can only specify one of --autoscaling-policy or --disable-autoscaling
@@ -261,6 +349,10 @@ class Update(base.UpdateCommand):
 
     lifecycle_config = dataproc.messages.LifecycleConfig()
     changed_config = False
+    # Flags max_age, expiration_time, max_idle, no_max_age, no_max_idle are
+    # hidden, but still supported. They are replaced with new flags
+    # delete_max_age, delete_expiration_time, delete_max_idle,
+    # no_delete_max_age and no_delete_max_idle.
     if args.max_age is not None:
       lifecycle_config.autoDeleteTtl = six.text_type(args.max_age) + 's'
       changed_fields.append('config.lifecycle_config.auto_delete_ttl')
@@ -282,6 +374,56 @@ class Update(base.UpdateCommand):
       lifecycle_config.idleDeleteTtl = None
       changed_fields.append('config.lifecycle_config.idle_delete_ttl')
       changed_config = True
+
+    if args.delete_max_age is not None:
+      lifecycle_config.autoDeleteTtl = (
+          six.text_type(args.delete_max_age) + 's'
+      )
+      changed_fields.append('config.lifecycle_config.auto_delete_ttl')
+      changed_config = True
+    if args.delete_expiration_time is not None:
+      lifecycle_config.autoDeleteTime = times.FormatDateTime(
+          args.delete_expiration_time
+      )
+      changed_fields.append('config.lifecycle_config.auto_delete_time')
+      changed_config = True
+    if args.delete_max_idle is not None:
+      lifecycle_config.idleDeleteTtl = (
+          six.text_type(args.delete_max_idle) + 's'
+      )
+      changed_fields.append('config.lifecycle_config.idle_delete_ttl')
+      changed_config = True
+    if args.no_delete_max_age:
+      lifecycle_config.autoDeleteTtl = None
+      changed_fields.append('config.lifecycle_config.auto_delete_ttl')
+      changed_config = True
+    if args.no_delete_max_idle:
+      lifecycle_config.idleDeleteTtl = None
+      changed_fields.append('config.lifecycle_config.idle_delete_ttl')
+      changed_config = True
+
+    if args.stop_max_age is not None:
+      lifecycle_config.autoStopTtl = six.text_type(args.stop_max_age) + 's'
+      changed_fields.append('config.lifecycle_config.auto_stop_ttl')
+      changed_config = True
+    if args.stop_expiration_time is not None:
+      lifecycle_config.autoStopTime = times.FormatDateTime(
+          args.stop_expiration_time)
+      changed_fields.append('config.lifecycle_config.auto_stop_time')
+      changed_config = True
+    if args.stop_max_idle is not None:
+      lifecycle_config.idleStopTtl = six.text_type(args.stop_max_idle) + 's'
+      changed_fields.append('config.lifecycle_config.idle_stop_ttl')
+      changed_config = True
+    if args.no_stop_max_age:
+      lifecycle_config.autoStopTtl = None
+      changed_fields.append('config.lifecycle_config.auto_stop_ttl')
+      changed_config = True
+    if args.no_stop_max_idle:
+      lifecycle_config.idleStopTtl = None
+      changed_fields.append('config.lifecycle_config.idle_stop_ttl')
+      changed_config = True
+
     if changed_config:
       cluster_config.lifecycleConfig = lifecycle_config
       has_changes = True

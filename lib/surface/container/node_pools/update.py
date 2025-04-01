@@ -111,6 +111,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
+    flags.AddConfidentialNodeTypeFlag(group, for_node_pool=True, is_update=True)
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableFastSocketFlag(group)
@@ -156,6 +157,7 @@ class Update(base.UpdateCommand):
         enable_image_streaming=args.enable_image_streaming,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
+        confidential_node_type=args.confidential_node_type,
         enable_blue_green_upgrade=args.enable_blue_green_upgrade,
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
@@ -302,6 +304,7 @@ class UpdateBeta(Update):
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
+    flags.AddConfidentialNodeTypeFlag(group, for_node_pool=True, is_update=True)
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
@@ -353,6 +356,7 @@ class UpdateBeta(Update):
         autoscaled_rollout_policy=args.autoscaled_rollout_policy,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
+        confidential_node_type=args.confidential_node_type,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,
@@ -425,6 +429,7 @@ class UpdateAlpha(Update):
     flags.AddNetworkPerformanceConfigFlags(group, hidden=False)
     flags.AddEnableConfidentialNodesFlag(
         group, for_node_pool=True, is_update=True)
+    flags.AddConfidentialNodeTypeFlag(group, for_node_pool=True, is_update=True)
     flags.AddEnableFastSocketFlag(group)
     flags.AddLoggingVariantFlag(group, for_node_pool=True)
     flags.AddWindowsOsVersionFlag(group)
@@ -476,6 +481,7 @@ class UpdateAlpha(Update):
         autoscaled_rollout_policy=args.autoscaled_rollout_policy,
         network_performance_config=args.network_performance_configs,
         enable_confidential_nodes=args.enable_confidential_nodes,
+        confidential_node_type=args.confidential_node_type,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
         windows_os_version=args.windows_os_version,

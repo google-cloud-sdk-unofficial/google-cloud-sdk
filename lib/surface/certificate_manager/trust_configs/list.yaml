@@ -18,13 +18,14 @@
 
   arguments:
     resource:
-      help_text: The location (defaults to global) of the resources.
-      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:location
+      help_text: The location (defaults to '-') of the resources.
+      spec: !REF googlecloudsdk.command_lib.certificate_manager.resources:allDefaultLocation
 
   output:
     format: |
       table(
         name.basename():label=NAME:sort=1,
+        name.segment(3):label=LOCATION,
         description:label=DESCRIPTION,
         create_time:label=CREATE_TIME,
         update_time:label=UPDATE_TIME

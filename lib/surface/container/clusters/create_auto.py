@@ -98,10 +98,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddInsecureRBACBindingFlags(parser, hidden=False)
   flags.AddEnableMultiNetworkingFlag(parser, hidden=False)
   flags.AddControlPlaneKeysFlags(parser)
-  if release_track is not base.ReleaseTrack.GA:
-    flags.AddAutoMonitoringScopeFlags(parser, hidden=False)
-  else:
-    flags.AddAutoMonitoringScopeFlags(parser, hidden=True)
+  flags.AddAutoMonitoringScopeFlags(parser, hidden=False)
   flags.AddClusterTierFlag(parser)
   flags.AddKubecontextOverrideFlag(parser)
 

@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.certificate_manager import util
 
 _FORMAT = """\
 table(
-    name.scope(certificateMapEntries),
+    name.scope(certificateMapEntries):sort=1,
     description,
     hostname,
     matcher,
@@ -56,6 +56,7 @@ _TRANSFORMS = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):

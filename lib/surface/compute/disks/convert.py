@@ -432,8 +432,8 @@ Convert.detailed_help = {
  *{command}* converts a Compute Engine Persistent Disk volume to a Hyperdisk volume. For a comprehensive guide, refer to: https://cloud.google.com/sdk/gcloud/reference/compute/disks/convert.
     """,
     'EXAMPLES': """\
-The following command converts a PD Standard disk to a Hyperdisk Throughput:
+The following command converts a Persistent Disk volume to a Hyperdisk Balanced volume:
 
-        $ {command} my-disk-1 --zone=ZONE --target-disk-type=hyperdisk-throughput
+        $ {command} my-disk-1 --zone=ZONE --target-disk-type=hyperdisk-balanced
         """,
 }

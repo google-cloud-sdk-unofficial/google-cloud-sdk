@@ -1,5 +1,4 @@
-- release_tracks:
-  - ALPHA
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Create a SaaS
     description: Create a SaaS
@@ -20,7 +19,7 @@
       required: true
     - arg_name: locations
       api_field: saas.locations
-      required: false
+      required: true
       repeated: true
       help_text: |-
         List of locations that the service is available in. Rollout refers to the
@@ -40,9 +39,13 @@
       - api_field: key
       - api_field: value
   request:
-    api_version: v1alpha1
+    ALPHA:
+      api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.saas
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations
+  ALPHA:
+    async:
+      collection:
+      - saasservicemgmt.projects.locations.operations

@@ -30,7 +30,6 @@ from googlecloudsdk.core import resources
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-@base.Hidden
 class AcceptSpokeUpdate(base.Command):
   """Accept a proposal to update a spoke in a hub.
 

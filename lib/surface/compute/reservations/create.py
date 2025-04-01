@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
   _support_auto_delete = False
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
+  _support_ssd_count = True
 
   @classmethod
   def Args(cls, parser):
@@ -68,6 +69,7 @@ class Create(base.CreateCommand):
         parser,
         support_folder_share_setting=cls._support_folder_share_setting,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
+        support_ssd_count=cls._support_ssd_count,
     )
 
   def Run(self, args):
@@ -77,7 +79,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine reservation."""
-  _support_ssd_count = False
+  _support_ssd_count = True
   _support_auto_delete = True
   _support_folder_share_setting = False
   _support_reservation_sharing_policy = True
@@ -91,6 +93,7 @@ class CreateBeta(Create):
         support_folder_share_setting=cls._support_folder_share_setting,
         support_auto_delete=cls._support_auto_delete,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
+        support_ssd_count=cls._support_ssd_count,
     )
 
   def Run(self, args):

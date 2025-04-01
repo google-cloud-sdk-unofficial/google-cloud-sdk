@@ -26,7 +26,7 @@ from googlecloudsdk.core.resource import resource_transform
 
 _FORMAT = """\
 table(
-    name.scope(certificateMaps),
+    name.scope(certificateMaps):sort=1,
     gclbTargets.gclbTargetsToString(undefined='-'):label=ENDPOINTS,
     description,
     createTime.date('%Y-%m-%d %H:%M:%S %Oz', undefined='-')
@@ -68,6 +68,7 @@ _TRANSFORMS = {
 }
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):
@@ -84,7 +85,8 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    resource_args.AddLocationResourceArg(parser, 'to list maps for')
+    resource_args.AddLocationResourceArg(
+        parser, verb='to list maps for', all_default_location=False)
     parser.display_info.AddUriFunc(util.CertificateMapUriFunc)
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddTransforms(_TRANSFORMS)

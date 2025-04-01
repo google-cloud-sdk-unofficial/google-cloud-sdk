@@ -104,6 +104,16 @@
         enum_value: UPDATE_UNIT_KIND_STRATEGY_NEVER
         help_text: |-
           Never update the unit kind.
+    - arg_name: labels
+      api_field: rolloutKind.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+        similar to Kubernetes resource labels.
+      spec:
+      - api_field: key
+      - api_field: value
   request:
     api_version: v1alpha1
     collection:

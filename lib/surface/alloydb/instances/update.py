@@ -65,6 +65,7 @@ class Update(base.UpdateCommand):
     flags.AddDatabaseFlags(parser)
     flags.AddInstance(parser)
     flags.AddCPUCount(parser, required=False)
+    flags.AddMachineType(parser, required=False)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
     flags.AddInsightsConfigQueryStringLength(parser)

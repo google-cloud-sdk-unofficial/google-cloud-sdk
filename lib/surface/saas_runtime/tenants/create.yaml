@@ -21,8 +21,8 @@
     - arg_name: saas
       help_text: |-
         A reference to the Saas that defines the product (managed service) that
-        the producer wants to manage with EasySaaS. Part of the
-        EasySaaS common data model.
+        the producer wants to manage with SaaS Runtime. Part of the
+        SaaS Runtime common data model.
       is_positional: false
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
       resource_method_params:

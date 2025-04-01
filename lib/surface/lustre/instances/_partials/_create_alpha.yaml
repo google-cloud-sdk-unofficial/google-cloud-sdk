@@ -30,7 +30,7 @@
     params:
     - help_text: |-
         Identifier.
-        name of resource
+        The name of the instance.
       is_positional: true
       is_primary_resource: true
       request_id_field: instanceId
@@ -41,47 +41,49 @@
       required: true
       repeated: false
       help_text: |-
-        Filesystem Name for Lustre.
+        The filesystem name for this instance. This name is used by client-side
+        tools, including when mounting the instance. Must be 8 characters or less
+        and may only contain letters and numbers.
     - arg_name: capacity-gib
       api_field: instance.capacityGib
       required: true
       repeated: false
       type: long
       help_text: |-
-        Capacity of the instance in GiB
+        The storage capacity of the instance in gibibytes (GiB). Allowed values
+        are from 18000 to 954000, in increments of 9000.
     - arg_name: network
       api_field: instance.network
       required: true
       repeated: false
       help_text: |-
-        VPC Network full name.
-        Must be in a form 'projects/{project_id}/global/networks/{network}'.
-        {project_id} is a project id, as in 'user-consumer-project' {network} is
-        network name.
+        The full name of the VPC network to which the instance is connected.
+        Must be in the format
+        `projects/{project_id}/global/networks/{network_name}`.
     - arg_name: description
       api_field: instance.description
       required: false
       repeated: false
       help_text: |-
-        Description
+        A user-readable description of the instance.
     - arg_name: labels
       api_field: instance.labels
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key value pairs.
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: per-unit-storage-throughput
-      api_field: instance.perUnitStorageThroughput
+    - arg_name: gke-support-enabled
+      api_field: instance.gkeSupportEnabled
+      action: store_true
       required: false
-      repeated: false
-      type: long
+      type: bool
       help_text: |-
-        The throughput of the instance in MB/s/TiB.
-        Valid values are 250, 500, 1000.
-        Default value is 1000.
+        Indicates whether you want to enable support for GKE clients. By default,
+        GKE clients are not supported.
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

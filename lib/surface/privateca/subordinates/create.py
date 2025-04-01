@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
-from googlecloudsdk.api_lib.privateca import certificate_utils
 from googlecloudsdk.api_lib.privateca import request_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -248,27 +247,6 @@ class Create(base.CreateCommand):
         default=False,
     )
 
-  def _SignCsr(self, issuer_pool_ref, csr, lifetime, issuer_ca_id):
-    """Issues a certificate under the given issuer with the given settings."""
-    certificate_id = 'subordinate-{}'.format(certificate_utils.GenerateCertId())
-    issuer_pool_name = issuer_pool_ref.RelativeName()
-    certificate_name = '{}/certificates/{}'.format(
-        issuer_pool_name, certificate_id
-    )
-    cert_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificatesCreateRequest(
-        certificateId=certificate_id,
-        parent=issuer_pool_name,
-        requestId=request_utils.GenerateRequestId(),
-        issuingCertificateAuthorityId=issuer_ca_id,
-        certificate=self.messages.Certificate(
-            name=certificate_name, lifetime=lifetime, pemCsr=csr
-        ),
-    )
-
-    return self.client.projects_locations_caPools_certificates.Create(
-        cert_request
-    )
-
   def _ActivateCertificateAuthority(self, ca_name, pem_cert, issuer_chain):
     """Activates the given CA using the given certificate and issuing CA chain."""
     activate_request = self.messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesActivateRequest(
@@ -366,9 +344,7 @@ class Create(base.CreateCommand):
 
     if issuer_ref:
       issuer_ca = args.issuer_ca if args.IsSpecified('issuer_ca') else None
-      ca_certificate = self._SignCsr(
-          issuer_ref, csr, new_ca.lifetime, issuer_ca
-      )
+      ca_certificate = create_utils.SignCsr(issuer_ref, csr, issuer_ca, new_ca)
       self._ActivateCertificateAuthority(
           ca_ref.RelativeName(),
           ca_certificate.pemCertificate,

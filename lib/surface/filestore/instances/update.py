@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.filestore import filestore_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -38,6 +40,59 @@ class Update(base.CreateCommand):
   """Update a Filestore instance."""
 
   _API_VERSION = filestore_client.V1_API_VERSION
+
+  detailed_help = {
+      'DESCRIPTION':
+          'Update a Filestore instance.',
+      'EXAMPLES':
+          textwrap.dedent("""\
+    The following command updates the Filestore instance NAME to change the
+    description to "A new description."
+
+      $ {command} NAME --description="A new description."
+
+    The following command updates a Filestore instance named NAME to add the label
+    "key1=value1" and remove any metadata with the label "key2".
+
+      $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
+
+      $ {command} NAME --zone=ZONE --flags-file=FILE_PATH
+
+    Example json configuration file:
+      {
+      "--file-share":
+      {
+        "capacity": "102400",
+        "name": "my_vol",
+        "nfs-export-options": [
+          {
+            "access-mode": "READ_WRITE",
+            "ip-ranges": [
+              "10.0.0.0/29",
+              "10.2.0.0/29"
+            ],
+            "squash-mode": "ROOT_SQUASH",
+            "anon_uid": 1003,
+            "anon_gid": 1003
+          }
+        ]
+      }
+      }
+
+
+    The following command updates a Filestore instance named NAME to change the
+    capacity to CAPACITY.
+
+      $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+        --file-share=name=VOLUME_NAME,capacity=CAPACITY
+
+    The following command updates a Filestore instance named NAME to configure the
+    max-iops-per-tb to MAX-IOPS-PER-TB.
+
+      $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+        --performance=max-iops-per-tb=MAX-IOPS-PER-TB
+    """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -128,6 +183,52 @@ class UpdateAlpha(Update):
   """Update a Filestore instance."""
 
   _API_VERSION = filestore_client.ALPHA_API_VERSION
+  detailed_help = {
+      'DESCRIPTION':
+          'Update a Filestore instance.',
+      'EXAMPLES':
+          textwrap.dedent("""\
+    The following command updates the Filestore instance NAME to change the
+    description to "A new description."
+
+      $ {command} NAME --description="A new description."
+
+    The following command updates a Filestore instance named NAME to add the label
+    "key1=value1" and remove any metadata with the label "key2".
+
+      $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
+
+      $ {command} NAME --zone=ZONE --flags-file=FILE_PATH
+
+    Example json configuration file:
+      {
+      "--file-share":
+      {
+        "capacity": "102400",
+        "name": "my_vol",
+        "nfs-export-options": [
+          {
+            "access-mode": "READ_WRITE",
+            "ip-ranges": [
+              "10.0.0.0/29",
+              "10.2.0.0/29"
+            ],
+            "squash-mode": "ROOT_SQUASH",
+            "anon_uid": 1003,
+            "anon_gid": 1003
+          }
+        ]
+      }
+      }
+
+
+    The following command updates a Filestore instance named NAME to change the
+    capacity to CAPACITY.
+
+      $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+        --file-share=name=VOLUME_NAME,capacity=CAPACITY
+    """),
+  }
 
   @staticmethod
   def Args(parser):
@@ -212,7 +313,61 @@ class UpdateBeta(Update):
 
   _API_VERSION = filestore_client.BETA_API_VERSION
 
+  detailed_help = {
+      'DESCRIPTION':
+          'Update a Filestore instance.',
+      'EXAMPLES':
+          textwrap.dedent("""\
+    The following command updates the Filestore instance NAME to change the
+    description to "A new description."
+
+      $ {command} NAME --description="A new description."
+
+    The following command updates a Filestore instance named NAME to add the label
+    "key1=value1" and remove any metadata with the label "key2".
+
+      $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
+
+      $ {command} NAME --zone=ZONE --flags-file=FILE_PATH
+
+    Example json configuration file:
+      {
+      "--file-share":
+      {
+        "capacity": "102400",
+        "name": "my_vol",
+        "nfs-export-options": [
+          {
+            "access-mode": "READ_WRITE",
+            "ip-ranges": [
+              "10.0.0.0/29",
+              "10.2.0.0/29"
+            ],
+            "squash-mode": "ROOT_SQUASH",
+            "anon_uid": 1003,
+            "anon_gid": 1003
+          }
+        ]
+      }
+      }
+
+
+    The following command updates a Filestore instance named NAME to change the
+    capacity to CAPACITY.
+
+      $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+        --file-share=name=VOLUME_NAME,capacity=CAPACITY
+
+    The following command updates a Filestore instance named NAME to configure the
+    max-iops-per-tb to MAX-IOPS-PER-TB.
+
+      $ {command} NAME --project=PROJECT_ID --zone=ZONE\
+        --performance=max-iops-per-tb=MAX-IOPS-PER-TB
+    """),
+  }
+
   @staticmethod
+
   def Args(parser):
     _CommonArgs(parser, UpdateBeta._API_VERSION)
 
@@ -301,49 +456,3 @@ class UpdateBeta(Update):
           'operations describe {}`'.format(result.name)
       )
     return result
-
-
-Update.detailed_help = {
-    'DESCRIPTION': 'Update a Filestore instance.',
-    'EXAMPLES': """\
-The following command updates the Filestore instance NAME to change the
-description to "A new description."
-
-  $ {command} NAME --description="A new description."
-
-The following command updates a Filestore instance named NAME to add the label
-"key1=value1" and remove any metadata with the label "key2".
-
-  $ {command} NAME --update-labels=key1=value1 --remove-labels=key2
-
-  $ {command} NAME --zone=ZONE --flags-file=FILE_PATH
-
-Example json configuration file:
-  {
-  "--file-share":
-  {
-    "capacity": "102400",
-    "name": "my_vol",
-    "nfs-export-options": [
-      {
-        "access-mode": "READ_WRITE",
-        "ip-ranges": [
-          "10.0.0.0/29",
-          "10.2.0.0/29"
-        ],
-        "squash-mode": "ROOT_SQUASH",
-        "anon_uid": 1003,
-        "anon_gid": 1003
-      }
-    ]
-  }
-  }
-
-
-The following command updates a Filestore instance named NAME to change the
-capacity to CAPACITY.
-
-  $ {command} NAME --project=PROJECT_ID --zone=ZONE\
-    --file-share=name=VOLUME_NAME,capacity=CAPACITY
-""",
-}

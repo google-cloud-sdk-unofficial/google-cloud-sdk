@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class ModelGarden(base.Group):
   """Interact with and manage resources in Vertex Model Garden."""

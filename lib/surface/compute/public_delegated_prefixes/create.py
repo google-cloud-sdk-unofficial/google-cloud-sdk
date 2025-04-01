@@ -42,14 +42,11 @@ class Create(base.CreateCommand):
   """
 
   _api_version = compute_api.COMPUTE_GA_API_VERSION
-  _include_subnetwork_creation_mode = False
 
   @classmethod
   def Args(cls, parser):
     flags.MakePublicDelegatedPrefixesArg().AddArgument(parser)
-    flags.AddCreatePdpArgsToParser(
-        parser, cls._include_subnetwork_creation_mode
-    )
+    flags.AddCreatePdpArgsToParser(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -103,7 +100,6 @@ class CreateBeta(Create):
   """
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
-  _include_subnetwork_creation_mode = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -119,4 +115,3 @@ class CreateAlpha(CreateBeta):
   """
 
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
-  _include_subnetwork_creation_mode = True

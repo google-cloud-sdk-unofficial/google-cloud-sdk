@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """services policies get command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 
@@ -103,7 +100,7 @@ class Get(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE.format(project)
 
-    policy = serviceusage.GetConsumerPolicyV2Alpha(
+    policy = serviceusage.GetConsumerPolicyV2Beta(
         resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name),
     )
 

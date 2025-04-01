@@ -60,7 +60,6 @@
           The scope of cluster-scoped resources to restore.
         mutex: true
         params:
-        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_restore_scope
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_selected_group_kinds
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_excluded_group_kinds
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:cluster_resource_all_group_kinds

@@ -493,7 +493,7 @@ class CreateBeta(CreateGA):
   """
   _support_subsetting_subset_size = True
   _support_custom_metrics = True
-  _support_ip_port_dynamic_forwarding = False
+  _support_ip_port_dynamic_forwarding = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

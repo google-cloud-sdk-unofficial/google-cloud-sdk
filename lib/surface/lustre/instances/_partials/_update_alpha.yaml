@@ -30,7 +30,7 @@
     params:
     - help_text: |-
         Identifier.
-        name of resource
+        The name of the instance.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location_instance
@@ -41,32 +41,32 @@
       repeated: false
       type: long
       help_text: |-
-        Capacity of the instance in GiB
+        The storage capacity of the instance in gibibytes (GiB). Allowed values
+        are from 18000 to 954000, in increments of 9000.
     - arg_name: description
       api_field: instance.description
       required: false
       repeated: false
       help_text: |-
-        Description
+        A user-readable description of the instance.
     - arg_name: labels
       api_field: instance.labels
       required: false
       repeated: true
       help_text: |-
-        Labels as key value pairs
+        Labels as key value pairs.
       clearable: true
       spec:
       - api_field: key
       - api_field: value
-    - arg_name: per-unit-storage-throughput
-      api_field: instance.perUnitStorageThroughput
+    - arg_name: gke-support-enabled
+      api_field: instance.gkeSupportEnabled
+      action: store_true_false
       required: false
-      repeated: false
-      type: long
+      type: bool
       help_text: |-
-        The throughput of the instance in MB/s/TiB.
-        Valid values are 250, 500, 1000.
-        Default value is 1000.
+        Indicates whether you want to enable support for GKE clients. By default,
+        GKE clients are not supported.
     - arg_name: request-id
       api_field: requestId
       required: false

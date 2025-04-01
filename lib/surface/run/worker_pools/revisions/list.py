@@ -63,7 +63,8 @@ class List(base.Command):
         'active().yesno(yes="yes", no=""):label="ACTIVE",'
         'parent():label="WORKER POOL",'
         'create_time.date("%Y-%m-%d %H:%M:%S %Z"):'
-        'label=DEPLOYED:sort=2:reverse)'
+        'label=DEPLOYED:sort=2:reverse,'
+        'creator:label="DEPLOYED BY")'
     )
     parser.display_info.AddTransforms(
         {'ready_symbol': printer_util.GetReadySymbolFromDict}

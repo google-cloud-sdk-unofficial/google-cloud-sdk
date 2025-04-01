@@ -14,11 +14,9 @@
 # limitations under the License.
 """Implementation of gcloud dataflow yaml run command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.dataflow import apis
+from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
@@ -102,14 +100,12 @@ class Run(base.Command):
 
     # These are required and mutually exclusive due to the grouping above.
     if args.yaml_pipeline_file:
-      if args.yaml_pipeline_file.startswith('gs://'):
-        # TODO(b/320740846): We could consider always downloading this to do
-        # validation.
+      yaml_contents = _try_get_yaml_contents(args.yaml_pipeline_file)
+      if yaml_contents is None:
         parameters['yaml_pipeline_file'] = args.yaml_pipeline_file
       else:
-        parameters['yaml_pipeline'] = files.ReadFileContents(
-            args.yaml_pipeline_file
-        )
+        parameters['yaml_pipeline'] = yaml_contents
+
     else:
       parameters['yaml_pipeline'] = args.yaml_pipeline
 
@@ -119,7 +115,9 @@ class Run(base.Command):
     if 'yaml_pipeline' in parameters and 'jinja-variables' not in parameters:
       _validate_yaml(parameters['yaml_pipeline'])
 
-    region_id = dataflow_util.GetRegion(args)
+    region_id = _get_region_from_yaml_or_default(
+        parameters.get('yaml_pipeline'), args
+    )
 
     arguments = apis.TemplateArguments(
         project_id=properties.VALUES.core.project.Get(required=True),
@@ -140,3 +138,55 @@ def _validate_yaml(yaml_pipeline):
     _ = yaml.load(yaml_pipeline)
   except Exception as exn:
     raise ValueError('yaml_pipeline must be a valid yaml.') from exn
+
+
+def _get_region_from_yaml_or_default(yaml_pipeline, args):
+  """Gets the region from yaml pipeline or args, or falls back to default."""
+  region = args.region
+  options_region = None
+  try:
+    pipeline_data = yaml.load(yaml_pipeline)
+    if 'options' in pipeline_data and 'region' in pipeline_data['options']:
+      options_region = pipeline_data['options']['region']
+      if '{' in options_region or '}' in options_region:
+        raise yaml.YAMLParseError(
+            'yaml pipeline contains unparsable region: {0}. Found curly braces '
+            'in region. Falling back to default region.'.format(options_region)
+        )
+  except yaml.YAMLParseError as exn:
+    if not region:
+      print('Failed to get region from yaml pipeline: {0}. If using jinja '
+            'variables, parsing may fail. Falling back to default '
+            'region.'.format(exn))
+
+  if options_region:
+    if region and region != options_region:
+      raise ValueError(
+          'Region specified in yaml pipeline options ({0}) does not match'
+          ' region specified in command line ({1})'.format(
+              options_region, region
+          )
+      )
+    return options_region
+
+  return dataflow_util.GetRegion(args)
+
+
+def _try_get_yaml_contents(yaml_pipeline_file):
+  """Reads yaml contents from the specified file if it is accessable."""
+  if not yaml_pipeline_file.startswith('gs://'):
+    return files.ReadFileContents(yaml_pipeline_file)
+
+  storage_client = storage_api.StorageClient()
+  obj_ref = storage_util.ObjectReference.FromUrl(yaml_pipeline_file)
+  try:
+    return storage_client.ReadObject(obj_ref)
+  except (storage_api.Error, storage_util.Error) as e:
+    print(
+        'Unable to read file {0} due to incorrect file path or insufficient'
+        ' read permissions. Will not be able to validate the yaml pipeline or'
+        ' determine the region from the yaml pipeline'
+        ' options. Error: {1}'.format(yaml_pipeline_file, e)
+    )
+
+  return None

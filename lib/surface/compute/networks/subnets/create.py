@@ -54,9 +54,9 @@ def _AddArgs(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_internal_ipv6_prefix,
     include_custom_hardware_link,
     api_version,
-    include_ip_collection,
     include_peer_migration_purpose,
 ):
   """Add subnetwork create arguments to parser."""
@@ -309,10 +309,21 @@ def _AddArgs(
         Set external IPv6 prefix to be allocated for this subnetwork.
 
         For example, `--external-ipv6-prefix 2600:1901:0:0:0:0:0:0/64`
-        """))
+        """),
+    )
 
-  if include_ip_collection:
-    flags.IpCollectionArgument().AddArgument(parser)
+  if include_internal_ipv6_prefix:
+    parser.add_argument(
+        '--internal-ipv6-prefix',
+        help=("""
+        Set internal IPv6 prefix to be allocated for this subnetwork.
+        When ULA is enabled, the prefix will be ignored.
+
+        For example, `--internal-ipv6-prefix 2600:1901:0:0:0:0:0:0/64`
+        """),
+    )
+
+  flags.IpCollectionArgument().AddArgument(parser)
 
 
 def GetPrivateIpv6GoogleAccessTypeFlagMapper(messages):
@@ -340,6 +351,7 @@ def _CreateSubnetwork(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_internal_ipv6_prefix,
     include_custom_hardware_link,
     ip_collection_ref,
     include_peer_migration_purpose,
@@ -458,6 +470,10 @@ def _CreateSubnetwork(
     if args.external_ipv6_prefix:
       subnetwork.externalIpv6Prefix = args.external_ipv6_prefix
 
+  if include_internal_ipv6_prefix:
+    if args.internal_ipv6_prefix:
+      subnetwork.internalIpv6Prefix = args.internal_ipv6_prefix
+
   if ip_collection_ref:
     subnetwork.ipCollection = ip_collection_ref.SelfLink()
 
@@ -471,8 +487,8 @@ def _Run(
     include_aggregate_purpose,
     include_l2,
     include_external_ipv6_prefix,
+    include_internal_ipv6_prefix,
     include_custom_hardware_link,
-    include_ip_collection,
     include_peer_migration_purpose,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
@@ -486,7 +502,7 @@ def _Run(
       holder.resources,
       scope_lister=compute_flags.GetDefaultScopeLister(client))
   ip_collection_ref = None
-  if include_ip_collection and args.ip_collection:
+  if args.ip_collection:
     ip_collection_ref = flags.IpCollectionArgument().ResolveAsResource(
         args, holder.resources)
 
@@ -499,9 +515,10 @@ def _Run(
       include_aggregate_purpose,
       include_l2,
       include_external_ipv6_prefix,
+      include_internal_ipv6_prefix,
       include_custom_hardware_link,
       ip_collection_ref,
-      include_peer_migration_purpose
+      include_peer_migration_purpose,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -528,9 +545,9 @@ class Create(base.CreateCommand):
   _include_aggregate_purpose = False
   _include_l2 = False
   _include_external_ipv6_prefix = False
+  _include_internal_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
-  _include_ip_collection = False
   _include_peer_migration_purpose = True
 
   detailed_help = _DetailedHelp()
@@ -543,9 +560,9 @@ class Create(base.CreateCommand):
         cls._include_aggregate_purpose,
         cls._include_l2,
         cls._include_external_ipv6_prefix,
+        cls._include_internal_ipv6_prefix,
         cls._include_custom_hardware_link,
         cls._api_version,
-        cls._include_ip_collection,
         cls._include_peer_migration_purpose,
     )
 
@@ -559,8 +576,8 @@ class Create(base.CreateCommand):
         self._include_aggregate_purpose,
         self._include_l2,
         self._include_external_ipv6_prefix,
+        self._include_internal_ipv6_prefix,
         self._include_custom_hardware_link,
-        self._include_ip_collection,
         self._include_peer_migration_purpose,
     )
 
@@ -570,7 +587,6 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
-  _include_ip_collection = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -581,7 +597,7 @@ class CreateAlpha(CreateBeta):
   _include_aggregate_purpose = True
   _include_l2 = True
   _include_external_ipv6_prefix = True
+  _include_internal_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
-  _include_ip_collection = True
   _include_peer_migration_purpose = True

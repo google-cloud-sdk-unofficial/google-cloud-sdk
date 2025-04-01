@@ -340,7 +340,7 @@ class Update(base.UpdateCommand):
     flags.AddMonitoringFlag(group_logging_monitoring_config)
     flags.AddManagedPrometheusFlags(group_logging_monitoring_config)
     flags.AddAutoMonitoringScopeFlags(
-        group_logging_monitoring_config, hidden=True
+        group_logging_monitoring_config, hidden=False
     )
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)

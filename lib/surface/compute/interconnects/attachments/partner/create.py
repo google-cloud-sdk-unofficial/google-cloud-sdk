@@ -131,6 +131,7 @@ class Create(base.CreateCommand):
     PrintPairingKeyEpilog(self._pairing_key)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a Compute Engine partner interconnect attachment.

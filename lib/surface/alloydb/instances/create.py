@@ -67,6 +67,7 @@ class Create(base.CreateCommand):
     flags.AddInstance(parser)
     flags.AddInstanceType(parser)
     flags.AddCPUCount(parser)
+    flags.AddMachineType(parser)
     flags.AddReadPoolNodeCount(parser)
     flags.AddRegion(parser)
     flags.AddInsightsConfigQueryStringLength(parser)

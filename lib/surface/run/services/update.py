@@ -59,11 +59,11 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
+  group.AddArgument(flags.StartupProbeFlag())
+  group.AddArgument(flags.LivenessProbeFlag())
 
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
     group.AddArgument(flags.GpuFlag(hidden=False))
-    group.AddArgument(flags.StartupProbeFlag())
-    group.AddArgument(flags.LivenessProbeFlag())
 
   return group
 
@@ -113,7 +113,7 @@ class Update(base.Command):
     flags.AddInvokerIamCheckFlag(parser)
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
-    flags.AddConfigMapsFlags(parser)
+    flags.CONFIG_MAP_FLAGS.AddToParser(parser)
 
     # Flags not specific to any platform
     service_presentation = presentation_specs.ResourcePresentationSpec(
@@ -179,6 +179,11 @@ class Update(base.Command):
     )
     return changes
 
+  def _GetIap(self, args):
+    if flags.FlagIsExplicitlySet(args, 'iap'):
+      return args.iap
+    return None
+
   def Run(self, args):
     """Update the service resource.
 
@@ -195,7 +200,7 @@ class Update(base.Command):
     conn_context = self._ConnectionContext(args)
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
-
+    iap = self._GetIap(args)
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       changes = self._GetBaseChanges(args, service)
@@ -208,6 +213,7 @@ class Update(base.Command):
           include_iam_policy_set=False,
           include_route=creates_revision and has_latest,
           include_create_revision=creates_revision,
+          include_iap=iap is not None,
       )
       if creates_revision:
         progress_message = 'Deploying...'
@@ -235,6 +241,7 @@ class Update(base.Command):
                 or flags.FlagIsExplicitlySet(args, 'tag')
             ),
             is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
+            iap_enabled=iap,
         )
 
       if args.async_:
@@ -264,6 +271,11 @@ class Update(base.Command):
 class BetaUpdate(Update):
   """Update Cloud Run environment variables and other configuration settings."""
 
+  input_flags = (
+      '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
+      ' `--connectivity`, `--image`, `--iap`'
+  )
+
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
@@ -283,6 +295,11 @@ class BetaUpdate(Update):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(BetaUpdate):
   """Update Cloud Run environment variables and other configuration settings."""
+
+  input_flags = (
+      '`--update-env-vars`, `--memory`, `--concurrency`, `--timeout`,'
+      ' `--connectivity`, `--image`, `--iap`'
+  )
 
   @classmethod
   def Args(cls, parser):

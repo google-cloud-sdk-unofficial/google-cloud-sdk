@@ -89,6 +89,17 @@
             enum_value: ROLLOUT_ACTION_CANCEL
             help_text: |-
               Cancel the Rollout permanently.
+    - arg_name: labels
+      api_field: rollout.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+        similar to Kubernetes resource labels.
+      clearable: true
+      spec:
+      - api_field: key
+      - api_field: value
   request:
     api_version: v1alpha1
     collection:

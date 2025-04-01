@@ -64,6 +64,7 @@ _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicat
 _CCI_DOCUMENTATION_LINK = 'https://cloud.google.com/network-connectivity/docs/interconnect/concepts/cci-overview'
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine interconnect.
@@ -143,8 +144,9 @@ class Create(base.CreateCommand):
     log.status.Print(message)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
   """Create a Compute Engine interconnect.
 
   *{command}* is used to create interconnects. An interconnect represents a
@@ -155,6 +157,7 @@ class CreateAlphaBeta(Create):
   LOCATION_ARG = None
   REMOTE_LOCATION_ARG = None
   is_cci = False
+  supports_400g = False
 
   @classmethod
   def Args(cls, parser):
@@ -167,7 +170,7 @@ class CreateAlphaBeta(Create):
     cls.REMOTE_LOCATION_ARG.AddArgument(parser)
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateAlphaBetaArgs(parser)
+    flags.AddCreateAlphaBetaArgs(parser, supports_400g=cls.supports_400g)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -203,6 +206,18 @@ class CreateAlphaBeta(Create):
             messages, args.requested_features
         ),
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine interconnect.
+
+  *{command}* is used to create interconnects. An interconnect represents a
+  single specific connection between Google and the customer.
+  """
+
+  supports_400g = True
 
 
 Create.detailed_help = DETAILED_HELP

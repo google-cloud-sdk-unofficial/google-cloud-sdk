@@ -34,6 +34,7 @@ def _ValidateArgs(
     support_share_with_flag,
     support_auto_delete=False,
     support_reservation_sharing_policy=False,
+    support_emergent_maintenance=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -43,6 +44,7 @@ def _ValidateArgs(
     support_auto_delete: Check if auto-delete settings are supported.
     support_reservation_sharing_policy: Check if reservation sharing policy is
       supported.
+    support_emergent_maintenance: Check if emergent maintenance is supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -74,6 +76,15 @@ def _ValidateArgs(
     one_option_exception_message += (
         '4- Modify reservation sharing policy with specifying'
         ' reservation-sharing-policy flag.'
+    )
+  if support_emergent_maintenance:
+    parameter_names.extend([
+        '--enable-emergent-maintenance',
+        '--no-enable-emergent-maintenance'
+    ])
+    one_option_exception_message += (
+        '5- Modify emergent maintenance with specifying'
+        ' enable-emergent-maintenance flag.'
     )
 
   has_share_with = False
@@ -115,6 +126,11 @@ def _ValidateArgs(
     minimum_argument_specified = (
         minimum_argument_specified
         and not args.IsSpecified('reservation_sharing_policy')
+    )
+  if support_emergent_maintenance:
+    minimum_argument_specified = (
+        minimum_argument_specified
+        and not args.IsSpecified('enable_emergent_maintenance')
     )
 
   # Check parameters (add_share_with and remove_share_with are on GA).
@@ -281,6 +297,38 @@ def _AutoDeleteUpdateRequest(args, reservation_ref, holder):
   )
 
 
+def _EnableEmergentMaintenanceUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for enabling emergent maintenance."""
+  messages = holder.client.messages
+
+  update_mask = []
+  if args.IsSpecified('enable_emergent_maintenance'):
+    update_mask.append('enableEmergentMaintenance')
+    enable_emergent_maintenance = args.enable_emergent_maintenance
+  else:
+    enable_emergent_maintenance = None
+
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+      enable_emergent_maintenance=enable_emergent_maintenance,
+  )
+
+  # Build Update Request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=update_mask,
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
@@ -288,6 +336,7 @@ class Update(base.UpdateCommand):
   _support_share_with_flag = False
   _support_auto_delete = False
   _support_reservation_sharing_policy = True
+  _support_emergent_maintenance = False
 
   @classmethod
   def Args(cls, parser):
@@ -310,6 +359,7 @@ class Update(base.UpdateCommand):
         self._support_share_with_flag,
         self._support_auto_delete,
         self._support_reservation_sharing_policy,
+        self._support_emergent_maintenance
     )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
@@ -385,6 +435,20 @@ class Update(base.UpdateCommand):
         if errors:
           utils.RaiseToolException(errors)
 
+    if self._support_emergent_maintenance:
+      if args.IsSpecified('enable_emergent_maintenance'):
+        r_update_request = _EnableEmergentMaintenanceUpdateRequest(
+            args, reservation_ref, holder
+        )
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_update_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )))
+
     return result
 
 
@@ -394,6 +458,7 @@ class UpdateBeta(Update):
   _support_share_with_flag = True
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
+  _support_emergent_maintenance = False
 
   @classmethod
   def Args(cls, parser):
@@ -423,6 +488,7 @@ class UpdateAlpha(Update):
   _support_share_with_flag = True
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
+  _support_emergent_maintenance = True
 
   @classmethod
   def Args(cls, parser):
@@ -434,6 +500,7 @@ class UpdateAlpha(Update):
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
+    r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',
