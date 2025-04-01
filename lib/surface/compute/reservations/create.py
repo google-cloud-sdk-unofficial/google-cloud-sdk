@@ -58,7 +58,7 @@ class Create(base.CreateCommand):
   """Create a Compute Engine reservation."""
   _support_auto_delete = False
   _support_folder_share_setting = False
-  _support_reservation_sharing_policy = False
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):

@@ -120,15 +120,9 @@ class Get(base.Command):
     return iap_setting_ref.GetIapSetting()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetBeta(Get):
   """Get the setting for an IAP resource."""
 
-  _support_cloud_run = False
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetAlpha(Get):
-  """Get the setting for an IAP resource."""
-
   _support_cloud_run = True
+

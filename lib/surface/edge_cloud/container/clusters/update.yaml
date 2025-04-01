@@ -17,6 +17,7 @@
     GA:
       api_version: v1
     modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.container.container_runtime:UpdateContainerRuntimeclass
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:AddMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:RemoveMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:ClearMaintenanceWindow
@@ -142,6 +143,11 @@
           repeated: false
           help_text: |
             If set, use the specified KMS key for zone storage encryption.
+    - arg_name: container-default-runtime-class
+      release_tracks: [ALPHA]
+      repeated: false
+      help_text: |
+        If set, use the specified default container runtime class for the cluster.
 
   response:
     modify_response_hooks:

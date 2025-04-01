@@ -30,7 +30,7 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update snapshot settings."""
 
@@ -286,9 +286,9 @@ class Update(base.UpdateCommand):
       return result
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class UpdateAlpha(Update):
+class UpdateAlphaAndBeta(Update):
   """Update snapshot settings."""
 
   @staticmethod

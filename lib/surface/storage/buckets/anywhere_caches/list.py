@@ -23,7 +23,6 @@ from googlecloudsdk.command_lib.storage.resources import resource_util
 from surface.storage.buckets.anywhere_caches import describe
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List all Anywhere Cache instances of a bucket."""

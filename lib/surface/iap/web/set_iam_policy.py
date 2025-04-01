@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy for an IAP IAM resource.
@@ -87,15 +87,20 @@ class SetIamPolicy(base.Command):
   """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_cloud_run = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapIamResourceArgs(parser)
+    iap_util.AddIapIamResourceArgs(
+        parser,
+        support_cloud_run=cls._support_cloud_run
+    )
     iap_util.AddIAMPolicyFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -109,11 +114,15 @@ class SetIamPolicy(base.Command):
     Returns:
       The specified function with its description and configured filter.
     """
-    iap_iam_ref = iap_util.ParseIapIamResource(self.ReleaseTrack(), args)
+    iap_iam_ref = iap_util.ParseIapIamResource(
+        self.ReleaseTrack(),
+        args,
+        self._support_cloud_run,
+    )
     return iap_iam_ref.SetIamPolicy(args.policy_file)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetIamPolicyAlpha(SetIamPolicy):
   """Set the IAM policy for an IAP IAM resource.
 
@@ -127,14 +136,4 @@ class SetIamPolicyAlpha(SetIamPolicy):
   the resource.
   """
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapIamResourceArgs(parser, is_alpha=True)
-    iap_util.AddIAMPolicyFileArg(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_cloud_run = True

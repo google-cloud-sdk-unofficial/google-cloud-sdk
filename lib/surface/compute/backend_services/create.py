@@ -94,6 +94,7 @@ class CreateHelper(object):
       support_subsetting_subset_size,
       support_custom_metrics,
       support_ip_port_dynamic_forwarding,
+      support_zonal_affinity,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -152,6 +153,8 @@ class CreateHelper(object):
       flags.AddBackendServiceCustomMetrics(parser)
     if support_ip_port_dynamic_forwarding:
       flags.AddIpPortDynamicForwarding(parser)
+    if support_zonal_affinity:
+      flags.AddZonalAffinity(parser)
 
   def __init__(
       self,
@@ -159,12 +162,14 @@ class CreateHelper(object):
       release_track,
       support_custom_metrics,
       support_ip_port_dynamic_forwarding,
+      support_zonal_affinity,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_custom_metrics = support_custom_metrics
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
     )
+    self._support_zonal_affinity = support_zonal_affinity
     self._release_track = release_track
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -357,6 +362,9 @@ class CreateHelper(object):
         client, args, backend_service
     )
 
+    if self._support_zonal_affinity:
+      backend_services_utils.ZonalAffinity(client, args, backend_service)
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -440,6 +448,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_custom_metrics = False
   _support_ip_port_dynamic_forwarding = False
+  _support_zonal_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -448,6 +457,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_custom_metrics=cls._support_custom_metrics,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
+        support_zonal_affinity=cls._support_zonal_affinity,
     )
 
   def Run(self, args):
@@ -458,6 +468,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_custom_metrics=self._support_custom_metrics,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
+        support_zonal_affinity=self._support_zonal_affinity,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -506,3 +517,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_custom_metrics = True
   _support_ip_port_dynamic_forwarding = True
+  _support_zonal_affinity = True

@@ -53,13 +53,19 @@ def _GAArgs(parser):
   Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
 
 
-def _AlphaArgs(parser):
-  """A helper function to build args for Alpha API version."""
-  Delete.SnapshotArg = flags.MakeSnapshotArgAlpha(plural=True)
+def _BetaArgs(parser):
+  """A helper function to build args for Beta API version."""
+  Delete.SnapshotArg = flags.MakeSnapshotArgForRegionalSnapshots(plural=True)
   Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+def _AlphaArgs(parser):
+  """A helper function to build args for Alpha API version."""
+  Delete.SnapshotArg = flags.MakeSnapshotArgForRegionalSnapshots(plural=True)
+  Delete.SnapshotArg.AddArgument(parser, operation_type='delete')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Compute Engine snapshots.
@@ -113,6 +119,21 @@ class Delete(base.DeleteCommand):
         ))
 
     return client.MakeRequests(requests)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Delete Compute Engine snapshots."""
+
+  @staticmethod
+  def Args(parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

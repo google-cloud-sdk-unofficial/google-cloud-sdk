@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.dataproc.batches import (
     batches_create_request_factory)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Submit(base.Group):
   """Submit a Dataproc batch job."""
@@ -47,10 +48,6 @@ class Submit(base.Group):
           To submit a Spark-Sql job, run:
 
             $ {command} spark-sql 'my-sql-script.sql' --region='us-central1' --deps-bucket=gs://my-bucket --vars='variable=value'
-
-          To submit a Ray job, run:
-
-            $ {command} ray my-ray.py --location='us-central1' --deps-bucket=gs://my-bucket -- ARG1 ARG2
         """
   }
 

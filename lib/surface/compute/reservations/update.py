@@ -287,7 +287,7 @@ class Update(base.UpdateCommand):
   """Update Compute Engine reservations."""
   _support_share_with_flag = False
   _support_auto_delete = False
-  _support_reservation_sharing_policy = False
+  _support_reservation_sharing_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -296,6 +296,7 @@ class Update(base.UpdateCommand):
     r_flags.GetAddShareWithFlag().AddToParser(parser)
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
+    r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
 
   def Run(self, args):
     """Common routine for updating reservation."""

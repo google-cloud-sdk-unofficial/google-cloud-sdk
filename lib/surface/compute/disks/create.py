@@ -681,6 +681,7 @@ class CreateBeta(Create):
         include_physical_block_size_support=True,
         vss_erase_enabled=True,
         support_pd_interface=True,
+        support_source_snapshot_region=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -697,7 +698,9 @@ class CreateBeta(Create):
         support_vss_erase=True,
         support_multiwriter_disk=True,
         support_pd_interface=True,
-        support_enable_confidential_compute=True)
+        support_enable_confidential_compute=True,
+        support_source_snapshot_region=True,
+    )
 
 
 @base.DefaultUniverseOnly

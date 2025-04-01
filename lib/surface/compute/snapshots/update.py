@@ -54,15 +54,21 @@ def _GAArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser)
 
 
-def _AlphaArgs(parser):
+def _BetaArgs(parser):
   """Set Args based on Release Track."""
-  Update.SnapshotArg = snapshots_flags.MakeSnapshotArgAlpha()
+  Update.SnapshotArg = snapshots_flags.MakeSnapshotArgForRegionalSnapshots()
   Update.SnapshotArg.AddArgument(parser, operation_type='update')
   labels_util.AddUpdateLabelsFlags(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+def _AlphaArgs(parser):
+  """Set Args based on Release Track."""
+  Update.SnapshotArg = snapshots_flags.MakeSnapshotArgForRegionalSnapshots()
+  Update.SnapshotArg.AddArgument(parser, operation_type='update')
+  labels_util.AddUpdateLabelsFlags(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine snapshot.
@@ -158,6 +164,21 @@ class Update(base.UpdateCommand):
           operation_poller, operation_ref,
           'Updating labels of snapshot [{0}]'.format(
               snapshot_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine snapshot."""
+
+  @staticmethod
+  def Args(parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

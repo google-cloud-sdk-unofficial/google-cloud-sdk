@@ -153,8 +153,11 @@ class Run(base.Command):
         metavar='ADDITIONAL_USER_LABELS',
         type=arg_parsers.ArgDict(),
         action=arg_parsers.UpdateAction,
-        help=
-        ('Additional user labels to pass to the job.'))
+        help=(
+            'Additional user labels to pass to the job. Example: '
+            '--additional-user-labels=\'{"key1":"value1"}\''
+        ),
+    )
 
     parser.add_argument(
         '--parameters',

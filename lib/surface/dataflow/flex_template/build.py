@@ -222,8 +222,11 @@ def _CommonArgs(parser):
       metavar='ADDITIONAL_USER_LABELS',
       type=arg_parsers.ArgDict(),
       action=arg_parsers.UpdateAction,
-      help=
-      ('Default user labels to pass to the job.'))
+      help=(
+          'Default user labels to pass to the job. Example: '
+          '--additional-user-labels=\'{"key1":"value1"}\''
+      ),
+  )
 
   image_building_args.add_argument(
       '--image-gcr-path',

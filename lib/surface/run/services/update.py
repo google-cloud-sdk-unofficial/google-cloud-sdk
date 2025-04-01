@@ -275,6 +275,7 @@ class BetaUpdate(Update):
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -301,6 +302,7 @@ class AlphaUpdate(BetaUpdate):
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
+    flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)

@@ -157,6 +157,157 @@ class Deploy(base.Command):
         help='If true, schedule the deployment workload on Spot VM.',
     ).AddToParser(parser)
 
+    base.Argument(
+        '--use-dedicated-endpoint',
+        action='store_true',
+        default=False,
+        required=False,
+        help=(
+            'If true, the endpoint will be exposed through a dedicated DNS.'
+            ' Your request to the dedicated DNS will be isolated from other'
+            " users' traffic and will have better performance and reliability."
+        ),
+    ).AddToParser(parser)
+
+    base.Argument(
+        '--enable-fast-tryout',
+        action='store_true',
+        default=False,
+        required=False,
+        help=(
+            'If True, model will be deployed using faster deployment path.'
+            ' Useful for quick experiments. Not for production workloads. Only'
+            ' available for most popular models with certain machine types.'
+        ),
+    ).AddToParser(parser)
+
+    base.Argument(
+        '--container-image-uri',
+        help=("""\
+      URI of the Model serving container file in the Container Registry
+      (e.g. gcr.io/myproject/server:latest).
+      """),
+    ).AddToParser(parser)
+
+    parser.add_argument(
+        '--container-env-vars',
+        metavar='KEY=VALUE',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help='List of key-value pairs to set as environment variables.',
+    )
+    parser.add_argument(
+        '--container-command',
+        type=arg_parsers.ArgList(),
+        metavar='COMMAND',
+        action=arg_parsers.UpdateAction,
+        help="""\
+  Entrypoint for the container image. If not specified, the container
+  image's default entrypoint is run.
+  """,
+    )
+    parser.add_argument(
+        '--container-args',
+        metavar='ARG',
+        type=arg_parsers.ArgList(),
+        help="""\
+  Comma-separated arguments passed to the command run by the container
+  image. If not specified and no `--command` is provided, the container
+  image's default command is used.
+  """,
+    )
+    parser.add_argument(
+        '--container-ports',
+        metavar='PORT',
+        type=arg_parsers.ArgList(element_type=arg_parsers.BoundedInt(1, 65535)),
+        action=arg_parsers.UpdateAction,
+        help="""\
+  Container ports to receive http requests at. Must be a number between 1 and
+  65535, inclusive.
+  """,
+    )
+    parser.add_argument(
+        '--container-grpc-ports',
+        metavar='PORT',
+        type=arg_parsers.ArgList(element_type=arg_parsers.BoundedInt(1, 65535)),
+        action=arg_parsers.UpdateAction,
+        help="""\
+  Container ports to receive grpc requests at. Must be a number between 1 and
+  65535, inclusive.
+  """,
+    )
+    parser.add_argument(
+        '--container-predict-route',
+        help='HTTP path to send prediction requests to inside the container.',
+    )
+    parser.add_argument(
+        '--container-health-route',
+        help='HTTP path to send health checks to inside the container.',
+    )
+    parser.add_argument(
+        '--container-deployment-timeout-seconds',
+        type=int,
+        help='Deployment timeout in seconds.',
+    )
+    parser.add_argument(
+        '--container-shared-memory-size-mb',
+        type=int,
+        help="""\
+  The amount of the VM memory to reserve as the shared memory for the model in
+  megabytes.
+    """,
+    )
+    parser.add_argument(
+        '--container-startup-probe-exec',
+        type=arg_parsers.ArgList(),
+        metavar='STARTUP_PROBE_EXEC',
+        help="""\
+  Exec specifies the action to take. Used by startup probe. An example of this
+  argument would be ["cat", "/tmp/healthy"].
+    """,
+    )
+    parser.add_argument(
+        '--container-startup-probe-period-seconds',
+        type=int,
+        help="""\
+  How often (in seconds) to perform the startup probe. Default to 10 seconds.
+  Minimum value is 1.
+    """,
+    )
+    parser.add_argument(
+        '--container-startup-probe-timeout-seconds',
+        type=int,
+        help="""\
+  Number of seconds after which the startup probe times out. Defaults to 1 second.
+  Minimum value is 1.
+    """,
+    )
+    parser.add_argument(
+        '--container-health-probe-exec',
+        type=arg_parsers.ArgList(),
+        metavar='HEALTH_PROBE_EXEC',
+        help="""\
+  Exec specifies the action to take. Used by health probe. An example of this
+  argument would be ["cat", "/tmp/healthy"].
+    """,
+    )
+    parser.add_argument(
+        '--container-health-probe-period-seconds',
+        type=int,
+        help="""\
+  How often (in seconds) to perform the health probe. Default to 10 seconds.
+  Minimum value is 1.
+    """,
+    )
+    parser.add_argument(
+        '--container-health-probe-timeout-seconds',
+        type=int,
+        help="""\
+  Number of seconds after which the health probe times out. Defaults to 1 second.
+  Minimum value is 1.
+    """,
+    )
+
   def Run(self, args):
     validation.ValidateModelGardenModelArgs(args)
     validation.ValidateDisplayName(args.endpoint_display_name)
@@ -190,9 +341,7 @@ class Deploy(base.Command):
         default_endpoint_name = '-'.join(
             [publisher_name, model_name, 'hf', 'mg-cli-deploy']
         )
-        api_model_arg = (
-            f'publishers/hf-{publisher_name}/models/{model_name}@001'
-        )
+        api_model_arg = f'{publisher_name}/{model_name}'
       else:
         # Convert to lower case because API only takes in lower case.
         publisher_name, model_and_version_name = args.model.lower().split('/')
@@ -243,7 +392,7 @@ class Deploy(base.Command):
             else default_endpoint_name
         )
 
-        model_garden_utils.DeployPublisherModel(
+        model_garden_utils.Deploy(
             args,
             deploy_config.dedicatedResources.machineSpec,
             endpoint_name,

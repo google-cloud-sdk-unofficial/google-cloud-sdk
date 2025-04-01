@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.compute.snapshot_settings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe snapshot settings."""
@@ -52,8 +52,8 @@ class Describe(base.DescribeCommand):
     return client.MakeRequests([(service, 'Get', request)])[0]
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class DescribeAlphaAndBeta(Describe):
   """Describe snapshot settings."""
 
   @staticmethod

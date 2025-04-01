@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bq import command_utils
@@ -28,6 +29,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Copy(base.Command):
   """Bq Copy Command."""
@@ -60,21 +62,21 @@ class Copy(base.Command):
         help='A unique job ID to use for the request. '
              'If not specified a unique job id will '
              'be generated.').AddToParser(parser)
-    concept_parser = hooks.GetTableCopyResourceArgs()[0]
+    concept_parser = command_utils.GetTableCopyResourceArgs()[0]
     concept_parser.AddToParser(parser)
 
   def Run(self, args):
     job_id = hooks.JobIdProcessor(args.job_id)
-    requests_type = hooks.GetApiMessage('BigqueryJobsInsertRequest')
+    requests_type = api_util.GetApiMessage('BigqueryJobsInsertRequest')
     request = requests_type()
     project = args.project or properties.VALUES.core.project.Get(required=True)
     request.projectId = project
-    request = hooks.ProcessTableCopyConfiguration(None, args, request)
-    request = hooks.ProcessTableCopyOverwrite(None, args, request)
+    request = command_utils.ProcessTableCopyConfiguration(None, args, request)
+    request = command_utils.ProcessTableCopyOverwrite(None, args, request)
     arg_utils.SetFieldInMessage(request, 'job.jobReference.jobId', job_id)
     arg_utils.SetFieldInMessage(request, 'job.jobReference.projectId', project)
 
-    client = hooks.GetApiClient()
+    client = api_util.GetApiClient()
     job_service = client.jobs
     job = client.jobs.Insert(request)
 

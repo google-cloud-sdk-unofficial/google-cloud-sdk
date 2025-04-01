@@ -21,10 +21,9 @@ from googlecloudsdk.command_lib.compute.disk_settings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class DescribeAlpha(base.DescribeCommand):
+class Describe(base.DescribeCommand):
   """Describe a Google Compute Engine disk setting."""
 
   @staticmethod

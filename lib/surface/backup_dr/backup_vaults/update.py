@@ -113,7 +113,9 @@ class Update(base.UpdateCommand):
     if args.unlock_backup_min_enforced_retention:
       effective_time = command_util.ResetEnforcedRetention()
     else:
-      effective_time = command_util.VerifyDateInFuture(args.effective_time)
+      effective_time = command_util.VerifyDateInFuture(
+          args.effective_time, 'effective-time'
+      )
     no_async = args.no_async
 
     try:

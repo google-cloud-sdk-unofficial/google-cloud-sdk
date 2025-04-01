@@ -32,6 +32,7 @@ from googlecloudsdk.core.util import times
 import six
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update labels and/or the number of worker nodes in a cluster.
 

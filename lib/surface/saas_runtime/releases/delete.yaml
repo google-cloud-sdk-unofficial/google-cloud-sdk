@@ -1,0 +1,23 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Delete a Release
+    description: Delete a Release
+    examples: |-
+      To delete the release, run:
+
+      $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Name of the resource
+      is_positional: true
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:release
+      required: true
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.releases
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations

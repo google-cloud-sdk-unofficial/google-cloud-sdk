@@ -23,7 +23,7 @@
     description: |
       Delete a single git repository link.
     examples: |-
-      To delete a git repository link `my-git-repository-link` in a connection `my-comection` in location `us-central1` run:
+      To delete a git repository link `my-git-repository-link` in a connection `my-connection` in location `us-central1` run:
 
       $ {command} my-git-repository-link --connection=my-connection --location=us-central1
   arguments:

@@ -50,17 +50,30 @@
         with an error. Default value is False.
       default: null
     - group:
+        api_field: parameterVersion.payload
         required: true
         help_text: |-
           Message for storing a ParameterVersion resource's payload data
         params:
-        - arg_name: payload-data
-          api_field: parameterVersion.payload.data
-          required: true
-          repeated: false
-          type: bytes
-          help_text: |-
-            bytes data for storing payload.
+        - group:
+            mutex: true
+            required: true
+            params:
+            - arg_name: payload-data-from-file
+              api_field: parameterVersion.payload.data
+              json_name: dataFromFile
+              required: false
+              repeated: false
+              type: file_type
+              help_text: |-
+                bytes data for storing payload.
+            - arg_name: payload-data
+              api_field: parameterVersion.payload.data
+              required: false
+              repeated: false
+              type: bytes
+              help_text: |-
+                bytes data for storing payload.
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -62,8 +62,9 @@ def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   help_text = """
 Container Flags
 
-  The following flags apply to a single container. If the --container flag is specified these flags may only be
-  specified after a --container flag. Otherwise they will apply to the primary ingress container.
+The following flags apply to a single container. If the --container flag is
+specified these flags may only be specified after a --container flag. Otherwise
+they will apply to the primary ingress container.
 """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.PortArg())
@@ -986,6 +987,7 @@ class BetaDeploy(Deploy):
     flags.AddRegionsArg(parser)
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -1111,6 +1113,7 @@ class AlphaDeploy(BetaDeploy):
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
+    flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)

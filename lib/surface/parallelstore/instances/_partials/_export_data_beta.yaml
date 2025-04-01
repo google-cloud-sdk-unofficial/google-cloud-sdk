@@ -86,6 +86,48 @@
       resource_method_params:
         exportDataRequest.serviceAccount: '{__relative_name__}'
       required: false
+    - arg_name: metadata-options-uid
+      api_field: exportDataRequest.metadataOptions.uid
+      required: false
+      help_text: |-
+        The UID preservation behavior.
+      choices:
+      - arg_value: uid-skip
+        enum_value: UID_SKIP
+        help_text: |-
+          Do not preserve UID during a transfer job.
+      - arg_value: uid-number-preserve
+        enum_value: UID_NUMBER_PRESERVE
+        help_text: |-
+          Preserve UID that is in number format during a transfer job.
+    - arg_name: metadata-options-gid
+      api_field: exportDataRequest.metadataOptions.gid
+      required: false
+      help_text: |-
+        The GID preservation behavior.
+      choices:
+      - arg_value: gid-skip
+        enum_value: GID_SKIP
+        help_text: |-
+          Do not preserve GID during a transfer job.
+      - arg_value: gid-number-preserve
+        enum_value: GID_NUMBER_PRESERVE
+        help_text: |-
+          Preserve GID that is in number format during a transfer job.
+    - arg_name: metadata-options-mode
+      api_field: exportDataRequest.metadataOptions.mode
+      required: false
+      help_text: |-
+        The mode preservation behavior.
+      choices:
+      - arg_value: mode-skip
+        enum_value: MODE_SKIP
+        help_text: |-
+          Do not preserve mode during a transfer job.
+      - arg_value: mode-preserve
+        enum_value: MODE_PRESERVE
+        help_text: |-
+          Preserve mode during a transfer job.
   request:
     api_version: v1beta
     collection:

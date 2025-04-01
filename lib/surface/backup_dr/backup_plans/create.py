@@ -111,7 +111,11 @@ class Create(base.CreateCommand):
         The name must be unique for a project and location.
         """,
     )
-    flags.AddResourceType(parser)
+    flags.AddResourceType(
+        parser,
+        """Type of resource to which the backup plan should be applied.
+          E.g., `compute.<UNIVERSE_DOMAIN>.com/Instance` """,
+    )
     flags.AddBackupRule(parser)
 
     description_help = """\

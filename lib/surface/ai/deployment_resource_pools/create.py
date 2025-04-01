@@ -72,6 +72,7 @@ def _RunBeta(args):
         max_replica_count=args.max_replica_count,
         machine_type=args.machine_type,
         tpu_topology=args.tpu_topology,
+        multihost_gpu_node_count=args.multihost_gpu_node_count,
         reservation_affinity=args.reservation_affinity,
         spot=args.spot,
     )

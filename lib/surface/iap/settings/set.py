@@ -121,16 +121,9 @@ class Set(base.Command):
     return iap_setting_ref.SetIapSetting(args.setting_file)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Set the setting for an IAP resource."""
 
-  _support_cloud_run = False
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class SetAlpha(Set):
-
-  """Set the setting for an IAP resource."""
-
   _support_cloud_run = True
+

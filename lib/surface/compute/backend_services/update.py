@@ -75,6 +75,7 @@ class UpdateHelper(object):
       support_external_managed_migration,
       support_custom_metrics,
       support_ip_port_dynamic_forwarding,
+      support_zonal_affinity,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -155,6 +156,8 @@ class UpdateHelper(object):
       flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
     if support_ip_port_dynamic_forwarding:
       flags.AddIpPortDynamicForwarding(parser)
+    if support_zonal_affinity:
+      flags.AddZonalAffinity(parser)
 
   def __init__(
       self,
@@ -162,6 +165,7 @@ class UpdateHelper(object):
       support_external_managed_migration=False,
       support_custom_metrics=False,
       support_ip_port_dynamic_forwarding=False,
+      support_zonal_affinity=False,
       release_track=None,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -172,6 +176,7 @@ class UpdateHelper(object):
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
     )
+    self._support_zonal_affinity = support_zonal_affinity
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -337,7 +342,8 @@ class UpdateHelper(object):
         replacement.customMetrics = []
     if self._support_ip_port_dynamic_forwarding:
       backend_services_utils.IpPortDynamicForwarding(client, args, replacement)
-
+    if self._support_zonal_affinity:
+      backend_services_utils.ZonalAffinity(client, args, replacement)
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -430,6 +436,12 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('ip_port_dynamic_forwarding')
         if self._support_ip_port_dynamic_forwarding
+        else False,
+        args.IsSpecified('zonal_affinity_spillover')
+        if self._support_zonal_affinity
+        else False,
+        args.IsSpecified('zonal_affinity_spillover_ratio')
+        if self._support_zonal_affinity
         else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
@@ -596,6 +608,7 @@ class UpdateGA(base.UpdateCommand):
   _support_external_managed_migration = False
   _support_custom_metrics = False
   _support_ip_port_dynamic_forwarding = False
+  _support_zonal_affinity = False
 
   @classmethod
   def Args(cls, parser):
@@ -607,6 +620,7 @@ class UpdateGA(base.UpdateCommand):
         ),
         support_custom_metrics=cls._support_custom_metrics,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
+        support_zonal_affinity=cls._support_zonal_affinity,
     )
 
   def Run(self, args):
@@ -617,6 +631,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_external_managed_migration,
         support_custom_metrics=self._support_custom_metrics,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
+        support_zonal_affinity=self._support_zonal_affinity,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -645,3 +660,4 @@ class UpdateAlpha(UpdateBeta):
   _support_external_managed_migration = True
   _support_custom_metrics = True
   _support_ip_port_dynamic_forwarding = True
+  _support_zonal_affinity = True

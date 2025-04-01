@@ -37,7 +37,6 @@ class PolicyIntelligenceAlpha(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class PolicyIntelligenceBeta(base.Group):
   """A platform to help better understand, use, and manage policies at scale."""
   category = base.IDENTITY_AND_SECURITY_CATEGORY

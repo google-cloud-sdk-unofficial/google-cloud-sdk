@@ -81,10 +81,14 @@
                 - _REF_: googlecloudsdk.command_lib.compute.tpus.flags:remove_metadata
     - group:
         required: false
-        mutex: true
         params:
-        - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:attach_disk
-        - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:detach_disk
+        - group:
+            mutex: true
+            params:
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:attach_disk
+            - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:detach_disk
+        - _REF_: googlecloudsdk.command_lib.compute.tpus.tpu_vm.flags:worker
+          release_tracks: [ALPHA]
 
   update:
     read_modify_update: true

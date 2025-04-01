@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Storage buckets anywhere-caches commands."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AnywhereCaches(base.Group):
   """Manage Cloud Storage Anywhere Caches."""

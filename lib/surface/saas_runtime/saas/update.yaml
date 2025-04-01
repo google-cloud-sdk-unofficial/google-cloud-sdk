@@ -1,0 +1,39 @@
+- release_tracks:
+  - ALPHA
+  help_text:
+    brief: Update a SaaS
+    description: Update a SaaS
+    examples: |-
+      To update the SaaS, run:
+
+      $ {command} my-saas
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The resource name (full URI of the resource) following the standard naming
+        scheme:
+
+          "projects/{project}/locations/{location}/saas/{saas}"
+      is_positional: true
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:saas
+      required: true
+    - arg_name: labels
+      api_field: saas.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+        similar to Kubernetes resource labels.
+      clearable: true
+      spec:
+      - api_field: key
+      - api_field: value
+  request:
+    api_version: v1alpha1
+    collection:
+    - saasservicemgmt.projects.locations.saas
+  async:
+    collection:
+    - saasservicemgmt.projects.locations.operations
+  update:
+    read_modify_update: true

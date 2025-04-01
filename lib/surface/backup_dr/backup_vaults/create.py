@@ -108,7 +108,9 @@ class Create(base.CreateCommand):
         args.backup_min_enforced_retention
     )
     description = args.description
-    effective_time = command_util.VerifyDateInFuture(args.effective_time)
+    effective_time = command_util.VerifyDateInFuture(
+        args.effective_time, 'effective-time'
+    )
     labels = labels_util.ParseCreateArgs(
         args, client.messages.BackupVault.LabelsValue
     )

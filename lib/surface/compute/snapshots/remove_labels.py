@@ -37,15 +37,25 @@ def _GAArgs(parser):
   labels_flags.AddArgsForRemoveLabels(parser)
 
 
-def _AlphaArgs(parser):
-  """A helper function to build args for Alpha API version."""
-  SnapshotsRemoveLabels.SnapshotArg = snapshots_flags.MakeSnapshotArgAlpha()
+def _BetaArgs(parser):
+  """A helper function to build args for Beta API version."""
+  SnapshotsRemoveLabels.SnapshotArg = (
+      snapshots_flags.MakeSnapshotArgForRegionalSnapshots()
+  )
   SnapshotsRemoveLabels.SnapshotArg.AddArgument(parser)
   labels_flags.AddArgsForRemoveLabels(parser)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+def _AlphaArgs(parser):
+  """A helper function to build args for Alpha API version."""
+  SnapshotsRemoveLabels.SnapshotArg = (
+      snapshots_flags.MakeSnapshotArgForRegionalSnapshots()
+  )
+  SnapshotsRemoveLabels.SnapshotArg.AddArgument(parser)
+  labels_flags.AddArgsForRemoveLabels(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class SnapshotsRemoveLabels(base.UpdateCommand):
   """Remove labels to Compute Engine snapshots."""
@@ -144,6 +154,21 @@ class SnapshotsRemoveLabels(base.UpdateCommand):
           operation_poller, operation_ref,
           'Updating labels of snapshot [{0}]'.format(
               snapshot_ref.Name()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SnapshotsRemoveLabelsBeta(SnapshotsRemoveLabels):
+  """Remove labels to Compute Engine snapshots."""
+
+  @staticmethod
+  def Args(parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -31,12 +31,17 @@ def _GAArgs(parser):
   Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
 
 
-def _AlphaArgs(parser):
-  Describe.SnapshotArg = flags.MakeSnapshotArgAlpha()
+def _BetaArgs(parser):
+  Describe.SnapshotArg = flags.MakeSnapshotArgForRegionalSnapshots()
   Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+def _AlphaArgs(parser):
+  Describe.SnapshotArg = flags.MakeSnapshotArgForRegionalSnapshots()
+  Describe.SnapshotArg.AddArgument(parser, operation_type='describe')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine snapshot."""
@@ -77,6 +82,20 @@ class Describe(base.DescribeCommand):
     return client.MakeRequests(
         [(client.apitools_client.snapshots, 'Get', request)]
     )[0]
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+
+  @staticmethod
+  def Args(parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(
+        args,
+        support_region=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

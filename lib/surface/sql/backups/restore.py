@@ -328,8 +328,9 @@ class RestoreBackup(base.RestoreCommand):
         collection='sql.instances',
     )
     if not console_io.PromptContinue(
-        'All current data on the instance will be lost when the backup is '
-        'restored.'
+        '1. All current data on the instance will be lost when the backup is'
+        ' restored to an existing instance.\n2. If restoring to a new instance,'
+        ' settings will be applied from the backups unless they are overriden.'
     ):
       return None
 

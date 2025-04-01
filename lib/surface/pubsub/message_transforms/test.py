@@ -24,7 +24,7 @@ from googlecloudsdk.core.util import http_encoding
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Test(base.Command):
-  """Tests messages transforms against a given message."""
+  """Tests message transforms against a given message."""
 
   @staticmethod
   def Args(parser):

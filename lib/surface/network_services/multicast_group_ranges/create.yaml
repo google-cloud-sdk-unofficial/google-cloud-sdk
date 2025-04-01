@@ -36,6 +36,9 @@ arguments:
     api_field: multicastGroupRange.logConfig.enabled
     help_text: Whether to enable logging for this multicast group range.
     action: store_true_false
+  - arg_name: distribution-scope
+    api_field: multicastGroupRange.distributionScope
+    help_text: Distribution scope of this multicast group range.
   - arg_name: description
     api_field: multicastGroupRange.description
     help_text: The description for the multicast group range.

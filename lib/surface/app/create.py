@@ -41,6 +41,10 @@ _DETAILED_HELP = {
         To create an app that with a user-managed service account, run:
 
             $ {command} --service-account=SERVICE_ACCOUNT
+
+        To create an app with minimum SSL policy allowing TLS 1.2 and above, run:
+
+          $ {command} --ssl-policy=TLS_VERSION_1_2
         """,
 }
 
@@ -64,11 +68,17 @@ class Create(base.CreateCommand):
           api_client,
           project,
           args.region,
-          service_account=args.service_account)
+          service_account=args.service_account,
+          ssl_policy=args.ssl_policy,
+      )
     elif console_io.CanPrompt():
       create_util.CheckAppNotExists(api_client, project)
       create_util.CreateAppInteractively(
-          api_client, project, service_account=args.service_account)
+          api_client,
+          project,
+          service_account=args.service_account,
+          ssl_policy=args.ssl_policy,
+      )
     else:
       raise create_util.UnspecifiedRegionError(
           'Prompts are disabled. Region must be specified either by the '
@@ -88,13 +98,6 @@ class CreateBeta(base.CreateCommand):
   @staticmethod
   def Args(parser):
     create_util.AddAppCreateFlags(parser)
-
-    parser.add_argument(
-        '--ssl-policy',
-        choices=['default', 'modern'],
-        hidden=True,
-        help='The app-level SSL policy to create the app with.',
-    )
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

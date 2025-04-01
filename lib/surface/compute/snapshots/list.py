@@ -35,6 +35,19 @@ def _GAArgs(parser):
   lister.AddBaseListerArgs(parser)
 
 
+def _BetaArgs(parser):
+  """Set Args based on Release Track."""
+  parser.display_info.AddFormat("""\
+      table(
+        name,
+        location().yesno(no="GLOBAL"):label=LOCATION,
+        diskSizeGb,
+        sourceDisk.scope():label=SRC_DISK,
+        status
+      )""")
+  lister.AddMultiScopeListerFlags(parser, global_=True, regional=True)
+
+
 def _AlphaArgs(parser):
   """Set Args based on Release Track."""
   parser.display_info.AddFormat("""\
@@ -48,7 +61,7 @@ def _AlphaArgs(parser):
   lister.AddMultiScopeListerFlags(parser, global_=True, regional=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List Compute Engine snapshots."""
@@ -86,6 +99,18 @@ class List(base.ListCommand):
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('snapshots')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Compute Engine snapshots."""
+
+  @classmethod
+  def Args(cls, parser):
+    _BetaArgs(parser)
+
+  def Run(self, args):
+    return self._Run(args, support_region=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from an IAP IAM resource.
@@ -83,15 +83,20 @@ class RemoveIamPolicyBinding(base.Command):
   """,
   }
 
-  @staticmethod
-  def Args(parser):
+  _support_cloud_run = False
+
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command.
 
     Args:
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
           to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapIamResourceArgs(parser)
+    iap_util.AddIapIamResourceArgs(
+        parser,
+        support_cloud_run=cls._support_cloud_run,
+        )
     iap_util.AddRemoveIamPolicyBindingArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -106,12 +111,16 @@ class RemoveIamPolicyBinding(base.Command):
       The specified function with its description and configured filter.
     """
     condition = iam_util.ValidateAndExtractCondition(args)
-    iap_iam_ref = iap_util.ParseIapIamResource(self.ReleaseTrack(), args)
+    iap_iam_ref = iap_util.ParseIapIamResource(
+        self.ReleaseTrack(),
+        args,
+        self._support_cloud_run,
+    )
     return iap_iam_ref.RemoveIamPolicyBinding(args.member, args.role, condition,
                                               args.all)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBinding):
   """Remove IAM policy binding from an IAP IAM resource.
 
@@ -121,14 +130,4 @@ class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBinding):
   specify an IAP IAM resource.
   """
 
-  @staticmethod
-  def Args(parser):
-    """Register flags for this command.
-
-    Args:
-      parser: An argparse.ArgumentParser-like object. It is mocked out in order
-          to capture some information, but behaves like an ArgumentParser.
-    """
-    iap_util.AddIapIamResourceArgs(parser, is_alpha=True)
-    iap_util.AddRemoveIamPolicyBindingArgs(parser)
-    base.URI_FLAG.RemoveFromParser(parser)
+  _support_cloud_run = True

@@ -20,13 +20,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import sys
+
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
-from googlecloudsdk.api_lib.dataproc.poller import batch_poller
+from googlecloudsdk.api_lib.dataproc.poller import gce_batch_poller
+from googlecloudsdk.api_lib.dataproc.poller import rm_batch_poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataproc import flags
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Wait(base.Command):
   """View the output of a batch as it runs or after it completes."""
@@ -52,7 +55,19 @@ class Wait(base.Command):
     dataproc = dp.Dataproc(base.ReleaseTrack.GA)
     batch_id = args.CONCEPTS.batch.Parse()
 
-    poller = batch_poller.BatchPoller(dataproc)
+    # Get the batch workload to obtain the resolved version.
+    batch = dataproc.client.projects_locations_batches.Get(
+        dataproc.messages.DataprocProjectsLocationsBatchesGetRequest(
+            name=batch_id.RelativeName()
+        )
+    )
+    if batch.runtimeConfig.version.startswith(
+        '1'
+    ) or batch.runtimeConfig.version.startswith('2'):
+      poller = gce_batch_poller.GceBatchPoller(dataproc)
+    else:
+      poller = rm_batch_poller.RmBatchPoller(dataproc)
+
     waiter.WaitFor(
         poller,
         batch_id.RelativeName(),

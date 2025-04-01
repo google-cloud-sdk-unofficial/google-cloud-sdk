@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.interconnects import flags as interconne
 from googlecloudsdk.command_lib.compute.interconnects.attachments import flags as attachment_flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Compute Engine partner provider interconnect attachment.
@@ -105,9 +106,22 @@ class Create(base.CreateCommand):
         candidate_ipv6_subnets=candidate_ipv6_subnets,
         cloud_router_ipv6_interface_id=cloud_router_ipv6_interface_id,
         customer_router_ipv6_interface_id=customer_router_ipv6_interface_id,
+        candidate_cloud_router_ip_address=getattr(
+            args, 'candidate_cloud_router_ip_address', None
+        ),
+        candidate_customer_router_ip_address=getattr(
+            args, 'candidate_customer_router_ip_address', None
+        ),
+        candidate_cloud_router_ipv6_address=getattr(
+            args, 'candidate_cloud_router_ipv6_address', None
+        ),
+        candidate_customer_router_ipv6_address=getattr(
+            args, 'candidate_customer_router_ipv6_address', None
+        ),
     )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a Compute Engine partner provider interconnect attachment.
@@ -126,3 +140,7 @@ class CreateAlpha(Create):
     attachment_flags.AddCandidateIpv6Subnets(parser)
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
+    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

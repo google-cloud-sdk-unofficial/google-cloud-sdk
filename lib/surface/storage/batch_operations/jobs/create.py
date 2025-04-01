@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_args
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
@@ -66,6 +67,17 @@ class Create(base.Command):
     flags.add_batch_jobs_flags(parser)
 
   def Run(self, args):
+    # Prompts to confirm deletion if --delete-object is specified.
+    if args.delete_object:
+      delete_prompt = (
+          "This command will delete objects specified in the batch operation"
+          " job. Please ensure that you have soft delete enabled on the bucket"
+          " if you want to restore the objects within the retention duration."
+      )
+      console_io.PromptContinue(
+          message=delete_prompt,
+          cancel_on_no=True,
+      )
     job_ref = args.CONCEPTS.batch_job.Parse()
     storage_batch_operations_api.StorageBatchOperationsApi().create_batch_job(
         args, job_ref.RelativeName()

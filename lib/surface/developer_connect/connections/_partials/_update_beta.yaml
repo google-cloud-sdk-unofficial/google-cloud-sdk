@@ -35,6 +35,8 @@
         params:
         - group:
             api_field: connection.githubConfig
+            arg_name: github-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to github.com.
@@ -65,6 +67,8 @@
                 GitHub App installation id.
         - group:
             api_field: connection.githubEnterpriseConfig
+            arg_name: github-enterprise-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to an instance of GitHub Enterprise.
@@ -137,6 +141,8 @@
                 SSL certificate to use for requests to GitHub Enterprise.
         - group:
             api_field: connection.gitlabConfig
+            arg_name: gitlab-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to gitlab.com.
@@ -179,6 +185,8 @@
                   required: false
         - group:
             api_field: connection.gitlabEnterpriseConfig
+            arg_name: gitlab-enterprise-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to an instance of GitLab Enterprise.
@@ -252,6 +260,8 @@
                 Enterprise instance.
         - group:
             api_field: connection.bitbucketDataCenterConfig
+            arg_name: bitbucket-data-center-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to an instance of Bitbucket Data Center.
@@ -325,6 +335,8 @@
                 Center.
         - group:
             api_field: connection.bitbucketCloudConfig
+            arg_name: bitbucket-cloud-config
+            clearable: true
             required: false
             help_text: |-
               Configuration for connections to an instance of Bitbucket Cloud.
@@ -417,6 +429,8 @@
         client has an up-to-date value before proceeding.
     - group:
         api_field: connection.cryptoKeyConfig
+        arg_name: crypto-key-config
+        clearable: true
         required: false
         help_text: |-
           The crypto key configuration. This field is used by the Customer-managed
@@ -438,6 +452,7 @@
         arg_name: git-proxy-config
         clearable: true
         required: false
+        hidden: true
         help_text: |-
           The git proxy configuration.
         params:

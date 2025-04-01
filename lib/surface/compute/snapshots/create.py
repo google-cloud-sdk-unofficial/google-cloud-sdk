@@ -66,6 +66,10 @@ def _GAArgs(parser):
 
 def _BetaArgs(parser):
   _GAArgs(parser)
+  snap_flags.AddScopeArg(parser)
+  kms_resource_args.AddKmsKeyResourceArg(
+      parser, 'snapshot', region_fallthrough=True
+  )
 
 
 def _AlphaArgs(parser):
@@ -262,7 +266,11 @@ class CreateBeta(Create):
     _BetaArgs(parser)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(
+        args,
+        support_scope_arg=True,
+        support_kms=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """View a list of clusters in a project.
 

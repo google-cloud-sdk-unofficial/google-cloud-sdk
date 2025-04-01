@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.buckets.anywhere_caches import create_anywhere_cache_task
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create Anywhere Cache instances for a bucket."""

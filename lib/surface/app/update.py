@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.app import update_util
 
 
 _DETAILED_HELP = {
-    'brief': ('Updates an App Engine application.'),
+    'brief': 'Updates an App Engine application.',
     'DESCRIPTION': """
         This command is used to update settings on an app engine application.
 
@@ -33,6 +33,10 @@ _DETAILED_HELP = {
         To update the app-level service account on an application:
 
           $ {command} --service-account=SERVICE_ACCOUNT
+
+        To update the app-level minimum SSL policy of the application:
+
+          $ {command} --ssl-policy=TLS_VERSION_1_2
         """,
 }
 
@@ -52,7 +56,9 @@ class UpdateGa(base.UpdateCommand):
     update_util.PatchApplication(
         self.ReleaseTrack(),
         split_health_checks=args.split_health_checks,
-        service_account=args.service_account)
+        service_account=args.service_account,
+        ssl_policy=args.ssl_policy,
+    )
 
 
 @base.DefaultUniverseOnly
@@ -65,13 +71,6 @@ class UpdateAlphaAndBeta(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     update_util.AddAppUpdateFlags(parser)
-
-    parser.add_argument(
-        '--ssl-policy',
-        choices=['default', 'modern'],
-        hidden=True,
-        help='The app-level SSL policy to update the app with.',
-    )
 
   def Run(self, args):
     update_util.PatchApplication(
