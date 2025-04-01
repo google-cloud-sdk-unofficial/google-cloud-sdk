@@ -81,6 +81,8 @@ class Update(base.UpdateCommand):
     flags.AddAuthorizedExternalNetworks(parser)
     flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
+    flags.AddPSCNetworkAttachmentUri(parser)
+    flags.ClearPSCNetworkAttachmentUri(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -162,8 +164,6 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     super(UpdateAlpha, UpdateAlpha).Args(parser)
-    flags.AddPSCNetworkAttachmentUrl(parser)
-    flags.ClearPSCNetworkAttachmentUrl(parser)
 
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)

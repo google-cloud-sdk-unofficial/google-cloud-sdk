@@ -46,6 +46,7 @@ _URL_FILTERING_SUPPORTED = (
 _CUSTOM_MIRRORING_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
     base.ReleaseTrack.BETA,
+    base.ReleaseTrack.GA,
 )
 _CUSTOM_INTERCEPT_SUPPORTED = (
     base.ReleaseTrack.ALPHA,

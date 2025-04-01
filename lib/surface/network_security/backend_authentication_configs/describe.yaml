@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: |
@@ -14,6 +14,8 @@
     collection: networksecurity.projects.locations.backendAuthenticationConfigs
     ALPHA:
       api_version: v1alpha1
+    BETA:
+      api_version: v1beta1
 
   arguments:
     resource:

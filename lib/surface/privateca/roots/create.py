@@ -36,6 +36,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
@@ -126,6 +127,7 @@ class Create(base.CreateCommand):
         x509_config_group, is_ca_command=True, default_max_chain_length=None)
     flags.AddAutoEnableFlag(parser)
     flags.AddSubjectKeyIdFlag(parser)
+    flags.AddUserDefinedAccessUrlsFlags(parser)
 
   def _EnableCertificateAuthority(self, ca_name):
     """Enables the given CA."""

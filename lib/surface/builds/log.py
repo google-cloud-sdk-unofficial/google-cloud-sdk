@@ -27,6 +27,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Log(base.Command):
   """Stream the logs for a build."""
@@ -65,7 +66,11 @@ class Log(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region or cloudbuild_util.DEFAULT_REGION
+    build_region = (
+        args.region
+        or properties.VALUES.builds.region.Get()
+        or cloudbuild_util.DEFAULT_REGION
+    )
 
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()

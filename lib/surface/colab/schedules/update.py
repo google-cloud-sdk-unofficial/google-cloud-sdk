@@ -71,7 +71,7 @@ class Update(base.UpdateCommand):
       )
       # Although API will error if schedule is not of notebook execution type,
       # validate client-side for better ux / consistency with other commands.
-      schedules_util.ValidateScheduleIsOfNotebookExecutionType(
+      schedules_util.ValidateAndGetColabSchedule(
           args, messages, schedules_service
       )
       schedule = schedules_service.Patch(

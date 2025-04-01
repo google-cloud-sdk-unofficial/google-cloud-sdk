@@ -41,16 +41,14 @@ DETAILED_HELP = {
           $ {command} example-wire-group \
               --project my-project \
               --cross-site-network example-cross-site-network \
-              --type WIRE \
-              --bandwidth-unmetered 10g \
-              --network-service-class BRONZE \
-              --bandwidth-allocation ALLOCATE_PER_WIRE
+              --type REDUNDANT \
+              --bandwidth-unmetered 1 \
         """,
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Compute Engine wire group.
 
@@ -73,11 +71,8 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser)
-    flags.AddBandwidthMetered(parser)
     flags.AddFaultResponse(parser)
     flags.AddAdminEnabled(parser)
-    flags.AddNetworkServiceClass(parser)
-    flags.AddBandwidthAllocation(parser)
     flags.AddValidateOnly(parser)
 
   def Collection(self):
@@ -102,13 +97,31 @@ class Create(base.CreateCommand):
         # Need to rename type as it conflicts with python built in type()
         wire_group_type=args.type,
         bandwidth_unmetered=args.bandwidth_unmetered,
-        bandwidth_metered=args.bandwidth_metered,
+        bandwidth_metered=getattr(args, 'bandwidth_metered', None),
         fault_response=args.fault_response,
         admin_enabled=args.admin_enabled,
-        network_service_class=args.network_service_class,
-        bandwidth_allocation=args.bandwidth_allocation,
+        network_service_class=getattr(args, 'network_service_class', None),
+        bandwidth_allocation=getattr(args, 'bandwidth_allocation', None),
         validate_only=args.validate_only,
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Compute Engine wire group.
+
+  *{command}* is used to create wire groups. A wire group represents a
+  group of redundant wires between interconnects in two different metros.
+  Each WireGroup belongs to a CrossSiteNetwork.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateAlpha, cls).Args(parser)
+    flags.AddBandwidthMetered(parser)
+    flags.AddNetworkServiceClass(parser)
+    flags.AddBandwidthAllocation(parser)
 
 
 Create.detailed_help = DETAILED_HELP

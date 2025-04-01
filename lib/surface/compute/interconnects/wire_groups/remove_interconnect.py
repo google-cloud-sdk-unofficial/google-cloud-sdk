@@ -44,11 +44,11 @@ DETAILED_HELP = {
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveInterconnect(base.UpdateCommand):
-  """Remove interconnect to a Compute Engine wire group.
+  """Remove interconnect from a wire group.
 
-  *{command}* removes interconnect from a Compute Engine Wire Group endpoint.
+  *{command}* removes interconnect from a wire group endpoint.
   """
 
   WIRE_GROUP_ARG = None
@@ -105,7 +105,7 @@ class RemoveInterconnect(base.UpdateCommand):
     endpoints = wire_group.Describe().endpoints
 
     # Convert the endpoints into a map for easier access to the interconnets.
-    endpoints_map = self._convert_endpoints_to_dict(endpoints)
+    endpoints_map = _convert_endpoints_to_dict(endpoints)
 
     if endpoint_label not in endpoints_map:
       return AttributeError('Endpoint not found.')
@@ -115,124 +115,132 @@ class RemoveInterconnect(base.UpdateCommand):
 
       # Convert the interconnects into a map for easier access to the
       # attributes.
-      interconnects_map = self._convert_interconnects_to_dict(interconnects)
+      interconnects_map = _convert_interconnects_to_dict(interconnects)
 
       # Delete interconnect from the map if it exists.
       if interconnect_label in interconnects_map:
         del interconnects_map[interconnect_label]
 
       # Rebuild the Interconnect messages
-      interconnects = self._build_interconnect_messages(interconnects_map)
+      interconnects = _build_interconnect_messages(
+          self._messages, interconnects_map
+      )
 
       endpoints_map[endpoint_label] = self._messages.WireGroupEndpoint(
           interconnects=interconnects
       )
 
-    endpoints = self._build_endpoint_messages(endpoints_map)
+    endpoints = _build_endpoint_messages(self._messages, endpoints_map)
 
     return wire_group.Patch(
         endpoints=endpoints,
     )
 
-  def _convert_interconnects_to_dict(self, interconnects):
-    """Extracts key value pairs from additionalProperties attribute.
 
-    Creates a dict to be able to pass them into the client.
+def _convert_interconnects_to_dict(interconnects):
+  """Extracts key value pairs from additionalProperties attribute.
 
-    Args:
-      interconnects: the list of interconnect additionalProperties messages
+  Creates a dict to be able to pass them into the client.
 
-    Returns:
-      dictionary containing key value pairs
-    """
-    interconnects_map = {}
+  Args:
+    interconnects: the list of interconnect additionalProperties messages
 
-    if not interconnects or not interconnects.additionalProperties:
-      return interconnects_map
+  Returns:
+    dictionary containing key value pairs
+  """
+  interconnects_map = {}
 
-    for interconnect_property in interconnects.additionalProperties:
-      key, value = interconnect_property.key, interconnect_property.value
-      interconnects_map[key] = value
-
+  if not interconnects or not interconnects.additionalProperties:
     return interconnects_map
 
-  def _convert_endpoints_to_dict(self, endpoints):
-    """Extracts the key,value pairs from the additionalProperties attribute.
+  for interconnect_property in interconnects.additionalProperties:
+    key, value = interconnect_property.key, interconnect_property.value
+    interconnects_map[key] = value
 
-    Creates a python dict to be able to pass them into the client.
+  return interconnects_map
 
-    Args:
-      endpoints: the list of additionalProperties messages
 
-    Returns:
-      Python dictionary containg the key value pairs.
-    """
-    endpoints_map = {}
+def _convert_endpoints_to_dict(endpoints):
+  """Extracts the key,value pairs from the additionalProperties attribute.
 
-    if not endpoints or not endpoints.additionalProperties:
-      return endpoints_map
+  Creates a python dict to be able to pass them into the client.
 
-    for endpoint_property in endpoints.additionalProperties:
-      key, value = endpoint_property.key, endpoint_property.value
-      endpoints_map[key] = value
+  Args:
+    endpoints: the list of additionalProperties messages
 
+  Returns:
+    Python dictionary containing the key value pairs.
+  """
+  endpoints_map = {}
+
+  if not endpoints or not endpoints.additionalProperties:
     return endpoints_map
 
-  def _build_interconnect_messages(self, interconnects_map):
-    """Builds a WireGroupEndpoint.InterconnectsValue message.
+  for endpoint_property in endpoints.additionalProperties:
+    key, value = endpoint_property.key, endpoint_property.value
+    endpoints_map[key] = value
 
-    Args:
-      interconnects_map: map of interconnects with label as the key and the
-        interconnect message as the value
+  return endpoints_map
 
-    Returns:
-      WireGroupEndpoint.InterconnectsValue message
-    """
-    if not interconnects_map:
-      return None
 
-    interconnect_properties_list = []
+def _build_interconnect_messages(messages, interconnects_map):
+  """Builds a WireGroupEndpoint.InterconnectsValue message.
 
-    for (interconnect_label, interconnect_message) in interconnects_map.items():
-      interconnect_properties_list.append(
-          self._messages.WireGroupEndpoint.InterconnectsValue.AdditionalProperty(
-              key=interconnect_label,
-              value=interconnect_message,
-          )
-      )
+  Args:
+    messages: the messages module
+    interconnects_map: map of interconnects with label as the key and the
+      interconnect message as the value
 
-    return self._messages.WireGroupEndpoint.InterconnectsValue(
-        additionalProperties=interconnect_properties_list
+  Returns:
+    WireGroupEndpoint.InterconnectsValue message
+  """
+  if not interconnects_map:
+    return None
+
+  interconnect_properties_list = []
+
+  for (interconnect_label, interconnect_message) in interconnects_map.items():
+    interconnect_properties_list.append(
+        messages.WireGroupEndpoint.InterconnectsValue.AdditionalProperty(
+            key=interconnect_label,
+            value=interconnect_message,
+        )
     )
 
-  def _build_endpoint_messages(self, endpoints_map):
-    """Builds a WireGroup.EndpointValue message.
+  return messages.WireGroupEndpoint.InterconnectsValue(
+      additionalProperties=interconnect_properties_list
+  )
 
-    This is so we can re-assign them to the additionalProperties attribute on
-    the WireGroup.EndpointsValue message.
 
-    Args:
-      endpoints_map: map of endpoints with label as the key and the
-        endpoint message as the value
+def _build_endpoint_messages(messages, endpoints_map):
+  """Builds a WireGroup.EndpointValue message.
 
-    Returns:
-      WireGroup.EndpointsValue message
-    """
-    if not endpoints_map:
-      return None
+  This is so we can re-assign them to the additionalProperties attribute on
+  the WireGroup.EndpointsValue message.
 
-    endpoint_properties_list = []
+  Args:
+    messages: the messages module
+    endpoints_map: map of endpoints with label as the key and the
+      endpoint message as the value
 
-    for (endpoint_label, endpoints_message) in endpoints_map.items():
-      endpoint_properties_list.append(
-          self._messages.WireGroup.EndpointsValue.AdditionalProperty(
-              key=endpoint_label,
-              value=endpoints_message,
-          )
-      )
+  Returns:
+    WireGroup.EndpointsValue message
+  """
+  if not endpoints_map:
+    return None
 
-    return self._messages.WireGroup.EndpointsValue(
-        additionalProperties=endpoint_properties_list
+  endpoint_properties_list = []
+
+  for (endpoint_label, endpoints_message) in endpoints_map.items():
+    endpoint_properties_list.append(
+        messages.WireGroup.EndpointsValue.AdditionalProperty(
+            key=endpoint_label,
+            value=endpoints_message,
+        )
     )
+
+  return messages.WireGroup.EndpointsValue(
+      additionalProperties=endpoint_properties_list
+  )
 
 RemoveInterconnect.detailed_help = DETAILED_HELP

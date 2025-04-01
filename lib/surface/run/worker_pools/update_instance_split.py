@@ -141,8 +141,9 @@ class AdjustInstanceSplit(base.Command):
           worker_pool_ref,
           config_changes,
       )
-      if args.async_:
-        pretty_print.Success('Updating instance split asynchronously.')
-      else:
-        response.result()  # Wait for the operation to complete.
-        return instance_split.GetInstanceSplitPairs(response.metadata)
+
+    if args.async_:
+      pretty_print.Success('Updating instance split asynchronously.')
+    else:
+      response.result()  # Wait for the operation to complete.
+      return instance_split.GetInstanceSplitPairs(response.metadata)

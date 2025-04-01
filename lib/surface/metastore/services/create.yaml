@@ -25,7 +25,7 @@
     ALPHA:
       api_version: v1alpha
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfigForCreate
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
@@ -33,7 +33,7 @@
     BETA:
       api_version: v1beta
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfigForCreate
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
@@ -41,7 +41,7 @@
     GA:
       api_version: v1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfigForCreate
       - googlecloudsdk.command_lib.metastore.services.util:GenerateNetworkConfigFromSubnetList
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfigForV1

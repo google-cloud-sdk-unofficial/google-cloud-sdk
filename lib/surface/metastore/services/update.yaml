@@ -20,7 +20,7 @@
     ALPHA:
       api_version: v1alpha
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
       - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
       - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
@@ -28,7 +28,7 @@
     BETA:
       api_version: v1beta
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
       - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
       - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook
@@ -36,7 +36,7 @@
     GA:
       api_version: v1
       modify_request_hooks:
-      - googlecloudsdk.command_lib.metastore.services.util:UpdateAutoscalingScalingConfig
+      - googlecloudsdk.command_lib.metastore.services.util:UpdateScalingConfig
       - googlecloudsdk.command_lib.metastore.services.util:SetServiceRequestUpdateHiveMetastoreConfigs
       - googlecloudsdk.command_lib.metastore.services.util:GenerateUpdateAuxiliaryVersionsConfigs
       - googlecloudsdk.command_lib.metastore.services.util:UpdateServiceMaskHook

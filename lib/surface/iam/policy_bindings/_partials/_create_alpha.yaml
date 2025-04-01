@@ -35,8 +35,8 @@
     - help_text: |-
         Identifier. The name of the policy binding, in the format
         `{binding_parent/locations/{location}/policyBindings/{policy_binding_id}`.
-        The binding parent is the closest Resource Manager resource (i.e., Project,
-        Folder or Organization) to the binding target.
+        The binding parent is the closest Resource Manager resource (project,
+        folder, or organization) to the binding target.
 
         Format:
 
@@ -45,6 +45,7 @@
         * `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
         * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
+      is_primary_resource: true
       request_id_field: policyBindingId
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:folder_or_organization_or_project_location_policy_binding
       required: true
@@ -67,12 +68,13 @@
       required: false
       repeated: true
       help_text: |-
-        User defined annotations. See https://google.aip.dev/148#annotations for
+        User-defined annotations. See https://google.aip.dev/148#annotations for
         more details such as format and size limitations
       spec:
       - api_field: key
       - api_field: value
     - group:
+        api_field: googleIamV3alphaPolicyBinding.target
         required: true
         help_text: |-
           Target is the full resource name of the resource to which the policy will
@@ -88,21 +90,28 @@
               required: false
               repeated: false
               help_text: |-
-                Full Resource Name used for principal access boundary policy bindings
-                Examples:
+                Full Resource Name used for principal access boundary policy bindings.
+                The principal set must be directly parented by the policy binding's
+                parent or same as the parent if the target is a
+                project/folder/organization.
 
-                * Organization:
-                `//cloudresourcemanager.googleapis.com/organizations/ORGANIZATION_ID`
-                * Folder: `//cloudresourcemanager.googleapis.com/folders/FOLDER_ID`
-                * Project:
+                Examples:
+                * For binding's parented by an organization:
+                  * Organization:
+                  `//cloudresourcemanager.googleapis.com/organizations/ORGANIZATION_ID`
+                  * Workforce Identity:
+                  `//iam.googleapis.com/locations/global/workforcePools/WORKFORCE_POOL_ID`
+                  * Workspace Identity:
+                  `//iam.googleapis.com/locations/global/workspace/WORKSPACE_ID`
+                * For binding's parented by a folder:
+                  * Folder:
+                  `//cloudresourcemanager.googleapis.com/folders/FOLDER_ID`
+                * For binding's parented by a project:
+                  * Project:
                     * `//cloudresourcemanager.googleapis.com/projects/PROJECT_NUMBER`
                     * `//cloudresourcemanager.googleapis.com/projects/PROJECT_ID`
-                * Workload Identity Pool:
-                `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/LOCATION/workloadIdentityPools/WORKLOAD_POOL_ID`
-                * Workforce Identity:
-                `//iam.googleapis.com/locations/global/workforcePools/WORKFORCE_POOL_ID`
-                * Workspace Identity:
-                `//iam.googleapis.com/locations/global/workspace/WORKSPACE_ID`
+                  * Workload Identity Pool:
+                  `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/LOCATION/workloadIdentityPools/WORKLOAD_POOL_ID`
     - arg_name: policy-kind
       api_field: googleIamV3alphaPolicyBinding.policyKind
       required: false
@@ -123,8 +132,9 @@
       repeated: false
       help_text: |-
         The resource name of the policy to be bound. The binding parent and policy
-        must belong to the same Organization (or Project).
+        must belong to the same organization.
     - group:
+        api_field: googleIamV3alphaPolicyBinding.condition
         required: false
         help_text: |-
           Represents a textual expression in the Common Expression Language (CEL)
@@ -191,9 +201,9 @@
   request:
     api_version: v3alpha
     collection:
-    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
+    - iam.projects.locations.policyBindings
   async:
     collection:
     - iam.folders.locations.operations

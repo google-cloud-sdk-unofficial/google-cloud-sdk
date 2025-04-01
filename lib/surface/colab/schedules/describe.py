@@ -18,7 +18,6 @@
 from googlecloudsdk.api_lib.colab_enterprise import util
 from googlecloudsdk.api_lib.notebook_executor import schedules as schedules_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.notebook_executor import flags
 
@@ -69,14 +68,9 @@ class Describe(base.DescribeCommand):
     ):
       api_client = util.GetClient(release_track)
       schedules_service = api_client.projects_locations_schedules
-      schedule = schedules_service.Get(
-          schedules_util.CreateScheduleGetRequest(args, messages)
+      return schedules_util.ValidateAndGetColabSchedule(
+          args, messages, schedules_service
       )
-      if schedule.createNotebookExecutionJobRequest is None:
-        raise exceptions.InvalidArgumentException(
-            'SCHEDULE', 'Schedule is not of notebook execution type.'
-        )
-      return schedule
 
 
 Describe.detailed_help = _DETAILED_HELP

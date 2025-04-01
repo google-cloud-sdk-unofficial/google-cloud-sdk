@@ -58,7 +58,7 @@ class Delete(base.DeleteCommand):
       schedules_service = (
           api_client.projects_locations_schedules
       )
-      schedules_util.ValidateScheduleIsOfNotebookExecutionType(
+      schedules_util.ValidateAndGetColabSchedule(
           args, messages, schedules_service
       )
       operation = schedules_service.Delete(

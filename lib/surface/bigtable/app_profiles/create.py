@@ -57,6 +57,10 @@ class CreateAppProfile(base.CreateCommand):
 
             $ {command} my-app-profile-id --instance=my-instance-id --route-any --row-affinity
 
+          To create an app profile with Data Boost enabled which bills usage to the host project, run:
+
+            $ {command} my-app-profile-id --instance=my-instance-id --data-boost --data-boost-compute-billing-owner=HOST_PAYS
+
           """),
   }
 
@@ -96,6 +100,8 @@ class CreateAppProfile(base.CreateCommand):
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,
+        data_boost=args.data_boost,
+        data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,
     )
 
@@ -166,7 +172,7 @@ class CreateAppProfileBeta(CreateAppProfile):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting()
-        .AddIsolation(allow_data_boost=True)
+        .AddIsolation()
         .AddForce('create')
     )
 
@@ -214,7 +220,7 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         .AddAppProfileRouting(
             allow_failover_radius=True,
         )
-        .AddIsolation(allow_data_boost=True)
+        .AddIsolation()
         .AddForce('create')
     )
 

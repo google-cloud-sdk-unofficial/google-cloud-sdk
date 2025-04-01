@@ -83,6 +83,7 @@ class Create(base.CreateCommand):
     flags.AddAuthorizedExternalNetworks(parser)
     flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
+    flags.AddPSCNetworkAttachmentUri(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -164,7 +165,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
-    flags.AddPSCNetworkAttachmentUrl(parser)
 
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)

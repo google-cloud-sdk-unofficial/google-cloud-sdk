@@ -38,18 +38,25 @@ class Create(base.Command):
       """,
       "EXAMPLES": """
       To create a batch job with the name `my-job` to perform object deletion
-      where the manifest file
+      on bucket `my-bucket` and the manifest file
       `gs://my-bucket/manifest.csv` specifies the objects to be transformed:
 
-          $ {command} my-job --manifest-location=gs://my-bucket/manifest.csv
+          $ {command} my-job --bucket=my-bucket --manifest-location=gs://my-bucket/manifest.csv
           --delete-object
 
       To create a batch job with the name `my-job` to update object metadata
-      `Content-Disposition` to `inline` and `Content-Language` to `en` where
+      `Content-Disposition` to `inline` and `Content-Language` to `en` on bucket `my-bucket` where
       you want to match objects with the prefix `prefix1` or `prefix2`:
 
-          $ {command} my-job --included-object-prefixes=prefix1,prefix2
+          $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
           --put-metadata=Content-Disposition=inline,Content-Language=en
+
+      To create a batch job with the name `my-job` to put object event based hold on objects in bucket `my-bucket` with
+      logging config enabled for corresponding transform action and succeeded and failed action states:
+
+          $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
+          --put-metadata=Content-Disposition=inline,Content-Language=en
+          --log-actions=transform --log-action-states=succeeded,failed
       """,
   }
 

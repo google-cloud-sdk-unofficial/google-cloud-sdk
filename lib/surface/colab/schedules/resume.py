@@ -58,7 +58,7 @@ class Resume(base.UpdateCommand):
       schedules_service = (
           api_client.projects_locations_schedules
       )
-      schedules_util.ValidateScheduleIsOfNotebookExecutionType(
+      schedules_util.ValidateAndGetColabSchedule(
           args, messages, schedules_service
       )
       api_response = schedules_service.Resume(

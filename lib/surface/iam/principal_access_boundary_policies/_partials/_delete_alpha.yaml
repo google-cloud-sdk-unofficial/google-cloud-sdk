@@ -35,6 +35,7 @@
         Format:
           `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:organization_location_principal_access_boundary_policy
       required: true
     - arg_name: etag
@@ -50,8 +51,8 @@
       required: false
       type: bool
       help_text: |-
-        If set to true, the request will force the deletion of the Policy even if
-        the Policy references PolicyBindings.
+        If set to true, the request will force the deletion of the policy even if
+        the policy is referenced in policy bindings.
       default: null
   request:
     api_version: v3alpha

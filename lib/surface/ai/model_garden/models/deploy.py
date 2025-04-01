@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.ai import constants
@@ -130,6 +131,31 @@ class Deploy(base.Command):
         default=False,
         required=False,
     ).AddToParser(parser)
+    base.Argument(
+        '--reservation-affinity',
+        type=arg_parsers.ArgDict(
+            spec={
+                'reservation-affinity-type': str,
+                'key': str,
+                'values': arg_parsers.ArgList(),
+            },
+            required_keys=['reservation-affinity-type'],
+        ),
+        help=(
+            'A ReservationAffinity can be used to configure a Vertex AI'
+            ' resource (e.g., a DeployedModel) to draw its Compute Engine'
+            ' resources from a Shared Reservation, or exclusively from'
+            ' on-demand capacity.'
+        ),
+    ).AddToParser(parser)
+
+    base.Argument(
+        '--spot',
+        action='store_true',
+        default=False,
+        required=False,
+        help='If true, schedule the deployment workload on Spot VM.',
+    ).AddToParser(parser)
 
   def Run(self, args):
     validation.ValidateModelGardenModelArgs(args)
@@ -209,6 +235,7 @@ class Deploy(base.Command):
       with endpoint_util.AiplatformEndpointOverrides(
           version, region=args.region
       ):
+        mg_client = client_mg.ModelGardenClient()
         operation_client = operations.OperationsClient(version=version)
         endpoint_name = (
             args.endpoint_display_name

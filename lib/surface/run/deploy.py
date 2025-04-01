@@ -1107,7 +1107,7 @@ class AlphaDeploy(BetaDeploy):
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.AddRegionsArg(parser)
-    flags.AddGpuTypeFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)

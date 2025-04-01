@@ -31,7 +31,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List wire groups."""
 
@@ -50,9 +50,6 @@ class List(base.ListCommand):
           crossSiteNetwork,
           wireGroupProperties.type:label=TYPE,
           wireProperties.bandwidthUnmetered:label=BANDWIDTH_UNMETERED,
-          wireProperties.bandwidthMetered:label=BANDWIDTH_METERED,
-          wireProperties.networkServiceClass:label=NETWORK_SERVICE_CLASS,
-          wireProperties.bandwidthAllocation:label=BANDWIDTH_ALLOCATION,
           wireProperties.faultResponse:label=FAULT_RESPONSE,
           adminEnabled:label=ADMIN_ENABLED
         )
@@ -94,6 +91,35 @@ class List(base.ListCommand):
         limit=args.limit,
         batch_size=None,
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List wire groups."""
+
+  CROSS_SITE_NETWORK_ARG = None
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CROSS_SITE_NETWORK_ARG = (
+        cross_site_network_flags.CrossSiteNetworkArgumentForOtherResource()
+    )
+    cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
+    parser.display_info.AddFormat("""
+        table(
+          name,
+          description,
+          crossSiteNetwork,
+          wireGroupProperties.type:label=TYPE,
+          wireProperties.bandwidthUnmetered:label=BANDWIDTH_UNMETERED,
+          wireProperties.bandwidthMetered:label=BANDWIDTH_METERED,
+          wireProperties.networkServiceClass:label=NETWORK_SERVICE_CLASS,
+          wireProperties.bandwidthAllocation:label=BANDWIDTH_ALLOCATION,
+          wireProperties.faultResponse:label=FAULT_RESPONSE,
+          adminEnabled:label=ADMIN_ENABLED
+        )
+    """)
 
 
 List.detailed_help = base_classes.GetGlobalListerHelp('wire groups')

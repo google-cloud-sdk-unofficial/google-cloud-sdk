@@ -74,6 +74,7 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_external_managed_migration,
       support_custom_metrics,
+      support_ip_port_dynamic_forwarding,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -152,12 +153,15 @@ class UpdateHelper(object):
 
     if support_custom_metrics:
       flags.AddBackendServiceCustomMetrics(parser, add_clear_argument=True)
+    if support_ip_port_dynamic_forwarding:
+      flags.AddIpPortDynamicForwarding(parser)
 
   def __init__(
       self,
       support_subsetting_subset_size,
       support_external_managed_migration=False,
       support_custom_metrics=False,
+      support_ip_port_dynamic_forwarding=False,
       release_track=None,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -165,6 +169,9 @@ class UpdateHelper(object):
         support_external_managed_migration
     )
     self._support_custom_metrics = support_custom_metrics
+    self._support_ip_port_dynamic_forwarding = (
+        support_ip_port_dynamic_forwarding
+    )
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -328,6 +335,8 @@ class UpdateHelper(object):
         replacement.customMetrics = args.custom_metrics_file
       if args.clear_custom_metrics:
         replacement.customMetrics = []
+    if self._support_ip_port_dynamic_forwarding:
+      backend_services_utils.IpPortDynamicForwarding(client, args, replacement)
 
     return replacement, cleared_fields
 
@@ -418,6 +427,9 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('clear_custom_metrics')
         if self._support_custom_metrics
+        else False,
+        args.IsSpecified('ip_port_dynamic_forwarding')
+        if self._support_ip_port_dynamic_forwarding
         else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
@@ -583,6 +595,7 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_external_managed_migration = False
   _support_custom_metrics = False
+  _support_ip_port_dynamic_forwarding = False
 
   @classmethod
   def Args(cls, parser):
@@ -593,6 +606,7 @@ class UpdateGA(base.UpdateCommand):
             cls._support_external_managed_migration
         ),
         support_custom_metrics=cls._support_custom_metrics,
+        support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
     )
 
   def Run(self, args):
@@ -602,6 +616,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         self._support_external_managed_migration,
         support_custom_metrics=self._support_custom_metrics,
+        support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -616,6 +631,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_external_managed_migration = True
   _support_custom_metrics = True
+  _support_ip_port_dynamic_forwarding = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -628,3 +644,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_external_managed_migration = True
   _support_custom_metrics = True
+  _support_ip_port_dynamic_forwarding = True

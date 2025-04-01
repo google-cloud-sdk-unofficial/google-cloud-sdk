@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -8,7 +8,9 @@ help_text:
   examples: |
     To create a config named `backend-authentication-config`, run:
 
-      $ {command} backend-authentication-config --location=global
+      $ {command} backend-authentication-config  \
+      --trust-config=projects/my-project/locations/global/trustConfigs/my-trust-config \
+      --location=global
 
 arguments:
   resource:
@@ -53,5 +55,7 @@ output:
 request: &request
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.backendAuthenticationConfigs
   method: create

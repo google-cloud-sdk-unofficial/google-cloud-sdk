@@ -19,6 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_validators
 from googlecloudsdk.core import log
 from googlecloudsdk.core.configurations import named_configs
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 
 
 @base.UniverseCompatible
@@ -84,9 +85,20 @@ class Create(base.SilentCommand):
       config_validators.WarnIfSettingUniverseDomainWithNoDescriptorData(
           args.universe_domain
       )
-      created_config.PersistProperty(
-          'core', 'universe_domain', args.universe_domain
+      universe_descriptor_obj = universe_descriptor.UniverseDescriptor()
+      _, is_deprecated_and_switched = (
+          universe_descriptor_obj.UpdateDescriptorFromUniverseDomain(
+              args.universe_domain
+          )
       )
+      # Avoid setting back the universe domain property if args.universe_domain
+      # is deprecated.
+      if not is_deprecated_and_switched:
+        created_config.PersistProperty(
+            'core', 'universe_domain', args.universe_domain
+        )
+      else:
+        log.status.Print('Domain is switched to primary.')
       log.status.Print('Updated property [core/universe_domain].')
 
     return args.configuration_name

@@ -22,8 +22,8 @@ from argcomplete import completers
 from googlecloudsdk.api_lib.resource_manager.settings import service
 from googlecloudsdk.api_lib.resource_manager.settings import utils as api_utils
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.resource_manager.settings import exceptions
 from googlecloudsdk.command_lib.resource_manager.settings import utils
-from googlecloudsdk.command_lib.resource_settings import exceptions
 
 
 @base.Hidden

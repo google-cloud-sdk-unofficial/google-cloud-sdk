@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.wire_groups import client
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags as cross_site_network_flags
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
@@ -29,7 +28,7 @@ from googlecloudsdk.core import properties
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine wire group.
 
@@ -51,28 +50,14 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddType(parser, required=False)
     flags.AddBandwidthUnmetered(parser, required=False)
-    flags.AddBandwidthMetered(parser)
     flags.AddFaultResponse(parser)
-    flags.AddAdminEnabled(parser)
-    flags.AddNetworkServiceClass(parser)
-    flags.AddBandwidthAllocation(parser)
+    flags.AddAdminEnabled(parser, update=True)
     flags.AddValidateOnly(parser)
 
   def Collection(self):
     return 'compute.wireGroups'
 
   def Run(self, args):
-    if (
-        args.description is None
-        and args.type is None
-        and args.bandwidth_unmetered is None
-        and args.bandwidth_metered is None
-        and args.fault_response is None
-        and args.admin_enabled is None
-        and args.network_service_class is None
-        and args.bandwidth_allocation is None
-    ):
-      raise exceptions.MinimumArgumentException([])
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.WIRE_GROUP_ARG.ResolveAsResource(
         args,
@@ -94,10 +79,29 @@ class Update(base.UpdateCommand):
         # Need to rename type as it conflicts with python built in type()
         wire_group_type=args.type,
         bandwidth_unmetered=args.bandwidth_unmetered,
-        bandwidth_metered=args.bandwidth_metered,
+        bandwidth_metered=getattr(args, 'bandwidth_metered', None),
         fault_response=args.fault_response,
         admin_enabled=args.admin_enabled,
-        network_service_class=args.network_service_class,
-        bandwidth_allocation=args.bandwidth_allocation,
+        network_service_class=getattr(args, 'network_service_class', None),
+        bandwidth_allocation=getattr(args, 'bandwidth_allocation', None),
         validate_only=args.validate_only,
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine wire group.
+
+  *{command}* is used to update wire groups. A wire group represents a group of
+  redundant wires.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    flags.AddBandwidthMetered(parser)
+    flags.AddNetworkServiceClass(parser)
+    flags.AddBandwidthAllocation(parser)
+
+

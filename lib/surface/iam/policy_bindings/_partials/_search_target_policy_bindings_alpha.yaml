@@ -63,7 +63,7 @@
   request:
     api_version: v3alpha
     collection:
-    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
+    - iam.projects.locations.policyBindings
     method: searchTargetPolicyBindings

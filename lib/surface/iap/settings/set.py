@@ -71,10 +71,22 @@ class Set(base.Command):
             $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
                 --region=REGION_ID
 
+          To set the IAP setting for all forwarding rule within a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=forwarding-rule
+
+          To set the IAP setting for a forwarding rule within a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
+
+          To set the IAP setting for a region forwarding rule within a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
+              --region=REGION_ID
+
           """,
   }
 
-  _support_forwarding_rule = False
   _support_cloud_run = False
 
   @classmethod
@@ -86,9 +98,7 @@ class Set(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     iap_util.AddIapSettingArg(
-        parser,
-        support_forwarding_rule=cls._support_forwarding_rule,
-        support_cloud_run=cls._support_cloud_run
+        parser, support_cloud_run=cls._support_cloud_run
     )
     iap_util.AddIapSettingFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
@@ -106,7 +116,6 @@ class Set(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(
         self.ReleaseTrack(),
         args,
-        self._support_forwarding_rule,
         self._support_cloud_run,
     )
     return iap_setting_ref.SetIapSetting(args.setting_file)
@@ -116,7 +125,6 @@ class Set(base.Command):
 class SetBeta(Set):
   """Set the setting for an IAP resource."""
 
-  _support_forwarding_rule = True
   _support_cloud_run = False
 
 
@@ -125,5 +133,4 @@ class SetAlpha(Set):
 
   """Set the setting for an IAP resource."""
 
-  _support_forwarding_rule = True
   _support_cloud_run = True

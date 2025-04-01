@@ -70,7 +70,7 @@ DETAILED_HELP_NO_ANTIVIRUS = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class ListOverrides(base.DescribeCommand):
   """List overrides of Threat Prevention Profile."""
@@ -92,13 +92,13 @@ class ListOverrides(base.DescribeCommand):
     return client.ListOverrides(security_profile.RelativeName())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-class ListOverridesAlpha(ListOverrides):
+class ListOverridesAlphaBeta(ListOverrides):
   """List overrides of Threat Prevention Profile."""
 
   enable_antivirus = True
 
 
-ListOverridesAlpha.detailed_help = DETAILED_HELP
+ListOverridesAlphaBeta.detailed_help = DETAILED_HELP
 ListOverrides.detailed_help = DETAILED_HELP_NO_ANTIVIRUS

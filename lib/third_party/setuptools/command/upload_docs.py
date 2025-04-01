@@ -8,7 +8,6 @@ from base64 import standard_b64encode
 from distutils import log
 from distutils.errors import DistutilsOptionError
 import os
-import socket
 import zipfile
 import tempfile
 import shutil
@@ -51,7 +50,7 @@ class upload_docs(upload):
             and metadata.entry_points(group='distutils.commands', name='build_sphinx')
         )
 
-    sub_commands = [('build_sphinx', has_sphinx)]
+    sub_commands = [('build_sphinx', has_sphinx)]  # type: ignore[list-item] # TODO: Fix in typeshed distutils stubs
 
     def initialize_options(self):
         upload.initialize_options(self)
@@ -201,7 +200,7 @@ class upload_docs(upload):
             conn.putheader('Authorization', auth)
             conn.endheaders()
             conn.send(body)
-        except socket.error as e:
+        except OSError as e:
             self.announce(str(e), log.ERROR)
             return
 

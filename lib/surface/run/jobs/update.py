@@ -55,7 +55,7 @@ Container Flags
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   if release_track in [base.ReleaseTrack.ALPHA]:
-    group.AddArgument(flags.GpuFlag())
+    group.AddArgument(flags.GpuFlag(hidden=False))
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -243,4 +243,5 @@ class AlphaUpdate(BetaUpdate):
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
-    flags.AddGpuTypeFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.GpuZonalRedundancyFlag(parser, hidden=True)

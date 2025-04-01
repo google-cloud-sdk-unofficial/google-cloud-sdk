@@ -93,6 +93,7 @@ class CreateHelper(object):
       parser,
       support_subsetting_subset_size,
       support_custom_metrics,
+      support_ip_port_dynamic_forwarding,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -149,15 +150,21 @@ class CreateHelper(object):
     flags.AddIpAddressSelectionPolicy(parser)
     if support_custom_metrics:
       flags.AddBackendServiceCustomMetrics(parser)
+    if support_ip_port_dynamic_forwarding:
+      flags.AddIpPortDynamicForwarding(parser)
 
   def __init__(
       self,
       support_subsetting_subset_size,
       release_track,
       support_custom_metrics,
+      support_ip_port_dynamic_forwarding,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_custom_metrics = support_custom_metrics
+    self._support_ip_port_dynamic_forwarding = (
+        support_ip_port_dynamic_forwarding
+    )
     self._release_track = release_track
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -250,6 +257,11 @@ class CreateHelper(object):
 
     if self._support_custom_metrics:
       backend_services_utils.ApplyCustomMetrics(args, backend_service)
+
+    if self._support_ip_port_dynamic_forwarding:
+      backend_services_utils.IpPortDynamicForwarding(
+          client, args, backend_service
+      )
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
@@ -427,6 +439,7 @@ class CreateGA(base.CreateCommand):
 
   _support_subsetting_subset_size = False
   _support_custom_metrics = False
+  _support_ip_port_dynamic_forwarding = False
 
   @classmethod
   def Args(cls, parser):
@@ -434,6 +447,7 @@ class CreateGA(base.CreateCommand):
         parser,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_custom_metrics=cls._support_custom_metrics,
+        support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
     )
 
   def Run(self, args):
@@ -443,6 +457,7 @@ class CreateGA(base.CreateCommand):
     return CreateHelper(
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_custom_metrics=self._support_custom_metrics,
+        support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -467,6 +482,7 @@ class CreateBeta(CreateGA):
   """
   _support_subsetting_subset_size = True
   _support_custom_metrics = True
+  _support_ip_port_dynamic_forwarding = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -489,3 +505,4 @@ class CreateAlpha(CreateBeta):
   """
   _support_subsetting_subset_size = True
   _support_custom_metrics = True
+  _support_ip_port_dynamic_forwarding = True

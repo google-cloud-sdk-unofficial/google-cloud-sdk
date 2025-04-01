@@ -76,7 +76,7 @@ DETAILED_HELP_NO_ANTIVIRUS = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class DeleteOverride(base.UpdateCommand):
   """Delete overrides of Threat Prevention Profile."""
@@ -159,13 +159,13 @@ class DeleteOverride(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-class DeleteOverrideAlpha(DeleteOverride):
+class DeleteOverrideAlphaBeta(DeleteOverride):
   """Delete overrides of Threat Prevention Profile."""
 
   enable_antivirus = True
 
 
-DeleteOverrideAlpha.detailed_help = DETAILED_HELP
+DeleteOverrideAlphaBeta.detailed_help = DETAILED_HELP
 DeleteOverride.detailed_help = DETAILED_HELP_NO_ANTIVIRUS

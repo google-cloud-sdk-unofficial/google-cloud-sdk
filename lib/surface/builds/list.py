@@ -28,6 +28,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.resource import resource_projection_spec
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List builds."""
 
@@ -97,7 +98,11 @@ class List(base.ListCommand):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region or cloudbuild_util.DEFAULT_REGION
+    build_region = (
+        args.region
+        or properties.VALUES.builds.region.Get()
+        or cloudbuild_util.DEFAULT_REGION
+    )
 
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()

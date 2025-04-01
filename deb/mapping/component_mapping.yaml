@@ -30,7 +30,6 @@ gsutil: google-cloud-cli
 istioctl: google-cloud-cli-istioctl
 kpt: google-cloud-cli-kpt
 kubectl: kubectl
-harbourbridge: google-cloud-cli-harbourbridge
 spanner-migration-tool: google-cloud-cli-spanner-migration-tool
 kubectl-oidc: google-cloud-cli-kubectl-oidc
 local-extract: google-cloud-cli-local-extract

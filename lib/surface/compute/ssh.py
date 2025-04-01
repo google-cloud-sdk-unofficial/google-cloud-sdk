@@ -406,22 +406,20 @@ class Ssh(base.Command):
     if not args.plain:
       if not identity_file_list:
         identity_file = ssh_helper.keys.key_file
-      options = ssh_helper.GetConfig(ssh_utils.HostKeyAlias(instance),
-                                     args.strict_host_key_checking,
-                                     host_keys_to_add=host_keys)
+      options = ssh_helper.GetConfig(
+          ssh_utils.HostKeyAlias(instance),
+          args.strict_host_key_checking,
+          host_keys_to_add=host_keys,
+      )
 
     if oslogin_state.third_party_user or oslogin_state.require_certificates:
-      # Use the region if present in arguments.
-      region = args.region
-      if not region:
-        # If region is not present in arguments, fallback to parse region
-        # from derived instance reference.
-        region = instance_ref.zone[: instance_ref.zone.rindex('-')]
+      cert_file = ssh.CertFileFromInstance(
+          project.name, instance_ref.zone, instance.id
+      )
 
-      cert_file = ssh.CertFileFromRegion(region)
-
-    extra_flags = ssh.ParseAndSubstituteSSHFlags(args, remote, instance_address,
-                                                 internal_address)
+    extra_flags = ssh.ParseAndSubstituteSSHFlags(
+        args, remote, instance_address, internal_address
+    )
     remainder = []
 
     if args.ssh_args:
@@ -503,6 +501,9 @@ class Ssh(base.Command):
         log.status.Print(self.createRecommendMessage(args, instance_name,
                                                      instance_ref, project))
       raise e
+
+    if cert_file:
+      ssh.DeleteCertificateFile(project.name, instance_ref.zone, instance.id)
 
     if return_code:
       # This is the return code of the remote command.  Problems with SSH itself

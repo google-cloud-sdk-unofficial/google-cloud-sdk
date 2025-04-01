@@ -49,9 +49,12 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Updates a Custom Mirroring Profile."""
+
   detailed_help = DETAILED_HELP
 
   @classmethod
@@ -100,4 +103,3 @@ class Update(base.UpdateCommand):
 
   def getLabels(self, client, security_profile):
     return client.GetSecurityProfile(security_profile.RelativeName()).labels
-

@@ -306,6 +306,7 @@ def AddBaseArgs(parser):
   flags.AddSwitchTransactionLogsToCloudStorage(parser)
   flags.AddFailoverDrReplicaName(parser)
   flags.AddClearFailoverDrReplicaName(parser)
+  flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
 
 
 def AddBetaArgs(parser):
@@ -314,7 +315,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddIncludeReplicasForMajorVersionUpgrade(parser)
   flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)

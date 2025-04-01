@@ -76,7 +76,7 @@ DETAILED_HELP_NO_ANTIVIRUS = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class UpdateOverride(base.UpdateCommand):
   """Update Overrides of Threat Prevention Profile."""
@@ -177,13 +177,13 @@ class UpdateOverride(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-class UpdateOverrideAlpha(UpdateOverride):
+class UpdateOverrideAlphaBeta(UpdateOverride):
   """Update Overrides of Threat Prevention Profile."""
 
   enable_antivirus = True
 
 
-UpdateOverrideAlpha.detailed_help = DETAILED_HELP
+UpdateOverrideAlphaBeta.detailed_help = DETAILED_HELP
 UpdateOverride.detailed_help = DETAILED_HELP_NO_ANTIVIRUS

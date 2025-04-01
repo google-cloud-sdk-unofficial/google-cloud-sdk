@@ -16,13 +16,15 @@
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
+from googlecloudsdk.command_lib.run import resource_name_conversion
 from googlecloudsdk.command_lib.run import stages
-from googlecloudsdk.command_lib.run.v2 import config_changes as config_changes_mod
+from googlecloudsdk.command_lib.run.v2 import config_changes as v2_config_changes_mod
 from googlecloudsdk.command_lib.run.v2 import flags_parser
 from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -129,7 +131,7 @@ class Update(base.Command):
         len(changes) == 1
         and isinstance(
             changes[0],
-            config_changes_mod.SetClientNameAndVersionChange,
+            v2_config_changes_mod.SetClientNameAndVersionChange,
         )
     ):
       raise exceptions.NoConfigurationChangeError(
@@ -143,11 +145,13 @@ class Update(base.Command):
     self._AssertChanges(changes, self.input_flags, ignore_empty)
     changes.insert(
         0,
-        config_changes_mod.BinaryAuthorizationChange(
+        v2_config_changes_mod.BinaryAuthorizationChange(
             breakglass_justification=None
         ),
     )
-    changes.append(config_changes_mod.SetLaunchStageChange(self.ReleaseTrack()))
+    changes.append(
+        v2_config_changes_mod.SetLaunchStageChange(self.ReleaseTrack())
+    )
     return changes
 
   def Run(self, args):
@@ -175,9 +179,10 @@ class Update(base.Command):
       header = 'Deploying new worker pool...'
       failure_message = 'Deployment failed'
       result_message = 'deploying'
+    creates_revision = config_changes_mod.AdjustsTemplate(config_changes)
     with progress_tracker.StagedProgressTracker(
         header,
-        stages.WorkerPoolStages(),
+        stages.WorkerPoolStages(include_create_revision=creates_revision),
         failure_message=failure_message,
         suppress_output=args.async_,
     ):
@@ -190,29 +195,26 @@ class Update(base.Command):
                 worker_pool_ref.workerPoolsId
             )
         )
-      if args.async_:
-        pretty_print.Success(
-            'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
-            'asynchronously.'.format(
-                worker_pool=worker_pool_ref.workerPoolsId,
-                result_message=result_message,
-            )
+
+    if args.async_:
+      pretty_print.Success(
+          'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
+          'asynchronously.'.format(
+              worker_pool=worker_pool_ref.workerPoolsId,
+              result_message=result_message,
+          )
+      )
+    else:
+      response.result()  # Wait for the operation to complete.
+      msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
+          worker_pool=worker_pool_ref.workerPoolsId
+      )
+      if response.metadata and response.metadata.latest_created_revision:
+        rev = resource_name_conversion.GetNameFromFullChildName(
+            response.metadata.latest_created_revision
         )
+        msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
+      if worker_pool and not creates_revision:
+        pretty_print.Success(msg + ' has been updated.')
       else:
-        response.result()  # Wait for the operation to complete.
-        if worker_pool:
-          pretty_print.Success(
-              'Worker pool [{{bold}}{worker_pool}{{reset}}] '
-              'has been updated.'.format(
-                  worker_pool=worker_pool_ref.workerPoolsId,
-              )
-          )
-        else:
-          # TODO(b/366115709): Add latest revision name to the output.
-          pretty_print.Success(
-              'Worker pool [{{bold}}{worker_pool}{{reset}}] '
-              'has been deployed.'.format(
-                  worker_pool=worker_pool_ref.workerPoolsId,
-              )
-          )
-        return response.operation
+        pretty_print.Success(msg + ' has been deployed.')

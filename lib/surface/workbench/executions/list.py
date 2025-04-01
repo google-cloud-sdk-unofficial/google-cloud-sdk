@@ -80,7 +80,7 @@ class List(base.ListCommand):
       return list_pager.YieldFromList(
           # TODO: b/384799644 - replace with API-side filtering to reduce
           # latency when available.
-          predicate=executions_util.FilterWorkbenchExecution,
+          predicate=executions_util.IsWorkbenchExecution,
           service=executions_service,
           request=executions_util.CreateExecutionListRequest(
               args, messages

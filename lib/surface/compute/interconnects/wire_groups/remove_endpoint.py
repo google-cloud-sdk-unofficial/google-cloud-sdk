@@ -44,7 +44,7 @@ DETAILED_HELP = {
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveEndpoint(base.UpdateCommand):
   """Remove endpoint from a Compute Engine wire group.
 
@@ -89,12 +89,12 @@ class RemoveEndpoint(base.UpdateCommand):
     endpoint_label = args.endpoint_label
     endpoints = wire_group.Describe().endpoints
 
-    endpoints_map = self.convert_endpoints_to_dict(endpoints)
+    endpoints_map = convert_endpoints_to_dict(endpoints)
 
     if endpoint_label in endpoints_map:
       del endpoints_map[endpoint_label]
 
-    endpoints = self._build_endpoint_messages(endpoints_map)
+    endpoints = _build_endpoint_messages(self._messages, endpoints_map)
 
     update_mask = None
     if not endpoints:
@@ -107,57 +107,60 @@ class RemoveEndpoint(base.UpdateCommand):
         update_mask=update_mask,
     )
 
-  def convert_endpoints_to_dict(self, endpoints):
-    """Extracts the key,value pairs from the additionalProperties attribute.
 
-    Creates a python dict to be able to pass them into the client.
+def convert_endpoints_to_dict(endpoints):
+  """Extracts the key,value pairs from the additionalProperties attribute.
 
-    Args:
-      endpoints: the list of additionalProperties messages
+  Creates a python dict to be able to pass them into the client.
 
-    Returns:
-      Python dictionary containg the key value pairs.
-    """
-    endpoints_map = {}
+  Args:
+    endpoints: the list of additionalProperties messages
 
-    if not endpoints or not endpoints.additionalProperties:
-      return endpoints_map
+  Returns:
+    Python dictionary containing the key value pairs.
+  """
+  endpoints_map = {}
 
-    for endpoint_property in endpoints.additionalProperties:
-      key, value = endpoint_property.key, endpoint_property.value
-      endpoints_map[key] = value
-
+  if not endpoints or not endpoints.additionalProperties:
     return endpoints_map
 
-  def _build_endpoint_messages(self, endpoints_map):
-    """Builds a WireGroup.EndpointValue message.
+  for endpoint_property in endpoints.additionalProperties:
+    key, value = endpoint_property.key, endpoint_property.value
+    endpoints_map[key] = value
 
-    This is so we can re-assign them to the additionalProperties attribute on
-    the WireGroup.EndpointsValue message.
+  return endpoints_map
 
-    Args:
-      endpoints_map: map of endpoints with label as the key and the
-        endpoint message as the value
 
-    Returns:
-      WireGroup.EndpointsValue message
-    """
-    if not endpoints_map:
-      return None
+def _build_endpoint_messages(messages, endpoints_map):
+  """Builds a WireGroup.EndpointValue message.
 
-    endpoint_properties_list = []
+  This is so we can re-assign them to the additionalProperties attribute on
+  the WireGroup.EndpointsValue message.
 
-    for (endpoint_label, endpoints_message) in endpoints_map.items():
-      endpoint_properties_list.append(
-          self._messages.WireGroup.EndpointsValue.AdditionalProperty(
-              key=endpoint_label,
-              value=endpoints_message,
-          )
-      )
+  Args:
+    messages: the messages module
+    endpoints_map: map of endpoints with label as the key and the
+      endpoint message as the value
 
-    return self._messages.WireGroup.EndpointsValue(
-        additionalProperties=endpoint_properties_list
+  Returns:
+    WireGroup.EndpointsValue message
+  """
+  if not endpoints_map:
+    return None
+
+  endpoint_properties_list = []
+
+  for (endpoint_label, endpoints_message) in endpoints_map.items():
+    endpoint_properties_list.append(
+        messages.WireGroup.EndpointsValue.AdditionalProperty(
+            key=endpoint_label,
+            value=endpoints_message,
+        )
     )
+
+  return messages.WireGroup.EndpointsValue(
+      additionalProperties=endpoint_properties_list
+  )
 
 
 RemoveEndpoint.detailed_help = DETAILED_HELP

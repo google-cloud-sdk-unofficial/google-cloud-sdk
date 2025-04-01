@@ -26,8 +26,8 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _CommonArgs(parser):
-  storagepools_flags.AddStoragePoolUpdateArgs(parser)
+def _CommonArgs(parser, release_track):
+  storagepools_flags.AddStoragePoolUpdateArgs(parser, release_track)
 
 
 @base.DefaultUniverseOnly
@@ -50,7 +50,7 @@ class Update(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, Update._RELEASE_TRACK)
 
   def Run(self, args):
     """Update a Cloud NetApp Storage Pool in the current project."""
@@ -69,6 +69,13 @@ class Update(base.UpdateCommand):
 
     zone = args.zone
     replica_zone = args.replica_zone
+    total_throughput_mibps = None
+    total_iops = None
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      total_iops = args.total_iops
+      if args.total_throughput is not None:
+        total_throughput_mibps = args.total_throughput >> 20
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
@@ -78,6 +85,8 @@ class Update(base.UpdateCommand):
         allow_auto_tiering=args.allow_auto_tiering,
         zone=zone,
         replica_zone=replica_zone,
+        total_throughput=total_throughput_mibps,
+        total_iops=total_iops,
     )
 
     updated_fields = []
@@ -99,6 +108,12 @@ class Update(base.UpdateCommand):
       updated_fields.append('zone')
     if args.IsSpecified('replica_zone'):
       updated_fields.append('replicaZone')
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      if args.IsSpecified('total_throughput'):
+        updated_fields.append('totalThroughputMibps')
+      if args.IsSpecified('total_iops'):
+        updated_fields.append('totalIops')
 
     update_mask = ','.join(updated_fields)
 
@@ -124,7 +139,7 @@ class UpdateBeta(Update):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, UpdateBeta._RELEASE_TRACK)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -135,4 +150,4 @@ class UpdateAlpha(UpdateBeta):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser)
+    _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)

@@ -35,6 +35,7 @@
         Format:
         projects/{project}/locations/{location}/policyPorters/{policy_porter}/translations/{translation}/translatedPolicies/{translated_policy}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:project_location_policy_porter_translation_translated_policy
       required: true
   request:

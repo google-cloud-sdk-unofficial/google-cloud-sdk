@@ -27,7 +27,6 @@ gcloud: google-cloud-sdk
 gcloud-crc32c: google-cloud-sdk
 gke-gcloud-auth-plugin: google-cloud-sdk-gke-gcloud-auth-plugin
 gsutil: google-cloud-sdk
-harbourbridge: google-cloud-sdk-harbourbridge
 spanner-migration-tool: google-cloud-sdk-spanner-migration-tool
 istioctl: google-cloud-sdk-istioctl
 kpt: google-cloud-sdk-kpt

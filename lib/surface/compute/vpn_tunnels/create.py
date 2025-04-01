@@ -77,8 +77,7 @@ def ValidateSimpleSharedSecret(possible_secret):
       'non-printable charcters.')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class CreateGA(base.CreateCommand):
   """Create a VPN tunnel.
@@ -103,6 +102,8 @@ class CreateGA(base.CreateCommand):
   _PEER_GCP_GATEWAY_ARG = (
       vpn_gateway_flags.GetPeerVpnGatewayArgumentForOtherResource(
           required=False))
+
+  _support_cipher_suite = False
 
   @classmethod
   def _AddCommonFlags(cls, parser):
@@ -131,6 +132,37 @@ class CreateGA(base.CreateCommand):
         type=arg_parsers.ArgList(min_length=1),
         hidden=True,
         help='THIS ARGUMENT NEEDS HELP TEXT.')
+
+  @classmethod
+  def _AddCipherSuiteFlags(cls, parser):
+    parser.add_argument('--phase1-encryption',
+                        metavar='ALGORITHMS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 1 encryption algorithms.')
+    parser.add_argument('--phase1-integrity',
+                        metavar='ALGORITHMS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 1 integrity algorithms.')
+    parser.add_argument('--phase1-prf',
+                        metavar='PSEUDORANDOM FUNCTIONS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 1 pseudorandom functions.')
+    parser.add_argument('--phase1-dh',
+                        metavar='GROUPS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 1 Diffie-Hellman groups.')
+    parser.add_argument('--phase2-encryption',
+                        metavar='ALGORITHMS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 2 encryption algorithms.')
+    parser.add_argument('--phase2-integrity',
+                        metavar='ALGORITHMS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 2 integrity algorithms.')
+    parser.add_argument('--phase2-pfs',
+                        metavar='ALGORITHMS',
+                        type=arg_parsers.ArgList(min_length=1),
+                        help='Phase 2 perfect forward secerecy algorithms.')
 
   @classmethod
   def Args(cls, parser):
@@ -215,6 +247,9 @@ class CreateGA(base.CreateCommand):
         is connected to.
         This flag is required if the tunnel is being created from
         a Highly Available VPN gateway to an External Vpn Gateway.""")
+
+    if(cls._support_cipher_suite):
+      cls._AddCipherSuiteFlags(parser)
 
     parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
@@ -317,43 +352,116 @@ class CreateGA(base.CreateCommand):
       self._ValidateHighAvailabilityVpnArgs(args)
       args.vpn_gateway_region = vpn_tunnel_ref.region
       vpn_gateway = self._VPN_GATEWAY_ARG.ResolveAsResource(
-          args, holder.resources).SelfLink()
+          args, holder.resources
+      ).SelfLink()
       vpn_gateway_interface = args.interface
       peer_external_gateway = self._GetPeerExternalGateway(
-          holder.resources, args)
+          holder.resources, args
+      )
       peer_external_gateway_interface = args.peer_external_gateway_interface
       peer_gcp_gateway = self._GetPeerGcpGateway(holder.resources, args)
     else:
       self._ValidateClassicVpnArgs(args)
       args.target_vpn_gateway_region = vpn_tunnel_ref.region
       target_vpn_gateway = self._TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
-          args, holder.resources).SelfLink()
+          args, holder.resources
+      ).SelfLink()
 
     if target_vpn_gateway:
-      vpn_tunnel_to_insert = helper.GetClassicVpnTunnelForInsert(
-          name=vpn_tunnel_ref.Name(),
-          description=args.description,
-          ike_version=args.ike_version,
-          peer_ip=args.peer_address,
-          shared_secret=args.shared_secret,
-          target_vpn_gateway=target_vpn_gateway,
-          local_traffic_selector=args.local_traffic_selector,
-          remote_traffic_selector=args.remote_traffic_selector)
+      if self._support_cipher_suite:
+        phase1_algo = helper.GetVpnTunnelPhase1Algorithms(
+            phase1_encryption=args.phase1_encryption,
+            phase1_integrity=args.phase1_integrity,
+            phase1_dh=args.phase1_dh,
+            phase1_prf=args.phase1_prf,
+        )
+        phase2_algo = helper.GetVpnTunnelPhase2Algorithms(
+            phase2_encryption=args.phase2_encryption,
+            phase2_integrity=args.phase2_integrity,
+            phase2_pfs=args.phase2_pfs,
+        )
+        cipher_suite = client.messages.VpnTunnelCipherSuite()
+        if phase1_algo:
+          cipher_suite.phase1 = phase1_algo
+        if phase2_algo:
+          cipher_suite.phase2 = phase2_algo
+        if not cipher_suite.phase1 and not cipher_suite.phase2:
+          cipher_suite = None
+        vpn_tunnel_to_insert = (
+            helper.GetClassicVpnTunnelForInsertWithCipherSuite(
+                name=vpn_tunnel_ref.Name(),
+                description=args.description,
+                ike_version=args.ike_version,
+                peer_ip=args.peer_address,
+                shared_secret=args.shared_secret,
+                target_vpn_gateway=target_vpn_gateway,
+                local_traffic_selector=args.local_traffic_selector,
+                remote_traffic_selector=args.remote_traffic_selector,
+                cipher_suite=cipher_suite,
+            )
+        )
+      else:
+        vpn_tunnel_to_insert = helper.GetClassicVpnTunnelForInsert(
+            name=vpn_tunnel_ref.Name(),
+            description=args.description,
+            ike_version=args.ike_version,
+            peer_ip=args.peer_address,
+            shared_secret=args.shared_secret,
+            target_vpn_gateway=target_vpn_gateway,
+            local_traffic_selector=args.local_traffic_selector,
+            remote_traffic_selector=args.remote_traffic_selector)
     else:
-      vpn_tunnel_to_insert = helper.GetHighAvailabilityVpnTunnelForInsert(
-          name=vpn_tunnel_ref.Name(),
-          description=args.description,
-          ike_version=args.ike_version,
-          # TODO(b/127839209): remove peer_ip for HA tunnels once peer gateway
-          # feature is enabled in Arcus.
-          peer_ip=args.peer_address,
-          shared_secret=args.shared_secret,
-          vpn_gateway=vpn_gateway,
-          vpn_gateway_interface=vpn_gateway_interface,
-          router=router_link,
-          peer_external_gateway=peer_external_gateway,
-          peer_external_gateway_interface=peer_external_gateway_interface,
-          peer_gcp_gateway=peer_gcp_gateway)
+      if(self._support_cipher_suite):
+        phase1_algo = helper.GetVpnTunnelPhase1Algorithms(
+            phase1_encryption=args.phase1_encryption,
+            phase1_integrity=args.phase1_integrity,
+            phase1_dh=args.phase1_dh,
+            phase1_prf=args.phase1_prf,
+        )
+        phase2_algo = helper.GetVpnTunnelPhase2Algorithms(
+            phase2_encryption=args.phase2_encryption,
+            phase2_integrity=args.phase2_integrity,
+            phase2_pfs=args.phase2_pfs,
+        )
+        cipher_suite = client.messages.VpnTunnelCipherSuite()
+        if phase1_algo:
+          cipher_suite.phase1 = phase1_algo
+        if phase2_algo:
+          cipher_suite.phase2 = phase2_algo
+        if not cipher_suite.phase1 and not cipher_suite.phase2:
+          cipher_suite = None
+        vpn_tunnel_to_insert = (
+            helper.GetHighAvailabilityVpnTunnelForInsertWithCipherSuite(
+                name=vpn_tunnel_ref.Name(),
+                description=args.description,
+                ike_version=args.ike_version,
+                peer_ip=args.peer_address,
+                shared_secret=args.shared_secret,
+                vpn_gateway=vpn_gateway,
+                vpn_gateway_interface=vpn_gateway_interface,
+                router=router_link,
+                peer_external_gateway=peer_external_gateway,
+                peer_external_gateway_interface=peer_external_gateway_interface,
+                peer_gcp_gateway=peer_gcp_gateway,
+                cipher_suite=cipher_suite,
+            )
+        )
+      else:
+        vpn_tunnel_to_insert = helper.GetHighAvailabilityVpnTunnelForInsert(
+            name=vpn_tunnel_ref.Name(),
+            description=args.description,
+            ike_version=args.ike_version,
+            # TODO(b/127839209): remove peer_ip for HA
+            # tunnels once peer gateway
+            # feature is enabled in Arcus.
+            peer_ip=args.peer_address,
+            shared_secret=args.shared_secret,
+            vpn_gateway=vpn_gateway,
+            vpn_gateway_interface=vpn_gateway_interface,
+            router=router_link,
+            peer_external_gateway=peer_external_gateway,
+            peer_external_gateway_interface=peer_external_gateway_interface,
+            peer_gcp_gateway=peer_gcp_gateway)
 
     operation_ref = helper.Create(vpn_tunnel_ref, vpn_tunnel_to_insert)
     return helper.WaitForOperation(vpn_tunnel_ref, operation_ref,
@@ -362,3 +470,30 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     """Issues API requests to construct VPN Tunnels."""
     return self._Run(args, is_vpn_gateway_supported=True)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(CreateGA):
+  """Create a VPN tunnel.
+
+    *{command}* is used to create a Classic VPN tunnel between a target VPN
+  gateway in Google Cloud Platform and a peer address; or create Highly
+  Available VPN tunnel between HA VPN gateway and another HA VPN gateway, or
+  Highly Available VPN tunnel between HA VPN gateway and an external VPN
+  gateway.
+  """
+
+  _support_cipher_suite = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a VPN tunnel.
+
+    *{command}* is used to create a Classic VPN tunnel between a target VPN
+  gateway in Google Cloud Platform and a peer address; or create Highly
+  Available VPN tunnel between HA VPN gateway and another HA VPN gateway, or
+  Highly Available VPN tunnel between HA VPN gateway and an external VPN
+  gateway.
+  """
+  _support_cipher_suite = True

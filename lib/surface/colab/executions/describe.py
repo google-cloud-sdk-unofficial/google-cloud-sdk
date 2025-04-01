@@ -58,10 +58,8 @@ class Describe(base.DescribeCommand):
       executions_service = (
           api_client.projects_locations_notebookExecutionJobs
       )
-      return executions_service.Get(
-          executions_util.CreateExecutionGetRequest(
-              args, messages
-          )
+      return executions_util.ValidateAndGetColabExecution(
+          args, messages, executions_service
       )
 
 

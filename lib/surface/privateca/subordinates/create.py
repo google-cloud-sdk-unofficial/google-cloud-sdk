@@ -39,6 +39,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import files
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new subordinate certificate authority.
@@ -203,6 +204,7 @@ class Create(base.CreateCommand):
         required=True,
     ).AddToParser(offline_issuer_group)
     flags.AddAutoEnableFlag(parser)
+    flags.AddUserDefinedAccessUrlsFlags(parser)
 
   def _EnableCertificateAuthority(self, ca_name):
     """Enable the given CA."""

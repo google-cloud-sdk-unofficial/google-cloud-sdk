@@ -28,7 +28,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List cross site networks."""
 

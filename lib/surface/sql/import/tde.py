@@ -28,12 +28,11 @@ from googlecloudsdk.command_lib.sql import import_util
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Tde(base.Command):
-  """Import TDE certificate into a Cloud SQL instance."""
+  """Import TDE certificate into a Cloud SQL for SQL Server instance."""
 
   detailed_help = {
       'DESCRIPTION':

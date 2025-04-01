@@ -34,6 +34,7 @@
         Format:
         projects/{project}/locations/{location}/policyPorters/{policy_porter}.
       is_positional: true
+      is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:project_location_policy_porter
       required: true
     - arg_name: force
@@ -45,6 +46,7 @@
         If set to true, any Translations from this PolicyPorter will also be
         deleted. (Otherwise, the request will only work if the PolicyPorter has no
         Translations.)
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -1,0 +1,24 @@
+- release_tracks: [GA, BETA, ALPHA]
+  hidden: true  # TODO(b/335409087): unhide the CLI for GA.
+
+  help_text:
+    brief: Describe a Bigtable proto bundle.
+    description: Describe a Bigtable proto bundle.
+    examples: |
+      To describe the proto bundle 'my-proto-bundle' in instance 'my-instance' and table
+      'my-table':
+
+        $ {command} my-proto-bundle --instance=test-instance --table=test-table
+
+  request:
+    collection: bigtableadmin.projects.instances.tables.protoBundles
+    method: get
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.api_lib.bigtable.proto_bundles:PrintParsedProtoDescriptorsInGetResponse
+
+  arguments:
+    resource:
+      help_text: Bigtable proto bundle to describe.
+      spec: !REF googlecloudsdk.command_lib.bigtable.resources:proto_bundle

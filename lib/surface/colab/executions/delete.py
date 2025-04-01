@@ -58,6 +58,7 @@ class Delete(base.DeleteCommand):
       executions_service = (
           api_client.projects_locations_notebookExecutionJobs
       )
+      executions_util.ValidateAndGetColabExecution(args, messages, executions_service)
       operation = executions_service.Delete(
           executions_util.CreateExecutionDeleteRequest(
               args, messages

@@ -297,7 +297,7 @@ class AlphaUpdate(BetaUpdate):
     flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
-    flags.AddGpuTypeFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)

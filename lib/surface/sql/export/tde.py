@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Export TDE certificate from a Cloud SQL instance.
+"""Export TDE certificate from a Cloud SQL for SQL Server instance.
 
 Export data from a Cloud SQL instance to a Google Cloud Storage bucket as
 a BAK backup file.
@@ -28,12 +28,11 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core.console import console_io
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Tde(base.Command):
-  """Export a TDE certificate from a Cloud SQL instance.
+  """Export a TDE certificate from a Cloud SQL for SQL Server instance.
 
   Exports a TDE certificate from a Cloud SQL instance to a Google Cloud Storage
   bucket. This is only supported for SQL Server.

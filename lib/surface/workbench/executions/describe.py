@@ -18,7 +18,6 @@
 from googlecloudsdk.api_lib.colab_enterprise import util
 from googlecloudsdk.api_lib.notebook_executor import executions as executions_util
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.notebook_executor import flags
 
@@ -69,16 +68,9 @@ class Describe(base.DescribeCommand):
     ):
       api_client = util.GetClient(release_track)
       executions_service = api_client.projects_locations_notebookExecutionJobs
-      execution = executions_service.Get(
-          executions_util.CreateExecutionGetRequest(args, messages)
+      return executions_util.ValidateAndGetWorkbenchExecution(
+          args, messages, executions_service
       )
-      if execution.kernelName is None:
-        raise exceptions.InvalidArgumentException(
-            'EXECUTION',
-            'Execution is not of Workbench type. To manage Colab Enterprise'
-            ' executions use `gcloud colab` instead.',
-        )
-      return execution
 
 
 Describe.detailed_help = _DETAILED_HELP

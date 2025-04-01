@@ -27,6 +27,7 @@ from googlecloudsdk.core import resources
 import six
 
 
+@base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel an ongoing build."""
 
@@ -64,7 +65,11 @@ class Cancel(base.Command):
     Returns:
       Some value that we want to have printed later.
     """
-    build_region = args.region or cloudbuild_util.DEFAULT_REGION
+    build_region = (
+        args.region
+        or properties.VALUES.builds.region.Get()
+        or cloudbuild_util.DEFAULT_REGION
+    )
 
     client = cloudbuild_util.GetClientInstance()
     messages = cloudbuild_util.GetMessagesModule()

@@ -63,18 +63,18 @@ class List(base.ListCommand):
         version='BETA', region=region
     ):
       api_client = util.GetClient(release_track)
-      executions_service = (
-          api_client.projects_locations_notebookExecutionJobs
-      )
+      executions_service = api_client.projects_locations_notebookExecutionJobs
       return list_pager.YieldFromList(
           service=executions_service,
-          request=executions_util.CreateExecutionListRequest(
-              args, messages
-          ),
+          request=executions_util.CreateExecutionListRequest(args, messages),
           field='notebookExecutionJobs',
           limit=args.limit,
           batch_size_attribute='pageSize',
           batch_size=args.page_size,
+          predicate=lambda execution: not executions_util.IsWorkbenchExecution(
+              execution
+          ),
       )
+
 
 List.detailed_help = _DETAILED_HELP

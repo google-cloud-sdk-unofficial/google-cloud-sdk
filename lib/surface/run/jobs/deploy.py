@@ -69,7 +69,7 @@ Container Flags
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   if release_track in [base.ReleaseTrack.ALPHA]:
-    group.AddArgument(flags.GpuFlag())
+    group.AddArgument(flags.GpuFlag(hidden=False))
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -382,7 +382,8 @@ class AlphaDeploy(BetaDeploy):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser, add_container_args=False)
-    flags.AddGpuTypeFlag(parser)
+    flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.GpuZonalRedundancyFlag(parser, hidden=True)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

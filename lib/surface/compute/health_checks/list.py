@@ -43,10 +43,13 @@ class List(base.ListCommand):
         default, health checks for all protocols are listed.
         """)
 
+  def _ConvertProtocolArgsToProtocolEnumName(self, args):
+    return args.protocol.upper()
+
   def _ConvertProtocolArgToValue(self, args):
     # Get the dictionary that maps strings to numbers, e.g. "HTTP" to 0.
     protocol_dict = self.messages.HealthCheck.TypeValueValuesEnum.to_dict()
-    return protocol_dict.get(args.protocol.upper())
+    return protocol_dict.get(self._ConvertProtocolArgsToProtocolEnumName(args))
 
   def _ProtocolAllowlist(self):
     # Returns a list of allowlisted protocols.
@@ -139,7 +142,9 @@ class List(base.ListCommand):
     # Filter the resources that do not match the specified protocol.
     health_checks = []
     for health_check in items:
-      if health_check['type'] == args.protocol.upper():
+      if health_check['type'] == self._ConvertProtocolArgsToProtocolEnumName(
+          args
+      ):
         health_checks.append(health_check)
     return health_checks
 
@@ -207,7 +212,13 @@ class ListAlpha(List):
   def _ProtocolAllowlist(self):
     # Returns a list of Allowlisted protocols.
     allowlist = super(ListAlpha, self)._ProtocolAllowlist()
+    allowlist.append(
+        self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number
+    )
     return allowlist
+
+  def _ConvertProtocolArgsToProtocolEnumName(self, args):
+    return args.protocol.upper().replace('-', '_')
 
   def _Format(self, args):
     columns = super(ListAlpha, self)._GetValidColumns(args)
@@ -220,6 +231,15 @@ class ListAlpha(List):
             'udpHealthCheck.request:label=REQUEST',
             'udpHealthCheck.response:label=RESPONSE'
         ])
+      elif (
+          protocol_value
+          == self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number
+      ):
+        columns.extend([
+            'grpcTlsHealthCheck.port:label=PORT',
+            'grpcTlsHealthCheck.grpcServiceName:label=GRPC_SERVICE_NAME',
+        ])
+
     return 'table[]({columns})'.format(columns=','.join(columns))
 
 

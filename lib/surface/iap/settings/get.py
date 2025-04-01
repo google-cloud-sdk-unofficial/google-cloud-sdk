@@ -71,10 +71,22 @@ class Get(base.Command):
             $ {command} --project=PROJECT_ID --resource-type=backend-services --service=SERVICE_ID
               --region=REGION_ID
 
+          To get the IAP setting for all forwarding rules within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=forwarding-rule
+
+          To get the IAP setting for a forwarding rule within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
+
+          To get the IAP setting for a regional forwarding rule within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
+              --region=REGION_ID
+
           """,
   }
 
-  _support_forwarding_rule = False
   _support_cloud_run = False
 
   @classmethod
@@ -86,9 +98,7 @@ class Get(base.Command):
         to capture some information, but behaves like an ArgumentParser.
     """
     iap_util.AddIapSettingArg(
-        parser,
-        support_forwarding_rule=cls._support_forwarding_rule,
-        support_cloud_run=cls._support_cloud_run,
+        parser, support_cloud_run=cls._support_cloud_run,
     )
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -105,7 +115,6 @@ class Get(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(
         self.ReleaseTrack(),
         args,
-        self._support_forwarding_rule,
         self._support_cloud_run,
     )
     return iap_setting_ref.GetIapSetting()
@@ -115,7 +124,6 @@ class Get(base.Command):
 class GetBeta(Get):
   """Get the setting for an IAP resource."""
 
-  _support_forwarding_rule = True
   _support_cloud_run = False
 
 
@@ -123,5 +131,4 @@ class GetBeta(Get):
 class GetAlpha(Get):
   """Get the setting for an IAP resource."""
 
-  _support_forwarding_rule = True
   _support_cloud_run = True

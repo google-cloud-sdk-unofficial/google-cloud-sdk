@@ -64,6 +64,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAuthorizedExternalNetworks(parser)
     flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
+    flags.AddPSCNetworkAttachmentUri(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

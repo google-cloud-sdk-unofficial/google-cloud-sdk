@@ -75,6 +75,9 @@ class List(base.ListCommand):
           limit=args.limit,
           batch_size_attribute='pageSize',
           batch_size=args.page_size,
+          predicate=lambda schedule: not schedules_util.FilterWorkbenchSchedule(
+              schedule
+          ),
       )
 
 List.detailed_help = _DETAILED_HELP
