@@ -27,7 +27,7 @@ arguments:
     - arg_value: symantec-cloud-swg
       enum_value: SYMANTEC_CLOUD_SWG
   - arg_name: symantec-secret
-    api_field: sACRealm.symantecOptions.secretId
+    api_field: sACRealm.symantecOptions.secretPath
     help_text: |
       ID of the Secret in Secret Manager containing the Symantec credentials.
   - arg_name: partner-environment

@@ -18,6 +18,7 @@ from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_reservation
 from clients import client_row_access_policy
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -898,6 +899,7 @@ class Make(bigquery_command.BigqueryCmd):
     """
 
     client = bq_cached_client.Client.Get()
+    reference = None
 
     if self.d and self.t:
       raise app.UsageError('Cannot specify both -d and -t.')
@@ -1066,7 +1068,7 @@ class Make(bigquery_command.BigqueryCmd):
           disable_auto_scheduling=self.no_auto_scheduling,
           event_driven_schedule=self.event_driven_schedule,
       )
-      transfer_name = client_data_transfer.CreateTransferConfig(
+      transfer_name = client_data_transfer.create_transfer_config(
           transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           data_source=self.data_source,
@@ -1104,7 +1106,7 @@ class Make(bigquery_command.BigqueryCmd):
       results = list(
           map(
               utils_formatting.format_transfer_run_info,
-              client_data_transfer.StartManualTransferRuns(
+              client_data_transfer.start_manual_transfer_runs(
                   transfer_client=client.GetTransferV1ApiClient(),
                   reference=reference,
                   start_time=self.start_time,
@@ -1293,7 +1295,9 @@ class Make(bigquery_command.BigqueryCmd):
         object_name = 'View'
       if self.materialized_view:
         object_name = 'Materialized View'
-      if (not self.force) and client.TableExists(reference):
+      if (not self.force) and client_table.table_exists(
+          apiclient=client.apiclient, reference=reference
+      ):
         message = (
             "%s '%s' could not be created; a table with this name "
             'already exists.'
@@ -1354,7 +1358,8 @@ class Make(bigquery_command.BigqueryCmd):
 
       biglake_config = None
       has_all_required_biglake_config = (
-          self.connection_id and self.storage_uri and self.table_format
+          self.connection_id
+          and self.storage_uri  and self.table_format
       )
       has_some_required_biglake_config = (
           self.connection_id
@@ -1376,7 +1381,7 @@ class Make(bigquery_command.BigqueryCmd):
         if not self.storage_uri:
           missing_fields.append('storage_uri')
         if not self.table_format:
-          missing_fields.append('table_format')
+         missing_fields.append('table_format')
         missing_fields = ', '.join(missing_fields)
         raise app.UsageError(
             f'BigLake tables require {missing_fields} to be specified'
@@ -1402,8 +1407,9 @@ class Make(bigquery_command.BigqueryCmd):
       resource_tags = None
       if self.add_tags is not None:
         resource_tags = bq_utils.ParseTags(self.add_tags)
-      client.CreateTable(
-          reference,
+      client_table.create_table(
+          apiclient=client.apiclient,
+          reference=reference,
           ignore_existing=True,
           schema=schema,
           description=self.description,

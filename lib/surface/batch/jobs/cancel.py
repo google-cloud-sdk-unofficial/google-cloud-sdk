@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.batch import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class Cancel(base.Command):
   """Cancel a job.

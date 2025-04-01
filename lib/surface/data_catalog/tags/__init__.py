@@ -21,8 +21,24 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud dataplex entries` instead. '
+        'Note that aspects - successors of tags - are part of the entry '
+        'resource and are managed by `gcloud dataplex entries` command.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud dataplex entries` instead. '
+        'Note that aspects - successors of tags - are part of the entry '
+        'resource and are managed by `gcloud dataplex entries` command.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Tags(base.Group):
   """Manage tags in Data Catalog."""
   pass

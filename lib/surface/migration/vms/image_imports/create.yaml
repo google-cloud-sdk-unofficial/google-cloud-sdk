@@ -48,3 +48,4 @@
             params:
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:generalize
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:license_type
+            - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:boot_conversion

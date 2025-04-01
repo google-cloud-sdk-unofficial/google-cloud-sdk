@@ -15,8 +15,10 @@ from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_job
+from clients import client_model
 from clients import client_reservation
 from clients import client_routine
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -280,7 +282,9 @@ class Delete(bigquery_command.BigqueryCmd):
           )
           or (
               isinstance(reference, bq_id_utils.ApiClientHelper.TableReference)
-              and client.TableExists(reference)
+              and client_table.table_exists(
+                  apiclient=client.apiclient, reference=reference
+              )
           )
           or (
               isinstance(reference, bq_id_utils.ApiClientHelper.JobReference)
@@ -288,7 +292,9 @@ class Delete(bigquery_command.BigqueryCmd):
           )
           or (
               isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference)
-              and client.ModelExists(reference)
+              and client_model.model_exists(
+                  model_client=client.GetModelsApiClient(), reference=reference
+              )
           )
           or (
               isinstance(
@@ -303,7 +309,7 @@ class Delete(bigquery_command.BigqueryCmd):
               isinstance(
                   reference, bq_id_utils.ApiClientHelper.TransferConfigReference
               )
-              and client_data_transfer.TransferExists(
+              and client_data_transfer.transfer_exists(
                   client.GetTransferV1ApiClient(), reference
               )
           )
@@ -322,11 +328,19 @@ class Delete(bigquery_command.BigqueryCmd):
           delete_contents=self.recursive,
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
-      client.DeleteTable(reference, ignore_not_found=self.force)
+      client_table.delete_table(
+          apiclient=client.apiclient,
+          reference=reference,
+          ignore_not_found=self.force,
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       client_job.DeleteJob(client, reference, ignore_not_found=self.force)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):
-      client.DeleteModel(reference, ignore_not_found=self.force)
+      client_model.delete_model(
+          model_client=client.GetModelsApiClient(),
+          reference=reference,
+          ignore_not_found=self.force,
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
       client_routine.DeleteRoutine(
           routines_api_client=client.GetRoutinesApiClient(),
@@ -336,7 +350,7 @@ class Delete(bigquery_command.BigqueryCmd):
     elif isinstance(
         reference, bq_id_utils.ApiClientHelper.TransferConfigReference
     ):
-      client_data_transfer.DeleteTransferConfig(
+      client_data_transfer.delete_transfer_config(
           client.GetTransferV1ApiClient(),
           reference,
           ignore_not_found=self.force,

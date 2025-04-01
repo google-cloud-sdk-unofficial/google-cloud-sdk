@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import sys
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
 from googlecloudsdk.calliope import arg_parsers
@@ -95,8 +93,12 @@ class ListCacheInvalidations(base.ListCommand):
   def _Flags(parser):
     parser.add_argument(
         '--limit',
-        type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
-        help='The maximum number of invalidations to list.')
+        type=arg_parsers.BoundedInt(1, 1000, unlimited=False),
+        help=(
+            'The maximum number of invalidations to list. This has an upper'
+            ' limit of 1000. For more results, use Cloud Logging.'
+        ),
+    )
 
   @classmethod
   def Args(cls, parser):

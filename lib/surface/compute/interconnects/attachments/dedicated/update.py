@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for updating dedicated interconnect attachments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -130,6 +126,12 @@ class UpdateBeta(Update):
             args, 'customer_router_ipv6_interface_id', None
         ),
         multicast_enabled=getattr(args, 'enable_multicast', None),
+        candidate_cloud_router_ipv6_address=getattr(
+            args, 'candidate_cloud_router_ipv6_address', None
+        ),
+        candidate_customer_router_ipv6_address=getattr(
+            args, 'candidate_customer_router_ipv6_address', None
+        ),
     )
 
 
@@ -147,3 +149,5 @@ class UpdateAlpha(UpdateBeta):
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
     attachment_flags.AddEnableMulticast(parser, update=True)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

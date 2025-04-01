@@ -274,6 +274,8 @@ def UpdateBiReservation(client, reference, reservation_size: str):
 
 
 def GetParamsForUpdateReservation(
+    client: ...,
+    reference: ...,
     api_version: str,  # pylint: disable=unused-argument Cleanup is error prone.
     slots: int,
     ignore_idle_slots: bool,
@@ -281,6 +283,8 @@ def GetParamsForUpdateReservation(
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
+    labels_to_set: Optional[Dict[str, str]] = None,
+    label_keys_to_remove: Optional[Set[str]] = None,
 ) -> Tuple[Dict[str, Any], str]:
   """Return the request body and update mask for UpdateReservation.
 
@@ -323,6 +327,22 @@ def GetParamsForUpdateReservation(
       # Disable autoscale.
       update_mask += 'autoscale,'
 
+  if label_keys_to_remove is not None or labels_to_set is not None:
+    lookup_reservation = GetReservation(client, reference)
+    if 'labels' in lookup_reservation:
+      reservation['labels'] = lookup_reservation['labels']
+    else:
+      reservation['labels'] = {}
+    update_mask += 'labels,'
+
+  if label_keys_to_remove is not None:
+    for key in label_keys_to_remove:
+      if key in reservation['labels']:
+        del reservation['labels'][key]
+
+  if labels_to_set is not None:
+    for key, value in labels_to_set.items():
+      reservation['labels'][key] = value
 
   if frontend_utils.ValidateAtMostOneSelectedAllowsDefault(
       max_slots, autoscale_max_slots
@@ -366,6 +386,8 @@ def UpdateReservation(
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
+    labels_to_set: Optional[Dict[str, str]] = None,
+    label_keys_to_remove: Optional[Set[str]] = None,
 ):
   """Updates a reservation with the given reservation reference.
 
@@ -389,6 +411,8 @@ def UpdateReservation(
       version.
   """
   reservation, update_mask = GetParamsForUpdateReservation(
+      client,
+      reference,
       api_version,
       slots,
       ignore_idle_slots,
@@ -396,6 +420,8 @@ def UpdateReservation(
       autoscale_max_slots,
       max_slots,
       scaling_mode,
+      labels_to_set,
+      label_keys_to_remove,
   )
   return (
       client.projects()

@@ -26,7 +26,6 @@
       spec: !REF googlecloudsdk.command_lib.data_catalog.resources:tag_template
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Set the IAM policy for a Data Catalog tag template.
     description: |

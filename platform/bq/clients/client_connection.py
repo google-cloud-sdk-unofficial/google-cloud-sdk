@@ -22,9 +22,6 @@ Service = bq_api_utils.Service
 AUTHORIZATION_CODE = 'authorization_code'
 VERSION_INFO = 'version_info'
 
-# IAM role name that represents being a grantee on a row access policy.
-_FILTERED_DATA_VIEWER_ROLE = 'roles/bigquery.filteredDataViewer'
-
 # Valid proto field name regex.
 _VALID_FIELD_NAME_REGEXP = r'[0-9A-Za-z_]+'
 

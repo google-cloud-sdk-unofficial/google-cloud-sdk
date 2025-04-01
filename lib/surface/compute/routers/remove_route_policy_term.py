@@ -26,12 +26,8 @@ from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RemoveRoutePolicyTerm(base.DeleteCommand):
-  """Remove a route policy term of a Compute Engine router.
-
-  *{command}* removes a term of a route policy.
-  """
+  """Remove a route policy term of a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -89,3 +85,14 @@ class RemoveRoutePolicyTerm(base.DeleteCommand):
     with client.apitools_client.IncludeFields(cleared_fields):
       result = client.MakeRequests([request])
     return result
+
+RemoveRoutePolicyTerm.detailed_help = {
+    'DESCRIPTION': """\
+*{command}* removes a term of a route policy.
+        """,
+    'EXAMPLES': """\
+         To remove a route policy term with priority 0 from a route policy `my-policy` from a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --policy-name=my-policy --priority=0
+          """,
+}

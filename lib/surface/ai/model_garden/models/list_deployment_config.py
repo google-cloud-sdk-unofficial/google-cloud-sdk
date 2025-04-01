@@ -28,15 +28,16 @@ from googlecloudsdk.core import exceptions as core_exceptions
 
 
 _DEFAULT_FORMAT = """
-        table[all-box, title="The supported machine specifications"](
+        table(
             dedicatedResources.machineSpec.machineType:label=MACHINE_TYPE,
             dedicatedResources.machineSpec.acceleratorType:label=ACCELERATOR_TYPE,
-            dedicatedResources.machineSpec.acceleratorCount:label=ACCELERATOR_COUNT
+            dedicatedResources.machineSpec.acceleratorCount:label=ACCELERATOR_COUNT,
+            containerSpec.imageUri:label=CONTAINER_IMAGE_URI
         )
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class ListDeployMentConfig(base.ListCommand):
   """List the machine specifications supported by and verified for a model in Model Garden.

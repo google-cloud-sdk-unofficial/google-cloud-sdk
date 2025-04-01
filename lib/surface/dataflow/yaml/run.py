@@ -27,11 +27,6 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
 
-YAML_TEMPLATE_GCS_LOCATION = (
-    'gs://dataflow-templates-{}/latest/flex/Yaml_Template'
-)
-
-
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Run(base.Command):
@@ -130,7 +125,9 @@ class Run(base.Command):
         project_id=properties.VALUES.core.project.Get(required=True),
         region_id=region_id,
         job_name=args.job_name,
-        gcs_location=YAML_TEMPLATE_GCS_LOCATION.format(region_id),
+        gcs_location=apis.Templates.YAML_TEMPLATE_GCS_LOCATION.format(
+            region_id
+        ),
         parameters=parameters,
     )
     return apis.Templates.CreateJobFromFlexTemplate(arguments)

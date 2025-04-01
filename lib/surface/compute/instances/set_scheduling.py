@@ -47,7 +47,7 @@ class SetSchedulingInstances(base.SilentCommand):
   """
   }
 
-  _support_host_error_timeout_seconds = False
+  _support_host_error_timeout_seconds = True
   _support_local_ssd_recovery_timeout = True
   _support_max_run_duration = True
   _support_graceful_shutdown = False
@@ -64,7 +64,8 @@ class SetSchedulingInstances(base.SilentCommand):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=False)
+    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=False,
+                                     support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
@@ -73,6 +74,7 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
+    flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""
@@ -235,7 +237,8 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True)
+    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True,
+                                     support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
@@ -276,7 +279,8 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True)
+    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True,
+                                     support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     # Deprecated in Alpha
     flags.AddMaintenancePolicyArgs(parser, deprecate=True)

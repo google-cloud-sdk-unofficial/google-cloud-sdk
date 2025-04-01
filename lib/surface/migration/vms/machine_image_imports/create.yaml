@@ -43,6 +43,7 @@
             params:
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:generalize
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:license_type
+            - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:boot_conversion
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:description
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:single_region_storage
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:machine_type

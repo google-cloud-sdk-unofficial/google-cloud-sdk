@@ -33,13 +33,9 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UploadRoutePolicy(base.SilentCommand):
-  """Upload a route policy into a Compute Engine router.
-
-  *{command}* uploads a route policy into a Compute Engine router.
-  """
+  """Upload a route policy into a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -135,3 +131,15 @@ class UploadRoutePolicy(base.SilentCommand):
           ' because {1}'.format(input_file, exp)
       )
       raise exceptions.BadFileException(msg)
+
+UploadRoutePolicy.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* uploads a route policy into a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+        To upload a route policy `my-import-policy` from a file `my-import-policy.yaml` into a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --policy-name=my-import-policy --file-name=my-import-policy.yaml"
+
+          """,
+}

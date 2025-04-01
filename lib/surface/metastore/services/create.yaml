@@ -30,6 +30,7 @@
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
       - googlecloudsdk.command_lib.metastore.validators:ValidateScheduledBackupConfigs
+      - googlecloudsdk.command_lib.metastore.validators:ValidateKmsKeys
     BETA:
       api_version: v1beta
       modify_request_hooks:
@@ -38,6 +39,7 @@
       - googlecloudsdk.command_lib.metastore.services.util:GenerateAuxiliaryVersionsConfigFromList
       - googlecloudsdk.command_lib.metastore.validators:ValidateServiceMutexConfig
       - googlecloudsdk.command_lib.metastore.validators:ValidateScheduledBackupConfigs
+      - googlecloudsdk.command_lib.metastore.validators:ValidateKmsKeys
     GA:
       api_version: v1
       modify_request_hooks:
@@ -291,15 +293,30 @@
           processor: googlecloudsdk.command_lib.metastore.validators:ValidateHourOfDay
           help_text: |
             The hour of day (0-23) when the window starts.
-    - arg_name: encryption-kms-key
-      api_field: service.encryptionConfig.kmsKey
-      processor: googlecloudsdk.command_lib.metastore.parsers:ParseCloudKmsKey
-      help_text: |
-        The name of the Cloud KMS key to use for customer data encryption.
-        Cannot be changed once the service is created.
-        Mutually exclusive with flag `--data-catalog-sync`.
-        This can be provided as a fully-qualified URL, or a relative name in
-        the form `projects/{project_id}/locations/{location}/keyRings/{key_ring_id}/cryptoKeys/{crypto_key_id}`.
+    - group:
+        help_text: |
+          Encryption configuration for the metastore service.
+        mutex: true
+        params:
+        - arg_name: encryption-kms-keys
+          release_tracks: [ALPHA, BETA]
+          api_field: service.encryptionConfig.kmsKeys
+          help_text: |
+            Comma-separated list of the Cloud KMS keys to use for customer data encryption.
+            Cannot be changed once the service is created.
+            Mutually exclusive with flag `--data-catalog-sync` and `--encryption-kms-key`.
+            Each key can be provided as a fully-qualified URL, or a relative name in
+            the form `projects/{project_id}/locations/{location}/keyRings/{key_ring_id}/cryptoKeys/{crypto_key_id}`.
+          type: "arg_list"
+        - arg_name: encryption-kms-key
+          api_field: service.encryptionConfig.kmsKey
+          processor: googlecloudsdk.command_lib.metastore.parsers:ParseCloudKmsKey
+          help_text: |
+            The name of the Cloud KMS key to use for customer data encryption.
+            Cannot be changed once the service is created.
+            Mutually exclusive with flag `--data-catalog-sync`.
+            This can be provided as a fully-qualified URL, or a relative name in
+            the form `projects/{project_id}/locations/{location}/keyRings/{key_ring_id}/cryptoKeys/{crypto_key_id}`.
     - group:
         help_text: |
           Network configuration for the metastore service.

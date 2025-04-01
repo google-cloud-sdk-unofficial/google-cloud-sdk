@@ -15,6 +15,11 @@
 
         $ {command} 'bigquery.table.`my-project1`.my_dataset.my_table'
 
+  deprecate:
+    is_removed: false
+    warning: "This command is deprecated. Please use `gcloud dataplex entries` instead."
+    error: "This command has been removed. Please use `gcloud dataplex entries` instead."
+
   request:
     api_version: v1
     collection: datacatalog.entries
@@ -47,6 +52,11 @@
       To lookup the entry for a BigQuery table by its SQL name, run:
 
         $ {command} 'bigquery.table.`my-project1`.my_dataset.my_table'
+
+  deprecate:
+    is_removed: false
+    warning: "This command is deprecated. Please use `gcloud dataplex entries` instead."
+    error: "This command has been removed. Please use `gcloud dataplex entries` instead."
 
   request:
     collection: datacatalog.entries

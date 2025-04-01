@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+import re
 from typing import Awaitable, Callable, Optional, Sequence, Union
 
 import google.api_core  # type: ignore
@@ -25,9 +26,12 @@ import google.auth  # type: ignore
 from google.auth import credentials as ga_credentials  # type: ignore
 from google.longrunning import operations_pb2
 from google.oauth2 import service_account  # type: ignore
-from cloudsdk.google.protobuf import empty_pb2  # type: ignore
+import cloudsdk.google.protobuf
+from cloudsdk.google.protobuf import empty_pb2, json_format  # type: ignore
 from grpc import Compression
 
+
+PROTOBUF_VERSION = cloudsdk.google.protobuf.__version__
 
 DEFAULT_CLIENT_INFO = gapic_v1.client_info.ClientInfo(
     gapic_version=version.__version__,
@@ -45,12 +49,14 @@ class OperationsTransport(abc.ABC):
         self,
         *,
         host: str = DEFAULT_HOST,
+        # TODO(https://github.com/googleapis/python-api-core/issues/709): update type hint for credentials to include `google.auth.aio.Credentials`.
         credentials: Optional[ga_credentials.Credentials] = None,
         credentials_file: Optional[str] = None,
         scopes: Optional[Sequence[str]] = None,
         quota_project_id: Optional[str] = None,
         client_info: gapic_v1.client_info.ClientInfo = DEFAULT_CLIENT_INFO,
         always_use_jwt_access: Optional[bool] = False,
+        url_scheme="https",
         **kwargs,
     ) -> None:
         """Instantiate the transport.
@@ -66,6 +72,18 @@ class OperationsTransport(abc.ABC):
             credentials_file (Optional[str]): A file with credentials that can
                 be loaded with :func:`google.auth.load_credentials_from_file`.
                 This argument is mutually exclusive with credentials.
+
+                .. warning::
+                    Important: If you accept a credential configuration (credential JSON/File/Stream)
+                    from an external source for authentication to Google Cloud Platform, you must
+                    validate it before providing it to any Google API or client library. Providing an
+                    unvalidated credential configuration to Google APIs or libraries can compromise
+                    the security of your systems and data. For more information, refer to
+                    `Validate credential configurations from external sources`_.
+
+                .. _Validate credential configurations from external sources:
+
+                https://cloud.google.com/docs/authentication/external/externally-sourced-credentials
             scopes (Optional[Sequence[str]]): A list of scopes.
             quota_project_id (Optional[str]): An optional project to use for billing
                 and quota.
@@ -76,10 +94,23 @@ class OperationsTransport(abc.ABC):
                 your own client library.
             always_use_jwt_access (Optional[bool]): Whether self signed JWT should
                 be used for service account credentials.
+            url_scheme: the protocol scheme for the API endpoint.  Normally
+                "https", but for testing or local servers,
+                "http" can be specified.
         """
+        maybe_url_match = re.match("^(?P<scheme>http(?:s)?://)?(?P<host>.*)$", host)
+        if maybe_url_match is None:
+            raise ValueError(
+                f"Unexpected hostname structure: {host}"
+            )  # pragma: NO COVER
+
+        url_match_items = maybe_url_match.groupdict()
+
+        host = f"{url_scheme}://{host}" if not url_match_items["scheme"] else host
+
         # Save the hostname. Default to port 443 (HTTPS) if none is specified.
         if ":" not in host:
-            host += ":443"
+            host += ":443"  # pragma: NO COVER
         self._host = host
 
         scopes_kwargs = {"scopes": scopes, "default_scopes": self.AUTH_SCOPES}
@@ -188,6 +219,37 @@ class OperationsTransport(abc.ABC):
              with other clients - this may cause errors in other clients!
         """
         raise NotImplementedError()
+
+    def _convert_protobuf_message_to_dict(
+        self, message: cloudsdk.google.protobuf.message.Message
+    ):
+        r"""Converts protobuf message to a dictionary.
+
+        When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
+
+        Args:
+            message(cloudsdk.google.protobuf.message.Message): The protocol buffers message
+                instance to serialize.
+
+        Returns:
+            A dict representation of the protocol buffer message.
+        """
+        # TODO(https://github.com/googleapis/python-api-core/issues/643): For backwards compatibility
+        # with protobuf 3.x 4.x, Remove once support for protobuf 3.x and 4.x is dropped.
+        if PROTOBUF_VERSION[0:2] in ["3.", "4."]:
+            result = json_format.MessageToDict(
+                message,
+                preserving_proto_field_name=True,
+                including_default_value_fields=True,  # type: ignore # backward compatibility
+            )
+        else:
+            result = json_format.MessageToDict(
+                message,
+                preserving_proto_field_name=True,
+                always_print_fields_with_no_presence=True,
+            )
+
+        return result
 
     @property
     def list_operations(

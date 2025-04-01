@@ -577,7 +577,10 @@ def _CreateTemporaryFile(name: _Path, data: Union[bytes, str]) -> str:
       try:
         f.write(data)
         filename = f.name
-      except EnvironmentError:
+      except EnvironmentError as e:
+        e.add_note(
+            f'Failed to write {len(data):,} bytes to temporary file {f.name}'
+        )
         os.remove(f.name)
         raise
     _temporaries[name] = filename

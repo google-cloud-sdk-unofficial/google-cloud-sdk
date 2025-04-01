@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from typing import (
-    Any,
     Callable,
     Iterator,
     Sequence,
@@ -22,9 +21,10 @@ from typing import (
 )
 
 from google.longrunning import operations_pb2
+from google.api_core.operations_v1.pagers_base import ListOperationsPagerBase
 
 
-class ListOperationsPager:
+class ListOperationsPager(ListOperationsPagerBase):
     """A pager for iterating through ``list_operations`` requests.
 
     This class thinly wraps an initial
@@ -50,25 +50,9 @@ class ListOperationsPager:
         *,
         metadata: Sequence[Tuple[str, str]] = ()
     ):
-        """Instantiate the pager.
-
-        Args:
-            method (Callable): The method that was originally called, and
-                which instantiated this pager.
-            request (google.longrunning.operations_pb2.ListOperationsRequest):
-                The initial request object.
-            response (google.longrunning.operations_pb2.ListOperationsResponse):
-                The initial response object.
-            metadata (Sequence[Tuple[str, str]]): Strings which should be
-                sent along with the request as metadata.
-        """
-        self._method = method
-        self._request = request
-        self._response = response
-        self._metadata = metadata
-
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self._response, name)
+        super().__init__(
+            method=method, request=request, response=response, metadata=metadata
+        )
 
     @property
     def pages(self) -> Iterator[operations_pb2.ListOperationsResponse]:
@@ -81,6 +65,3 @@ class ListOperationsPager:
     def __iter__(self) -> Iterator[operations_pb2.Operation]:
         for page in self.pages:
             yield from page.operations
-
-    def __repr__(self) -> str:
-        return "{0}<{1!r}>".format(self.__class__.__name__, self._response)

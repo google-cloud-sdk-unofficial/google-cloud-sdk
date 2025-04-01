@@ -474,12 +474,6 @@ def ParseCreateOptionsBase(args, is_autopilot, get_default, location,
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
       enable_secret_manager=get_default('enable_secret_manager'),
-      enable_secret_manager_rotation=get_default(
-          'enable_secret_manager_rotation'
-      ),
-      secret_manager_rotation_interval=get_default(
-          'secret_manager_rotation_interval'
-      ),
       enable_cilium_clusterwide_network_policy=get_default(
           'enable_cilium_clusterwide_network_policy'
       ),
@@ -724,7 +718,9 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
+            p, release_track=base.ReleaseTrack.GA
+        ),
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
@@ -914,7 +910,9 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
+            p, release_track=base.ReleaseTrack.BETA
+        ),
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1108,7 +1106,9 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
+            p, release_track=base.ReleaseTrack.ALPHA
+        ),
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),

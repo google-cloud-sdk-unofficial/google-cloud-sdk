@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of connection profile list command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datastream import connection_profiles
 from googlecloudsdk.calliope import base
@@ -160,6 +157,8 @@ class List(_List, base.ListCommand):
       return "Google Cloud Storage"
     elif profile.sqlServerProfile:
       return "SQL Server"
+    elif profile.salesforceProfile:
+      return "Salesforce"
     elif profile.bigqueryProfile:
       return "BigQuery"
     else:

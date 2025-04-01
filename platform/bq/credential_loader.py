@@ -24,28 +24,13 @@ import requests
 import bq_auth_flags
 import bq_utils
 import wrapped_credentials
+from auth import utils as bq_auth_utils
 from utils import bq_error
 from utils import bq_error_utils
 
 
 FLAGS = flags.FLAGS
 
-if os.environ.get('CLOUDSDK_WRAPPER') == '1':
-  _CLIENT_ID = '32555940559.apps.googleusercontent.com'
-  _CLIENT_SECRET = 'ZmssLNjJy2998hD4CTg2ejr2'
-  _CLIENT_USER_AGENT = 'google-cloud-sdk' + os.environ.get(
-      'CLOUDSDK_VERSION', bq_utils.VERSION_NUMBER
-  )
-else:
-  _CLIENT_ID = '977385342095.apps.googleusercontent.com'
-  _CLIENT_SECRET = 'wbER7576mc_1YOII0dGk7jEE'
-  _CLIENT_USER_AGENT = 'bq/' + bq_utils.VERSION_NUMBER
-
-_CLIENT_INFO = {
-    'client_id': _CLIENT_ID,
-    'client_secret': _CLIENT_SECRET,
-    'user_agent': _CLIENT_USER_AGENT,
-}
 
 
 WrappedCredentialsUnionType = Union[
@@ -66,7 +51,7 @@ class CredentialLoader(object):
   def Load(self) -> WrappedCredentialsUnionType:
     """Loads credential."""
     cred = self._Load()
-    cred._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
+    cred._user_agent = bq_auth_utils.get_client_user_agent()  # pylint: disable=protected-access
     return cred
 
   def _Load(self) -> WrappedCredentialsUnionType:
@@ -259,7 +244,7 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
           refresh_token=credentials['refresh_token'],
           token_expiry=None,
           token_uri=oauth2client_4_0.GOOGLE_TOKEN_URI,
-          user_agent=_CLIENT_USER_AGENT,
+          user_agent=bq_auth_utils.get_client_user_agent(),
           scopes=client_scope,
       )
     elif credentials['type'] == 'external_account':
@@ -275,7 +260,7 @@ class ApplicationDefaultCredentialFileLoader(CachedCredentialLoader):
       service_account_credentials = oauth2client_4_0.service_account.ServiceAccountCredentials.from_json_keyfile_dict(
           keyfile_dict=credentials, scopes=client_scope
       )
-      service_account_credentials._user_agent = _CLIENT_USER_AGENT  # pylint: disable=protected-access
+      service_account_credentials._user_agent = bq_auth_utils.get_client_user_agent()  # pylint: disable=protected-access
       return service_account_credentials
 
 
@@ -295,7 +280,7 @@ class AccessTokenCredentialLoader(CredentialLoader):
 
   def _Load(self) -> WrappedCredentialsUnionType:
     return oauth2client_4_0.client.AccessTokenCredentials(
-        self._access_token, _CLIENT_USER_AGENT
+        self._access_token, bq_auth_utils.get_client_user_agent()
     )
 
 

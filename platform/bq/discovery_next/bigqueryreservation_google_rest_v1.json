@@ -275,7 +275,7 @@
           "type": "string"
         },
         "replicationStatus": {
-          "description": "Output only. The Disater Recovery(DR) replication status of the reservation. This is only available for the primary replica of DR\/failover reservations and provides information about the both the staleness of the secondary and the last error encountered while trying to replicate changes from the primary to the secondary.",
+          "description": "Output only. The Disaster Recovery(DR) replication status of the reservation. This is only available for the primary replicas of DR\/failover reservations and provides information about the both the staleness of the secondary and the last error encountered while trying to replicate changes from the primary to the secondary. If this field is blank, it means that the reservation is either not a DR reservation or the reservation is a DR secondary or that any replication operations on the reservation have succeeded.",
           "readOnly": true,
           "$ref": "ReplicationStatus"
         }

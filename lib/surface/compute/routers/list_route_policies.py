@@ -26,13 +26,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListRoutePolicies(base.ListCommand):
-  """List route policies from a Compute Engine router.
-
-  *{command}* lists all route policies from a Compute Engine router.
-  """
+  """List route policies from a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -68,3 +64,14 @@ class ListRoutePolicies(base.ListCommand):
         next_token_attribute='nextPageToken',
         batch_size_attribute='maxResults',
     )
+
+ListRoutePolicies.detailed_help = {
+    'DESCRIPTION': """\
+*{command}* lists all route policies from a Compute Engine router.
+        """,
+    'EXAMPLES': """\
+        To list route policies from a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1
+        """,
+}

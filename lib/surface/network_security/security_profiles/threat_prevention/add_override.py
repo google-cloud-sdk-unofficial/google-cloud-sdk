@@ -50,50 +50,19 @@ DETAILED_HELP = {
         """,
 }
 
-DETAILED_HELP_NO_ANTIVIRUS = {
-    'DESCRIPTION': """
-          Add severities or threat-ids to existing
-          threat prevention profile with intended action on each specified.
-          Check the updates of add-override command by using `gcloud network-security
-          security-profiles threat-prevention list-override my-security-profile`.
 
-          For more examples, refer to the EXAMPLES section below.
-
-        """,
-    'EXAMPLES': """
-            To add an override, run:
-
-              $ {command} my-security-profile --severities=MEDIUM --action=ALLOW
-
-            `my-security-profile` is the name of the Security Profile in the
-            format organizations/{organizationID}/locations/{location}/securityProfiles/
-            {security_profile_id}
-            where organizationID is the organization ID to which the changes should apply,
-            location - `global` specified and
-            security_profile_id the Security Profile Identifier
-
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class AddOverride(base.UpdateCommand):
   """Add overrides to Threat Prevention Profile."""
 
-  enable_antivirus = False
-
   @classmethod
   def Args(cls, parser):
     sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
-    # TODO: b/384033890 - Remove this check once the field is
-    # available in BETA and GA (and b/379282262 is fixed).
-    sp_flags.AddSeverityorThreatIDorAntivirusArg(
-        parser, required=True, enable_antivirus=cls.enable_antivirus
-    )
-    sp_flags.AddActionArg(
-        parser, required=True, enable_antivirus=cls.enable_antivirus
-    )
+    sp_flags.AddSeverityorThreatIDorAntivirusArg(parser, required=True)
+    sp_flags.AddActionArg(parser, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -129,9 +98,7 @@ class AddOverride(base.UpdateCommand):
       action = args.action
       for threat in threats:
         overrides.append({'threatId': threat, 'action': action})
-    # TODO: b/384033890 - Remove this check once the field is
-    # available in BETA and GA (and b/379282262 is fixed).
-    elif args.IsSpecified('antivirus') and self.enable_antivirus:
+    elif args.IsSpecified('antivirus'):
       update_mask = 'antivirusOverrides'
       protocols = args.antivirus
       action = args.action
@@ -139,8 +106,7 @@ class AddOverride(base.UpdateCommand):
         overrides.append({'protocol': protocol, 'action': action})
     else:
       raise core_exceptions.Error(
-          'Either --antivirus, --severities, or --threat-ids must be'
-          ' specified'
+          'Either --antivirus, --severities, or --threat-ids must be specified'
       )
 
     if args.location != 'global':
@@ -154,7 +120,6 @@ class AddOverride(base.UpdateCommand):
         'add_override',
         update_mask,
         labels=labels_update.GetOrNone(),
-        enable_antivirus=self.enable_antivirus,
     )
 
     # Return the in-progress operation if async is requested.
@@ -177,13 +142,4 @@ class AddOverride(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class AddOverrideAlphaBeta(AddOverride):
-  """Add overrides to Threat Prevention Profile."""
-
-  enable_antivirus = True
-
-
-AddOverrideAlphaBeta.detailed_help = DETAILED_HELP
-AddOverride.detailed_help = DETAILED_HELP_NO_ANTIVIRUS
+AddOverride.detailed_help = DETAILED_HELP

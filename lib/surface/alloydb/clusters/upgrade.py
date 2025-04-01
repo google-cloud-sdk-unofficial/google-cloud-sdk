@@ -33,8 +33,9 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Upgrade(base.SilentCommand):
   """Upgrade an AlloyDB cluster within a given project and region."""
 
@@ -106,16 +107,3 @@ class Upgrade(base.SilentCommand):
           op_ref, 'Upgrading cluster', self.ReleaseTrack(), False
       )
     return op
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Visible
-class UpgradeAlpha(Upgrade):
-  """Upgrade an AlloyDB cluster within a given project and region."""
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Visible
-class UpgradeBeta(Upgrade):
-  """Upgrade an AlloyDB cluster within a given project and region."""
-

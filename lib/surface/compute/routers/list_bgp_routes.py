@@ -27,14 +27,9 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBgpRoutes(base.ListCommand):
-  """List routes advertised and learned on individual BGP sessions, both pre- and post-policy evaluation.
-
-  *{command}* lists routes advertised and learned on individual BGP sessions,
-  both pre- and post-policy evaluation.
-  """
+  """List routes advertised and learned on individual BGP sessions, both pre- and post-policy evaluation."""
 
   ROUTER_ARG = None
 
@@ -124,3 +119,15 @@ class ListBgpRoutes(base.ListCommand):
       return 'ADVERTISED'
     else:
       return route_direction
+
+
+ListBgpRoutes.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* lists routes advertised and learned on individual BGP sessions, both pre- and post-policy evaluation.
+  """,
+    'EXAMPLES': """\
+          To list inbound BGP routes limited to IPv4 addess family from a router `my-router` BGP peer `my-bgp-peer` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --address-family=IPV4 --peer=my-bgp-peer --route-direction=INBOUND"
+          """,
+}

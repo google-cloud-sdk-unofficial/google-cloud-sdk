@@ -22,15 +22,15 @@ from googlecloudsdk.calliope import base
 
 
 class InstanceNetworkInterfaces(base.Group):
-  """Read and manipulate Compute Engine VM instance network interfaces."""
+  """Read and manipulate Compute Engine instance network interfaces."""
 
 InstanceNetworkInterfaces.detailed_help = {
     'DESCRIPTION': """
-        Read and manipulate Compute Engine VM instance network interfaces.
+        Read and manipulate Compute Engine instance network interfaces.
 
-        For more information about VM instance network interfaces, see the
+        For more information about instance network interfaces, see the
         [network interfaces documentation](https://cloud.google.com/vpc/docs/multiple-interfaces-concepts).
 
-        See also: [VM instance network interfaces API](https://cloud.google.com/compute/docs/reference/rest/v1/instances/updateNetworkInterface).
+        See also: [instance network interfaces API](https://cloud.google.com/compute/docs/reference/rest/v1/instances/updateNetworkInterface).
     """,
 }

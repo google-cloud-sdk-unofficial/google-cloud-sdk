@@ -39,8 +39,8 @@ class GetPublicKey(base.DescribeCommand):
 
   The optional flag `public-key-format` indicates the format in which the
   public key will be returned. For the PQC algorithms, this must be
-  specified and set to NIST_PQC. For all other algorithms, this flag is
-  optional and defaults to PEM. See "Retrieve a public key" in the Cloud KMS
+  specified and set to `nist-pqc`. For all other algorithms, this flag is
+  optional and defaults to `pem`. See "Retrieve a public key" in the Cloud KMS
   documentation (https://cloud.google.com/kms/docs/retrieve-public-key) for more
   information about the supported formats.
 
@@ -53,7 +53,7 @@ class GetPublicKey(base.DescribeCommand):
     --key=frodo \
     --keyring=fellowship \
     --location=us-east1 \
-    --public-key-format=PEM \
+    --public-key-format=pem \
     --output-file=/tmp/my/public_key.file
   """
 

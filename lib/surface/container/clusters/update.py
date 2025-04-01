@@ -397,7 +397,9 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
-    flags.AddSecretManagerEnableFlagGroup(group)
+    flags.AddSecretManagerEnableFlagGroup(
+        group, release_track=base.ReleaseTrack.GA
+    )
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group(hidden=True)
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
@@ -406,7 +408,7 @@ class Update(base.UpdateCommand):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
-    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -418,6 +420,8 @@ class Update(base.UpdateCommand):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddServiceAccountVerificationKeysFlag(group)
+    flags.AddServiceAccountSigningKeysFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -523,10 +527,6 @@ class Update(base.UpdateCommand):
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
     opts.enable_secret_manager = args.enable_secret_manager
-    opts.enable_secret_manager_rotation = args.enable_secret_manager_rotation
-    opts.secret_manager_rotation_interval = (
-        args.secret_manager_rotation_interval
-    )
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )
@@ -549,6 +549,10 @@ class Update(base.UpdateCommand):
     opts.enable_autopilot_compatibility_auditing = (
         args.enable_autopilot_compatibility_auditing
     )
+    opts.service_account_verification_keys = (
+        args.service_account_verification_keys
+    )
+    opts.service_account_signing_keys = args.service_account_signing_keys
     return opts
 
   def Run(self, args):
@@ -1058,7 +1062,9 @@ class UpdateBeta(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlagGroup(group)
+    flags.AddSecretManagerEnableFlagGroup(
+        group, release_track=base.ReleaseTrack.BETA
+    )
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1072,7 +1078,7 @@ class UpdateBeta(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
-    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(
@@ -1085,6 +1091,8 @@ class UpdateBeta(Update):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddServiceAccountVerificationKeysFlag(group)
+    flags.AddServiceAccountSigningKeysFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1273,6 +1281,10 @@ class UpdateBeta(Update):
     opts.enable_autopilot_compatibility_auditing = (
         args.enable_autopilot_compatibility_auditing
     )
+    opts.service_account_verification_keys = (
+        args.service_account_verification_keys
+    )
+    opts.service_account_signing_keys = args.service_account_signing_keys
     return opts
 
 
@@ -1383,7 +1395,9 @@ class UpdateAlpha(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlagGroup(group)
+    flags.AddSecretManagerEnableFlagGroup(
+        group, release_track=base.ReleaseTrack.ALPHA
+    )
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1397,7 +1411,7 @@ class UpdateAlpha(Update):
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
-    flags.AddEnableAutopilotCompatibilityAuditingFlag(group, hidden=True)
+    flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(
@@ -1410,6 +1424,8 @@ class UpdateAlpha(Update):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddServiceAccountVerificationKeysFlag(group)
+    flags.AddServiceAccountSigningKeysFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1594,4 +1610,8 @@ class UpdateAlpha(Update):
     opts.enable_autopilot_compatibility_auditing = (
         args.enable_autopilot_compatibility_auditing
     )
+    opts.service_account_verification_keys = (
+        args.service_account_verification_keys
+    )
+    opts.service_account_signing_keys = args.service_account_signing_keys
     return opts

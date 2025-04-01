@@ -24,27 +24,8 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import route_policy_utils
 
-DETAILED_HELP = {
-    'DESCRIPTION': """\
-        Updates a term of an existing route policy of a Comute Engine router.
-
-        *{command}* updates a term of a route policy.
-
-        For an example, refer to the *EXAMPLES* section below.
-        """,
-    # pylint: disable=line-too-long
-    'EXAMPLES': """\
-        To update a term of a route policy, run:
-
-          $ {command} example-router --region=router-region --policy-name=example-policy-name --priority=128 --match="destination == '192.168.0.0/24'" --actions="med.set(12345);asPath.prependSequence([1, 2])"
-
-        """,
-    # pylint: enable=line-too-long
-}
-
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class UpdateRoutePolicyTerm(base.UpdateCommand):
   """Updates a term of an existing route policy of a Comute Engine router."""
 
@@ -118,4 +99,17 @@ def _UpdatePolicyTermMessage(term, messages, args):
       for cel_expression in args.actions
   ]
 
-UpdateRoutePolicyTerm.detailed_help = DETAILED_HELP
+
+UpdateRoutePolicyTerm.detailed_help = {
+    'DESCRIPTION': """\
+        *{command}* updates a term of a route policy.
+        """,
+    # pylint: disable=line-too-long
+    'EXAMPLES': """\
+        To update a term with priority 128 with match `destination == '192.168.0.0/24'` and actions `med.set(12345);asPath.prependSequence([1, 2])` of a route policy `example-policy-name` of a router `example-router` in region `router-region`, run:
+
+          $ {command} example-router --region=router-region --policy-name=example-policy-name --priority=128 --match="destination == '192.168.0.0/24'" --actions="med.set(12345);asPath.prependSequence([1, 2])"
+
+        """,
+    # pylint: enable=line-too-long
+}

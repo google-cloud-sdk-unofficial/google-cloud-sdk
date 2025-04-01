@@ -12,6 +12,7 @@ from absl import flags
 
 import bq_flags
 from clients import client_job
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -102,7 +103,11 @@ class Truncate(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstri
                   lambda x: bq_client_utils.GetReference(
                       id_fallbacks=client, identifier=x['id']
                   ),
-                  client.ListTables(reference, max_results=1000 * 1000),
+                  client_table.list_tables(
+                      apiclient=client.apiclient,
+                      reference=reference,
+                      max_results=1000 * 1000,
+                  ),
               )
           )
       for a_table in all_tables:

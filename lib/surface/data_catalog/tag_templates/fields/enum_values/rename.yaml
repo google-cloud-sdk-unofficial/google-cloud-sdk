@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-
   help_text:
     brief: Rename an enum value in Data Catalog tag template enum field.
     description: Rename an enum value in Data Catalog tag template enum field.
@@ -26,7 +25,6 @@
       help_text: New display name of the enum value.
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Rename an enum value in Data Catalog tag template enum field.
     description: Rename an enum value in Data Catalog tag template enum field.

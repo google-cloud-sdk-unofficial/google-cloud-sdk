@@ -244,7 +244,7 @@ class Show(bigquery_command.BigqueryCmd):
       reference = TransferConfigReference(
           transferConfigName=formatted_identifier
       )
-      object_info = client_data_transfer.GetTransferConfig(
+      object_info = client_data_transfer.get_transfer_config(
           client.GetTransferV1ApiClient(), formatted_identifier
       )
     elif self.transfer_run:
@@ -252,7 +252,7 @@ class Show(bigquery_command.BigqueryCmd):
           client, identifier
       )
       reference = TransferRunReference(transferRunName=formatted_identifier)
-      object_info = client_data_transfer.GetTransferRun(
+      object_info = client_data_transfer.get_transfer_run(
           client.GetTransferV1ApiClient(), formatted_identifier
       )
     elif self.m:

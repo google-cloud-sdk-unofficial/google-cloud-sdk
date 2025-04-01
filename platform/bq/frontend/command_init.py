@@ -193,8 +193,4 @@ class Init(bigquery_command.BigqueryCmd):
 
     print('BigQuery configuration complete! Type "bq" to get started.')
     print()
-    bq_utils.ProcessBigqueryrc()
-    # Destroy the client we created, so that any new client will
-    # pick up new flag values.
-    bq_cached_client.Client.Delete()
     return 0

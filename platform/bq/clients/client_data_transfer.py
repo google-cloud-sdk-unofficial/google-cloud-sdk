@@ -42,7 +42,7 @@ class TransferScheduleArgs:
     self.disable_auto_scheduling = disable_auto_scheduling
     self.event_driven_schedule = event_driven_schedule
 
-  def ToScheduleOptionsV2Payload(
+  def to_schedule_options_v2_payload(
       self, options_to_copy: Optional[Dict[str, Any]] = None
   ) -> Dict[str, Any]:
     """Returns a dictionary of schedule options v2.
@@ -57,11 +57,11 @@ class TransferScheduleArgs:
     Raises:
       bq_error.BigqueryError: If shedule options conflict.
     """
-    self._ValidateScheduleOptions()
+    self._validate_schedule_options()
 
     options = {}
     if self.event_driven_schedule:
-      options['eventDrivenSchedule'] = self._ProcessEventDrivenSchedule(
+      options['eventDrivenSchedule'] = self._process_event_driven_schedule(
           self.event_driven_schedule
       )
     elif self.disable_auto_scheduling:
@@ -75,16 +75,16 @@ class TransferScheduleArgs:
       if self.schedule:
         options['timeBasedSchedule']['schedule'] = self.schedule
       if self.start_time:
-        options['timeBasedSchedule']['startTime'] = self._TimeOrInfitity(
+        options['timeBasedSchedule']['startTime'] = self._time_or_infitity(
             self.start_time
         )
       if self.end_time:
-        options['timeBasedSchedule']['endTime'] = self._TimeOrInfitity(
+        options['timeBasedSchedule']['endTime'] = self._time_or_infitity(
             self.end_time
         )
     return options
 
-  def ToScheduleOptionsPayload(
+  def to_schedule_options_payload(
       self, options_to_copy: Optional[Dict[str, str]] = None
   ) -> Dict[str, Any]:
     """Returns a dictionary of schedule options.
@@ -101,19 +101,19 @@ class TransferScheduleArgs:
     options = dict(options_to_copy or {})
 
     if self.start_time is not None:
-      options['startTime'] = self._TimeOrInfitity(self.start_time)
+      options['startTime'] = self._time_or_infitity(self.start_time)
     if self.end_time is not None:
-      options['endTime'] = self._TimeOrInfitity(self.end_time)
+      options['endTime'] = self._time_or_infitity(self.end_time)
 
     options['disableAutoScheduling'] = self.disable_auto_scheduling
 
     return options
 
-  def _TimeOrInfitity(self, time_str: str):
+  def _time_or_infitity(self, time_str: str):
     """Returns None to indicate Inifinity, if time_str is an empty string."""
     return time_str or None
 
-  def _ValidateScheduleOptions(self):
+  def _validate_schedule_options(self):
     """Validates schedule options.
 
     Raises:
@@ -135,7 +135,7 @@ class TransferScheduleArgs:
           ' no_auto_scheduling, time-based schedule or event-driven schedule.'
       )
 
-  def _ProcessEventDrivenSchedule(
+  def _process_event_driven_schedule(
       self,
       event_driven_schedule: str,
   ) -> Dict[str, str]:
@@ -165,7 +165,7 @@ class TransferScheduleArgs:
     return parsed_event_driven_schedule
 
 
-def GetTransferConfig(transfer_client: discovery.Resource, transfer_id: str):
+def get_transfer_config(transfer_client: discovery.Resource, transfer_id: str):
   return (
       transfer_client.projects()
       .locations()
@@ -175,7 +175,7 @@ def GetTransferConfig(transfer_client: discovery.Resource, transfer_id: str):
   )
 
 
-def GetTransferRun(transfer_client: discovery.Resource, identifier: str):
+def get_transfer_run(transfer_client: discovery.Resource, identifier: str):
   return (
       transfer_client.projects()
       .locations()
@@ -186,7 +186,7 @@ def GetTransferRun(transfer_client: discovery.Resource, identifier: str):
   )
 
 
-def ListTransferConfigs(
+def list_transfer_configs(
     transfer_client: discovery.Resource,
     reference: Optional[bq_id_utils.ApiClientHelper.ProjectReference] = None,
     location: Optional[str] = None,
@@ -211,7 +211,7 @@ def ListTransferConfigs(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.ProjectReference,
-      method='ListTransferConfigs',
+      method='list_transfer_configs',
   )
   if page_size is not None:
     if page_size > bq_processor_utils.MAX_RESULTS:
@@ -257,7 +257,7 @@ def ListTransferConfigs(
   return (results,)
 
 
-def ListTransferRuns(
+def list_transfer_runs(
     transfer_client: discovery.Resource,
     reference: Optional[bq_id_utils.ApiClientHelper.TransferConfigReference],
     run_attempt: Optional[str],
@@ -283,7 +283,7 @@ def ListTransferRuns(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.TransferConfigReference,
-      method='ListTransferRuns',
+      method='list_transfer_runs',
   )
   reference = str(reference)
   request = bq_processor_utils.PrepareTransferRunListRequest(
@@ -319,7 +319,7 @@ def ListTransferRuns(
   return (transfer_runs,)
 
 
-def ListTransferLogs(
+def list_transfer_logs(
     transfer_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.TransferRunReference,
     message_type: Optional[str] = None,
@@ -380,7 +380,7 @@ def ListTransferLogs(
   return (transfer_logs,)
 
 
-def StartManualTransferRuns(
+def start_manual_transfer_runs(
     transfer_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.TransferConfigReference,
     start_time: Optional[str],
@@ -402,7 +402,7 @@ def StartManualTransferRuns(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.TransferConfigReference,
-      method='StartManualTransferRuns',
+      method='start_manual_transfer_runs',
   )
   parent = str(reference)
 
@@ -419,7 +419,7 @@ def StartManualTransferRuns(
   return response.get('runs')
 
 
-def TransferExists(
+def transfer_exists(
     transfer_client: discovery.Resource,
     reference: 'bq_id_utils.ApiClientHelper.TransferConfigReference',
 ) -> bool:
@@ -428,7 +428,7 @@ def TransferExists(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.TransferConfigReference,
-      method='TransferExists',
+      method='transfer_exists',
   )
   try:
     transfer_client.projects().locations().transferConfigs().get(
@@ -439,7 +439,7 @@ def TransferExists(
     return False
 
 
-def _FetchDataSource(
+def _fetch_data_source(
     transfer_client: discovery.Resource,
     project_reference: str,
     data_source_id: str,
@@ -457,7 +457,7 @@ def _FetchDataSource(
   )
 
 
-def UpdateTransferConfig(
+def update_transfer_config(
     transfer_client: discovery.Resource,
     apiclient: discovery.Resource,
     id_fallbacks: NamedTuple(
@@ -508,12 +508,12 @@ def UpdateTransferConfig(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.TransferConfigReference,
-      method='UpdateTransferConfig',
+      method='update_transfer_config',
   )
   project_reference = 'projects/' + (
       bq_client_utils.GetProjectReference(id_fallbacks=id_fallbacks).projectId
   )
-  current_config = GetTransferConfig(
+  current_config = get_transfer_config(
       transfer_client, reference.transferConfigName
   )
   update_mask = []
@@ -544,7 +544,7 @@ def UpdateTransferConfig(
 
   # if refresh window provided, check that data source supports it
   if refresh_window_days:
-    data_source_info = _FetchDataSource(
+    data_source_info = _fetch_data_source(
         transfer_client, project_reference, current_config['dataSourceId']
     )
     update_items = bq_processor_utils.ProcessRefreshWindowDaysFlag(
@@ -557,7 +557,7 @@ def UpdateTransferConfig(
 
   if schedule_args:
     update_items['scheduleOptionsV2'] = (
-        schedule_args.ToScheduleOptionsV2Payload(
+        schedule_args.to_schedule_options_v2_payload(
             current_config.get('scheduleOptionsV2')
         )
     )
@@ -595,7 +595,7 @@ def UpdateTransferConfig(
   ).execute()
 
 
-def CreateTransferConfig(
+def create_transfer_config(
     transfer_client: discovery.Resource,
     reference: str,
     data_source: str,
@@ -656,7 +656,9 @@ def CreateTransferConfig(
 
   # if refresh window provided, check that data source supports it
   if refresh_window_days:
-    data_source_info = _FetchDataSource(transfer_client, reference, data_source)
+    data_source_info = _fetch_data_source(
+        transfer_client, reference, data_source
+    )
     create_items = bq_processor_utils.ProcessRefreshWindowDaysFlag(
         refresh_window_days, data_source_info, create_items, data_source
     )
@@ -677,7 +679,7 @@ def CreateTransferConfig(
 
   if schedule_args:
     create_items['scheduleOptionsV2'] = (
-        schedule_args.ToScheduleOptionsV2Payload()
+        schedule_args.to_schedule_options_v2_payload()
     )
 
   if notification_pubsub_topic:
@@ -709,7 +711,7 @@ def CreateTransferConfig(
   return new_transfer_config['name']
 
 
-def DeleteTransferConfig(
+def delete_transfer_config(
     transfer_client: discovery.Resource,
     reference: bq_id_utils.ApiClientHelper.TransferConfigReference,
     ignore_not_found: bool = False,
@@ -730,7 +732,7 @@ def DeleteTransferConfig(
   bq_id_utils.typecheck(
       reference,
       bq_id_utils.ApiClientHelper.TransferConfigReference,
-      method='DeleteTransferConfig',
+      method='delete_transfer_config',
   )
   try:
     transfer_client.projects().locations().transferConfigs().delete(

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Utilities to load Google Auth credentials from gcloud."""
 
+import datetime
 import logging
 import subprocess
 from typing import Iterator, List, Optional
@@ -10,6 +11,7 @@ from google.oauth2 import credentials as google_oauth2
 import bq_auth_flags
 import bq_flags
 import bq_utils
+from auth import utils as bq_auth_utils
 from gcloud_wrapper import gcloud_runner
 from utils import bq_error
 from utils import bq_gcloud_utils
@@ -29,6 +31,9 @@ def LoadCredential() -> google_oauth2.Credentials:
   is_service_account = bq_utils.IsServiceAccount(account)
   access_token = _GetAccessTokenAndPrintOutput(is_service_account)
   refresh_token = _GetRefreshTokenAndPrintOutput()
+  refresh_handler = (
+      _ServiceAccountRefreshHandler if is_service_account else None
+  )
   fallback_quota_project_id = _GetFallbackQuotaProjectId(
       is_service_account=is_service_account,
       has_refresh_token=refresh_token is not None,
@@ -38,6 +43,10 @@ def LoadCredential() -> google_oauth2.Credentials:
       account=account,
       token=access_token,
       refresh_token=refresh_token,
+      refresh_handler=refresh_handler,
+      client_id=bq_auth_utils.get_client_id(),
+      client_secret=bq_auth_utils.get_client_secret(),
+      token_uri=bq_auth_utils.get_token_uri(),
       quota_project_id=bq_utils.GetResolvedQuotaProjectID(
           bq_auth_flags.QUOTA_PROJECT_ID.value, fallback_quota_project_id
       ),
@@ -52,8 +61,10 @@ def _GetScopes() -> List[str]:
   return scopes
 
 
-def _GetAccessTokenAndPrintOutput(is_service_account: bool) -> Optional[str]:
-  scopes = _GetScopes()
+def _GetAccessTokenAndPrintOutput(
+    is_service_account: bool, scopes: Optional[List[str]] = None
+) -> Optional[str]:
+  scopes = _GetScopes() if scopes is None else scopes
   if is_service_account and scopes:
     return _GetTokenFromGcloudAndPrintOtherOutput(
         ['auth', 'print-access-token', '--scopes', ','.join(scopes)]
@@ -160,3 +171,21 @@ def _GetFallbackQuotaProjectId(
   if not has_refresh_token:
     return None
   return bq_flags.PROJECT_ID.value
+
+
+def _ServiceAccountRefreshHandler(request, scopes):
+  """Refreshes the access token for a service account."""
+  del request  # Unused.
+  access_token = _GetAccessTokenAndPrintOutput(
+      is_service_account=True, scopes=scopes
+  )
+  # According to
+  # https://cloud.google.com/docs/authentication/token-types#at-lifetime
+  # and https://cloud.google.com/sdk/gcloud/reference/auth/print-access-token,
+  # the access token lifetime from gcloud auth print-access-token is 1 hour,
+  # but set token expiry to 55 minutes from now to be safe.
+  expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+      minutes=55
+  )
+  expiry = expiry.replace(tzinfo=None)
+  return access_token, expiry

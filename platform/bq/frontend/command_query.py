@@ -18,10 +18,10 @@ from clients import bigquery_client
 from clients import bigquery_client_extended
 from clients import client_data_transfer
 from clients import client_job
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
-
 from frontend import flags as frontend_flags
 from frontend import utils as frontend_utils
 from frontend import utils_data_transfer
@@ -544,7 +544,7 @@ class Query(bigquery_command.BigqueryCmd):
         params['partitioning_field'] = self.time_partitioning_field
       if self.time_partitioning_type:
         params['partitioning_type'] = self.time_partitioning_type
-      transfer_name = client_data_transfer.CreateTransferConfig(
+      transfer_name = client_data_transfer.create_transfer_config(
           transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           data_source='scheduled_query',
@@ -657,11 +657,12 @@ class Query(bigquery_command.BigqueryCmd):
       else:
         self._PrintQueryJobResults(client, job)
     if read_schema:
-      client.UpdateTable(
-          bq_client_utils.GetTableReference(
+      client_table.update_table(
+          apiclient=client.apiclient,
+          reference=bq_client_utils.GetTableReference(
               id_fallbacks=client, identifier=self.destination_table
           ),
-          read_schema,
+          schema=read_schema,
       )
 
   def _PrintQueryJobResults(

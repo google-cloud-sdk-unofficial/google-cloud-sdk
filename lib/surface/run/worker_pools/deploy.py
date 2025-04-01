@@ -353,22 +353,22 @@ class Deploy(base.Command):
             )
         )
 
-    if args.async_:
-      pretty_print.Success(
-          'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
-          'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
-      )
-    else:
-      response.result()  # Wait for the operation to complete.
-      msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
-          worker_pool=worker_pool_ref.workerPoolsId
-      )
-      if response.metadata and response.metadata.latest_created_revision:
-        rev = resource_name_conversion.GetNameFromFullChildName(
-            response.metadata.latest_created_revision
+      if args.async_:
+        pretty_print.Success(
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
+            'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
         )
-        msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-      pretty_print.Success(msg +' has been deployed.')
+      else:
+        response.result()  # Wait for the operation to complete.
+        msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
+            worker_pool=worker_pool_ref.workerPoolsId
+        )
+        if response.metadata and response.metadata.latest_created_revision:
+          rev = resource_name_conversion.GetNameFromFullChildName(
+              response.metadata.latest_created_revision
+          )
+          msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
+        pretty_print.Success(msg +' has been deployed.')
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):

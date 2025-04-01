@@ -15,6 +15,7 @@ import bq_flags
 from clients import bigquery_client
 from clients import client_dataset
 from clients import client_job
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -246,7 +247,9 @@ class Copy(bigquery_command.BigqueryCmd):
     # Check if destination table exists, confirm overwrite
     destination_region = None
     if not ignore_already_exists and not self.force:
-      destination_region = client.GetTableRegion(dest_reference)
+      destination_region = client_table.get_table_region(
+          apiclient=client.apiclient, reference=dest_reference
+      )
       if destination_region and 'y' != frontend_utils.PromptYN(
           self._CONFIRM_OVERWRITE % (dest_reference)
       ):

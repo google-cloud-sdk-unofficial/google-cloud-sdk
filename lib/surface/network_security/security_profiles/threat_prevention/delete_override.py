@@ -50,47 +50,18 @@ DETAILED_HELP = {
         """,
 }
 
-DETAILED_HELP_NO_ANTIVIRUS = {
-    'DESCRIPTION': """
-          To delete existing severities or threat-ids of
-          threat prevention profile.
-          Check the updates of update-override command by using `gcloud network-security
-          security-profiles threat-prevention list-override my-security-profile`.
 
-          For more examples, refer to the EXAMPLES section below.
-
-        """,
-    'EXAMPLES': """
-            To delete an override, run:
-
-              $ {command} my-security-profile --severities=MEDIUM
-
-            `my-security-profile` is the name of the Security Profile in the
-            format organizations/{organizationID}/locations/{location}/securityProfiles/
-            {security_profile_id}
-            where organizationID is the organization ID to which the changes should apply,
-            location - `global` specified and
-            security_profile_id the Security Profile Identifier
-
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class DeleteOverride(base.UpdateCommand):
   """Delete overrides of Threat Prevention Profile."""
 
-  enable_antivirus = False
-
   @classmethod
   def Args(cls, parser):
     sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
-    # TODO: b/384033890 - Remove this check once the field is
-    # available in BETA and GA (and b/379282262 is fixed).
-    sp_flags.AddSeverityorThreatIDorAntivirusArg(
-        parser, required=True, enable_antivirus=cls.enable_antivirus
-    )
+    sp_flags.AddSeverityorThreatIDorAntivirusArg(parser, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -115,15 +86,12 @@ class DeleteOverride(base.UpdateCommand):
     elif args.IsSpecified('threat_ids'):
       update_mask = 'threatOverrides'
       overrides = args.threat_ids
-    # TODO: b/384033890 - Remove this check once the field is
-    # available in BETA and GA (and b/379282262 is fixed).
-    elif args.IsSpecified('antivirus') and self.enable_antivirus:
+    elif args.IsSpecified('antivirus'):
       update_mask = 'antivirusOverrides'
       overrides = args.antivirus
     else:
       raise core_exceptions.Error(
-          'Either --antivirus, --severities, or --threat-ids  must be'
-          ' specified'
+          'Either --antivirus, --severities, or --threat-ids  must be specified'
       )
 
     if args.location != 'global':
@@ -136,7 +104,6 @@ class DeleteOverride(base.UpdateCommand):
         overrides,
         update_mask,
         labels=labels_update.GetOrNone(),
-        enable_antivirus=self.enable_antivirus,
     )
 
     # Return the in-progress operation if async is requested.
@@ -159,13 +126,4 @@ class DeleteOverride(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class DeleteOverrideAlphaBeta(DeleteOverride):
-  """Delete overrides of Threat Prevention Profile."""
-
-  enable_antivirus = True
-
-
-DeleteOverrideAlphaBeta.detailed_help = DETAILED_HELP
-DeleteOverride.detailed_help = DETAILED_HELP_NO_ANTIVIRUS
+DeleteOverride.detailed_help = DETAILED_HELP

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to add network interface to an instance."""
+"""Command to add a dynamic network interface to a Compute Engine instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,15 +29,19 @@ from googlecloudsdk.command_lib.compute.instances.network_interfaces import flag
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Add(base.UpdateCommand):
-  r"""Add a Compute Engine virtual machine network interface.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddBeta(base.UpdateCommand):
+  r"""Add a dynamic network interface to a Compute Engine instance.
 
-  *{command}* adds network interface to a Compute Engine virtual machine.
+  *{command}* adds a dynamic network interface to a Compute Engine instance.
+  For example:
+
+    $ {command} instance-name --parent-nic-name nic1 --vlan 2
+    --network network-1 --subnetwork subnetwork-1
   """
 
-  enable_ipv6_assignment = True
-  support_igmp_query = True
+  enable_ipv6_assignment = False
+  support_igmp_query = False
 
   @classmethod
   def Args(cls, parser):
@@ -129,3 +133,18 @@ class Add(base.UpdateCommand):
         operation_ref,
         f'Adding network interface for instance [{instance_ref.Name()}]',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddAlpha(AddBeta):
+  r"""Add a dynamic network interface to a Compute Engine instance.
+
+  *{command}* adds a dynamic network interface to a Compute Engine instance.
+  For example:
+
+    $ {command} instance-name --parent-nic-name nic1 --vlan 2
+    --network network-1 --subnetwork subnetwork-1
+  """
+
+  enable_ipv6_assignment = True
+  support_igmp_query = True

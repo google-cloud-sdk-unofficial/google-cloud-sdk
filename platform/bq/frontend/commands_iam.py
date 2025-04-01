@@ -18,6 +18,7 @@ from clients import client_connection
 from clients import client_dataset
 from clients import client_reservation
 from clients import client_routine
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -135,7 +136,9 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       RuntimeError: reference isn't an expected type.
     """
     if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
-      return client.GetTableIAMPolicy(reference)
+      return client_table.get_table_iam_policy(
+          iampolicy_client=client.GetIAMPolicyApiClient(), reference=reference
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
       return client_dataset.GetDatasetIAMPolicy(
           apiclient=client.GetIAMPolicyApiClient(), reference=reference
@@ -160,7 +163,11 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       RuntimeError: reference isn't an expected type.
     """
     if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
-      return client.SetTableIAMPolicy(reference, policy)
+      return client_table.set_table_iam_policy(
+          iampolicy_client=client.GetIAMPolicyApiClient(),
+          reference=reference,
+          policy=policy,
+      )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
       return client_dataset.SetDatasetIAMPolicy(
           apiclient=client.GetIAMPolicyApiClient(),

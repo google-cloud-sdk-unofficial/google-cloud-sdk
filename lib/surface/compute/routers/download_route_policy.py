@@ -30,13 +30,9 @@ from googlecloudsdk.core.resource import resource_printer
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DownloadRoutePolicy(base.DescribeCommand):
-  """Download a route policy from a Compute Engine router.
-
-  *{command}* downloads a route policy from a Compute Engine router.
-  """
+  """Download a route policy from a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -97,3 +93,15 @@ class DownloadRoutePolicy(base.DescribeCommand):
           print_format=file_format,
           out=export_file,
       )
+
+
+DownloadRoutePolicy.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* downloads a route policy from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To download a route policy `my-export-policy` to a file `my-export-policy.yaml` from a router `my-router` in region `us-central1`, run:
+
+            $ {command} my-router --region=us-central1 --policy-name=my-export-policy --file-name=my-export-policy.yaml"
+  """,
+}

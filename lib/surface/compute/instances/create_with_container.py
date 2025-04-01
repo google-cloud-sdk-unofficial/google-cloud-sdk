@@ -48,6 +48,7 @@ def _Args(
     support_ipv6_only=False,
     support_reservation_bound=False,
     support_graceful_shutdown=False,
+    support_flex_start=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -75,7 +76,8 @@ def _Args(
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(
-      parser, support_reservation_bound=support_reservation_bound
+      parser, support_reservation_bound=support_reservation_bound,
+      support_flex_start=support_flex_start,
   )
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
   instances_flags.AddServiceAccountAndScopeArgs(parser, False)
@@ -139,7 +141,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_create_boot_disk = True
   _support_match_container_mount_disks = True
   _support_nvdimm = False
-  _support_host_error_timeout_seconds = False
+  _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_confidential_compute_type = True
@@ -169,6 +171,7 @@ class CreateWithContainer(base.CreateCommand):
                                                   utils.COMPUTE_GA_API_VERSION)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   def _ValidateArgs(self, args):
     self._ValidateTrackSpecificArgs(args)
@@ -449,6 +452,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_reservation_bound=True,
         support_graceful_shutdown=True,
         support_ipv6_only=True,
+        support_flex_start=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -494,6 +498,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_ipv6_only=True,
         support_reservation_bound=True,
         support_graceful_shutdown=True,
+        support_flex_start=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

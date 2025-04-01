@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-
   help_text:
     brief: Update a Data Catalog tag template field.
     description: Update a Data Catalog tag template field.
@@ -47,7 +46,6 @@
         Indicates if the tag template field is required. Updating from FALSE (optional) to TRUE (required) is NOT allowed.
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Update a Data Catalog tag template field.
     description: Update a Data Catalog tag template field.

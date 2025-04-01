@@ -15,10 +15,12 @@ from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_job
+from clients import client_model
 from clients import client_project
 from clients import client_reservation
 from clients import client_routine
 from clients import client_row_access_policy
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -350,7 +352,8 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       reference = bq_client_utils.GetDatasetReference(
           id_fallbacks=client, identifier=identifier
       )
-      response = client.ListModels(
+      response = client_model.list_models(
+          model_client=client.GetModelsApiClient(),
           reference=reference,
           max_results=self.max_results,
           page_token=page_token,
@@ -493,7 +496,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
       # transfer_configs tuple contains transfer configs at index 0 and
       # next page token at index 1 if there is one.
-      transfer_configs = client_data_transfer.ListTransferConfigs(
+      transfer_configs = client_data_transfer.list_transfer_configs(
           transfer_client=client.GetTransferV1ApiClient(),
           reference=reference,
           location=self.transfer_location,
@@ -518,7 +521,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       )
       # list_transfer_runs_result tuple contains transfer runs at index 0 and
       # next page token at index 1 if there is next page token.
-      list_transfer_runs_result = client_data_transfer.ListTransferRuns(
+      list_transfer_runs_result = client_data_transfer.list_transfer_runs(
           client.GetTransferV1ApiClient(),
           reference,
           run_attempt,
@@ -542,7 +545,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       )
       # list_transfer_log_result tuple contains transfer logs at index 0 and
       # next page token at index 1 if there is one.
-      list_transfer_log_result = client_data_transfer.ListTransferLogs(
+      list_transfer_log_result = client_data_transfer.list_transfer_logs(
           client.GetTransferV1ApiClient(),
           reference,
           message_type=self.message_type,
@@ -598,8 +601,11 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
     else:  # isinstance(reference, DatasetReference):
       object_type = bq_id_utils.ApiClientHelper.TableReference
-      results = client.ListTables(
-          reference, max_results=self.max_results, page_token=page_token
+      results = client_table.list_tables(
+          apiclient=client.apiclient,
+          reference=reference,
+          max_results=self.max_results,
+          page_token=page_token,
       )
     if object_type is bq_id_utils.ApiClientHelper.DatasetReference:
       objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(

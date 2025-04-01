@@ -58,6 +58,33 @@
           type: bool
           help_text: |-
             If set to true deletion of the instance will fail.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  ondemand maintenance.
+        params:
+        - arg_name: ondemand-maintenance
+          api_field: instance.ondemandMaintenance
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Ondemand maintenance for the instance.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  async instance endpoints deletion enabled.
+        params:
+        - arg_name: async-instance-endpoints-deletion-enabled
+          api_field: instance.asyncInstanceEndpointsDeletionEnabled
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            If true, instance endpoints that are created and registered by customers
+            can be deleted asynchronously. That is, such an instance endpoint can be
+            de-registered before the forwarding rules in the instance endpoint are
+            deleted.
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -82,6 +109,28 @@
       type: int
       help_text: |-
         Number of shards for the instance.
+    - arg_name: node-type
+      api_field: instance.nodeType
+      required: false
+      help_text: |-
+        Machine type for individual nodes of the instance.
+      choices:
+      - arg_value: shared-core-nano
+        enum_value: SHARED_CORE_NANO
+        help_text: |-
+          Shared core nano.
+      - arg_value: highmem-medium
+        enum_value: HIGHMEM_MEDIUM
+        help_text: |-
+          High memory medium.
+      - arg_value: highmem-xlarge
+        enum_value: HIGHMEM_XLARGE
+        help_text: |-
+          High memory extra large.
+      - arg_value: standard-small
+        enum_value: STANDARD_SMALL
+        help_text: |-
+          Standard small.
     - group:
         api_field: instance.persistenceConfig
         arg_name: persistence-config
@@ -173,6 +222,12 @@
                 help_text: |-
                   Fsync every time new write commands are appended to the AOF. The best
                   data loss protection at the cost of performance.
+    - arg_name: engine-version
+      api_field: instance.engineVersion
+      required: false
+      repeated: false
+      help_text: |-
+        Engine version of the instance.
     - arg_name: engine-configs
       api_field: instance.engineConfigs
       required: false

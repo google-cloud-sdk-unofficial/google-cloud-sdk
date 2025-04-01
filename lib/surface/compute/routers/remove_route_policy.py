@@ -25,14 +25,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class RemoveRoutePolicy(base.DeleteCommand):
-  """Remove a route policy from a Compute Engine router.
-
-  *{command}* removes a route policy from a Compute Engine router.
-  """
-
+  """Remove a route policy from a Compute Engine router."""
   ROUTER_ARG = None
 
   @classmethod
@@ -72,3 +67,15 @@ class RemoveRoutePolicy(base.DeleteCommand):
     )
 
     return client.MakeRequests([request])[0]
+
+RemoveRoutePolicy.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* removes a route policy from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+       To remove a route policy `my-policy` from a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --policy-name=my-policy
+
+          """,
+}

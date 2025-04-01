@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-
   help_text:
     brief: Create a Data Catalog tag template field.
     description: Create a Data Catalog tag template field.
@@ -40,7 +39,6 @@
             `type="enum(A|B)"`
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Create a Data Catalog tag template field.
     description: Create a Data Catalog tag template field.

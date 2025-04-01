@@ -289,7 +289,7 @@ class Create(base.CreateCommand):
   _support_multi_writer = False
   _support_subinterface = False
   _support_secure_tag = False
-  _support_host_error_timeout_seconds = False
+  _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_network_queue_count = True
@@ -361,7 +361,7 @@ class Create(base.CreateCommand):
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
-        parser, support_reservation_bound=False
+        parser, support_reservation_bound=False, support_flex_start=False,
     )
 
   def Collection(self):
@@ -894,7 +894,7 @@ class CreateBeta(Create):
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
-        parser, support_reservation_bound=True
+        parser, support_reservation_bound=True, support_flex_start=False,
     )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
@@ -1004,7 +1004,7 @@ class CreateAlpha(CreateBeta):
     instances_flags.AddAvailabilityDomainAgrs(parser)
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
-        parser, support_reservation_bound=True
+        parser, support_reservation_bound=True, support_flex_start=True,
     )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 

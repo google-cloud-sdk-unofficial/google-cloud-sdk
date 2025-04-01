@@ -33,7 +33,6 @@
         arg_value: redis-standard-small
       - enum_value: REDIS_SHARED_CORE_NANO
         arg_value: redis-shared-core-nano
-      hidden: true
     - arg_name: replica-count
       api_field: cluster.replicaCount
       type: int
@@ -168,7 +167,6 @@
                Hour of day (`0` to `23`) for the start of maintenance window, in UTC time zone.
               processor: googlecloudsdk.command_lib.redis.clusters_update_util:CheckMaintenanceWindowStartTimeField
     - arg_name: ondemand-maintenance
-      hidden: true
       action: store_true
       help_text: |
         Trigger an on-demand maintenance.

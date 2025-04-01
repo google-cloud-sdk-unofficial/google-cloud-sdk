@@ -25,13 +25,9 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.routers import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class GetRoutePolicy(base.DescribeCommand):
-  """Get a route policy from a Compute Engine router.
-
-  *{command}* gets a route policy from a Compute Engine router.
-  """
+  """Get a route policy from a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -65,3 +61,16 @@ class GetRoutePolicy(base.DescribeCommand):
     )
 
     return client.MakeRequests([request])[0]
+
+
+GetRoutePolicy.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* gets a route policy from a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To get a route policy `my-policy` from a router `my-router` in region `us-central1`, run:
+
+            $ {command} my-router --region=us-central1 --policy-name=my-policy
+
+          """,
+}

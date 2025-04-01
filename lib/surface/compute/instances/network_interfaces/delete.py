@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of gcloud command to delete a single NIC from a running VM."""
+"""Command to delete a dynamic network interface from a Compute Engine instance."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,12 +27,13 @@ from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Delete(base.DeleteCommand):
-  r"""Delete a Compute Engine virtual machine network interface.
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(base.DeleteCommand):
+  r"""Delete a dynamic network interface from a Compute Engine instance.
 
-  *{command}* deletes network interface of a Compute Engine
-  virtual machine. For example:
+  *{command}* deletes a dynamic network interface from a Compute Engine
+  instance. For example:
 
     $ {command} instance-name --network-interface nic1.2
   """
@@ -72,3 +73,14 @@ class Delete(base.DeleteCommand):
         f'Deleting network interface {args.network_interface} from instance'
         f' {resource.Name()}',
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  r"""Delete a dynamic network interface from a Compute Engine instance.
+
+  *{command}* deletes a dynamic network interface from a Compute Engine
+  instance. For example:
+
+    $ {command} instance-name --network-interface nic1.2
+  """

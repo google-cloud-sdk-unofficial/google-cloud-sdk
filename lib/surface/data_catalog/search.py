@@ -25,9 +25,20 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.data_catalog import search
 
+
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud dataplex entries search` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud dataplex entries search` instead.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-
-
+@base.DefaultUniverseOnly
 class Search(base.Command):
   """Search Data Catalog for resources that match a query."""
 
@@ -56,7 +67,8 @@ class Search(base.Command):
             Query string in search query syntax in Data Catalog. For more
             information, see:
             https://cloud.google.com/data-catalog/docs/how-to/search-reference
-        """)
+        """,
+    )
 
     parser.add_argument(
         '--limit',
@@ -65,7 +77,8 @@ class Search(base.Command):
         category=base.LIST_COMMAND_FLAGS,
         help="""\
             Maximum number of resources to list. The default is *unlimited*.
-        """)
+        """,
+    )
 
     parser.add_argument(
         '--page-size',
@@ -75,7 +88,8 @@ class Search(base.Command):
         help="""\
             Some services group resource list output into pages. This flag specifies
             the maximum number of resources per page.
-        """)
+        """,
+    )
 
     parser.add_argument(
         '--order-by',
@@ -92,48 +106,63 @@ class Search(base.Command):
 
             To order by last modified timestamp ascending, specify:
             `--order-by="last_modified_timestamp desc"`.
-        """)
+        """,
+    )
 
     scope_group = parser.add_argument_group(
-        'Scope. Control the scope of the search.',
-        required=True)
+        'Scope. Control the scope of the search.', required=True
+    )
     scope_group.add_argument(
         '--include-gcp-public-datasets',
         action='store_true',
         help="""\
             If True, include Google Cloud Platform public datasets in the search
             results.
-        """)
+        """,
+    )
     scope_group.add_argument(
         '--include-project-ids',
         type=arg_parsers.ArgList(),
         metavar='PROJECT',
         help="""\
             List of Cloud Project IDs to include in the search.
-        """)
+        """,
+    )
     scope_group.add_argument(
         '--include-organization-ids',
         type=arg_parsers.ArgList(),
         metavar='ORGANIZATION',
         help="""\
             List of Cloud Organization IDs to include in the search.
-        """)
+        """,
+    )
     scope_group.add_argument(
         '--restricted-locations',
         type=arg_parsers.ArgList(),
         metavar='LOCATION',
         help="""\
             List of locations to search within.
-        """)
+        """,
+    )
 
   def Run(self, args):
     """Run the search command."""
     version_label = 'v1'
     return search.Search(args, version_label)
 
+
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud dataplex entries search` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud dataplex entries search` instead.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-
-
 class SearchBeta(Search):
   __doc__ = Search.__doc__
 

@@ -339,6 +339,8 @@ def ParseReservationAssignmentPath(
   return (project_id, location, reservation_id, reservation_assignment_id)
 
 
+
+
 def _ParseConnectionIdentifier(
     identifier: str,
 ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
@@ -1041,6 +1043,8 @@ def GetReservationAssignmentReference(
       reservationId=reservation_id,
       reservationAssignmentId=reservation_assignment_id,
   )
+
+
 
 
 def GetConnectionReference(

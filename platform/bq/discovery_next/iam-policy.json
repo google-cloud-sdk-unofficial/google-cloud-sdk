@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250211",
+  "revision": "20250227",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3610,6 +3610,26 @@
             "AUTOMATIC",
             "MANUAL"
           ]
+        },
+        "timeZone": {
+          "description": "Optional. Time zone used when parsing timestamp values that do not have specific time zone information (e.g. 2024-04-20 12:34:56). The expected format is a IANA timezone string (e.g. America\/Los_Angeles).",
+          "type": "string"
+        },
+        "dateFormat": {
+          "description": "Optional. Format used to parse DATE values. Supports C-style and SQL-style values.",
+          "type": "string"
+        },
+        "datetimeFormat": {
+          "description": "Optional. Format used to parse DATETIME values. Supports C-style and SQL-style values.",
+          "type": "string"
+        },
+        "timeFormat": {
+          "description": "Optional. Format used to parse TIME values. Supports C-style and SQL-style values.",
+          "type": "string"
+        },
+        "timestampFormat": {
+          "description": "Optional. Format used to parse TIMESTAMP values. Supports C-style and SQL-style values.",
+          "type": "string"
         }
       }
     },
@@ -3805,6 +3825,17 @@
         },
         "nullMarker": {
           "description": "Optional. Specifies a string that represents a null value in a CSV file. For example, if you specify \"\\N\", BigQuery interprets \"\\N\" as a null value when querying a CSV file. The default value is the empty string. If you set this property to a custom value, BigQuery throws an error if an empty string is present for all data types except for STRING and BYTE. For STRING and BYTE columns, BigQuery interprets the empty string as an empty value.",
+          "type": "string"
+        },
+        "nullMarkers": {
+          "description": "Optional. A list of strings represented as SQL NULL value in a CSV file. null_marker and null_markers can't be set at the same time. If null_marker is set, null_markers has to be not set. If null_markers is set, null_marker has to be not set. If both null_marker and null_markers are set at the same time, a user error would be thrown. Any strings listed in null_markers, including empty string would be interpreted as SQL NULL. This applies to all column types.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceColumnMatch": {
+          "description": "Optional. Controls the strategy used to match loaded columns to the schema. If not set, a sensible default is chosen based on how the schema is provided. If autodetect is used, then columns are matched by name. Otherwise, columns are matched by position. This is done to keep the behavior backward-compatible. Acceptable values are: POSITION - matches by position. This assumes that the columns are ordered the same way as the schema. NAME - matches by name. This reads the header row as column names and reorders columns to match the field names in the schema.",
           "type": "string"
         }
       }
@@ -4464,6 +4495,47 @@
         "copyFilesOnly": {
           "description": "Optional. [Experimental] Configures the load job to copy files directly to the destination BigLake managed table, bypassing file content reading and rewriting. Copying files only is supported when all the following are true: * `source_uris` are located in the same Cloud Storage location as the destination table's `storage_uri` location. * `source_format` is `PARQUET`. * `destination_table` is an existing BigLake managed table. The table's schema does not have flexible column names. The table's columns do not have type parameters other than precision and scale. * No options other than the above are specified.",
           "type": "boolean"
+        },
+        "timeZone": {
+          "description": "Optional. [Experimental] Default time zone that will apply when parsing timestamp values that have no specific time zone.",
+          "type": "string"
+        },
+        "nullMarkers": {
+          "description": "Optional. A list of strings represented as SQL NULL value in a CSV file. null_marker and null_markers can't be set at the same time. If null_marker is set, null_markers has to be not set. If null_markers is set, null_marker has to be not set. If both null_marker and null_markers are set at the same time, a user error would be thrown. Any strings listed in null_markers, including empty string would be interpreted as SQL NULL. This applies to all column types.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dateFormat": {
+          "description": "Optional. Date format used for parsing DATE values.",
+          "type": "string"
+        },
+        "datetimeFormat": {
+          "description": "Optional. Date format used for parsing DATETIME values.",
+          "type": "string"
+        },
+        "timeFormat": {
+          "description": "Optional. Date format used for parsing TIME values.",
+          "type": "string"
+        },
+        "timestampFormat": {
+          "description": "Optional. Date format used for parsing TIMESTAMP values.",
+          "type": "string"
+        },
+        "sourceColumnMatch": {
+          "description": "Optional. Controls the strategy used to match loaded columns to the schema. If not set, a sensible default is chosen based on how the schema is provided. If autodetect is used, then columns are matched by name. Otherwise, columns are matched by position. This is done to keep the behavior backward-compatible.",
+          "type": "string",
+          "enumDescriptions": [
+            "Uses sensible defaults based on how the schema is provided. If autodetect is used, then columns are matched by name. Otherwise, columns are matched by position. This is done to keep the behavior backward-compatible.",
+            "Matches by position. This assumes that the columns are ordered the same way as the schema.",
+            "Matches by name. This reads the header row as column names and reorders columns to match the field names in the schema."
+          ],
+          "enum": [
+            "SOURCE_COLUMN_MATCH_UNSPECIFIED",
+            "POSITION",
+            "NAME"
+          ]
         }
       }
     },

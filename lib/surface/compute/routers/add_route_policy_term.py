@@ -27,12 +27,8 @@ from googlecloudsdk.command_lib.compute.routers import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddRoutePolicyTerm(base.UpdateCommand):
-  """Adds a new term to an existing route policy of a Comute Engine router.
-
-  *{command}* adds a term to a route policy.
-  """
+  """Adds a new term to an existing route policy of a Comute Engine router."""
 
   ROUTER_ARG = None
 
@@ -99,3 +95,16 @@ class AddRoutePolicyTerm(base.UpdateCommand):
         ),
     )
     return client.MakeRequests([request])[0]
+
+
+AddRoutePolicyTerm.detailed_help = {
+    'DESCRIPTION': """\
+  *{command}* adds a term to a route policy.
+  """,
+    'EXAMPLES': """\
+          To add a term with priority 0  with match `destination == '192.168.0.0/16'` and actions `drop()` to a route policy `my-policy` of a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --policy-name=my-policy --priority=0 --match="destination == '192.168.0.0/16'" --actions="drop()"
+
+          """,
+}

@@ -200,17 +200,6 @@ class Client(object):
 
     return cls.client_cache[cache_key]
 
-  @classmethod
-  def Delete(cls) -> None:
-    """Delete the existing client.
-
-    This is needed when flags have changed, and we need to force
-    client recreation to reflect new flag values.
-    """
-    cache_key = Client._GetClientCacheKey()
-    if cache_key in cls.client_cache:
-      del cls.client_cache[cache_key]
-
 
 class Factory:
   """Class encapsulating factory creation of BigqueryClient."""

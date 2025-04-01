@@ -196,25 +196,25 @@ class Update(base.Command):
             )
         )
 
-    if args.async_:
-      pretty_print.Success(
-          'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
-          'asynchronously.'.format(
-              worker_pool=worker_pool_ref.workerPoolsId,
-              result_message=result_message,
-          )
-      )
-    else:
-      response.result()  # Wait for the operation to complete.
-      msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
-          worker_pool=worker_pool_ref.workerPoolsId
-      )
-      if response.metadata and response.metadata.latest_created_revision:
-        rev = resource_name_conversion.GetNameFromFullChildName(
-            response.metadata.latest_created_revision
+      if args.async_:
+        pretty_print.Success(
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
+            'asynchronously.'.format(
+                worker_pool=worker_pool_ref.workerPoolsId,
+                result_message=result_message,
+            )
         )
-        msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-      if worker_pool and not creates_revision:
-        pretty_print.Success(msg + ' has been updated.')
       else:
-        pretty_print.Success(msg + ' has been deployed.')
+        response.result()  # Wait for the operation to complete.
+        msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
+            worker_pool=worker_pool_ref.workerPoolsId
+        )
+        if response.metadata and response.metadata.latest_created_revision:
+          rev = resource_name_conversion.GetNameFromFullChildName(
+              response.metadata.latest_created_revision
+          )
+          msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
+        if worker_pool and not creates_revision:
+          pretty_print.Success(msg + ' has been updated.')
+        else:
+          pretty_print.Success(msg + ' has been deployed.')

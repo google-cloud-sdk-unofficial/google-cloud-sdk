@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create connection profiles for a datastream."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datastream import connection_profiles
 from googlecloudsdk.api_lib.datastream import util
@@ -39,6 +36,18 @@ EXAMPLES = """\
     To create a connection profile for PostgreSQL:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=postgresql --postgresql-password=fakepassword --postgresql-username=fakeuser --display-name=my-profile --postgresql-hostname=35.188.150.50 --postgresql-port=5432 --postgresql-database=db --static-ip-connectivity
+
+    To create a connection profile for SQL Server:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=sqlserver --sqlserver-password=fakepassword --sqlserver-username=fakeuser --display-name=my-profile --sqlserver-hostname=35.188.150.50 --sqlserver-port=1433 --sqlserver-database=db --static-ip-connectivity
+
+    To create a connection profile for Salesforce using Username, Password and Security Token:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-password=fakepassword --salesforce-username=fakeuser --salesforce-security-token=fakesecuritytoken --display-name=my-profile --salesforce-hostname=35.188.150.50 --salesforce-port=1433 --salesforce-database=db --static-ip-connectivity
+
+    To create a connection profile for Salesforce using OAuth:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-client-secret=fakesecret --salesforce-client-id=fake-client-id --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
 
     To create a connection profile for Google Cloud Storage:
 
@@ -92,6 +101,7 @@ class Create(base.Command):
     cp_flags.AddOracleProfileGroup(profile_flags)
     cp_flags.AddPostgresqlProfileGroup(profile_flags)
     cp_flags.AddSqlServerProfileGroup(profile_flags)
+    cp_flags.AddSalesforceProfileGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     flags.AddLabelsCreateFlags(parser)
 
@@ -128,6 +138,21 @@ class Create(base.Command):
     if args.sqlserver_prompt_for_password:
       args.sqlserver_password = console_io.PromptPassword(
           'Please Enter Password: '
+      )
+
+    if args.salesforce_prompt_for_password:
+      args.salesforce_password = console_io.PromptPassword(
+          'Please Enter Password: '
+      )
+
+    if args.salesforce_prompt_for_security_token:
+      args.salesforce_security_token = console_io.PromptPassword(
+          'Please Enter Security Token: '
+      )
+
+    if args.salesforce_prompt_for_oauth2_client_secret:
+      args.salesforce_oauth2_client_secret = console_io.PromptPassword(
+          'Please Enter OAuth 2.0 Client Secret: '
       )
 
     cp_type = (args.type).upper()

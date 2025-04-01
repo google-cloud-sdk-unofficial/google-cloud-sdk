@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-
   help_text:
     brief: Rename a Data Catalog tag template field.
     description: Rename a Data Catalog tag template field.
@@ -26,7 +25,6 @@
       help_text: New ID of the tag template field.
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Rename a Data Catalog tag template field.
     description: Rename a Data Catalog tag template field.

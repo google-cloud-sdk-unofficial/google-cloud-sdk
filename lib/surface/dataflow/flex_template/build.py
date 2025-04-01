@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import json
+
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -33,6 +35,7 @@ def _CommonArgs(parser):
   """
   image_args = parser.add_mutually_exclusive_group(required=True)
   image_building_args = image_args.add_argument_group()
+  yaml_args = image_args.add_argument_group()
   parser.add_argument(
       'template_file_gcs_path',
       metavar='TEMPLATE_FILE_GCS_PATH',
@@ -88,9 +91,10 @@ def _CommonArgs(parser):
 
   parser.add_argument(
       '--sdk-language',
-      help=('SDK language of the flex template job.'),
-      choices=['JAVA', 'PYTHON', 'GO'],
-      required=True)
+      help='SDK language of the flex template job.',
+      choices=['JAVA', 'PYTHON', 'GO', 'YAML'],
+      required=True,
+  )
 
   parser.add_argument(
       '--metadata-file',
@@ -268,6 +272,24 @@ def _CommonArgs(parser):
             'https://beam.apache.org/documentation/sdks/go-cross-compilation/ '
             'for more information.'))
 
+  # This is set here as image_args is required.
+  yaml_args.add_argument(
+      '--yaml-pipeline-path',
+      required=True,
+      metavar='YAML_PIPELINE_PATH',
+      type=arg_parsers.FileContents(),
+      help='Local path to your YAML pipeline file.',
+  )
+
+  yaml_args.add_argument(
+      '--yaml-image',
+      metavar='YAML_IMAGE',
+      help=(
+          'Path to the any image registry location of the prebuilt yaml '
+          'template image.'
+      ),
+  )
+
   image_building_args.add_argument(
       '--flex-template-base-image',
       help=(
@@ -334,8 +356,18 @@ def _CommonRun(args):
       .GetBool(),
       additional_experiments=args.additional_experiments,
       additional_user_labels=args.additional_user_labels)
-  image_path = args.image
-  if not args.image:
+
+  if args.sdk_language == 'YAML':
+    if not args.yaml_pipeline_path:
+      raise ValueError('yaml_pipeline_path is required.')
+    metadata = json.loads(args.metadata_file)
+    metadata['yamlDefinition'] = args.yaml_pipeline_path
+    args.metadata_file = json.dumps(metadata, indent=4)
+    image_path = apis.Templates.GetYamlTemplateImage(args)
+  else:
+    image_path = args.image
+
+  if not image_path:
     image_path = args.image_gcr_path
     apis.Templates.BuildAndStoreFlexTemplateImage(
         args.image_gcr_path,

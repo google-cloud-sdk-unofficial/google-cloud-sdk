@@ -48,6 +48,8 @@ You can also pass a mapping object.
 
 """
 
+from typing import Callable, Mapping, Optional, Sequence, Tuple
+
 
 class ClientOptions(object):
     """Client Options used to set options on clients.
@@ -55,11 +57,11 @@ class ClientOptions(object):
     Args:
         api_endpoint (Optional[str]): The desired API endpoint, e.g.,
             compute.googleapis.com
-        client_cert_source (Optional[Callable[[], (bytes, bytes)]]): A callback
+        client_cert_source (Optional[Callable[[], Tuple[bytes, bytes]]]): A callback
             which returns client certificate bytes and private key bytes both in
             PEM format. ``client_cert_source`` and ``client_encrypted_cert_source``
             are mutually exclusive.
-        client_encrypted_cert_source (Optional[Callable[[], (str, str, bytes)]]):
+        client_encrypted_cert_source (Optional[Callable[[], Tuple[str, str, bytes]]]):
             A callback which returns client certificate file path, encrypted
             private key file path, and the passphrase bytes.``client_cert_source``
             and ``client_encrypted_cert_source`` are mutually exclusive.
@@ -67,6 +69,18 @@ class ClientOptions(object):
             quota belongs to.
         credentials_file (Optional[str]): A path to a file storing credentials.
             ``credentials_file` and ``api_key`` are mutually exclusive.
+
+            .. warning::
+                Important: If you accept a credential configuration (credential JSON/File/Stream)
+                from an external source for authentication to Google Cloud Platform, you must
+                validate it before providing it to any Google API or client library. Providing an
+                unvalidated credential configuration to Google APIs or libraries can compromise
+                the security of your systems and data. For more information, refer to
+                `Validate credential configurations from external sources`_.
+
+            .. _Validate credential configurations from external sources:
+
+            https://cloud.google.com/docs/authentication/external/externally-sourced-credentials
         scopes (Optional[Sequence[str]]): OAuth access token override scopes.
         api_key (Optional[str]): Google API key. ``credentials_file`` and
             ``api_key`` are mutually exclusive.
@@ -88,15 +102,17 @@ class ClientOptions(object):
 
     def __init__(
         self,
-        api_endpoint=None,
-        client_cert_source=None,
-        client_encrypted_cert_source=None,
-        quota_project_id=None,
-        credentials_file=None,
-        scopes=None,
-        api_key=None,
-        api_audience=None,
-        universe_domain=None,
+        api_endpoint: Optional[str] = None,
+        client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = None,
+        client_encrypted_cert_source: Optional[
+            Callable[[], Tuple[str, str, bytes]]
+        ] = None,
+        quota_project_id: Optional[str] = None,
+        credentials_file: Optional[str] = None,
+        scopes: Optional[Sequence[str]] = None,
+        api_key: Optional[str] = None,
+        api_audience: Optional[str] = None,
+        universe_domain: Optional[str] = None,
     ):
         if client_cert_source and client_encrypted_cert_source:
             raise ValueError(
@@ -114,11 +130,11 @@ class ClientOptions(object):
         self.api_audience = api_audience
         self.universe_domain = universe_domain
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "ClientOptions: " + repr(self.__dict__)
 
 
-def from_dict(options):
+def from_dict(options: Mapping[str, object]) -> ClientOptions:
     """Construct a client options object from a mapping object.
 
     Args:

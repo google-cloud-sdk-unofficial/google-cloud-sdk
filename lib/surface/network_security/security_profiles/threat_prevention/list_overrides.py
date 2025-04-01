@@ -46,36 +46,13 @@ DETAILED_HELP = {
         """,
 }
 
-DETAILED_HELP_NO_ANTIVIRUS = {
-    'DESCRIPTION': """
-          To list existing severities or threat-ids of
-          threat prevention profile.
 
-          For more examples, refer to the EXAMPLES section below.
-
-        """,
-    'EXAMPLES': """
-            To list overrides, run:
-
-              $ {command} my-security-profile
-
-            `my-security-profile` is the name of the Security Profile in the
-            format organizations/{organizationID}/locations/{location}/securityProfiles/
-            {security_profile_id}
-            where organizationID is the organization ID to which the changes should apply,
-            location - `global` specified and
-            security_profile_id the Security Profile Identifier
-
-        """,
-}
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class ListOverrides(base.DescribeCommand):
   """List overrides of Threat Prevention Profile."""
-
-  enable_antivirus = False
 
   @classmethod
   def Args(cls, parser):
@@ -92,13 +69,4 @@ class ListOverrides(base.DescribeCommand):
     return client.ListOverrides(security_profile.RelativeName())
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
-class ListOverridesAlphaBeta(ListOverrides):
-  """List overrides of Threat Prevention Profile."""
-
-  enable_antivirus = True
-
-
-ListOverridesAlphaBeta.detailed_help = DETAILED_HELP
-ListOverrides.detailed_help = DETAILED_HELP_NO_ANTIVIRUS
+ListOverrides.detailed_help = DETAILED_HELP

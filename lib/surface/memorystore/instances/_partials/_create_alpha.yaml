@@ -67,6 +67,35 @@
           help_text: |-
             If set to true deletion of the instance will fail.
           default: null
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  ondemand maintenance.
+        params:
+        - arg_name: ondemand-maintenance
+          api_field: instance.ondemandMaintenance
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            Ondemand maintenance for the instance.
+          default: null
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  async instance endpoints deletion enabled.
+        params:
+        - arg_name: async-instance-endpoints-deletion-enabled
+          api_field: instance.asyncInstanceEndpointsDeletionEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            If true, instance endpoints that are created and registered by customers
+            can be deleted asynchronously. That is, such an instance endpoint can be
+            de-registered before the forwarding rules in the instance endpoint are
+            deleted.
+          default: null
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -280,6 +309,10 @@
       help_text: |-
         User inputs and resource details of the auto-created PSC connections.
       spec:
+      - api_field: port
+        one_of_index: 0
+        help_text: |-
+          port will only be set for Primary/Reader or Discovery endpoint.
       - api_field: projectId
         help_text: |-
           The consumer project_id where PSC connections are established.
@@ -307,6 +340,10 @@
             Detailed information of a PSC connection that is created through
             service connectivity automation.
           spec:
+          - api_field: port
+            one_of_index: 0
+            help_text: |-
+              port will only be set for Primary/Reader or Discovery endpoint.
           - api_field: projectId
             help_text: |-
               The consumer project_id where PSC connections are established.

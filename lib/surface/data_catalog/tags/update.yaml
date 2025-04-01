@@ -1,5 +1,4 @@
 - release_tracks: [GA]
-
   help_text:
     brief: Update a Data Catalog entry tag.
     description: |
@@ -45,7 +44,6 @@
             }
 
 - release_tracks: [ALPHA, BETA]
-
   help_text:
     brief: Update a Data Catalog entry tag.
     description: |

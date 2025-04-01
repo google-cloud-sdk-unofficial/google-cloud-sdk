@@ -27,13 +27,9 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class AddRoutePolicy(base.UpdateCommand):
-  """Add an empty route policy to a Compute Engine router.
-
-  *{command}* adds an empty route policy to a Compute Engine router.
-  """
+  """Add an empty route policy to a Compute Engine router."""
 
   ROUTER_ARG = None
 
@@ -120,3 +116,16 @@ class AddRoutePolicy(base.UpdateCommand):
       return 'ROUTE_POLICY_TYPE_EXPORT'
     else:
       return route_type
+
+
+AddRoutePolicy.detailed_help = {
+    'DESCRIPTION': """\
+          *{command}* adds an empty route policy to a Compute Engine router.
+  """,
+    'EXAMPLES': """\
+          To add an import route policy `my-policy`  to a router `my-router` in region `us-central1`, run:
+
+              $ {command} my-router --region=us-central1 --policy-name=my-policy --policy-type=IMPORT
+
+          """,
+}

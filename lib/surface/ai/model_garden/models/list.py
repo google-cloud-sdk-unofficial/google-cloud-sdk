@@ -32,7 +32,7 @@ _DEFAULT_FORMAT = """
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List the publisher models in Model Garden.

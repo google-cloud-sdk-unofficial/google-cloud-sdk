@@ -58,6 +58,14 @@
                 other rfc-1918 address spaces like "172.16.0.0/12" and "192.168.0.0/16" or non-rfc-1918
                 address spaces used in the VPC.
               type: arg_list
+            - arg_name: exclude-cidr-ranges
+              release_tracks: [ALPHA]
+              api_field: internalRange.excludeCidrRanges
+              help_text: |
+                A list of CIDR ranges to exclude from the search for a free range.
+                This can be used to exclude specific ranges that are already intended to
+                have some other use. This option can only be used if prefix length is also set.
+              type: arg_list
     - arg_name: labels
       api_field: internalRange.labels.additionalProperties
       metavar: KEY=VALUE

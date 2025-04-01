@@ -9,6 +9,11 @@ help_text:
       $ {command} entry1 \
           --entry-group=group1 --location=us-central1
 
+deprecate:
+  is_removed: false
+  warning: "This command is deprecated."
+  error: "This command has been removed."
+
 request:
   api_version: v1
   method: star

@@ -39,6 +39,14 @@ EXAMPLES = """\
     To lookup an existing PostgreSQL stream object:
 
         $ {command} --stream=my-stream --location=us-central1 --postgresql-schema=my-schema --postgresql-table=my-table
+
+    To lookup an existing SQL Server stream object:
+
+       $ {command} --stream=my-stream --location=us-central1 --sqlserver-schema=my-schema --sqlserver-table=my-table
+
+    To lookup an existing Salesforce stream object:
+
+       $ {command} --stream=my-stream --location=us-central1 --salesforce-object-name=my-object
    """
 
 
@@ -63,6 +71,7 @@ class Lookup(base.Command):
     so_flags.AddMysqlObjectIdentifier(object_identifier_parser)
     so_flags.AddPostgresqlObjectIdentifier(object_identifier_parser)
     so_flags.AddSqlServerObjectIdentifier(object_identifier_parser)
+    so_flags.AddSalesforceObjectIdentifier(object_identifier_parser)
 
   def Run(self, args):
     """Lookup a Datastream stream object.

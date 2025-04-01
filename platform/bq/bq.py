@@ -45,15 +45,19 @@ from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import commands
 from frontend import commands_iam
+from frontend import command_cancel
 from frontend import command_copy
 from frontend import command_delete
 from frontend import command_extract
+from frontend import command_head
 from frontend import command_info
 from frontend import command_init
+from frontend import command_insert
 from frontend import command_list
 from frontend import command_load
 from frontend import command_make
 from frontend import command_mkdef
+from frontend import command_partition
 from frontend import command_query
 from frontend import command_repl
 from frontend import command_show
@@ -61,7 +65,6 @@ from frontend import command_truncate
 from frontend import command_undelete
 from frontend import command_update
 from frontend import utils as frontend_utils
-from utils import bq_gcloud_utils
 
 flags.adopt_module_key_flags(bq_flags)
 
@@ -84,19 +87,19 @@ def main(unused_argv):
     bq_commands = {
         # Keep the commands alphabetical.
         'add-iam-policy-binding': commands_iam.AddIamPolicyBinding,
-        'cancel': commands.Cancel,
+        'cancel': command_cancel.Cancel,
         'cp': command_copy.Copy,
         'extract': command_extract.Extract,
         'get-iam-policy': commands_iam.GetIamPolicy,
-        'head': commands.Head,
+        'head': command_head.Head,
         'info': command_info.Info,
         'init': command_init.Init,
-        'insert': commands.Insert,
+        'insert': command_insert.Insert,
         'load': command_load.Load,
         'ls': command_list.ListCmd,
         'mk': command_make.Make,
         'mkdef': command_mkdef.MakeExternalTableDefinition,
-        'partition': commands.Partition,
+        'partition': command_partition.Partition,
         'query': command_query.Query,
         'remove-iam-policy-binding': commands_iam.RemoveIamPolicyBinding,
         'rm': command_delete.Delete,

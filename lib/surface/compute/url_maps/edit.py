@@ -105,13 +105,16 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
   original_record = encoding.MessageToDict(original_object)
 
   # Selects only the fields that can be modified.
-  field_selector = property_selector.PropertySelector(properties=[
-      'defaultService',
-      'description',
-      'hostRules',
-      'pathMatchers',
-      'tests',
-  ])
+  field_selector = property_selector.PropertySelector(
+      properties=[
+          'defaultService',
+          'description',
+          'hostRules',
+          'pathMatchers',
+          'tests',
+          'defaultCustomErrorResponsePolicy',
+      ]
+  )
   modifiable_record = field_selector.Apply(original_record)
 
   buf = _BuildFileContents(args, client, modifiable_record, original_record,
@@ -185,12 +188,24 @@ def _GetExampleResource(client, track):
   return client.messages.UrlMap(
       name='site-map',
       defaultService=backend_service_uri_prefix + 'default-service',
+      defaultCustomErrorResponsePolicy=client.messages.CustomErrorResponsePolicy(
+          errorService=backend_service_uri_prefix + 'error-service',
+          errorResponseRules=[
+              client.messages.CustomErrorResponsePolicyCustomErrorResponseRule(
+                  matchResponseCodes=['4xx'],
+                  path='/errors/4xx/not-found.html',
+                  overrideResponseCode=404,
+              ),
+          ],
+      ),
       hostRules=[
           client.messages.HostRule(
-              hosts=['*.google.com', 'google.com'], pathMatcher='www'),
+              hosts=['*.google.com', 'google.com'], pathMatcher='www'
+          ),
           client.messages.HostRule(
               hosts=['*.youtube.com', 'youtube.com', '*-youtube.com'],
-              pathMatcher='youtube'),
+              pathMatcher='youtube',
+          ),
       ],
       pathMatchers=[
           client.messages.PathMatcher(
@@ -199,40 +214,51 @@ def _GetExampleResource(client, track):
               pathRules=[
                   client.messages.PathRule(
                       paths=['/search', '/search/*'],
-                      service=backend_service_uri_prefix + 'search'),
+                      service=backend_service_uri_prefix + 'search',
+                  ),
                   client.messages.PathRule(
                       paths=['/search/ads', '/search/ads/*'],
-                      service=backend_service_uri_prefix + 'ads'),
+                      service=backend_service_uri_prefix + 'ads',
+                  ),
                   client.messages.PathRule(
                       paths=['/images/*'],
-                      service=backend_bucket_uri_prefix + 'images'),
-              ]),
+                      service=backend_bucket_uri_prefix + 'images',
+                  ),
+              ],
+          ),
           client.messages.PathMatcher(
               name='youtube',
               defaultService=backend_service_uri_prefix + 'youtube-default',
               pathRules=[
                   client.messages.PathRule(
                       paths=['/search', '/search/*'],
-                      service=backend_service_uri_prefix + 'youtube-search'),
+                      service=backend_service_uri_prefix + 'youtube-search',
+                  ),
                   client.messages.PathRule(
                       paths=['/watch', '/view', '/preview'],
-                      service=backend_service_uri_prefix + 'youtube-watch'),
-              ]),
+                      service=backend_service_uri_prefix + 'youtube-watch',
+                  ),
+              ],
+          ),
       ],
       tests=[
           client.messages.UrlMapTest(
               host='www.google.com',
               path='/search/ads/inline?q=flowers',
-              service=backend_service_uri_prefix + 'ads'),
+              service=backend_service_uri_prefix + 'ads',
+          ),
           client.messages.UrlMapTest(
               host='youtube.com',
               path='/watch/this',
-              service=backend_service_uri_prefix + 'youtube-default'),
+              service=backend_service_uri_prefix + 'youtube-default',
+          ),
           client.messages.UrlMapTest(
               host='youtube.com',
               path='/images/logo.png',
-              service=backend_bucket_uri_prefix + 'images'),
-      ])
+              service=backend_bucket_uri_prefix + 'images',
+          ),
+      ],
+  )
 
 
 def _GetReferenceNormalizers(resource_registry):
@@ -263,14 +289,26 @@ def _GetReferenceNormalizers(resource_registry):
       'compute.regionBackendServices'
   ]
   return [
-      ('defaultService',
-       MakeReferenceNormalizer('defaultService', allowed_collections)),
-      ('pathMatchers[].defaultService',
-       MakeReferenceNormalizer('defaultService', allowed_collections)),
-      ('pathMatchers[].pathRules[].service',
-       MakeReferenceNormalizer('service', allowed_collections)),
-      ('tests[].service', MakeReferenceNormalizer('service',
-                                                  allowed_collections)),
+      (
+          'defaultService',
+          MakeReferenceNormalizer('defaultService', allowed_collections),
+      ),
+      (
+          'pathMatchers[].defaultService',
+          MakeReferenceNormalizer('defaultService', allowed_collections),
+      ),
+      (
+          'pathMatchers[].pathRules[].service',
+          MakeReferenceNormalizer('service', allowed_collections),
+      ),
+      (
+          'CustomErrorResponsePolicy.errorService',
+          MakeReferenceNormalizer('errorService', allowed_collections),
+      ),
+      (
+          'tests[].service',
+          MakeReferenceNormalizer('service', allowed_collections),
+      ),
   ]
 
 
@@ -321,6 +359,7 @@ class InvalidResourceError(exceptions.ToolException):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Edit(base.Command):
   """Modify URL maps."""
 

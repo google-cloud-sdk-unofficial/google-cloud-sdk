@@ -163,7 +163,7 @@ class Create(base.Command):
   _support_display_device = False
   _support_local_ssd_size = True
   _support_secure_tags = False
-  _support_host_error_timeout_seconds = False
+  _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
   _support_visible_core_count = True
   _support_max_run_duration = True
@@ -182,6 +182,7 @@ class Create(base.Command):
   _support_ipv6_only = True
   _support_reservation_bound = False
   _support_graceful_shutdown = True
+  _support_flex_start = False
 
   _log_async = False
 
@@ -213,11 +214,13 @@ class Create(base.Command):
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
         support_reservation_bound=cls._support_reservation_bound,
+        support_flex_start=cls._support_flex_start,
     )
     cls.AddSourceInstanceTemplate(parser)
 
     # Flags specific to GA release track
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+    instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
 
   # LINT.IfChange(instance_template)
   @classmethod
@@ -428,6 +431,7 @@ class CreateBeta(Create):
   _support_ipv6_only = True
   _support_reservation_bound = True
   _support_graceful_shutdown = True
+  _support_flex_start = False
 
   @classmethod
   def Args(cls, parser):
@@ -458,6 +462,7 @@ class CreateBeta(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_reservation_bound=cls._support_reservation_bound,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_flex_start=cls._support_flex_start,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -494,6 +499,7 @@ class CreateAlpha(Create):
   _support_igmp_query = True
   _support_reservation_bound = True
   _support_graceful_shutdown = True
+  _support_flex_start = False
 
   @classmethod
   def Args(cls, parser):
@@ -525,6 +531,7 @@ class CreateAlpha(Create):
         support_igmp_query=cls._support_igmp_query,
         support_reservation_bound=cls._support_reservation_bound,
         support_graceful_shutdown=cls._support_graceful_shutdown,
+        support_flex_start=cls._support_flex_start,
     )
 
     cls.AddSourceInstanceTemplate(parser)

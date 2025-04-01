@@ -331,6 +331,7 @@ class ApiClientHelper:
     def create_path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._create_path_str % dict(self)
 
+
   class ConnectionReference(Reference):
     _required_fields = frozenset(('projectId', 'location', 'connectionId'))
     _format_str = '%(projectId)s.%(location)s.%(connectionId)s'

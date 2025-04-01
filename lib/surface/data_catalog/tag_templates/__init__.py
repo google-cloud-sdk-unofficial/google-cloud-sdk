@@ -21,8 +21,20 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please use `gcloud dataplex aspect-types` instead.'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please use `gcloud dataplex aspect-types` instead.'
+    ),
+)
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class TagTemplates(base.Group):
   """Manage tag templates in Data Catalog."""
   pass

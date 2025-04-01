@@ -17,8 +17,10 @@ from clients import bigquery_client_extended
 from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
+from clients import client_model
 from clients import client_reservation
 from clients import client_row_access_policy
+from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -772,6 +774,12 @@ class Update(bigquery_command.BigqueryCmd):
         )
       self.printSuccessMessage('Row access policy', self.policy_id)
     elif self.reservation:
+      label_keys_to_remove = None
+      labels_to_set = None
+      if self.set_label is not None:
+        labels_to_set = frontend_utils.ParseLabels(self.set_label)
+      if self.clear_label is not None:
+        label_keys_to_remove = set(self.clear_label)
       try:
         if (
             self.reservation_size is not None
@@ -819,6 +827,8 @@ class Update(bigquery_command.BigqueryCmd):
               autoscale_max_slots=self.autoscale_max_slots,
               max_slots=self.max_slots,
               scaling_mode=self.scaling_mode,
+              labels_to_set=labels_to_set,
+              label_keys_to_remove=label_keys_to_remove,
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'
@@ -1128,8 +1138,9 @@ class Update(bigquery_command.BigqueryCmd):
       if self.remove_tags:
         tags_to_remove = bq_utils.ParseTagKeys(self.remove_tags)
 
-      client.UpdateTable(
-          reference,
+      client_table.update_table(
+          apiclient=client.apiclient,
+          reference=reference,
           schema=schema,
           description=self.description,
           expiration=expiration,
@@ -1160,7 +1171,7 @@ class Update(bigquery_command.BigqueryCmd):
     elif isinstance(
         reference, bq_id_utils.ApiClientHelper.TransferConfigReference
     ):
-      if client_data_transfer.TransferExists(
+      if client_data_transfer.transfer_exists(
           client.GetTransferV1ApiClient(), reference
       ):
         auth_info = {}
@@ -1174,7 +1185,7 @@ class Update(bigquery_command.BigqueryCmd):
                     client, reference.transferConfigName
                 )
             )
-            current_config = client_data_transfer.GetTransferConfig(
+            current_config = client_data_transfer.get_transfer_config(
                 client.GetTransferV1ApiClient(), transfer_config_name
             )
             auth_info = utils_data_transfer.RetrieveAuthorizationInfo(
@@ -1197,7 +1208,7 @@ class Update(bigquery_command.BigqueryCmd):
             disable_auto_scheduling=self.no_auto_scheduling,
             event_driven_schedule=self.event_driven_schedule,
         )
-        client_data_transfer.UpdateTransferConfig(
+        client_data_transfer.update_transfer_config(
             transfer_client=client.GetTransferV1ApiClient(),
             apiclient=client.apiclient,
             id_fallbacks=client,
@@ -1223,8 +1234,9 @@ class Update(bigquery_command.BigqueryCmd):
         expiration = int(self.expiration + time.time()) * 1000
       else:
         expiration = self.expiration  # None or 0
-      client.UpdateModel(
-          reference,
+      client_model.update_model(
+          model_client=client.GetModelsApiClient(),
+          reference=reference,
           description=self.description,
           expiration=expiration,
           labels_to_set=labels_to_set,

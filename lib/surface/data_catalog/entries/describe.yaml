@@ -8,6 +8,11 @@
         $ {command} entry1 \
             --entry-group=group1 --location=us-central1
 
+  deprecate:
+    is_removed: false
+    warning: "This command is deprecated. Please use `gcloud dataplex entries` instead."
+    error: "This command has been removed. Please use `gcloud dataplex entries` instead."
+
   request:
     api_version: v1
     collection: datacatalog.projects.locations.entryGroups.entries
@@ -27,6 +32,11 @@
 
         $ {command} entry1 \
             --entry-group=group1 --location=us-central1
+
+  deprecate:
+    is_removed: false
+    warning: "This command is deprecated. Please use `gcloud dataplex entries` instead."
+    error: "This command has been removed. Please use `gcloud dataplex entries` instead."
 
   request:
     collection: datacatalog.projects.locations.entryGroups.entries

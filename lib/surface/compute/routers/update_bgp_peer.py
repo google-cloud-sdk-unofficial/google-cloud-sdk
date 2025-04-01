@@ -37,7 +37,7 @@ class UpdateBgpPeer(base.UpdateCommand):
   ROUTER_ARG = None
 
   @classmethod
-  def _Args(cls, parser, enable_route_policies=False):
+  def _Args(cls, parser):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -45,7 +45,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         parser,
         for_add_bgp_peer=False,
         is_update=True,
-        enable_route_policies=enable_route_policies,
     )
     flags.AddUpdateCustomAdvertisementArgs(parser, 'peer')
     flags.AddUpdateCustomLearnedRoutesArgs(parser)
@@ -54,19 +53,12 @@ class UpdateBgpPeer(base.UpdateCommand):
   def Args(cls, parser):
     cls._Args(parser)
 
-  def _Run(
-      self,
-      args,
-      support_bfd_mode=False,
-      enable_route_policies=False,
-  ):
+  def _Run(self, args, support_bfd_mode=False):
     """Runs the command.
 
     Args:
       args: contains arguments passed to the command.
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
-      enable_route_policies: The flag to indicate whether exportPolicies and
-        importPolicies are supported.
 
     Returns:
       The result of patching the router updating the bgp peer with the
@@ -123,7 +115,6 @@ class UpdateBgpPeer(base.UpdateCommand):
         args,
         md5_authentication_key_name=md5_authentication_key_name,
         support_bfd_mode=support_bfd_mode,
-        enable_route_policies=enable_route_policies,
     )
 
     if router_utils.HasReplaceAdvertisementFlags(args):
@@ -274,7 +265,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, enable_route_policies=True)
+    cls._Args(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -286,7 +277,7 @@ class UpdateBgpPeerBeta(UpdateBgpPeer):
       The result of patching the router updating the bgp peer with the
       information provided in the arguments.
     """
-    return self._Run(args, support_bfd_mode=False, enable_route_policies=True)
+    return self._Run(args, support_bfd_mode=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -297,7 +288,7 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser, enable_route_policies=True)
+    cls._Args(parser)
 
   def Run(self, args):
     """Runs the command.
@@ -309,11 +300,7 @@ class UpdateBgpPeerAlpha(UpdateBgpPeerBeta):
       The result of patching the router updating the bgp peer with the
       information provided in the arguments.
     """
-    return self._Run(
-        args,
-        support_bfd_mode=True,
-        enable_route_policies=True,
-    )
+    return self._Run(args, support_bfd_mode=True)
 
 
 def _UpdateBgpPeerMessage(
@@ -322,7 +309,6 @@ def _UpdateBgpPeerMessage(
     args,
     md5_authentication_key_name,
     support_bfd_mode=False,
-    enable_route_policies=False,
 ):
   """Updates base attributes of a BGP peer based on flag arguments."""
 
@@ -355,9 +341,8 @@ def _UpdateBgpPeerMessage(
     attrs['customLearnedRoutePriority'] = args.custom_learned_route_priority
   if args.md5_authentication_key is not None:
     attrs['md5AuthenticationKeyName'] = md5_authentication_key_name
-  if enable_route_policies:
-    attrs['exportPolicies'] = args.export_policies
-    attrs['importPolicies'] = args.import_policies
+  attrs['exportPolicies'] = args.export_policies
+  attrs['importPolicies'] = args.import_policies
   for attr, value in attrs.items():
     if value is not None:
       setattr(peer, attr, value)
