@@ -32,7 +32,7 @@
         Name of the resource
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection_git_repository_link
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_connections_git_repository_links
       required: true
     - arg_name: request-id
       api_field: requestId

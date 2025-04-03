@@ -108,6 +108,7 @@ class CreateGA(base.CreateCommand):
 
   support_update_policy_min_ready_flag = False
   support_resource_manager_tags = False
+  support_workload_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -130,6 +131,8 @@ class CreateGA(base.CreateCommand):
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
+    if cls.support_workload_policy:
+      managed_flags.AddWorkloadPolicyFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _HandleStatefulArgs(self, instance_group_manager, args, client):
@@ -323,6 +326,9 @@ class CreateGA(base.CreateCommand):
             args, client.messages
         )
     )
+    resource_policies = managed_instance_groups_utils.CreateResourcePolicies(
+        client.messages, args
+    )
 
     instance_group_manager = client.messages.InstanceGroupManager(
         name=group_ref.Name(),
@@ -340,6 +346,7 @@ class CreateGA(base.CreateCommand):
         updatePolicy=update_policy,
         instanceLifecyclePolicy=instance_lifecycle_policy,
         instanceFlexibilityPolicy=instance_flexibility_policy,
+        resourcePolicies=resource_policies,
     )
 
     if args.IsSpecified('list_managed_instances_results'):
@@ -455,6 +462,7 @@ class CreateBeta(CreateGA):
 
   support_update_policy_min_ready_flag = True
   support_resource_manager_tags = True
+  support_workload_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -478,6 +486,7 @@ class CreateAlpha(CreateBeta):
   """Create Compute Engine managed instance groups."""
 
   support_resource_manager_tags = True
+  support_workload_policy = True
 
   @classmethod
   def Args(cls, parser):

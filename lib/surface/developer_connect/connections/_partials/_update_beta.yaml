@@ -54,7 +54,7 @@
                     the connection. Format: `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.githubConfig.authorizerCredential.oauthTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -92,7 +92,7 @@
                 formatted as `projects/*/secrets/*/versions/*`.
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
               resource_method_params:
                 connection.githubEnterpriseConfig.privateKeySecretVersion: '{__relative_name__}'
               required: false
@@ -103,7 +103,7 @@
                 formatted as `projects/*/secrets/*/versions/*`.
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
               resource_method_params:
                 connection.githubEnterpriseConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: false
@@ -129,7 +129,7 @@
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
                   resource_method_params:
                     connection.githubEnterpriseConfig.serviceDirectoryConfig.service: '{__relative_name__}'
                   required: false
@@ -161,7 +161,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -179,7 +179,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.gitlabConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -211,7 +211,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.gitlabEnterpriseConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -229,7 +229,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.gitlabEnterpriseConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -247,7 +247,7 @@
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
                   resource_method_params:
                     connection.gitlabEnterpriseConfig.serviceDirectoryConfig.service: '{__relative_name__}'
                   required: false
@@ -286,7 +286,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketDataCenterConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -304,7 +304,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketDataCenterConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -322,7 +322,7 @@
                     projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_namespace_service
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
                   resource_method_params:
                     connection.bitbucketDataCenterConfig.serviceDirectoryConfig.service: '{__relative_name__}'
                   required: false
@@ -361,7 +361,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketCloudConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -379,7 +379,7 @@
                     `projects/*/secrets/*/versions/*`.
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_secret_secret_version
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketCloudConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -388,7 +388,7 @@
         `projects/{project}/locations/{location}/connections/{connection_id}`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_connections
       required: true
     - arg_name: labels
       api_field: connection.labels
@@ -443,7 +443,7 @@
             `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
           is_positional: false
           is_primary_resource: false
-          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_key_ring_crypto_key
+          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_key_rings_crypto_keys
           resource_method_params:
             connection.cryptoKeyConfig.keyReference: '{__relative_name__}'
           required: false

@@ -21,4 +21,4 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Saas(base.Group):
   category = base.SAAS_CATEGORY
-  detailed_help = {'brief': 'Manage SaaS Runtime saas-types.'}
+  detailed_help = {'brief': 'Manage SaaS Runtime saas.'}

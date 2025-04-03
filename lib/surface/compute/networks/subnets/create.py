@@ -53,7 +53,6 @@ def _AddArgs(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_external_ipv6_prefix,
     include_internal_ipv6_prefix,
     include_custom_hardware_link,
     api_version,
@@ -302,15 +301,18 @@ def _AddArgs(
       """,
   )
 
-  if include_external_ipv6_prefix:
-    parser.add_argument(
-        '--external-ipv6-prefix',
-        help=("""
-        Set external IPv6 prefix to be allocated for this subnetwork.
+  parser.add_argument(
+      '--external-ipv6-prefix',
+      help=("""
+      The /64 external IPv6 CIDR range to assign to this subnet. The range must
+      be associated with an IPv6 BYOIP sub-prefix that is defined by the
+      --ip-collection flag. If you specify --ip-collection but not
+      --external-ipv6-prefix, a random /64 range is allocated from
+      the sub-prefix.
 
-        For example, `--external-ipv6-prefix 2600:1901:0:0:0:0:0:0/64`
-        """),
-    )
+      For example, `--external-ipv6-prefix=2600:1901:0:0:0:0:0:0/64`
+      """),
+  )
 
   if include_internal_ipv6_prefix:
     parser.add_argument(
@@ -350,7 +352,6 @@ def _CreateSubnetwork(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_external_ipv6_prefix,
     include_internal_ipv6_prefix,
     include_custom_hardware_link,
     ip_collection_ref,
@@ -466,9 +467,8 @@ def _CreateSubnetwork(
   if args.reserved_internal_range:
     subnetwork.reservedInternalRange = args.reserved_internal_range
 
-  if include_external_ipv6_prefix:
-    if args.external_ipv6_prefix:
-      subnetwork.externalIpv6Prefix = args.external_ipv6_prefix
+  if args.external_ipv6_prefix:
+    subnetwork.externalIpv6Prefix = args.external_ipv6_prefix
 
   if include_internal_ipv6_prefix:
     if args.internal_ipv6_prefix:
@@ -486,7 +486,6 @@ def _Run(
     include_alpha_logging,
     include_aggregate_purpose,
     include_l2,
-    include_external_ipv6_prefix,
     include_internal_ipv6_prefix,
     include_custom_hardware_link,
     include_peer_migration_purpose,
@@ -514,7 +513,6 @@ def _Run(
       include_alpha_logging,
       include_aggregate_purpose,
       include_l2,
-      include_external_ipv6_prefix,
       include_internal_ipv6_prefix,
       include_custom_hardware_link,
       ip_collection_ref,
@@ -544,7 +542,6 @@ class Create(base.CreateCommand):
   _include_alpha_logging = False
   _include_aggregate_purpose = False
   _include_l2 = False
-  _include_external_ipv6_prefix = False
   _include_internal_ipv6_prefix = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
@@ -559,7 +556,6 @@ class Create(base.CreateCommand):
         cls._include_alpha_logging,
         cls._include_aggregate_purpose,
         cls._include_l2,
-        cls._include_external_ipv6_prefix,
         cls._include_internal_ipv6_prefix,
         cls._include_custom_hardware_link,
         cls._api_version,
@@ -575,7 +571,6 @@ class Create(base.CreateCommand):
         self._include_alpha_logging,
         self._include_aggregate_purpose,
         self._include_l2,
-        self._include_external_ipv6_prefix,
         self._include_internal_ipv6_prefix,
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
@@ -596,7 +591,6 @@ class CreateAlpha(CreateBeta):
   _include_alpha_logging = True
   _include_aggregate_purpose = True
   _include_l2 = True
-  _include_external_ipv6_prefix = True
   _include_internal_ipv6_prefix = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True

@@ -90,7 +90,7 @@ class Create(base.Command):
   }
 
   @classmethod
-  def CommonArgs(cls, parser, add_container_args=True):
+  def CommonArgs(cls, parser):
     # Flags not specific to any platform
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
@@ -99,20 +99,6 @@ class Create(base.Command):
         required=True,
         prefixes=False,
     )
-    if add_container_args:
-      flags.AddImageArg(parser, image=EXAMPLE_JOB_IMAGE)
-      flags.AddArgsFlag(parser)
-      flags.AddCommandFlag(parser)
-      flags.AddCpuFlag(parser)
-      flags.AddMemoryFlag(parser)
-      flags.AddMutexEnvVarsFlagsForCreate(parser)
-      flags.AddSetSecretsFlag(parser)
-      group = base.ArgumentGroup()
-      group.AddArgument(flags.AddVolumeMountFlag())
-      group.AddArgument(flags.RemoveVolumeMountFlag())
-      group.AddArgument(flags.ClearVolumeMountsFlag())
-      group.AddToParser(parser)
-
     flags.AddLabelsFlag(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
@@ -148,6 +134,8 @@ class Create(base.Command):
   @staticmethod
   def Args(parser):
     Create.CommonArgs(parser)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
 
   def Run(self, args):
     """Deploy a Job to Cloud Run."""
@@ -248,7 +236,7 @@ class BetaCreate(Create):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
@@ -260,7 +248,7 @@ class AlphaCreate(BetaCreate):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
     flags.GpuZonalRedundancyFlag(parser, hidden=True)

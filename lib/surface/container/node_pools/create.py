@@ -121,6 +121,7 @@ for examples.
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
   flags.AddThreadsPerCore(parser)
+  flags.AddPerformanceMonitoringUnit(parser)
   flags.AddAdditionalNodeNetworkFlag(parser)
   flags.AddAdditionalPodNetworkFlag(parser)
   flags.AddAsyncFlag(parser)
@@ -205,6 +206,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_confidential_nodes=args.enable_confidential_nodes,
       confidential_node_type=args.confidential_node_type,
       enable_confidential_storage=args.enable_confidential_storage,
+      data_cache_count=args.data_cache_count,
       enable_blue_green_upgrade=args.enable_blue_green_upgrade,
       enable_surge_upgrade=args.enable_surge_upgrade,
       node_pool_soak_duration=args.node_pool_soak_duration,
@@ -286,6 +288,7 @@ class Create(base.CreateCommand):
         parser, for_node_pool=True, hidden=False)
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
+    flags.AddDataCacheCountFlag(parser, for_node_pool=True, hidden=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -295,6 +298,7 @@ class Create(base.CreateCommand):
     ops.placement_type = args.placement_type
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
+    ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.placement_policy = args.placement_policy
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
@@ -472,6 +476,7 @@ class CreateBeta(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
+    ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
@@ -597,7 +602,6 @@ class CreateAlpha(Create):
         parser, for_node_pool=True, hidden=False)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
-    flags.AddPerformanceMonitoringUnit(parser, hidden=True)
     flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)

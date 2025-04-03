@@ -46,7 +46,6 @@ def _Args(
     support_specific_then_x_affinity=False,
     support_disk_labels=False,
     support_ipv6_only=False,
-    support_reservation_bound=False,
     support_graceful_shutdown=False,
     support_flex_start=False,
 ):
@@ -76,7 +75,7 @@ def _Args(
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(
-      parser, support_reservation_bound=support_reservation_bound,
+      parser,
       support_flex_start=support_flex_start,
   )
   instances_flags.AddInstanceTerminationActionVmArgs(parser)
@@ -449,7 +448,6 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_confidential_compute_type_tdx=True,
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
-        support_reservation_bound=True,
         support_graceful_shutdown=True,
         support_ipv6_only=True,
         support_flex_start=False,
@@ -496,7 +494,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
-        support_reservation_bound=True,
         support_graceful_shutdown=True,
         support_flex_start=True,
     )

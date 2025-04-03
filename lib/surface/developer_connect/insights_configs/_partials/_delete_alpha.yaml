@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
         Value for parent.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_insights_config
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_insights_configs
       required: true
     - arg_name: request-id
       api_field: requestId

@@ -103,7 +103,7 @@ class Deploy(base.Command):
   }
 
   @classmethod
-  def CommonArgs(cls, parser, add_container_args=True):
+  def CommonArgs(cls, parser):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
@@ -121,21 +121,6 @@ class Deploy(base.Command):
     flags.AddVpcConnectorArg(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='job')
     flags.AddEgressSettingsFlag(parser)
-    if add_container_args:
-      flags.AddMutexEnvVarsFlags(parser)
-      flags.AddSetSecretsFlag(parser)
-      flags.AddMemoryFlag(parser)
-      flags.AddCpuFlag(parser)
-      flags.AddCommandFlag(parser)
-      flags.AddArgsFlag(parser)
-      flags.AddSourceAndImageFlags(
-          parser, image='us-docker.pkg.dev/cloudrun/container/job:latest'
-      )
-      group = base.ArgumentGroup()
-      group.AddArgument(flags.AddVolumeMountFlag())
-      group.AddArgument(flags.RemoveVolumeMountFlag())
-      group.AddArgument(flags.ClearVolumeMountsFlag())
-      group.AddToParser(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddBinAuthzPolicyFlags(parser, with_clear=False)
     flags.AddBinAuthzBreakglassFlag(parser)
@@ -160,6 +145,9 @@ class Deploy(base.Command):
   @staticmethod
   def Args(parser):
     Deploy.CommonArgs(parser)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
+    flags.RemoveContainersFlag().AddToParser(parser)
 
   def Run(self, args):
     """Deploy a Job to Cloud Run."""
@@ -369,7 +357,7 @@ class BetaDeploy(Deploy):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
@@ -382,7 +370,7 @@ class AlphaDeploy(BetaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
     flags.GpuZonalRedundancyFlag(parser, hidden=True)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)

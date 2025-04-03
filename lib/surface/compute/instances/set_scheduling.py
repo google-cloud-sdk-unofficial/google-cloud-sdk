@@ -64,8 +64,7 @@ class SetSchedulingInstances(base.SilentCommand):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=False,
-                                     support_flex_start=False)
+    flags.AddProvisioningModelVmArgs(parser, support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
@@ -237,8 +236,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True,
-                                     support_flex_start=False)
+    flags.AddProvisioningModelVmArgs(parser, support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     flags.AddMaintenancePolicyArgs(parser)
     sole_tenancy_flags.AddNodeAffinityFlagToParser(parser, is_update=True)
@@ -279,8 +277,7 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
         """)
 
     flags.AddPreemptibleVmArgs(parser, is_update=True)
-    flags.AddProvisioningModelVmArgs(parser, support_reservation_bound=True,
-                                     support_flex_start=False)
+    flags.AddProvisioningModelVmArgs(parser, support_flex_start=False)
     flags.AddInstanceTerminationActionVmArgs(parser, is_update=True)
     # Deprecated in Alpha
     flags.AddMaintenancePolicyArgs(parser, deprecate=True)

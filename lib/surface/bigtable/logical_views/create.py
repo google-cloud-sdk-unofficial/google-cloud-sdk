@@ -36,7 +36,9 @@ class CreateLogicalView(base.CreateCommand):
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
           To create a logical view, run:
-            $ {command} my-logical-view-id --query="SELECT my-column-family FROM my-table"
+
+            $ {command} my-logical-view-id --instance=my-instance-id --query="SELECT my-column-family FROM my-table"
+
           """),
   }
 

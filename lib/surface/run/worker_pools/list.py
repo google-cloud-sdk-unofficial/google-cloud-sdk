@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run.printers.v2 import printer_util
@@ -75,6 +76,11 @@ class List(base.Command):
 
   def Run(self, args):
     """List available worker-pools."""
+    # TODO(b/382273085): Support YAML format once WorkerPools V1 API is ready.
+    if 'format' in args and args.format == 'yaml':
+      raise exceptions.ArgumentError(
+          'YAML format is not supported for worker pools yet.'
+      )
 
     def DeriveRegionalEndpoint(endpoint):
       region = args.CONCEPTS.region.Parse().locationsId

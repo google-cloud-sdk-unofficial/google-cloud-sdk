@@ -22,7 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA,
-                    base.ReleaseTrack.BETA)
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class BackupCollections(base.Group):
   """Manage backup collections of Memorystore for Redis Cluster instances."""

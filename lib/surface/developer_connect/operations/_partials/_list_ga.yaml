@@ -30,7 +30,7 @@
     - help_text: |-
         The name of the operation's parent resource.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.default_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.default_resources:projects_locations
       required: true
   request:
     api_version: v1

@@ -20,7 +20,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
+_UNIVERSE_ADDITIONAL_INFO_MESSAGE = """\
+          Only self-managed certificates are supported. Managed certificates are not
+          currently supported.
+          """
 
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class CertificateMaps(base.Group):
@@ -28,3 +34,6 @@ class CertificateMaps(base.Group):
 
   Commands for managing certificates.
   """
+  detailed_help = {
+      'UNIVERSE ADDITIONAL INFO': _UNIVERSE_ADDITIONAL_INFO_MESSAGE,
+  }

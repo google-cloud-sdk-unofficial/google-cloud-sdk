@@ -15,4 +15,4 @@
   arguments:
     resource:
       help_text: Developer Connect GitRepositoryLink from which to fetch the read token.
-      spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_connection_git_repository_link
+      spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_connections_git_repository_links

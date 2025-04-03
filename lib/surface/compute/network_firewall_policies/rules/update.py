@@ -23,6 +23,7 @@ from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_ut
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
 from googlecloudsdk.api_lib.compute.network_firewall_policies import region_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 from googlecloudsdk.command_lib.compute.network_firewall_policies import secure_tags_utils
 
@@ -83,6 +84,8 @@ class Update(base.UpdateCommand):
       flags.AddSrcNetworkScope(parser)
       flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
+      flags.AddSrcNetworkType(parser)
+      flags.AddDestNetworkType(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -169,6 +172,20 @@ class Update(base.UpdateCommand):
           )
       )
     if self.support_network_scopes:
+      if args.IsSpecified('src_network_scope') and args.IsSpecified(
+          'src_network_type'
+      ):
+        raise exceptions.ToolException(
+            'At most one of src_network_scope and src_network_type can be'
+            ' specified.'
+        )
+      if args.IsSpecified('dest_network_scope') and args.IsSpecified(
+          'dest_network_type'
+      ):
+        raise exceptions.ToolException(
+            'At most one of dest_network_scope and dest_network_type can be'
+            ' specified.'
+        )
       if args.IsSpecified('src_network_scope'):
         if not args.src_network_scope:
           src_network_scope = (
@@ -190,6 +207,31 @@ class Update(base.UpdateCommand):
         else:
           dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
               args.dest_network_scope
+          )
+        should_setup_match = True
+
+      if args.IsSpecified('src_network_type'):
+        # src_network_type and src_network_scope are mutually exclusive so only
+        # one of them can be specified.
+        if not args.src_network_type:
+          src_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
+              args.src_network_type
+          )
+        should_setup_match = True
+      if args.IsSpecified('dest_network_type'):
+        # dest_network_type and dest_network_scope are mutually exclusive so
+        # only one of them can be specified.
+        if not args.dest_network_type:
+          dest_network_scope = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
+              args.dest_network_type
           )
         should_setup_match = True
 

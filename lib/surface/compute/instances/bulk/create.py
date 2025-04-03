@@ -180,7 +180,6 @@ class Create(base.Command):
   _support_watchdog_timer = False
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
-  _support_reservation_bound = False
   _support_graceful_shutdown = True
   _support_flex_start = False
 
@@ -213,7 +212,6 @@ class Create(base.Command):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
-        support_reservation_bound=cls._support_reservation_bound,
         support_flex_start=cls._support_flex_start,
     )
     cls.AddSourceInstanceTemplate(parser)
@@ -429,7 +427,6 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_per_interface_stack_type = True
   _support_ipv6_only = True
-  _support_reservation_bound = True
   _support_graceful_shutdown = True
   _support_flex_start = False
 
@@ -460,7 +457,6 @@ class CreateBeta(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_ipv6_only=cls._support_ipv6_only,
-        support_reservation_bound=cls._support_reservation_bound,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
     )
@@ -497,7 +493,6 @@ class CreateAlpha(Create):
   _support_watchdog_timer = True
   _support_per_interface_stack_type = True
   _support_igmp_query = True
-  _support_reservation_bound = True
   _support_graceful_shutdown = True
   _support_flex_start = False
 
@@ -529,7 +524,6 @@ class CreateAlpha(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_igmp_query=cls._support_igmp_query,
-        support_reservation_bound=cls._support_reservation_bound,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
     )

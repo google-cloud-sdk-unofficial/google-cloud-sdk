@@ -84,7 +84,7 @@ class Update(base.Command):
   }
 
   @classmethod
-  def CommonArgs(cls, parser, add_container_args=True):
+  def CommonArgs(cls, parser):
     # Flags not specific to any platform
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
@@ -93,24 +93,6 @@ class Update(base.Command):
         required=True,
         prefixes=False,
     )
-    if add_container_args:
-      flags.AddImageArg(
-          parser,
-          required=False,
-          image='us-docker.pkg.dev/cloudrun/container/job:latest',
-      )
-      flags.AddMutexEnvVarsFlags(parser)
-      flags.AddSecretsFlags(parser)
-      flags.AddMemoryFlag(parser)
-      flags.AddCpuFlag(parser)
-      flags.AddCommandFlag(parser)
-      flags.AddArgsFlag(parser)
-      group = base.ArgumentGroup()
-      group.AddArgument(flags.AddVolumeMountFlag())
-      group.AddArgument(flags.RemoveVolumeMountFlag())
-      group.AddArgument(flags.ClearVolumeMountsFlag())
-      group.AddToParser(parser)
-
     flags.AddLabelsFlags(parser)
     flags.AddParallelismFlag(parser)
     flags.AddTasksFlag(parser)
@@ -144,6 +126,9 @@ class Update(base.Command):
   @staticmethod
   def Args(parser):
     Update.CommonArgs(parser)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
+    flags.RemoveContainersFlag().AddToParser(parser)
 
   def Run(self, args):
     """Update a Job on Cloud Run."""
@@ -226,7 +211,7 @@ class BetaUpdate(Update):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
@@ -239,7 +224,7 @@ class AlphaUpdate(BetaUpdate):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

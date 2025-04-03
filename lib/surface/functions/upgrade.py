@@ -48,7 +48,6 @@ _ABORT_GUIDANCE_MSG = (
     ' with the --abort flag.'
 )
 
-# TODO(b/272771821): Standardize upgrade related strings.
 _SETUP_CONFIG_ACTION = UpgradeAction(
     target_state='SETUP_FUNCTION_UPGRADE_CONFIG_SUCCESSFUL',
     prompt_msg=(
@@ -65,7 +64,7 @@ _SETUP_CONFIG_ACTION = UpgradeAction(
         ' function.'
     ),
     success_msg=(
-        'The Cloud Run function is now ready for testing:\n  {}.\nView the'
+        'The Cloud Run function is now ready for testing:\n  {}\nView the'
         ' function upgrade testing guide for steps on how to test the function'
         ' before redirecting traffic to it.\n\nOnce you are ready to redirect'
         ' traffic, rerun this command with the --redirect-traffic flag.'

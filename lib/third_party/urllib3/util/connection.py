@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import socket
 import typing
 
@@ -29,6 +30,7 @@ def create_connection(
     timeout: _TYPE_TIMEOUT = _DEFAULT_TIMEOUT,
     source_address: tuple[str, int] | None = None,
     socket_options: _TYPE_SOCKET_OPTIONS | None = None,
+    google_protocol_id: int = 0,  # go/secure-protocols
 ) -> socket.socket:
     """Connect to *address* and return the socket object.
 
@@ -62,6 +64,20 @@ def create_connection(
         sock = None
         try:
             sock = socket.socket(af, socktype, proto)
+
+            # go/secure-protocols protocol tagging
+            # hardcoded to support users that copy from /third_party without
+            # obeying BUILD rules, see b/371432500.
+            _SO_GOOGLE_NET_PROTOCOL_ID = 0x1600BD62
+            try:
+                sock.setsockopt(
+                    socket.SOL_SOCKET,
+                    _SO_GOOGLE_NET_PROTOCOL_ID,
+                    google_protocol_id
+                )
+            except OSError as exception:
+                if exception.errno != errno.ENOPROTOOPT:
+                    raise
 
             # If provided, set socket level options before connecting.
             _set_socket_options(sock, socket_options)

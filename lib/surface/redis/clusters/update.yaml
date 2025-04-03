@@ -104,7 +104,6 @@
           Redis explicitly calls fsync for every write command.
     - arg_name: automated-backup-mode
       api_field: cluster.automatedBackupConfig.automatedBackupMode
-      release_tracks: [ALPHA, BETA]
       help_text: |
         Automated backup mode
       choices:
@@ -118,16 +117,16 @@
           Automated backup is enabled.
     - arg_name: automated-backup-start-time
       api_field: cluster.automatedBackupConfig.fixedFrequencySchedule.startTime
-      release_tracks: [ALPHA, BETA]
       help_text: |
         One-hour window when you want automated-backup operations to start. Specify the time in the format HH:00 on a 24-hour cycle in UTC time.
       ALPHA:
         processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayAlpha
       BETA:
         processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayBeta
+      GA:
+        processor: googlecloudsdk.command_lib.redis.cluster_util:ParseTimeOfDayGa
     - arg_name: automated-backup-ttl
       api_field: cluster.automatedBackupConfig.retention
-      release_tracks: [ALPHA, BETA]
       type: googlecloudsdk.core.util.times:ParseDuration
       processor: googlecloudsdk.core.util.times:FormatDurationForJson
       help_text: |
@@ -217,6 +216,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateOnDemandMaintenance
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
     collection: redis.projects.locations.clusters
 

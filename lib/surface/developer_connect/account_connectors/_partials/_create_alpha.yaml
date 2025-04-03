@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,22 +53,32 @@
                     enum_value: GITHUB
                     help_text: |-
                       GitHub provider.
+                      Scopes can be found at
+                      https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
                   - arg_value: gitlab
                     enum_value: GITLAB
                     help_text: |-
                       GitLab provider.
+                      Scopes can be found at
+                      https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes
                   - arg_value: google
                     enum_value: GOOGLE
                     help_text: |-
                       Google provider.
+                      Recommended scopes:
+                        "https://www.googleapis.com/auth/drive.readonly",
+                        "https://www.googleapis.com/auth/documents.readonly"
                   - arg_value: sentry
                     enum_value: SENTRY
                     help_text: |-
                       Sentry provider.
+                      Scopes can be found at
+                      https://docs.sentry.io/api/permissions/
                   - arg_value: rovo
                     enum_value: ROVO
                     help_text: |-
                       Rovo provider.
+                      Must select the "rovo" scope.
             - arg_name: provider-oauth-config-scopes
               api_field: accountConnector.providerOauthConfig.scopes
               required: true
@@ -83,7 +93,7 @@
       is_positional: true
       is_primary_resource: true
       request_id_field: accountConnectorId
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_account_connector
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_account_connectors
       required: true
     - arg_name: annotations
       api_field: accountConnector.annotations

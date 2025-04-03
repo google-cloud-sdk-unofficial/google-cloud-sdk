@@ -335,6 +335,7 @@ def ParseCreateOptionsBase(
       node_taints=get_default('node_taints'),
       notification_config=get_default('notification_config'),
       autoscaling_profile=getattr(args, 'autoscaling_profile', None),
+      hpa_profile=get_default('hpa_profile'),
       num_nodes=get_default('num_nodes'),
       password=get_default('password'),
       preemptible=get_default('preemptible'),
@@ -354,6 +355,7 @@ def ParseCreateOptionsBase(
       autoprovisioning_network_tags=get_default(
           'autoprovisioning_network_tags'
       ),
+      performance_monitoring_unit=get_default('performance_monitoring_unit'),
       threads_per_core=get_default('threads_per_core'),
       user=get_default('username'),
       metadata=metadata,
@@ -602,6 +604,7 @@ flags_to_add = {
         'autorepair': AddAutoRepair,
         'autoprovisioning': AddAutoprovisioning,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
+        'hpaprofile': flags.AddHPAProfilesFlag,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'args': _Args,
@@ -622,6 +625,9 @@ flags_to_add = {
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
         'confidentialnodetype': flags.AddConfidentialNodeTypeFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
+        'dataCacheCount': lambda p: flags.AddDataCacheCountFlag(
+            p, hidden=True
+        ),
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
@@ -670,6 +676,9 @@ flags_to_add = {
         'nodeversion': flags.AddNodeVersionFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
+        'performancemonitoringunit': (
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True)
+        ),
         'placementtype': flags.AddPlacementTypeFlag,
         'placementpolicy': flags.AddPlacementPolicyFlag,
         'preemptible': flags.AddPreemptibleFlag,
@@ -848,6 +857,9 @@ flags_to_add = {
         'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
+        'performancemonitoringunit': (
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True)
+        ),
         'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
         'preemptible': flags.AddPreemptibleFlag,
         'privatecluster': AddPrivateClusterDeprecated,
@@ -1390,6 +1402,7 @@ class CreateBeta(Create):
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
         'enable_workload_config_audit')
+    ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
         'pod_autoscaling_direct_metrics_opt_in')
     ops.hpa_profile = get_default('hpa_profile')

@@ -76,8 +76,8 @@
       required: false
       repeated: false
       help_text: |-
-        AIP/160 formatted filter string against Unit. The filter will be applied to
-        determine the eligible unit population. This filter can only reduce, but
+        CEL(https://github.com/google/cel-spec) formatted filter string against Unit. The filter
+        will be applied to determine the eligible unit population. This filter can only reduce, but
         not expand the scope of the rollout.
     - arg_name: update-unit-kind-strategy
       api_field: rolloutKind.updateUnitKindStrategy

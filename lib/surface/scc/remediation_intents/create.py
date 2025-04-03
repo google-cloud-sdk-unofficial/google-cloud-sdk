@@ -53,6 +53,7 @@ class Create(base.CreateCommand):
     flags.PARENT_NAME_FLAG.AddToParser(parser)
     flags.FINDING_NAME_FLAG.AddToParser(parser)
     flags.WORKFLOW_TYPE_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat("yaml")
 
   def Run(self, args):
     """The main function which is called when the user runs this command.

@@ -98,16 +98,39 @@ class Replace(base.Command):
         args, flags.Product.RUN, self.ReleaseTrack(), region_label=region_label
     )
 
-  def _GetBaseChanges(self, new_service, args):  # used by child - pylint: disable=unused-argument
+  def _GetBaseChanges(
+      self, new_service, args):  # used by child - pylint: disable=unused-argument
     return [
         config_changes.ReplaceServiceChange(new_service),
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()),
     ]
 
+  def _PrintSuccessMessage(self, service_obj, dry_run, args):
+    if args.async_:
+      pretty_print.Success(
+          'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
+          'asynchronously.'.format(serv=service_obj.name)
+      )
+    elif dry_run:
+      pretty_print.Success(
+          'New configuration has been validated for service '
+          '[{{bold}}{serv}{{reset}}].'.format(serv=service_obj.name)
+      )
+    else:
+      pretty_print.Success(
+          'New configuration has been applied to service '
+          '[{{bold}}{serv}{{reset}}].\n'
+          'URL: {{bold}}{url}{{reset}}'.format(
+              serv=service_obj.name, url=service_obj.domain
+          )
+      )
+
   def Run(self, args):
     """Create or Update service from YAML."""
-    run_messages = apis.GetMessagesModule(global_methods.SERVERLESS_API_NAME,
-                                          global_methods.SERVERLESS_API_VERSION)
+    run_messages = apis.GetMessagesModule(
+        global_methods.SERVERLESS_API_NAME,
+        global_methods.SERVERLESS_API_VERSION,
+    )
     service_dict = dict(args.FILE)
     # Clear the status to make migration from k8s deployments easier.
     # Since a Deployment status will have several fields that Cloud Run doesn't
@@ -201,20 +224,7 @@ class Replace(base.Command):
             for_replace=True,
             dry_run=dry_run,
         )
-      if args.async_:
-        pretty_print.Success(
-            'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
-            'asynchronously.'.format(serv=service_obj.name))
-      elif dry_run:
-        pretty_print.Success(
-            'New configuration has been validated for service '
-            '[{{bold}}{serv}{{reset}}].'.format(serv=service_obj.name)
-        )
-      else:
-        pretty_print.Success('New configuration has been applied to service '
-                             '[{{bold}}{serv}{{reset}}].\n'
-                             'URL: {{bold}}{url}{{reset}}'.format(
-                                 serv=service_obj.name, url=service_obj.domain))
+      self._PrintSuccessMessage(service_obj, dry_run, args)
       return service_obj
 
 

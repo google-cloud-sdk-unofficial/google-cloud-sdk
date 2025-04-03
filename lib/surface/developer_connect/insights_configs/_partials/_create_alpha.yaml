@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2024 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
       is_positional: true
       is_primary_resource: true
       request_id_field: insightsConfigId
-      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:project_location_insights_config
+      resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_insights_configs
       required: true
     - arg_name: artifact-configs
       api_field: insightsConfig.artifactConfigs
@@ -101,6 +101,24 @@
         - api_field: uri
           help_text: |-
             The URI of the git repository.
+    - arg_name: state
+      api_field: insightsConfig.state
+      required: false
+      help_text: |-
+        The state of the InsightsConfig.
+      choices:
+      - arg_value: pending
+        enum_value: PENDING
+        help_text: |-
+          The InsightsConfig is pending application discovery/runtime discovery.
+      - arg_value: complete
+        enum_value: COMPLETE
+        help_text: |-
+          The initial discovery process is complete.
+      - arg_value: error
+        enum_value: ERROR
+        help_text: |-
+          The InsightsConfig is in an error state.
     - arg_name: annotations
       api_field: insightsConfig.annotations
       required: false

@@ -146,6 +146,8 @@ def _get_region_from_yaml_or_default(yaml_pipeline, args):
   options_region = None
   try:
     pipeline_data = yaml.load(yaml_pipeline)
+    if not pipeline_data:
+      return dataflow_util.GetRegion(args)
     if 'options' in pipeline_data and 'region' in pipeline_data['options']:
       options_region = pipeline_data['options']['region']
       if '{' in options_region or '}' in options_region:

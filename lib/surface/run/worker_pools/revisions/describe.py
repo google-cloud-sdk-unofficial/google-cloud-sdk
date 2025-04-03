@@ -67,6 +67,11 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Show details about a revision."""
+    # TODO(b/380116152): Support YAML format once WorkerPools V1 API is ready.
+    if 'format' in args and args.format == 'yaml':
+      raise exceptions.ArgumentError(
+          'YAML format is not supported for worker pools yet.'
+      )
 
     # TODO(b/366115714): Make sure to cover all edge cases and possibly find
     # better location to be shared by all worker pools operations.

@@ -19,11 +19,16 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.api_lib.compute.operations import poller
+from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
+
 
 FAULT_REASONS_CHOICES = [
     'BEHAVIOR_UNSPECIFIED',
@@ -71,6 +76,7 @@ class ReportHostAsFaulty(base.SilentCommand):
     flags.INSTANCE_ARG.AddArgument(parser)
     ReportHostAsFaulty._AddDisruptionSchedule(parser)
     ReportHostAsFaulty._AddFaultReasons(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
 
   @staticmethod
   def _AddDisruptionSchedule(parser):
@@ -134,21 +140,75 @@ class ReportHostAsFaulty(base.SilentCommand):
     )
     return request
 
+  def _Run(self, args, instance_refs, client, holder, is_async=False):
+    if not isinstance(instance_refs, list):
+      instance_refs = [instance_refs]
+
+    requests = [
+        (
+            client.apitools_client.instances,
+            'ReportHostAsFaulty',
+            self._BuildRequest(args, instance_ref, client),
+        )
+        for instance_ref in instance_refs
+    ]
+
+    errors_to_collect = []
+    responses = client.AsyncRequests(
+        requests,
+        errors_to_collect,
+    )
+    if errors_to_collect:
+      raise core_exceptions.MultiError(errors_to_collect)
+
+    operation_refs = [holder.resources.Parse(r.selfLink) for r in responses]
+
+    if is_async:
+      for operation_ref in operation_refs:
+        log.status.Print(
+            'The report host as faulty operation is currently in progress.'
+            ' Operation URI: [{}].'.format(
+                operation_ref.SelfLink()
+            )
+        )
+      log.status.Print(
+          'Use [gcloud compute operations describe URI] command to check the '
+          'status of the operation(s).'
+      )
+      return responses
+    else:
+      operation_poller = poller.BatchPoller(
+          client, client.apitools_client.instances, instance_refs
+      )
+
+      result = waiter.WaitFor(
+          operation_poller,
+          poller.OperationBatch(operation_refs),
+          'Reporting host as faulty for instance(s) {0} in progress.'.format(
+              ', '.join(i.Name() for i in instance_refs)
+          ),
+          max_wait_ms=None,
+      )
+
+      for instance_ref in instance_refs:
+        log.status.Print(
+            'Successfully reported host as faulty for instance: [{0}].'
+            ' The operation has been completed.'.format(instance_ref.Name())
+        )
+
+      return result
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    instance_ref = flags.INSTANCE_ARG.ResolveAsResource(
+    instance_refs = flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
         scope_lister=flags.GetInstanceZoneScopeLister(client),
     )
 
-    request = self._BuildRequest(args, instance_ref, client)
-
-    return client.MakeRequests(
-        [(client.apitools_client.instances, 'ReportHostAsFaulty', request)]
-    )
+    return self._Run(args, instance_refs, client, holder, is_async=args.async_)
 
 
 ReportHostAsFaulty.detailed_help = DETAILED_HELP

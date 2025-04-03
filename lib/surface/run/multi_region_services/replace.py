@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import platforms
+from googlecloudsdk.command_lib.run import pretty_print
 from surface.run.services import replace
 
 
@@ -66,6 +67,27 @@ class MultiRegionReplace(replace.Replace):
         region_label=region_label,
         is_multiregion=True,
     )
+
+  def _PrintSuccessMessage(self, service_obj, dry_run, args):
+    if args.async_:
+      pretty_print.Success(
+          'New configuration for [{{bold}}{serv}{{reset}}] is being applied '
+          'asynchronously.'.format(serv=service_obj.name)
+      )
+    elif dry_run:
+      pretty_print.Success(
+          'New configuration has been validated for Multi-region service '
+          '[{{bold}}{serv}{{reset}}].'.format(serv=service_obj.name)
+      )
+    else:
+      pretty_print.Success(
+          'New configuration has been applied to Multi-region service '
+          '[{{bold}}{serv}{{reset}}].\nRegional URLs:'.format(
+              serv=service_obj.name
+          )
+      )
+      for url in service_obj.urls:
+        pretty_print.Success('{{bold}}{url}{{reset}}'.format(url=url))
 
   def Run(self, args):
     if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:

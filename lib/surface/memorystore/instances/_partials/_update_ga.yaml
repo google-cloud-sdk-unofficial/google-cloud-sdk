@@ -90,7 +90,7 @@
         Format: projects/{project}/locations/{location}/instances/{instance}
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1_resources:projects_locations_instances
       required: true
     - arg_name: labels
       api_field: instance.labels
@@ -256,6 +256,10 @@
           help_text: |-
             Detailed information of a PSC connection that is created by the user.
           spec:
+          - api_field: port
+            one_of_index: 0
+            help_text: |-
+              port will only be set for Primary/Reader or Discovery endpoint.
           - api_field: pscConnectionId
             help_text: |-
               The PSC connection id of the forwarding rule connected to the
@@ -384,7 +388,7 @@
                 the format: projects/<project>/locations/<region>/instances/<instance-id>
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1_resources:project_location_instance
+              resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1_resources:projects_locations_instances
               resource_method_params:
                 instance.crossInstanceReplicationConfig.primaryInstance.instance: '{__relative_name__}'
               required: false
@@ -405,6 +409,93 @@
             help_text: |-
               The full resource path of the remote instance in
               the format: projects/<project>/locations/<region>/instances/<instance-id>
+    - group:
+        api_field: instance.automatedBackupConfig
+        arg_name: automated-backup-config
+        clearable: true
+        required: false
+        help_text: |-
+          The automated backup config for an instance.
+        params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the schedule.
+            params:
+            - group:
+                api_field: instance.automatedBackupConfig.fixedFrequencySchedule
+                required: false
+                help_text: |-
+                  This schedule allows the backup to be triggered at a fixed frequency
+                  (currently only daily is supported).
+                params:
+                - group:
+                    api_field: instance.automatedBackupConfig.fixedFrequencySchedule.startTime
+                    required: false
+                    help_text: |-
+                      Represents a time of day. The date and time zone are either not significant
+                      or are specified elsewhere. An API may choose to allow leap seconds. Related
+                      types are [google.type.Date][google.type.Date] and `google.protobuf.Timestamp`.
+                    params:
+                    - arg_name: fixed-frequency-schedule-start-time-hours
+                      api_field: instance.automatedBackupConfig.fixedFrequencySchedule.startTime.hours
+                      required: false
+                      repeated: false
+                      type: int
+                      help_text: |-
+                        Hours of a day in 24 hour format. Must be greater than or equal to 0 and
+                        typically must be less than or equal to 23. An API may choose to allow the
+                        value "24:00:00" for scenarios like business closing time.
+                    - arg_name: fixed-frequency-schedule-start-time-minutes
+                      api_field: instance.automatedBackupConfig.fixedFrequencySchedule.startTime.minutes
+                      required: false
+                      repeated: false
+                      type: int
+                      help_text: |-
+                        Minutes of an hour. Must be greater than or equal to 0 and less than or
+                        equal to 59.
+                    - arg_name: fixed-frequency-schedule-start-time-seconds
+                      api_field: instance.automatedBackupConfig.fixedFrequencySchedule.startTime.seconds
+                      required: false
+                      repeated: false
+                      type: int
+                      help_text: |-
+                        Seconds of a minute. Must be greater than or equal to 0 and typically must
+                        be less than or equal to 59. An API may allow the value 60 if it allows
+                        leap-seconds.
+                    - arg_name: fixed-frequency-schedule-start-time-nanos
+                      api_field: instance.automatedBackupConfig.fixedFrequencySchedule.startTime.nanos
+                      required: false
+                      repeated: false
+                      type: int
+                      help_text: |-
+                        Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
+                        and less than or equal to 999,999,999.
+        - arg_name: automated-backup-config-mode
+          api_field: instance.automatedBackupConfig.automatedBackupMode
+          required: false
+          help_text: |-
+            The automated backup mode. If the mode is disabled, the other fields will
+            be ignored.
+          choices:
+          - arg_value: disabled
+            enum_value: DISABLED
+            help_text: |-
+              Automated backup config disabled.
+          - arg_value: enabled
+            enum_value: ENABLED
+            help_text: |-
+              Automated backup config enabled.
+        - arg_name: automated-backup-config-retention
+          api_field: instance.automatedBackupConfig.retention
+          required: false
+          repeated: false
+          type: googlecloudsdk.core.util.times:ParseDuration
+          processor: googlecloudsdk.core.util.times:FormatDurationForJson
+          help_text: |-
+            How long to keep automated backups before the backups are deleted. The
+            value should be between 1 day and 365 days. If not specified, the default
+            value is 35 days.
     - arg_name: request-id
       api_field: requestId
       required: false

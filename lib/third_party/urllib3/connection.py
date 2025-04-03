@@ -113,6 +113,8 @@ class HTTPConnection(_HTTPConnection):
 
     #: Whether this connection verifies the host's certificate.
     is_verified: bool = False
+    # go/secure-protocols HTTP_PYTHON_URLLIB3
+    google_protocol_id: typing.ClassVar[int] = 116
 
     #: Whether this proxy connection verified the proxy host's certificate.
     # If no proxy is currently connected to the value will be ``None``.
@@ -198,6 +200,7 @@ class HTTPConnection(_HTTPConnection):
                 self.timeout,
                 source_address=self.source_address,
                 socket_options=self.socket_options,
+                google_protocol_id=self.google_protocol_id,
             )
         except socket.gaierror as e:
             raise NameResolutionError(self.host, self, e) from e
@@ -499,6 +502,8 @@ class HTTPSConnection(HTTPConnection):
     """
 
     default_port = port_by_scheme["https"]  # type: ignore[misc]
+    # go/secure-protocols HTTPS_PYTHON_URLLIB3
+    google_protocol_id: typing.ClassVar[int] = 117
 
     cert_reqs: int | str | None = None
     ca_certs: str | None = None

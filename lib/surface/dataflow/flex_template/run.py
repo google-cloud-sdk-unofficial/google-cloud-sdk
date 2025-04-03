@@ -145,8 +145,22 @@ class Run(base.Command):
         metavar='ADDITIONAL_EXPERIMENTS',
         type=arg_parsers.ArgList(),
         action=arg_parsers.UpdateAction,
-        help=
-        ('Additional experiments to pass to the job.'))
+        help=(
+            'Additional experiments to pass to the job. Example: '
+            '--additional-experiments=experiment1,experiment2=value2'
+        ),
+    )
+
+    parser.add_argument(
+        '--additional-pipeline-options',
+        metavar='ADDITIONAL_PIPELINE_OPTIONS',
+        type=arg_parsers.ArgList(),
+        action=arg_parsers.UpdateAction,
+        help=(
+            'Additional pipeline options to pass to the job. Example: '
+            '--additional-pipeline-options=option1=value1,option2=value2'
+        ),
+    )
 
     parser.add_argument(
         '--additional-user-labels',
@@ -217,6 +231,7 @@ class Run(base.Command):
         enable_streaming_engine=
         properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
         additional_experiments=args.additional_experiments,
+        additional_pipeline_options=args.additional_pipeline_options,
         additional_user_labels=args.additional_user_labels,
         streaming_update=args.update,
         transform_name_mappings=args.transform_name_mappings,

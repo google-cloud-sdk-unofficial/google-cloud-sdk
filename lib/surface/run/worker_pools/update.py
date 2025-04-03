@@ -53,7 +53,6 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
-  group.AddArgument(flags.GpuFlag())
 
   return group
 
@@ -86,7 +85,6 @@ class Update(base.Command):
     flags_parser.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
-    flags.AddCustomAudiencesFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddWorkerPoolMinInstancesFlag(parser)
@@ -95,7 +93,6 @@ class Update(base.Command):
     flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
     flags.AddScalingFlag(parser)
     flags.AddRevisionSuffixArg(parser)
-    flags.AddSessionAffinityFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)

@@ -19,6 +19,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.Hidden  # TODO: b/396112841 - Remove hidden once the feature is GA.
 class LogicalViews(base.Group):
   """Manage Bigtable logical views."""

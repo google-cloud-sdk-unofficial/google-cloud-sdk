@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Gets a single Parameter Manager parameter version render
     description: |

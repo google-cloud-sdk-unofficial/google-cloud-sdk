@@ -67,7 +67,7 @@ class Execute(base.Command):
   container_flags_text = '`--update-env-vars`, `--args`'
 
   @classmethod
-  def CommonArgs(cls, parser, add_container_args=True):
+  def CommonArgs(cls, parser):
     job_presentation = presentation_specs.ResourcePresentationSpec(
         'JOB',
         resource_args.GetJobResourceSpec(prompt=True),
@@ -83,13 +83,12 @@ class Execute(base.Command):
     parser.display_info.AddFormat('none')
     flags.AddTaskTimeoutFlags(parser, for_execution_overrides=True)
     flags.AddTasksFlag(parser, for_execution_overrides=True)
-    if add_container_args:
-      flags.AddArgsFlag(parser, for_execution_overrides=True)
-      flags.AddOverrideEnvVarsFlag(parser)
 
   @staticmethod
   def Args(parser):
     Execute.CommonArgs(parser)
+    container_args = ContainerOverridesGroup()
+    container_parser.AddContainerFlags(parser, container_args)
 
   def _MakeContainerOverrde(self, operations, args, container_name=None):
     # If args list has been explicitly set as an empty list,
@@ -186,7 +185,7 @@ class BetaExecute(Execute):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     container_args = ContainerOverridesGroup()
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -197,6 +196,6 @@ class AlphaExecute(BetaExecute):
 
   @classmethod
   def Args(cls, parser):
-    cls.CommonArgs(parser, add_container_args=False)
+    cls.CommonArgs(parser)
     container_args = ContainerOverridesGroup()
     container_parser.AddContainerFlags(parser, container_args)

@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Updates the metadata of an Parameter Manager parameter resource
     description: |

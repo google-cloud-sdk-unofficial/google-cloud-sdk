@@ -357,6 +357,7 @@ class Update(base.UpdateCommand):
     flags.AddVerticalPodAutoscalingFlags(group)
     flags.AddAutoprovisioningFlags(group)
     flags.AddAutoscalingProfilesFlag(group)
+    flags.AddHPAProfilesFlag(group)
     flags.AddEnableShieldedNodesFlags(group)
     flags.AddPrivateIpv6GoogleAccessTypeFlag('v1', group, hidden=False)
     flags.AddNotificationConfigFlag(group)
@@ -446,6 +447,7 @@ class Update(base.UpdateCommand):
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
     opts.autoscaling_profile = args.autoscaling_profile
+    opts.hpa_profile = args.hpa_profile
     opts.disable_autopilot = args.disable_autopilot
     opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
                                                         get_default)

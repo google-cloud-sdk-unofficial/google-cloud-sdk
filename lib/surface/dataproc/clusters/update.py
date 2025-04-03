@@ -21,7 +21,9 @@ from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dataproc import clusters
 from googlecloudsdk.command_lib.dataproc import flags
+from googlecloudsdk.command_lib.dataproc.utils import user_sa_mapping_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
@@ -261,6 +263,7 @@ class Update(base.UpdateCommand):
         Disable autoscaling, if it is enabled. This is an alias for passing the
         empty string to --autoscaling-policy'.
         """)
+    user_sa_mapping_util.AddUpdateUserSaMappingFlags(parser)
 
   def Run(self, args):
     dataproc = dp.Dataproc(self.ReleaseTrack())
@@ -453,6 +456,54 @@ class Update(base.UpdateCommand):
       has_changes = True
       changed_fields.append('labels')
     labels = labels_update.GetOrNone()
+
+    def _GetCurrentUserServiceAccountMapping():
+      current_cluster = _GetCurrentCluster()
+      if (
+          current_cluster.config.securityConfig
+          and current_cluster.config.securityConfig.identityConfig
+      ):
+        return (
+            current_cluster.config.securityConfig.identityConfig.userServiceAccountMapping
+        )
+      return None
+
+    def _UpdateSecurityConfig(cluster_config, user_sa_mapping):
+      if cluster_config.securityConfig is None:
+        cluster_config.securityConfig = dataproc.messages.SecurityConfig()
+      if cluster_config.securityConfig.identityConfig is None:
+        cluster_config.securityConfig.identityConfig = (
+            dataproc.messages.IdentityConfig()
+        )
+
+      cluster_config.securityConfig.identityConfig.userServiceAccountMapping = (
+          user_sa_mapping
+      )
+
+    if args.add_user_mappings or args.remove_user_mappings:
+      user_sa_mapping_update = user_sa_mapping_util.ProcessUpdateArgsLazy(
+          args,
+          dataproc.messages.IdentityConfig.UserServiceAccountMappingValue,
+          orig_user_sa_mapping_thunk=_GetCurrentUserServiceAccountMapping,
+      )
+      if user_sa_mapping_update.needs_update:
+        changed_fields.append(
+            'configuration.security_config.identity_config.user_service_account_mapping'
+        )
+        has_changes = True
+      user_sa_mapping = user_sa_mapping_update.GetOrNone()
+      if user_sa_mapping:
+        _UpdateSecurityConfig(cluster_config, user_sa_mapping)
+    elif args.identity_config_file:
+      if cluster_config.securityConfig is None:
+        cluster_config.securityConfig = dataproc.messages.SecurityConfig()
+      cluster_config.securityConfig.identityConfig = (
+          clusters.ParseIdentityConfigFile(dataproc, args.identity_config_file)
+      )
+      changed_fields.append(
+          'configuration.security_config.identity_config.user_service_account_mapping'
+      )
+      has_changes = True
 
     if not has_changes:
       raise exceptions.ArgumentError(

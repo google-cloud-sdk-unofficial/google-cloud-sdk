@@ -66,6 +66,7 @@ class Update(base.UpdateCommand):
     flags.AddRemediationIntentResourceArg(parser)
     flags.REMEDIATION_INTENT_FROM_FILE_FLAG.AddToParser(parser)
     flags.UPDATE_MASK_FLAG.AddToParser(parser)
+    parser.display_info.AddFormat("yaml")
 
   def Run(self, args):
     """The main function which is called when the user runs this command.
