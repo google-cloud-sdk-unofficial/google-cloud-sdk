@@ -41,7 +41,7 @@ class CreateMaterializedView(base.CreateCommand):
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
           To create a materialized view, run:
-            $ {command} my-materialized-view-id --query="SELECT my-column-family FROM my-table --deletion-protection=false"
+            $ {command} my-materialized-view-id --instance=my-instance-id --query="SELECT my-column-family FROM my-table --deletion-protection=false"
           """),
   }
 

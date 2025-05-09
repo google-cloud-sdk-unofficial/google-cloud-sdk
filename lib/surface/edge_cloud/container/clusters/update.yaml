@@ -18,6 +18,7 @@
       api_version: v1
     modify_request_hooks:
     - googlecloudsdk.command_lib.edge_cloud.container.container_runtime:UpdateContainerRuntimeclass
+    - googlecloudsdk.command_lib.edge_cloud.container.cluster_isolation:UpdateClusterIsolation
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:AddMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:RemoveMaintenanceExclusionWindow
     - googlecloudsdk.command_lib.edge_cloud.container.maintenance_policy:ClearMaintenanceWindow
@@ -121,7 +122,6 @@
             to the upgrade stage size. This value does not affect the control plane node upgrade
             parallelism.
     - group:
-        release_tracks: [ALPHA]
         mutex: true
         params:
         - arg_name: use-google-managed-key
@@ -148,6 +148,11 @@
       repeated: false
       help_text: |
         If set, use the specified default container runtime class for the cluster.
+    - arg_name: enable-cluster-isolation
+      release_tracks: [ALPHA]
+      repeated: false
+      help_text: |
+        If set to true, the cluster will be created in a secure cluster isolation mode.
 
   response:
     modify_response_hooks:

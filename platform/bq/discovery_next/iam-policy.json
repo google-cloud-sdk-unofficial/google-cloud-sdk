@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250227",
+  "revision": "20250402",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3323,6 +3323,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "reservation": {
+          "description": "Optional. The reservation that job would use. User can specify a reservation to execute the job. If reservation is not set, reservation is determined based on the rules defined by the reservation assignments. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`.",
+          "type": "string"
         }
       }
     },
@@ -6819,6 +6823,10 @@
             "JOB_CREATION_OPTIONAL"
           ]
         },
+        "reservation": {
+          "description": "Optional. The reservation that jobs.query request would use. User can specify a reservation to execute the job.query. The expected format is `projects\/{project}\/locations\/{location}\/reservations\/{reservation}`.",
+          "type": "string"
+        },
         "writeIncrementalResults": {
           "description": "Optional. This is only supported for SELECT query. If set, the query is allowed to write results incrementally to the temporary result table. This may incur a performance penalty. This option cannot be used with Legacy SQL. This feature is not yet available.",
           "type": "boolean"
@@ -7559,7 +7567,7 @@
           "$ref": "ExternalDataConfiguration"
         },
         "biglakeConfiguration": {
-          "description": "Optional. Specifies the configuration of a BigLake managed table.",
+          "description": "Optional. Specifies the configuration of a BigQuery table for Apache Iceberg.",
           "$ref": "BigLakeConfiguration"
         },
         "managedTableType": {
@@ -7955,7 +7963,7 @@
     },
     "BigLakeConfiguration": {
       "id": "BigLakeConfiguration",
-      "description": "Configuration for BigLake managed tables.",
+      "description": "Configuration for BigQuery tables for Apache Iceberg (formerly BigLake managed tables.)",
       "type": "object",
       "properties": {
         "connectionId": {

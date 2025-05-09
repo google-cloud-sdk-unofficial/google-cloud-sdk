@@ -38,6 +38,7 @@ class Create(base.CreateCommand):
 
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
+  support_target_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -85,6 +86,9 @@ class Create(base.CreateCommand):
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
+    if cls.support_target_type:
+      flags.AddTargetType(parser)
+      flags.AddTargetForwardingRules(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
@@ -116,6 +120,8 @@ class Create(base.CreateCommand):
     src_network_scope = None
     src_networks = []
     dest_network_scope = None
+    target_type = None
+    target_forwarding_rules = []
 
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
@@ -251,6 +257,15 @@ class Create(base.CreateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
+    if self.support_target_type:
+      if args.IsSpecified('target_type'):
+        target_type = (
+            holder.client.messages.FirewallPolicyRule.TargetTypeValueValuesEnum(
+                args.target_type
+            )
+        )
+      if args.IsSpecified('target_forwarding_rules'):
+        target_forwarding_rules = args.target_forwarding_rules
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=rule_utils.ConvertPriorityToInt(args.priority),
@@ -265,6 +280,9 @@ class Create(base.CreateCommand):
         securityProfileGroup=security_profile_group,
         tlsInspect=tls_inspect,
     )
+    if self.support_target_type:
+      firewall_policy_rule.targetType = target_type
+      firewall_policy_rule.targetForwardingRules = target_forwarding_rules
 
     return network_firewall_policy_rule_client.CreateRule(
         firewall_policy=args.firewall_policy,
@@ -280,6 +298,7 @@ class CreateBeta(Create):
   """
 
   support_network_scopes = True
+  support_target_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -290,6 +309,7 @@ class CreateAlpha(Create):
   """
 
   support_network_scopes = True
+  support_target_type = True
 
 
 Create.detailed_help = {

@@ -26,9 +26,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class GetUpgradeInfo(base.Command):
   """Get upgrade information for an existing node pool for a cluster.
 
@@ -78,10 +76,3 @@ class GetUpgradeInfo(base.Command):
                                                                   location))
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.UniverseCompatible
-@base.Visible
-class GetUpgradeInfoAlphaBeta(GetUpgradeInfo):
-  """Get information about upgrades for existing clusters including auto upgrade status, upgrade history, upgrade targets, and end of support timelines."""

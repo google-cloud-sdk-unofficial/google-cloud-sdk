@@ -115,7 +115,7 @@ class UpdateAlpha(base.UpdateCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Updating backup plan association [{}].  (This operation could'
-            ' take upto 2 minutes.)'.format(
+            ' take up to 2 minutes.)'.format(
                 backup_plan_association.RelativeName()
             )
         ),

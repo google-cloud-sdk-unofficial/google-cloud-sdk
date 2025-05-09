@@ -76,6 +76,17 @@ def _CommonArgs(parser):
       help=('Additional experiments to pass to the job. These experiments are '
             'appended to any experiments already set by the template.'))
 
+  parser.add_argument(
+      '--additional-user-labels',
+      metavar='ADDITIONAL_USER_LABELS',
+      type=arg_parsers.ArgDict(),
+      action=arg_parsers.UpdateAction,
+      help=(
+          'Additional user labels to pass to the job. Example: '
+          '--additional-user-labels=\'key1=value1,key2=value2\''
+      ),
+  )
+
   # TODO(b/139889563): Mark as required when default region is removed
   parser.add_argument(
       '--region',
@@ -130,6 +141,7 @@ def _CommonRun(args):
       streaming_update=args.update,
       transform_name_mappings=args.transform_name_mappings,
       additional_experiments=args.additional_experiments,
+      additional_user_labels=args.additional_user_labels,
   )
   if args.update:
     return apis.Templates.LaunchDynamicTemplate(arguments)

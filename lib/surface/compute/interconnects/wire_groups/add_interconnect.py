@@ -136,7 +136,7 @@ class AddInterconnect(base.UpdateCommand):
     if endpoint_label not in endpoints_map:
       raise InvalidEndpointError(
           'Not a valid endpoint. Found the following endpoints: '
-          + ''.join(endpoints_map.keys())
+          + ', '.join(endpoints_map.keys())
       )
 
     interconnects = endpoints_map[endpoint_label].interconnects

@@ -34,6 +34,7 @@ from googlecloudsdk.core.util import times
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class UpdateMarks(base.UpdateCommand):
   """Update Security Command Center finding's security marks."""
 
@@ -84,7 +85,9 @@ class UpdateMarks(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     # Add the shared flags and positional argument.
-    flags.CreateFindingArg().AddToParser(parser)
+    flags.FINDING_FLAG.AddToParser(parser)
+    flags.SOURCE_FLAG.AddToParser(parser)
+    flags.AddParentGroup(parser)
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
     base.Argument(

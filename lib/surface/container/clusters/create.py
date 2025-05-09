@@ -22,7 +22,6 @@ import functools
 import string
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
@@ -44,8 +43,11 @@ def _AddAdditionalZonesFlag(parser, deprecated=True):
   if deprecated:
     action = actions.DeprecationAction(
         'additional-zones',
-        warn='This flag is deprecated. '
-        'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.')
+        warn=(
+            'This flag is deprecated. '
+            'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.'
+        ),
+    )
   parser.add_argument(
       '--additional-zones',
       type=arg_parsers.ArgList(min_length=1),
@@ -63,7 +65,8 @@ specify `--num-nodes=4` and choose one additional zone, 8 nodes will be created.
 Multiple locations can be specified, separated by commas. For example:
 
   $ {command} example-cluster --zone us-central1-a --additional-zones us-central1-b,us-central1-c
-""")
+""",
+  )
 
 
 def _AddAdditionalZonesGroup(parser):
@@ -96,14 +99,16 @@ The name of the cluster to create.
 The name may contain only lowercase alphanumerics and '-', must start with a
 letter and end with an alphanumeric, and must be no longer than 40
 characters.
-""")
+""",
+  )
   # Timeout in seconds for operation
   parser.add_argument(
       '--timeout',
       type=int,
       default=3600,
       hidden=True,
-      help='Timeout (seconds) for waiting on the operation to complete.')
+      help='Timeout (seconds) for waiting on the operation to complete.',
+  )
   flags.AddAsyncFlag(parser)
 
   parser.add_argument(
@@ -114,12 +119,16 @@ The Google Compute Engine subnetwork
 connected. The subnetwork must belong to the network specified by --network.
 
 Cannot be used with the "--create-subnetwork" option.
-""")
+""",
+  )
   parser.add_argument(
       '--network',
-      help='The Compute Engine Network that the cluster will connect to. '
-      'Google Kubernetes Engine will use this network when creating routes '
-      'and firewalls for the clusters. Defaults to the \'default\' network.')
+      help=(
+          'The Compute Engine Network that the cluster will connect to. '
+          'Google Kubernetes Engine will use this network when creating routes '
+          "and firewalls for the clusters. Defaults to the 'default' network."
+      ),
+  )
   parser.add_argument(
       '--cluster-ipv4-cidr',
       help="""\
@@ -136,7 +145,8 @@ You should specify `--cluster-ipv4-cidr` to prevent conflicts.
 
 This field is not applicable in a Shared VPC setup where the IP address range
 for the pods must be specified with `--cluster-secondary-range-name`
-""")
+""",
+  )
 
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
 
@@ -160,9 +170,11 @@ cloudNatTemplate = string.Template(
 
 
 def MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id):
-  if (is_autopilot
+  if (
+      is_autopilot
       and getattr(args, 'enable_private_nodes', False)
-      and (hasattr(args, 'network') or hasattr(args, 'subnetwork'))):
+      and (hasattr(args, 'network') or hasattr(args, 'subnetwork'))
+  ):
     log.status.Print(
         cloudNatTemplate.substitute(REGION=location, PROJECT_ID=project_id)
     )
@@ -184,11 +196,13 @@ def ParseCreateOptionsBase(
       flags.WarnForNodeModification(args, enable_autorepair)
 
   metadata = metadata_utils.ConstructMetadataDict(
-      get_default('metadata'), get_default('metadata_from_file'))
+      get_default('metadata'), get_default('metadata_from_file')
+  )
 
   cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args, get_default)
-  flags.ValidateCloudRunConfigCreateArgs(cloud_run_config,
-                                         get_default('addons'))
+  flags.ValidateCloudRunConfigCreateArgs(
+      cloud_run_config, get_default('addons')
+  )
 
   MaybeLogCloudNatHelpText(args, is_autopilot, location, project_id)
 
@@ -205,9 +219,7 @@ def ParseCreateOptionsBase(
   local_nvme_ssd_block = None
   if args.IsKnownAndSpecified('local_nvme_ssd_block'):
     local_nvme_ssd_block = (
-        []
-        if args.local_nvme_ssd_block is None
-        else args.local_nvme_ssd_block
+        [] if args.local_nvme_ssd_block is None else args.local_nvme_ssd_block
     )
 
   addons = get_default('addons')
@@ -524,6 +536,7 @@ def ParseCreateOptionsBase(
       enable_authorized_networks_on_private_endpoint=get_default(
           'enable_authorized_networks_on_private_endpoint'
       ),
+      patch_update=get_default('patch_update'),
   )
 
 
@@ -539,7 +552,8 @@ def AddAutoRepair(parser):
 def AddPrivateClusterDeprecated(parser, default=None):
   default_value = {} if default is None else default
   flags.AddPrivateClusterFlags(
-      parser, default=default_value, with_deprecated=True)
+      parser, default=default_value, with_deprecated=True
+  )
 
 
 def AddEnableAutoUpgradeWithDefault(parser):
@@ -625,9 +639,7 @@ flags_to_add = {
         'confidentialnodes': flags.AddEnableConfidentialNodesFlag,
         'confidentialnodetype': flags.AddConfidentialNodeTypeFlag,
         'enableconfidentialstorage': flags.AddEnableConfidentialStorageFlag,
-        'dataCacheCount': lambda p: flags.AddDataCacheCountFlag(
-            p, hidden=True
-        ),
+        'dataCacheCount': flags.AddDataCacheCountFlag,
         'costmanagementconfig': flags.AddCostManagementConfigFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'databaseencryption': flags.AddDatabaseEncryptionFlag,
@@ -762,6 +774,7 @@ flags_to_add = {
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
+        'patchUpdate': flags.AddPatchUpdateFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -954,6 +967,7 @@ flags_to_add = {
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
+        'patchUpdate': flags.AddPatchUpdateFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1152,6 +1166,7 @@ flags_to_add = {
             flags.AddAauthorizedNetworksOnPrivateEndpointFlag
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
+        'patchUpdate': flags.AddPatchUpdateFlag,
     },
 }
 
@@ -1186,10 +1201,8 @@ class Create(base.CreateCommand):
   """Create a cluster for running containers."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To create a cluster with the default configuration, run:
 
             $ {command} sample-cluster
@@ -1205,8 +1218,9 @@ class Create(base.CreateCommand):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    return ParseCreateOptionsBase(args, self.autopilot, get_default, location,
-                                  project_id)
+    return ParseCreateOptionsBase(
+        args, self.autopilot, get_default, location, project_id
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -1234,8 +1248,9 @@ class Create(base.CreateCommand):
     options = self.ParseCreateOptions(args, location, cluster_ref.projectId)
 
     if options.private_cluster and not (
-        options.enable_master_authorized_networks or
-        options.master_authorized_networks):
+        options.enable_master_authorized_networks
+        or options.master_authorized_networks
+    ):
       log.status.Print(
           'Note: `--private-cluster` makes the master inaccessible from '
           'cluster-external IP addresses, by design. To allow limited '
@@ -1246,15 +1261,18 @@ class Create(base.CreateCommand):
 
     if not options.enable_ip_alias:
       max_node_number = util.CalculateMaxNodeNumberByPodRange(
-          options.cluster_ipv4_cidr)
+          options.cluster_ipv4_cidr
+      )
       if max_node_number > 0:
         log.status.Print(
             'Note: Your Pod address range (`--cluster-ipv4-cidr`) can '
-            'accommodate at most %d node(s).' % max_node_number)
+            'accommodate at most %d node(s).' % max_node_number
+        )
 
     if options.enable_l4_ilb_subsetting:
       log.status.Print(
-          'Note: Once enabled, L4 ILB Subsetting cannot be disabled.')
+          'Note: Once enabled, L4 ILB Subsetting cannot be disabled.'
+      )
 
     if options.enable_pod_security_policy:
       log.status.Print(
@@ -1271,18 +1289,38 @@ class Create(base.CreateCommand):
       console_io.PromptContinue(
           message=constants.KUBERNETES_ALPHA_PROMPT,
           throw_if_unattended=True,
-          cancel_on_no=True)
+          cancel_on_no=True,
+      )
 
     if options.accelerators is not None:
       log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
-      log.status.Print('Note: ' +
-                       constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG)
+      log.status.Print(
+          'Note: ' + constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG
+      )
 
     # image streaming feature requires Container File System API to be enabled.
     # Checking whether the API has been enabled, and warning if not.
     if options.enable_image_streaming:
       util.CheckForContainerFileSystemApiEnablementWithPrompt(
           cluster_ref.projectId)
+
+    if options.logging == ['NONE']:
+      if console_io.CanPrompt():
+        console_io.PromptContinue(
+            message=constants.LOGGING_DISABLED_WARNING,
+            cancel_on_no=True,
+        )
+      else:
+        log.status.Print(constants.LOGGING_DISABLED_WARNING)
+
+    if options.monitoring == ['NONE']:
+      if console_io.CanPrompt():
+        console_io.PromptContinue(
+            message=constants.MONITORING_DISABLED_WARNING,
+            cancel_on_no=True,
+        )
+      else:
+        log.status.Print(constants.MONITORING_DISABLED_WARNING)
 
     operation = None
     try:
@@ -1292,9 +1330,11 @@ class Create(base.CreateCommand):
 
       operation = adapter.WaitForOperation(
           operation_ref,
-          'Creating cluster {0} in {1}'.format(cluster_ref.clusterId,
-                                               cluster_ref.zone),
-          timeout_s=args.timeout)
+          'Creating cluster {0} in {1}'.format(
+              cluster_ref.clusterId, cluster_ref.zone
+          ),
+          timeout_s=args.timeout,
+      )
       cluster = adapter.GetCluster(cluster_ref)
       for node_pool in cluster.nodePools:
         util.CheckForCgroupModeV1(node_pool)
@@ -1304,8 +1344,9 @@ class Create(base.CreateCommand):
 
     log.CreatedResource(cluster_ref)
     cluster_url = util.GenerateClusterUrl(cluster_ref)
-    log.status.Print('To inspect the contents of your cluster, go to: ' +
-                     cluster_url)
+    log.status.Print(
+        'To inspect the contents of your cluster, go to: ' + cluster_url
+    )
     if operation.detail:
       # Non-empty detail on a DONE create operation should be surfaced as
       # a warning to end user.
@@ -1334,16 +1375,15 @@ class CreateBeta(Create):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
-                                 project_id)
+    ops = ParseCreateOptionsBase(
+        args, self.autopilot, get_default, location, project_id
+    )
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ephemeral_storage = None
     if args.IsKnownAndSpecified('ephemeral_storage'):
       ephemeral_storage = (
-          []
-          if args.ephemeral_storage is None
-          else args.ephemeral_storage
+          [] if args.ephemeral_storage is None else args.ephemeral_storage
       )
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.min_cpu_platform = get_default('min_cpu_platform')
@@ -1353,17 +1393,19 @@ class CreateBeta(Create):
     ops.private_cluster = get_default('private_cluster')
     ops.istio_config = get_default('istio_config')
     ops.enable_vertical_pod_autoscaling = get_default(
-        'enable_vertical_pod_autoscaling')
+        'enable_vertical_pod_autoscaling'
+    )
     ops.enable_experimental_vertical_pod_autoscaling = get_default(
-        'enable_experimental_vertical_pod_autoscaling')
+        'enable_experimental_vertical_pod_autoscaling'
+    )
     ops.security_group = get_default('security_group')
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
     ops.autoscaling_profile = get_default('autoscaling_profile')
-    ops.enable_tpu_service_networking = \
-        get_default('enable_tpu_service_networking')
-    ops.enable_logging_monitoring_system_only = \
-        get_default('enable_logging_monitoring_system_only')
+    ops.enable_tpu_service_networking = (
+        get_default('enable_tpu_service_networking'))
+    ops.enable_logging_monitoring_system_only = (
+        get_default('enable_logging_monitoring_system_only'))
     ops.gvnic = get_default('enable_gvnic')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.datapath_provider = get_default('datapath_provider')
@@ -1374,40 +1416,44 @@ class CreateBeta(Create):
     ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
         'enable_nested_virtualization')
-    ops.kubernetes_objects_changes_target = \
-        getattr(args, 'kubernetes_objects_changes_target', None)
-    ops.kubernetes_objects_snapshots_target = \
-        getattr(args, 'kubernetes_objects_snapshots_target', None)
+    ops.kubernetes_objects_changes_target = (
+        getattr(args, 'kubernetes_objects_changes_target', None))
+    ops.kubernetes_objects_snapshots_target = (
+        getattr(args, 'kubernetes_objects_snapshots_target', None))
     ops.enable_gcfs = get_default('enable_gcfs')
     ops.enable_image_streaming = get_default('enable_image_streaming')
-    ops.enable_workload_certificates = getattr(args,
-                                               'enable_workload_certificates',
-                                               None)
+    ops.enable_workload_certificates = getattr(
+        args, 'enable_workload_certificates', None
+    )
     ops.enable_alts = getattr(args, 'enable_alts', None)
     ops.ephemeral_storage = ephemeral_storage
-    ops.enable_workload_monitoring_eap = \
-      get_default('enable_workload_monitoring_eap')
-    ops.private_endpoint_subnetwork = \
-        get_default('private_endpoint_subnetwork')
-    ops.cross_connect_subnetworks = \
-        get_default('cross_connect_subnetworks')
+    ops.enable_workload_monitoring_eap = (
+        get_default('enable_workload_monitoring_eap'))
+    ops.private_endpoint_subnetwork = (
+        get_default('private_endpoint_subnetwork'))
+    ops.cross_connect_subnetworks = (
+        get_default('cross_connect_subnetworks'))
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(
-        'disable_pod_cidr_overprovision')
+        'disable_pod_cidr_overprovision'
+    )
     ops.stack_type = get_default('stack_type')
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
-        'enable_workload_config_audit')
+        'enable_workload_config_audit'
+    )
     ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
-        'pod_autoscaling_direct_metrics_opt_in')
+        'pod_autoscaling_direct_metrics_opt_in'
+    )
     ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
-        'enable_workload_vulnerability_scanning')
+        'enable_workload_vulnerability_scanning'
+    )
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
@@ -1420,8 +1466,10 @@ class CreateBeta(Create):
     ops.workload_vulnerability_scanning = get_default(
         'workload_vulnerability_scanning'
     )
+    ops.patch_update = get_default('patch_update')
     ops.enable_runtime_vulnerability_insight = get_default(
-        'enable_runtime_vulnerability_insight')
+        'enable_runtime_vulnerability_insight'
+    )
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.containerd_config_from_file = get_default(
         'containerd_config_from_file',
@@ -1470,16 +1518,15 @@ class CreateAlpha(Create):
 
   def ParseCreateOptions(self, args, location, project_id):
     get_default = lambda key: AttrValue(args, key, self.default_flag_values)
-    ops = ParseCreateOptionsBase(args, self.autopilot, get_default, location,
-                                 project_id)
+    ops = ParseCreateOptionsBase(
+        args, self.autopilot, get_default, location, project_id
+    )
     flags.WarnForNodeVersionAutoUpgrade(args)
     flags.ValidateSurgeUpgradeSettings(args)
     ephemeral_storage = None
     if args.IsKnownAndSpecified('ephemeral_storage'):
       ephemeral_storage = (
-          []
-          if args.ephemeral_storage is None
-          else args.ephemeral_storage
+          [] if args.ephemeral_storage is None else args.ephemeral_storage
       )
     ops.boot_disk_kms_key = get_default('boot_disk_kms_key')
     ops.autoscaling_profile = get_default('autoscaling_profile')
@@ -1491,22 +1538,23 @@ class CreateAlpha(Create):
     ops.enable_private_nodes = get_default('enable_private_nodes')
     ops.enable_private_endpoint = get_default('enable_private_endpoint')
     ops.master_ipv4_cidr = get_default('master_ipv4_cidr')
-    ops.enable_tpu_service_networking = \
-        get_default('enable_tpu_service_networking')
+    ops.enable_tpu_service_networking = (
+        get_default('enable_tpu_service_networking'))
     ops.istio_config = get_default('istio_config')
     ops.security_group = get_default('security_group')
-    ops.enable_vertical_pod_autoscaling = \
-        get_default('enable_vertical_pod_autoscaling')
+    ops.enable_vertical_pod_autoscaling = (
+        get_default('enable_vertical_pod_autoscaling'))
     ops.enable_experimental_vertical_pod_autoscaling = get_default(
-        'enable_experimental_vertical_pod_autoscaling')
+        'enable_experimental_vertical_pod_autoscaling'
+    )
     ops.security_profile = get_default('security_profile')
-    ops.security_profile_runtime_rules = \
-        get_default('security_profile_runtime_rules')
+    ops.security_profile_runtime_rules = (
+        get_default('security_profile_runtime_rules'))
     ops.node_pool_name = get_default('node_pool_name')
-    ops.enable_network_egress_metering = \
-        get_default('enable_network_egress_metering')
-    ops.enable_resource_consumption_metering = \
-        get_default('enable_resource_consumption_metering')
+    ops.enable_network_egress_metering = (
+        get_default('enable_network_egress_metering'))
+    ops.enable_resource_consumption_metering = (
+        get_default('enable_resource_consumption_metering'))
     ops.enable_private_ipv6_access = get_default('enable_private_ipv6_access')
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
@@ -1514,8 +1562,8 @@ class CreateAlpha(Create):
     ops.disable_default_snat = get_default('disable_default_snat')
     ops.system_config_from_file = get_default('system_config_from_file')
     ops.enable_cost_allocation = get_default('enable_cost_allocation')
-    ops.enable_logging_monitoring_system_only = \
-        get_default('enable_logging_monitoring_system_only')
+    ops.enable_logging_monitoring_system_only = (
+        get_default('enable_logging_monitoring_system_only'))
     ops.datapath_provider = get_default('datapath_provider')
     ops.gvnic = get_default('enable_gvnic')
     ops.enable_master_metrics = get_default('enable_master_metrics')
@@ -1524,39 +1572,43 @@ class CreateAlpha(Create):
     ops.confidential_node_type = get_default('confidential_node_type')
     ops.enable_nested_virtualization = get_default(
         'enable_nested_virtualization')
-    ops.kubernetes_objects_changes_target = \
-        getattr(args, 'kubernetes_objects_changes_target', None)
-    ops.kubernetes_objects_snapshots_target = \
-        getattr(args, 'kubernetes_objects_snapshots_target', None)
+    ops.kubernetes_objects_changes_target = (
+        getattr(args, 'kubernetes_objects_changes_target', None))
+    ops.kubernetes_objects_snapshots_target = (
+        getattr(args, 'kubernetes_objects_snapshots_target', None))
     ops.enable_gcfs = get_default('enable_gcfs')
     ops.enable_image_streaming = get_default('enable_image_streaming')
-    ops.enable_workload_certificates = getattr(args,
-                                               'enable_workload_certificates',
-                                               None)
+    ops.enable_workload_certificates = getattr(
+        args, 'enable_workload_certificates', None
+    )
     ops.enable_alts = getattr(args, 'enable_alts', None)
-    ops.enable_workload_monitoring_eap = \
-      get_default('enable_workload_monitoring_eap')
-    ops.private_endpoint_subnetwork = \
-        get_default('private_endpoint_subnetwork')
-    ops.cross_connect_subnetworks = \
-        get_default('cross_connect_subnetworks')
+    ops.enable_workload_monitoring_eap = (
+        get_default('enable_workload_monitoring_eap'))
+    ops.private_endpoint_subnetwork = (
+        get_default('private_endpoint_subnetwork'))
+    ops.cross_connect_subnetworks = (
+        get_default('cross_connect_subnetworks'))
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
     ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')
     ops.disable_pod_cidr_overprovision = get_default(
-        'disable_pod_cidr_overprovision')
+        'disable_pod_cidr_overprovision'
+    )
     ops.stack_type = get_default('stack_type')
     ops.ipv6_access_type = get_default('ipv6_access_type')
     ops.enable_workload_config_audit = get_default(
-        'enable_workload_config_audit')
+        'enable_workload_config_audit'
+    )
     ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
     ops.pod_autoscaling_direct_metrics_opt_in = get_default(
-        'pod_autoscaling_direct_metrics_opt_in')
+        'pod_autoscaling_direct_metrics_opt_in'
+    )
     ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
-        'enable_workload_vulnerability_scanning')
+        'enable_workload_vulnerability_scanning'
+    )
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
@@ -1571,6 +1623,7 @@ class CreateAlpha(Create):
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight'
     )
+    ops.patch_update = get_default('patch_update')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
     ops.enable_confidential_storage = get_default('enable_confidential_storage')

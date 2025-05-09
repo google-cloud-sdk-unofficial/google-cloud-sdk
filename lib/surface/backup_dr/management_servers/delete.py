@@ -106,7 +106,7 @@ class DeleteAlpha(base.DeleteCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Deleting management server [{}]. (This operation could'
-            ' take upto 1 hour.)'.format(management_server.RelativeName())
+            ' take up to 1 hour.)'.format(management_server.RelativeName())
         ),
         has_result=False,
     )

@@ -112,7 +112,7 @@ class BigqueryModel(model.JsonModel):
       self,
       headers: Dict[str, str],
       path_params: Dict[str, str],
-      query_params: Dict[str, Any],  # TODO(b/314756043): This seems incorrect.
+      query_params: Dict[str, Any],  # TODO(b/338466958): This seems incorrect.
       body_value: object,
   ) -> Tuple[Dict[str, str], Dict[str, str], str, str]:
     """Updates outgoing request.

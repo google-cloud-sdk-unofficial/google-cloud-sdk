@@ -34,6 +34,18 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 import six
 
+SUPPORTED_EVENT_TYPES = (
+    'google.pubsub.topic.publish',
+    'providers/cloud.pubsub/eventTypes/topic.publish',
+)
+
+UNSUPPORTED_RUNTIMES = (
+    'python37',
+    'nodejs8',
+    'nodejs10',
+    'go111',
+)
+
 UpgradeAction = collections.namedtuple(
     'UpgradeAction',
     [
@@ -192,6 +204,49 @@ def _ValidateStateTransition(upgrade_state, action):
     )
 
 
+# Source: http://cs/f:Gen1UpgradeEligibilityValidator.java
+def _RaiseNotEligibleForUpgradeError(function):
+  """Raises an error when the function is not eligible for upgrade."""
+  if six.text_type(function.environment) == 'GEN_2':
+    raise exceptions.FunctionsError(
+        f'Function [{function.name}] is not eligible for Upgrade. To migrate to'
+        ' Cloud Run function, please detach the function using `gcloud'
+        ' functions detach` instead.'
+    )
+  if ':' in api_util.GetProject():
+    raise exceptions.FunctionsError(
+        f'Function [{function.name}] is not eligible for Cloud Run function'
+        ' upgrade. It is in domain-scoped project that Cloud Run does not'
+        ' support.'
+    )
+  if six.text_type(function.state) != 'ACTIVE':
+    raise exceptions.FunctionsError(
+        f'Function [{function.name}] is not eligible for Cloud Run function'
+        f' upgrade. It is in state [{function.state}].'
+    )
+  if (
+      not function.url
+      and function.eventTrigger.eventType not in SUPPORTED_EVENT_TYPES
+  ):
+    raise exceptions.FunctionsError(
+        f'Function [{function.name}] is not eligible for Cloud Run function'
+        ' upgrade. Only HTTP functions and Pub/Sub triggered functions are'
+        ' supported.'
+    )
+  if function.buildConfig.runtime in UNSUPPORTED_RUNTIMES:
+    raise exceptions.FunctionsError(
+        f'Function [{function.name}] is not eligible for Cloud Run function'
+        f' upgrade. The runtime [{function.buildConfig.runtime}] is not'
+        ' supported. Please update to a supported runtime instead and try'
+        ' again. Use `gcloud functions runtimes list` to get a list of'
+        ' available runtimes.'
+    )
+  raise exceptions.FunctionsError(
+      f'Function [{function.name}] is not eligible for Cloud Run function'
+      ' upgrade.'
+  )
+
+
 @base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -241,12 +296,7 @@ class UpgradeAlpha(base.Command):
       )
 
     if not function.upgradeInfo:
-      # TODO(b/271030987): Provide additional info on why a function is not
-      # eligible for an upgrade.
-      raise exceptions.FunctionsError(
-          'Function [{}] is not eligible for Cloud Run function upgrade.'
-          .format(function_name)
-      )
+      _RaiseNotEligibleForUpgradeError(function)
 
     upgrade_state = function.upgradeInfo.upgradeState
 

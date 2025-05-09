@@ -20,6 +20,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.UniverseCompatible
+@base.DefaultUniverseOnly
 class Operation(base.Group):
   """Backup for GKE Operations."""
+
+  category = base.UNCATEGORIZED_CATEGORY

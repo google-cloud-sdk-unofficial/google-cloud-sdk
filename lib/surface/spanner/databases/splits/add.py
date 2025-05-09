@@ -27,14 +27,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Add(base.UpdateCommand):
-  """Add split points to a Cloud Spanner database."""
+  """Add split points to a  Spanner database."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
-        To add split points to the given Cloud Spanner database, run:
+      'EXAMPLES': textwrap.dedent("""\
+        To add split points to the given Spanner database, run:
 
           $ {command} my-database-id --instance=my-instance-id
               --splits-file=path/to/splits.txt --initiator=my-initiator-string
@@ -48,19 +49,20 @@ class Add(base.UpdateCommand):
     resource_args.AddDatabaseResourceArg(parser, 'on which to add split points')
     flags.SplitsFile(
         help_text=(
-            'Path of a file containing split points to add to the database. The'
-            ' split points are new line seperated. The file format is'
-            ' <ObjectType>[space]<ObjectName>[space]<Split Value>, where the'
-            ' ObjectType is one of TABLE or INDEX and the Split Value is the'
-            ' split point key. For index the split point key is the index key'
-            ' with or without a full table key prefix.'
+            'The path of a file containing split points to add to the database.'
+            ' Separate split points in the file with a new line. The file'
+            ' format is <ObjectType>[space]<ObjectName>[space]<Split Value>,'
+            ' where the ObjectType is one of TABLE or INDEX and the Split Value'
+            ' is the split point key. For index, the split point key is the'
+            ' index key with or without a full table key prefix.'
         )
     ).AddToParser(parser)
     flags.SplitExpirationDate(
         help_text=(
-            'The date post which the split points will become system managed'
-            ' and eligible for mergeing. Default is 10 days from date of'
-            ' creation. Maximum is 30 days from date of creation.'
+            'The date when the split points become system managed and'
+            ' becomes eligible for merging. The default is 10 days from the'
+            ' date of creation. The maximum is 30 days from the date of'
+            ' creation.'
         )
     ).AddToParser(parser)
     flags.Initiator(

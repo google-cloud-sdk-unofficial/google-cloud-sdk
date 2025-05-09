@@ -244,6 +244,7 @@ class Create(base.CreateCommand):
     flags.AddLocalSSDsGAFlags(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True, for_create=True)
+    flags.AddOpportunisticMaintenanceFlag(parser)
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
@@ -288,7 +289,7 @@ class Create(base.CreateCommand):
         parser, for_node_pool=True, hidden=False)
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
-    flags.AddDataCacheCountFlag(parser, for_node_pool=True, hidden=True)
+    flags.AddDataCacheCountFlag(parser, for_node_pool=True)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -432,6 +433,7 @@ class CreateBeta(Create):
         parser, for_node_pool=True, hidden=False)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddOpportunisticMaintenanceFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
 
@@ -476,6 +478,7 @@ class CreateBeta(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
+    ops.opportunistic_maintenance = args.opportunistic_maintenance
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
@@ -529,6 +532,7 @@ class CreateAlpha(Create):
     ops.enable_best_effort_provision = args.enable_best_effort_provision
     ops.min_provision_nodes = args.min_provision_nodes
     ops.host_maintenance_interval = args.host_maintenance_interval
+    ops.opportunistic_maintenance = args.opportunistic_maintenance
     ops.performance_monitoring_unit = args.performance_monitoring_unit
     ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.ephemeral_storage = ephemeral_storage
@@ -602,6 +606,7 @@ class CreateAlpha(Create):
         parser, for_node_pool=True, hidden=False)
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
+    flags.AddOpportunisticMaintenanceFlag(parser)
     flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)

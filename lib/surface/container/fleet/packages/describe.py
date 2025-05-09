@@ -80,7 +80,8 @@ class Describe(base.DescribeCommand):
             fleet_package=args.fleet_package,
             rollout=target_rollout.split('/')[_ROLLOUT_BASENAME_INDEX],
         )
-        utils.FormatForRolloutsDescribe(described_rollout, args)
+        if not args.format:
+          utils.FormatForRolloutsDescribe(described_rollout, args)
         return described_rollout
 
     return result

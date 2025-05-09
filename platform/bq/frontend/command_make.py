@@ -1269,6 +1269,20 @@ class Make(bigquery_command.BigqueryCmd):
       resource_tags = None
       if self.add_tags is not None:
         resource_tags = bq_utils.ParseTags(self.add_tags)
+      command_flags_for_this_resource = {
+          'description': self.description,
+          'force': self.force,
+      }
+      # TODO(b/355324165): Add genralised code to handle defaults.
+      if location and (location != 'us' or location != 'US'):
+        command_flags_for_this_resource['location'] = location
+      # The DatasetExists check has already happened.
+      self.PossiblyDelegateToGcloudAndExit(
+          resource='datasets',
+          bq_command='mk',
+          identifier=identifier,
+          command_flags_for_this_resource=command_flags_for_this_resource,
+      )
       client_dataset.CreateDataset(
           apiclient=client.apiclient,
           reference=reference,

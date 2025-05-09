@@ -65,8 +65,9 @@ class Describe(base.DescribeCommand):
         location=flags.GetLocation(args),
         rollout=args.name,
     )
-    utils.FormatForRolloutsDescribe(output, args, args.less)
-    if output.info and output.info.message:
-      if not args.less:
-        self.show_less = True
+    if not args.format:
+      utils.FormatForRolloutsDescribe(output, args, args.less)
+      if output.info and output.info.message:
+        if not args.less:
+          self.show_less = True
     return output

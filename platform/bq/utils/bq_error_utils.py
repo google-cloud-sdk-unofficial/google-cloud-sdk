@@ -17,6 +17,7 @@ import httplib2
 import oauth2client_4_0.client
 
 import bq_utils
+from gcloud_wrapper import bq_to_gcloud_config_classes
 from utils import bq_error
 from utils import bq_gcloud_utils
 from utils import bq_logging
@@ -100,6 +101,10 @@ def process_error(
   ):
     response.append('BigQuery error in %s operation: %s' % (name, message))
   elif isinstance(err, (app.UsageError, bq_error.BigqueryTypeError)):
+    response.append(message)
+  elif isinstance(
+      err, (bq_to_gcloud_config_classes.BigqueryGcloudDelegationUserError)
+  ):
     response.append(message)
   elif isinstance(err, SyntaxError) or isinstance(
       err, bq_error.BigquerySchemaError

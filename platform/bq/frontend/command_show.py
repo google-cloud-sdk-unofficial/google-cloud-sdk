@@ -10,6 +10,7 @@ import bq_flags
 from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
+from clients import client_deprecated
 from clients import client_reservation
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
@@ -210,6 +211,7 @@ class Show(bigquery_command.BigqueryCmd):
           default_location=bq_flags.LOCATION.value,
       )
     elif self.d:
+      self.PossiblyDelegateToGcloudAndExit('datasets', 'show', identifier)
       reference = bq_client_utils.GetDatasetReference(
           id_fallbacks=client, identifier=identifier
       )
@@ -333,10 +335,16 @@ class Show(bigquery_command.BigqueryCmd):
       raise app.UsageError('Must provide an identifier for show.')
 
     if isinstance(reference, DatasetReference) and not object_info:
+      self.PossiblyDelegateToGcloudAndExit('datasets', 'show', identifier)
       pass
 
     if object_info is None:
-      object_info = client.GetObjectInfo(reference)
+      object_info = client_deprecated.get_object_info(
+          apiclient=client.apiclient,
+          get_routines_api_client=client.GetRoutinesApiClient,
+          get_models_api_client=client.GetModelsApiClient,
+          reference=reference,
+      )
     bq_frontend_utils.PrintObjectInfo(
         object_info,
         reference,

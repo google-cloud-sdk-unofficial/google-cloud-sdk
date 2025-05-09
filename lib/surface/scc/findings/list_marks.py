@@ -31,6 +31,7 @@ from googlecloudsdk.core.util import times
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class ListMarks(base.ListCommand):
   """List a finding's security marks."""
 
@@ -68,11 +69,28 @@ class ListMarks(base.ListCommand):
     base.URI_FLAG.RemoveFromParser(parser)
 
     # Add shared flags and finding positional argument
-    flags.CreateFindingArg().AddToParser(parser)
+    flags.FINDING_FLAG.AddToParser(parser)
+    flags.SOURCE_FLAG.AddToParser(parser)
     scc_flags.PAGE_TOKEN_FLAG.AddToParser(parser)
     scc_flags.READ_TIME_FLAG.AddToParser(parser)
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     scc_flags.LOCATION_FLAG.AddToParser(parser)
+
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument(
+        "--organization",
+        help="The organization ID (e.g., 123) that contains the finding.",
+    )
+    group.add_argument(
+        "--folder",
+        help="The folder ID (e.g., 456) that contains the finding.",
+    )
+    group.add_argument(
+        "--project",
+        help=(
+            "The project ID (e.g., example-project) that contains the finding."
+        ),
+    )
 
   def Run(self, args):
     # Determine what version to call from --location and --api-version.
@@ -105,6 +123,7 @@ def _GenerateParent(args, req, version):
   finding_name = util.GetFullFindingName(args, version)
   req.parent = util.GetSourceParentFromFindingName(finding_name, version)
   req.filter = f"name : \"{util.GetFindingIdFromName(finding_name)}\""
+
   return req
 
 

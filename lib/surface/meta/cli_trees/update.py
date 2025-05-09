@@ -26,10 +26,15 @@ from googlecloudsdk.command_lib.meta import generate_cli_trees
 
 
 def _GetCliTreeGeneratorList():
-  return ', '.join(sorted([cli_tree.DEFAULT_CLI_NAME] +
-                          list(generate_cli_trees.GENERATORS.keys())))
+  return ', '.join(
+      sorted(
+          [cli_tree.DEFAULT_CLI_NAME]
+          + list(generate_cli_trees.GENERATORS.keys())
+      )
+  )
 
 
+@base.UniverseCompatible
 class Update(base.Command):
   """Updates gcloud CLI command trees in the installation directory.
 
@@ -53,27 +58,46 @@ class Update(base.Command):
         '--commands',
         type=arg_parsers.ArgList(),
         metavar='COMMAND',
-        help='Update only the commands in this list.')
+        help='Update only the commands in this list.',
+    )
     parser.add_argument(
         '--directory',
-        help=('Update this directory instead of the default installation '
-              'directory.'))
+        help=(
+            'Update this directory instead of the default installation '
+            'directory.'
+        ),
+    )
     parser.add_argument(
         '--force',
         action='store_true',
-        help=('Force existing CLI trees to be out of date. This causes them '
-              'to be regenerated.'))
+        help=(
+            'Force existing CLI trees to be out of date. This causes them '
+            'to be regenerated.'
+        ),
+    )
     parser.add_argument(
         '--tarball',
-        help=('For packaging CLI trees. --commands specifies one command '
-              'that is a relative path in this tarball. The tarball is '
-              'extracted to a temporary directory and the command path is '
-              'adjusted to point to the temporary directory.'))
+        help=(
+            'For packaging CLI trees. --commands specifies one command '
+            'that is a relative path in this tarball. The tarball is '
+            'extracted to a temporary directory and the command path is '
+            'adjusted to point to the temporary directory.'
+        ),
+    )
+    parser.add_argument(
+        '--skip-completions',
+        action='store_true',
+        default=False,
+        help='Skip updating the static completion CLI tree.',
+    )
 
   def Run(self, args):
-    generate_cli_trees.UpdateCliTrees(cli=self._cli_power_users_only,
-                                      commands=args.commands,
-                                      directory=args.directory,
-                                      tarball=args.tarball,
-                                      force=args.force,
-                                      verbose=not args.quiet)
+    generate_cli_trees.UpdateCliTrees(
+        cli=self._cli_power_users_only,
+        commands=args.commands,
+        directory=args.directory,
+        tarball=args.tarball,
+        force=args.force,
+        verbose=not args.quiet,
+        skip_completions=args.skip_completions,
+    )

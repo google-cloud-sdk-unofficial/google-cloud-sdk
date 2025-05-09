@@ -135,13 +135,11 @@ class CreateBeta(Create):
   _API_VERSION = filestore_client.BETA_API_VERSION
 
   detailed_help = {
-      'DESCRIPTION':
-          'Create a Filestore instance.',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': 'Create a Filestore instance.',
+      'EXAMPLES': """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE,psc-endpoint-project=PSC_ENDPOINT_PROJECT --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE,psc-endpoint-project=PSC_ENDPOINT_PROJECT --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --ldap=^:^domain=DOMAIN:servers=SERVER1,SERVER2:users_ou=USERSOU:groups_ou=GROUPSOU --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -174,7 +172,7 @@ class CreateBeta(Create):
   }
   }
 
-    """
+    """,
   }
 
   @staticmethod
@@ -201,6 +199,7 @@ class CreateBeta(Create):
           client.messages
       ).GetEnumForChoice(args.protocol)
     managed_ad = args.managed_ad or None
+    ldap = args.ldap or None
     source_instance = args.source_instance or None
     labels = labels_util.ParseCreateArgs(
         args, client.messages.Instance.LabelsValue)
@@ -227,9 +226,11 @@ class CreateBeta(Create):
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
         managed_ad=managed_ad,
+        ldap=ldap,
         source_instance=source_instance,
         deletion_protection_enabled=args.deletion_protection,
-        deletion_protection_reason=args.deletion_protection_reason)
+        deletion_protection_reason=args.deletion_protection_reason,
+    )
 
     result = client.CreateInstance(instance_ref, args.async_, instance)
     if args.async_:

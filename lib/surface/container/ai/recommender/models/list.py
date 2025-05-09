@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.ai.recommender import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -28,10 +29,10 @@ $ {command}
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+class List(commands.List):
   """List supported models."""
 
-  def Run(self, args):
+  def Run(self, _):
     client = util.GetClientInstance(base.ReleaseTrack.ALPHA)
     messages = util.GetMessagesModule(base.ReleaseTrack.ALPHA)
 

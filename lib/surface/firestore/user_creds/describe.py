@@ -39,7 +39,7 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore user-creds describe."""
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddUserCredsIdArg(parser)
 
   def Run(self, args):

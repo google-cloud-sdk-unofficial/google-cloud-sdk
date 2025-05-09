@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.ai.recommender import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -29,7 +30,7 @@ $ {command} --model=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+class List(commands.List):
   """List supported model servers for a given model.
 
   To get supported models, run `gcloud alpha container ai recommender models

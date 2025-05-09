@@ -94,7 +94,7 @@ class Create(base.CreateCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Creating backup plan association [{}]. (This operation could'
-            ' take upto 2 minutes.)'.format(
+            ' take up to 2 minutes.)'.format(
                 backup_plan_association.RelativeName()
             )
         ),

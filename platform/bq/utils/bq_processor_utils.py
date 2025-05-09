@@ -360,6 +360,38 @@ def PrepareTransferListRequest(
   return request
 
 
+def ParseStateFilterExpression(
+    filter_expression: Optional[str] = None,
+) -> Optional[List[str]]:
+  """Parses the state filter for list jobs.
+
+  Args:
+    filter_expression: A string containing the state filter, e.g., 'state:done'.
+
+  Returns:
+    A single state filter or a list of filters to apply. Returns None if no
+    filter is provided.
+
+  Raises:
+    bq_error.BigqueryClientError: if the filter expression is invalid.
+  """
+  if filter_expression is None:
+    return None
+  if filter_expression.startswith('states:'):
+    try:
+      return filter_expression.split(':')[1].split(',')
+    except IndexError as e:
+      raise bq_error.BigqueryError(
+          'Invalid flag argument "' + filter_expression + '"'
+      ) from e
+  else:
+    raise bq_error.BigqueryError(
+        'Invalid flag argument "'
+        + filter_expression
+        + ', the expression must start with "states:"'
+    )
+
+
 def PrepareTransferRunListRequest(
     reference: str,
     run_attempt: Optional[str],
@@ -375,16 +407,7 @@ def PrepareTransferRunListRequest(
       max_results = MAX_RESULTS
     request['pageSize'] = max_results
   if states is not None:
-    if 'states:' in states:
-      try:
-        states = states.split(':')[1].split(',')
-        request['states'] = states
-      except IndexError as e:
-        raise bq_error.BigqueryError(
-            'Invalid flag argument "' + states + '"'
-        ) from e
-    else:
-      raise bq_error.BigqueryError('Invalid flag argument "' + states + '"')
+    request['states'] = ParseStateFilterExpression(states)
   if page_token is not None:
     request['pageToken'] = page_token
   return request

@@ -30,7 +30,10 @@ def LoadCredential() -> google_oauth2.Credentials:
 
   is_service_account = bq_utils.IsServiceAccount(account)
   access_token = _GetAccessTokenAndPrintOutput(is_service_account)
-  refresh_token = _GetRefreshTokenAndPrintOutput()
+  # Service accounts use the refresh_handler instead of the token for refresh.
+  refresh_token = (
+      None if is_service_account else _GetRefreshTokenAndPrintOutput()
+  )
   refresh_handler = (
       _ServiceAccountRefreshHandler if is_service_account else None
   )

@@ -26,14 +26,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
-  """List user added split points of a Cloud Spanner database."""
+  """List split points that are added by a user to a Spanner database."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent(text="""\
-        To list the user added split points of the given Cloud Spanner database,
+      'EXAMPLES': textwrap.dedent(text="""\
+        To list the user added split points of the given Spanner database,
         run:
 
           $ {command} my-database-id --instance=my-instance-id

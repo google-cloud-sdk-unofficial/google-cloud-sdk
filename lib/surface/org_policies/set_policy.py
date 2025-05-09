@@ -67,6 +67,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class SetPolicy(base.Command):
   """Set an organization policy from a JSON or YAML file."""
 
@@ -88,6 +89,9 @@ class SetPolicy(base.Command):
     is checked to see if it needs to be updated. If so, the policy is updated
     using UpdatePolicy.
 
+    If canned constraint is being chosen even though matching Managed Constraint
+    is available, a warning is logged.
+
     Args:
       args: argparse.Namespace, An object that contains the values for the
         arguments specified in the Args method.
@@ -102,6 +106,27 @@ class SetPolicy(base.Command):
     if not input_policy.name:
       raise exceptions.InvalidInputError(
           'Name field not present in the organization policy.')
+
+    policy_parts = input_policy.name.split('/')
+    constraint_name = policy_parts[-1]
+    parent = policy_parts[0] + '/' + policy_parts[1]
+    # check it's a canned constraint
+    if 'custom' not in constraint_name and 'managed' not in constraint_name:
+      constraints = org_policy_api.ListConstraints(parent).constraints
+      for constraint in constraints:
+        if (
+            constraint.name == (parent + '/constraints/' + constraint_name)
+            and constraint.equivalentConstraint
+        ):
+          log.warning(
+              'Operation not recommended by org policy: ["constraints/'
+              + constraint_name
+              + '"]: "A newer version of this constraint exists that supports'
+              ' dry run and simulation, '
+              + constraint.equivalentConstraint
+              + ', learn more here'
+              ' https://cloud.google.com/resource-manager/docs/organization-policy/using-constraints#managed-constraints.'
+          )
 
     try:
       policy = org_policy_api.GetPolicy(input_policy.name)

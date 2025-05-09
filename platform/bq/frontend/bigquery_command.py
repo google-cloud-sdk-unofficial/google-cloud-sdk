@@ -8,6 +8,7 @@ import shlex
 import sys
 import traceback
 import types
+from typing import Any, Dict, List, Optional
 
 from absl import app
 from absl import flags
@@ -16,6 +17,7 @@ import googleapiclient
 import bq_auth_flags
 import bq_flags
 import bq_utils
+from gcloud_wrapper import bq_to_gcloud_command_executor
 from utils import bq_error
 from utils import bq_error_utils
 from utils import bq_logging
@@ -37,7 +39,7 @@ def _UseServiceAccount() -> bool:
 class NewCmd(appcommands.Cmd):
   """Featureful extension of appcommands.Cmd."""
 
-  def __init__(self, name: str, flag_values):
+  def __init__(self, name: str, flag_values: flags.FlagValues) -> None:
     super(NewCmd, self).__init__(name, flag_values)
     run_with_args = getattr(self, 'RunWithArgs', None)
     self._new_style = isinstance(run_with_args, types.MethodType)
@@ -70,13 +72,13 @@ class NewCmd(appcommands.Cmd):
       return self._command_flags[name].value
     return super(NewCmd, self).__getattribute__(name)
 
-  def _GetFlag(self, flagname):
+  def _GetFlag(self, flagname: str) -> Optional[flags.FlagHolder]:
     if flagname in self._command_flags:
       return self._command_flags[flagname]
     else:
       return None
 
-  def _CheckFlags(self):
+  def _CheckFlags(self) -> None:
     """Validate flags after command specific flags have been loaded.
 
     This function will run through all values in appcommands._cmd_argv and
@@ -110,7 +112,7 @@ class NewCmd(appcommands.Cmd):
         ))
         sys.exit(1)
 
-  def Run(self, argv):
+  def Run(self, argv: List[str]) -> int:
     """Run this command.
 
     If self is a new-style command, we set up arguments and call
@@ -178,7 +180,7 @@ class NewCmd(appcommands.Cmd):
         self._command_flags[flag].value = value
         self._command_flags[flag].present = original_presence[flag]
 
-  def RunCmdLoop(self, argv):
+  def RunCmdLoop(self, argv) -> int:
     """Hook for use in cmd.Cmd-based command shells."""
     try:
       args = shlex.split(argv)
@@ -195,7 +197,7 @@ class NewCmd(appcommands.Cmd):
     )
     return 1
 
-  def RunDebug(self, args, kwds):
+  def RunDebug(self, args: List[str], kwds: Dict[str, Any]) -> int:
     """Run this command in debug mode."""
     logging.debug('In NewCmd.RunDebug: %s, %s', args, kwds)
     try:
@@ -229,7 +231,7 @@ class NewCmd(appcommands.Cmd):
       return 1
     return return_value
 
-  def RunSafely(self, args, kwds):
+  def RunSafely(self, args: List[str], kwds: Dict[str, Any]) -> int:
     """Run this command, turning exceptions into print statements."""
     logging.debug('In NewCmd.RunSafely: %s, %s', args, kwds)
     try:
@@ -256,7 +258,7 @@ class BigqueryCmd(NewCmd):
         or os.path.exists(FLAGS.credential_file)
     )
 
-  def Run(self, argv):
+  def Run(self, argv: List[str]) -> int:
     """Bigquery commands run `init` before themselves if needed."""
 
     if FLAGS.debug_mode:
@@ -271,18 +273,18 @@ class BigqueryCmd(NewCmd):
       appcommands.GetCommandByName('init').Run(['init'])
     return super(BigqueryCmd, self).Run(argv)
 
-  def RunSafely(self, args, kwds):
+  def RunSafely(self, args: List[str], kwds: Dict[str, Any]) -> int:
     """Run this command, printing information about any exceptions raised."""
     logging.debug('In BigqueryCmd.RunSafely: %s, %s', args, kwds)
     try:
       return_value = self.RunWithArgs(*args, **kwds)
-    # pylint: disable=broad-exception-caught
-    except BaseException as e:
-      # pylint: enable=broad-exception-caught
+    except SystemExit as e:
+      return_value = e.code
+    except BaseException as e:  # pylint: disable=broad-exception-caught
       return bq_error_utils.process_error(e, name=self._command_name)
     return return_value
 
-  def PrintJobStartInfo(self, job):
+  def PrintJobStartInfo(self, job) -> None:
     """Print a simple status line."""
     if bq_flags.FORMAT.value in ['prettyjson', 'json']:
       bq_utils.PrintFormattedJsonObject(job)
@@ -292,3 +294,23 @@ class BigqueryCmd(NewCmd):
 
   def _ProcessCommandRc(self, fv):
     bq_utils.ProcessBigqueryrcSection(self._command_name, fv)
+
+  def ParseCommandFlagsSharedWithAllResources(self) -> Dict[str, str]:
+    """Parses flags for the command that are shared with all resources.
+
+    This is intended to be implemented by any subclass that needs it.
+
+    Returns:
+      A dictionary of command flags that are shared with all resources in the
+      command. For example `max_results` in the list command.
+    """
+    return {}
+
+  def PossiblyDelegateToGcloudAndExit(
+      self,
+      resource: str,
+      bq_command: str,
+      identifier: Optional[str] = None,
+      command_flags_for_this_resource: Optional[Dict[str, str]] = None,
+  ):
+    pass  # pylint: disable=unreachable

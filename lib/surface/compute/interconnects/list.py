@@ -43,7 +43,7 @@ class List(base.ListCommand):
             location.basename(),
             operationalStatus,
             adminEnabled,
-            interconnectGroups.join(sep="\n")
+            interconnectGroups.basename().join(sep="\n")
           )
       """)
     else:

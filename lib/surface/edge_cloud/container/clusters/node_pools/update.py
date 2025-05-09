@@ -63,6 +63,8 @@ class Update(base.UpdateCommand):
     container_flags.AddLROMaximumTimeout(parser)
     container_flags.AddNodeLabels(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    container_flags.AddLocalDiskKMSKey(parser)
+    container_flags.AddUseGoogleManagedKey(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -135,5 +137,3 @@ class UpdateAlpha(Update):
         API=util.VERSION_MAP.get(track)
     )
     Update.Args(parser)
-    container_flags.AddLocalDiskKMSKey(parser)
-    container_flags.AddUseGoogleManagedKey(parser)

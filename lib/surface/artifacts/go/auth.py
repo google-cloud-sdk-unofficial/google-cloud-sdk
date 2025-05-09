@@ -21,7 +21,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Auth(base.Command):
   """Print authentication commands for the GOAUTH environment variable.

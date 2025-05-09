@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.14",
+  "CLI_VERSION": "2.1.15",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -213,7 +213,7 @@
       "release": "GA",
       "sections": {
         "DESCRIPTION": "List the objects contained in the named collection.\n\nList the objects in the named project or dataset. A\ntrailing : or . can be used to signify a project or\ndataset.\n* With -j, show the jobs in the named project.\n* With -p, show all projects.\n",
-        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset\nbq ls --row_access_policies mytable (requires\nwhitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run\n--filter='states:SUCCESSED,PENDING'\n--run_attempt='LATEST'\nprojects/p/locations/l/transferConfigs/c\nbq ls --transfer_log\n--message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --capacity_commitment --project_id=proj\n--location='us'\nbq ls --reservation --project_id=proj --location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\n<reservation_id>\nbq ls --connection --project_id=proj --location=us\n"
+        "EXAMPLES": "bq ls\nbq ls -j proj\nbq ls -j --filter:'states:RUNNING,PENDING' proj\nbq ls -p -n 1000\nbq ls mydataset\nbq ls -a\nbq ls -m mydataset\nbq ls --routines mydataset\nbq ls --row_access_policies mytable (requires\nwhitelisting)\nbq ls --filter labels.color:red\nbq ls --filter 'labels.color:red labels.size:*'\nbq ls --transfer_config --transfer_location='us'\n--filter='dataSourceIds:play,adwords'\nbq ls --transfer_run\n--filter='states:SUCCEEDED,PENDING'\n--run_attempt='LATEST'\nprojects/p/locations/l/transferConfigs/c\nbq ls --transfer_log\n--message_type='messageTypes:INFO,ERROR'\nprojects/p/locations/l/transferConfigs/c/runs/r\nbq ls --capacity_commitment --project_id=proj\n--location='us'\nbq ls --reservation --project_id=proj --location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\nbq ls --reservation_assignment --project_id=proj\n--location='us'\n<reservation_id>\nbq ls --connection --project_id=proj --location=us\n"
       }
     },
     "mk": {

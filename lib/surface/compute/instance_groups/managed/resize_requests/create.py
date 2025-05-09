@@ -47,19 +47,13 @@ class Create(base.CreateCommand):
   detailed_help = DETAILED_HELP
 
   @classmethod
-  def _AddArgs(cls, parser):
+  def _AddArgsGaCommon(cls, parser):
     parser.add_argument(
         '--resize-request',
         metavar='RESIZE_REQUEST_NAME',
         type=str,
         required=True,
         help="""The name of the resize request to create.""",
-    )
-    parser.add_argument(
-        '--resize-by',
-        type=int,
-        required=True,
-        help="""The number of VMs to resize managed instance group by.""",
     )
     parser.add_argument(
         '--requested-run-duration',
@@ -72,15 +66,22 @@ class Create(base.CreateCommand):
         minutes or `1d2h3m4s` for 1 day, 2 hours, 3 minutes, and 4 seconds.
         The value must be between `10m` (10 minutes) and `7d` (7 days).
 
-        If you want the managed instance group to consume a reservation, then
-        this flag is optional. Otherwise, it's required.""",
+        If you want the managed instance group to consume a reservation or use
+        FLEX_START provisioning model, then this flag is optional. Otherwise,
+        it's required.""",
     )
 
   @classmethod
   def Args(cls, parser):
     instance_groups_flags.MakeZonalInstanceGroupManagerArg().AddArgument(parser)
     rr_flags.AddOutputFormat(parser, cls.ReleaseTrack())
-    cls._AddArgs(parser)
+    cls._AddArgsGaCommon(parser)
+    parser.add_argument(
+        '--resize-by',
+        type=int,
+        required=True,
+        help="""The number of VMs to resize managed instance group by.""",
+    )
 
   def Run(self, args):
     """Creates and issues an instanceGroupManagerResizeRequests.insert request.
@@ -146,7 +147,23 @@ class CreateBeta(Create):
         parser
     )
     rr_flags.AddOutputFormat(parser, cls.ReleaseTrack())
-    cls._AddArgs(parser)
+    cls._AddArgsGaCommon(parser)
+    resize_by_instances_group = parser.add_group(mutex=True, required=True)
+    resize_by_instances_group.add_argument(
+        '--resize-by',
+        type=int,
+        help="""The number of instances to create with this resize request.
+        Instances have automatically-generated names. The group's target size
+        increases by this number.""",
+    )
+    resize_by_instances_group.add_argument(
+        '--instances',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='INSTANCE',
+        help="""A comma-separated list of instance names. The number of names
+        you provide determines the number of instances to create with this
+        resize request. The group's target size increases by this count.""",
+    )
 
   def Run(self, args):
     """Creates and issues an instanceGroupManagerResizeRequests.insert request.
@@ -162,11 +179,20 @@ class CreateBeta(Create):
           seconds=args.requested_run_duration
       )
 
+    resize_by = None
+    instances = []
+    if args.IsKnownAndSpecified('resize_by'):
+      resize_by = args.resize_by
+    else:
+      instances = args.instances
+
     resize_request = holder.client.messages.InstanceGroupManagerResizeRequest(
         name=args.resize_request,
-        resizeBy=args.resize_by,
+        resizeBy=resize_by,
+        instances=self._CreatePerInstanceConfigList(holder, instances),
         requestedRunDuration=requested_run_duration,
     )
+
     return self._MakeRequest(holder.client, igm_ref, resize_request)
 
   def _MakeRequest(self, client, igm_ref, resize_request):
@@ -194,6 +220,13 @@ class CreateBeta(Create):
       )])
     raise ValueError('Unknown reference type {0}'.format(igm_ref.Collection()))
 
+  def _CreatePerInstanceConfigList(self, holder, instances):
+    """Creates a list of per instance configs for the given instances."""
+    return [
+        holder.client.messages.PerInstanceConfig(name=instance)
+        for instance in instances
+    ]
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
@@ -207,35 +240,31 @@ class CreateAlpha(CreateBeta):
         parser
     )
     rr_flags.AddOutputFormat(parser, cls.ReleaseTrack())
+    cls._AddArgsGaCommon(parser)
 
-    parser.add_argument(
-        '--resize-request',
-        metavar='RESIZE_REQUEST_NAME',
-        type=str,
-        required=True,
-        help="""The name of the resize request to create.""",
+    count_resize_by_instances_group = parser.add_group(
+        mutex=True, required=True
     )
-
-    count_resize_by_group = parser.add_group(mutex=True, required=True)
-    count_resize_by_group.add_argument(
+    count_resize_by_instances_group.add_argument(
         '--count',
         type=int,
         hidden=True,
         help="""(ALPHA only) The number of VMs to create.""",
     )
-    count_resize_by_group.add_argument(
+    count_resize_by_instances_group.add_argument(
         '--resize-by',
         type=int,
-        help="""The number of instances to be created by this resize request.
-        The group's target size will be increased by this number.""",
+        help="""The number of instances to create with this resize request.
+        Instances have automatically-generated names. The group's target size
+        increases by this number.""",
     )
-    count_resize_by_group.add_argument(
+    count_resize_by_instances_group.add_argument(
         '--instances',
         type=arg_parsers.ArgList(min_length=1),
         metavar='INSTANCE',
-        help="""The names of instances to be created by this resize request. The
-        number of names specified determines the number of instances to create.
-        The group's target size will be increased by this number.""",
+        help="""A comma-separated list of instance names. The number of names
+        you provide determines the number of instances to create with this
+        resize request. The group's target size increases by this count.""",
     )
 
     valid_until_group = parser.add_group(
@@ -250,18 +279,6 @@ class CreateAlpha(CreateBeta):
         '--valid-until-time',
         type=arg_parsers.Datetime.Parse,
         help="""Absolute deadline for waiting for capacity in RFC3339 text format.""",
-    )
-
-    parser.add_argument(
-        '--requested-run-duration',
-        type=arg_parsers.Duration(),
-        required=False,
-        help="""The time you need the requested VMs to run before being
-        automatically deleted. The value must be formatted as the number of
-        days, hours, minutes, or seconds followed by `d`, `h`, `m`, and `s`
-        respectively. For example, specify `30m` for a duration of 30
-        minutes or `1d2h3m4s` for 1 day, 2 hours, 3 minutes, and 4 seconds.
-        The value must be between `10m` (10 minutes) and `7d` (7 days).""",
     )
 
   def Run(self, args):
@@ -313,10 +330,3 @@ class CreateAlpha(CreateBeta):
         requestedRunDuration=requested_run_duration,
     )
     return self._MakeRequest(holder.client, igm_ref, resize_request)
-
-  def _CreatePerInstanceConfigList(self, holder, instances):
-    """Creates a list of per instance configs for the given instances."""
-    return [
-        holder.client.messages.PerInstanceConfig(name=instance)
-        for instance in instances
-    ]

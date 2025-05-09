@@ -224,26 +224,41 @@ class Update(base.Command):
         progress_message = 'Updating...'
         failure_message = 'Update failed'
         result_message = 'updating'
-      with progress_tracker.StagedProgressTracker(
-          progress_message,
-          deployment_stages,
-          failure_message=failure_message,
-          suppress_output=args.async_,
-      ) as tracker:
-        service = client.ReleaseService(
-            service_ref,
-            changes,
-            self.ReleaseTrack(),
-            tracker,
-            asyn=args.async_,
-            prefetch=service,
-            generate_name=(
-                flags.FlagIsExplicitlySet(args, 'revision_suffix')
-                or flags.FlagIsExplicitlySet(args, 'tag')
-            ),
-            is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
-            iap_enabled=iap,
-        )
+
+      def _ReleaseService(changes_):
+        with progress_tracker.StagedProgressTracker(
+            progress_message,
+            deployment_stages,
+            failure_message=failure_message,
+            suppress_output=args.async_,
+        ) as tracker:
+          return client.ReleaseService(
+              service_ref,
+              changes_,
+              self.ReleaseTrack(),
+              tracker,
+              asyn=args.async_,
+              prefetch=service,
+              generate_name=(
+                  flags.FlagIsExplicitlySet(args, 'revision_suffix')
+                  or flags.FlagIsExplicitlySet(args, 'tag')
+              ),
+              is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
+              iap_enabled=iap,
+          )
+
+      try:
+        service = _ReleaseService(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
+          service = _ReleaseService(changes)
+        else:
+          raise e
 
       if args.async_:
         pretty_print.Success(

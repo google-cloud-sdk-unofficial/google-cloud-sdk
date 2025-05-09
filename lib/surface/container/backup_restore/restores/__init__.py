@@ -21,6 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Restores(base.Group):
   """Backup for GKE Restores."""
+
+  category = base.RESTORE_CATEGORY

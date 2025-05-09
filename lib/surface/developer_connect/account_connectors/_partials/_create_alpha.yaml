@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,6 +79,16 @@
                     help_text: |-
                       Rovo provider.
                       Must select the "rovo" scope.
+                  - arg_value: new-relic
+                    enum_value: NEW_RELIC
+                    help_text: |-
+                      New Relic provider.
+                      No scopes are allowed.
+                  - arg_value: datastax
+                    enum_value: DATASTAX
+                    help_text: |-
+                      Datastax provider.
+                      No scopes are allowed.
             - arg_name: provider-oauth-config-scopes
               api_field: accountConnector.providerOauthConfig.scopes
               required: true
@@ -88,7 +98,7 @@
                 In the event of changing scopes, user records under AccountConnector will
                 be deleted and users will re-auth again.
     - help_text: |-
-        Identifier. The resource name of the userConnection, in the format
+        Identifier. The resource name of the accountConnector, in the format
         `projects/{project}/locations/{location}/accountConnectors/{account_connector_id}`.
       is_positional: true
       is_primary_resource: true

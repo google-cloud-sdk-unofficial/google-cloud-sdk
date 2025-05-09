@@ -1106,9 +1106,9 @@ def PrintJobMessages(printable_job_info):
               'REPLACE',
           ):
             index_progress_instruction = (
-                'Please use INFORMATION_SCHEMA to check the progress of the'
-                ' index.\n'
-            )
+                'Please query %s.%s.INFORMATION_SCHEMA to check the progress '
+                ' of the index.\n'
+            ) % (project_id, dataset_id)
           print(
               '%s vector index on table %s.%s.%s\n%s'
               % (

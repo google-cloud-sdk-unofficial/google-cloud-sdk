@@ -37,7 +37,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

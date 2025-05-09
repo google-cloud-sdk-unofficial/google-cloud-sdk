@@ -46,7 +46,6 @@ OVERRIDE_FLAGS_SET = (
     'backup_location',
     'cpu',
     'collation',
-    'database_flags',
     'enable_bin_log',
     'retained_backups_count',
     'retained_transaction_log_days',
@@ -109,7 +108,6 @@ def AddInstanceSettingsArgs(parser):
   flags.AddBackupLocation(parser, allow_empty=False)
   flags.AddCPU(parser)
   flags.AddInstanceCollation(parser)
-  flags.AddDatabaseFlags(parser)
   flags.AddEnableBinLog(parser)
   flags.AddRetainedBackupsCount(parser)
   flags.AddRetainedTransactionLogDays(parser)

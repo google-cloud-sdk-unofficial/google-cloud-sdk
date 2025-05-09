@@ -4,11 +4,11 @@ help_text:
   brief: |
     List ServerTlsPolicies.
   description: |
-    List all ServerTlsPolicies in the specified location of the current project.
+    List all ServerTlsPolicies in the current project.
   examples: |
       To list ServerTlsPolicies in the current project, run:
 
-        $ {command} --location=global
+        $ {command}
 
 request: &request
   ALPHA:
@@ -21,9 +21,9 @@ request: &request
 
 arguments:
   resource:
-    spec: !REF googlecloudsdk.command_lib.network_security.resources:location
+    spec: !REF googlecloudsdk.command_lib.network_security.resources:allDefaultLocation
     help_text: |
-      The project of the ServerTlsPolicies to display.
+      The location of the ServerTlsPolicies to display.
 
 response:
   id_field: name
@@ -32,6 +32,7 @@ output:
   format: |
      table(
         name.basename():label=NAME:sort=1,
+        name.segment(3):label=LOCATION,
         description:label=DESCRIPTION,
         create_time:label=CREATE_TIME,
         update_time:label=UPDATE_TIME

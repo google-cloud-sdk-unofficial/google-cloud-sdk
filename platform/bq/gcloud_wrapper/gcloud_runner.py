@@ -4,11 +4,18 @@
 import logging
 import os
 import subprocess
+import sys
 from typing import List, Optional
 
-import bq_utils
+from typing_extensions import TypeAlias
+
 from pyglib import resources
 
+if sys.version_info >= (3, 9):
+  GcloudPopen: TypeAlias = subprocess.Popen[str]
+else:
+  # Before python 3.09 the type `subprocess.Popen[str]` is unsupported.
+  GcloudPopen: TypeAlias = subprocess.Popen  # pylint: disable=g-bare-generic
 
 _gcloud_path = None
 
@@ -24,18 +31,24 @@ def _get_gcloud_path() -> str:
     binary = 'gcloud.cmd'
   else:
     binary = 'gcloud'
-  if bq_utils.IS_TPC_BINARY:
-    binary = resources.GetResourceFilename('google3/cloud/sdk/gcloud/' + binary)
+
+  # If a gcloud binary has been bundled with this code then use that version
+  # instead of the system installed version.
+  try:
+    binary = resources.GetResourceFilename(
+        'google3/cloud/sdk/gcloud/gcloud.par'
+    )
+  except FileNotFoundError:
+    pass
 
   logging.info('Found gcloud path: %s', binary)
   _gcloud_path = binary
   return binary
 
 
-# Before python 3.09 the return type `subprocess.Popen[str]` is unsupported.
 def run_gcloud_command(
     cmd: List[str], stderr: Optional[int] = None
-) -> subprocess.Popen:  # pylint: disable=g-bare-generic
+) -> GcloudPopen:
   """Runs the given gcloud command and returns the Popen object."""
   gcloud_path = _get_gcloud_path()
   logging.info('Running gcloud command: %s %s', gcloud_path, ' '.join(cmd))
@@ -45,3 +58,14 @@ def run_gcloud_command(
       stderr=stderr,
       universal_newlines=True,
   )
+
+
+def get_all_output(proc: GcloudPopen) -> str:
+  """Returns all output from the given Popen object."""
+  output = ''
+  if not proc.stdout:
+    return ''
+
+  for raw_line in iter(proc.stdout.readline, ''):
+    output += str(raw_line).strip()
+  return output

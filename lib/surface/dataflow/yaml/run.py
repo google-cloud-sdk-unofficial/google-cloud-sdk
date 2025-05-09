@@ -182,8 +182,8 @@ def _try_get_yaml_contents(yaml_pipeline_file):
   storage_client = storage_api.StorageClient()
   obj_ref = storage_util.ObjectReference.FromUrl(yaml_pipeline_file)
   try:
-    return storage_client.ReadObject(obj_ref)
-  except (storage_api.Error, storage_util.Error) as e:
+    return storage_client.ReadObject(obj_ref).read().decode('utf-8')
+  except Exception as e:  # pylint: disable=broad-exception-caught
     print(
         'Unable to read file {0} due to incorrect file path or insufficient'
         ' read permissions. Will not be able to validate the yaml pipeline or'

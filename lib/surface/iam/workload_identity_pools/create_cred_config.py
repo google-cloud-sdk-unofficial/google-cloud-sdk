@@ -136,6 +136,16 @@ class CreateCredConfig(base.CreateCommand):
             ' created at the default gcloud location.'
         ),
     )
+    certificate_args.add_argument(
+        '--credential-cert-trust-chain-path',
+        help=(
+            'Path for the trust chain file. A trust chain file is required'
+            ' if there are intermediate certificates in the certificate chain'
+            ' in between the root certificate stored in the workload identity'
+            ' pool provider trust store. This trust chain file should be a list'
+            ' of PEM certificates, with the leaf certificate at the top.'
+        ),
+    )
 
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:

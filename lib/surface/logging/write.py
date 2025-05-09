@@ -19,7 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.logging import util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
@@ -50,6 +52,18 @@ class Write(base.SilentCommand):
         '--severity', required=False,
         choices=Write.SEVERITY_ENUM, default='DEFAULT',
         help='Severity level of the log entry.')
+    parser.add_argument(
+        '--monitored-resource-type',
+        default='global',
+        help='Monitored Resource type to add to the payload',
+    )
+    parser.add_argument(
+        '--monitored-resource-labels',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE, ...',
+        default={},
+        help='Monitored Resource labels to add to the payload',
+    )
 
     util.AddParentArgs(parser, 'log entries to write')
 
@@ -65,11 +79,21 @@ class Write(base.SilentCommand):
     severity_value = getattr(messages.LogEntry.SeverityValueValuesEnum,
                              args.severity.upper())
 
+    monitored_resource = messages.MonitoredResource(
+        type=args.monitored_resource_type
+    )
+    if args.monitored_resource_labels:
+      monitored_resource.labels = encoding.PyValueToMessage(
+          messages.MonitoredResource.LabelsValue, args.monitored_resource_labels
+      )
+
     entry = messages.LogEntry(
         logName=util.CreateLogResourceName(
-            util.GetParentFromArgs(args), args.log_name),
-        resource=messages.MonitoredResource(type='global'),
-        severity=severity_value)
+            util.GetParentFromArgs(args), args.log_name
+        ),
+        resource=monitored_resource,
+        severity=severity_value,
+    )
 
     if args.payload_type == 'json':
       json_object = util.ConvertToJsonObject(args.message)
@@ -95,10 +119,8 @@ Write.detailed_help = {
     'DESCRIPTION': """\
         {index}
         If the destination log does not exist, it will be created.
-        All log entries written with this command are considered to be from
-        the "custom.googleapis.com" v1 service or the "global" v2 resource type.
-        The log entries will be listed in the Logs Explorer under that service
-        or resource type.
+        By default, all log entries written with this command are written with
+        the "global" resource type.
 
         {command} should be used for simple testing purposes.
         Check Cloud Logging agent for a proper way to send log entries:
@@ -116,5 +138,9 @@ Write.detailed_help = {
         To create a structured log, run:
 
           $ {command} LOG_NAME '{"key": "value"}' --payload-type=json
+
+        To create a log entry with a custom resource type, run:
+
+          $ {command} LOG_NAME "A simple entry" --monitored-resource-type=gce_instance --monitored-resource-labels=zone=us-centra1-a,instance_id=1234
     """,
 }

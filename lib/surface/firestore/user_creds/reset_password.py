@@ -38,7 +38,7 @@ class Reset(base.Command):
   @staticmethod
   def Args(parser):
     """Set args for gcloud firestore user-creds reset-password."""
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddUserCredsIdArg(parser)
 
   def Run(self, args):

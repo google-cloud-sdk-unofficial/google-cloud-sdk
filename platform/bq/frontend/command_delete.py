@@ -137,17 +137,17 @@ class Delete(bigquery_command.BigqueryCmd):
     client = bq_cached_client.Client.Get()
 
     # pylint: disable=g-doc-exception
-    if (
-        self.d
-        + self.t
-        + self.j
-        + self.routine
-        + self.transfer_config
-        + self.reservation
-        + self.reservation_assignment
-        + self.capacity_commitment
-        + self.connection
-    ) > 1:
+    if frontend_utils.ValidateAtMostOneSelected(
+        self.d,
+        self.t,
+        self.j,
+        self.routine,
+        self.transfer_config,
+        self.reservation,
+        self.reservation_assignment,
+        self.capacity_commitment,
+        self.connection,
+    ):
       raise app.UsageError('Cannot specify more than one resource type.')
     if not identifier:
       raise app.UsageError('Must provide an identifier for rm.')
@@ -321,6 +321,13 @@ class Delete(bigquery_command.BigqueryCmd):
           return 0
 
     if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
+      # Prompt for confirmation has already occurred.
+      self.PossiblyDelegateToGcloudAndExit(
+          resource='datasets',
+          bq_command='rm',
+          identifier=identifier,
+          command_flags_for_this_resource={'recursive': self.recursive},
+      )
       client_dataset.DeleteDataset(
           client.apiclient,
           reference,

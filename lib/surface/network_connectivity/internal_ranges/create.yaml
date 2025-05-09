@@ -59,7 +59,6 @@
                 address spaces used in the VPC.
               type: arg_list
             - arg_name: exclude-cidr-ranges
-              release_tracks: [ALPHA]
               api_field: internalRange.excludeCidrRanges
               help_text: |
                 A list of CIDR ranges to exclude from the search for a free range.

@@ -6,7 +6,9 @@ import datetime
 import json
 import sys
 import time
-from typing import Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
+
+from typing_extensions import TypeAlias
 
 import table_formatter
 import bq_flags
@@ -118,8 +120,8 @@ def maybe_print_manual_instructions_for_connection(
       'federatedApplicationClientId'
   ):
     obj = {
-        'federatedApplicationClientId': connection['azure'].get(
-            'federatedApplicationClientId'
+        'federatedApplicationClientId': (
+            connection['azure'].get('federatedApplicationClientId')
         ),
         'identity': connection['azure'].get('identity'),
     }
@@ -218,22 +220,36 @@ def format_time_from_proto_timestamp_json_string(json_string: str) -> str:
   seconds = (parsed_datetime - datetime.datetime(1970, 1, 1)).total_seconds()
   return format_time(seconds)
 
+StringReference: TypeAlias = str  # eg. 'project:dataset.routine'
+ResourceType: TypeAlias = str  # eg. 'ROUTINE' or 'All ROUTINES in DATASET'
+# Conditions is used as a key for the dictionary of ACL entries that is printed.
+# eg. (('title', 'Expires_2024'),
+# ('description', 'Expires at noon on 2024-12-31'),
+# ('expression', "request.time <timestamp('2024-12-31T12:00:00Z')"))
+Conditions: TypeAlias = Tuple[Tuple[str, str], Tuple[str, str], Tuple[str, str]]
+ResourceTypeAndConditions: TypeAlias = Tuple[ResourceType, Conditions]
+DatasetAccess: TypeAlias = List[Dict[str, Union[Dict[str, str], str]]]
 
-def format_acl(acl):
+
+def format_acl(acl: DatasetAccess) -> str:
   """Format a server-returned ACL for printing."""
-  acl_entries = collections.defaultdict(list)
+
+  acl_entries: Dict[ResourceTypeAndConditions, List[StringReference]] = (
+      collections.defaultdict(list)
+  )
   for entry in acl:
     entry = entry.copy()
-    view = entry.pop('view', None)
-    dataset = entry.pop('dataset', None)
-    routine = entry.pop('routine', None)
+    view = cast(Dict[str, str], entry.pop('view', None))
+    dataset = cast(Dict[str, Dict[str, str]], entry.pop('dataset', None))
+    routine = cast(Dict[str, str], entry.pop('routine', None))
+    role = cast(str, entry.pop('role', None))
     if view:
       acl_entries['VIEW', ()].append(
           '%s:%s.%s'
           % (view.get('projectId'), view.get('datasetId'), view.get('tableId'))
       )
     elif dataset:
-      dataset_reference = dataset.get('dataset')
+      dataset_reference = cast(Dict[str, str], dataset.get('dataset'))
       for target in dataset.get('targetTypes'):
         acl_entries['All ' + target + ' in DATASET', ()].append(
             '%s:%s'
@@ -243,17 +259,12 @@ def format_acl(acl):
             )
         )
     elif routine:
-      acl_entries['ROUTINE', ()].append(
-          '%s:%s.%s'
-          % (
-              routine.get('projectId'),
-              routine.get('datasetId'),
-              routine.get('routineId'),
-          )
+      routine_reference = str(
+          bq_id_utils.ApiClientHelper.RoutineReference(**routine)
       )
+      acl_entries['ROUTINE', ()].append(routine_reference)
     else:
-      role = entry.pop('role', None)
-      condition = entry.pop('condition', None)
+      condition = cast(Dict[str, str], entry.pop('condition', None))
       if not role or len(list(entry.values())) != 1:
         raise bq_error.BigqueryInterfaceError(
             'Invalid ACL returned by server: %s' % acl, {}, []
@@ -1230,6 +1241,8 @@ def format_reservation_info(
   return result
 
 
+
+
 def format_capacity_commitment_info(capacity_commitment):
   """Prepare a capacity commitment for printing.
 
@@ -1304,8 +1317,8 @@ def format_connection_info(connection):
   result = {}
   for key, value in connection.items():
     if key == 'name':
-      project_id, location, connection_id = (
-          bq_client_utils.ParseConnectionPath(value)
+      project_id, location, connection_id = bq_client_utils.ParseConnectionPath(
+          value
       )
       reference = bq_id_utils.ApiClientHelper.ConnectionReference.Create(
           projectId=project_id, location=location, connectionId=connection_id

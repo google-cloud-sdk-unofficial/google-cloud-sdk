@@ -71,6 +71,7 @@ _SECTION_RE = re.compile(r'(^{begin}\n*?(Host.*?)\n+{end}\n?)'.format(
 _HOST_RE = re.compile(r'Host (.*?)\n', flags=re.IGNORECASE)
 
 
+@base.UniverseCompatible
 class MultipleComputeSectionsError(exceptions.ToolException):
   """Multiple compute sections are disallowed."""
 
@@ -230,6 +231,7 @@ def _BuildComputeSection(instances, private_key_file, known_hosts_file):
     return ''
 
 
+@base.UniverseCompatible
 class ConfigSSH(base.Command):
   """Populate SSH config files with Host entries from each instance.
 
@@ -255,9 +257,10 @@ class ConfigSSH(base.Command):
 
     $ scp ~/MY-FILE example-instance.us-central1-a.MY-PROJECT:~
 
-  Whenever instances are added, removed, or their external IP
-  addresses are changed, this command should be re-executed to
-  update the configuration.
+  Whenever instances are added, removed, or their external IP addresses are
+  changed, the remove command must be run to clear the existing configuration
+  and then the command can set executed to set the configuration to the current
+  state.
 
   This command ensures that the user's public SSH key is present
   in the project's metadata. If the user does not have a public

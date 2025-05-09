@@ -43,7 +43,6 @@ import credential_loader
 
 from frontend import bigquery_command
 from frontend import bq_cached_client
-from frontend import commands
 from frontend import commands_iam
 from frontend import command_cancel
 from frontend import command_copy
@@ -64,6 +63,8 @@ from frontend import command_show
 from frontend import command_truncate
 from frontend import command_undelete
 from frontend import command_update
+from frontend import command_version
+from frontend import command_wait
 from frontend import utils as frontend_utils
 
 flags.adopt_module_key_flags(bq_flags)
@@ -109,8 +110,8 @@ def main(unused_argv):
         'truncate': command_truncate.Truncate,
         'undelete': command_undelete.Undelete,
         'update': command_update.Update,
-        'version': commands.Version,
-        'wait': commands.Wait,
+        'version': command_version.Version,
+        'wait': command_wait.Wait,
     }
 
     for command, function in bq_commands.items():

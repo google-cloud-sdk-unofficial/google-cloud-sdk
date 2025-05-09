@@ -99,7 +99,7 @@ class Delete(base.DeleteCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Deleting backup plan association [{}]. (This operation could'
-            ' take upto 2 minutes.)'.format(
+            ' take up to 2 minutes.)'.format(
                 backup_plan_association.RelativeName()
             )
         ),

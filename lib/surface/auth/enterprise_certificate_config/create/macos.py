@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.auth import enterprise_certificate_config
 from googlecloudsdk.command_lib.auth.flags import AddCommonEnterpriseCertConfigFlags
 
 
+@base.DefaultUniverseOnly
 class CreateMacOSConfig(base.CreateCommand):
   """Create an enterprise-certificate configuration file for MacOS.
 
@@ -49,6 +50,16 @@ class CreateMacOSConfig(base.CreateCommand):
         '--issuer',
         help='The certificate issuer.',
         required=True,
+    )
+    parser.add_argument(
+        '--keychain-type',
+        default='all',
+        help=(
+            'Specify the target keychain(s) for certificate lookup.'
+            'Accepted values are "login", "system", or "all". If omitted,'
+            'defaults to "all". Use "all" to include custom keychains.'
+        ),
+        required=False,
     )
 
   def Run(self, args):

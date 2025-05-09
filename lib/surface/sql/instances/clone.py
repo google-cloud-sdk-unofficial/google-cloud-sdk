@@ -81,8 +81,19 @@ EXAMPLES_ALPHA = ("""\
   To specify the allocated IP range for the private IP target Instance
   (reserved for future use):
 
-  $ {command} instance-foo instance-bar --allocated-ip-range-name range-bar
+  $ {command} my-source-instance my-cloned-instance --allocated-ip-range-name cloned-instance-ip-range
+
+  To clone a deleted instance, include the name and deletion time of the source instance:
+
+  $ {command} my-source-instance my-cloned-instance --source-instance-deletion-time '2012-11-15T16:19:00.094Z'
     """)
+
+EXAMPLES_BETA = ("""\
+
+  To clone a deleted instance, include the name and deletion time of the source instance:
+
+  $ {command} my-source-instance my-cloned-instance --source-instance-deletion-time '2012-11-15T16:19:00.094Z'
+  """)
 
 DETAILED_HELP = {
     'DESCRIPTION': DESCRIPTION,
@@ -92,6 +103,11 @@ DETAILED_HELP = {
 DETAILED_APLHA_HELP = {
     'DESCRIPTION': DESCRIPTION,
     'EXAMPLES': EXAMPLES_GA + EXAMPLES_ALPHA,
+}
+
+DETAILED_BETA_HELP = {
+    'DESCRIPTION': DESCRIPTION,
+    'EXAMPLES': EXAMPLES_GA + EXAMPLES_BETA,
 }
 
 
@@ -136,6 +152,28 @@ def AddAlphaArgs(parser):
       IP is created in the allocated range represented by this name.
       Reserved for future use.
       """)
+  parser.add_argument(
+      '--source-instance-deletion-time',
+      type=arg_parsers.Datetime.Parse,
+      required=False,
+      help="""\
+      The time the source instance was deleted. This is required if cloning
+      from a deleted instance.
+      """,
+      hidden=True)
+
+
+def AddBetaArgs(parser):
+  """Declare beta flags for this command parser."""
+  parser.add_argument(
+      '--source-instance-deletion-time',
+      type=arg_parsers.Datetime.Parse,
+      required=False,
+      help="""\
+      The time the source instance was deleted. This is required if cloning
+      from a deleted instance.
+      """,
+      hidden=True)
 
 
 def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
@@ -159,10 +197,20 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
   if args.preferred_secondary_zone:
     clone_context.preferredSecondaryZone = args.preferred_secondary_zone
 
+  if release_track == base.ReleaseTrack.BETA:
+    if args.source_instance_deletion_time:
+      clone_context.sourceInstanceDeletionTime = (
+          args.source_instance_deletion_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+      )
+
   if release_track == base.ReleaseTrack.ALPHA:
     # ALLOCATED IP RANGE options
     if args.allocated_ip_range_name:
       clone_context.allocatedIpRange = args.allocated_ip_range_name
+    if args.source_instance_deletion_time:
+      clone_context.sourceInstanceDeletionTime = (
+          args.source_instance_deletion_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+      )
 
 
 def RunBaseCloneCommand(args, release_track):
@@ -323,6 +371,8 @@ class Clone(base.CreateCommand):
     """Declare flag and positional arguments for the command parser."""
     AddBaseArgs(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+    if cls.ReleaseTrack() == base.ReleaseTrack.BETA:
+      AddBetaArgs(parser)
 
   def Run(self, args):
     return RunBaseCloneCommand(args, self.ReleaseTrack())

@@ -185,7 +185,7 @@ class Create(base.CreateCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Creating backup plan [{}]. (This operation could'
-            ' take upto 2 minutes.)'.format(backup_plan.RelativeName())
+            ' take up to 2 minutes.)'.format(backup_plan.RelativeName())
         ),
     )
     log.CreatedResource(backup_plan.RelativeName(), kind='backup plan')

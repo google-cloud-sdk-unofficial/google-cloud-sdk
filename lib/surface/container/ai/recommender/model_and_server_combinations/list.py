@@ -16,6 +16,7 @@
 
 from googlecloudsdk.api_lib.ai.recommender import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
@@ -28,7 +29,7 @@ $ {command}
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+class List(commands.List):
   """List supported model and server combinations.
 
   This command lists all supported model, model server, and model server version
@@ -55,6 +56,9 @@ class List(base.Command):
             " any model server version."
         ),
     )
+    parser.display_info.AddFormat(
+        "table(modelName, modelServerName, modelServerVersion)"
+    )
 
   def Run(self, args):
     client = util.GetClientInstance(base.ReleaseTrack.ALPHA)
@@ -75,57 +79,3 @@ class List(base.Command):
       log.error(f"An error has occurred: {e}")
       log.status.Print(f"An error has occurred: {e}")
       return []
-
-  def Display(self, _, resources):
-    if not resources:
-      log.out.Print("No supported model and model server combinations found.")
-      return
-
-    log.out.Print("Supported model and model server combinations:")
-
-    table_data = [
-        {
-            "Model": item.modelName,
-            "Model Server": item.modelServerName,
-            "Model Server Version": item.modelServerVersion,
-        }
-        for item in resources
-    ]
-
-    col_widths = {
-        "Model": max(
-            [len(row["Model"]) for row in table_data] + [len("Model")]
-        ),
-        "Model Server": max(
-            [len(row["Model Server"]) for row in table_data]
-            + [len("Model Server")]
-        ),
-        "Model Server Version": max(
-            [len(row["Model Server Version"]) for row in table_data]
-            + [len("Model Server Version")]
-        ),
-    }
-
-    header = " | ".join([
-        f"{'Model':<{col_widths['Model']}}",
-        f"{'Model Server':<{col_widths['Model Server']}}",
-        f"{'Model Server Version':<{col_widths['Model Server Version']}}",
-    ])
-    log.out.Print(header)
-
-    separator = "-|-".join([
-        "-" * col_widths["Model"],
-        "-" * col_widths["Model Server"],
-        "-" * col_widths["Model Server Version"],
-    ])
-    log.out.Print(separator)
-
-    for row in table_data:
-      row_str = " | ".join([
-          f"{row['Model']:<{col_widths['Model']}}",
-          f"{row['Model Server']:<{col_widths['Model Server']}}",
-          (
-              f"{row['Model Server Version']:<{col_widths['Model Server Version']}}"
-          ),
-      ])
-      log.out.Print(row_str)

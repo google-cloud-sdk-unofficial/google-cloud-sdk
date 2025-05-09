@@ -43,6 +43,7 @@
     modify_request_hooks:
     - googlecloudsdk.api_lib.bigtable.tables:UpdateRequestWithInput
     - googlecloudsdk.api_lib.bigtable.tables:HandleAutomatedBackupPolicyCreateTableArgs
+    - googlecloudsdk.api_lib.bigtable.tables:HandleRowKeySchemaCreateTableArgs
 
   arguments:
     resource:
@@ -79,3 +80,38 @@
       type: bool
       help_text: |
         Once specified, the table is deletion protected.
+    - arg_name: row-key-schema-definition-file
+      required: false
+      help_text: |
+        The row key schema for the table. The schema is defined in a YAML or JSON file, equivalent
+        to the StructType protobuf message.
+
+        Example YAML:
+
+        ```yaml
+        encoding:
+          delimitedBytes:
+            delimiter: '#'
+        fields:
+        - fieldName: field1
+          type:
+            bytesType:
+              encoding:
+                raw: {}
+        - fieldName: field2
+          type:
+            bytesType:
+              encoding:
+                raw: {}
+        ```
+
+    - arg_name: row-key-schema-pre-encoded-bytes
+      type: bool
+      default: false
+      required: false
+      help_text: |
+        By default, Base64 encoding is applied to all binary fields in the YAML/JSON file (for
+        example, `encoding.delimitedBytes.delimiter`).
+
+        Use this to indicate that all binary fields are already encoded in the YAML/JSON file and
+        should not be encoded again.

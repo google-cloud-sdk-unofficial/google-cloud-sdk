@@ -98,7 +98,7 @@ class Delete(base.DeleteCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Deleting backup plan [{}]. '
-            '(This operation could take upto 2 minutes.)'
+            '(This operation could take up to 2 minutes.)'
             .format(backup_plan.RelativeName())
         ),
         has_result=False,

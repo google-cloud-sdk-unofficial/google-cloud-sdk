@@ -669,6 +669,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "capacityCommitmentId": {
+          "description": "Optional. The optional resulting capacity commitment ID. Capacity commitment name will be generated automatically if this field is empty. This field must only contain lower case alphanumeric characters or dashes. The first and last character cannot be a dash. Max length is 64 characters.",
+          "type": "string"
         }
       }
     },
@@ -1696,6 +1700,11 @@
                     },
                     "pageToken": {
                       "description": "The next_page_token value returned from a previous List request, if any.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "filter": {
+                      "description": "Optional. The filter to apply to the list results. For now, only filter by reservation group is supported. Examples: \"reservation_group=my-group\"",
                       "location": "query",
                       "type": "string"
                     }

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
@@ -27,6 +26,7 @@ from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.container import constants
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
@@ -39,8 +39,10 @@ class InvalidAddonValueError(util.Error):
   """A class for invalid --update-addons input."""
 
   def __init__(self, value):
-    message = ('invalid --update-addons value {0}; '
-               'must be ENABLED or DISABLED.'.format(value))
+    message = (
+        'invalid --update-addons value {0}; '
+        'must be ENABLED or DISABLED.'.format(value)
+    )
     super(InvalidAddonValueError, self).__init__(message)
 
 
@@ -68,7 +70,8 @@ def _AddCommonArgs(parser):
       capture some information, but behaves like an ArgumentParser.
   """
   parser.add_argument(
-      'name', metavar='NAME', help='The name of the cluster to update.')
+      'name', metavar='NAME', help='The name of the cluster to update.'
+  )
   parser.add_argument('--node-pool', help='Node pool to be updated.')
   # Timeout in seconds for the operation, default 3600 seconds (60 minutes)
   parser.add_argument(
@@ -76,7 +79,8 @@ def _AddCommonArgs(parser):
       type=int,
       default=3600,
       hidden=True,
-      help='Timeout (seconds) for waiting on the operation to complete.')
+      help='Timeout (seconds) for waiting on the operation to complete.',
+  )
   flags.AddAsyncFlag(parser)
 
 
@@ -103,11 +107,13 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
+                    api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
-                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
-                  }),),
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
+            ),
+        ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -124,20 +130,21 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED""".format(
-    hpa=api_adapter.HPA,
-    ingress=api_adapter.INGRESS,
-    dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY,
-    istio=api_adapter.ISTIO,
-    backuprestore=api_adapter.BACKUPRESTORE,
-    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
-    cloudbuild=api_adapter.CLOUDBUILD,
-    configconnector=api_adapter.CONFIGCONNECTOR,
-    nodelocaldns=api_adapter.NODELOCALDNS,
-    gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
-    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
-    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
-    ))
+            hpa=api_adapter.HPA,
+            ingress=api_adapter.INGRESS,
+            dashboard=api_adapter.DASHBOARD,
+            network_policy=api_adapter.NETWORK_POLICY,
+            istio=api_adapter.ISTIO,
+            backuprestore=api_adapter.BACKUPRESTORE,
+            cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
+            cloudbuild=api_adapter.CLOUDBUILD,
+            configconnector=api_adapter.CONFIGCONNECTOR,
+            nodelocaldns=api_adapter.NODELOCALDNS,
+            gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+            gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+            gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+        ),
+    )
 
   elif release_track == base.ReleaseTrack.BETA:
     mutex_group.add_argument(
@@ -159,11 +166,13 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
+                    api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
-                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
-                  }),),
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
+            ),
+        ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -179,19 +188,20 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED""".format(
-    hpa=api_adapter.HPA,
-    ingress=api_adapter.INGRESS,
-    dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY,
-    istio=api_adapter.ISTIO,
-    backuprestore=api_adapter.BACKUPRESTORE,
-    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
-    configconnector=api_adapter.CONFIGCONNECTOR,
-    nodelocaldns=api_adapter.NODELOCALDNS,
-    gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
-    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
-    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
-    ))
+            hpa=api_adapter.HPA,
+            ingress=api_adapter.INGRESS,
+            dashboard=api_adapter.DASHBOARD,
+            network_policy=api_adapter.NETWORK_POLICY,
+            istio=api_adapter.ISTIO,
+            backuprestore=api_adapter.BACKUPRESTORE,
+            cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
+            configconnector=api_adapter.CONFIGCONNECTOR,
+            nodelocaldns=api_adapter.NODELOCALDNS,
+            gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+            gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+            gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+        ),
+    )
 
   else:
     mutex_group.add_argument(
@@ -212,10 +222,12 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.STATEFULHA: _ParseAddonDisabled,
                     api_adapter.PARALLELSTORECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
+                    api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
                 },
-                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS
-                  }),),
+                **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
+            ),
+        ),
         dest='disable_addons',
         metavar='ADDON=ENABLED|DISABLED',
         help="""Cluster addons to enable or disable. Options are
@@ -231,31 +243,38 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {gcpfilestoredriver}=ENABLED|DISABLED
 {gcsfusecsidriver}=ENABLED|DISABLED
 """.format(
-    hpa=api_adapter.HPA,
-    ingress=api_adapter.INGRESS,
-    dashboard=api_adapter.DASHBOARD,
-    network_policy=api_adapter.NETWORK_POLICY,
-    backuprestore=api_adapter.BACKUPRESTORE,
-    cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
-    configconnector=api_adapter.CONFIGCONNECTOR,
-    nodelocaldns=api_adapter.NODELOCALDNS,
-    gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
-    gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
-    gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
-    ))
+            hpa=api_adapter.HPA,
+            ingress=api_adapter.INGRESS,
+            dashboard=api_adapter.DASHBOARD,
+            network_policy=api_adapter.NETWORK_POLICY,
+            backuprestore=api_adapter.BACKUPRESTORE,
+            cloudrun=api_adapter.CLOUDRUN_ADDONS[0],
+            configconnector=api_adapter.CONFIGCONNECTOR,
+            nodelocaldns=api_adapter.NODELOCALDNS,
+            gcepdcsidriver=api_adapter.GCEPDCSIDRIVER,
+            gcpfilestoredriver=api_adapter.GCPFILESTORECSIDRIVER,
+            gcsfusecsidriver=api_adapter.GCSFUSECSIDRIVER,
+        ),
+    )
 
   mutex_group.add_argument(
       '--generate-password',
       action='store_true',
       default=None,
-      help='Ask the server to generate a secure password and use that as the '
-      'basic auth password, keeping the existing username.')
+      help=(
+          'Ask the server to generate a secure password and use that as the '
+          'basic auth password, keeping the existing username.'
+      ),
+  )
   mutex_group.add_argument(
       '--set-password',
       action='store_true',
       default=None,
-      help='Set the basic auth password to the specified value, keeping the '
-      'existing username.')
+      help=(
+          'Set the basic auth password to the specified value, keeping the '
+          'existing username.'
+      ),
+  )
 
   flags.AddBasicAuthFlags(mutex_group)
 
@@ -265,8 +284,11 @@ def _AddAdditionalZonesArg(mutex_group, deprecated=True):
   if deprecated:
     action = actions.DeprecationAction(
         'additional-zones',
-        warn='This flag is deprecated. '
-        'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.')
+        warn=(
+            'This flag is deprecated. '
+            'Use --node-locations=PRIMARY_ZONE,[ZONE,...] instead.'
+        ),
+    )
   mutex_group.add_argument(
       '--additional-zones',
       type=arg_parsers.ArgList(),
@@ -288,7 +310,8 @@ To remove all zones other than the cluster's primary zone, pass the empty string
 to the flag. For example:
 
   $ {command} example-cluster --zone us-central1-a --additional-zones ""
-""")
+""",
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -297,10 +320,8 @@ class Update(base.UpdateCommand):
   """Update cluster settings for an existing container cluster."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': '{description}',
+      'EXAMPLES': """\
           To enable autoscaling for an existing cluster, run:
 
             $ {command} sample-cluster --enable-autoscaling
@@ -423,6 +444,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddPatchUpdateFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -430,38 +452,46 @@ class Update(base.UpdateCommand):
     flags.WarnForEnablingBetaAPIs(args)
     opts = container_command_util.ParseUpdateOptionsBase(args, locations)
     opts.resource_usage_bigquery_dataset = args.resource_usage_bigquery_dataset
-    opts.clear_resource_usage_bigquery_dataset = \
-        args.clear_resource_usage_bigquery_dataset
+    opts.clear_resource_usage_bigquery_dataset = (
+        args.clear_resource_usage_bigquery_dataset)
     opts.enable_network_egress_metering = args.enable_network_egress_metering
-    opts.enable_resource_consumption_metering = \
-        args.enable_resource_consumption_metering
+    opts.enable_resource_consumption_metering = (
+        args.enable_resource_consumption_metering)
     opts.enable_intra_node_visibility = args.enable_intra_node_visibility
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:
       console_io.PromptContinue(
-          message='Enabling L4 ILB Subsetting is a one-way operation.'
-          'Once enabled, this configuration cannot be disabled.'
-          'Existing ILB services should be recreated to use Subsetting.',
-          cancel_on_no=True)
+          message=(
+              'Enabling L4 ILB Subsetting is a one-way operation.'
+              'Once enabled, this configuration cannot be disabled.'
+              'Existing ILB services should be recreated to use Subsetting.'
+          ),
+          cancel_on_no=True,
+      )
     opts.enable_master_global_access = args.enable_master_global_access
     opts.enable_shielded_nodes = args.enable_shielded_nodes
     opts.release_channel = args.release_channel
     opts.autoscaling_profile = args.autoscaling_profile
     opts.hpa_profile = args.hpa_profile
     opts.disable_autopilot = args.disable_autopilot
-    opts.cloud_run_config = flags.GetLegacyCloudRunFlag('{}_config', args,
-                                                        get_default)
-    flags.ValidateCloudRunConfigUpdateArgs(opts.cloud_run_config,
-                                           args.disable_addons)
+    opts.cloud_run_config = flags.GetLegacyCloudRunFlag(
+        '{}_config', args, get_default
+    )
+    flags.ValidateCloudRunConfigUpdateArgs(
+        opts.cloud_run_config, args.disable_addons
+    )
     if args.disable_addons and api_adapter.NODELOCALDNS in args.disable_addons:
       # NodeLocalDNS is being enabled or disabled
       console_io.PromptContinue(
-          message='Enabling/Disabling NodeLocal DNSCache causes a re-creation '
-          'of all cluster nodes at versions 1.15 or above. '
-          'This operation is long-running and will block other '
-          'operations on the cluster (including delete) until it has run '
-          'to completion.',
-          cancel_on_no=True)
+          message=(
+              'Enabling/Disabling NodeLocal DNSCache causes a re-creation '
+              'of all cluster nodes at versions 1.15 or above. '
+              'This operation is long-running and will block other '
+              'operations on the cluster (including delete) until it has run '
+              'to completion.'
+          ),
+          cancel_on_no=True,
+      )
     opts.disable_default_snat = args.disable_default_snat
     opts.notification_config = args.notification_config
     opts.security_group = args.security_group
@@ -508,7 +538,8 @@ class Update(base.UpdateCommand):
     opts.security_posture = args.security_posture
     opts.workload_vulnerability_scanning = args.workload_vulnerability_scanning
     opts.enable_runtime_vulnerability_insight = (
-        args.enable_runtime_vulnerability_insight)
+        args.enable_runtime_vulnerability_insight
+    )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
     opts.enable_multi_networking = args.enable_multi_networking
@@ -555,6 +586,7 @@ class Update(base.UpdateCommand):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.patch_update = args.patch_update
     return opts
 
   def Run(self, args):
@@ -583,13 +615,19 @@ class Update(base.UpdateCommand):
       cluster_name = cluster.name
       cluster_node_count = cluster.currentNodeCount
       cluster_zone = cluster.zone
-    except (exceptions.HttpException, apitools_exceptions.HttpForbiddenError,
-            util.Error) as error:
+    except (
+        exceptions.HttpException,
+        apitools_exceptions.HttpForbiddenError,
+        util.Error,
+    ) as error:
       if cluster_is_required:
         raise
-      log.warning(('Problem loading details of cluster to update:\n\n{}\n\n'
-                   'You can still attempt updates to the cluster.\n').format(
-                       console_attr.SafeText(error)))
+      log.warning(
+          (
+              'Problem loading details of cluster to update:\n\n{}\n\n'
+              'You can still attempt updates to the cluster.\n'
+          ).format(console_attr.SafeText(error))
+      )
 
     if getattr(args, 'enable_pod_security_policy', None):
       log.status.Print(
@@ -619,26 +657,32 @@ class Update(base.UpdateCommand):
       options = api_adapter.SetMasterAuthOptions(
           action=api_adapter.SetMasterAuthOptions.SET_USERNAME,
           username=args.username,
-          password=args.password)
+          password=args.password,
+      )
 
       try:
         op_ref = adapter.SetMasterAuth(cluster_ref, options)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
-    elif (args.generate_password or args.set_password or
-          args.IsSpecified('password')):
+    elif (
+        args.generate_password
+        or args.set_password
+        or args.IsSpecified('password')
+    ):
       if args.generate_password:
         password = ''
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.GENERATE_PASSWORD,
-            password=password)
+            password=password,
+        )
       else:
         password = args.password
         if not args.IsSpecified('password'):
           password = input('Please enter the new password:')
         options = api_adapter.SetMasterAuthOptions(
             action=api_adapter.SetMasterAuthOptions.SET_PASSWORD,
-            password=password)
+            password=password,
+        )
 
       try:
         op_ref = adapter.SetMasterAuth(cluster_ref, options)
@@ -650,14 +694,18 @@ class Update(base.UpdateCommand):
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.enable_network_policy is not None:
       console_io.PromptContinue(
-          message='Enabling/Disabling Network Policy causes a rolling '
-          'update of all cluster nodes, similar to performing a cluster '
-          'upgrade.  This operation is long-running and will block other '
-          'operations on the cluster (including delete) until it has run '
-          'to completion.',
-          cancel_on_no=True)
+          message=(
+              'Enabling/Disabling Network Policy causes a rolling '
+              'update of all cluster nodes, similar to performing a cluster '
+              'upgrade.  This operation is long-running and will block other '
+              'operations on the cluster (including delete) until it has run '
+              'to completion.'
+          ),
+          cancel_on_no=True,
+      )
       options = api_adapter.SetNetworkPolicyOptions(
-          enabled=args.enable_network_policy)
+          enabled=args.enable_network_policy
+      )
       try:
         op_ref = adapter.SetNetworkPolicy(cluster_ref, options)
       except apitools_exceptions.HttpError as error:
@@ -689,11 +737,14 @@ completion."""
       console_io.PromptContinue(
           message=msg_tmpl.format(
               name=cluster_name,
-              num_nodes=cluster_node_count if cluster_node_count else '?'),
-          cancel_on_no=True)
+              num_nodes=cluster_node_count if cluster_node_count else '?',
+          ),
+          cancel_on_no=True,
+      )
       try:
         op_ref = adapter.StartIpRotation(
-            cluster_ref, rotate_credentials=rotate_credentials)
+            cluster_ref, rotate_credentials=rotate_credentials
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.complete_ip_rotation or args.complete_credential_rotation:
@@ -726,8 +777,10 @@ to completion."""
           message=msg_tmpl.format(
               name=cluster_name,
               project=cluster_ref.projectId,
-              zone=cluster_zone),
-          cancel_on_no=True)
+              zone=cluster_zone,
+          ),
+          cancel_on_no=True,
+      )
       try:
         op_ref = adapter.CompleteIpRotation(cluster_ref)
       except apitools_exceptions.HttpError as error:
@@ -749,40 +802,48 @@ to completion."""
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.maintenance_window is not None:
       try:
-        op_ref = adapter.SetDailyMaintenanceWindow(cluster_ref,
-                                                   cluster.maintenancePolicy,
-                                                   args.maintenance_window)
+        op_ref = adapter.SetDailyMaintenanceWindow(
+            cluster_ref, cluster.maintenancePolicy, args.maintenance_window
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'maintenance_window_start', None) is not None:
       try:
         op_ref = adapter.SetRecurringMaintenanceWindow(
-            cluster_ref, cluster.maintenancePolicy,
-            args.maintenance_window_start, args.maintenance_window_end,
-            args.maintenance_window_recurrence)
+            cluster_ref,
+            cluster.maintenancePolicy,
+            args.maintenance_window_start,
+            args.maintenance_window_end,
+            args.maintenance_window_recurrence,
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'clear_maintenance_window', None):
       try:
-        op_ref = adapter.RemoveMaintenanceWindow(cluster_ref,
-                                                 cluster.maintenancePolicy)
+        op_ref = adapter.RemoveMaintenanceWindow(
+            cluster_ref, cluster.maintenancePolicy
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'add_maintenance_exclusion_end', None) is not None:
       try:
         op_ref = adapter.AddMaintenanceExclusion(
-            cluster_ref, cluster.maintenancePolicy,
+            cluster_ref,
+            cluster.maintenancePolicy,
             args.add_maintenance_exclusion_name,
             args.add_maintenance_exclusion_start,
             args.add_maintenance_exclusion_end,
-            args.add_maintenance_exclusion_scope)
+            args.add_maintenance_exclusion_scope,
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'remove_maintenance_exclusion', None) is not None:
       try:
         op_ref = adapter.RemoveMaintenanceExclusion(
-            cluster_ref, cluster.maintenancePolicy,
-            args.remove_maintenance_exclusion)
+            cluster_ref,
+            cluster.maintenancePolicy,
+            args.remove_maintenance_exclusion,
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'add_cross_connect_subnetworks', None) is not None:
@@ -790,7 +851,8 @@ to completion."""
         op_ref = adapter.ModifyCrossConnectSubnetworks(
             cluster_ref,
             cluster.privateClusterConfig.crossConnectConfig,
-            add_subnetworks=args.add_cross_connect_subnetworks)
+            add_subnetworks=args.add_cross_connect_subnetworks,
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif getattr(args, 'remove_cross_connect_subnetworks', None) is not None:
@@ -798,7 +860,8 @@ to completion."""
         op_ref = adapter.ModifyCrossConnectSubnetworks(
             cluster_ref,
             cluster.privateClusterConfig.crossConnectConfig,
-            remove_subnetworks=args.remove_cross_connect_subnetworks)
+            remove_subnetworks=args.remove_cross_connect_subnetworks,
+        )
 
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
@@ -807,7 +870,8 @@ to completion."""
         op_ref = adapter.ModifyCrossConnectSubnetworks(
             cluster_ref,
             cluster.privateClusterConfig.crossConnectConfig,
-            clear_all_subnetworks=True)
+            clear_all_subnetworks=True,
+        )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (
@@ -876,8 +940,8 @@ to completion."""
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (
         getattr(args, 'enable_insecure_binding_system_authenticated', None)
-        is not None or
-        getattr(args, 'enable_insecure_binding_system_unauthenticated', None)
+        is not None
+        or getattr(args, 'enable_insecure_binding_system_unauthenticated', None)
         is not None
     ):
       try:
@@ -899,7 +963,8 @@ to completion."""
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
-            cluster_ref, args.enable_legacy_authorization)
+            cluster_ref, args.enable_legacy_authorization
+        )
       else:
         options = self.ParseUpdateOptions(args, locations)
 
@@ -908,7 +973,26 @@ to completion."""
         # Checking whether the API has been enabled, and warning if not.
         if options.enable_image_streaming:
           util.CheckForContainerFileSystemApiEnablementWithPrompt(
-              cluster_ref.projectId)
+              cluster_ref.projectId
+          )
+
+        if options.logging == ['NONE']:
+          if console_io.CanPrompt():
+            console_io.PromptContinue(
+                message=constants.LOGGING_DISABLED_WARNING,
+                cancel_on_no=True,
+            )
+          else:
+            log.status.Print(constants.LOGGING_DISABLED_WARNING)
+
+        if options.monitoring == ['NONE']:
+          if console_io.CanPrompt():
+            console_io.PromptContinue(
+                message=constants.MONITORING_DISABLED_WARNING,
+                cancel_on_no=True,
+            )
+          else:
+            log.status.Print(constants.MONITORING_DISABLED_WARNING)
 
         op_ref = adapter.UpdateCluster(cluster_ref, options)
 
@@ -916,15 +1000,21 @@ to completion."""
       adapter.WaitForOperation(
           op_ref,
           'Updating {0}'.format(cluster_ref.clusterId),
-          timeout_s=args.timeout)
+          timeout_s=args.timeout,
+      )
 
       log.UpdatedResource(cluster_ref)
       cluster_url = util.GenerateClusterUrl(cluster_ref)
-      log.status.Print('To inspect the contents of your cluster, go to: ' +
-                       cluster_url)
+      log.status.Print(
+          'To inspect the contents of your cluster, go to: ' + cluster_url
+      )
 
-      if (args.start_ip_rotation or args.complete_ip_rotation or
-          args.start_credential_rotation or args.complete_credential_rotation):
+      if (
+          args.start_ip_rotation
+          or args.complete_ip_rotation
+          or args.start_credential_rotation
+          or args.complete_credential_rotation
+      ):
         cluster = adapter.GetCluster(cluster_ref)
         try:
           util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
@@ -937,8 +1027,11 @@ to completion."""
           cluster = adapter.GetCluster(cluster_ref)
           for node_pool in cluster.nodePools:
             util.CheckForCgroupModeV1(node_pool)
-        except (exceptions.HttpException,
-                apitools_exceptions.HttpForbiddenError, util.Error) as error:
+        except (
+            exceptions.HttpException,
+            apitools_exceptions.HttpForbiddenError,
+            util.Error,
+        ) as error:
           log.warning(
               util.CGROUPV1_CHECKING_FAILURE_MSG.format(
                   console_attr.SafeText(error)
@@ -948,14 +1041,15 @@ to completion."""
   def IsClusterRequired(self, args):
     """Returns if failure getting the cluster should be an error."""
     return bool(
-        getattr(args, 'maintenance_window_end', False) or
-        getattr(args, 'clear_maintenance_window', False) or
-        getattr(args, 'add_maintenance_exclusion_end', False) or
-        getattr(args, 'remove_maintenance_exclusion', False) or
-        getattr(args, 'add_cross_connect_subnetworks', False) or
-        getattr(args, 'remove_cross_connect_subnetworks', False) or
-        getattr(args, 'clear_cross_connect_subnetworks', False) or
-        getattr(args, 'enable_google_cloud_access', False))
+        getattr(args, 'maintenance_window_end', False)
+        or getattr(args, 'clear_maintenance_window', False)
+        or getattr(args, 'add_maintenance_exclusion_end', False)
+        or getattr(args, 'remove_maintenance_exclusion', False)
+        or getattr(args, 'add_cross_connect_subnetworks', False)
+        or getattr(args, 'remove_cross_connect_subnetworks', False)
+        or getattr(args, 'clear_cross_connect_subnetworks', False)
+        or getattr(args, 'enable_google_cloud_access', False)
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -1083,8 +1177,7 @@ class UpdateBeta(Update):
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
-    flags.AddMasterAuthorizedNetworksFlags(
-        group_for_control_plane_endpoints)
+    flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
     flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
     flags.AddMasterGlobalAccessFlag(group_for_control_plane_endpoints)
     flags.AddEnablePrivateEndpoint(group_for_control_plane_endpoints)
@@ -1095,6 +1188,7 @@ class UpdateBeta(Update):
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddPatchUpdateFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1176,10 +1270,13 @@ class UpdateBeta(Update):
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:
       console_io.PromptContinue(
-          message='Enabling L4 ILB Subsetting is a one-way operation.'
-          'Once enabled, this configuration cannot be disabled.'
-          'Existing ILB services should be recreated to use Subsetting.',
-          cancel_on_no=True)
+          message=(
+              'Enabling L4 ILB Subsetting is a one-way operation.'
+              'Once enabled, this configuration cannot be disabled.'
+              'Existing ILB services should be recreated to use Subsetting.'
+          ),
+          cancel_on_no=True,
+      )
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
@@ -1287,6 +1384,7 @@ class UpdateBeta(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.patch_update = args.patch_update
     return opts
 
 
@@ -1416,8 +1514,7 @@ class UpdateAlpha(Update):
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
-    flags.AddMasterAuthorizedNetworksFlags(
-        group_for_control_plane_endpoints)
+    flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
     flags.AddEnableIPAccessFlag(group_for_control_plane_endpoints)
     flags.AddMasterGlobalAccessFlag(group_for_control_plane_endpoints)
     flags.AddEnablePrivateEndpoint(group_for_control_plane_endpoints)
@@ -1428,6 +1525,7 @@ class UpdateAlpha(Update):
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddPatchUpdateFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1506,10 +1604,13 @@ class UpdateAlpha(Update):
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
     if opts.enable_l4_ilb_subsetting:
       console_io.PromptContinue(
-          message='Enabling L4 ILB Subsetting is a one-way operation.'
-          'Once enabled, this configuration cannot be disabled.'
-          'Existing ILB services should be recreated to use Subsetting.',
-          cancel_on_no=True)
+          message=(
+              'Enabling L4 ILB Subsetting is a one-way operation.'
+              'Once enabled, this configuration cannot be disabled.'
+              'Existing ILB services should be recreated to use Subsetting.'
+          ),
+          cancel_on_no=True,
+      )
     opts.cluster_dns = args.cluster_dns
     opts.cluster_dns_scope = args.cluster_dns_scope
     opts.cluster_dns_domain = args.cluster_dns_domain
@@ -1616,4 +1717,5 @@ class UpdateAlpha(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.patch_update = args.patch_update
     return opts

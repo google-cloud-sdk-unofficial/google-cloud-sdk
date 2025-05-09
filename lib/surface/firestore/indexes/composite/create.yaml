@@ -46,3 +46,5 @@
       required: true
     - _REF_: googlecloudsdk.command_lib.firestore.flags:query_scope
     - _REF_: googlecloudsdk.command_lib.firestore.flags:api_scope
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:multikey
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:density

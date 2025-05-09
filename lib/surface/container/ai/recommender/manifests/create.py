@@ -23,7 +23,7 @@ from googlecloudsdk.core.util import files
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.Command):
+class Create(base.CreateCommand):
   """Generate ready-to-deploy Kubernetes manifests with compute, load balancing, and autoscaling capabilities.
 
   To get supported model, model servers, and model server versions, run `gcloud

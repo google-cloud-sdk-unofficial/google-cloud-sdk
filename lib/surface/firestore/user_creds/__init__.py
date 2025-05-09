@@ -23,8 +23,8 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
-@base.Hidden
 class UserCreds(base.Group):
   """Manage the user creds for a Cloud Firestore Database."""

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.composer import environments_util as environments_ap
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import resource_args
+from googlecloudsdk.core import resources
 
 
 DETAILED_HELP = {
@@ -51,6 +52,15 @@ class List(base.ListCommand):
   detailed_help = DETAILED_HELP
 
   @staticmethod
+  def _GetUri(environment):
+    r = resources.REGISTRY.ParseRelativeName(
+        environment.name,
+        collection='composer.projects.locations.environments',
+        api_version='v1',
+    )
+    return r.SelfLink()
+
+  @staticmethod
   def Args(parser):
     resource_args.AddLocationResourceArg(
         parser,
@@ -66,9 +76,7 @@ class List(base.ListCommand):
                                   'state:label=STATE,'
                                   'createTime:reverse'
                                   ')')
-    parser.display_info.AddUriFunc(
-        lambda x: f'https://www.googleapis.com/composer/v1/{x.name}'
-    )
+    parser.display_info.AddUriFunc(List._GetUri)
 
   def Run(self, args):
     location_refs = flags.FallthroughToLocationProperty(

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -253,6 +253,12 @@
             The retention period for the Autonomous Database. This field is specified
             in days, can range from 1 day to 60 days, and has a default value of
             60 days.
+        - arg_name: properties-allowlisted-ips
+          api_field: autonomousDatabase.properties.allowlistedIps
+          required: false
+          repeated: true
+          help_text: |-
+            The list of allowlisted IP addresses for the Autonomous Database.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false
@@ -279,6 +285,31 @@
       repeated: false
       help_text: |-
         The subnet CIDR range for the Autonmous Database.
+    - group:
+        api_field: autonomousDatabase.sourceConfig
+        required: false
+        help_text: |-
+          The source configuration for the standby Autonomnous Database.
+        params:
+        - arg_name: source-config-autonomous-database
+          help_text: |-
+            The name of the primary Autonomous Database that is used to create a Peer
+            Autonomous Database from a source.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_autonomous_databases
+          resource_method_params:
+            autonomousDatabase.sourceConfig.autonomousDatabase: '{__relative_name__}'
+          required: false
+        - arg_name: source-config-automatic-backups-replication-enabled
+          api_field: autonomousDatabase.sourceConfig.automaticBackupsReplicationEnabled
+          action: store_true
+          required: false
+          type: bool
+          help_text: |-
+            This field specifies if the replication of automatic backups is enabled
+            when creating a Data Guard.
+          default: null
     - arg_name: request-id
       api_field: requestId
       required: false

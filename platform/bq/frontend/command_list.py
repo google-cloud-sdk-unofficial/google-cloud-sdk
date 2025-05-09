@@ -5,10 +5,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from typing import Optional
+from typing import Dict, Optional
 
 from absl import app
 from absl import flags
+from typing_extensions import override
 
 import bq_flags
 from clients import client_connection
@@ -28,6 +29,8 @@ from frontend import utils as frontend_utils
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
+from utils import bq_processor_utils
+
 
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
@@ -184,7 +187,10 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         'https://cloud.google.com/bigquery/docs/reference/datatransfer/rest/v1/'
         'TransferState '
         'for details.'
-        '\nFor jobs, filtering is currently not supported.',
+        '\nFor jobs, the filter expression, in the form "states:VALUE(s)", '
+        'will show jobs with the specified states. See '
+        'https://cloud.google.com/bigquery/docs/reference/rest/v2/'
+        'Job#JobStatus for details.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -232,6 +238,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
     Examples:
       bq ls
       bq ls -j proj
+      bq ls -j --filter:'states:RUNNING,PENDING' proj
       bq ls -p -n 1000
       bq ls mydataset
       bq ls -a
@@ -242,7 +249,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       bq ls --filter 'labels.color:red labels.size:*'
       bq ls --transfer_config --transfer_location='us'
           --filter='dataSourceIds:play,adwords'
-      bq ls --transfer_run --filter='states:SUCCESSED,PENDING'
+      bq ls --transfer_run --filter='states:SUCCEEDED,PENDING'
           --run_attempt='LATEST' projects/p/locations/l/transferConfigs/c
       bq ls --transfer_log --message_type='messageTypes:INFO,ERROR'
           projects/p/locations/l/transferConfigs/c/runs/r
@@ -323,7 +330,6 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
     page_token = self.k
     results = None
-    object_type = None
     objects_metadata = None
     if self.j:
       object_type = bq_id_utils.ApiClientHelper.JobReference
@@ -336,11 +342,13 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           'Cannot determine job(s) associated with "%s"' % (identifier,),
           is_usage_error=True,
       )
+      state_filter = bq_processor_utils.ParseStateFilterExpression(self.filter)
       objects_metadata = client_job.ListJobsWithTokenAndUnreachable(
           bqclient=client,
           reference=reference,
           max_results=self.max_results,
           all_users=self.a,
+          state_filter=state_filter,
           min_creation_time=self.min_creation_time,
           max_creation_time=self.max_creation_time,
           page_token=page_token,
@@ -592,6 +600,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       object_type = bq_id_utils.ApiClientHelper.DatasetReference
     elif self.p or reference is None:
       object_type = bq_id_utils.ApiClientHelper.ProjectReference
+      self.PossiblyDelegateToGcloudAndExit('projects', 'ls')
       results = client_project.list_projects(
           apiclient=client.apiclient,
           max_results=self.max_results,
@@ -608,6 +617,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           page_token=page_token,
       )
     if object_type is bq_id_utils.ApiClientHelper.DatasetReference:
+      self.PossiblyDelegateToGcloudAndExit('datasets', 'ls')
       objects_metadata = client_dataset.ListDatasetsWithTokenAndUnreachable(
           apiclient=client.apiclient,
           id_fallbacks=client,
@@ -626,3 +636,14 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           passed_flags=self,
           objects_metadata=objects_metadata,
       )
+
+  @override
+  def ParseCommandFlagsSharedWithAllResources(self) -> Dict[str, str]:
+    """Parses command flags from the command line."""
+    return {
+        # The BQ CLI will default to one page of results from the server if this
+        # flag is not set (and that is usually 50 items), but the `gcloud`
+        # implementation will continue fetching until all results have been
+        # printed.
+        'max_results': str(self.max_results or 50),
+    }

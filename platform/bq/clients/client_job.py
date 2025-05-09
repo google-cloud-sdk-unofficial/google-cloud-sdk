@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 import time
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 import uuid
 
 # To configure apiclient logging.
@@ -86,7 +86,7 @@ def ListJobs(
     reference: Optional[bq_id_utils.ApiClientHelper.ProjectReference] = None,
     max_results: Optional[int] = None,
     page_token: Optional[str] = None,
-    state_filter: Optional[str] = None,  # Actually an enum.
+    state_filter: Optional[Union[List[str], str]] = None,  # Actually an enum.
     min_creation_time: Optional[str] = None,
     max_creation_time: Optional[str] = None,
     all_users: Optional[bool] = None,
@@ -132,7 +132,7 @@ def ListJobsWithTokenAndUnreachable(
     reference: Optional[bq_id_utils.ApiClientHelper.ProjectReference] = None,
     max_results: Optional[int] = None,
     page_token: Optional[str] = None,
-    state_filter: Optional[str] = None,  # Actually an enum.
+    state_filter: Optional[Union[List[str], str]] = None,
     min_creation_time: Optional[str] = None,
     max_creation_time: Optional[str] = None,
     all_users: Optional[bool] = None,
@@ -505,14 +505,10 @@ def _StartQueryRpc(
   if request_id is None and flags.FLAGS.jobs_query_use_request_id:
     request_id = str(uuid.uuid4())
 
-  reservation_path = None
-  if reservation_id is not None:
-    reference = bq_client_utils.GetReservationReference(
-        id_fallbacks=bqclient,
-        identifier=reservation_id,
-        default_location=bq_flags.LOCATION.value,
-    )
-    reservation_path = reference.path()
+  reservation_path = _GetReservationPath(
+      bqclient,
+      reservation_id,
+  )
 
   bq_processor_utils.ApplyParameters(
       request,
@@ -1152,7 +1148,8 @@ def Query(
     reservation_id: Optional. An option to set the reservation to use when
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
-      "reservation_id".
+      "reservation_id". If reservation_id is "none", the job will be executed
+      without assigned reservation using the on-demand slots.
     **kwds: Passed on to ExecuteJob.
 
   Raises:
@@ -1216,17 +1213,11 @@ def Query(
       query_config, connection_properties=connection_properties
   )
   request = {'query': query_config}
-  reservation_path = None
-  if reservation_id == 'none':
-    reservation_path = 'none'
-  elif reservation_id is not None:
-    reference = bq_client_utils.GetReservationReference(
-        id_fallbacks=bqclient,
-        identifier=reservation_id,
-        default_location=bq_flags.LOCATION.value,
-        check_reservation_project=False,
-    )
-    reservation_path = reference.path()
+  reservation_path = _GetReservationPath(
+      bqclient,
+      reservation_id,
+      check_reservation_project=False,
+  )
   bq_processor_utils.ApplyParameters(
       request,
       dry_run=dry_run,
@@ -1235,6 +1226,34 @@ def Query(
       reservation=reservation_path,
   )
   return ExecuteJob(bqclient, request, **kwds)
+
+
+def _GetReservationPath(
+    bqclient: bigquery_client.BigqueryClient,
+    reservation_id: Optional[str],
+    check_reservation_project: bool = True,
+) -> Optional[str]:
+  """Converts the reservation_id from the format `<project_id>:<location>.<reservation_id>` to the fully qualified reservation path `projects/<project_id>/locations/<location>/reservations/<reservation_id>`.
+
+  The special value "none" is returned as is.
+
+  Args:
+    bqclient: A BigqueryClient to get state and request clients from.
+    reservation_id: The reservation id to convert.
+    check_reservation_project: Whether to validate the reservation project.
+
+  Returns:
+    The fully qualified reservation path or "none" if reservation_id is "none".
+  """
+  if reservation_id is None or reservation_id == 'none':
+    return reservation_id
+  reference = bq_client_utils.GetReservationReference(
+      id_fallbacks=bqclient,
+      identifier=reservation_id,
+      default_location=bq_flags.LOCATION.value,
+      check_reservation_project=check_reservation_project,
+  )
+  return reference.path()
 
 
 def Load(
@@ -1524,6 +1543,7 @@ def Extract(
               uri, bq_processor_utils.GCS_SCHEME_PREFIX
           )
       )
+  extract_config = {}
   if isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
     extract_config = {'sourceTable': dict(reference)}
   elif isinstance(reference, bq_id_utils.ApiClientHelper.ModelReference):

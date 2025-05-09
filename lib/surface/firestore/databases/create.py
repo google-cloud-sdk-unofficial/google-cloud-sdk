@@ -35,6 +35,11 @@ class CreateFirestoreAPI(base.Command):
 
   ## EXAMPLES
 
+  To create a Firestore Enterprise database named `foo` in `nam5` for use with
+  Ignite APIs.
+
+      $ {command} --database=foo --edition=enterprise --location=nam5
+
   To create a Firestore Native database in `nam5`.
 
       $ {command} --location=nam5
@@ -77,6 +82,18 @@ class CreateFirestoreAPI(base.Command):
     else:
       raise ValueError('invalid database type: {}'.format(database_type))
 
+  def DatabaseEdition(self, database_edition):
+    if database_edition == 'standard':
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.DatabaseEditionValueValuesEnum.STANDARD
+      )
+    elif database_edition == 'enterprise':
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.DatabaseEditionValueValuesEnum.ENTERPRISE
+      )
+    else:
+      raise ValueError('invalid database edition: {}'.format(database_edition))
+
   def DatabaseDeleteProtectionState(self, enable_delete_protection):
     if enable_delete_protection:
       return (
@@ -113,6 +130,7 @@ class CreateFirestoreAPI(base.Command):
         args.location,
         args.database,
         self.DatabaseType(args.type),
+        self.DatabaseEdition(args.edition),
         self.DatabaseDeleteProtectionState(args.delete_protection),
         self.DatabasePitrState(args.enable_pitr),
         self.DatabaseCmekConfig(args),
@@ -122,6 +140,12 @@ class CreateFirestoreAPI(base.Command):
   def Args(cls, parser):
     flags.AddLocationFlag(
         parser, required=True, suggestion_aliases=['--region']
+    )
+    parser.add_argument(
+        '--edition',
+        help='The edition of the database.',
+        default='standard',
+        choices=['standard', 'enterprise'],
     )
     parser.add_argument(
         '--type',

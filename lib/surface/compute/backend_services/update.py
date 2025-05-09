@@ -352,6 +352,7 @@ class UpdateHelper(object):
       replacement.customMetrics = args.custom_metrics_file
     if args.clear_custom_metrics:
       replacement.customMetrics = []
+      cleared_fields.append('customMetrics')
     if self._support_ip_port_dynamic_forwarding:
       backend_services_utils.IpPortDynamicForwarding(client, args, replacement)
     if self._support_zonal_affinity:

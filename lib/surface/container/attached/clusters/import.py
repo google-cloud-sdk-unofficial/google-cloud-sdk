@@ -43,6 +43,7 @@ $ {command} --location=us-west1 --platform-version=PLATFORM_VERSION --fleet-memb
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Import(base.Command):
   """Import fleet membership for an Attached cluster."""
 
@@ -58,6 +59,7 @@ class Import(base.Command):
     attached_flags.AddDistribution(parser, required=True)
     attached_flags.AddKubectl(parser)
     attached_flags.AddProxyConfig(parser)
+    attached_flags.AddSkipClusterAdminCheck(parser)
 
     flags.AddValidateOnly(parser, 'cluster to import')
 
@@ -79,7 +81,8 @@ class Import(base.Command):
           context=attached_flags.GetContext(args),
           enable_workload_identity=True,
       ) as kube_client:
-        kube_client.CheckClusterAdminPermissions()
+        if not attached_flags.GetSkipClusterAdminCheck(args):
+          kube_client.CheckClusterAdminPermissions()
 
         try:
           if not flags.GetValidateOnly(args):

@@ -770,46 +770,62 @@ class Deploy(base.Command):
 
       iap = self._GetIap(args)
 
-      with self._GetTracker(
-          args,
-          service,
-          changes,
-          build_from_source,
-          repo_to_create,
-          allow_unauth,
-          has_latest,
-          iap,
-      ) as tracker:
-        service = operations.ReleaseService(
-            service_ref,
-            changes,
-            self.ReleaseTrack(),
-            tracker,
-            asyn=args.async_,
-            allow_unauthenticated=allow_unauth,
-            allow_unauth_regions=self._GetAllowUnauthRegions(args),
-            prefetch=service,
-            build_image=image,
-            build_pack=pack,
-            build_source=source,
-            repo_to_create=repo_to_create,
-            already_activated_services=already_activated_services,
-            generate_name=(
-                flags.FlagIsExplicitlySet(args, 'revision_suffix')
-                or flags.FlagIsExplicitlySet(args, 'tag')
-            ),
-            delegate_builds=flags.FlagIsExplicitlySet(args, 'delegate_builds'),
-            base_image=base_image,
-            build_from_source_container_name=build_from_source_container_name,
-            build_service_account=build_service_account,
-            build_worker_pool=build_worker_pool,
-            build_env_vars=build_env_vars,
-            enable_automatic_updates=enable_automatic_updates,
-            is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
-            source_bucket=source_bucket,
-            kms_key=kms_key,
-            iap_enabled=iap,
-        )
+      def _ReleaseService(changes_):
+        with self._GetTracker(
+            args,
+            service,
+            changes_,
+            build_from_source,
+            repo_to_create,
+            allow_unauth,
+            has_latest,
+            iap,
+        ) as tracker:
+          return operations.ReleaseService(
+              service_ref,
+              changes_,
+              self.ReleaseTrack(),
+              tracker,
+              asyn=args.async_,
+              allow_unauthenticated=allow_unauth,
+              allow_unauth_regions=self._GetAllowUnauthRegions(args),
+              prefetch=service,
+              build_image=image,
+              build_pack=pack,
+              build_source=source,
+              repo_to_create=repo_to_create,
+              already_activated_services=already_activated_services,
+              generate_name=(
+                  flags.FlagIsExplicitlySet(args, 'revision_suffix')
+                  or flags.FlagIsExplicitlySet(args, 'tag')
+              ),
+              delegate_builds=flags.FlagIsExplicitlySet(
+                  args, 'delegate_builds'
+              ),
+              base_image=base_image,
+              build_from_source_container_name=build_from_source_container_name,
+              build_service_account=build_service_account,
+              build_worker_pool=build_worker_pool,
+              build_env_vars=build_env_vars,
+              enable_automatic_updates=enable_automatic_updates,
+              is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
+              source_bucket=source_bucket,
+              kms_key=kms_key,
+              iap_enabled=iap,
+          )
+
+      try:
+        service = _ReleaseService(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
+          service = _ReleaseService(changes)
+        else:
+          raise e
 
       self._DisplaySuccessMessage(service, args)
       return service

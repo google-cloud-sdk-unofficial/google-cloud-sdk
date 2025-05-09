@@ -38,6 +38,7 @@ class Update(base.UpdateCommand):
 
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
+  support_target_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -86,6 +87,9 @@ class Update(base.UpdateCommand):
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
+    if cls.support_target_type:
+      flags.AddTargetType(parser)
+      flags.AddTargetForwardingRules(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -104,6 +108,7 @@ class Update(base.UpdateCommand):
         'security_profile_group': 'securityProfileGroup',
         'target_secure_tags': 'targetSecureTags',
         'target_service_accounts': 'targetServiceAccounts',
+        'target_forwarding_rules': 'targetForwardingRules',
     }
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
@@ -135,6 +140,8 @@ class Update(base.UpdateCommand):
     src_network_scope = None
     src_networks = []
     dest_network_scope = None
+    target_type = None
+    target_forwarding_rules = []
     cleared_fields = []
     for arg in clearable_arg_name_to_field_name:
       if args.IsKnownAndSpecified(arg) and not args.GetValue(arg):
@@ -305,6 +312,16 @@ class Update(base.UpdateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
+    if self.support_target_type:
+      if args.IsSpecified('target_type'):
+        target_type = (
+            holder.client.messages.FirewallPolicyRule.TargetTypeValueValuesEnum(
+                args.target_type
+            )
+        )
+      if args.IsSpecified('target_forwarding_rules'):
+        target_forwarding_rules = args.target_forwarding_rules
+        cleared_fields.append('targetForwardingRules')
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=new_priority,
@@ -319,6 +336,9 @@ class Update(base.UpdateCommand):
         securityProfileGroup=security_profile_group,
         tlsInspect=tls_inspect,
     )
+    if self.support_target_type:
+      firewall_policy_rule.targetType = target_type
+      firewall_policy_rule.targetForwardingRules = target_forwarding_rules
 
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       return network_firewall_policy_rule_client.UpdateRule(
@@ -337,6 +357,7 @@ class UpdateBeta(Update):
   """
 
   support_network_scopes = True
+  support_target_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -347,6 +368,7 @@ class UpdateAlpha(Update):
   """
 
   support_network_scopes = True
+  support_target_type = True
 
 
 Update.detailed_help = {

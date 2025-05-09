@@ -169,7 +169,7 @@ class Run(base.Command):
         action=arg_parsers.UpdateAction,
         help=(
             'Additional user labels to pass to the job. Example: '
-            '--additional-user-labels=\'{"key1":"value1"}\''
+            '--additional-user-labels=\'key1=value1,key2=value2\''
         ),
     )
 

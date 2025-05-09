@@ -81,6 +81,7 @@ class Register(base.CreateCommand):
     attached_flags.AddAdminUsers(parser)
     attached_flags.AddKubectl(parser)
     attached_flags.AddProxyConfig(parser)
+    attached_flags.AddSkipClusterAdminCheck(parser)
 
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
@@ -114,7 +115,8 @@ class Register(base.CreateCommand):
           context=attached_flags.GetContext(args),
           enable_workload_identity=True,
       ) as kube_client:
-        kube_client.CheckClusterAdminPermissions()
+        if not attached_flags.GetSkipClusterAdminCheck(args):
+          kube_client.CheckClusterAdminPermissions()
 
         if attached_flags.GetHasPrivateIssuer(args):
           pretty_print.Info('Fetching cluster OIDC information')

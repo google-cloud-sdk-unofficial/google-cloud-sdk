@@ -35,6 +35,7 @@ from googlecloudsdk.core.util import times
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Security Command Center finding."""
 
@@ -81,7 +82,9 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     # Add flags and finding positional argument.
-    flags.CreateFindingArg().AddToParser(parser)
+    flags.FINDING_FLAG.AddToParser(parser)
+    flags.SOURCE_FLAG.AddToParser(parser)
+    flags.AddParentGroup(parser)
     flags.EVENT_TIME_FLAG_NOT_REQUIRED.AddToParser(parser)
     flags.EXTERNAL_URI_FLAG.AddToParser(parser)
     flags.SOURCE_PROPERTIES_FLAG.AddToParser(parser)

@@ -39,6 +39,7 @@ EXAMPLES = """\
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.Command):
   """Create a Database Migration private connection."""
   detailed_help = {'DESCRIPTION': DESCRIPTION, 'EXAMPLES': EXAMPLES}
@@ -57,6 +58,7 @@ class Create(base.Command):
 
     pc_flags.AddDisplayNameFlag(parser)
     pc_flags.AddNoAsyncFlag(parser)
+    pc_flags.AddSkipValidationFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   @staticmethod

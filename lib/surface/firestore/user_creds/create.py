@@ -37,7 +37,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddDatabaseIdFlag(parser, required=True, hidden=True)
+    flags.AddDatabaseIdFlag(parser, required=True)
     flags.AddUserCredsIdArg(parser)
 
   def Run(self, args):

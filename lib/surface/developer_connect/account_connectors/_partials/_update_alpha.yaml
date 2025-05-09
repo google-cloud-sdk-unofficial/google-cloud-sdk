@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@
                 In the event of changing scopes, user records under AccountConnector will
                 be deleted and users will re-auth again.
     - help_text: |-
-        Identifier. The resource name of the userConnection, in the format
+        Identifier. The resource name of the accountConnector, in the format
         `projects/{project}/locations/{location}/accountConnectors/{account_connector_id}`.
       is_positional: true
       is_primary_resource: true
@@ -107,9 +107,10 @@
       required: false
       type: bool
       help_text: |-
-        If set to true, and the userConnection is not found a new userConnection
-        will be created. In this situation `update_mask` is ignored. The creation
-        will succeed only if the input userConnection has all the necessary
+        If set to true, and the accountConnector is not found a new
+        accountConnector will be created. In this situation `update_mask` is
+        ignored. The creation will succeed only if the input accountConnector has
+        all the necessary
     - arg_name: validate-only
       api_field: validateOnly
       action: store_true_false

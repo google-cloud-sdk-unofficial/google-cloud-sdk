@@ -31,10 +31,11 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a NAT on a Compute Engine router."""
-  _with_nat64 = False
 
   @classmethod
   def Args(cls, parser):
@@ -46,9 +47,7 @@ class Update(base.UpdateCommand):
     compute_flags.AddRegionFlag(parser, 'NAT', operation_type='create')
 
     nats_flags.AddNatNameArg(parser, operation_type='create')
-    nats_flags.AddCommonNatArgs(
-        parser, for_create=False, with_nat64=cls._with_nat64
-    )
+    nats_flags.AddCommonNatArgs(parser, for_create=False)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -62,9 +61,7 @@ class Update(base.UpdateCommand):
 
     # Retrieve specified NAT and update base fields.
     existing_nat = nats_utils.FindNatOrRaise(replacement, args.name)
-    nat = nats_utils.UpdateNatMessage(
-        existing_nat, args, holder, self._with_nat64
-    )
+    nat = nats_utils.UpdateNatMessage(existing_nat, args, holder)
 
     request_type = messages.ComputeRoutersPatchRequest
     result = service.Patch(
@@ -104,13 +101,6 @@ class Update(base.UpdateCommand):
         operation_poller, operation_ref,
         'Updating nat [{0}] in router [{1}]'.format(nat.name,
                                                     router_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a NAT on a Compute Engine router."""
-
-  _with_nat64 = True
 
 
 Update.detailed_help = {

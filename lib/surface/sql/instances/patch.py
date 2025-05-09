@@ -157,6 +157,10 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     )
   if args.IsKnownAndSpecified('clear_connection_pool_flags'):
     cleared_fields.append('settings.connectionPoolConfig.flags')
+  if args.IsKnownAndSpecified('clear_psc_network_attachment_uri'):
+    cleared_fields.append(
+        'settings.ipConfiguration.pscConfig.networkAttachmentUri'
+    )
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -333,6 +337,9 @@ def AddBetaArgs(parser):
   flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
+  psc_na_uri_update_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
+  flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):

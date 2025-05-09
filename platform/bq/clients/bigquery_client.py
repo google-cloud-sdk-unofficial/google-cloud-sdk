@@ -681,3 +681,4 @@ class BigqueryClient:
     )
 
     return json.dumps(discovery_document)
+

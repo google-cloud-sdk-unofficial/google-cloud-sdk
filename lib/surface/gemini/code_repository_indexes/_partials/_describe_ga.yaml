@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,8 @@
     - help_text: |-
         Name of the resource
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.gemini.v1_resources:project_location_code_repository_index
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.gemini.v1_resources:projects_locations_code_repository_indexes
       required: true
   request:
     api_version: v1

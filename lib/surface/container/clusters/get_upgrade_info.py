@@ -21,9 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class GetUpgradeInfo(base.Command):
   """Get information about upgrades for existing clusters including auto upgrade status, upgrade history, upgrade targets, and end of support timelines."""
 
@@ -64,10 +62,3 @@ class GetUpgradeInfo(base.Command):
 
     return adapter.GetClusterUpgradeInfo(adapter.ParseCluster(args.name,
                                                               location))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.UniverseCompatible
-@base.Visible
-class GetUpgradeInfoAlphaBeta(GetUpgradeInfo):
-  """Get information about upgrades for existing clusters including auto upgrade status, upgrade history, upgrade targets, and end of support timelines."""

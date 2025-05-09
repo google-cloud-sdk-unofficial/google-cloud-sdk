@@ -244,7 +244,7 @@ class Compute(base.Command):
         message=(
             'Restoring backup'
             ' [{}].'
-            ' (This operation could take upto 15 minutes.)'.format(
+            ' (This operation could take up to 15 minutes.)'.format(
                 backup.Name()
             )
         ),

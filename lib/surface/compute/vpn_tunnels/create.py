@@ -300,10 +300,6 @@ class CreateGA(base.CreateCommand):
             '--peer-address',
             'When creating Classic VPN tunnels, the peer address '
             'must be specified.')
-      if args.IsSpecified('router'):
-        raise exceptions.InvalidArgumentException(
-            '--router',
-            'Cannot specify router with Classic VPN tunnels.')
 
   def _GetPeerGcpGateway(self, api_resource_registry, args):
     if args.IsSpecified('peer_gcp_gateway'):

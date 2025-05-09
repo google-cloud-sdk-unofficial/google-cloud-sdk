@@ -383,6 +383,8 @@ class CreateHelper(object):
         client, args, backend_service
     )
 
+    backend_services_utils.ApplyCustomMetrics(args, backend_service)
+
     if self._support_zonal_affinity:
       backend_services_utils.ZonalAffinity(client, args, backend_service)
 

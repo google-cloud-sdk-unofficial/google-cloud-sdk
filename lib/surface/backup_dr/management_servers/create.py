@@ -44,9 +44,9 @@ class Create(base.CreateCommand):
           ' backed up.'
       ),
       'EXAMPLES': """\
-        To create a new management server `sample-ms` in project `sample-project` and location `us-central1` with network `sample-network`, run:
+        To create a new management server `sample-ms` in project `sample-project` and location `us-central1`, run:
 
-          $ {command} sample-ms --project=sample-project --location=us-central1 --network=projects/sample-project/global/networks/sample-network
+          $ {command} sample-ms --project=sample-project --location=us-central1
         """,
   }
 
@@ -103,7 +103,7 @@ class Create(base.CreateCommand):
         operation_ref=client.GetOperationRef(operation),
         message=(
             'Creating management server [{}]. (This operation could'
-            ' take upto 1 hour.)'.format(management_server.RelativeName())
+            ' take up to 1 hour.)'.format(management_server.RelativeName())
         ),
     )
     log.CreatedResource(

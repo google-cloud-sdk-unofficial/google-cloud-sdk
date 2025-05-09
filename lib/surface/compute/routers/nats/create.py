@@ -31,11 +31,11 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Add a NAT to a Compute Engine router."""
-
-  _with_nat64 = False
 
   @classmethod
   def Args(cls, parser):
@@ -50,9 +50,7 @@ class Create(base.CreateCommand):
     nats_flags.AddTypeArg(parser)
 
     nats_flags.AddEndpointTypesArg(parser)
-    nats_flags.AddCommonNatArgs(
-        parser, for_create=True, with_nat64=cls._with_nat64
-    )
+    nats_flags.AddCommonNatArgs(parser, for_create=True)
 
   def Run(self, args):
     """See base.CreateCommand."""
@@ -66,7 +64,7 @@ class Create(base.CreateCommand):
     request_type = messages.ComputeRoutersGetRequest
     replacement = service.Get(request_type(**router_ref.AsDict()))
 
-    nat = nats_utils.CreateNatMessage(args, holder, self._with_nat64)
+    nat = nats_utils.CreateNatMessage(args, holder)
 
     replacement.nats.append(nat)
 
@@ -107,13 +105,6 @@ class Create(base.CreateCommand):
         operation_poller, operation_ref,
         'Creating NAT [{0}] in router [{1}]'.format(nat.name,
                                                     router_ref.Name()))
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Add a NAT to a Compute Engine router."""
-
-  _with_nat64 = True
 
 
 Create.detailed_help = {

@@ -35,6 +35,5 @@ class Validate(base.Command):
 
     message_transform_file = getattr(args, 'message_transform_file', None)
 
-    result = client.Validate(util.ParseProject(), message_transform_file)
+    client.Validate(util.ParseProject(), message_transform_file)
     log.status.Print('Message transform is valid.')
-    return result

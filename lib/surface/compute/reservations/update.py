@@ -35,6 +35,7 @@ def _ValidateArgs(
     support_auto_delete=False,
     support_reservation_sharing_policy=False,
     support_emergent_maintenance=False,
+    support_share_type=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -45,6 +46,7 @@ def _ValidateArgs(
     support_reservation_sharing_policy: Check if reservation sharing policy is
       supported.
     support_emergent_maintenance: Check if emergent maintenance is supported.
+    support_share_type: Check if share setting is supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -85,6 +87,13 @@ def _ValidateArgs(
     one_option_exception_message += (
         '5- Modify emergent maintenance with specifying'
         ' enable-emergent-maintenance flag.'
+    )
+  if support_share_type:
+    parameter_names.extend([
+        '--share-setting',
+    ])
+    one_option_exception_message += (
+        '6- Modify share setting with specifying share-setting flag.'
     )
 
   has_share_with = False
@@ -140,7 +149,8 @@ def _ValidateArgs(
 
 
 def _GetShareSettingUpdateRequest(
-    args, reservation_ref, holder, support_share_with_flag):
+    args, reservation_ref, holder, support_share_with_flag,
+    support_share_type):
   """Create Update Request for share-with.
 
   Returns:
@@ -150,34 +160,46 @@ def _GetShareSettingUpdateRequest(
    reservation_ref: reservation refrence.
    holder: base_classes.ComputeApiHolder.
    support_share_with_flag: Check if share_with is supported.
+   support_share_type: Check if share_type is supported.
   """
   messages = holder.client.messages
   # Set updated properties and build update mask.
   share_settings = None
-  setting_configs = 'projects'  # Only updating projects is supported now.
+  update_mask = []
+  setting_configs = None
+  if support_share_type and args.IsSpecified('share_setting'):
+    setting_configs = getattr(args, 'share_setting', None)
+    update_mask.append('shareSettings.shareType')
+
   if support_share_with_flag:
+    if not setting_configs and (args.IsSpecified('share_with') or
+                                args.IsSpecified('add_share_with') or
+                                args.IsSpecified('remove_share_with')):
+      setting_configs = 'projects'
+
     if args.IsSpecified('share_with'):
       share_settings = util.MakeShareSettingsWithArgs(
           messages, args, setting_configs, share_with='share_with')
-      update_mask = [
+      update_mask.extend([
           'shareSettings.projectMap.' + project
           for project in getattr(args, 'share_with', [])
-      ]
+      ])
+  else:
+    setting_configs = 'projects'
   if args.IsSpecified('add_share_with'):
     share_settings = util.MakeShareSettingsWithArgs(
         messages, args, setting_configs, share_with='add_share_with')
-    update_mask = [
+    update_mask.extend([
         'shareSettings.projectMap.' + project
         for project in getattr(args, 'add_share_with', [])
-    ]
+    ])
   elif args.IsSpecified('remove_share_with'):
-    share_settings = messages.ShareSettings(
-        shareType=messages.ShareSettings.ShareTypeValueValuesEnum
-        .SPECIFIC_PROJECTS)
-    update_mask = [
+    share_settings = util.MakeShareSettingsWithArgs(
+        messages, args, setting_configs, share_with='remove_share_with')
+    update_mask.extend([
         'shareSettings.projectMap.' + project
         for project in getattr(args, 'remove_share_with', [])
-    ]
+    ])
 
   # Build reservation object using new share-settings.
   r_resource = util.MakeReservationMessage(messages, reservation_ref.Name(),
@@ -337,6 +359,7 @@ class Update(base.UpdateCommand):
   _support_auto_delete = False
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = False
+  _support_share_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -359,7 +382,8 @@ class Update(base.UpdateCommand):
         self._support_share_with_flag,
         self._support_auto_delete,
         self._support_reservation_sharing_policy,
-        self._support_emergent_maintenance
+        self._support_emergent_maintenance,
+        self._support_share_type
     )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
@@ -379,7 +403,8 @@ class Update(base.UpdateCommand):
 
     if share_with:
       r_update_request = _GetShareSettingUpdateRequest(
-          args, reservation_ref, holder, self._support_share_with_flag)
+          args, reservation_ref, holder, self._support_share_with_flag,
+          self._support_share_type)
       # Invoke Reservation.update API.
       result.append(
           list(
@@ -459,6 +484,7 @@ class UpdateBeta(Update):
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = False
+  _support_share_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -469,6 +495,8 @@ class UpdateBeta(Update):
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
+    r_flags.GetSharedSettingFlag(
+        support_folder_share_setting=False).AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',
@@ -489,6 +517,7 @@ class UpdateAlpha(Update):
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
+  _support_share_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -501,6 +530,8 @@ class UpdateAlpha(Update):
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
+    r_flags.GetSharedSettingFlag(
+        support_folder_share_setting=False).AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

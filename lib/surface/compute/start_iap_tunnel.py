@@ -82,7 +82,7 @@ specify the `--region` and `--network` flags:
   return detailed_help
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class StartIapTunnel(base.Command):
   """Starts an IAP TCP forwarding tunnel."""
@@ -281,7 +281,7 @@ If `LOCAL_PORT` is 0, an arbitrary unused local port is chosen."""
       log.warning(_NUMPY_HELP_TEXT)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class StartIapTunnelBeta(StartIapTunnel):
   """Starts an IAP TCP forwarding tunnel (Beta)."""
@@ -289,7 +289,7 @@ class StartIapTunnelBeta(StartIapTunnel):
   fetch_instance_after_connect_error = True
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class StartIapTunnelAlpha(StartIapTunnelBeta):
   """Starts an IAP TCP forwarding tunnel (Beta)."""

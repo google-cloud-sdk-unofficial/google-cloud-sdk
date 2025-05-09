@@ -102,8 +102,24 @@ class List(base.ListCommand):
       updated_uri = 'https://{}'.format(updated_uri)
     found = re.findall(docker_util.DOCKER_URI_REGEX, updated_uri)
     if found:
-      resource_uri_str = found[0][2]
+      resource_uri_str = found[0][0]
+      is_gcr = 'gcr.io' in found[0][1]
+      if is_gcr:
+        resource_uri_str, _, _ = docker_util.ConvertGCRImageString(
+            resource_uri_str,
+        )
       image, version = docker_util.DockerUrlToVersion(resource_uri_str)
+      if is_gcr:
+        version = docker_util.GcrDockerVersion(
+            image.docker_repo.project,
+            version.GetDockerString().replace(
+                image.docker_repo.GetDockerString(),
+                '{}/{}'.format(
+                    image.docker_repo.repo,  # AR repo name is the gcr_host
+                    image.docker_repo.project,
+                ),
+            ),
+        )
       project = image.project
       docker_html_str_digest = 'https://{}'.format(version.GetDockerString())
       updated_uri = re.sub(
