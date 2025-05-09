@@ -84,6 +84,7 @@ class Update(base.UpdateCommand):
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.ClearPSCNetworkAttachmentUri(parser)
+    flags.AddPSCAutoConnectionGroup(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 

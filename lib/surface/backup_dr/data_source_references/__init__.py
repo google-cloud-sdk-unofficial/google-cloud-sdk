@@ -14,15 +14,16 @@
 # limitations under the License.
 """Command group for Backup and DR data source references."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
 class DataSourceReferences(base.Group):
-  """View Backup and DR data source references."""
+  """Command group for Backup and DR Data Source References."""
+
+  group = True
+  commands = ['describe', 'fetch-for-resource-type']
+

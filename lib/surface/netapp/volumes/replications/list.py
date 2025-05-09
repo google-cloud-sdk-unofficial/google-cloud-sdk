@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Cloud NetApp Volume Replications."""
@@ -79,3 +80,9 @@ class ListBeta(List):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Cloud NetApp Volume Replications."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

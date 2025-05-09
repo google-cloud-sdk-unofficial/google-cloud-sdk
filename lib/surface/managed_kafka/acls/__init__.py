@@ -21,7 +21,9 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 class Acls(base.Group):
   """Administer Managed Service for Apache Kafka acls."""
   category = base.DATA_ANALYTICS_CATEGORY

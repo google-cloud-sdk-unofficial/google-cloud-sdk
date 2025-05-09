@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resume(base.Command):
   """Resume a Cloud NetApp Volume Replication."""
@@ -80,3 +81,9 @@ class ResumeBeta(Resume):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResumeAlpha(ResumeBeta):
+  """Resume a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

@@ -61,7 +61,7 @@ class Update(base.UpdateCommand):
     container_flags.AddNodeCount(parser, required=False)
     container_flags.AddMachineFilter(parser)
     container_flags.AddLROMaximumTimeout(parser)
-    container_flags.AddNodeLabels(parser)
+    container_flags.AddNodeLabelsForUpdateNodePool(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     container_flags.AddLocalDiskKMSKey(parser)
     container_flags.AddUseGoogleManagedKey(parser)

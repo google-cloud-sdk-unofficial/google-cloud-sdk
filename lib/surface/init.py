@@ -414,13 +414,15 @@ https://console.developers.google.com/apis page.
             'with Compute Engine resources, the default is assumed.').format(
                 name)
         idx = console_io.PromptChoice(
-            [value['name'] for value in values]
-            + ['Do not set default {0}'.format(name)],
+            ['Do not set default {0}'.format(name)]
+            + [value['name'] for value in values],
             message=message, prompt_string=None, allow_freeform=True,
             freeform_suggester=usage_text.TextChoiceSuggester())
-        if idx is None or idx == len(values):
+        # If the user selected "Do not set default {0}" or "None" as the default
+        # value, we should not set the default value.
+        if idx is None or idx == 0:
           return
-        default_value = values[idx]
+        default_value = values[idx-1]
       properties.PersistProperty(properties.VALUES.compute.Property(name),
                                  default_value['name'])
       log.status.write('Your project default Compute Engine {0} has been set '

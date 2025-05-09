@@ -171,6 +171,13 @@ class Load(bigquery_command.BigqueryCmd):
         'in CSV import data.',
         flag_values=fv,
     )
+    flags.DEFINE_list(
+        'null_markers',
+        [],
+        'An optional list of custom strings that will represent a NULL value'
+        'in CSV import data.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'time_partitioning_type',
         None,
@@ -394,6 +401,53 @@ class Load(bigquery_command.BigqueryCmd):
         'writing them to new files.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'time_zone',
+        None,
+        'Default time zone that will apply when parsing timestamp values that'
+        ' have no specific time zone. For example, "America/Los_Angeles".',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'date_format',
+        None,
+        'Format elements that define how the DATE values are formatted in the'
+        ' input files. For example, "MM/DD/YYYY".',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'datetime_format',
+        None,
+        'Format elements that define how the DATETIME values are formatted in'
+        ' the input files. For example, "MM/DD/YYYY HH24:MI:SS.FF3".',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'time_format',
+        None,
+        'Format elements that define how the TIME values are formatted in the'
+        ' input files. For example, "HH24:MI:SS.FF3".',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'timestamp_format',
+        None,
+        'Format elements that define how the TIMESTAMP values are formatted in'
+        ' the input files. For example, "MM/DD/YYYY HH24:MI:SS.FF3".',
+        flag_values=fv,
+    )
+    flags.DEFINE_enum(
+        'source_column_match',
+        None,
+        ['POSITION', 'NAME'],
+        'Controls the strategy used to match loaded columns to the schema.'
+        ' Options include:'
+        '\n POSITION: matches by position. This option assumes that the columns'
+        ' are ordered the same way as the schema.'
+        '\n NAME: matches by name. This option reads the header row as column'
+        ' names and reorders columns to match the field names in the schema.',
+        flag_values=fv,
+    )
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
@@ -497,6 +551,8 @@ class Load(bigquery_command.BigqueryCmd):
       opts['schema_update_options'] = self.schema_update_option
     if self.null_marker:
       opts['null_marker'] = self.null_marker
+    if self.null_markers is not None:
+      opts['null_markers'] = self.null_markers
     time_partitioning = frontend_utils.ParseTimePartitioning(
         self.time_partitioning_type,
         self.time_partitioning_expiration,
@@ -542,6 +598,16 @@ class Load(bigquery_command.BigqueryCmd):
       opts['file_set_spec_type'] = frontend_utils.ParseFileSetSpecType(
           self.file_set_spec_type
       )
+    if self.time_zone is not None:
+      opts['time_zone'] = self.time_zone
+    if self.date_format is not None:
+      opts['date_format'] = self.date_format
+    if self.datetime_format is not None:
+      opts['datetime_format'] = self.datetime_format
+    if self.time_format is not None:
+      opts['time_format'] = self.time_format
+    if self.timestamp_format is not None:
+      opts['timestamp_format'] = self.timestamp_format
     if opts['source_format'] == 'THRIFT':
       thrift_options = {}
       if self.thrift_schema_idl_root_dir is not None:

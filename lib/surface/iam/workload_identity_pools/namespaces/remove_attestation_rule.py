@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources as sdkresources
 
 
+@base.Hidden
 @base.UniverseCompatible
 class RemoveAttestationRule(base.Command):
   """Remove an attestation rule on a workload identity pool namespace."""

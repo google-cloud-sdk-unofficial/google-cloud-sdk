@@ -19,12 +19,13 @@
   - GA
   auto_generated: true
   help_text:
-    brief: List instances
-    description: List instances
+    brief: List Lustre instances
+    description: |
+      List Managed Lustre instances.
     examples: |-
-      To list all instances, run:
+      To list all instances in particular location `us-central1-a` run:
 
-      $ {command}
+      $ {command} --location=us-central1-a
   arguments:
     params:
     - help_text: |-
@@ -43,3 +44,18 @@
     - lustre.projects.locations.instances
   response:
     id_field: name
+  output:
+    format: |-
+      table(name,
+            capacityGib,
+            createTime,
+            updateTime
+            filesystem,
+            mountPoint,
+            name,
+            network,
+            perUnitStorageThroughput,
+            state,
+            description,
+            labels
+            )

@@ -12,92 +12,116 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for listing available revisions in a worker pool."""
+"""Command for listing available worker pool revisions."""
 
-from googlecloudsdk.api_lib.util import apis
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
-from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.run.printers.v2 import printer_util
-from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
+from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
-  """List available revisions in a worker pool in a region."""
+class List(commands.List):
+  """List available worker pool revisions."""
 
   detailed_help = {
       'DESCRIPTION': """\
           {description}
           """,
       'EXAMPLES': """\
-          To list available revisions in a worker pool `worker1` in a us-central1:
+          To list all revisions in a worker pool `foo`:
 
-              $ {command} worker1 --region=us-central1
+              $ {command} --worker-pool=foo
           """,
   }
 
   @classmethod
   def CommonArgs(cls, parser):
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
-        '--worker-pool',
-        resource_args.GetWorkerPoolResourceSpec(),
-        'WorkerPool to list revisions in.',
+        '--namespace',
+        resource_args.GetNamespaceResourceSpec(),
+        'Namespace to list revisions in.',
         required=True,
         prefixes=False,
+        hidden=True,
     )
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
 
+    flags.AddWorkerPoolFlag(parser)
+    flags.AddRegionArg(parser)
+
+    parser.display_info.AddFormat(
+        'table('
+        '{ready_column},'
+        'name:label=REVISION,'
+        'active.yesno(yes="yes", no=""),'
+        'worker_pool_name:label=WORKER_POOL:sort=1,'
+        'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):'
+        'label=DEPLOYED:sort=2:reverse,'
+        'author:label="DEPLOYED BY"):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
+    )
+
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    parser.display_info.AddFormat(
-        f'table(ready_symbol().{pretty_print.READY_COLUMN_COLOR},'
-        'name():label="REVISION",'
-        'active().yesno(yes="yes", no=""):label="ACTIVE",'
-        'parent():label="WORKER POOL",'
-        'create_time.date("%Y-%m-%d %H:%M:%S %Z"):'
-        'label=DEPLOYED:sort=2:reverse,'
-        'creator:label="DEPLOYED BY")'
-    )
-    parser.display_info.AddTransforms(
-        {'ready_symbol': printer_util.GetReadySymbolFromDict}
-    )
-    parser.display_info.AddTransforms(
-        {'name': printer_util.GetChildNameFromDict}
-    )
-    parser.display_info.AddTransforms(
-        {'active': printer_util.GetActiveStateFromDict}
-    )
-    parser.display_info.AddTransforms(
-        {'parent': printer_util.GetParentFromDict}
-    )
+
+  def _FilterServiceRevisions(self, revisions):
+    """Filters out revisions that are service revisions.
+
+    Per discussion with jmahood@, we want to make sure that all resources are
+    self-contained, so none of the describe/list commands should mix the
+    resource type.
+
+    Args:
+      revisions: List of revisions to filter.
+
+    Returns:
+      List of revisions that are worker pool revisions.
+    """
+    return list(filter(lambda rev: rev.worker_pool_name is not None, revisions))
 
   def Run(self, args):
-    """List available revisions in a worker pool in a region."""
-    # TODO(b/382273085): Support YAML format once WorkerPools V1 API is ready.
-    if 'format' in args and args.format == 'yaml':
-      raise exceptions.ArgumentError(
-          'YAML format is not supported for worker pools yet.'
-      )
-
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool.Parse().locationsId
-      return region + '-' + endpoint
-
-    worker_pool_ref = args.CONCEPTS.worker_pool.Parse()
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    """List available revisions."""
+    label_selector = None
+    worker_pool_name = args.worker_pool
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
     )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    response = worker_pools_client.ListRevisions(worker_pool_ref)
-    return commands.SortByName(response.revisions)
+    namespace_ref = args.CONCEPTS.namespace.Parse()
+    with serverless_operations.Connect(conn_context) as client:
+      self.SetCompleteApiEndpoint(conn_context.endpoint)
+      if platforms.GetPlatform() != platforms.PLATFORM_MANAGED:
+        location_msg = ' in [{}]'.format(conn_context.cluster_location)
+        log.status.Print(
+            'For cluster [{cluster}]{zone}:'.format(
+                cluster=conn_context.cluster_name,
+                zone=location_msg if conn_context.cluster_location else '',
+            )
+        )
+      if worker_pool_name is not None:
+        label_selector = 'run.googleapis.com/workerPool = {}'.format(
+            worker_pool_name
+        )
+      for rev in self._FilterServiceRevisions(
+          client.ListRevisions(
+              namespace_ref, label_selector, args.limit, args.page_size
+          )
+      ):
+        yield rev

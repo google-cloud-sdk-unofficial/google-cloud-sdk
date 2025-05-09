@@ -33,6 +33,7 @@ from googlecloudsdk.core import yaml
 import six
 
 
+@base.Hidden
 @base.UniverseCompatible
 class AddAttestationRule(base.Command):
   """Set attestation rules on a workload identity pool namespace."""

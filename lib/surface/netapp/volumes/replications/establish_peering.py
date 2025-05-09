@@ -88,3 +88,10 @@ class EstablishPeeringBeta(EstablishPeering):
   """Establish peering for Hybrid replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EstablishPeeringAlpha(EstablishPeeringBeta):
+  """Establish peering for Hybrid replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Stop(base.Command):
   """Stop a Cloud NetApp Volume Replication."""
@@ -80,3 +81,10 @@ class StopBeta(Stop):
   """Stop a Cloud NetApp Volume Replication."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class StopAlpha(StopBeta):
+  """Stop a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

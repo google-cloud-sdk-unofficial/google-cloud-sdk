@@ -161,5 +161,7 @@ class List(_List, base.ListCommand):
       return "Salesforce"
     elif profile.bigqueryProfile:
       return "BigQuery"
+    elif profile.mongodbProfile:
+      return "MongoDB"
     else:
       return None

@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Reverse(base.Command):
   """Reverse a Cloud NetApp Volume Replication's direction."""
@@ -84,3 +85,9 @@ class ReverseBeta(Reverse):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ReverseAlpha(ReverseBeta):
+  """Reverse a Cloud NetApp Volume Replication's direction."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

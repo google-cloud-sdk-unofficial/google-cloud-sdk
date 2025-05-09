@@ -43,7 +43,7 @@ class UpdateLogicalView(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     arguments.AddLogicalViewResourceArg(parser, 'to update')
-    arguments.ArgAdder(parser).AddViewQuery().AddAsync()
+    arguments.ArgAdder(parser).AddViewQuery().AddAsync().AddDeletionProtection()
 
   def _UpdateLogicalView(self, logical_view_ref, args):
     """Updates a logical view with the given arguments.
@@ -56,7 +56,9 @@ class UpdateLogicalView(base.UpdateCommand):
     Returns:
       Long running operation.
     """
-    return logical_views.Update(logical_view_ref, args.query)
+    return logical_views.Update(
+        logical_view_ref, args.query, args.deletion_protection
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

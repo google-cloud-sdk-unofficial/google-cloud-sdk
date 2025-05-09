@@ -50,8 +50,9 @@ import typing
 from typing import Any, BinaryIO, Callable, Dict, Iterable, Iterator, List, Literal, Optional, TextIO, Tuple, Union
 import zipfile  # Must import zipfile at startup because of b/135941387
 
-# TODO(b/270392982): Code needs to be py3.8 compatible due to FDU dependency
-# with continued py3.9 support (See b/386790696, go/bq-cli-python-versions).
+# TODO(b/408451275, b/409324907): Code needs to be compatible with versions
+# before 3.10 before end of 4/2025 because of dependency from the BQ CLI
+# (go/bq-cli-python-versions) team, and CSDNM team.
 _Path = Union[str, 'os.PathLike[str]']
 
 # Check for the special module provided by Hermetic Python. Don't try
@@ -65,9 +66,11 @@ else:
 # pylint: enable=g-import-not-at-top,invalid-name
 
 # This controls sys.stderr debug verbosity when accessing resources.
-_verbosity = (sys.flags.verbose or
-              os.environ.get('PYTHONVERBOSE', 0) or
-              os.environ.get('RESOURCESVERBOSE', 0))
+_verbosity = (
+    sys.flags.verbose
+    or os.environ.get('PYTHONVERBOSE', 0)
+    or os.environ.get('RESOURCESVERBOSE', 0)
+)
 _OCTAL_777 = 0o777
 
 _GOOGLE3_STR = os.sep + 'google3' + os.sep
@@ -190,14 +193,14 @@ def GetResource(
   from a directory.
 
   Args:
-    name: The name of the resource. Example:
-          google3/pyglib/resources.py
+    name: The name of the resource. Example: google3/pyglib/resources.py
     mode: The file mode. GetResource only supports text read-only ('r' or 'rt')
-          and binary read-only ('rb').
+      and binary read-only ('rb').
     encoding: The name of the encoding that the data will be decoded with if
-              necessary. Defaults to locale.getpreferredencoding.
+      necessary. Defaults to locale.getpreferredencoding.
     errors: Optional string specifying how decoding errors are to be handled.
             https://docs.python.org/3/library/codecs.html#error-handlers
+
   Returns:
     The contents of the named resource as a bytes object OR when text mode is
     specified (mode='r' or mode='rt') it is returned as a str.
@@ -316,9 +319,10 @@ def GetResourceFilename(name: _Path, mode: str = 'rb') -> str:
   from a directory.
 
   Args:
-    name: The name of the resource. Example:
-          google3/pyglib/resources.py. Must point to a file, not a directory.
+    name: The name of the resource. Example: google3/pyglib/resources.py. Must
+      point to a file, not a directory.
     mode: Unused; only present for API compatibility.
+
   Returns:
     The absolute path to the temporary file.
   Raises:
@@ -348,8 +352,10 @@ def GetResourceFilename(name: _Path, mode: str = 'rb') -> str:
     if not filename:
       assert data is not None
       filename = _CreateTemporaryFile(name, data)
-      _Log('Resource %s does not already exist, writing it to temp file %s\n'
-           % (name, filename))
+      _Log(
+          'Resource %s does not already exist, writing it to temp file %s\n'
+          % (name, filename)
+      )
       permissions = _ParGetPermissions(name)
       if permissions is not None:
         os.chmod(filename, permissions)
@@ -451,13 +457,15 @@ def GetResourceDirectory() -> str:
     except EnvironmentError as e:
       _Log('# error deleting tmpfile %s: %s\n' % (directory, e))
 
-  atexit.register(DeleteResourceDirectoryresourceDir,
-                  unlink=os.unlink,
-                  dirname=os.path.dirname,
-                  removedirs=SafeRemovedirs,
-                  enoent_error=errno.ENOENT,
-                  directory=_resource_directory,
-                  files=_resource_directory_files)
+  atexit.register(
+      DeleteResourceDirectoryresourceDir,
+      unlink=os.unlink,
+      dirname=os.path.dirname,
+      removedirs=SafeRemovedirs,
+      enoent_error=errno.ENOENT,
+      directory=_resource_directory,
+      files=_resource_directory_files,
+  )
   return _resource_directory
 
 
@@ -476,9 +484,9 @@ def GetResourceFilenameInDirectoryTree(name: _Path, mode: str = 'rb') -> str:
   go/borg-python-howto#resources_apis_that_write.
 
   Args:
-    name: The name of the resource. Example:
-          google3/pyglib/resources.py
+    name: The name of the resource. Example: google3/pyglib/resources.py
     mode: Unused; only present for API compatibility.
+
   Returns:
     The absolute path to a file that contains the named resource.
   Raises:
@@ -570,10 +578,9 @@ def _CreateTemporaryFile(name: _Path, data: Union[bytes, str]) -> str:
     py_binary_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
     prefix = '{}__py_binary_resource_{}__'.format(file_name, py_binary_name)
     mode = 'wb' if isinstance(data, bytes) else 'w'
-    with tempfile.NamedTemporaryFile(prefix=prefix,
-                                     suffix=suffix,
-                                     delete=False,
-                                     mode=mode) as f:
+    with tempfile.NamedTemporaryFile(
+        prefix=prefix, suffix=suffix, delete=False, mode=mode
+    ) as f:
       try:
         f.write(data)
         filename = f.name
@@ -593,6 +600,7 @@ def _CreateTemporaryFile(name: _Path, data: Union[bytes, str]) -> str:
       _Log('# deleted resource tmpfile %s\n' % filename)
     except EnvironmentError as e:
       _Log('# error deleting tmpfile %s: %s\n' % (filename, e))
+
   atexit.register(Delete)
 
   return filename
@@ -618,8 +626,11 @@ def _IsModernBootstrap(loader: MetaPathFinder) -> bool:
 
 def _IsParLoader(loader: MetaPathFinder) -> bool:
   return (
-      _IsClassicBootstrap(loader) or _IsModernBootstrap(loader) or
-      _IsHermeticParLoader(loader) or 'FakeLoader' in str(loader))
+      _IsClassicBootstrap(loader)
+      or _IsModernBootstrap(loader)
+      or _IsHermeticParLoader(loader)
+      or 'FakeLoader' in str(loader)
+  )
 
 
 # Hermetic Python/PAR support. This duplicates some of the code from the
@@ -661,7 +672,7 @@ def _NormalizeFilename(parfile: str, pathlike: _Path) -> str:
   path = os.fspath(pathlike)
   parfile += '/'
   if path.startswith(parfile):
-    path = path[len(parfile):]
+    path = path[len(parfile) :]
   return path
 
 
@@ -695,8 +706,7 @@ def _ParGetPermissions(name: _Path) -> Optional[int]:
   This function does not modify global state, so it is thread-safe.
 
   Args:
-    name: The name of the resource. Example:
-          google3/pyglib/resources.py
+    name: The name of the resource. Example: google3/pyglib/resources.py
 
   Returns:
     An integer containing the permissions or None if they can't be
@@ -711,8 +721,9 @@ def _ParGetPermissions(name: _Path) -> Optional[int]:
       name = loader._NormalizeFilename(name)  # pylint: disable=protected-access
       try:
         # pylint: disable=protected-access
-        return ((loader._par._zip_file.getinfo(name).external_attr >> 16)
-                & _OCTAL_777)
+        return (
+            loader._par._zip_file.getinfo(name).external_attr >> 16
+        ) & _OCTAL_777
         # pylint: enable=protected-access
       except KeyError:
         # Can't find the metadata for the file so we don't know the permissions.
@@ -838,8 +849,9 @@ def FindResource(
       with _RESOURCE_LOCK:
         data = loader.get_data(name)
       if isinstance(data, bytes) and 'b' not in mode:
-        data = data.decode(encoding or locale.getpreferredencoding(False),
-                           errors or 'strict')
+        data = data.decode(
+            encoding or locale.getpreferredencoding(False), errors or 'strict'
+        )
       _Log('# loading resource %s via __loader__\n' % name)
       return (None, data)
     except IOError as e:
@@ -852,16 +864,20 @@ def FindResource(
   if root and _IsSubPath(root, name):
     filename = os.path.join(root, name)
     if os.path.isfile(filename):
-      _Log('# loading resource %s from %s via __file__ (non-READONLY)\n' %
-           (name, filename))
+      _Log(
+          '# loading resource %s from %s via __file__ (non-READONLY)\n'
+          % (name, filename)
+      )
       return (filename, None)
 
   # 3 Look relative to this module's __file__ attribute, if available
   if readonly_root and _IsSubPath(readonly_root, name):
     filename = os.path.join(readonly_root, name)
     if os.path.isfile(filename):
-      _Log('# loading resource %s from %s via __file__ (READONLY)\n' %
-           (name, filename))
+      _Log(
+          '# loading resource %s from %s via __file__ (READONLY)\n'
+          % (name, filename)
+      )
       return (filename, None)
 
   # 4 Look relative to sitecustomize.GOOGLEBASE, if available
@@ -871,8 +887,10 @@ def FindResource(
     if root and _IsSubPath(root, name):
       filename = os.path.join(root, name)
       if os.path.isfile(filename):
-        _Log('# loading resource %s from %s via sitecustomize\n' % (name,
-                                                                    filename))
+        _Log(
+            '# loading resource %s from %s via sitecustomize\n'
+            % (name, filename)
+        )
         return (filename, None)
       else:
         _Log('# resource %s not found via sitecustomize %s' % (name, root))
@@ -882,8 +900,7 @@ def FindResource(
   if root and _IsSubPath(root, name):
     filename = os.path.join(root, name)
     if os.path.isfile(filename):
-      _Log('# loading resource %s from %s via GOOGLEBASE\n' % (name,
-                                                               filename))
+      _Log('# loading resource %s from %s via GOOGLEBASE\n' % (name, filename))
       return (filename, None)
     else:
       _Log('# resource %s not found in GOOGLEBASE %s' % (name, root))
@@ -920,8 +937,10 @@ def FindResource(
   if readonly_path is not None and _IsSubPath(readonly_path, resource_name):
     filename = os.path.join(readonly_path, resource_name)
     if os.path.isfile(filename):
-      _Log('# loading resource %s from %s via srcfs READONLY\n' % (name,
-                                                                   filename))
+      _Log(
+          '# loading resource %s from %s via srcfs READONLY\n'
+          % (name, filename)
+      )
       return (filename, None)
 
   # If all else fails, see if it's just an absolute filesystem path pointing
@@ -936,14 +955,18 @@ def FindResource(
     # this up but instead of adding complexity in the library it seems saner
     # for the users to fix their code.
     if name in _temporaries.values():
-      _Log('# UNSUPPORTED LEGACY USAGE: loading resource from previously '
-           'extracted file. resources.py is only expected to handle google3 '
-           'resource paths. That is an absolute path you should open with '
-           'gfile instead: %s\n' % name)
+      _Log(
+          '# UNSUPPORTED LEGACY USAGE: loading resource from previously '
+          'extracted file. resources.py is only expected to handle google3 '
+          'resource paths. That is an absolute path you should open with '
+          'gfile instead: %s\n' % name
+      )
       return (name, None)
     else:
-      _Log('# discarding absolute path not pointing to known '
-           'resource: %s\n' % name)
+      _Log(
+          '# discarding absolute path not pointing to known resource: %s\n'
+          % name
+      )
 
   raise IOError(errno.ENOENT, 'Resource not found', name)
 
@@ -983,6 +1006,7 @@ class _FileIndex:
 
   def Walk(self, top: str) -> Iterable[Tuple[str, List[str], List[str]]]:
     """Walks the directory tree like os.walk."""
+
     def ProcessDir(
         prefix, d: Dict[str, Any]
     ) -> Iterable[Tuple[str, List[str], List[str]]]:
@@ -1030,9 +1054,10 @@ def _TrimPathPrefixFromWalkIterable(
 ):
   for dirpath, dirnames, filenames in iterable:
     if not dirpath.startswith(path_prefix):
-      raise ValueError('path %r doesn\'t start with prefix %r' % (dirpath,
-                                                                  path_prefix))
-    yield dirpath[len(path_prefix):], dirnames, filenames
+      raise ValueError(
+          "path %r doesn't start with prefix %r" % (dirpath, path_prefix)
+      )
+    yield dirpath[len(path_prefix) :], dirnames, filenames
 
 
 def WalkResources(path: _Path) -> Iterator[Tuple[str, List[str], List[str]]]:
@@ -1053,8 +1078,9 @@ def WalkResources(path: _Path) -> Iterator[Tuple[str, List[str], List[str]]]:
   # higher level, such as a test environment.
   if runfiles_dir and runfiles_dir == __file__.rpartition(_GOOGLE3_STR)[0]:
     abs_path = os.path.join(runfiles_dir, path)
-    return _TrimPathPrefixFromWalkIterable(runfiles_dir + '/',
-                                           os.walk(abs_path))
+    return _TrimPathPrefixFromWalkIterable(
+        runfiles_dir + '/', os.walk(abs_path)
+    )
 
   global _par_file_index
   with _RESOURCE_LOCK:
@@ -1089,8 +1115,9 @@ def _DeriveRootPathFromThisFile(
     # this_filename is like <root>/google3/pyglib/resources.py
     # where <root> is either the srcfs READONLY folder or the actual client
     # root.
-    google3_dir = os.path.dirname(os.path.dirname(
-        os.path.abspath(this_filename)))
+    google3_dir = os.path.dirname(
+        os.path.dirname(os.path.abspath(this_filename))
+    )
     tentative_root = os.path.dirname(google3_dir)
     if 'google3' == os.path.basename(google3_dir):
       root = tentative_root
@@ -1136,8 +1163,9 @@ def GetRunfilesDir() -> Optional[str]:
   # which has sys.argv[0] set to:
   # /usr/local/google/eclipse.../plugins/org.python.pydev_.../pysrc/runfiles.py
   starting_point = sys.argv[0]
-  if (('/org.python.pydev' in starting_point)
-      or (UsingPythonLauncher() and not _RunningInsideParFile())):
+  if ('/org.python.pydev' in starting_point) or (
+      UsingPythonLauncher() and not _RunningInsideParFile()
+  ):
     starting_point = __file__
   return FindRunfilesDir(os.path.abspath(starting_point))
 
@@ -1179,7 +1207,7 @@ def FindRunfilesDir(program_filename: str) -> Optional[str]:
     for bindir in ['bin', 'blaze-bin']:
       bindir_sep = bindir + os.sep
       if filename.startswith(bindir_sep):
-        filename = filename[len(bindir_sep):]
+        filename = filename[len(bindir_sep) :]
         return bindir, filename
     # if not, find the bin directory in the absolute programname
     for elem in os.path.abspath(sys.argv[0]).split(os.sep):
@@ -1191,11 +1219,12 @@ def FindRunfilesDir(program_filename: str) -> Optional[str]:
   google3_idx = program_filename.rfind(_GOOGLE3_STR)
   if google3_idx != -1:
     root_dir = program_filename[:google3_idx]
-    rel_filename = program_filename[google3_idx + len(_GOOGLE3_STR):]
+    rel_filename = program_filename[google3_idx + len(_GOOGLE3_STR) :]
     bindir, rel_filename = _GetBinaryDirectoryFilename(rel_filename)
     rel_filename_noext = os.path.splitext(rel_filename)[0]
-    runfiles = os.path.join(root_dir, 'google3', bindir,
-                            rel_filename_noext + '.runfiles')
+    runfiles = os.path.join(
+        root_dir, 'google3', bindir, rel_filename_noext + '.runfiles'
+    )
     if os.path.isdir(runfiles):
       return runfiles
     return root_dir
@@ -1223,8 +1252,11 @@ def _RunningInsideParFile() -> bool:
   loader = _GetLoader()
   if not loader:
     return False
-  return (_IsClassicBootstrap(loader) or _IsModernBootstrap(loader) or
-          _IsHermeticParLoader(loader))
+  return (
+      _IsClassicBootstrap(loader)
+      or _IsModernBootstrap(loader)
+      or _IsHermeticParLoader(loader)
+  )
 
 
 def _ListAllFiles(loader) -> List[str]:
@@ -1304,7 +1336,8 @@ def GetARootDirWithAllResources(
         try:
           # The available API is unfortunately _protected.
           loader._par._ExtractFiles(  # pylint: disable=protected-access
-              filename_predicate, 'file', root)
+              filename_predicate, 'file', root
+          )
         except EnvironmentError:
           shutil.rmtree(root, ignore_errors=True)
           raise
@@ -1316,7 +1349,8 @@ def GetARootDirWithAllResources(
         # which is not considered a "temp" as it is recycled between runs.
         return loader.par.ExtractMultipleResourcesByPredicateIfNeeded(
             extraction_predicate=filename_predicate,
-            force_extract=skip_previous_extraction_check)
+            force_extract=skip_previous_extraction_check,
+        )
       elif _IsHermeticParLoader(loader):
         # With Hermetic PAR files, nothing is extracted by default, and
         # there is no canonical runfiles directory. Like the classic tinypar
@@ -1397,7 +1431,8 @@ def ParExtractAllFiles() -> Optional[str]:
       elif _IsModernBootstrap(loader):
         # zipimport_modern's loader has a different API.
         _par_extract_all_files_cache = (
-            loader.par.ExtractMultipleResourcesByPredicateIfNeeded())
+            loader.par.ExtractMultipleResourcesByPredicateIfNeeded()
+        )
       elif _IsHermeticParLoader(loader):
         # There isn't really a runfiles directory for Hermetic PAR files,
         # so just fall back to GetARootDirWithAllResources().
@@ -1444,6 +1479,7 @@ def _ParOpen(  # pylint: disable=keyword-arg-before-vararg
     mode: file mode for opening the file.
     *args: Other argments to apply to the Open command.
     **kwargs: Keyword arguments to apply to the open command.
+
   Returns:
     A file handle to the par file.
   Raises:
@@ -1456,10 +1492,9 @@ def _ParOpen(  # pylint: disable=keyword-arg-before-vararg
 
   # We only support reading.
   if any(write_indicator in mode for write_indicator in ['w', 'a', '+']):
-    raise IOError(errno.EROFS,
-                  'Parfiles are not writable: %r' % path)
+    raise IOError(errno.EROFS, 'Parfiles are not writable: %r' % path)
 
-  relative_path = path[len(_PAR_PREFIX):]
+  relative_path = path[len(_PAR_PREFIX) :]
   fp = GetResourceAsFile(relative_path)
   if 'b' in mode:
     return fp  # pytype: disable=bad-return-type

@@ -251,13 +251,13 @@
       - api_field: value
     - arg_name: cidr
       api_field: cloudVmCluster.cidr
-      required: true
+      required: false
       repeated: false
       help_text: |-
         Network settings. CIDR to use for cluster IP allocation.
     - arg_name: backup-subnet-cidr
       api_field: cloudVmCluster.backupSubnetCidr
-      required: true
+      required: false
       repeated: false
       help_text: |-
         CIDR range of the backup subnet.
@@ -270,7 +270,7 @@
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_none_networks
       resource_method_params:
         cloudVmCluster.network: '{__relative_name__}'
-      required: true
+      required: false
     - arg_name: request-id
       api_field: requestId
       required: false

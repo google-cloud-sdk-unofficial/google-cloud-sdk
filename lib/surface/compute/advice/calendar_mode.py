@@ -55,9 +55,8 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CalendarMode(base_classes.BaseCommand):
   """Recommends the optimal time window and zone for Future Reservations."""
 
@@ -88,3 +87,12 @@ class CalendarMode(base_classes.BaseCommand):
     service = client.apitools_client.advice
     method_name = 'CalendarMode'
     return client.MakeRequests([(service, method_name, request_message)])
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CalendarModeAlpha(CalendarMode):
+  """Recommends the optimal time window and zone for Future Reservations."""
+
+  detailed_help = DETAILED_HELP
+

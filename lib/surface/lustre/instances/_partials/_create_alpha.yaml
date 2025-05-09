@@ -19,12 +19,13 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Create instances
-    description: Create an instance
+    brief: Creates a Managed Lustre instance
+    description: |
+      Creates a Managed Lustre instance.
     examples: |-
-      To create the instance, run:
+      To create an instance `my-instance` in location `us-central1-a` with 2048 Gib capacity run:
 
-      $ {command}
+      $ {command} my-instance --capacity-gib=2048 --location=us-central1-a --network=projects/my-project/global/networks/default --filesystem=lustrefs
   arguments:
     params:
     - help_text: |-

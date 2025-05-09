@@ -115,3 +115,14 @@ class CreateBeta(Create):
   @staticmethod
   def Args(parser):
     return CreateBeta._ReplicationArgs(parser, CreateBeta._RELEASE_TRACK)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+
+  @staticmethod
+  def Args(parser):
+    return CreateAlpha._ReplicationArgs(parser, CreateAlpha._RELEASE_TRACK)

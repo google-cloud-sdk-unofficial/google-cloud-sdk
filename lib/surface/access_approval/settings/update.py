@@ -26,7 +26,14 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.access_approval import parent
 
+
 _PREFERENCES = ('ORGANIZATION', 'FOLDER', 'PROJECT')
+_APPROVAL_POLICY_PREFERENCES = (
+    'transparency',
+    'streamlined-support',
+    'access-approval',
+    'inherit-policy-from-parent',
+)
 
 
 @base.UniverseCompatible
@@ -72,6 +79,10 @@ class Update(base.Command):
     Update request scope max width preference for project `p1`:
 
         $ {command} --project=p1 --request_scope_max_width_preference=PROJECT
+
+    Update approval policy for project `p1`:
+
+        $ {command} --project=p1 --approval_policy=transparency
         """),
   }
 
@@ -147,6 +158,14 @@ class Update(base.Command):
             ' resources.'
         ),
     )
+    parser.add_argument(
+        '--approval_policy',
+        choices=_APPROVAL_POLICY_PREFERENCES,
+        help=(
+            'The preference to configure the approval policy for access'
+            ' requests.'
+        ),
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -169,6 +188,7 @@ class Update(base.Command):
         and args.notification_pubsub_topic is None
         and args.request_scope_max_width_preference is None
         and args.require_customer_visible_justification is None
+        and args.approval_policy is None
     ):
       raise exceptions.MinimumArgumentException(
           [
@@ -180,6 +200,7 @@ class Update(base.Command):
               '--notification_pubsub_topic',
               '--request_scope_max_width_preference',
               '--require_customer_visible_justification',
+              '--approval_policy',
           ],
           'must specify at least one of these flags',
       )
@@ -235,6 +256,32 @@ class Update(base.Command):
     if args.require_customer_visible_justification is not None:
       update_mask.append('require_customer_visible_justification')
 
+    if args.approval_policy is not None:
+      update_mask.append('approval_policy')
+
+      approval_policy_arg = args.approval_policy
+      if approval_policy_arg == 'transparency':
+        approval_policy = msgs.CustomerApprovalApprovalPolicy(
+            justificationBasedApprovalPolicy=msgs.CustomerApprovalApprovalPolicy.JustificationBasedApprovalPolicyValueValuesEnum.JUSTIFICATION_BASED_APPROVAL_ENABLED_ALL
+        )
+      elif (
+          approval_policy_arg
+          == 'streamlined-support'
+      ):
+        approval_policy = msgs.CustomerApprovalApprovalPolicy(
+            justificationBasedApprovalPolicy=msgs.CustomerApprovalApprovalPolicy.JustificationBasedApprovalPolicyValueValuesEnum.JUSTIFICATION_BASED_APPROVAL_ENABLED_EXTERNAL_JUSTIFICATIONS
+        )
+      elif approval_policy_arg == 'access-approval':
+        approval_policy = msgs.CustomerApprovalApprovalPolicy(
+            justificationBasedApprovalPolicy=msgs.CustomerApprovalApprovalPolicy.JustificationBasedApprovalPolicyValueValuesEnum.JUSTIFICATION_BASED_APPROVAL_NOT_ENABLED
+        )
+      elif approval_policy_arg == 'inherit-policy-from-parent':
+        approval_policy = msgs.CustomerApprovalApprovalPolicy(
+            justificationBasedApprovalPolicy=msgs.CustomerApprovalApprovalPolicy.JustificationBasedApprovalPolicyValueValuesEnum.JUSTIFICATION_BASED_APPROVAL_INHERITED
+        )
+    else:
+      approval_policy = None
+
     return settings.Update(
         name=f'{p}/accessApprovalSettings',
         notification_emails=emails_list,
@@ -245,5 +292,6 @@ class Update(base.Command):
         notification_pubsub_topic=args.notification_pubsub_topic,
         request_scope_max_width_preference=request_scope_max_width_preference,
         require_customer_visible_justification=args.require_customer_visible_justification,
+        approval_policy=approval_policy,
         update_mask=','.join(update_mask),
     )

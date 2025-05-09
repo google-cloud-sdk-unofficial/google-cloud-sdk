@@ -52,6 +52,11 @@ EXAMPLES = """\
     To update a connection profile for BigQuery:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=bigquery --display-name=my-profile
+
+    To update a connection profile for MongoDB:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=mongodb --mongodb-password=fakepassword --mongodb-username=fakeuser --display-name=my-profile --mongodb-host-addresses=35.188.150.50:27017 --static-ip-connectivity
+
    """
 
 EXAMPLES_BETA = """\
@@ -100,6 +105,7 @@ class Update(base.Command):
     cp_flags.AddSqlServerProfileGroup(profile_flags, required=False)
     cp_flags.AddSalesforceProfileGroup(profile_flags, required=False)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track, required=False)
+    cp_flags.AddMongodbProfileGroup(profile_flags, required=False)
     flags.AddLabelsUpdateFlags(parser)
 
   @staticmethod
@@ -149,6 +155,10 @@ class Update(base.Command):
     if args.salesforce_prompt_for_oauth2_client_secret:
       args.salesforce_oauth2_client_secret = console_io.PromptPassword(
           'Please Enter OAuth 2.0 Client Secret: '
+      )
+    if args.mongodb_prompt_for_password:
+      args.mongodb_password = console_io.PromptPassword(
+          'Please Enter Password: '
       )
 
     cp_type = (args.type).upper()

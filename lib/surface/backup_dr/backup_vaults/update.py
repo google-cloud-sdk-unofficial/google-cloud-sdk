@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Updates a Backup and DR Backup Vault."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
+import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.backupdr import util
@@ -29,7 +30,38 @@ from googlecloudsdk.command_lib.backupdr import util as command_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+def _add_common_args(parser: argparse.ArgumentParser):
+  """Specifies additional command flags.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+  """
+  flags.AddBackupVaultResourceArg(
+      parser,
+      'Name of the existing backup vault to update.',
+  )
+  flags.AddNoAsyncFlag(parser)
+  flags.AddEnforcedRetention(parser, False)
+  flags.AddDescription(parser)
+  flags.AddEffectiveTime(parser)
+  flags.AddUnlockBackupMinEnforcedRetention(parser)
+  flags.AddForceUpdateFlag(parser)
+
+
+def _add_common_update_mask(args: argparse.Namespace) -> str:
+  updated_fields = []
+  if args.IsSpecified('description'):
+    updated_fields.append('description')
+  if args.IsSpecified('backup_min_enforced_retention'):
+    updated_fields.append('backupMinimumEnforcedRetentionDuration')
+  if args.IsSpecified(
+      'unlock_backup_min_enforced_retention'
+  ) or args.IsSpecified('effective_time'):
+    updated_fields.append('effectiveTime')
+  return ','.join(updated_fields)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Backup and DR backup vault."""
@@ -57,48 +89,18 @@ class Update(base.UpdateCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
     """
-    flags.AddBackupVaultResourceArg(
-        parser,
-        'Name of the existing backup vault to update.',
-    )
-    flags.AddNoAsyncFlag(parser)
-    flags.AddEnforcedRetention(parser, False)
-    flags.AddDescription(parser)
-    flags.AddEffectiveTime(parser)
-    flags.AddUnlockBackupMinEnforcedRetention(parser)
-    flags.AddForceUpdateFlag(parser)
+    _add_common_args(parser)
 
-  def GetUpdateMask(self, args):
-    updated_fields = []
-    if args.IsSpecified('description'):
-      updated_fields.append('description')
-    if args.IsSpecified('backup_min_enforced_retention'):
-      updated_fields.append('backupMinimumEnforcedRetentionDuration')
-    if args.IsSpecified(
-        'unlock_backup_min_enforced_retention'
-    ) or args.IsSpecified('effective_time'):
-      updated_fields.append('effectiveTime')
-    return ','.join(updated_fields)
+  def GetUpdateMask(self, args: argparse.Namespace) -> str:
+    return _add_common_update_mask(args)
 
-  def Run(self, args):
-    """Constructs and sends request.
-
-    Args:
-      args: argparse.Namespace, An object that contains the values for the
-        arguments specified in the .Args() method.
-
-    Returns:
-      ProcessHttpResponse of the request made.
-    """
-    client = BackupVaultsClient()
-    backup_vault = args.CONCEPTS.backup_vault.Parse()
-
+  def ParseUpdateBv(self, args: argparse.Namespace, client: BackupVaultsClient):
     backup_min_enforced_retention = command_util.ConvertIntToStr(
         args.backup_min_enforced_retention
     )
@@ -116,22 +118,39 @@ class Update(base.UpdateCommand):
       effective_time = command_util.VerifyDateInFuture(
           args.effective_time, 'effective-time'
       )
+
+    parsed_bv = client.ParseUpdate(
+        description=description,
+        backup_min_enforced_retention=backup_min_enforced_retention,
+        effective_time=effective_time,
+        access_restriction=None,
+    )
+    return parsed_bv
+
+  def Run(self, args):
+    """Constructs and sends request.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      ProcessHttpResponse of the request made.
+    """
+    client = BackupVaultsClient()
+    backup_vault = args.CONCEPTS.backup_vault.Parse()
     no_async = args.no_async
 
     try:
-      parsed_bv = client.ParseUpdate(
-          description=description,
-          backup_min_enforced_retention=backup_min_enforced_retention,
-          effective_time=effective_time,
-      )
+      parsed_bv = self.ParseUpdateBv(args, client)
 
       update_mask = self.GetUpdateMask(args)
 
       operation = client.Update(
           backup_vault,
           parsed_bv,
-          update_mask=update_mask,
           force_update=args.force_update,
+          update_mask=update_mask,
       )
 
     except apitools_exceptions.HttpError as e:
@@ -156,3 +175,47 @@ class Update(base.UpdateCommand):
         details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
     )
     return operation
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Backup and DR backup vault."""
+
+  @staticmethod
+  def Args(parser):
+    _add_common_args(parser)
+    flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'update')
+
+  def ParseUpdateBv(self, args: argparse.Namespace, client: BackupVaultsClient):
+    backup_min_enforced_retention = command_util.ConvertIntToStr(
+        args.backup_min_enforced_retention
+    )
+    description = args.description
+
+    if args.unlock_backup_min_enforced_retention and args.effective_time:
+      raise calliope_exceptions.ConflictingArgumentsException(
+          'Only one of --unlock-backup-min-enforced-retention or '
+          '--effective-time can be specified.'
+      )
+
+    if args.unlock_backup_min_enforced_retention:
+      effective_time = command_util.ResetEnforcedRetention()
+    else:
+      effective_time = command_util.VerifyDateInFuture(
+          args.effective_time, 'effective-time'
+      )
+    access_restriction = args.access_restriction
+
+    parsed_bv = client.ParseUpdate(
+        description=description,
+        backup_min_enforced_retention=backup_min_enforced_retention,
+        effective_time=effective_time,
+        access_restriction=access_restriction,
+    )
+    return parsed_bv
+
+  def GetUpdateMask(self, args: argparse.Namespace) -> str:
+    mask = _add_common_update_mask(args)
+    if args.IsSpecified('access_restriction'):
+      mask += ',accessRestriction'
+    return mask

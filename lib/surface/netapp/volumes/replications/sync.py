@@ -81,3 +81,9 @@ class SyncBeta(Sync):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SyncAlpha(SyncBeta):
+  """Sync a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

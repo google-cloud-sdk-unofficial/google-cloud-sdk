@@ -79,6 +79,7 @@ def GetBodyForCreateReservation(
   if scaling_mode is not None:
     reservation['scaling_mode'] = scaling_mode
 
+
   return reservation
 
 
@@ -372,6 +373,7 @@ def GetParamsForUpdateReservation(
   if scaling_mode is not None:
     reservation['scaling_mode'] = scaling_mode
     update_mask += 'scaling_mode,'
+
 
   return reservation, update_mask
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Delete migrationWorkflows
-    description: Delete a migrationWorkflow
+    brief: Delete migration workflows
+    description: Delete a migration workflow
     examples: |-
-      To delete the migrationWorkflow, run:
+      To delete a migration workflow `projects/123/locations/eu/workflows/1234`, run:
 
-      $ {command}
+      $ {command} projects/123/locations/eu/workflows/1234
   arguments:
     params:
     - help_text: |-

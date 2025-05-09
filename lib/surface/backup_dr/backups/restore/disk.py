@@ -65,6 +65,7 @@ class Disk(base.Command):
     disk_flags.AddTargetRegionArg(parser, False)
     disk_flags.AddTargetProjectArg(parser)
     disk_flags.AddReplicaZonesArg(parser, False)
+    disk_flags.AddGuestOsFeaturesArgs(parser, False)
     disk_flags.AddDescriptionArg(parser, False)
     disk_flags.AddLicensesArg(parser, False)
     disk_flags.AddLabelsArg(parser, False)
@@ -114,6 +115,8 @@ class Disk(base.Command):
       restore_config['TargetRegion'] = args.target_region
     if args.replica_zones:
       restore_config['ReplicaZones'] = args.replica_zones
+    if args.guest_os_features:
+      restore_config['GuestOsFeatures'] = args.guest_os_features
     if args.licenses:
       restore_config['Licenses'] = args.licenses
     if args.description:

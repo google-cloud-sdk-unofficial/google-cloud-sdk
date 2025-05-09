@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete a Cloud NetApp Volume Replication."""
@@ -90,3 +91,9 @@ class DeleteBeta(Delete):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  """Delete a Cloud NetApp Storage Pool."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

@@ -1142,6 +1142,7 @@ class AlphaDeploy(BetaDeploy):
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
+    flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)

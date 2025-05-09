@@ -304,6 +304,9 @@ def AddBaseArgs(parser):
   psc_update_group = parser.add_mutually_exclusive_group()
   flags.AddAllowedPscProjects(psc_update_group)
   flags.AddClearAllowedPscProjects(psc_update_group)
+  ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
+  flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
+  flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
   flags.AddEnableDataplexIntegration(parser)
@@ -316,6 +319,7 @@ def AddBaseArgs(parser):
   flags.AddRetainBackupsOnDelete(parser)
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
+  flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
 
 
 def AddBetaArgs(parser):
@@ -324,7 +328,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
@@ -332,9 +335,6 @@ def AddBetaArgs(parser):
   connection_pool_flags_group = parser.add_mutually_exclusive_group()
   flags.AddConnectionPoolFlags(connection_pool_flags_group)
   flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
-  ip_update_custom_sans_group = parser.add_mutually_exclusive_group()
-  flags.AddCustomSubjectAlternativeNames(ip_update_custom_sans_group)
-  flags.AddClearCustomSubjectAlternativeNames(ip_update_custom_sans_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
   psc_na_uri_update_group = parser.add_mutually_exclusive_group(hidden=True)

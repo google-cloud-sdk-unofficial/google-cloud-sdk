@@ -49,10 +49,10 @@ class Create(base.Command):
 
   detailed_help = {
       'EXAMPLES': """\
-          To create a Dataplex Metadata Job with name `my-metadata-job` in location
+          To create a Dataplex Metadata Job with type `IMPORT` and name `my-metadata-job` in location
           `us-central1` with additional parameters, run:
 
-            $ {command} my-dataplex-lake --location=us-central --project=test-project
+            $ {command} my-metadata-job --location=us-central --project=test-project
             --type=import --import-source-storage-uri=gs://test-storage/
             --import-source-create-time="2019-01-23T12:34:56.123456789Z"
             --import-entry-sync-mode=FULL --import-aspect-sync-mode=INCREMENTAL
@@ -61,6 +61,17 @@ class Create(base.Command):
             --import-entry-types="projects/test-project/locations/us-central1/entryTypes/et1",
                 "projects/test-project/locations/us-central1/entryTypes/et2"
             --import-aspect-types="projects/test-project/locations/us-central1/aspectTypes/at1",
+                "projects/test-project/locations/us-central1/aspectTypes/at2"
+
+          To create a Dataplex Metadata Job with type `EXPORT` and name `my-metadata-job` in location
+          `us-central1` with additional parameters, run:
+
+            $ {command} my-metadata-job --location=us-central --project=test-project
+            --type=export --export-output-path=gs://test-storage/
+            --export-entry-groups=projects/test-project/locations/us-central1/entryGroups/eg1
+            --export-entry-types="projects/test-project/locations/us-central1/entryTypes/et1",
+                "projects/test-project/locations/us-central1/entryTypes/et2"
+            --export-aspect-types="projects/test-project/locations/us-central1/aspectTypes/at1",
                 "projects/test-project/locations/us-central1/aspectTypes/at2"
           """,
   }
@@ -74,7 +85,12 @@ class Create(base.Command):
             'IMPORT': (
                 """A Metadata Import Job will ingest, update, or delete entries
                    and aspects into the declared Dataplex entry group."""
-            )
+            ),
+            'EXPORT': (
+                """A Metadata Export Job will export entries and aspects from
+                   the declared Dataplex scope to the specified Cloud
+                   Storage location."""
+            ),
         },
         type=arg_utils.ChoiceToEnumName,
         help='Type',
@@ -95,25 +111,23 @@ class Create(base.Command):
     import_scope = import_spec.add_group(
         help=
         """A boundary on the scope of impact that the metadata import job can
-        have.""", required=True
+        have.""",
+        required=True,
     )
     import_scope.add_argument(
         '--import-entry-groups',
-        default=[],
         type=arg_parsers.ArgList(),
         metavar='IMPORT_ENTRY_GROUPS',
         help="""The list of entry groups to import metadata jobs into.""",
     )
     import_scope.add_argument(
         '--import-entry-types',
-        default=[],
         type=arg_parsers.ArgList(),
         metavar='IMPORT_ENTRY_TYPES',
         help="""The list of entry types to import metadata jobs into.""",
     )
     import_scope.add_argument(
         '--import-aspect-types',
-        default=[],
         type=arg_parsers.ArgList(),
         metavar='IMPORT_ASPECT_TYPES',
         help="""The list of aspect types to import metadata jobs into.""",
@@ -167,18 +181,70 @@ class Create(base.Command):
     import_spec.add_argument(
         '--import-log-level',
         choices={
-            'DEBUG': """Debug-level logging. Captures detailed logs for each import
+            'DEBUG': (
+                """Debug-level logging. Captures detailed logs for each import
                 item. Use debug-level logging to troubleshoot issues with
                 specific import items. For example, use debug-level logging to
                 identify resources that are missing from the job scope, entries
                 or aspects that don't conform to the associated entry type or
-                aspect type, or other misconfigurations with the metadata import file..""",
+                aspect type, or other misconfigurations with the metadata import file.."""
+            ),
             'INFO': """ Info-level logging. Captures logs at the overall job
                     level. Includes aggregate logs about import items, but
                     doesn't specify which import item has an error..""",
         },
         type=arg_utils.ChoiceToEnumName,
         help='Type',
+    )
+    export_spec = spec.add_group(
+        help='Settings for metadata export job operation.'
+    )
+    export_spec.add_argument(
+        '--export-output-path',
+        help='The Cloud Storage location to export metadata to.',
+        metavar='EXPORT_OUTPUT_PATH',
+        required=True,
+    )
+    export_scope = export_spec.add_group(
+        help="""A boundary on the scope of impact that the metadata export job can
+        have.""",
+        required=True,
+    )
+    export_scope_resources = export_scope.add_group(
+        mutex=True,
+        required=True,
+        help="""The scope of resources to export metadata from.""",
+    )
+    export_scope_resources.add_argument(
+        '--export-organization-level',
+        type=bool,
+        metavar='EXPORT_ORGANIZATION_LEVEL',
+        help="""Whether to export metadata at the organization level.""",
+    )
+    export_scope_resources.add_argument(
+        '--export-projects',
+        type=arg_parsers.ArgList(),
+        metavar='EXPORT_PROJECTS',
+        help="""The list of projects to export metadata from.""",
+    )
+    export_scope_resources.add_argument(
+        '--export-entry-groups',
+        type=arg_parsers.ArgList(),
+        metavar='EXPORT_ENTRY_GROUPS',
+        help="""The list of entry groups to export metadata from.""",
+    )
+
+    export_scope.add_argument(
+        '--export-entry-types',
+        type=arg_parsers.ArgList(),
+        metavar='EXPORT_ENTRY_TYPES',
+        help="""The list of entry types to export metadata from.""",
+    )
+    export_scope.add_argument(
+        '--export-aspect-types',
+        type=arg_parsers.ArgList(),
+        metavar='EXPORT_ASPECT_TYPES',
+        help="""The list of aspect types to export metadata from.""",
     )
     base.ASYNC_FLAG.AddToParser(parser)
     labels_util.AddCreateLabelsFlags(parser)

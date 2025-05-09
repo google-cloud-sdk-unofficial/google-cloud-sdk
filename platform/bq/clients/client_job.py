@@ -417,6 +417,7 @@ def _StartQueryRpc(
     maximum_bytes_billed: Optional[int] = None,
     max_results: Optional[int] = None,
     timeout_ms: Optional[int] = None,
+    job_timeout_ms: Optional[int] = None,
     min_completion_ratio: Optional[float] = None,
     project_id: Optional[str] = None,
     external_table_definitions_json=None,
@@ -431,6 +432,7 @@ def _StartQueryRpc(
     create_session: Optional[bool] = None,
     query_parameters=None,
     positional_parameter_mode=None,
+    destination_encryption_configuration=None,
     **kwds,
 ):
   """Executes the given query using the rpc-style query api.
@@ -449,6 +451,7 @@ def _StartQueryRpc(
     maximum_bytes_billed: Optional. Upper limit on the number of billed bytes.
     max_results: Maximum number of results to return.
     timeout_ms: Timeout, in milliseconds, for the call to query().
+    job_timeout_ms: Optional. How long to let the job run.
     min_completion_ratio: Optional. Specifies the minimum fraction of data that
       must be scanned before a query returns. This value should be between 0.0
       and 1.0 inclusive.
@@ -475,6 +478,8 @@ def _StartQueryRpc(
     query_parameters: parameter values for use_legacy_sql=False queries.
     positional_parameter_mode: If true, set the parameter mode to POSITIONAL
       instead of the default NAMED.
+    destination_encryption_configuration: Optional. Allows user to encrypt the
+      table created from a query job with a Cloud KMS key.
     **kwds: Extra keyword arguments passed directly to jobs.Query().
 
   Returns:
@@ -517,6 +522,7 @@ def _StartQueryRpc(
       maximum_bytes_billed=maximum_bytes_billed,
       use_query_cache=use_cache,
       timeout_ms=timeout_ms,
+      job_timeout_ms=job_timeout_ms,
       max_results=max_results,
       use_legacy_sql=use_legacy_sql,
       min_completion_ratio=min_completion_ratio,
@@ -525,6 +531,7 @@ def _StartQueryRpc(
       location=location,
       create_session=create_session,
       query_parameters=query_parameters,
+      destination_encryption_configuration=destination_encryption_configuration,
       parameter_mode=None
       if positional_parameter_mode is None
       else ('POSITIONAL' if positional_parameter_mode else 'NAMED'),
@@ -884,6 +891,7 @@ def RunQueryRpc(
         bigquery_client.BigqueryClient.JobCreationMode
     ] = None,
     reservation_id: Optional[str] = None,
+    job_timeout_ms: Optional[int] = None,
     **kwds,
 ):
   """Executes the given query using the rpc-style query api.
@@ -923,6 +931,7 @@ def RunQueryRpc(
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
       "reservation_id".
+    job_timeout_ms: Optional. How long to let the job run.
     **kwds: Passed directly to ExecuteSyncQuery.
 
   Raises:
@@ -987,7 +996,7 @@ def RunQueryRpc(
             use_cache=use_cache,
             dry_run=dry_run,
             min_completion_ratio=min_completion_ratio,
-            timeout_ms=current_wait_ms,
+            job_timeout_ms=job_timeout_ms,
             max_results=rows_to_read,
             external_table_definitions_json=external_table_definitions_json,
             udf_resources=udf_resources,
@@ -1277,6 +1286,7 @@ def Load(
     autodetect: Optional[bool] = None,
     schema_update_options: Optional[List[str]] = None,
     null_marker: Optional[str] = None,
+    null_markers: Optional[List[str]] = None,
     time_partitioning=None,
     clustering=None,
     destination_encryption_configuration=None,
@@ -1287,12 +1297,18 @@ def Load(
     decimal_target_types=None,
     json_extension: Optional[str] = None,  # Actually an enum
     column_name_character_map=None,
+    time_zone=None,
+    date_format=None,
+    datetime_format=None,
+    time_format=None,
+    timestamp_format=None,
     file_set_spec_type=None,
     thrift_options=None,
     parquet_options=None,
     connection_properties=None,
     reservation_id: Optional[str] = None,
     copy_files_only: Optional[bool] = None,
+    source_column_match: Optional[str] = None,
     **kwds,
 ):
   """Load the given data into BigQuery.
@@ -1337,6 +1353,8 @@ def Load(
     schema_update_options: schema update options when appending to the
       destination table or truncating a table partition.
     null_marker: Optional. String that will be interpreted as a NULL value.
+    null_markers: Optional. List of strings that will be interpreted as a NULL
+      value.
     time_partitioning: Optional. Provides time based partitioning specification
       for the destination table.
     clustering: Optional. Provides clustering specification for the destination
@@ -1434,6 +1452,16 @@ def Load(
         destination_encryption_configuration
     )
 
+  if time_zone is not None:
+    load_config['timeZone'] = time_zone
+  if date_format is not None:
+    load_config['dateFormat'] = date_format
+  if datetime_format is not None:
+    load_config['datetimeFormat'] = datetime_format
+  if time_format is not None:
+    load_config['timeFormat'] = time_format
+  if timestamp_format is not None:
+    load_config['timestampFormat'] = timestamp_format
 
 
   bq_processor_utils.ApplyParameters(
@@ -1453,6 +1481,7 @@ def Load(
       projection_fields=projection_fields,
       schema_update_options=schema_update_options,
       null_marker=null_marker,
+      null_markers=null_markers,
       time_partitioning=time_partitioning,
       clustering=clustering,
       autodetect=autodetect,

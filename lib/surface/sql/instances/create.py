@@ -143,6 +143,7 @@ def AddBaseArgs(parser):
   psc_setup_group = parser.add_group()
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
   flags.AddAllowedPscProjects(psc_setup_group)
+  flags.AddCustomSubjectAlternativeNames(parser)
   flags.AddSslMode(parser)
   flags.AddEnableGoogleMLIntegration(parser)
   flags.AddEnableDataplexIntegration(parser)
@@ -170,7 +171,6 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableConnectionPooling(parser)
   flags.AddConnectionPoolFlags(parser)
-  flags.AddCustomSubjectAlternativeNames(parser)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
 

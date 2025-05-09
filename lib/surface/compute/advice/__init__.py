@@ -21,11 +21,18 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {
+    'DESCRIPTION': """
+      Provides recommendation on optimal allocation of resources according to a flexible specifications.
+    """,
+}
 
-@base.Hidden
+
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Advice(base.Group):
   """Provides recommendation on optimal allocation of resources according to a flexible specifications."""
 
   category = base.COMPUTE_CATEGORY
+
+  detailed_help = DETAILED_HELP

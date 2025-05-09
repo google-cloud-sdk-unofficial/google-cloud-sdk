@@ -27,17 +27,19 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.Command):
   """Create a migration workflow."""
 
   detailed_help = {
-      'brief': 'create migrationWorkflows',
-      'DESCRIPTION': 'Create a migrationWorkflow',
+      'brief': 'create migration workflows',
+      'DESCRIPTION': 'Create a migration workflow',
       'EXAMPLES': """\
-          To create a migration workflow in US synchronously based on a config file, run:
+          To create a migration workflow in EU synchronously based on a config file, run:
 
-            $ {command} --location=US --config-file=config_file.yaml --no-async
+            $ {command} --location=EU --config-file=config_file.yaml --no-async
             """,
   }
 
@@ -46,12 +48,12 @@ class Create(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     parser.add_argument(
         '--location',
-        help='The location of the migration workflow.',
+        help='Location of the migration workflow.',
         required=True,
     )
     parser.add_argument(
         '--config-file',
-        help='The path to the migration workflows config file.',
+        help='Path to the migration workflows config file.',
         required=True,
     )
 

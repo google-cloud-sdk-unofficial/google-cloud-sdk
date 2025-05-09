@@ -66,6 +66,14 @@ def GetCredentialsFromFlags() -> GoogleAuthCredentialsUnionType:
   else:
     logging.info('No `use_gce_service_account`, load credentials elsewhere')
 
+  if bq_auth_flags.SERVICE_ACCOUNT.value:
+    raise app.UsageError(
+        'The flag --service_account is not supported. '
+        'To use a service account please follow'
+        ' https://cloud.google.com/docs/authentication/'
+        'use-service-account-impersonation#gcloud-config.'
+    )
+
 
   return gcloud_credential_loader.LoadCredential()
 

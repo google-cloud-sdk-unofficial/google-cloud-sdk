@@ -19,12 +19,13 @@
   - GA
   auto_generated: true
   help_text:
-    brief: Update instances
-    description: Update an instance
+    brief: Updates the parameters of a single Managed Lustre instance
+    description: |
+      Updates the parameters of a single Managed Lustre instance.
     examples: |-
-      To update the instance, run:
+      To update the description of an instance `my-instance` in location `us-central1-a` run:
 
-      $ {command}
+      $ {command} my-instance --location=us-central1-a --description="<updated description>"
   arguments:
     params:
     - help_text: |-

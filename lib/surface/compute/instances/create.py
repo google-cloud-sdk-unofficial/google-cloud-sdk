@@ -840,6 +840,7 @@ class CreateBeta(Create):
   _support_watchdog_timer = False
   _support_disk_labels = True
   _support_ipv6_only = True
+  _support_source_snapshot_region = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -882,6 +883,7 @@ class CreateBeta(Create):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
+        support_source_snapshot_region=cls._support_source_snapshot_region,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()

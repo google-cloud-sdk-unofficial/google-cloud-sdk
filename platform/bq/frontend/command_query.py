@@ -586,6 +586,8 @@ class Query(bigquery_command.BigqueryCmd):
       kwds['create_session'] = self.create_session
     if self.reservation_id_for_a_job_flag.present:
       kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value
+    if self.job_timeout_ms:
+      kwds['job_timeout_ms'] = self.job_timeout_ms
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -643,8 +645,6 @@ class Query(bigquery_command.BigqueryCmd):
       kwds['flatten_results'] = self.flatten_results
       kwds['continuous'] = self.continuous
       kwds['job_id'] = utils_flags.get_job_id_from_flags()
-      if self.job_timeout_ms:
-        kwds['job_timeout_ms'] = self.job_timeout_ms
       kwds['job_creation_mode'] = self.job_creation_mode
 
       logging.debug('Calling client.Query(%s, %s)', query, kwds)

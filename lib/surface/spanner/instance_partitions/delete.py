@@ -28,13 +28,15 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaAndAlphaDelete(base.DeleteCommand):
-  """Delete a Cloud Spanner instance partition."""
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+class Delete(base.DeleteCommand):
+  """Delete a Spanner instance partition."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-        To delete a Cloud Spanner instance partition, run:
+        To delete a Spanner instance partition, run:
 
           $ {command} my-instance-partition-id --instance=my-instance-id
         """),

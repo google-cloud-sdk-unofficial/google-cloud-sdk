@@ -85,6 +85,7 @@ class Create(base.CreateCommand):
     flags.AddOutboundPublicIp(parser, show_negated_in_help=True)
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
+    flags.AddPSCAutoConnections(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 

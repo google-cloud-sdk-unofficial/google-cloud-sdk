@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Replications(base.Group):
   """Create and manage Cloud NetApp Volume Replications."""
@@ -28,4 +29,9 @@ class Replications(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ReplicationsBeta(Replications):
+  """Create and manage Cloud NetApp Volume Replications."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ReplicationsAlpha(ReplicationsBeta):
   """Create and manage Cloud NetApp Volume Replications."""

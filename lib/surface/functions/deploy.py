@@ -42,8 +42,8 @@ _LEARN_ABOUT_GEN_DIFFS = (
 
 
 _NEW_CHANGE_WARNING = (
-    'As of this Cloud SDK release, new functions will be deployed as 2nd gen '
-    ' functions by default. This is equivalent to currently deploying new '
+    'As of Cloud SDK 492.0.0 release, new functions will be deployed as 2nd gen'
+    ' functions by default. This is equivalent to currently deploying new'
     ' with the --gen2 flag. Existing 1st gen functions will not be impacted'
     ' and will continue to deploy as 1st gen functions.\n'
     f'{_HOW_TO_DISABLE_CHANGE}\n'

@@ -45,7 +45,7 @@ class CreateLogicalView(base.CreateCommand):
   @staticmethod
   def Args(parser):
     arguments.AddLogicalViewResourceArg(parser, 'to create')
-    arguments.ArgAdder(parser).AddViewQuery().AddAsync()
+    arguments.ArgAdder(parser).AddViewQuery().AddAsync().AddDeletionProtection()
 
   def _CreateLogicalView(self, logical_view_ref, args):
     """Creates a logical view with the given arguments.
@@ -58,7 +58,9 @@ class CreateLogicalView(base.CreateCommand):
     Returns:
       Created logical view resource object.
     """
-    return logical_views.Create(logical_view_ref, args.query)
+    return logical_views.Create(
+        logical_view_ref, args.query, args.deletion_protection
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.

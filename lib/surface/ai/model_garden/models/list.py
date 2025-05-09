@@ -24,12 +24,37 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 
-_DEFAULT_FORMAT = """
-        table(
-            format("{0:s}@{1:s}/{2:s}", name, versionId, name.regex("publishers/hf-.*", "@hf", "@mg")).sub("publishers/hf-", "").sub("publishers/", "").sub("models/", "").sub("@001/@hf", ""). sub("/@mg", ""):sort=1:label=MODEL_ID,
-            supportedActions.multiDeployVertex.if(NOT list_supported_hugging_face_models).yesno(yes=Yes):label=SUPPORTS_DEPLOYMENT
-        )
-    """
+_SHORT_NAME_FORMAT = (
+    'format("{0:s}@{1:s}/{2:s}", name, versionId,'
+    ' name.regex("publishers/hf-.*", "@hf", "@mg")).sub("publishers/hf-",'
+    ' "").sub("publishers/", "").sub("models/", "").sub("@001/@hf", "").'
+    ' sub("/@mg", ""):sort=1'
+)
+_FULL_RESOURCE_NAME_FORMAT = 'format("{0:s}@{1:s}", name, versionId):sort=1'
+_MODEL_ID_LABEL = ':label=MODEL_ID'
+
+_CAN_DEPLOY_FILTER = 'supportedActions.multiDeployVertex.yesno(yes=Yes)'
+_CAN_DEPLOY_LABEL = ':label=CAN_DEPLOY'
+
+_CAN_PREDICT_FILTER = 'publisherModelTemplate.yesno(yes=Yes)'
+_CAN_PREDICT_LABEL = ':label=CAN_PREDICT'
+
+_DEFAULT_TABLE_FORMAT = (
+    f'table({_SHORT_NAME_FORMAT}{_MODEL_ID_LABEL},'
+    f' {_CAN_DEPLOY_FILTER}{_CAN_DEPLOY_LABEL},'
+    f' {_CAN_PREDICT_FILTER}{_CAN_PREDICT_LABEL})'
+)
+_SHORT_MODEL_NAME_ONLY_TABLE_FORMAT = (
+    f'table({_SHORT_NAME_FORMAT}{_MODEL_ID_LABEL})'
+)
+_FULL_RESOURCE_NAME_ONLY_TABLE_FORMAT = (
+    f'table({_FULL_RESOURCE_NAME_FORMAT}{_MODEL_ID_LABEL})'
+)
+_FULL_RESOURCE_NAME_TABLE_FORMAT = (
+    f'table({_FULL_RESOURCE_NAME_FORMAT}{_MODEL_ID_LABEL},'
+    f' {_CAN_DEPLOY_FILTER}{_CAN_DEPLOY_LABEL},'
+    f' {_CAN_PREDICT_FILTER}{_CAN_PREDICT_LABEL})'
+)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -48,13 +73,13 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    parser.display_info.AddFormat(_DEFAULT_FORMAT)
+    parser.display_info.AddFormat(_DEFAULT_TABLE_FORMAT)
     parser.add_argument(
-        '--list-supported-hugging-face-models',
+        '--can-deploy-hugging-face-models',
         action='store_true',
         default=False,
         required=False,
-        help='Whether to only list supported Hugging Face models.',
+        help='Whether to only list Hugging Face models that can be deployed.',
     )
     parser.add_argument(
         '--model-filter',
@@ -66,15 +91,31 @@ class List(base.ListCommand):
             ' list of models.'
         ),
     )
+    parser.add_argument(
+        '--full-resource-name',
+        action='store_true',
+        default=False,
+        required=False,
+        help='Whether to return the full resource name of the model.',
+    )
     base.URI_FLAG.RemoveFromParser(parser)
     base.LIMIT_FLAG.SetDefault(parser, 1000)
 
   def Run(self, args):
     version = constants.BETA_VERSION
+
+    if args.full_resource_name:
+      args.GetDisplayInfo().AddFormat(_FULL_RESOURCE_NAME_TABLE_FORMAT)
+
     # Set the default page size to 100 if the user requests to list supported
     # Hugging Face models, since there are tens of thousands of Hugging Face
     # models and the call will take a long time.
-    if args.list_supported_hugging_face_models:
+    if args.can_deploy_hugging_face_models:
+      args.GetDisplayInfo().AddFormat(
+          _FULL_RESOURCE_NAME_ONLY_TABLE_FORMAT
+          if args.full_resource_name
+          else _SHORT_MODEL_NAME_ONLY_TABLE_FORMAT
+      )
       if args.page_size is None:
         args.page_size = 100
 
@@ -85,6 +126,6 @@ class List(base.ListCommand):
       return mg_client.ListPublisherModels(
           limit=args.limit,
           batch_size=args.page_size,
-          list_hf_models=args.list_supported_hugging_face_models,
+          list_hf_models=args.can_deploy_hugging_face_models,
           model_filter=args.model_filter,
       )

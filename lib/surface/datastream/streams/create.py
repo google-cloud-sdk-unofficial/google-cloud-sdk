@@ -47,6 +47,10 @@ EXAMPLES = """\
 
         $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --postgresql-source-config=source_config.json --destination=destination --bigquery-destination-config=destination_config.json --backfill-none
 
+    To create a stream with a MongoDB source and a Cloud Storage destination and that excludes some objects from being backfilled:
+
+        $ {command} STREAM --location=us-central1 --display-name=my-stream --source=source --mongodb-source-config=source_config.json --destination=destination --gcs-destination-config=destination_config.json --backfill-all --mongodb-excluded-objects=excluded_objects.json
+
    """
 EXAMPLES_BETA = """\
     To create a stream with an Oracle source and a Google Cloud Storage destination:
@@ -60,6 +64,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream stream."""

@@ -99,6 +99,7 @@ class List(commands.List):
 
   def Run(self, args):
     """List available revisions."""
+    label_selector = None
     service_name = args.service
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack()
@@ -114,9 +115,11 @@ class List(commands.List):
                 zone=location_msg if conn_context.cluster_location else '',
             )
         )
+      if service_name is not None:
+        label_selector = 'serving.knative.dev/service = {}'.format(service_name)
       for rev in self._FilterWorkerPoolRevisions(
           client.ListRevisions(
-              namespace_ref, service_name, args.limit, args.page_size
+              namespace_ref, label_selector, args.limit, args.page_size
           )
       ):
         yield rev

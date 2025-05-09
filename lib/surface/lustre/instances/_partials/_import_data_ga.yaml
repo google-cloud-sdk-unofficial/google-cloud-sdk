@@ -19,12 +19,13 @@
   - GA
   auto_generated: true
   help_text:
-    brief: import instances
-    description: import instances
+    brief: Imports data from Cloud Storage to Managed Lustre instance.
+    description: |
+      Imports data from Cloud Storage to Managed Lustre instance.
     examples: |-
-      To import all instances, run:
+      To import data from `gs://my-bucket` storage to `my-instance` run:
 
-      $ {command}
+      $ {command} my-instance --location=us-central-a --gcs-path-uri=gs://my_bucket --lustre-path='/path/to/lustre/dir'
   arguments:
     params:
     - arg_name: gcs-path-uri
@@ -73,4 +74,5 @@
   async:
     collection:
     - lustre.projects.locations.operations
+    extract_resource_result: false
   command_type: GENERIC

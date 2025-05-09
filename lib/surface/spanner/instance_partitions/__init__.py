@@ -20,8 +20,10 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class InstancePartitions(base.Group):
-  """Manage Cloud Spanner instance partitions."""
+  """Manage Spanner instance partitions."""
 
   pass

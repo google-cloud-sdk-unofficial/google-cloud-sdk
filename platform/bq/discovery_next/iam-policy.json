@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250402",
+  "revision": "20250423",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -5001,7 +5001,7 @@
           "type": "boolean"
         },
         "referencedTables": {
-          "description": "Output only. Referenced tables for the job. Queries that reference more than 50 tables will not have a complete list.",
+          "description": "Output only. Referenced tables for the job.",
           "readOnly": true,
           "type": "array",
           "items": {
@@ -5389,6 +5389,11 @@
           "description": "Total number of active workers. This does not correspond directly to slot usage. This is the largest value observed since the last sample.",
           "type": "string",
           "format": "int64"
+        },
+        "shuffleRamUsageRatio": {
+          "description": "Total shuffle usage ratio in shuffle RAM per reservation of this query. This will be provided for reservation customers only.",
+          "type": "number",
+          "format": "double"
         },
         "estimatedRunnableUnits": {
           "description": "Units of work that can be scheduled immediately. Providing additional slots for these units of work will accelerate the query, if no other query in the reservation needs additional slots.",
@@ -8699,9 +8704,9 @@
               "type": "string",
               "enumDescriptions": [
                 "The default value. Default to the FULL view.",
-                "Includes metadata information for the dataset, such as location, etag, lastModifiedTime, etc.",
-                "Includes ACL information for the dataset, which defines dataset access for one or more entities.",
-                "Includes both dataset metadata and ACL information."
+                "Updates metadata information for the dataset, such as friendlyName, description, labels, etc.",
+                "Updates ACL information for the dataset, which defines dataset access for one or more entities.",
+                "Updates both dataset metadata and ACL information."
               ],
               "enum": [
                 "DATASET_VIEW_UNSPECIFIED",
@@ -8786,6 +8791,23 @@
               "required": true,
               "type": "string"
             },
+            "updateMode": {
+              "description": "Optional. Specifies the fields of dataset that update\/patch operation is targeting By default, both metadata and ACL fields are updated.",
+              "location": "query",
+              "type": "string",
+              "enumDescriptions": [
+                "The default value. Default to the UPDATE_FULL.",
+                "Includes metadata information for the dataset, such as friendlyName, description, labels, etc.",
+                "Includes ACL information for the dataset, which defines dataset access for one or more entities.",
+                "Includes both dataset metadata and ACL information."
+              ],
+              "enum": [
+                "UPDATE_MODE_UNSPECIFIED",
+                "UPDATE_METADATA",
+                "UPDATE_ACL",
+                "UPDATE_FULL"
+              ]
+            },
             "accessPolicyVersion": {
               "description": "Optional. The version of the provided access policy schema. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. This version refers to the schema version of the access policy and not the version of access policy. This field's value can be equal or more than the access policy schema provided in the request. For example, * Operations updating conditional access policy binding in datasets must specify version 3. Some of the operations are : - Adding a new access policy entry with condition. - Removing an access policy entry with condition. - Updating an access policy entry with condition. * But dataset with no conditional role bindings in access policy may specify any valid value or leave the field unset. If unset or if 0 or 1 value is used for dataset with conditional bindings, request will be rejected. This field will be mapped to IAM Policy version (https:\/\/cloud.google.com\/iam\/docs\/policies#versions) and will be used to set policy in IAM.",
               "location": "query",
@@ -8828,6 +8850,23 @@
               "location": "path",
               "required": true,
               "type": "string"
+            },
+            "updateMode": {
+              "description": "Optional. Specifies the fields of dataset that update\/patch operation is targeting By default, both metadata and ACL fields are updated.",
+              "location": "query",
+              "type": "string",
+              "enumDescriptions": [
+                "The default value. Default to the UPDATE_FULL.",
+                "Includes metadata information for the dataset, such as friendlyName, description, labels, etc.",
+                "Includes ACL information for the dataset, which defines dataset access for one or more entities.",
+                "Includes both dataset metadata and ACL information."
+              ],
+              "enum": [
+                "UPDATE_MODE_UNSPECIFIED",
+                "UPDATE_METADATA",
+                "UPDATE_ACL",
+                "UPDATE_FULL"
+              ]
             },
             "accessPolicyVersion": {
               "description": "Optional. The version of the provided access policy schema. Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected. This version refers to the schema version of the access policy and not the version of access policy. This field's value can be equal or more than the access policy schema provided in the request. For example, * Operations updating conditional access policy binding in datasets must specify version 3. Some of the operations are : - Adding a new access policy entry with condition. - Removing an access policy entry with condition. - Updating an access policy entry with condition. * But dataset with no conditional role bindings in access policy may specify any valid value or leave the field unset. If unset or if 0 or 1 value is used for dataset with conditional bindings, request will be rejected. This field will be mapped to IAM Policy version (https:\/\/cloud.google.com\/iam\/docs\/policies#versions) and will be used to set policy in IAM.",

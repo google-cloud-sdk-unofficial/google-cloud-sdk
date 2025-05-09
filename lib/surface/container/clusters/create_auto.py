@@ -94,6 +94,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddAdditiveVPCScopeFlags(parser)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
   flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
+  flags.AddEnableLustreCSIDriverFlag(parser, hidden=True)
   flags.AddEnableRayOperatorFlag(parser, hidden=False)
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)

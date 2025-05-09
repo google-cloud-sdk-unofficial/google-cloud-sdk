@@ -48,6 +48,14 @@ class Download(base.Command):
 
         $ {command} my-attachment --destination=/path/to/destination/ \
             --chunk-size=8000
+
+    For Docker-format repositories only: to download the attachment stored in the OCI version `projects/my-project/locations/us/repositories/my-repo/packages/my-package/versions/sha256:123` to `/path/to/destination/`:
+
+        $ {command} --oci-version-name=projects/my-project/locations/us/repositories/my-repo/packages/my-package/versions/sha256:123 --destination=/path/to/destination/
+
+    For Docker-format repositories only: to download the attachment stored in the OCI version with URI `us-docker.pkg.dev/my-project/my-repo/my-package@sha256:123` to `/path/to/destination/`:
+
+        $ {command} --oci-version-name=us-docker.pkg.dev/my-project/my-repo/my-package@sha256:123 --destination=/path/to/destination/
     """,
   }
 
@@ -64,7 +72,10 @@ class Download(base.Command):
         '--oci-version-name',
         metavar='OCI_VERSION_NAME',
         required=False,
-        help='The version name of the OCI artifact to download.',
+        help=(
+            'For Docker-format repositories only. The version name of the OCI'
+            ' artifact to download.'
+        ),
     )
     parser.add_argument(
         '--destination',

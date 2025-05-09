@@ -46,25 +46,68 @@
               api_field: internalRange.prefixLength
               help_text: |
                 An alternative to ip-cidr-range.
-                Can be set when trying to create a reservation that automatically finds a free range of
-                the given size.
+                Can be set when trying to create a reservation that automatically finds a free range
+                of the given size.
               required: true
-            - arg_name: target-cidr-range
-              api_field: internalRange.targetCidrRange
-              help_text: |
-                Can be set to narrow down or pick a different address space while searching for a free
-                range.
-                If not set, defaults to the "10.0.0.0/8" address space. This can be used to search in
-                other rfc-1918 address spaces like "172.16.0.0/12" and "192.168.0.0/16" or non-rfc-1918
-                address spaces used in the VPC.
-              type: arg_list
-            - arg_name: exclude-cidr-ranges
-              api_field: internalRange.excludeCidrRanges
-              help_text: |
-                A list of CIDR ranges to exclude from the search for a free range.
-                This can be used to exclude specific ranges that are already intended to
-                have some other use. This option can only be used if prefix length is also set.
-              type: arg_list
+            - group:
+                help_text: |
+                  Additional options for the internal range's address auto-allocation (allowed only
+                  when prefix-length is set):
+                params:
+                - arg_name: target-cidr-range
+                  api_field: internalRange.targetCidrRange
+                  help_text: |
+                    Can be set to narrow down or pick a different address space while searching for
+                    a free range.
+                    If not set, defaults to the "10.0.0.0/8" address space. This can be used to
+                    search in other rfc-1918 address spaces like "172.16.0.0/12" and
+                    "192.168.0.0/16" or non-rfc-1918 address spaces used in the VPC.
+                  type: arg_list
+                - arg_name: exclude-cidr-ranges
+                  api_field: internalRange.excludeCidrRanges
+                  help_text: |
+                    A list of CIDR ranges to exclude from the search for a free range.
+                    This can be used to exclude specific ranges that are already intended to
+                    have some other use.
+                  type: arg_list
+                - arg_name: allocation_strategy
+                  release_tracks: [ALPHA]
+                  api_field: internalRange.allocationOptions.allocationStrategy
+                  help_text: |
+                    Allocation strategy to be used when searching for a free range.
+                  choices:
+                  - arg_value: random
+                    enum_value: RANDOM
+                    help_text: |
+                      Random strategy, the legacy algorithm, used for backwards compatibility. This
+                      allocation strategy remains efficient in the case of concurrent allocation
+                      requests in the same peered network space and doesn't require providing the
+                      level of concurrency in an explicit parameter, but it is prone to fragmenting
+                      available address space.
+                  - arg_value: first-available
+                    enum_value: FIRST_AVAILABLE
+                    help_text: |
+                      Pick the first available address range. This strategy is deterministic and the
+                      result is easy to predict.
+                  - arg_value: random-first-n-available
+                    enum_value: RANDOM_FIRST_N_AVAILABLE
+                    help_text: |
+                      Pick an arbitrary range out of the first N available ones. The N will be set
+                      in the first_available_ranges_lookup_size flag. This strategy should be used
+                      when concurrent allocation requests are made in the same space of peered
+                      networks  while the fragmentation of the addrress space is reduced.
+                  - arg_value: first-smallest-fitting
+                    enum_value: FIRST_SMALLEST_FITTING
+                    help_text: |
+                      Pick the smallest but fitting available range. This deterministic strategy
+                      minimizes fragmentation of the address space.
+                - arg_name: first_available_ranges_lookup_size
+                  release_tracks: [ALPHA]
+                  api_field: internalRange.allocationOptions.firstAvailableRangesLookupSize
+                  help_text: |
+                    The number of ranges to be considered when using the
+                    RANDOM_FIRST_N_AVAILABLE allocation strategy. This is only allowed when
+                    allocation_strategy is set to RANDOM_FIRST_N_AVAILABLE.
     - arg_name: labels
       api_field: internalRange.labels.additionalProperties
       metavar: KEY=VALUE

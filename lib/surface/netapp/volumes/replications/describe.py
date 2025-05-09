@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.netapp.volumes.replications import flags as repl
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Volume Replication."""
@@ -91,3 +92,10 @@ class DescribeBeta(Describe):
         release_track=self._RELEASE_TRACK
     )
     return client.GetReplication(replication_ref)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(DescribeBeta):
+  """Describe a Cloud NetApp Volume Replication."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

@@ -86,6 +86,7 @@ class RemoveMembers(base.UpdateCommand):
 
     return interconnect_group.Patch(
         interconnects=sorted(list(interconnects)),
+        interconnects_to_remove=sorted(list(args.interconnects)),
     )
 
 

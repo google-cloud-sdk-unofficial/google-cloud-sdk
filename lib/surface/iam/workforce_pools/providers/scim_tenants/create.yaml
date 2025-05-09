@@ -20,7 +20,6 @@
     description: |
       Create a new SCIM Tenant associated with a specific Workforce Pool Provider.
 
-      alpha_note: true
       Upon successful creation, the command returns the created SCIM Tenant resource.
     examples: |
       To create a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:

@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.util.apis import yaml_data
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
+@base.Hidden
 @base.UniverseCompatible
 class ListAttestationRules(base.ListCommand):
   """List the attestation rules on a workload identity pool namespace."""

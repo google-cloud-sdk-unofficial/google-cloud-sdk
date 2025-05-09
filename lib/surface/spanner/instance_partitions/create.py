@@ -28,13 +28,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaAndAlphaCreate(base.CreateCommand):
-  """Create a Cloud Spanner instance partition."""
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+class Create(base.CreateCommand):
+  """Create a Spanner instance partition."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-        To create a Cloud Spanner instance partition, run:
+        To create a Spanner instance partition, run:
 
           $ {command} my-instance-partition-id --instance=my-instance-id --config=regional-us-east1 --description=my-instance-display-name --nodes=3
         """),

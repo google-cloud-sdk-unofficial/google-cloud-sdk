@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class BqAlpha(base.Group):
   """Interact with and manage resources in Google BigQuery."""
 
@@ -43,13 +44,15 @@ class BqAlpha(base.Group):
     self.EnableSelfSignedJwtForTracks([base.ReleaseTrack.ALPHA])
 
 
+@base.UniverseCompatible
 class BqBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.BIG_DATA_CATEGORY
 
 
+@base.UniverseCompatible
 class BqGa(base.Group):
   """Optional no-auto-generated code for GA."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.BIG_DATA_CATEGORY

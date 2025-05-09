@@ -15,13 +15,14 @@
 """Command for obtaining details about a given worker pool revision."""
 
 
-from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.run.printers.v2 import revision_printer
-from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
+from googlecloudsdk.command_lib.run import serverless_operations
+from googlecloudsdk.command_lib.run.printers import export_printer
+from googlecloudsdk.command_lib.run.printers import worker_pool_revision_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.resource import resource_printer
@@ -29,7 +30,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.Command):
+class Describe(base.DescribeCommand):
   """Obtain details about a given worker pool revision."""
 
   detailed_help = {
@@ -45,9 +46,10 @@ class Describe(base.Command):
 
   @staticmethod
   def CommonArgs(parser):
+    flags.AddRegionArg(parser)
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL_REVISION',
-        resource_args.GetWorkerPoolRevisionResourceSpec(),
+        resource_args.GetRevisionResourceSpec(is_worker_pool_revision=True),
         'Worker pool revision to describe.',
         required=True,
         prefixes=False,
@@ -55,11 +57,18 @@ class Describe(base.Command):
     concept_parsers.ConceptParser([revision_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
-        revision_printer.REVISION_PRINTER_FORMAT,
-        revision_printer.RevisionPrinter,
+        worker_pool_revision_printer.REVISION_PRINTER_FORMAT,
+        worker_pool_revision_printer.WorkerPoolRevisionPrinter,
         hidden=True,
     )
-    parser.display_info.AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
+    parser.display_info.AddFormat(
+        worker_pool_revision_printer.REVISION_PRINTER_FORMAT
+    )
+    resource_printer.RegisterFormatter(
+        export_printer.EXPORT_PRINTER_FORMAT,
+        export_printer.ExportPrinter,
+        hidden=True,
+    )
 
   @staticmethod
   def Args(parser):
@@ -67,35 +76,17 @@ class Describe(base.Command):
 
   def Run(self, args):
     """Show details about a revision."""
-    # TODO(b/380116152): Support YAML format once WorkerPools V1 API is ready.
-    if 'format' in args and args.format == 'yaml':
-      raise exceptions.ArgumentError(
-          'YAML format is not supported for worker pools yet.'
-      )
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
+    )
+    revision_ref = args.CONCEPTS.worker_pool_revision.Parse()
 
-    # TODO(b/366115714): Make sure to cover all edge cases and possibly find
-    # better location to be shared by all worker pools operations.
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.worker_pool_revision.Parse().locationsId
-      return region + '-' + endpoint
+    with serverless_operations.Connect(conn_context) as client:
+      wrapped_revision = client.GetRevision(revision_ref)
 
-    worker_pool_revision_ref = args.CONCEPTS.worker_pool_revision.Parse()
-    flags.ValidateResource(worker_pool_revision_ref)
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
-    )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    worker_pool_revision = worker_pools_client.GetRevision(
-        worker_pool_revision_ref
-    )
-    if not worker_pool_revision:
+    # If the revision is not a worker pool revision, we should not show it.
+    if not wrapped_revision or wrapped_revision.worker_pool_name is None:
       raise exceptions.ArgumentError(
-          'Cannot find worker pool revision [{revision}] in [{region}] region.'
-          .format(
-              revision=worker_pool_revision_ref.revisionsId,
-              region=worker_pool_revision_ref.locationsId,
-          )
+          'Cannot find revision [{}]'.format(revision_ref.revisionsId)
       )
-    return worker_pool_revision
+    return wrapped_revision

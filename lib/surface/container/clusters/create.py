@@ -233,6 +233,11 @@ def ParseCreateOptionsBase(
       addons = {api_adapter.RAYOPERATOR: True}
     else:
       addons[api_adapter.RAYOPERATOR] = True
+  if getattr(args, 'enable_lustre_csi_driver', None):
+    if addons is None:
+      addons = {api_adapter.LUSTRECSIDRIVER: True}
+    else:
+      addons[api_adapter.LUSTRECSIDRIVER] = True
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),

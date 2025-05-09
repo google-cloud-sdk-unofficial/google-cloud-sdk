@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Creates a Backup and DR Backup Vault."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
+
+import argparse
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.backupdr import util
@@ -73,7 +74,7 @@ class Create(base.CreateCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser):
     """Specifies additional command flags.
 
     Args:
@@ -90,9 +91,9 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddEffectiveTime(parser)
     flags.AddLabels(parser)
-    flags.AddBackupVaultAccessRestrictionEnumFlag(parser)
+    flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
 
-  def Run(self, args):
+  def Run(self, args: argparse.Namespace):
     """Constructs and sends request.
 
     Args:
