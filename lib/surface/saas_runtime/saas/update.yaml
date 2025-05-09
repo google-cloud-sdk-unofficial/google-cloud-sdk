@@ -39,15 +39,8 @@
       - api_field: key
       - api_field: value
   request:
-    ALPHA:
-      api_version: v1alpha1
-    BETA:
-      api_version: v1beta1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.saas
-  ALPHA:
-    async:
-      collection:
-      - saasservicemgmt.projects.locations.operations
   update:
     read_modify_update: true

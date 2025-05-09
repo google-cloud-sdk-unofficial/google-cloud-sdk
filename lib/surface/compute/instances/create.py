@@ -301,6 +301,7 @@ class Create(base.CreateCommand):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = False
   _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True
   _support_local_ssd_size = True
@@ -360,7 +361,8 @@ class Create(base.CreateCommand):
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx)
+        ._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddAvailabilityDomainAgrs(parser)
@@ -463,7 +465,8 @@ class Create(base.CreateCommand):
             support_confidential_compute_type=self
             ._support_confidential_compute_type,
             support_confidential_compute_type_tdx=self
-            ._support_confidential_compute_type_tdx))
+            ._support_confidential_compute_type_tdx,
+            support_snp_svsm=self._support_snp_svsm))
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args,
                                                  self._support_rsa_encrypted)
@@ -822,6 +825,7 @@ class CreateBeta(Create):
   _support_ipv6_assignment = False
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = False
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = False
@@ -894,7 +898,8 @@ class CreateBeta(Create):
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx)
+        ._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddKeyRevocationActionTypeArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
@@ -938,6 +943,7 @@ class CreateAlpha(CreateBeta):
   _support_ipv6_assignment = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = True
   _support_local_ssd_recovery_timeout = True
   _support_local_ssd_size = True
   _support_vlan_nic = True
@@ -1001,7 +1007,8 @@ class CreateAlpha(CreateBeta):
         support_confidential_compute_type=cls
         ._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls
-        ._support_confidential_compute_type_tdx)
+        ._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm)
     instances_flags.AddPostKeyRevocationActionTypeArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
         parser, utils.COMPUTE_ALPHA_API_VERSION)

@@ -28,9 +28,23 @@ from googlecloudsdk.command_lib.backupdr import util as command_util
 from googlecloudsdk.core import log
 
 
-@base.Hidden
+def _add_common_args(parser):
+  """Specifies additional command flags.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+  """
+  base.ASYNC_FLAG.AddToParser(parser)
+  base.ASYNC_FLAG.SetDefault(parser, True)
+  flags.AddBackupResourceArg(
+      parser,
+      'Name of the backup to update.',
+  )
+  flags.AddBackupEnforcedRetentionEndTime(parser)
+
+
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update the specified Backup."""
 
@@ -42,24 +56,26 @@ class Update(base.UpdateCommand):
         sample-ds, project sample-project and location us-central1, run:
 
           $ {command} sample-backup --backup-vault=sample-vault --data-source=sample-ds --project=sample-project --location=us-central1 --enforced-retention-end-time="2025-02-14T01:10:20Z"
+
+        To update the expire time of a backup sample-backup in backup vault sample-vault, data source
+        sample-ds, project sample-project and location us-central1, run:
+
+          $ {command} sample-backup --backup-vault=sample-vault --data-source=sample-ds --project=sample-project --location=us-central1 --expire-time="2025-02-14T01:10:20Z"
         """,
   }
 
   @staticmethod
   def Args(parser):
-    """Specifies additional command flags.
+    _add_common_args(parser)
 
-    Args:
-      parser: argparse.Parser: Parser object for command line inputs.
-    """
-    base.ASYNC_FLAG.AddToParser(parser)
-    base.ASYNC_FLAG.SetDefault(parser, True)
-    flags.AddBackupResourceArg(
-        parser,
-        'Name of the backup to update.',
+  def ParseUpdate(self, args, client):
+    updated_enforced_retention = command_util.VerifyDateInFuture(
+        args.enforced_retention_end_time, 'enforced-retention-end-time'
     )
 
-    flags.AddBackupEnforcedRetentionEndTime(parser)
+    parsed_backup = client.ParseUpdate(updated_enforced_retention, None)
+
+    return parsed_backup
 
   def GetUpdateMask(self, args):
     updated_fields = []
@@ -79,15 +95,9 @@ class Update(base.UpdateCommand):
     """
     client = BackupsClient()
     is_async = args.async_
-
     backup = args.CONCEPTS.backup.Parse()
-
-    updated_enforced_retention = command_util.VerifyDateInFuture(
-        args.enforced_retention_end_time, 'enforced-retention-end-time'
-    )
-
     try:
-      parsed_backup = client.ParseUpdate(updated_enforced_retention)
+      parsed_backup = self.ParseUpdate(args, client)
 
       update_mask = self.GetUpdateMask(args)
 
@@ -119,3 +129,34 @@ class Update(base.UpdateCommand):
     log.UpdatedResource(backup.RelativeName(), kind='backup')
 
     return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update the specified Backup."""
+
+  @staticmethod
+  def Args(parser):
+    _add_common_args(parser)
+    flags.AddBackupExpireTime(parser)
+
+  def ParseUpdate(self, args, client):
+    updated_enforced_retention = command_util.VerifyDateInFuture(
+        args.enforced_retention_end_time, 'enforced-retention-end-time'
+    )
+
+    expire_time = command_util.VerifyDateInFuture(
+        args.expire_time, 'expire-time'
+    )
+
+    parsed_backup = client.ParseUpdate(updated_enforced_retention, expire_time)
+
+    return parsed_backup
+
+  def GetUpdateMask(self, args):
+    updated_fields = []
+    if args.IsSpecified('enforced_retention_end_time'):
+      updated_fields.append('enforcedRetentionEndTime')
+    if args.IsSpecified('expire_time'):
+      updated_fields.append('expireTime')
+    return ','.join(updated_fields)

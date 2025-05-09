@@ -72,13 +72,13 @@ class Describe(base.FeatureCommand, calliope_base.ListCommand):
   def FormatSessionDuration(self, config, path):
     try:
       identity_service_options = operator.attrgetter(path)(config)
-      session_duration_mins = times.ParseDuration(
-          identity_service_options.sessionDuration
-      ).minutes
-      identity_service_options.sessionDuration = (
-          str(session_duration_mins) + ' mins'
-          if session_duration_mins != 0
-          else '60 mins'
-      )
+      if identity_service_options.sessionDuration is not None:
+        session_duration_secs = times.ParseDuration(
+            identity_service_options.sessionDuration, default_suffix='s'
+        ).total_seconds
+        session_duration_mins = int(session_duration_secs/60)
+        identity_service_options.sessionDuration = (
+            str(session_duration_mins) + ' mins'
+        )
     except AttributeError:
       pass

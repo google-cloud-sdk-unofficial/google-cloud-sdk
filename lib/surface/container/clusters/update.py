@@ -431,6 +431,7 @@ class Update(base.UpdateCommand):
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
+    flags.AddAnonymousAuthenticationConfigFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -586,6 +587,7 @@ class Update(base.UpdateCommand):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     return opts
 
@@ -960,6 +962,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'anonymous_authentication_config', None) is not None:
+      try:
+        op_ref = adapter.ModifyAnonymousAuthenticationConfig(
+            cluster_ref,
+            args.anonymous_authentication_config,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -1129,7 +1139,6 @@ class UpdateBeta(Update):
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
-    flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddCostManagementConfigFlag(group, is_update=True)
@@ -1175,6 +1184,7 @@ class UpdateBeta(Update):
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
+    flags.AddAnonymousAuthenticationConfigFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -1299,9 +1309,6 @@ class UpdateBeta(Update):
     )
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
-    opts.pod_autoscaling_direct_metrics_opt_in = (
-        args.pod_autoscaling_direct_metrics_opt_in
-    )
     opts.hpa_profile = args.hpa_profile
     opts.enable_workload_vulnerability_scanning = (
         args.enable_workload_vulnerability_scanning
@@ -1384,6 +1391,7 @@ class UpdateBeta(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     return opts
 
@@ -1467,7 +1475,6 @@ class UpdateAlpha(Update):
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
     flags.AddWorkloadConfigAuditFlag(group)
-    flags.AddPodAutoscalingDirectMetricsOptInFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
     flags.AddStackTypeFlag(group)
@@ -1512,6 +1519,7 @@ class UpdateAlpha(Update):
     flags.AddClusterTierFlag(group)
     flags.AddAutoprovisioningCgroupModeFlag(group)
     flags.AddEnableAutopilotCompatibilityAuditingFlag(group)
+    flags.AddAnonymousAuthenticationConfigFlag(group)
 
     group_for_control_plane_endpoints = group.add_group()
     flags.AddMasterAuthorizedNetworksFlags(group_for_control_plane_endpoints)
@@ -1633,9 +1641,6 @@ class UpdateAlpha(Update):
     )
     opts.dataplane_v2_observability_mode = args.dataplane_v2_observability_mode
     opts.enable_workload_config_audit = args.enable_workload_config_audit
-    opts.pod_autoscaling_direct_metrics_opt_in = (
-        args.pod_autoscaling_direct_metrics_opt_in
-    )
     opts.hpa_profile = args.hpa_profile
     opts.enable_workload_vulnerability_scanning = (
         args.enable_workload_vulnerability_scanning
@@ -1717,5 +1722,6 @@ class UpdateAlpha(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     return opts

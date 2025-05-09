@@ -109,7 +109,7 @@ class Start(base.Command):
         help='Directory path in which emulator data will be saved upon '
         'shutdown. Example:`/home/user/myexports/2024-03-26/`')
 
-  # TODO(b/357102683): Remove this warning after b/357102683 is fixed.
+  # TODO(b/354923511): Remove this warning after b/354923511 is fixed.
   def LogJavaVersionWarning(self):
     """Log a warning message notifying users about Java version change.
 

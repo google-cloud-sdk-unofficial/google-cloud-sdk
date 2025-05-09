@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List instances
     description: List instances
@@ -36,7 +35,7 @@
         of `{location}`.
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:projects_locations
       required: true
   request:
     api_version: v1

@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
-  """Lists backup schedules under a Cloud Firesore database.
+  """Lists backup schedules under a Cloud Firestore database.
 
   ## EXAMPLES
 

@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
-  """Lists user creds under a Cloud Firesore database.
+  """Lists user creds under a Cloud Firestore database.
 
   ## EXAMPLES
 

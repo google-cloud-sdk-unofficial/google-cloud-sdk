@@ -101,6 +101,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddAutoMonitoringScopeFlags(parser, hidden=False)
   flags.AddClusterTierFlag(parser)
   flags.AddKubecontextOverrideFlag(parser)
+  flags.AddAnonymousAuthenticationConfigFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -26,8 +26,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
-# TODO(b/396327181): Update help text before unhiding.
-
 
 @base.Hidden
 @base.UniverseCompatible

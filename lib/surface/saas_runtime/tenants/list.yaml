@@ -12,10 +12,7 @@
         Parent value for ListTenantsRequest
       spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:project_location_with_default
   request:
-    ALPHA:
-      api_version: v1alpha1
-    BETA:
-      api_version: v1beta1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.tenants
   response:

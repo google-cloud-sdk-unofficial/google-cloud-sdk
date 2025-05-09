@@ -49,8 +49,8 @@ class Update(base.UpdateCommand):
         """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
@@ -130,9 +130,9 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates an AlloyDB instance within a given cluster."""
 
-  @staticmethod
-  def Args(parser):
-    super(UpdateBeta, UpdateBeta).Args(parser)
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateBeta, cls).Args(parser)
     flags.AddUpdateMode(parser)
     flags.AddObservabilityConfigEnabled(
         parser, show_negated_in_help=True
@@ -162,9 +162,10 @@ class UpdateBeta(Update):
 class UpdateAlpha(UpdateBeta):
   """Updates an AlloyDB instance within a given cluster."""
 
-  @staticmethod
-  def Args(parser):
-    super(UpdateAlpha, UpdateAlpha).Args(parser)
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
 
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)
@@ -176,6 +177,7 @@ class UpdateAlpha(UpdateBeta):
     flags.AddConnectionPoolingQueryWaitTimeout(parser)
     flags.AddConnectionPoolingStatsUsers(parser)
     flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+    flags.AddActivationPolicy(parser, alloydb_messages)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

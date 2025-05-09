@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,16 +19,19 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class LustreAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
+@base.DefaultUniverseOnly
 class LustreBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
   category = base.UNCATEGORIZED_CATEGORY
 
 
+@base.DefaultUniverseOnly
 class LustreGa(base.Group):
   """Optional no-auto-generated code for GA."""
   category = base.UNCATEGORIZED_CATEGORY

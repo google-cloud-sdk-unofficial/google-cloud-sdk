@@ -225,14 +225,14 @@ def ParseCreateOptionsBase(
   addons = get_default('addons')
   if getattr(args, 'enable_backup_restore', None):
     if addons is None:
-      addons = api_adapter.BACKUPRESTORE
+      addons = {api_adapter.BACKUPRESTORE: True}
     else:
-      addons += api_adapter.BACKUPRESTORE
+      addons[api_adapter.BACKUPRESTORE] = True
   if getattr(args, 'enable_ray_operator', None):
     if addons is None:
-      addons = api_adapter.RAYOPERATOR
+      addons = {api_adapter.RAYOPERATOR: True}
     else:
-      addons += api_adapter.RAYOPERATOR
+      addons[api_adapter.RAYOPERATOR] = True
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -537,6 +537,9 @@ def ParseCreateOptionsBase(
           'enable_authorized_networks_on_private_endpoint'
       ),
       patch_update=get_default('patch_update'),
+      anonymous_authentication_config=get_default(
+          'anonymous_authentication_config'
+      ),
   )
 
 
@@ -775,6 +778,9 @@ flags_to_add = {
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
         'patchUpdate': flags.AddPatchUpdateFlag,
+        'anonymousAuthenticationConfig': (
+            flags.AddAnonymousAuthenticationConfigFlag
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -917,9 +923,6 @@ flags_to_add = {
         'disablepodcidroverprovision': flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit': flags.AddWorkloadConfigAuditFlag,
         'enableworkloadvulnscanning': flags.AddWorkloadVulnScanningFlag,
-        'podautoscalingdirectmetricsoptin': (
-            flags.AddPodAutoscalingDirectMetricsOptInFlag
-        ),
         'hpaprofile': flags.AddHPAProfilesFlag,
         'enableGoogleCloudAccess': flags.AddEnableGoogleCloudAccess,
         'managedConfig': flags.AddManagedConfigFlag,
@@ -968,6 +971,9 @@ flags_to_add = {
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
         'patchUpdate': flags.AddPatchUpdateFlag,
+        'anonymousAuthenticationConfig': (
+            flags.AddAnonymousAuthenticationConfigFlag
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1117,9 +1123,6 @@ flags_to_add = {
         'disablepodcidroverprovision': flags.AddDisablePodCIDROverprovisionFlag,
         'enableworkloadconfigaudit': flags.AddWorkloadConfigAuditFlag,
         'enableworkloadvulnscanning': flags.AddWorkloadVulnScanningFlag,
-        'podautoscalingdirectmetricsoptin': (
-            flags.AddPodAutoscalingDirectMetricsOptInFlag
-        ),
         'enableGoogleCloudAccess': flags.AddEnableGoogleCloudAccess,
         'managedConfig': flags.AddManagedConfigFlag,
         'fleetProject': flags.AddFleetProjectFlag,
@@ -1167,6 +1170,9 @@ flags_to_add = {
         ),
         'kubecontextOverride': flags.AddKubecontextOverrideFlag,
         'patchUpdate': flags.AddPatchUpdateFlag,
+        'anonymousAuthenticationConfig': (
+            flags.AddAnonymousAuthenticationConfigFlag
+        ),
     },
 }
 
@@ -1447,9 +1453,6 @@ class CreateBeta(Create):
         'enable_workload_config_audit'
     )
     ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
-    ops.pod_autoscaling_direct_metrics_opt_in = get_default(
-        'pod_autoscaling_direct_metrics_opt_in'
-    )
     ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning'
@@ -1504,6 +1507,9 @@ class CreateBeta(Create):
         'disable_l4_lb_firewall_reconciliation'
     )
     ops.tier = get_default('tier')
+    ops.anonymous_authentication_config = get_default(
+        'anonymous_authentication_config'
+    )
     return ops
 
 
@@ -1602,9 +1608,6 @@ class CreateAlpha(Create):
         'enable_workload_config_audit'
     )
     ops.performance_monitoring_unit = get_default('performance_monitoring_unit')
-    ops.pod_autoscaling_direct_metrics_opt_in = get_default(
-        'pod_autoscaling_direct_metrics_opt_in'
-    )
     ops.hpa_profile = get_default('hpa_profile')
     ops.enable_workload_vulnerability_scanning = get_default(
         'enable_workload_vulnerability_scanning'
@@ -1656,4 +1659,7 @@ class CreateAlpha(Create):
         'disable_l4_lb_firewall_reconciliation'
     )
     ops.tier = get_default('tier')
+    ops.anonymous_authentication_config = get_default(
+        'anonymous_authentication_config'
+    )
     return ops

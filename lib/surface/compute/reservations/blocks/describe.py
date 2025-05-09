@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.compute.reservations.blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine reservation block."""
 
@@ -64,9 +65,9 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'EXAMPLES':
         """\
-    To describe a reservation block in reservation exr1 in my-zone
-    with block name block1, run:
+    To describe a reservation block in reservation my-reservation in my-zone
+    with block name my-reservation-block-0001, run:
 
-      $ {command} exr1 --zone=my-zone --block-name=block1
+      $ {command} my-reservation --zone=my-zone --block-name=my-reservation-block-0001
     """,
 }

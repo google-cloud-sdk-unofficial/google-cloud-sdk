@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: export instances
     description: export instances
@@ -33,7 +32,7 @@
       required: false
       repeated: false
       help_text: |-
-        Root directory path to the Lustre filesystem, starting with `/`.
+        Root directory path to the Managed Lustre file system, starting with `/`.
         Defaults to `/` if unset.
     - arg_name: gcs-path-uri
       api_field: exportDataRequest.gcsPath.uri
@@ -46,21 +45,24 @@
         Name of the resource.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances
       required: true
     - arg_name: request-id
       api_field: exportDataRequest.requestId
       required: false
       repeated: false
       help_text: |-
-        Optional uuid to identify requests.
+        UUID to identify requests.
     - arg_name: service-account
-      api_field: exportDataRequest.serviceAccount
-      required: false
-      repeated: false
       help_text: |-
         User-specified service account used to perform the transfer.
-        If unspecified, the default Lustre P4SA will be used.
+        If unspecified, the Managed Lustre service agent is used.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_service_accounts
+      resource_method_params:
+        exportDataRequest.serviceAccount: '{__relative_name__}'
+      required: false
   request:
     api_version: v1alpha
     collection:
@@ -69,3 +71,4 @@
   async:
     collection:
     - lustre.projects.locations.operations
+  command_type: GENERIC

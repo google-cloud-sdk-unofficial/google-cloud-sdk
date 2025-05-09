@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command group for Backup and DR service config."""
+"""Command group for Backup and DR Service configuration."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,4 +25,4 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class ServiceConfig(base.Group):
-  """Manage Backup and DR service config."""
+  """Manage Backup and DR Service configuration."""

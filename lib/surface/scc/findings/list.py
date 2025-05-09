@@ -35,6 +35,7 @@ from googlecloudsdk.core.util import times
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List an organization or source's findings."""
 
@@ -103,6 +104,7 @@ class List(base.ListCommand):
 
     # Add shared flags and parent positional argument.
     scc_flags.AppendParentArg()[0].AddToParser(parser)
+    flags.AddParentGroup(parser)
     scc_flags.PAGE_TOKEN_FLAG.AddToParser(parser)
     scc_flags.READ_TIME_FLAG.AddToParser(parser)
     flags.COMPARE_DURATION_FLAG.AddToParser(parser)

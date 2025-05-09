@@ -67,15 +67,15 @@ class Restore(base.RestoreCommand):
         ),
     )
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Specifies additional command flags.
 
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
     """
     Restore.CommonArgs(parser)
-    flags.AddRestoreClusterSourceFlags(parser)
+    flags.AddRestoreClusterSourceFlags(parser, cls.ReleaseTrack())
 
   def ConstructRestoreRequestFromArgs(self, alloydb_messages, location_ref,
                                       resource_parser, args):

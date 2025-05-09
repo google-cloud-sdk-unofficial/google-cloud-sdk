@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - GA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update instances
     description: Update an instance
@@ -33,7 +32,7 @@
         The name of the instance.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:projects_locations_instances
       required: true
     - arg_name: capacity-gib
       api_field: instance.capacityGib
@@ -42,7 +41,7 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from 18000 to 954000, in increments of 9000.
+        are from `18000` to `936000`, in increments of 9000.
     - arg_name: description
       api_field: instance.description
       required: false

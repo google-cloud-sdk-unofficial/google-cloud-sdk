@@ -56,53 +56,6 @@ _DETAILED_HELP = {'EXAMPLES': """
 
           $ {command} --api-target=service=bar.service.com --api-target=service=foo.service.com
 
-        To create a key with allowed API targets (service and methods are
-        specified):
-
-          $ {command} --flags-file=my-flags.yaml
-
-        The content of 'my-flags.yaml' is as follows:
-
-        ```
-        - --api-target:
-            service: "foo.service.com"
-        - --api-target:
-            service: "bar.service.com"
-            methods:
-              - "foomethod"
-              - "barmethod"
-        ```
-        """}
-
-_DETAILED_HELP_ALPHA = {'EXAMPLES': """
-        To create a key with display name and allowed IPs specified:
-
-          $ {command} --display-name="test name" --allowed-ips=2620:15c:2c4:203:2776:1f90:6b3b:217,104.133.8.78
-
-        To create a key with annotations:
-
-         $ {command} --annotations=foo=bar,abc=def
-
-        To create a key with user-specified key ID:
-
-          $ {command} --key-id="my-key-id"
-
-        To create a key with allowed referrers restriction:
-
-          $ {command} --allowed-referrers="https://www.example.com/*,http://sub.example.com/*"
-
-        To create a key with allowed IOS app bundle IDs:
-
-          $ {command} --allowed-bundle-ids=my.app
-
-        To create a key with allowed Android application:
-
-          $ {command} --allowed-application=sha1_fingerprint=foo1,package_name=bar.foo --allowed-application=sha1_fingerprint=foo2,package_name=foo.bar
-
-        To create a key with allowed API targets (service name only):
-
-          $ {command} --api-target=service=bar.service.com --api-target=service=foo.service.com
-
         To create a key with service account:
 
           $ {command} --service-account=my-service-account
@@ -127,16 +80,18 @@ _DETAILED_HELP_ALPHA = {'EXAMPLES': """
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create an API key."""
-  _support_service_account = False
 
   @staticmethod
   def Args(parser):
     common_flags.display_name_flag(parser=parser, suffix='to create')
     common_flags.add_key_create_args(parser)
     common_flags.key_id_flag(parser=parser, suffix='to create')
+    common_flags.service_account_flag(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -183,7 +138,7 @@ class Create(base.CreateCommand):
       key_proto.restrictions.apiTargets = apikeys.GetApiTargets(args, messages)
     if args.IsSpecified('annotations'):
       key_proto.annotations = apikeys.GetAnnotations(args, messages)
-    if self._support_service_account and args.IsSpecified('service_account'):
+    if args.IsSpecified('service_account'):
       key_proto.serviceAccountEmail = args.service_account
     if args.IsSpecified('key_id'):
       request = messages.ApikeysProjectsLocationsKeysCreateRequest(
@@ -209,20 +164,3 @@ class Create(base.CreateCommand):
     services_util.PrintOperationWithResponse(op)
     return op
   detailed_help = _DETAILED_HELP
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlphaBeta(Create):
-  """Create an API key."""
-
-  _support_service_account = True
-  detailed_help = _DETAILED_HELP_ALPHA
-
-  @staticmethod
-  def Args(parser):
-    common_flags.display_name_flag(parser=parser, suffix='to create')
-    common_flags.add_key_create_args(parser)
-    common_flags.key_id_flag(parser=parser, suffix='to create')
-    common_flags.service_account_flag(parser)
-    base.ASYNC_FLAG.AddToParser(parser)

@@ -31,10 +31,10 @@ from googlecloudsdk.core import log
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Init(base.Command):
-  """Initialize a Backup and DR service config."""
+  """Initialize a Backup and DR Service configuration."""
 
   detailed_help = {
-      'BRIEF': 'Initializes a Backup and DR service config.',
+      'BRIEF': 'Initializes a Backup and DR Service configuration.',
       'DESCRIPTION': '{description}',
       'API REFERENCE': (
           'This command uses the backupdr/v1 API. The full documentation for'
@@ -42,7 +42,7 @@ class Init(base.Command):
           ' https://cloud.google.com/backup-disaster-recovery'
       ),
       'EXAMPLES': """\
-        To initialize a new service config in location ``MY_LOCATION''
+        To initialize a new service configuration in location ``MY_LOCATION''
         and project ``MY_PROJECT'' for resource type ``MY_RESOURCE_TYPE'', run:
 
         $ {command} --project=MY_PROJECT \
@@ -61,7 +61,7 @@ class Init(base.Command):
     flags.AddNoAsyncFlag(parser)
     flags.AddLocationResourceArg(
         parser,
-        """The location for which the service config should be created.""",
+        """The location for which the service configuration should be created.""",
     )
     flags.AddResourceType(
         parser,
@@ -97,10 +97,9 @@ class Init(base.Command):
       resource = client.WaitForOperation(
           operation_ref=client.GetOperationRef(operation),
           message=(
-              'Initializing service config for resource type [{}] in location'
-              ' [{}]. (This operation could take up to 2 minutes.)'.format(
-                  resource_type, location
-              )
+              'Initializing service configuration for resource type [{}] in'
+              ' location [{}]. (This operation could take up to 2 minutes.)'
+              .format(resource_type, location)
           ),
           has_result=False,
       )
@@ -108,20 +107,20 @@ class Init(base.Command):
       # pylint: disable=protected-access
       # none of the log.CreatedResource, log.DeletedResource etc. matched
       log._PrintResourceChange(
-          'Initialization of service config',
+          'Initialization of service configuration',
           location,
           kind='location',
           is_async=False,
           details=None,
           failed=None,
-          operation_past_tense='Service config initialized for',
+          operation_past_tense='Service configuration initialized for',
       )
       return resource
 
     # pylint: disable=protected-access
     # none of the log.CreatedResource, log.DeletedResource etc. matched
     log._PrintResourceChange(
-        'Initialization of service config',
+        'Initialization of service configuration',
         location,
         kind='location',
         is_async=True,

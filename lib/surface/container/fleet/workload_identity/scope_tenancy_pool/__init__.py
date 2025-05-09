@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base as calliope_base
 
 
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-@calliope_base.Hidden
 class ScopeTenancyPool(calliope_base.Group):
   """Manage Workload Identity Feature scope tenancy pool."""
 

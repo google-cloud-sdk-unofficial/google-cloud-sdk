@@ -170,6 +170,7 @@ class Create(base.Command):
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = False
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
@@ -203,6 +204,7 @@ class Create(base.Command):
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
@@ -266,6 +268,7 @@ class Create(base.Command):
         self._support_enable_target_shape,
         self._support_confidential_compute_type,
         self._support_confidential_compute_type_tdx,
+        self._support_snp_svsm,
         self._support_max_count_per_zone,
         self._support_performance_monitoring_unit,
         self._support_custom_hostnames,
@@ -416,6 +419,7 @@ class CreateBeta(Create):
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = False
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
@@ -448,6 +452,7 @@ class CreateBeta(Create):
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,
@@ -482,6 +487,7 @@ class CreateAlpha(Create):
   _support_enable_target_shape = True
   _support_confidential_compute_type = True
   _support_confidential_compute_type_tdx = True
+  _support_snp_svsm = True
   _support_no_address_in_networking = True
   _support_max_count_per_zone = True
   _support_local_ssd_recovery_timeout = True
@@ -514,6 +520,7 @@ class CreateAlpha(Create):
         support_enable_target_shape=cls._support_enable_target_shape,
         support_confidential_compute_type=cls._support_confidential_compute_type,
         support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
+        support_snp_svsm=cls._support_snp_svsm,
         support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
         support_network_queue_count=cls._support_network_queue_count,

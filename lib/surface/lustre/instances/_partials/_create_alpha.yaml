@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create instances
     description: Create an instance
@@ -34,7 +33,7 @@
       is_positional: true
       is_primary_resource: true
       request_id_field: instanceId
-      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances
       required: true
     - arg_name: filesystem
       api_field: instance.filesystem
@@ -42,8 +41,8 @@
       repeated: false
       help_text: |-
         The filesystem name for this instance. This name is used by client-side
-        tools, including when mounting the instance. Must be 8 characters or less
-        and may only contain letters and numbers.
+        tools, including when mounting the instance. Must be eight characters or
+        less and can only contain letters and numbers.
     - arg_name: capacity-gib
       api_field: instance.capacityGib
       required: true
@@ -51,15 +50,18 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from 18000 to 954000, in increments of 9000.
+        are from `18000` to `936000`, in increments of 9000.
     - arg_name: network
-      api_field: instance.network
-      required: true
-      repeated: false
       help_text: |-
         The full name of the VPC network to which the instance is connected.
         Must be in the format
         `projects/{project_id}/global/networks/{network_name}`.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_none_networks
+      resource_method_params:
+        instance.network: '{__relative_name__}'
+      required: true
     - arg_name: description
       api_field: instance.description
       required: false

@@ -22,9 +22,8 @@ from googlecloudsdk.calliope import base as calliope_base
 
 
 @calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
-@calliope_base.Hidden
 @calliope_base.DefaultUniverseOnly
 class WorkloadIdentity(calliope_base.Group):
   """Manage Workload Identity Feature."""
 
-  pass
+  category = calliope_base.COMPUTE_CATEGORY

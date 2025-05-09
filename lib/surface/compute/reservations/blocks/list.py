@@ -30,24 +30,27 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 DETAILED_HELP = {
     'DESCRIPTION':
         """\
-        {command} displays all Compute Engine reservation blocks in an extended reservation.
+        {command} displays all Compute Engine reservation blocks in a densely
+        deployed reservation.
       """,
     'EXAMPLES':
         """\
-        To list all reservation blocks in an extended reservation in table form,
-        run:
+        To list all reservation blocks in a densely deployed reservation in
+        table form, run:
 
-        $ {command} extended-reservation --zone=us-central1-a --project=my-project
+        $ {command} my-reservation --zone=us-central1-a --project=my-project
 
-        To list the URIs of all reservation blocks in an extended reservation, run:
+        To list the URIs of all reservation blocks in a densely deployed
+        reservation, run:
 
-        $ {command} extended-reservation --zone=us-central1-a --project=my-project --uri
+        $ {command} my-reservation --zone=us-central1-a --project=my-project --uri
     """
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Compute Engine reservation blocks."""
 

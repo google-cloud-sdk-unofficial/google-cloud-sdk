@@ -27,35 +27,32 @@
           spec:
           - api_field: key
           - api_field: value
-    - group:
-        required: true
-        params:
-        - arg_name: subnets
-          required: true
-          is_positional: false
-          resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:subnetwork
-          resource_method_params:
-            serviceConnectionPolicy.pscConfig.subnetworks: "{__relative_name__}"
-          help_text: Subnetwork to use for IP address management.
-          repeated: true
-        - arg_name: psc-connection-limit
-          type: int
-          api_field: serviceConnectionPolicy.pscConfig.limit
-          help_text: Max number of PSC connections for this policy.
-        - arg_name: producer-instance-location
-          api_field: serviceConnectionPolicy.pscConfig.producerInstanceLocation
-          help_text: Option that determines where the producer instances can be located for which connections can be created in the network controlled by this policy.
-          choices:
-          - arg_value: none
-            enum_value:  PRODUCER_INSTANCE_LOCATION_UNSPECIFIED
-            help_text: The producer instance must be within the same project as this connection policy.
-          - arg_value: custom-resource-hierarchy-levels
-            enum_value:  CUSTOM_RESOURCE_HIERARCHY_LEVELS
-            help_text: The producer instance must be located in one of the values provided in the allowed-google-producers-resource-hierarchy-level flag.
-        - arg_name: allowed-google-producers-resource-hierarchy-level
-          api_field: serviceConnectionPolicy.pscConfig.allowedGoogleProducersResourceHierarchyLevel
-          repeated: true
-          help_text: List of projects, folders, or orgs where the producer instance can be located in the form "projects/123456789", folders/123456789", or "organizations/123456789".
+    - arg_name: subnets
+      required: false
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:subnetwork
+      resource_method_params:
+        serviceConnectionPolicy.pscConfig.subnetworks: "{__relative_name__}"
+      help_text: Subnetwork to use for IP address management.
+      repeated: true
+    - arg_name: psc-connection-limit
+      type: int
+      api_field: serviceConnectionPolicy.pscConfig.limit
+      help_text: Max number of PSC connections for this policy.
+    - arg_name: producer-instance-location
+      api_field: serviceConnectionPolicy.pscConfig.producerInstanceLocation
+      help_text: Option that determines where the producer instances can be located for which connections can be created in the network controlled by this policy.
+      choices:
+      - arg_value: none
+        enum_value:  PRODUCER_INSTANCE_LOCATION_UNSPECIFIED
+        help_text: The producer instance must be within the same project as this connection policy.
+      - arg_value: custom-resource-hierarchy-levels
+        enum_value:  CUSTOM_RESOURCE_HIERARCHY_LEVELS
+        help_text: The producer instance must be located in one of the values provided in the allowed-google-producers-resource-hierarchy-level flag.
+    - arg_name: allowed-google-producers-resource-hierarchy-level
+      api_field: serviceConnectionPolicy.pscConfig.allowedGoogleProducersResourceHierarchyLevel
+      repeated: true
+      help_text: List of projects, folders, or orgs where the producer instance can be located in the form "projects/123456789", folders/123456789", or "organizations/123456789".
 
   async:
     collection: networkconnectivity.projects.locations.operations

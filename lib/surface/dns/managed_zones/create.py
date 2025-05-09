@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-def _AddArgsCommon(parser, messages):
+def _AddArgsCommon(parser, messages, release_track):
   """Adds the common arguments for all versions."""
   flags.GetDnsZoneArg(
       'The name of the managed-zone to be created.').AddToParser(parser)
@@ -38,9 +38,9 @@ def _AddArgsCommon(parser, messages):
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
-  flags.GetForwardingTargetsArg().AddToParser(parser)
+  flags.GetForwardingTargetsArg(release_track).AddToParser(parser)
   flags.GetDnsPeeringArgs().AddToParser(parser)
-  flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
+  flags.GetPrivateForwardingTargetsArg(release_track).AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetServiceDirectoryArg().AddToParser(parser)
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
@@ -70,6 +70,7 @@ def _MakeDnssecConfig(args, messages, api_version='v1'):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   r"""Create a Cloud DNS managed-zone.
 
@@ -105,7 +106,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
-    _AddArgsCommon(parser, messages)
+    _AddArgsCommon(parser, messages, cls.ReleaseTrack())
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -183,17 +184,14 @@ class Create(base.CreateCommand):
           networks=network_configs, gkeClusters=gkecluster_configs)
 
     if args.forwarding_targets or args.private_forwarding_targets:
-      if self._BetaOrAlpha():
-        # Special handling for the beta Forwarding config.
-        forwarding_config = command_util.BetaParseManagedZoneForwardingConfigWithForwardingPath(
-            messages=messages,
-            server_list=args.forwarding_targets,
-            private_server_list=args.private_forwarding_targets)
-      else:
-        forwarding_config = command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
-            messages=messages,
-            server_list=args.forwarding_targets,
-            private_server_list=args.private_forwarding_targets)
+      forwarding_config = (
+          command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
+              messages=messages,
+              server_list=args.forwarding_targets,
+              private_server_list=args.private_forwarding_targets,
+              allow_ipv6_and_fqdn=self._BetaOrAlpha(),
+          )
+      )
     else:
       forwarding_config = None
 

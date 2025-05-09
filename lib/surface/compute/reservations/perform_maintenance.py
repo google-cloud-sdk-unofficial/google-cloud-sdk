@@ -28,7 +28,8 @@ from googlecloudsdk.command_lib.compute.reservations import util
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class PerformMaintenance(base.UpdateCommand):
   """Perform maintenance on a reservation, only applicable to reservations with reservation blocks."""
 
@@ -67,8 +68,8 @@ class PerformMaintenance(base.UpdateCommand):
 PerformMaintenance.detailed_help = {
     'EXAMPLES':
         """\
-    To perform maintenance on reservation exr1 in my-zone with scope all, run:
+    To perform maintenance on reservation my-reservation in my-zone with scope all, run:
 
-      $ {command} exr1 --zone=my-zone --scope=all
+      $ {command} my-reservation --zone=my-zone --scope=all
     """,
 }

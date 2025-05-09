@@ -24,17 +24,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.datastream import flags
 from googlecloudsdk.command_lib.datastream import resource_args
 from googlecloudsdk.command_lib.datastream.private_connections import flags as pc_flags
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
+
 
 DESCRIPTION = ('Create a Datastream private connection')
 EXAMPLES = """\
-    To create a privateConnection called 'my-privateConnection', run:
+    To create a privateConnection with VPC Peering called 'my-privateConnection', run:
 
         $ {command} my-privateConnection --location=us-central1 --display-name=my-privateConnection --vpc=vpc-example --subnet=10.0.0.0/29
 
+    To create a privateConnection with PSC Interface called 'my-privateConnection', run:
 
+        $ {command} my-privateConnection --location=us-central1 --display-name=my-privateConnection --network-attachment=network-attachment-example
    """
 EXAMPLES_BETA = """\
-    To create a privateConnection called 'my-privateConnection', run:
+    To create a privateConnection with VPC Peering called 'my-privateConnection', run:
 
         $ {command} my-privateConnection --location=us-central1 --display-name=my-privateConnection --vpc-name=vpc-example --subnet=10.0.0.0/29
 
@@ -42,6 +47,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Datastream private connection."""
@@ -57,11 +63,42 @@ class Create(base.Command):
       release_track: Some arguments are added based on the command release
         track.
     """
-    resource_args.AddPrivateConnectionResourceArg(parser, 'to create',
-                                                  release_track)
-
+    resource_args.AddPrivateConnectionResourceArg(parser, 'to create')
     pc_flags.AddDisplayNameFlag(parser)
+    # pc_flags.AddNetworkAttachmentFlag(parser)
+    pc_flags.AddValidateOnlyFlag(parser)
     flags.AddLabelsCreateFlags(parser)
+
+    config_group = parser.add_group(mutex=True, required=True)
+
+    vpc_peering_group = config_group.add_group(
+        help='Arguments for VPC Peering configuration.'
+    )
+    vpc_peering_group.add_argument(
+        '--subnet',
+        help="""A free subnet for peering. (CIDR of /29).""",
+        required=True,
+    )
+
+    # Add VPC resource arg inside the VPC Peering group
+    vpc_field_name = 'vpc'
+    if release_track == base.ReleaseTrack.BETA:
+      vpc_field_name = 'vpc-name'
+
+    vpc_spec = presentation_specs.ResourcePresentationSpec(
+        '--%s' % vpc_field_name,
+        resource_args.GetVpcResourceSpec(),
+        'Resource ID of the VPC network to peer with.',
+        required=True,
+    )  # Ensure VPC is required within this group
+    concept_parsers.ConceptParser([vpc_spec]).AddToParser(vpc_peering_group)
+
+    # --- PSC Interface Group ---
+    if release_track == base.ReleaseTrack.GA:
+      psc_group = config_group.add_group(
+          help='Arguments for Private Service Connect Interface configuration.'
+      )
+      pc_flags.AddNetworkAttachmentFlag(psc_group)
 
   @staticmethod
   def Args(parser):

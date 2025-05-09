@@ -29,6 +29,7 @@
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.description
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.labels
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.failover_origin
+    - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.flex_shielding
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.max_attempts
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.origin_address
     - _REF_: googlecloudsdk.command_lib.edge_cache.flags:origin.port

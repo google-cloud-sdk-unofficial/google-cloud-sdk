@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Enable(feature_base.EnableCommand):
   """Enable Workload Identity Feature.
 

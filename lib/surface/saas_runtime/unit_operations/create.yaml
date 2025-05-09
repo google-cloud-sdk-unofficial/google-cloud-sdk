@@ -172,17 +172,10 @@
       - api_field: key
       - api_field: value
   request:
-    ALPHA:
-      api_version: v1alpha1
-    BETA:
-      api_version: v1beta1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.unitOperations
     modify_request_hooks:
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleEmptyProvision
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleEmptyUpgrade
     - googlecloudsdk.command_lib.saas_runtime.unit_operations:HandleEmptyDeprovision
-  ALPHA:
-    async:
-      collection:
-      - saasservicemgmt.projects.locations.operations

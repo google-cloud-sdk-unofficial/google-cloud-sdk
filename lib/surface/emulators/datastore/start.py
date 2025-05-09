@@ -79,7 +79,7 @@ To start a local datastore emulator, run:
         'Reads are always strongly consistent and --consistency flag may not '
         'be specified.')
 
-  # TODO(b/357102683): Remove this warning after b/357102683 is fixed.
+  # TODO(b/409832658): Remove this warning after b/409832658 is fixed.
   def LogJavaVersionWarning(self):
     """Log a warning message notifying users about Java version change.
 

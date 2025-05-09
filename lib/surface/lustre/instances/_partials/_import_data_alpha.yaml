@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: import instances
     description: import instances
@@ -40,27 +39,30 @@
       required: false
       repeated: false
       help_text: |-
-        Root directory path to the Lustre filesystem, starting with `/`.
+        Root directory path to the Managed Lustre file system, starting with `/`.
         Defaults to `/` if unset.
     - help_text: |-
         Name of the resource.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:project_location_instance
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances
       required: true
     - arg_name: request-id
       api_field: importDataRequest.requestId
       required: false
       repeated: false
       help_text: |-
-        Optional uuid to identify requests.
+        UUID to identify requests.
     - arg_name: service-account
-      api_field: importDataRequest.serviceAccount
-      required: false
-      repeated: false
       help_text: |-
         User-specified service account used to perform the transfer.
-        If unspecified, the default Lustre P4 Service Account will be used.
+        If unspecified, the default Lustre P4 service account will be used.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_service_accounts
+      resource_method_params:
+        importDataRequest.serviceAccount: '{__relative_name__}'
+      required: false
   request:
     api_version: v1alpha
     collection:
@@ -69,3 +71,4 @@
   async:
     collection:
     - lustre.projects.locations.operations
+  command_type: GENERIC

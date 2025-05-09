@@ -22,8 +22,10 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class ReservationBlocks(base.Group):
+  """Manage Compute Engine reservation blocks."""
   category = base.COMPUTE_CATEGORY
 
   detailed_help = {

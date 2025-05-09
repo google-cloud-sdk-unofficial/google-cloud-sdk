@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Set(feature_base.UpdateCommand):
   """Set Scope Tenancy Pool.
 

@@ -44,12 +44,12 @@ def _DetailedHelp():
   }
 
 
-def _Args(parser, path_required):
+def _Args(parser):
   """Add invalidate-cdn-cache arguments to the parser."""
 
   parser.add_argument(
       '--path',
-      required=path_required,
+      required=False,
       help="""\
       A path specifying which objects to invalidate. PATH must start with
       ``/'' and the only place a ``*'' is allowed is at the end following a
@@ -79,6 +79,18 @@ def _Args(parser, path_required):
       help="""\
       If set, this invalidation will apply only to requests to the
       specified host.
+      """)
+
+  parser.add_argument(
+      '--tags',
+      required=False,
+      default=None,
+      help="""\
+      A single tag or a comma-delimited list of tags. When multiple tags are
+      specified, the invalidation applies them using boolean OR logic.
+
+      Example:
+      - ``--tags=abcd,user123''
       """)
 
   base.ASYNC_FLAG.AddToParser(parser)
@@ -148,10 +160,10 @@ class InvalidateCdnCache(base.SilentCommand):
   URL_MAP_ARG = None
 
   @classmethod
-  def Args(cls, parser, path_required=True):
+  def Args(cls, parser):
     cls.URL_MAP_ARG = flags.GlobalUrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, cust_metavar='URLMAP')
-    _Args(parser, path_required)
+    _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -161,22 +173,7 @@ class InvalidateCdnCache(base.SilentCommand):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class InvalidateCdnCacheBeta(InvalidateCdnCache):
-  """Invalidate specified objects for a URL map in Cloud CDN caches."""
-
-  @classmethod
-  def Args(cls, parser):
-    parser.add_argument(
-        '--tags',
-        required=False,
-        default=None,
-        help="""\
-        A single tag or a comma-delimited list of tags. When multiple tags are
-        specified, the invalidation applies them using boolean OR logic.
-
-        Example:
-        - ``--tags=abcd,user123''
-        """)
-    super().Args(parser, False)
+  pass
 
 
 @base.DefaultUniverseOnly
