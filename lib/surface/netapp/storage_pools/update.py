@@ -71,11 +71,16 @@ class Update(base.UpdateCommand):
     replica_zone = args.replica_zone
     total_throughput_mibps = None
     total_iops = None
+    hot_tier_size_gib = None
+    enable_hot_tier_auto_resize = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       total_iops = args.total_iops
       if args.total_throughput is not None:
         total_throughput_mibps = args.total_throughput >> 20
+      if args.hot_tier_size is not None:
+        hot_tier_size_gib = args.hot_tier_size >> 30
+      enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
@@ -87,6 +92,8 @@ class Update(base.UpdateCommand):
         replica_zone=replica_zone,
         total_throughput=total_throughput_mibps,
         total_iops=total_iops,
+        hot_tier_size=hot_tier_size_gib,
+        enable_hot_tier_auto_resize=enable_hot_tier_auto_resize,
     )
 
     updated_fields = []
@@ -114,6 +121,10 @@ class Update(base.UpdateCommand):
         updated_fields.append('totalThroughputMibps')
       if args.IsSpecified('total_iops'):
         updated_fields.append('totalIops')
+      if args.IsSpecified('hot_tier_size'):
+        updated_fields.append('hotTierSizeGib')
+      if args.IsSpecified('enable_hot_tier_auto_resize'):
+        updated_fields.append('enableHotTierAutoResize')
 
     update_mask = ','.join(updated_fields)
 

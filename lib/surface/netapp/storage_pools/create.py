@@ -74,12 +74,17 @@ class Create(base.CreateCommand):
     custom_performance_enabled = None
     total_throughput_mibps = None
     total_iops = None
+    hot_tier_size_gib = None
+    enable_hot_tier_auto_resize = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       custom_performance_enabled = args.custom_performance_enabled
       total_iops = args.total_iops
       if args.total_throughput is not None:
         total_throughput_mibps = args.total_throughput >> 20
+      if args.hot_tier_size is not None:
+        hot_tier_size_gib = args.hot_tier_size >> 30
+      enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
 
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
@@ -96,6 +101,8 @@ class Create(base.CreateCommand):
         custom_performance_enabled=custom_performance_enabled,
         total_throughput=total_throughput_mibps,
         total_iops=total_iops,
+        hot_tier_size=hot_tier_size_gib,
+        enable_hot_tier_auto_resize=enable_hot_tier_auto_resize,
         labels=labels,
     )
     result = client.CreateStoragePool(

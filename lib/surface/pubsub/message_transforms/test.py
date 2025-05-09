@@ -22,7 +22,9 @@ from googlecloudsdk.core.util import http_encoding
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Test(base.Command):
   """Tests message transforms against a given message."""
 

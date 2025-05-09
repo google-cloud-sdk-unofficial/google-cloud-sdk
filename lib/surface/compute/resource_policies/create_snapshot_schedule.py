@@ -63,10 +63,14 @@ class CreateSnapshotScheduleBeta(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    _CommonArgs(parser, api_version=compute_api.COMPUTE_BETA_API_VERSION)
+    _CommonArgs(
+        parser,
+        api_version=compute_api.COMPUTE_BETA_API_VERSION,
+        support_snapshot_region=True,
+    )
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_snapshot_region=True)
 
   def _Run(self, args, support_snapshot_region=False):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -105,12 +109,6 @@ class CreateSnapshotScheduleAlpha(CreateSnapshotScheduleBeta):
         parser,
         api_version=compute_api.COMPUTE_ALPHA_API_VERSION,
         support_snapshot_region=True)
-
-  def Run(self, args):
-    return self._Run(
-        args,
-        support_snapshot_region=True,
-    )
 
 
 CreateSnapshotScheduleBeta.detailed_help = {

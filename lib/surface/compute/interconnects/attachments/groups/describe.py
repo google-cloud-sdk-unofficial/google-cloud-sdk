@@ -24,9 +24,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.attachments.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to describe interconnect attachment groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To describe an interconnect attachment group, run:
+
+          $ {command} example-attachment-group
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine interconnect attachment group.
 
@@ -50,3 +65,6 @@ class Describe(base.DescribeCommand):
         ref, project, compute_client=holder.client
     )
     return attachment_group.Describe()
+
+
+Describe.detailed_help = DETAILED_HELP

@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class WorkloadPoolNamespaceOperations(base.Group):
   """Manage IAM workload identity pool namespace long running operations.

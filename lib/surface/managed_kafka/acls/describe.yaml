@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 
 help_text:
   brief: |
@@ -8,10 +7,10 @@ help_text:
     Describe a Managed Service for Apache Kafka acl.
 
   examples: |
-    To describe an acl in a cluster named mycluster located in us-central1,
-    run the following:
+    To describe an acl for the consumer group mygroup, in a cluster named mycluster located in
+    us-central1, run the following:
 
-      $ {command} myacl \
+      $ {command} consumerGroup/mygroup \
           --cluster=mycluster \
           --location=us-central1
 

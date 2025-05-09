@@ -281,6 +281,7 @@ def _Args(
   flags.AddTopicMessageRetentionFlags(parser, is_update=False)
 
   flags.AddTopicMessageStoragePolicyFlags(parser, is_update=False)
+  flags.AddMessageTransformsFlags(parser)
 
 
 @base.UniverseCompatible
@@ -327,4 +328,3 @@ class CreateAlpha(CreateBeta):
     _Args(
         parser,
     )
-    flags.AddMessageTransformsFlags(parser)

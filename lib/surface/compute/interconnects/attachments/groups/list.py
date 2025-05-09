@@ -26,9 +26,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.resource import resource_projection_spec
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to list interconnect attachment groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To list interconnect attachment groups, run:
+
+          $ {command}
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List interconnect attachment groups."""
 
@@ -71,6 +86,4 @@ class List(base.ListCommand):
     )
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp(
-    'interconnect attachment groups'
-)
+List.detailed_help = DETAILED_HELP

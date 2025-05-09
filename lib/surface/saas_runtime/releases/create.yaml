@@ -82,3 +82,5 @@
     api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.releases
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.saas_runtime.releases:AddParentToUpgradeableFromReleases

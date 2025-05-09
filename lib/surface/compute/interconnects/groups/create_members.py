@@ -33,13 +33,15 @@ DETAILED_HELP = {
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To create interconnects interconnect1 and interconnect2 in interconnect group example-interconnect-group, run:
+        To create interconnects interconnect1 and interconnect2 in interconnect
+        group example-interconnect-group, run:
 
-          $ {command} example-interconnect-group --interconnect-type DEDICATED --link-speed LINK_TYPE_ETHERNET_10G_LR --requested-link-count 1 --facility iad-1 --interconnect="name=interconnect1" --interconnect="name=interconnect2"
+          $ {command} example-interconnect-group --interconnect-type=DEDICATED
+          --link-type=LINK_TYPE_ETHERNET_10G_LR --requested-link-count=1
+          --facility=iad-1 --interconnect="name=interconnect1"
+          --interconnect="name=interconnect2"
         """,
-    # pylint: enable=line-too-long
 }
 
 # Interconnect Flags
@@ -57,7 +59,9 @@ _REQUESTED_FEATURES = 'requested-features'
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CreateMembers(base.UpdateCommand):
   """Create new member interconnects in a Compute Engine interconnect group.
 

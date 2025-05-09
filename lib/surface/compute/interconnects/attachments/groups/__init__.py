@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class InterconnectAttachmentGroups(base.Group):
   """Create or manipulate interconnect attachment groups."""
 

@@ -108,6 +108,12 @@ class Start(base.Command):
         required=False,
         help='Directory path in which emulator data will be saved upon '
         'shutdown. Example:`/home/user/myexports/2024-03-26/`')
+    parser.add_argument(
+        '--licenses',
+        default=False,
+        action='store_true',
+        help='If set, the emulator will print open-source dependencies and '
+        'licenses, then exit.')
 
   # TODO(b/354923511): Remove this warning after b/354923511 is fixed.
   def LogJavaVersionWarning(self):

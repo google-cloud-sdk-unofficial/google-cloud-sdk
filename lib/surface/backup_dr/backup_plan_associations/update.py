@@ -27,7 +27,6 @@ from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):

@@ -136,6 +136,7 @@ def _Args(
       parser,
       is_update=True,
   )
+  flags.AddMessageTransformsFlags(parser, is_update=True)
 
 
 def _Run(args):
@@ -377,4 +378,3 @@ class UpdateAlpha(UpdateBeta):
     _Args(
         parser,
     )
-    flags.AddMessageTransformsFlags(parser, is_update=True)

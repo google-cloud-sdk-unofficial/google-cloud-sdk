@@ -540,6 +540,8 @@ def ParseCreateOptionsBase(
       anonymous_authentication_config=get_default(
           'anonymous_authentication_config'
       ),
+      enable_auto_ipam=get_default('enable_auto_ipam'),
+      enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
   )
 
 
@@ -781,6 +783,8 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
+        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -974,6 +978,8 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
+        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1173,6 +1179,8 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
+        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
     },
 }
 
@@ -1510,6 +1518,8 @@ class CreateBeta(Create):
     ops.anonymous_authentication_config = get_default(
         'anonymous_authentication_config'
     )
+    ops.enable_auto_ipam = get_default('enable_auto_ipam')
+    ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     return ops
 
 
@@ -1662,4 +1672,6 @@ class CreateAlpha(Create):
     ops.anonymous_authentication_config = get_default(
         'anonymous_authentication_config'
     )
+    ops.enable_auto_ipam = get_default('enable_auto_ipam')
+    ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     return ops

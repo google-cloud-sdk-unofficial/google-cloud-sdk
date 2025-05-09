@@ -24,9 +24,24 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to describe an interconnect group.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To describe interconnect group example-interconnect-group, run:
+
+          $ {command} example-interconnect-group
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine interconnect group.
 
@@ -50,3 +65,6 @@ class Describe(base.DescribeCommand):
         ref, project, compute_client=holder.client
     )
     return interconnect_group.Describe()
+
+
+Describe.detailed_help = DETAILED_HELP

@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 
 help_text:
   brief: |
@@ -7,14 +6,18 @@ help_text:
   description: |
     Update a Managed Service for Apache Kafka acl.
 
+    NOTE: update performs a FULL REPLACEMENT of acl entries. For incremental
+    updates, use add-acl-entry and remove-acl-entry commands.
+
   examples: |
-    To update an acl in a cluster named mycluster located in us-central1,
-    run the following:
+    To update an acl for the Kafka cluster resource pattern, with etag W/XYZ123
+    returned from a previous create or describe command, in a cluster named
+    mycluster located in us-central1, run the following:
 
       $ {command} cluster \
           --cluster=mycluster \
           --location=us-central1 \
-          --acl-entry=principal='User:admin@project.iam.gserviceaccount.com',operation=ALL,permission_type=ALLOW,host='*' \
+          --acl-entry=principal='User:admin@project.iam.gserviceaccount.com',operation=ALL,permission-type=ALLOW,host='*' \
           --etag=W/XYZ123
 
 request:

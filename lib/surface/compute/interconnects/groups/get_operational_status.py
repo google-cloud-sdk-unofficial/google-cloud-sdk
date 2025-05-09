@@ -24,9 +24,26 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to get the operational status of an interconnect
+        group.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To get the operational status of interconnect group
+        example-interconnect-group, run:
+
+          $ {command} example-interconnect-group
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetOperationalStatus(base.DescribeCommand):
   """Get the operational status of a Compute Engine interconnect group.
 
@@ -52,3 +69,6 @@ class GetOperationalStatus(base.DescribeCommand):
         ref, project, compute_client=holder.client
     )
     return interconnect_group.GetOperationalStatus()
+
+
+GetOperationalStatus.detailed_help = DETAILED_HELP

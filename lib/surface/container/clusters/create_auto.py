@@ -63,6 +63,8 @@ auto_flags = [
     'hpaprofile',
     'enableIpAccess',
     'enableAuthorizedNetworksOnPrivateEndpoint',
+    'enableAutoIpam',
+    'enableK8sTokensViaDns',
 ]
 
 # Change default flag values in create-auto

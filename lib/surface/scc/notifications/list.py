@@ -73,7 +73,7 @@ class List(base.ListCommand):
 
     # Add shared flags and parent positional argument.
     scc_flags.AppendParentArg()[0].AddToParser(parser)
-
+    notifications_flags.AddParentGroup(parser)
     scc_flags.API_VERSION_FLAG.AddToParser(parser)
     notifications_flags.LIST_NOTIFICATION_CONFIG_LOCATION_FLAG.AddToParser(
         parser

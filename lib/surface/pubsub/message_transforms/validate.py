@@ -22,7 +22,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
 class Validate(base.Command):
   """Validates a message transform."""
 

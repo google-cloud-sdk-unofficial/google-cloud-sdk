@@ -32,24 +32,31 @@ DETAILED_HELP = {
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To create an interconnect attachment group capable of PRODUCTION_CRITICAL, run:
+        To create an interconnect attachment group capable of
+        PRODUCTION_CRITICAL, run:
 
-          $ {command} example-attachment-group --intended-availability-sla=PRODUCTION_CRITICAL --description="Example interconnect attachment group"
+          $ {command} example-attachment-group
+          --intended-availability-sla=PRODUCTION_CRITICAL
+          --description="Example interconnect attachment group"
 
-        It is easy to add members to an existing interconnect attachment group after creation using the *add-members* command.
+        It is easy to add members to an existing interconnect attachment group
+        after creation using the *add-members* command.
 
-        To create an interconnect attachment group capable of PRODUCTION_NON_CRITICAL, with two members at creation time, run:
+        To create an interconnect attachment group capable of
+        PRODUCTION_NON_CRITICAL, with two members at creation time, run:
 
-          $ {command} example-attachment-group --intended-availability-sla=PRODUCTION_NON_CRITICAL --attachments=region-1/attachment-1,region-2/attachment-2
+          $ {command} example-attachment-group
+          --intended-availability-sla=PRODUCTION_NON_CRITICAL
+          --attachments=region-1/attachment-1,region-2/attachment-2
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Compute Engine interconnect attachment group.
 

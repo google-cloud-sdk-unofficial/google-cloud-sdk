@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class WorkloadPoolManagedIdentityOperations(base.Group):
   """Manage IAM workload identity pool managed identity long running operations.

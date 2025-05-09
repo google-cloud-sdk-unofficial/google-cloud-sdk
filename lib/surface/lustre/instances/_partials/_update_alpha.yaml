@@ -58,6 +58,15 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: per-unit-storage-throughput
+      api_field: instance.perUnitStorageThroughput
+      required: false
+      repeated: false
+      type: long
+      help_text: |-
+        The throughput of the instance in MB/s/TiB.
+        Valid values are 250, 500, 1000.
+        Default value is 1000.
     - arg_name: gke-support-enabled
       api_field: instance.gkeSupportEnabled
       action: store_true_false

@@ -186,6 +186,11 @@ class Update(base.UpdateCommand):
         updated_fields.append('tieringPolicy.tierAction')
       if args.tiering_policy.get('cooling-threshold-days') is not None:
         updated_fields.append('tieringPolicy.coolingThresholdDays')
+      if (
+          self._RELEASE_TRACK == base.ReleaseTrack.BETA
+          or self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
+      ) and args.tiering_policy.get('enable-hot-tier-bypass-mode') is not None:
+        updated_fields.append('tieringPolicy.hotTierBypassModeEnabled')
     if args.IsSpecified('description'):
       updated_fields.append('description')
     if (

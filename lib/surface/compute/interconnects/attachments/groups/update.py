@@ -25,9 +25,42 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.interconnects.attachments.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to update interconnect attachment groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To update an interconnect attachment group example-attachment-group's
+        intended availability SLA to PRODUCTION_CRITICAL, run:
+
+          $ {command} example-attachment-group
+          --intended-availability-sla=PRODUCTION_CRITICAL
+
+        To update an interconnect attachment group example-attachment-group's
+        description to "example attachment group description", run:
+
+          $ {command} example-attachment-group
+          --description="example attachment group description"
+
+        To update an interconnect attachment group example-attachment-group's
+        member attachments to attachment-1 and attachment-2, run:
+
+          $ {command} example-attachment-group
+          --attachments=region-1/attachment-1,region-2/attachment-2
+
+        Although you can add or remove member attachments using this command, it
+        is recommended to add or remove member attachments using the
+        *add-members* and *remove-members* commands.
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect attachment group.
 
@@ -76,3 +109,6 @@ class Update(base.UpdateCommand):
         availability_sla=availability_sla,
         attachments=attachments,
     )
+
+
+Update.detailed_help = DETAILED_HELP

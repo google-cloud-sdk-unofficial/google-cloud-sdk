@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [GA]
-  hidden: true
 
   help_text:
     brief: List workload identity pool namespaces.

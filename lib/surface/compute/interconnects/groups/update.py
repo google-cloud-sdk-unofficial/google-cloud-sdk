@@ -25,9 +25,42 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.interconnects.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to update interconnect groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To update an interconnect group example-interconnect-group's intended
+        topology capability to PRODUCTION_CRITICAL, run:
+
+          $ {command} example-interconnect-group
+          --intended-topology-capability=PRODUCTION_CRITICAL
+
+        To update an interconnect group example-interconnect-group's description
+        to "example interconnect group description", run:
+
+          $ {command} example-interconnect-group
+          --description="example interconnect group description"
+
+        To update an interconnect group example-interconnect-group's member
+        interconnects to interconnect-1 and interconnect-2, run:
+
+          $ {command} example-interconnect-group
+          --interconnects=interconnect-1,interconnect-2
+
+        Although you can add or remove member interconnects using this command,
+        it is recommended to add or remove member interconnects using the
+        *add-members* and *remove-members* commands.
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine interconnect group.
 
@@ -74,3 +107,5 @@ class Update(base.UpdateCommand):
         topology_capability=topology_capability,
         interconnects=args.interconnects,
     )
+
+Update.detailed_help = DETAILED_HELP

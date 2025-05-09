@@ -216,7 +216,7 @@ def _add_common_args(parser):
       help='Minimum [retention period](https://cloud.google.com'
       '/storage/docs/bucket-lock#retention-periods)'
       ' for objects stored in the bucket, for example'
-      ' ``--retention-period=1Y1M1D5S\'\'. Objects added to the bucket'
+      ' ``--retention-period=P1Y1M1DT5S\'\'. Objects added to the bucket'
       ' cannot be deleted until they\'ve been stored for the specified'
       ' length of time. Default is no retention period. Only available'
       ' for Cloud Storage using the JSON API.')

@@ -32,15 +32,17 @@
       required: true
       repeated: false
       help_text: |-
-        URI to a Cloud Storage path in the format:
-        `gs://<bucket_name>`.
+        The URI to a Cloud Storage bucket, or a path within a bucket, using the
+        format `gs://<bucket_name>/<optional_path_inside_bucket>/`. If a path
+        inside the bucket is specified, it must end with a forward slash (`/`).
     - arg_name: lustre-path
       api_field: importDataRequest.lustrePath.path
       required: false
       repeated: false
       help_text: |-
-        Root directory path to the Managed Lustre file system, starting with `/`.
-        Defaults to `/` if unset.
+        The root directory path to the Managed Lustre file system. Must start with
+        `/`. Default is `/`. If you're importing data into Managed Lustre, any
+        path other than the default must already exist on the file system.
     - help_text: |-
         Name of the resource.
       is_positional: true
@@ -56,7 +58,7 @@
     - arg_name: service-account
       help_text: |-
         User-specified service account used to perform the transfer.
-        If unspecified, the default Lustre P4 service account will be used.
+        If unspecified, the default Managed Lustre service agent will be used.
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:projects_service_accounts

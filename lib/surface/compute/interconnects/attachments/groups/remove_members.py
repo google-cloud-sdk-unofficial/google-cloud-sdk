@@ -27,22 +27,25 @@ from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        *{command}* is used to remove member interconnect attachments from an interconnect attachment group.
+        *{command}* is used to remove member interconnect attachments from an
+        interconnect attachment group.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To remove attachment-1 and attachment-2 from interconnect attachment group example-attachment-group, run:
+        To remove attachment-1 and attachment-2 from interconnect attachment
+        group example-attachment-group, run:
 
-          $ {command} example-attachment-group --attachments=region-1/attachment-1,region-2/attachment-2
+          $ {command} example-attachment-group
+          --attachments=region-1/attachment-1,region-2/attachment-2
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class RemoveMembers(base.UpdateCommand):
   """Remove member interconnect attachments from a Compute Engine interconnect attachment group.
 

@@ -32,24 +32,30 @@ DETAILED_HELP = {
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
         To create an interconnect group capable of PRODUCTION_CRITICAL, run:
 
-          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_CRITICAL --description="Example interconnect group"
+          $ {command} example-interconnect-group
+          --intended-topology-capability=PRODUCTION_CRITICAL
+          --description="Example interconnect group"
 
-        It is easy to add members to an existing interconnect group after creation using the *add-members* command.
+        It is easy to add members to an existing interconnect group after
+        creation using the *add-members* command.
 
-        To create an interconnect group capable of PRODUCTION_NON_CRITICAL, with two members at creation time, run:
+        To create an interconnect group capable of PRODUCTION_NON_CRITICAL, with
+        two members at creation time, run:
 
-          $ {command} example-interconnect-group --intended-topology-capability=PRODUCTION_NON_CRITICAL --interconnects=interconnect-1,interconnect-2
+          $ {command} example-interconnect-group
+          --intended-topology-capability=PRODUCTION_NON_CRITICAL
+          --interconnects=interconnect-1,interconnect-2
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Compute Engine interconnect group.
 

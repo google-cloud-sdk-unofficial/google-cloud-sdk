@@ -106,7 +106,9 @@ class CreateHelper(object):
     )
     producer_forwarding_rule_ref = (
         self.PRODUCER_FORWARDING_RULE_ARG.ResolveAsResource(
-            args, self._holder.resources
+            args,
+            self._holder.resources,
+            default_scope=compute_scope.ScopeEnum.REGION,
         )
     )
     if target_service_args := args.target_service:

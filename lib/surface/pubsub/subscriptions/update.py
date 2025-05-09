@@ -46,6 +46,7 @@ def _Args(
       enable_push_to_cps=enable_push_to_cps,
   )
   labels_util.AddUpdateLabelsFlags(parser)
+  flags.AddMessageTransformsFlags(parser, is_update=True)
 
 
 @base.UniverseCompatible
@@ -264,4 +265,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    flags.AddMessageTransformsFlags(parser, is_update=True)

@@ -328,7 +328,6 @@ character. When using Windows PowerShell, use `'` instead of
         self.exit_code = exit_code
         return
 
-      # TODO(b/304524534): Replace with args.include_managed_folders.
       if args.include_managed_folders:
         exit_code = _perform_rsync(
             args,

@@ -207,6 +207,7 @@ class Create(base.CreateCommand):
     resource_args.AddResourceArgs(parser, [topic, subscription])
     flags.AddSubscriptionSettingsFlags(parser)
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddMessageTransformsFlags(parser)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
@@ -235,6 +236,7 @@ class CreateBeta(Create):
         enable_push_to_cps=True,
     )
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddMessageTransformsFlags(parser)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
@@ -254,4 +256,3 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    flags.AddMessageTransformsFlags(parser)

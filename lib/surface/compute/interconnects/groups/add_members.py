@@ -27,22 +27,25 @@ from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
-        *{command}* is used to add member interconnects to an interconnect group.
+        *{command}* is used to add member interconnects to an interconnect
+        group.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To add interconnects interconnect1 and interconnect2 to interconnect group example-interconnect-group, run:
+        To add interconnects interconnect1 and interconnect2 to interconnect
+        group example-interconnect-group, run:
 
-          $ {command} example-interconnect-group --interconnects=interconnect1,interconnect2
+          $ {command} example-interconnect-group
+          --interconnects=interconnect1,interconnect2
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddMembers(base.UpdateCommand):
   """Add member interconnects to a Compute Engine interconnect group.
 

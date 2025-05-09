@@ -27,6 +27,9 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine interconnects.
 

@@ -43,6 +43,7 @@ class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = False
+  support_workload_policy = False
 
   @classmethod
   def Args(cls, parser):
@@ -75,6 +76,8 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigSizeFlag(parser)
     managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
     managed_flags.AddStandbyPolicyFlags(parser)
+    if cls.support_workload_policy:
+      managed_flags.AddWorkloadPolicyFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(
@@ -385,6 +388,11 @@ class UpdateGA(base.UpdateCommand):
     if args.stopped_size:
       patch_instance_group_manager.targetStoppedSize = args.stopped_size
 
+    resource_policies = managed_instance_groups_utils.CreateResourcePolicies(
+        client.messages, args
+    )
+    patch_instance_group_manager.resourcePolicies = resource_policies
+
     return patch_instance_group_manager
 
   def Run(self, args):
@@ -454,6 +462,7 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = True
+  support_workload_policy = True
 
   @classmethod
   def Args(cls, parser):
@@ -477,6 +486,8 @@ UpdateBeta.detailed_help = UpdateGA.detailed_help
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine managed instance group."""
+
+  support_workload_policy = True
 
   @classmethod
   def Args(cls, parser):

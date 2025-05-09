@@ -1,5 +1,4 @@
 release_tracks: [ALPHA]
-hidden: true
 
 help_text:
   brief: |
@@ -8,14 +7,14 @@ help_text:
     Remove an acl entry from a Managed Service for Apache Kafka acl.
 
   examples: |
-    To remove an acl entry in a cluster named `mycluster` located in `us-central1`,
-    run the following:
+    To remove an acl entry for the Kafka cluster resource pattern (acl_id=cluster),
+    in a cluster named `mycluster` located in `us-central1`, run the following:
 
       $ {command} cluster \
           --cluster=mycluster \
           --location=us-central1 \
           --principal='User:admin@project.iam.gserviceaccount.com' --operation=ALL \
-          --permission_type=ALLOW --host='*'
+          --permission-type=ALLOW --host='*'
 
 request:
   collection: managedkafka.projects.locations.clusters.acls

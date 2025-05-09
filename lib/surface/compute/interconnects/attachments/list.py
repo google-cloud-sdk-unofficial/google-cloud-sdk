@@ -36,27 +36,16 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.display_info.AddFormat("""
-          table(
-            name,
-            region.basename(),
-            type.basename(),
-            interconnect.basename(),
-            router.basename(),
-            attachmentGroup.basename()
-          )
-      """)
-    else:
-      parser.display_info.AddFormat("""
-          table(
-            name,
-            region.basename(),
-            type.basename(),
-            interconnect.basename(),
-            router.basename()
-          )
-      """)
+    parser.display_info.AddFormat("""
+        table(
+          name,
+          region.basename(),
+          type.basename(),
+          interconnect.basename(),
+          router.basename(),
+          attachmentGroup.basename()
+        )
+    """)
 
   def _GetListPage(self, compute_interconnect_attachments, request):
     response = compute_interconnect_attachments.AggregatedList(request)

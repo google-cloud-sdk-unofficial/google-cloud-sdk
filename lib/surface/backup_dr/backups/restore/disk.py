@@ -64,6 +64,32 @@ class Disk(base.Command):
     disk_flags.AddTargetZoneArg(parser, False)
     disk_flags.AddTargetRegionArg(parser, False)
     disk_flags.AddTargetProjectArg(parser)
+    disk_flags.AddReplicaZonesArg(parser, False)
+    disk_flags.AddDescriptionArg(parser, False)
+    disk_flags.AddLicensesArg(parser, False)
+    disk_flags.AddLabelsArg(parser, False)
+    disk_flags.AddTypeArg(parser, False)
+    disk_flags.AddAccessModeArg(parser, False)
+    disk_flags.AddProvisionedIopsArg(parser, False)
+    disk_flags.AddProvisionedThroughputArg(parser, False)
+    disk_flags.AddArchitectureArg(parser, False)
+    disk_flags.AddStoragePoolArg(parser, False)
+    disk_flags.AddSizeArg(parser, False)
+    disk_flags.AddConfidentialComputeArg(parser, False)
+    disk_flags.AddResourcePoliciesArg(parser, False)
+    disk_flags.AddKmsKeyArg(parser, False)
+
+  def _ParseResourcePolicies(self, resource_policies, project, zone):
+    """Parses the resource policies flag."""
+    resource_policy_uris = []
+    for policy in resource_policies:
+      if not policy.startswith('projects/'):
+        region = zone.rsplit('-', 1)[0]
+        policy = 'projects/{}/regions/{}/resourcePolicies/{}'.format(
+            project, region, policy
+        )
+      resource_policy_uris.append(policy)
+    return resource_policy_uris
 
   def Run(self, args):
     """Constructs and sends request.
@@ -86,6 +112,35 @@ class Disk(base.Command):
       restore_config['TargetZone'] = args.target_zone
     if args.target_region:
       restore_config['TargetRegion'] = args.target_region
+    if args.replica_zones:
+      restore_config['ReplicaZones'] = args.replica_zones
+    if args.licenses:
+      restore_config['Licenses'] = args.licenses
+    if args.description:
+      restore_config['Description'] = args.description
+    if args.type:
+      restore_config['Type'] = args.type
+    if args.access_mode:
+      restore_config['AccessMode'] = args.access_mode
+    if args.provisioned_iops:
+      restore_config['ProvisionedIops'] = args.provisioned_iops
+    if args.provisioned_throughput:
+      restore_config['ProvisionedThroughput'] = args.provisioned_throughput
+    if args.architecture:
+      restore_config['Architecture'] = args.architecture
+    if args.storage_pool:
+      restore_config['StoragePool'] = args.storage_pool
+    if args.size:
+      restore_config['Size'] = args.size
+    if args.kms_key:
+      restore_config['KmsKey'] = args.kms_key
+    if args.labels:
+      restore_config['Labels'] = args.labels
+      restore_config['ConfidentialCompute'] = args.confidential_compute
+    if args.resource_policies:
+      restore_config['ResourcePolicies'] = self._ParseResourcePolicies(
+          args.resource_policies, args.target_project, args.target_zone
+      )
     try:
       operation = client.RestoreDisk(backup, restore_config)
     except apitools_exceptions.HttpError as e:

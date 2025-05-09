@@ -443,9 +443,11 @@ class Update(base.UpdateCommand):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
+    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -589,6 +591,9 @@ class Update(base.UpdateCommand):
     opts.service_account_signing_keys = args.service_account_signing_keys
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
+    opts.enable_auto_ipam = args.enable_auto_ipam
+    opts.disable_auto_ipam = args.disable_auto_ipam
+    opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     return opts
 
   def Run(self, args):
@@ -1196,9 +1201,11 @@ class UpdateBeta(Update):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
+    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1393,6 +1400,9 @@ class UpdateBeta(Update):
     opts.service_account_signing_keys = args.service_account_signing_keys
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
+    opts.enable_auto_ipam = args.enable_auto_ipam
+    opts.disable_auto_ipam = args.disable_auto_ipam
+    opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     return opts
 
 
@@ -1531,9 +1541,11 @@ class UpdateAlpha(Update):
         group_for_control_plane_endpoints
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
+    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1724,4 +1736,7 @@ class UpdateAlpha(Update):
     opts.service_account_signing_keys = args.service_account_signing_keys
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
+    opts.enable_auto_ipam = args.enable_auto_ipam
+    opts.disable_auto_ipam = args.disable_auto_ipam
+    opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     return opts

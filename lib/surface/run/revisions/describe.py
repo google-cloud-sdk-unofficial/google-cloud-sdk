@@ -40,9 +40,9 @@ class Describe(base.DescribeCommand):
           {description}
           """,
       'EXAMPLES': """\
-          To describe all revisions of service default in us-central1:
+          To describe a revision `my-service-00001-abc`in us-central1:
 
-              $ {command} --region=us-central1 default
+              $ {command} --region=us-central1 my-service-00001-abc
           """,
   }
 
@@ -78,7 +78,8 @@ class Describe(base.DescribeCommand):
     with serverless_operations.Connect(conn_context) as client:
       wrapped_revision = client.GetRevision(revision_ref)
 
-    if not wrapped_revision:
+    # If the revision is a worker pool revision, we should not show it.
+    if not wrapped_revision or wrapped_revision.worker_pool_name is not None:
       raise exceptions.ArgumentError('Cannot find revision [{}]'.format(
           revision_ref.revisionsId))
     return wrapped_revision

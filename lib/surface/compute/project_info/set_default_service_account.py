@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetDefaultServiceAccount(base.SilentCommand):
   r"""Set the default service account on the project.
@@ -47,8 +48,7 @@ class SetDefaultServiceAccount(base.SilentCommand):
 
   To remove the default service account from the project, issue the command:
 
-    $ gcloud compute project-info set-default-service-account \
-        --no-service-account
+    $ {command} --no-service-account
 
   The required permission to execute this command is
   `compute.projects.setDefaultServiceAccount`. If needed, you can include this

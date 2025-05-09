@@ -26,9 +26,27 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.attachments.groups import flags
 from googlecloudsdk.core import properties
 
+DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to delete interconnect attachment groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To delete an interconnect attachment group, run:
+
+          $ {command} example-attachment-group"
+
+        Although not shown in this example, you can delete multiple interconnect
+        attachment groups in a single command.
+        """,
+}
+
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine interconnect attachment groups.
 
@@ -64,3 +82,6 @@ class Delete(base.DeleteCommand):
       requests.extend(attachment_group.Delete(only_generate_request=True))
 
     return holder.client.MakeRequests(requests)
+
+
+Delete.detailed_help = DETAILED_HELP
