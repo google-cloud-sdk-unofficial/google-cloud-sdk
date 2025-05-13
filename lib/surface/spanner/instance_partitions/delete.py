@@ -32,7 +32,7 @@ from googlecloudsdk.core.console import console_io
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 class Delete(base.DeleteCommand):
-  """Delete a Spanner instance partition."""
+  """Delete a Spanner instance partition. You can't delete the default instance partition using this command."""  # pylint: disable=line-too-long
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\

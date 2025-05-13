@@ -23,13 +23,15 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaAndAlphaDescribe(base.DescribeCommand):
-  """Describe a Cloud Spanner instance partition."""
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+class Describe(base.DescribeCommand):
+  """Describe a Spanner instance partition."""
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-        To describe a Cloud Spanner instance partition, run:
+        To describe a Spanner instance partition, run:
 
           $ {command} my-instance-partition-id --instance=my-instance-id
         """),

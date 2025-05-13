@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [GA]
-  hidden: true
-
   command_type: CREATE
 
   help_text:
@@ -50,6 +48,5 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.attribute_mapping
-      required: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool_provider.trust_store_config_path
       required: true

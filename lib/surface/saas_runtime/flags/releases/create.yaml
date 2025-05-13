@@ -78,9 +78,6 @@
       - api_field: value
 
   request:
-    api_version: v1alpha1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.flagReleases
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations

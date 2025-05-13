@@ -66,7 +66,7 @@ class UpdateBeta(base.UpdateCommand):
         support_require_specific_reservation=True,
         support_gsc=True,
         support_cuds=True,
-        support_emergent_maintenance=False,
+        support_emergent_maintenance=True,
     )
 
   def _ValidateArgs(self, update_mask):

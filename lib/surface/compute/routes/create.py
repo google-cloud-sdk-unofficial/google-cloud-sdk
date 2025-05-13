@@ -28,12 +28,14 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.forwarding_rules import flags as ilb_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.routes import flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import flags as vpn_flags
 from googlecloudsdk.core import properties
+import six
 
 
 def _AddGaHops(next_hop_group):
@@ -64,7 +66,7 @@ def _AddGaHops(next_hop_group):
       help=('The target VPN tunnel that will receive forwarded traffic.'))
 
 
-def _Args(parser):
+def _Args(parser, include_resource_manager_tags):
   """Add arguments for route creation."""
 
   parser.add_argument(
@@ -134,10 +136,21 @@ def _Args(parser):
       help=('The region of the next hop forwarding rule. ' +
             compute_flags.REGION_PROPERTY_EXPLANATION))
 
+  if include_resource_manager_tags:
+    parser.add_argument(
+        '--resource-manager-tags',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help="""\
+            A comma-separated list of Resource Manager tags to apply to the route.
+        """,
+    )
+
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a new route.
 
@@ -182,6 +195,8 @@ class Create(base.CreateCommand):
   ILB_ARG = None
   ROUTE_ARG = None
 
+  _include_resource_manager_tags = False
+
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -193,7 +208,7 @@ class Create(base.CreateCommand):
     cls.ILB_ARG = ilb_flags.ForwardingRuleArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()
     cls.ROUTE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser)
+    _Args(parser, cls._include_resource_manager_tags)
 
   def Run(self, args):
     """Issue API requests for route creation, callable from multiple tracks."""
@@ -271,14 +286,39 @@ class Create(base.CreateCommand):
             nextHopVpnTunnel=next_hop_vpn_tunnel_uri,
             priority=args.priority,
             tags=args.tags,
-        ))
+        ),
+    )
     request.route.nextHopIlb = next_hop_ilb_uri
 
-    return client.MakeRequests([(client.apitools_client.routes, 'Insert',
-                                 request)])
+    if self._include_resource_manager_tags:
+      if args.resource_manager_tags is not None:
+        request.route.params = _CreateRouteParams(
+            client.messages, args.resource_manager_tags
+        )
+
+    return client.MakeRequests(
+        [(client.apitools_client.routes, 'Insert', request)]
+    )
+
+
+def _CreateRouteParams(messages, resource_manager_tags):
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.RouteParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(six.iteritems(resource_manager_tags_map))
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class CreateAlphaBeta(Create):
   r"""Create a new route.
 
@@ -316,3 +356,5 @@ class CreateAlphaBeta(Create):
       --next-hop-gateway=default-internet-gateway
 
   """
+
+  _include_resource_manager_tags = True

@@ -44,18 +44,3 @@
     - lustre.projects.locations.instances
   response:
     id_field: name
-  output:
-    format: |-
-      table(name,
-            capacityGib,
-            createTime,
-            updateTime
-            filesystem,
-            mountPoint,
-            name,
-            network,
-            perUnitStorageThroughput,
-            state,
-            description,
-            labels
-            )

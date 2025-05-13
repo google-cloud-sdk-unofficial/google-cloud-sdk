@@ -26,8 +26,7 @@ from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a Dataplex encryption config resource.
@@ -57,7 +56,7 @@ class Create(base.Command):
   def Run(self, args):
     encryption_config_ref = args.CONCEPTS.encryption_config.Parse()
     dataplex_client = dataplex_util.GetClientInstance()
-    create_req_op = dataplex_client.organizations_locations_encryptionConfigs.Create(
+    dataplex_client.organizations_locations_encryptionConfigs.Create(
         dataplex_util.GetMessageModule().DataplexOrganizationsLocationsEncryptionConfigsCreateRequest(
             encryptionConfigId=encryption_config_ref.Name(),
             parent=encryption_config_ref.Parent().RelativeName(),
@@ -66,10 +65,9 @@ class Create(base.Command):
             ),
         )
     )
-# TODO(b/388204419): Add support for waiting for operation to complete.
+    # TODO(b/388204419): Add support for waiting for operation to complete.
     log.status.Print(
-        'Creating EncryptionConfig [{0}] with operation [{1}].'.format(
-            encryption_config_ref, create_req_op.name
-        )
+        'Encryption Config is saved successfully. Please use gcloud describe'
+        ' command to check the data encryption status after sometime.'
     )
-    return create_req_op
+    return

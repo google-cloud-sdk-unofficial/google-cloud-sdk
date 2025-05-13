@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 - release_tracks: [GA]
-  hidden: true
-
   command_type: UPDATE
 
   help_text:

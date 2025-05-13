@@ -50,7 +50,8 @@ class UpdateHelper(object):
   def Args(
       cls,
       parser,
-      support_fairshare,
+      support_fairshare=False,
+      support_rpc_status=False,
   ):
     """Generates the flagset for an Update command."""
     cls.NAME_ARG = (flags.PriorityArgument('update'))
@@ -71,7 +72,7 @@ class UpdateHelper(object):
     flags.AddRedirectOptions(parser)
     flags.AddRateLimitOptions(
         parser,
-        support_fairshare=support_fairshare,
+        support_rpc_status=support_rpc_status,
     )
     flags.AddRequestHeadersToAdd(parser)
     flags.AddRecaptchaOptions(parser)
@@ -81,7 +82,7 @@ class UpdateHelper(object):
       cls,
       release_track,
       args,
-      support_fairshare,
+      support_rpc_status,
   ):
     """Validates arguments and patches a security policy rule."""
     modified_fields = [
@@ -140,7 +141,7 @@ class UpdateHelper(object):
         '--recaptcha_action_site_keys',
         '--recaptcha_session_site_keys',
     ]
-    if support_fairshare:
+    if support_rpc_status:
       modified_fields.extend([
           args.exceed_action_rpc_status_code,
           args.exceed_action_rpc_status_message,
@@ -206,7 +207,7 @@ class UpdateHelper(object):
         holder.client, args
     )
     rate_limit_options = security_policies_utils.CreateRateLimitOptions(
-        holder.client, args, support_fairshare
+        holder.client, args, support_rpc_status
     )
 
     request_headers_to_add = args.request_headers_to_add
@@ -273,20 +274,20 @@ class UpdateGA(base.UpdateCommand):
   SECURITY_POLICY_ARG = None
   NAME_ARG = None
 
-  _support_fairshare = False
+  _support_rpc_status = False
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_fairshare=cls._support_fairshare,
+        support_rpc_status=cls._support_rpc_status,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_fairshare,
+        self._support_rpc_status,
     )
 
 
@@ -310,20 +311,21 @@ class UpdateBeta(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_fairshare = False
+  _support_rpc_status = False
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_fairshare=cls._support_fairshare,
+        support_fairshare=True,
+        support_rpc_status=cls._support_rpc_status,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_fairshare,
+        self._support_rpc_status,
     )
 
 
@@ -347,18 +349,19 @@ class UpdateAlpha(base.UpdateCommand):
 
   SECURITY_POLICY_ARG = None
 
-  _support_fairshare = True
+  _support_rpc_status = True
 
   @classmethod
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        support_fairshare=cls._support_fairshare,
+        support_fairshare=True,
+        support_rpc_status=cls._support_rpc_status,
     )
 
   def Run(self, args):
     return UpdateHelper.Run(
         self.ReleaseTrack(),
         args,
-        self._support_fairshare,
+        self._support_rpc_status,
     )

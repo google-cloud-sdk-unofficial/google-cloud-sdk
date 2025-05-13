@@ -173,6 +173,7 @@ def AddBetaArgs(parser):
   flags.AddConnectionPoolFlags(parser)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
+  flags.AddEnableDbAlignedAtomicWrites(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: List Metadata Job resources under a project.
     description: List all Metadata Job resource under a specific project and location.

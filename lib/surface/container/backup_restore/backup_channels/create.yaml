@@ -9,7 +9,7 @@
 
       To create a backup channel ``my-backup-channel'' in project ``my-project'' in location ``us-central1'' with destination project ``projects/1234567890'', run:
 
-        $ {command} my-backup-channel --project=my-project --location=us-central1 --destination_project=projects/1234567890
+        $ {command} my-backup-channel --project=my-project --location=us-central1 --destination-project=projects/1234567890
 
   request:
     collection: gkebackup.projects.locations.backupChannels

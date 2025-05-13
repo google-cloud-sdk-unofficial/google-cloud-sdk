@@ -74,7 +74,7 @@ class AdjustInstanceSplit(base.Command):
   def CommonArgs(cls, parser):
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
-        resource_args.GetWorkerPoolResourceSpec(prompt=True),
+        resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
         'WorkerPool to update instance split of.',
         required=True,
         prefixes=False,

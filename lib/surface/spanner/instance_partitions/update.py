@@ -28,17 +28,19 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-class BetaAndAlphaUpdate(base.Command):
-  """Update a Cloud Spanner instance partition."""
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+)
+class Update(base.Command):
+  """Update a Spanner instance partition. You can't update the default instance partition using this command."""  # pylint: disable=line-too-long
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-        To update the display name of a Cloud Spanner instance partition, run:
+        To update the display name of a Spanner instance partition, run:
 
           $ {command} my-instance-partition-id --instance=my-instance-id --description=my-new-display-name
 
-        To update the node count of a Cloud Spanner instance partition, run:
+        To update the node count of a Spanner instance partition, run:
 
           $ {command} my-instance-partition-id --instance=my-instance-id --nodes=1
         """),

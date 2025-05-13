@@ -46,11 +46,8 @@
       - api_field: value
 
   request:
-    api_version: v1alpha1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.flagReleases
   update:
     read_modify_update: true
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations

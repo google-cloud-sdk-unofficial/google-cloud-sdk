@@ -483,7 +483,7 @@ class UpdateBeta(Update):
   _support_share_with_flag = True
   _support_auto_delete = True
   _support_reservation_sharing_policy = True
-  _support_emergent_maintenance = False
+  _support_emergent_maintenance = True
   _support_share_type = True
 
   @classmethod
@@ -495,6 +495,7 @@ class UpdateBeta(Update):
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
+    r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
         support_folder_share_setting=False).AddToParser(parser)
 

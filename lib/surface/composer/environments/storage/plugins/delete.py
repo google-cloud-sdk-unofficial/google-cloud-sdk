@@ -29,7 +29,7 @@ DETAILED_HELP = {
     'EXAMPLES':
         '''\
           To delete the plugins in the path ``path/to/plugins'', for the
-          environment named ``environmnet-1'' in the location ``us-east1'', run:
+          environment named ``environment-1'' in the location ``us-east1'', run:
 
             $ {command} path/to/plugins --environment=environment-1 --location=us-east1
         '''

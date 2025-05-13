@@ -68,7 +68,7 @@ arguments:
     type: int
   - arg_name: isolation-config-granularity
     api_field: serviceLbPolicy.isolationConfig.isolationGranularity
-    release_tracks: [ALPHA]
+    release_tracks: [ALPHA, BETA]
     help_text: |
       The granularity of the isolation.
     choices:
@@ -84,7 +84,7 @@ arguments:
     default: unspecified
   - arg_name: isolation-config-mode
     api_field: serviceLbPolicy.isolationConfig.isolationMode
-    release_tracks: [ALPHA]
+    release_tracks: [ALPHA, BETA]
     help_text: |
       The granularity of the isolation.
     choices:

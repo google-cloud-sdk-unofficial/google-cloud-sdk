@@ -27,7 +27,7 @@ DETAILED_HELP = {
     'EXAMPLES':
         """\
         To list the dags for the Cloud Composer environment
-        ``environmnet-1'' and location ``us-central1'', run:
+        ``environment-1'' and location ``us-central1'', run:
 
           $ {command} --environment=environment-1 --location=us-central1
         """

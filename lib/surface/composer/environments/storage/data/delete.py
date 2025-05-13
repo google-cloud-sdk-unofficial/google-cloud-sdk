@@ -29,7 +29,7 @@ DETAILED_HELP = {
     'EXAMPLES':
         '''\
           To delete the data from the path ``path/to/data'', for the
-          environment named ``environmnet-1'' in the location ``us-east1'', run:
+          environment named ``environment-1'' in the location ``us-east1'', run:
 
             $ {command} path/to/data --environment=environment-1 --location=us-east1
         '''

@@ -1274,7 +1274,7 @@ class CreateBeta(Create):
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_igmp_query = False
-  _support_flex_start = False
+  _support_flex_start = True
 
   @classmethod
   def Args(cls, parser):

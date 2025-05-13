@@ -122,7 +122,7 @@ class Deploy(base.Command):
     flags.AddNoPromoteFlag(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
-        resource_args.GetWorkerPoolResourceSpec(prompt=True),
+        resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
         'WorkerPool to deploy to.',
         required=True,
         prefixes=False,

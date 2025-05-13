@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 
 help_text:
   brief: |
@@ -31,6 +31,7 @@ arguments:
     help_text: |
       ID of the Secret in Secret Manager containing the Symantec credentials.
   - arg_name: partner-environment
+    release_tracks: [ALPHA]
     hidden: true
     api_field: sACRealm.partnerEnvironment
     help_text: |
@@ -43,5 +44,7 @@ async:
 request: &request
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
   collection: networksecurity.projects.locations.sacRealms
   method: create

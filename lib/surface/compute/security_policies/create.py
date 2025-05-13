@@ -31,6 +31,7 @@ from googlecloudsdk.core.util import files
 import six
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a Compute Engine security policy.
@@ -133,6 +134,7 @@ class Create(base.CreateCommand):
     return security_policy.Create(template)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   r"""Create a Compute Engine security policy.
@@ -165,10 +167,16 @@ class CreateBeta(Create):
 
     group.add_argument(
         '--type',
-        choices=['CLOUD_ARMOR', 'CLOUD_ARMOR_EDGE', 'CLOUD_ARMOR_NETWORK'],
+        choices=[
+            'CLOUD_ARMOR',
+            'CLOUD_ARMOR_EDGE',
+            'CLOUD_ARMOR_NETWORK',
+            'CLOUD_ARMOR_INTERNAL_SERVICE',
+        ],
         type=lambda x: x.upper(),
         metavar='SECURITY_POLICY_TYPE',
-        help=('The type indicates the intended use of the security policy.'))
+        help='The type indicates the intended use of the security policy.',
+    )
 
     group.add_argument(
         '--file-name',
@@ -212,6 +220,7 @@ class CreateBeta(Create):
     return security_policy.Create(template)
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   r"""Create a Compute Engine security policy.

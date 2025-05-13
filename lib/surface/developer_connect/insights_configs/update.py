@@ -16,7 +16,7 @@
 
 import datetime
 
-from googlecloudsdk.api_lib.developer_connect import insights_config
+from googlecloudsdk.api_lib.developer_connect.insights_configs import insights_config
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.developer_connect import flags
@@ -38,15 +38,10 @@ DETAILED_HELP = {
           """,
 }
 
-# TODO(b/403527870): Remove this when the update command is no longer hidden.
-_HIDDEN_FLAGS = [
-    'run-discovery'
-    'build-project'
-    'artifact-uri'
-]
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA
+)
 @base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update the configuration of an insight config."""

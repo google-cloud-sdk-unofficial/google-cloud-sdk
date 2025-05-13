@@ -57,45 +57,45 @@ class List(base.ListCommand):
 
         $ {command} --limit=5
 
-      To list repositories with name as `my_repo`:
+    To list repositories with name as `my_repo`:
 
-          $ {command} --filter='name="projects/my-project/locations/us/repositories/my_repo"'
+        $ {command} --filter='name="projects/my-project/locations/us/repositories/my_repo"'
 
-      To list repositories with a given partial name, use `*` to match any character in name:
+    To list repositories with a given partial name, use `*` to match any character in name:
 
-          $ {command} --filter='name="projects/my-project/locations/us/repositories/*repo"'
+        $ {command} --filter='name="projects/my-project/locations/us/repositories/*repo"'
 
-          $ {command} --filter='name="projects/my-project/locations/us/repositories/my_*"'
+        $ {command} --filter='name="projects/my-project/locations/us/repositories/my_*"'
 
-      To list files that have annotations:
+    To list files that have annotations:
 
-          $ {command} --filter=annotations:*
+        $ {command} --filter=annotations:*
 
-      To list repositories with annotations pair as [annotation_key: annotation_value]
+    To list repositories with annotations pair as [annotation_key: annotation_value]
 
-          $ {command} --filter='annotations.annotation_key:annotation_value'
+        $ {command} --filter='annotations.annotation_key:annotation_value'
 
-      To list repositories with annotations containing key as `my_key`:
+    To list repositories with annotations containing key as `my_key`:
 
-          $ {command} --filter='annotations.my_key'
+        $ {command} --filter='annotations.my_key'
 
-          If the key or value contains special characters, such as `my.key` or `my.value`, backtick("`") is required:
+    If the key or value contains special characters, such as `my.key` or `my.value`, backtick("`") is required:
 
-          $ {command} --filter='annotations.`my.key`'
+        $ {command} --filter='annotations.`my.key`'
 
-          $ {command} --filter='annotations.`my.key`:`my.value`'
+        $ {command} --filter='annotations.`my.key`:`my.value`'
 
-      To list repositories with given partial annotation key or value, use `*` to match any character:
+    To list repositories with given partial annotation key or value, use `*` to match any character:
 
-          $ {command} --filter='annotations.*key:`*.value`'
+        $ {command} --filter='annotations.*key:`*.value`'
 
-      To list repositories ordered by create_time:
+    To list repositories ordered by create_time:
 
-          $ {command} --sort-by=create_time
+        $ {command} --sort-by=create_time
 
-      To list repositories ordered by update_time reversely:
+    To list repositories ordered by update_time reversely:
 
-          $ {command}--sort-by=~update_time
+        $ {command}--sort-by=~update_time
     """,
   }
 

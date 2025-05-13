@@ -38,6 +38,7 @@
     modify_request_hooks:
     - googlecloudsdk.api_lib.bigtable.tables:HandleChangeStreamArgs
     - googlecloudsdk.api_lib.bigtable.tables:HandleAutomatedBackupPolicyUpdateTableArgs
+    - googlecloudsdk.api_lib.bigtable.tables:HandleTieredStorageArgs
     - googlecloudsdk.api_lib.bigtable.tables:RefreshUpdateMask
     - googlecloudsdk.api_lib.bigtable.tables:HandleRowKeySchemaUpdateTableArgs
 
@@ -45,7 +46,9 @@
     resource:
       help_text: Cloud Bigtable table to update.
       spec: !REF googlecloudsdk.command_lib.bigtable.resources:table
-    additional_arguments_hook: googlecloudsdk.api_lib.bigtable.tables:AddAdditionalArgs
+    additional_arguments_hook: googlecloudsdk.api_lib.bigtable.tables:AddAdditionalArgsAlphaBeta
+    GA:
+      additional_arguments_hook: googlecloudsdk.api_lib.bigtable.tables:AddAdditionalArgs
     params:
     - api_field: table.deletionProtection
       arg_name: deletion-protection

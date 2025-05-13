@@ -24,17 +24,22 @@ from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.firewall_rules import flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.core.console import progress_tracker
+import six
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Compute Engine firewall rule."""
 
   FIREWALL_RULE_ARG = None
   NETWORK_ARG = None
+
+  _with_resource_manager_tags = False
 
   @classmethod
   def Args(cls, parser):
@@ -47,6 +52,7 @@ class Create(base.CreateCommand):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
+        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)
@@ -116,16 +122,42 @@ class Create(base.CreateCommand):
     if args.IsSpecified('logging_metadata') and not args.enable_logging:
       raise exceptions.InvalidArgumentException(
           '--logging-metadata',
-          'cannot toggle logging metadata if logging is not enabled.')
+          'cannot toggle logging metadata if logging is not enabled.',
+      )
 
     if args.IsSpecified('enable_logging'):
       log_config = client.messages.FirewallLogConfig(enable=args.enable_logging)
       if args.IsSpecified('logging_metadata'):
         log_config.metadata = flags.GetLoggingMetadataArg(
-            client.messages).GetEnumForChoice(args.logging_metadata)
+            client.messages
+        ).GetEnumForChoice(args.logging_metadata)
       firewall.logConfig = log_config
 
+    if self._with_resource_manager_tags and args.IsSpecified(
+        'resource_manager_tags'
+    ):
+      firewall.params = self._CreateFirewallParams(
+          client.messages, args.resource_manager_tags
+      )
+
     return firewall, firewall_ref.project
+
+  def _CreateFirewallParams(self, messages, resource_manager_tags):
+    resource_manager_tags_map = (
+        resource_manager_tags_utils.GetResourceManagerTags(
+            resource_manager_tags
+        )
+    )
+    params = messages.FirewallParams
+    additional_properties = [
+        params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+        for key, value in sorted(six.iteritems(resource_manager_tags_map))
+    ]
+    return params(
+        resourceManagerTags=params.ResourceManagerTagsValue(
+            additionalProperties=additional_properties
+        )
+    )
 
   def Run(self, args):
     """Issues requests necessary for adding firewall rules."""
@@ -147,6 +179,8 @@ class Create(base.CreateCommand):
 class BetaCreate(Create):
   """Create a Compute Engine firewall rule."""
 
+  _with_resource_manager_tags = True
+
   @classmethod
   def Args(cls, parser):
     messages = apis.GetMessagesModule('compute',
@@ -158,6 +192,7 @@ class BetaCreate(Create):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
+        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)
@@ -181,6 +216,7 @@ class AlphaCreate(BetaCreate):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
+        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)

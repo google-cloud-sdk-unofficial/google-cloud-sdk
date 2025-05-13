@@ -110,7 +110,7 @@ class Update(base.Command):
     flags.AddNoPromoteFlag(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
-        resource_args.GetWorkerPoolResourceSpec(prompt=True),
+        resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
         'WorkerPool to update the configuration of.',
         required=True,
         prefixes=False,

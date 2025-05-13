@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataplex import datascan
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import resource_args
@@ -81,6 +82,100 @@ class DataDiscovery(base.Command):
             'BigQuery connection to use for auto discovering cloud resource'
             ' bucket to BigLake tables. Connection is required for `BIGLAKE`'
             'BigQuery publishing table type.'
+        ),
+    )
+    bigquery_publishing_config_arg.add_argument(
+        '--bigquery-publishing-dataset-location',
+        help=(
+            'The location of the BigQuery dataset to publish BigLake external'
+            ' or non-BigLake external tables to. If not specified, the dataset'
+            ' location will be set to the location of the data source resource.'
+            ' Refer to'
+            ' https://cloud.google.com/bigquery/docs/locations#supportedLocations'
+            ' for supported locations.'
+        ),
+    )
+    storage_config_arg = data_spec.add_group(
+        help='Storage config arguments for the data discovery scan.',
+    )
+    storage_config_arg.add_argument(
+        '--storage-include-patterns',
+        type=arg_parsers.ArgList(),
+        metavar='PATTERN',
+        help=(
+            'List of patterns that identify the data to include during'
+            ' discovery when only a subset of the data should be considered.'
+            ' These patterns are interpreted as glob patterns used to match'
+            ' object names in the Cloud Storage bucket.'
+        ),
+    )
+    storage_config_arg.add_argument(
+        '--storage-exclude-patterns',
+        type=arg_parsers.ArgList(),
+        metavar='PATTERN',
+        help=(
+            'List of patterns that identify the data to exclude during'
+            ' discovery. These patterns are interpreted as glob patterns used'
+            ' to match object names in the Cloud Storage bucket. Exclude'
+            ' patterns will be applied before include patterns.'
+        ),
+    )
+    csv_options_arg = storage_config_arg.add_group(
+        help='CSV options arguments for the data discovery scan.',
+    )
+    csv_options_arg.add_argument(
+        '--csv-header-row-count',
+        help=(
+            'The number of rows to interpret as header rows that should be'
+            ' skipped when reading data rows. The default value is 1.'
+        ),
+    )
+    csv_options_arg.add_argument(
+        '--csv-delimiter',
+        help=(
+            'Delimiter used to separate values in the CSV file. If not'
+            ' specified, the delimiter will be set to comma (",").'
+        ),
+    )
+    csv_options_arg.add_argument(
+        '--csv-encoding',
+        help=(
+            'Character encoding of the CSV file. If not specified, the encoding'
+            ' will be set to UTF-8.'
+        ),
+    )
+    csv_options_arg.add_argument(
+        '--csv-disable-type-inference',
+        type=bool,
+        help=(
+            'Whether to disable the inference of data types for CSV data.'
+            ' If true, all columns are registered as strings.'
+        ),
+    )
+    csv_options_arg.add_argument(
+        '--csv-quote-character',
+        help=(
+            'The character used to quote column values. Accepts "'
+            " (double quotation mark) or ' (single quotation mark). If"
+            ' unspecified, defaults to " (double quotation mark).'
+        ),
+    )
+    json_options_arg = storage_config_arg.add_group(
+        help='JSON options arguments for the data discovery scan.',
+    )
+    json_options_arg.add_argument(
+        '--json-encoding',
+        help=(
+            'Character encoding of the JSON file. If not specified, the'
+            ' encoding will be set to UTF-8.'
+        ),
+    )
+    json_options_arg.add_argument(
+        '--json-disable-type-inference',
+        type=bool,
+        help=(
+            'Whether to disable the inference of data types for JSON data.'
+            ' If true, all columns are registered as strings.'
         ),
     )
     execution_spec = parser.add_group(

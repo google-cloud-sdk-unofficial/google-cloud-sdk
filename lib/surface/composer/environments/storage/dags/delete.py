@@ -29,7 +29,7 @@ DETAILED_HELP = {
     'EXAMPLES':
         '''\
           To delete the dags in the path ``path/to/dags'', for the
-          environment named ``environmnet-1'' in the location ``us-east1'', run:
+          environment named ``environment-1'' in the location ``us-east1'', run:
 
             $ {command} path/to/dags --environment=environment-1 --location=us-east1
         '''

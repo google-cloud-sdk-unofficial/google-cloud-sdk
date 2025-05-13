@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google Inc. All Rights Reserved.
+# Copyright 2024 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -127,6 +127,8 @@ class DataDiscovery(base.Command):
         help=(
             'List of patterns that identify the data to include during'
             ' discovery when only a subset of the data should be considered.'
+            ' These patterns are interpreted as glob patterns used to match'
+            ' object names in the Cloud Storage bucket.'
         ),
     )
     storage_config_arg.add_argument(
@@ -135,8 +137,9 @@ class DataDiscovery(base.Command):
         metavar='PATTERN',
         help=(
             'List of patterns that identify the data to exclude during'
-            ' discovery. When both include and exclude patterns exist at the'
-            ' same time, exclude patterns are applied first.'
+            ' discovery. These patterns are interpreted as glob patterns used'
+            ' to match object names in the Cloud Storage bucket. Exclude'
+            ' patterns will be applied before include patterns.'
         ),
     )
     csv_options_arg = storage_config_arg.add_group(

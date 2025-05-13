@@ -33,7 +33,6 @@ def _Args(
     cls,
     parser,
     support_network_tier,
-    support_external_migration,
 ):
   """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
@@ -44,8 +43,7 @@ def _Args(
   flags.AddSourceIpRanges(parser)
   flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
-  if support_external_migration:
-    flags.AddExternalMigration(parser)
+  flags.AddExternalMigration(parser)
 
 
 @base.UniverseCompatible
@@ -56,7 +54,6 @@ class UpdateGA(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
 
   _support_network_tier = False
-  _support_external_migration = False
 
   @classmethod
   def Args(cls, parser):
@@ -64,7 +61,6 @@ class UpdateGA(base.UpdateCommand):
         cls,
         parser,
         support_network_tier=cls._support_network_tier,
-        support_external_migration=cls._support_external_migration,
     )
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
@@ -111,8 +107,6 @@ class UpdateGA(base.UpdateCommand):
     return args.IsSpecified('allow_psc_global_access')
 
   def _HasExternalMigrationChange(self, args):
-    if not self._support_external_migration:
-      return False
     return (
         args.IsSpecified(
             'external_managed_backend_bucket_migration_testing_percentage'
@@ -149,37 +143,36 @@ class UpdateGA(base.UpdateCommand):
       forwarding_rule.fingerprint = existing.fingerprint
       has_change = True
 
-    if self._support_external_migration:
-      if args.IsSpecified('external_managed_backend_bucket_migration_state'):
-        forwarding_rule.externalManagedBackendBucketMigrationState = messages.ForwardingRule.ExternalManagedBackendBucketMigrationStateValueValuesEnum(
-            args.external_managed_backend_bucket_migration_state
-        )
-        has_change = True
+    if args.IsSpecified('external_managed_backend_bucket_migration_state'):
+      forwarding_rule.externalManagedBackendBucketMigrationState = messages.ForwardingRule.ExternalManagedBackendBucketMigrationStateValueValuesEnum(
+          args.external_managed_backend_bucket_migration_state
+      )
+      has_change = True
 
-      if args.IsSpecified(
-          'external_managed_backend_bucket_migration_testing_percentage'
-      ):
-        forwarding_rule.externalManagedBackendBucketMigrationTestingPercentage = (
-            args.external_managed_backend_bucket_migration_testing_percentage
-        )
-        has_change = True
+    if args.IsSpecified(
+        'external_managed_backend_bucket_migration_testing_percentage'
+    ):
+      forwarding_rule.externalManagedBackendBucketMigrationTestingPercentage = (
+          args.external_managed_backend_bucket_migration_testing_percentage
+      )
+      has_change = True
 
-      if args.IsSpecified('load_balancing_scheme'):
-        forwarding_rule.loadBalancingScheme = (
-            messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum(
-                args.load_balancing_scheme
-            )
-        )
-        has_change = True
+    if args.IsSpecified('load_balancing_scheme'):
+      forwarding_rule.loadBalancingScheme = (
+          messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme
+          )
+      )
+      has_change = True
 
-      if args.IsSpecified(
-          'clear_external_managed_backend_bucket_migration_state'
-      ):
-        cleared_fields.append('externalManagedBackendBucketMigrationState')
-        cleared_fields.append(
-            'externalManagedBackendBucketMigrationTestingPercentage'
-        )
-        has_change = True
+    if args.IsSpecified(
+        'clear_external_managed_backend_bucket_migration_state'
+    ):
+      cleared_fields.append('externalManagedBackendBucketMigrationState')
+      cleared_fields.append(
+          'externalManagedBackendBucketMigrationTestingPercentage'
+      )
+      has_change = True
 
     if not has_change:
       return None
@@ -277,7 +270,6 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine forwarding rule."""
 
   _support_network_tier = False
-  _support_external_migration = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -285,7 +277,6 @@ class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine forwarding rule."""
 
   _support_network_tier = True
-  _support_external_migration = True
 
 
 UpdateGA.detailed_help = {

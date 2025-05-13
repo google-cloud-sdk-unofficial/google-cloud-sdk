@@ -168,6 +168,7 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
+    network_utils.AddTagsArg(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -206,5 +207,6 @@ class CreateAlpha(CreateBeta):
     network_utils.AddEnableUlaInternalIpv6Arg(parser)
     network_utils.AddNetworkFirewallPolicyEnforcementOrderArg(parser)
     network_utils.AddBgpBestPathSelectionArgGroup(parser)
+    network_utils.AddTagsArg(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworksCompleter)

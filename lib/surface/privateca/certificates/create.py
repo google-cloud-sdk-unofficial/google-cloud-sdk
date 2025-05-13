@@ -313,7 +313,7 @@ class Create(base.CreateCommand):
     config.publicKey = self.messages.PublicKey()
     config.publicKey.key = public_key
     config.publicKey.format = self.messages.PublicKey.FormatValueValuesEnum.PEM
-    config.subjectConfig = flags.ParseSubjectFlags(args, is_ca=args.is_ca_cert)
+    config.subjectConfig = flags.ParseSubjectFlags(args)
     config.x509Config = flags.ParseX509Parameters(args, is_ca_command=False)
     config.subjectKeyId = flags.ParseSubjectKeyId(args, self.messages)
     return config

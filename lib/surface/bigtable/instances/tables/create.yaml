@@ -75,6 +75,14 @@
         Passing in a value for this option enables a change stream for the table. Examples: `5d` or
         `48h`.
       processor: googlecloudsdk.api_lib.bigtable.tables:ParseChangeStreamRetentionPeriod
+    - api_field: createTableRequest.table.tieredStorageConfig.infrequentAccess.includeIfOlderThan
+      arg_name: tiered-storage-infrequent-access-older-than
+      release_tracks: [ALPHA, BETA]
+      help_text: |
+        The age at which data should be moved to infrequent access storage.
+
+        See `$ gcloud topic datetimes` for information on absolute duration formats.
+      processor: googlecloudsdk.api_lib.bigtable.tables:ParseTieredStorageConfigDuration
     - api_field: createTableRequest.table.deletionProtection
       arg_name: deletion-protection
       type: bool

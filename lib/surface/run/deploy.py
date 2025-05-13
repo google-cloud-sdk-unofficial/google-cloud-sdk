@@ -66,11 +66,11 @@ The following flags apply to a single container. If the --container flag is
 specified these flags may only be specified after a --container flag. Otherwise
 they will apply to the primary ingress container.
 """
-  del release_track  # Unused.
+
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.Http2Flag())
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())

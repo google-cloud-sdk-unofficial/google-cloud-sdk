@@ -56,11 +56,6 @@ class Update(base.UpdateCommand):
         sample-ds, project sample-project and location us-central1, run:
 
           $ {command} sample-backup --backup-vault=sample-vault --data-source=sample-ds --project=sample-project --location=us-central1 --enforced-retention-end-time="2025-02-14T01:10:20Z"
-
-        To update the expire time of a backup sample-backup in backup vault sample-vault, data source
-        sample-ds, project sample-project and location us-central1, run:
-
-          $ {command} sample-backup --backup-vault=sample-vault --data-source=sample-ds --project=sample-project --location=us-central1 --expire-time="2025-02-14T01:10:20Z"
         """,
   }
 

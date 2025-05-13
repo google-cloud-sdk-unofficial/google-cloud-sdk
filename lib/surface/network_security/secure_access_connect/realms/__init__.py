@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Realms(base.Group):
   """Manage Secure Access Connect realms."""
   category = base.NETWORK_SECURITY_CATEGORY

@@ -17,8 +17,16 @@ help_text:
 
 request:
   collection: managedkafka.projects.locations.clusters
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
+  ALPHA:
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
+    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithCaPools
+  BETA:
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
+  GA:
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
 
 arguments:
   resource:
@@ -34,6 +42,8 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:labels
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
         default: null
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ca-pools
+        release_tracks: [ALPHA]
 
 async:
   collection: managedkafka.projects.locations.operations

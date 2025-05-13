@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class MetadataJobs(base.Group):
   """Manage Dataplex metadata jobs."""

@@ -43,16 +43,6 @@ _URL_FILTERING_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
 )
 
-_CUSTOM_MIRRORING_SUPPORTED = (
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA,
-)
-_CUSTOM_INTERCEPT_SUPPORTED = (
-    base.ReleaseTrack.ALPHA,
-    base.ReleaseTrack.BETA,
-)
-
 _INCOMPATIBLE_PAIRS = (
     ('threat-prevention-profile', 'custom-mirroring-profile'),
     ('threat-prevention-profile', 'custom-intercept-profile'),
@@ -73,10 +63,9 @@ class CreateProfileGroup(base.CreateCommand):
   def Args(cls, parser):
     spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
     spg_flags.AddProfileGroupDescription(parser)
+    required_group = parser.add_group(required=True)
     # TODO: b/349671332 - Remove this conditional once the group is released.
-    required_group = None
     if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
-      required_group = parser.add_group(required=True)
       spg_flags.AddSecurityProfileResource(
           parser,
           cls.ReleaseTrack(),
@@ -92,16 +81,20 @@ class CreateProfileGroup(base.CreateCommand):
         required=False,
         arg_aliases=['security-profile'],
     )
-    if cls.ReleaseTrack() in _CUSTOM_MIRRORING_SUPPORTED:
-      spg_flags.AddSecurityProfileResource(
-          parser, cls.ReleaseTrack(), 'custom-mirroring-profile',
-          group=required_group, required=False
-      )
-    if cls.ReleaseTrack() in _CUSTOM_INTERCEPT_SUPPORTED:
-      spg_flags.AddSecurityProfileResource(
-          parser, cls.ReleaseTrack(), 'custom-intercept-profile',
-          group=required_group, required=False
-      )
+    spg_flags.AddSecurityProfileResource(
+        parser,
+        cls.ReleaseTrack(),
+        'custom-mirroring-profile',
+        group=required_group,
+        required=False
+    )
+    spg_flags.AddSecurityProfileResource(
+        parser,
+        cls.ReleaseTrack(),
+        'custom-intercept-profile',
+        group=required_group,
+        required=False,
+    )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)

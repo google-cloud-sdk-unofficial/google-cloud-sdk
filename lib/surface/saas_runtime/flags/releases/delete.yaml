@@ -16,9 +16,6 @@
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
       required: true
   request:
-    api_version: v1alpha1
+    api_version: v1beta1
     collection:
     - saasservicemgmt.projects.locations.flagReleases
-  async:
-    collection:
-    - saasservicemgmt.projects.locations.operations

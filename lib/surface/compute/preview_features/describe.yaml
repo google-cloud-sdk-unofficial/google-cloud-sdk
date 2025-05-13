@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Describe a preview feature."
+    description: "Describe a preview feature."
+    examples: |
+      To retrieve a single preview feature and print its properties, run the following command:
+
+      $ {command} my-preview-feature
+
+  request:
+    ALPHA:
+      api_version: alpha
+
+    collection: compute.previewFeatures
+
+  arguments:
+    resource:
+      help_text: Name of the preview feature you want to inspect.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:preview_feature

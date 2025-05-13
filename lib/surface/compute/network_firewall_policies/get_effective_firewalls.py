@@ -123,11 +123,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
     for fp in all_firewall_policy:
       result.extend(
           firewalls_utils.ConvertFirewallPolicyRulesToEffectiveFwRules(
-              client,
-              fp,
-              True,
-              support_region_network_firewall_policy=True,
-              support_packet_mirroring_rules=True,
+              client, fp
           )
       )
     result.extend(

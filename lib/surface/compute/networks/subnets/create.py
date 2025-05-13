@@ -25,9 +25,11 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
+import six
 
 
 def _DetailedHelp():
@@ -57,6 +59,7 @@ def _AddArgs(
     include_custom_hardware_link,
     api_version,
     include_peer_migration_purpose,
+    include_resource_manager_tags,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -325,6 +328,16 @@ def _AddArgs(
         """),
     )
 
+  if include_resource_manager_tags:
+    parser.add_argument(
+        '--resource-manager-tags',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help="""\
+            A comma-separated list of Resource Manager tags to apply to the subnetwork.
+        """,
+    )
+
   flags.IpCollectionArgument().AddArgument(parser)
 
 
@@ -356,6 +369,7 @@ def _CreateSubnetwork(
     include_custom_hardware_link,
     ip_collection_ref,
     include_peer_migration_purpose,
+    include_resource_manager_tags,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -477,7 +491,29 @@ def _CreateSubnetwork(
   if ip_collection_ref:
     subnetwork.ipCollection = ip_collection_ref.SelfLink()
 
+  if include_resource_manager_tags:
+    if args.resource_manager_tags is not None:
+      subnetwork.params = _CreateSubnetworkParams(
+          messages, args.resource_manager_tags
+      )
+
   return subnetwork
+
+
+def _CreateSubnetworkParams(messages, resource_manager_tags):
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.SubnetworkParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(six.iteritems(resource_manager_tags_map))
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
 
 
 def _Run(
@@ -489,6 +525,7 @@ def _Run(
     include_internal_ipv6_prefix,
     include_custom_hardware_link,
     include_peer_migration_purpose,
+    include_resource_manager_tags,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -517,6 +554,7 @@ def _Run(
       include_custom_hardware_link,
       ip_collection_ref,
       include_peer_migration_purpose,
+      include_resource_manager_tags
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -546,6 +584,7 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_peer_migration_purpose = True
+  _include_resource_manager_tags = False
 
   detailed_help = _DetailedHelp()
 
@@ -560,6 +599,7 @@ class Create(base.CreateCommand):
         cls._include_custom_hardware_link,
         cls._api_version,
         cls._include_peer_migration_purpose,
+        cls._include_resource_manager_tags,
     )
 
   def Run(self, args):
@@ -574,6 +614,7 @@ class Create(base.CreateCommand):
         self._include_internal_ipv6_prefix,
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
+        self._include_resource_manager_tags,
     )
 
 
@@ -582,6 +623,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_resource_manager_tags = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

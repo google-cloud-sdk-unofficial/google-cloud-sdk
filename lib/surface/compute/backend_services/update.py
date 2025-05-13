@@ -72,7 +72,6 @@ class UpdateHelper(object):
       cls,
       parser,
       support_subsetting_subset_size,
-      support_external_managed_migration,
       support_tls_settings,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
@@ -148,9 +147,7 @@ class UpdateHelper(object):
     flags.AddServiceBindings(parser, required=False, is_update=True)
     flags.AddLocalityLbPolicy(parser)
     flags.AddIpAddressSelectionPolicy(parser)
-
-    if support_external_managed_migration:
-      flags.AddExternalMigration(parser)
+    flags.AddExternalMigration(parser)
 
     if support_tls_settings:
       flags.AddBackendServiceTlsSettings(parser, add_clear_argument=True)
@@ -163,16 +160,12 @@ class UpdateHelper(object):
   def __init__(
       self,
       support_subsetting_subset_size,
-      support_external_managed_migration=False,
       support_tls_settings=False,
       support_ip_port_dynamic_forwarding=False,
       support_zonal_affinity=False,
       release_track=None,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
-    self._support_external_managed_migration = (
-        support_external_managed_migration
-    )
     self._support_tls_settings = support_tls_settings
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
@@ -314,26 +307,25 @@ class UpdateHelper(object):
     backend_services_utils.ApplyIpAddressSelectionPolicyArgs(
         client, args, replacement
     )
-    if self._support_external_managed_migration:
-      if args.external_managed_migration_state is not None:
-        replacement.externalManagedMigrationState = client.messages.BackendService.ExternalManagedMigrationStateValueValuesEnum(
-            args.external_managed_migration_state
-        )
-      if args.external_managed_migration_testing_percentage is not None:
-        replacement.externalManagedMigrationTestingPercentage = (
-            args.external_managed_migration_testing_percentage
-        )
-      if args.clear_external_managed_migration_state is not None:
-        replacement.externalManagedMigrationState = None
-        replacement.externalManagedMigrationTestingPercentage = None
-        cleared_fields.append('externalManagedMigrationState')
-        cleared_fields.append('externalManagedMigrationTestingPercentage')
-      if args.load_balancing_scheme is not None:
-        replacement.loadBalancingScheme = (
-            client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
-                args.load_balancing_scheme
-            )
-        )
+    if args.external_managed_migration_state is not None:
+      replacement.externalManagedMigrationState = client.messages.BackendService.ExternalManagedMigrationStateValueValuesEnum(
+          args.external_managed_migration_state
+      )
+    if args.external_managed_migration_testing_percentage is not None:
+      replacement.externalManagedMigrationTestingPercentage = (
+          args.external_managed_migration_testing_percentage
+      )
+    if args.clear_external_managed_migration_state is not None:
+      replacement.externalManagedMigrationState = None
+      replacement.externalManagedMigrationTestingPercentage = None
+      cleared_fields.append('externalManagedMigrationState')
+      cleared_fields.append('externalManagedMigrationTestingPercentage')
+    if args.load_balancing_scheme is not None:
+      replacement.loadBalancingScheme = (
+          client.messages.BackendService.LoadBalancingSchemeValueValuesEnum(
+              args.load_balancing_scheme
+          )
+      )
     if self._support_tls_settings and args.tls_settings is not None:
       backend_services_utils.ApplyTlsSettingsArgs(
           client,
@@ -426,18 +418,10 @@ class UpdateHelper(object):
         args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy'),
         args.IsSpecified('ip_address_selection_policy'),
-        args.IsSpecified('external_managed_migration_state')
-        if self._support_external_managed_migration
-        else False,
-        args.IsSpecified('external_managed_migration_testing_percentage')
-        if self._support_external_managed_migration
-        else False,
-        args.IsSpecified('clear_external_managed_migration_state')
-        if self._support_external_managed_migration
-        else False,
-        args.IsSpecified('load_balancing_scheme')
-        if self._support_external_managed_migration
-        else False,
+        args.IsSpecified('external_managed_migration_state'),
+        args.IsSpecified('external_managed_migration_testing_percentage'),
+        args.IsSpecified('clear_external_managed_migration_state'),
+        args.IsSpecified('load_balancing_scheme'),
         args.IsSpecified('tls_settings')
         if self._support_tls_settings
         else False,
@@ -618,7 +602,6 @@ class UpdateGA(base.UpdateCommand):
   """
 
   _support_subsetting_subset_size = False
-  _support_external_managed_migration = False
   _support_tls_settings = False
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
@@ -628,9 +611,6 @@ class UpdateGA(base.UpdateCommand):
     UpdateHelper.Args(
         parser,
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
-        support_external_managed_migration=(
-            cls._support_external_managed_migration
-        ),
         support_tls_settings=cls._support_tls_settings,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
@@ -641,7 +621,6 @@ class UpdateGA(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(
         self._support_subsetting_subset_size,
-        self._support_external_managed_migration,
         support_tls_settings=self._support_tls_settings,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=self._support_zonal_affinity,
@@ -657,7 +636,6 @@ class UpdateBeta(UpdateGA):
   """
 
   _support_subsetting_subset_size = True
-  _support_external_managed_migration = True
   _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
 
@@ -670,7 +648,6 @@ class UpdateAlpha(UpdateBeta):
   """
 
   _support_subsetting_subset_size = True
-  _support_external_managed_migration = True
   _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
