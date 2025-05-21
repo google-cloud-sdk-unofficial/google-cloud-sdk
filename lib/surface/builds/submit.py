@@ -21,7 +21,6 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
-from googlecloudsdk.api_lib.cloudbuild import endpoint_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.command_lib.builds import submit_util
@@ -217,71 +216,68 @@ class Submit(base.CreateCommand):
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
     build_region = args.region
-    with endpoint_util.CloudBuildEndpointOverrides(region=build_region):
-      messages = cloudbuild_util.GetMessagesModule()
 
-      # Create the build request.
-      build_config = submit_util.CreateBuildConfig(
-          args.tag,
-          args.no_cache,
-          messages,
-          args.substitutions,
-          args.config,
-          args.IsSpecified('source'),
-          args.no_source,
-          args.source,
-          args.gcs_source_staging_dir,
-          args.ignore_file,
-          args.gcs_log_dir,
-          args.machine_type,
-          args.disk_size,
-          args.worker_pool,
-          args.git_source_dir,
-          args.git_source_revision,
-          args.dir,
-          args.revision,
-          args.service_account,
-          args.pack,
-          False,
-          args.default_buckets_behavior,
-          skip_set_source=True,
-          client_tag='gcloudsubmits',
-      )
+    messages = cloudbuild_util.GetMessagesModule()
 
-      build_region = submit_util.DetermineBuildRegion(
-          build_config, build_region
-      )
-      build_region = build_region or cloudbuild_util.DEFAULT_REGION
+    # Create the build request.
+    build_config = submit_util.CreateBuildConfig(
+        args.tag,
+        args.no_cache,
+        messages,
+        args.substitutions,
+        args.config,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        args.gcs_log_dir,
+        args.machine_type,
+        args.disk_size,
+        args.worker_pool,
+        args.git_source_dir,
+        args.git_source_revision,
+        args.dir,
+        args.revision,
+        args.service_account,
+        args.pack,
+        False,
+        args.default_buckets_behavior,
+        skip_set_source=True,
+        client_tag='gcloudsubmits',
+    )
 
-      # Set build_config source with updated build_region.
-      build_config = submit_util.SetSource(
-          build_config,
-          messages,
-          args.IsSpecified('source'),
-          args.no_source,
-          args.source,
-          args.gcs_source_staging_dir,
-          args.dir,
-          args.revision,
-          args.git_source_dir,
-          args.git_source_revision,
-          args.ignore_file,
-          False,
-          build_region,
-          args.default_buckets_behavior,
-      )
+    build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+    build_region = build_region or cloudbuild_util.DEFAULT_REGION
 
-      # Start the build.
-      build, _ = submit_util.Build(
-          messages,
-          args.async_,
-          build_config,
-          build_region=build_region,
-          support_gcl=self._support_gcl,
-          suppress_logs=args.suppress_logs,
-          polling_interval=args.polling_interval,
-      )
-      return build
+    # Set build_config source with updated build_region.
+    build_config = submit_util.SetSource(
+        build_config,
+        messages,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.dir,
+        args.revision,
+        args.git_source_dir,
+        args.git_source_revision,
+        args.ignore_file,
+        False,
+        build_region,
+        args.default_buckets_behavior,
+    )
+
+    # Start the build.
+    build, _ = submit_util.Build(
+        messages,
+        args.async_,
+        build_config,
+        build_region=build_region,
+        support_gcl=self._support_gcl,
+        suppress_logs=args.suppress_logs,
+        polling_interval=args.polling_interval)
+    return build
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -320,68 +316,65 @@ class SubmitAlpha(SubmitBeta):
       FailedBuildException: If the build is completed and not 'SUCCESS'.
     """
     build_region = args.region
-    with endpoint_util.CloudBuildEndpointOverrides(region=build_region):
-      messages = cloudbuild_util.GetMessagesModule()
 
-      # Create the build request.
-      build_config = submit_util.CreateBuildConfigAlpha(
-          args.tag,
-          args.no_cache,
-          messages,
-          args.substitutions,
-          args.config,
-          args.IsSpecified('source'),
-          args.no_source,
-          args.source,
-          args.gcs_source_staging_dir,
-          args.ignore_file,
-          args.gcs_log_dir,
-          args.machine_type,
-          args.disk_size,
-          args.memory,
-          args.vcpu_count,
-          args.worker_pool,
-          args.dir,
-          args.revision,
-          args.git_source_dir,
-          args.git_source_revision,
-          args.pack,
-          False,
-          args.default_buckets_behavior,
-          skip_set_source=True,
-          client_tag='gcloudsubmits',
-      )
+    messages = cloudbuild_util.GetMessagesModule()
 
-      build_region = submit_util.DetermineBuildRegion(
-          build_config, build_region
-      )
-      build_region = build_region or cloudbuild_util.DEFAULT_REGION
+    # Create the build request.
+    build_config = submit_util.CreateBuildConfigAlpha(
+        args.tag,
+        args.no_cache,
+        messages,
+        args.substitutions,
+        args.config,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.ignore_file,
+        args.gcs_log_dir,
+        args.machine_type,
+        args.disk_size,
+        args.memory,
+        args.vcpu_count,
+        args.worker_pool,
+        args.dir,
+        args.revision,
+        args.git_source_dir,
+        args.git_source_revision,
+        args.pack,
+        False,
+        args.default_buckets_behavior,
+        skip_set_source=True,
+        client_tag='gcloudsubmits',
+    )
 
-      # Set build_config source with updated build_region.
-      build_config = submit_util.SetSource(
-          build_config,
-          messages,
-          args.IsSpecified('source'),
-          args.no_source,
-          args.source,
-          args.gcs_source_staging_dir,
-          args.dir,
-          args.revision,
-          args.git_source_dir,
-          args.git_source_revision,
-          args.ignore_file,
-          False,
-          build_region,
-          args.default_buckets_behavior,
-      )
+    build_region = submit_util.DetermineBuildRegion(build_config, build_region)
+    build_region = build_region or cloudbuild_util.DEFAULT_REGION
 
-      # Start the build.
-      build, _ = submit_util.Build(
-          messages,
-          args.async_,
-          build_config,
-          build_region=build_region,
-          support_gcl=True,
-          polling_interval=args.polling_interval,
-      )
-      return build
+    # Set build_config source with updated build_region.
+    build_config = submit_util.SetSource(
+        build_config,
+        messages,
+        args.IsSpecified('source'),
+        args.no_source,
+        args.source,
+        args.gcs_source_staging_dir,
+        args.dir,
+        args.revision,
+        args.git_source_dir,
+        args.git_source_revision,
+        args.ignore_file,
+        False,
+        build_region,
+        args.default_buckets_behavior,
+    )
+
+    # Start the build.
+    build, _ = submit_util.Build(
+        messages,
+        args.async_,
+        build_config,
+        build_region=build_region,
+        support_gcl=True,
+        polling_interval=args.polling_interval)
+    return build

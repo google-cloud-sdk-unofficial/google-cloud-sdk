@@ -52,6 +52,7 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     resource_args.AddConversionWorkspaceResourceArg(parser, 'to update')
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddDisplayNameFlag(parser)
+    cw_flags.AddGlobalFilterFlag(parser)
 
   def Run(self, args: argparse.Namespace) -> Optional[messages.Operation]:
     """Update a Database Migration Service conversion workspace.
@@ -68,6 +69,7 @@ class Update(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     result_operation = self.client.crud.Update(
         name=conversion_workspace_ref.RelativeName(),
         display_name=args.display_name,
+        global_filter=args.global_filter,
     )
     return self.HandleOperationResult(
         conversion_workspace_ref=conversion_workspace_ref,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,11 +38,12 @@
         * `folders/{folder_id}/locations/{location}/policyBindings/{policy_binding_id}`
         * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folder_or_organization_or_project_location_policy_binding
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:folders_or_organizations_or_projects_locations_policy_bindings
       required: true
   request:
     api_version: v3beta
     collection:
-    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
+    - iam.projects.locations.policyBindings

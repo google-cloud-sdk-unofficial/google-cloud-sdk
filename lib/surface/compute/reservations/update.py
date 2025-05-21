@@ -36,6 +36,7 @@ def _ValidateArgs(
     support_reservation_sharing_policy=False,
     support_emergent_maintenance=False,
     support_share_type=False,
+    support_scheduling_type=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -47,6 +48,7 @@ def _ValidateArgs(
       supported.
     support_emergent_maintenance: Check if emergent maintenance is supported.
     support_share_type: Check if share setting is supported.
+    support_scheduling_type: Check if scheduling type is supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -95,6 +97,13 @@ def _ValidateArgs(
     one_option_exception_message += (
         '6- Modify share setting with specifying share-setting flag.'
     )
+  if support_scheduling_type:
+    parameter_names.extend([
+        '--scheduling-type',
+    ])
+    one_option_exception_message += (
+        '7- Modify scheduling type with specifying scheduling-type flag.'
+    )
 
   has_share_with = False
   if support_share_with_flag:
@@ -140,6 +149,10 @@ def _ValidateArgs(
     minimum_argument_specified = (
         minimum_argument_specified
         and not args.IsSpecified('enable_emergent_maintenance')
+    )
+  if support_scheduling_type:
+    minimum_argument_specified = (
+        minimum_argument_specified and not args.IsSpecified('scheduling_type')
     )
 
   # Check parameters (add_share_with and remove_share_with are on GA).
@@ -351,6 +364,36 @@ def _EnableEmergentMaintenanceUpdateRequest(args, reservation_ref, holder):
   )
 
 
+def _SchedulingTypeUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for scheduling type."""
+  messages = holder.client.messages
+  update_mask = []
+  if args.IsSpecified('scheduling_type'):
+    update_mask.append('schedulingType')
+    scheduling_type = args.scheduling_type
+  else:
+    scheduling_type = None
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+      scheduling_type=scheduling_type,
+  )
+
+  # Build Update Request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=update_mask,
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
@@ -360,6 +403,7 @@ class Update(base.UpdateCommand):
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = False
   _support_share_type = False
+  _support_scheduling_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -383,7 +427,8 @@ class Update(base.UpdateCommand):
         self._support_auto_delete,
         self._support_reservation_sharing_policy,
         self._support_emergent_maintenance,
-        self._support_share_type
+        self._support_share_type,
+        self._support_scheduling_type,
     )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
@@ -474,6 +519,22 @@ class Update(base.UpdateCommand):
                     errors=errors,
                 )))
 
+    if self._support_scheduling_type:
+      if args.IsSpecified('scheduling_type'):
+        r_update_request = _SchedulingTypeUpdateRequest(
+            args, reservation_ref, holder
+        )
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_update_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )
+            )
+        )
+
     return result
 
 
@@ -485,6 +546,7 @@ class UpdateBeta(Update):
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
   _support_share_type = True
+  _support_scheduling_type = False
 
   @classmethod
   def Args(cls, parser):
@@ -519,6 +581,7 @@ class UpdateAlpha(Update):
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
   _support_share_type = True
+  _support_scheduling_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -533,6 +596,7 @@ class UpdateAlpha(Update):
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
         support_folder_share_setting=False).AddToParser(parser)
+    r_flags.GetSchedulingTypeFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

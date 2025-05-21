@@ -86,9 +86,6 @@ class RemoveMembers(base.UpdateCommand):
 
     return attachment_group.Patch(
         attachments=flags.ParseAttachments(sorted(list(attachments))),
-        attachments_to_remove=flags.ParseAttachments(
-            sorted(list(args.attachments))
-        ),
     )
 
 

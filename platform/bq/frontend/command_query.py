@@ -118,6 +118,13 @@ class Query(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_boolean(
+        'replace_data',
+        False,
+        'If true, erase existing contents only, other table metadata like'
+        ' schema is kept.',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
         'allow_large_results',
         None,
         'Enables larger destination table sizes for legacy SQL queries.',
@@ -540,6 +547,8 @@ class Query(bigquery_command.BigqueryCmd):
         params['write_disposition'] = 'WRITE_APPEND'
       if self.replace:
         params['write_disposition'] = 'WRITE_TRUNCATE'
+      if self.replace_data:
+        params['write_disposition'] = 'WRITE_TRUNCATE_DATA'
       if self.time_partitioning_field:
         params['partitioning_field'] = self.time_partitioning_field
       if self.time_partitioning_type:
@@ -796,13 +805,18 @@ class Query(bigquery_command.BigqueryCmd):
                   stack_frame['startColumn'],
               )
           )
-      self.PrintNonScriptQueryJobResults(client, child_job_info)
+      self.PrintNonScriptQueryJobResults(
+          client, child_job_info, json_escape=is_json
+      )
       statements_printed = statements_printed + 1
     if is_json:
       sys.stdout.write(']\n')
 
   def PrintNonScriptQueryJobResults(
-      self, client: bigquery_client_extended.BigqueryClientExtended, job
+      self,
+      client: bigquery_client_extended.BigqueryClientExtended,
+      job,
+      json_escape: bool = False,
   ) -> None:
     printable_job_info = utils_formatting.format_job_info(job)
     is_assert_job = job['statistics']['query']['statementType'] == 'ASSERT'
@@ -824,5 +838,14 @@ class Query(bigquery_command.BigqueryCmd):
       bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
           fields, rows
       )
-    # If we are here, the job succeeded, but print warnings if any.
+    elif json_escape:
+      print(
+          json.dumps(
+              frontend_utils.GetJobMessagesForPrinting(printable_job_info)
+          )
+      )
+      return
+    # If JSON escaping is not enabled, always print job messages, regardless
+    # of job type or succeeded/failed status. Even successful query jobs will
+    # have messages in some cases, such as when run in a session.
     frontend_utils.PrintJobMessages(printable_job_info)

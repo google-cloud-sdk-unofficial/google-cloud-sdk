@@ -7,9 +7,9 @@
 
       ## EXAMPLES
 
-      To create a restore channel ``my-restore-channel'' in project ``my-project'' in location ``us-central1'' with destination project ``projects/1234567890'', run:
+      To create a restore channel ``my-restore-channel'' in project ``my-project'' in location ``us-central1'' with destination project ``projects/restore-project'', run:
 
-        $ {command} my-restore-channel --project=my-project --location=us-central1 --destination-project=projects/1234567890
+        $ {command} my-restore-channel --project=my-project --location=us-central1 --destination-project=projects/restore-project
 
   request:
     collection: gkebackup.projects.locations.restoreChannels

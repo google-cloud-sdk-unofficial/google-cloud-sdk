@@ -20,6 +20,66 @@ def define_null_marker(
 
 
 
+def define_time_zone(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'time_zone',
+      None,
+      'Default time zone that will apply when parsing timestamp values that'
+      ' have no specific time zone. For example, "America/Los_Angeles".',
+      flag_values=flag_values,
+  )
+
+
+def define_date_format(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'date_format',
+      None,
+      'Format elements that define how the DATE values are formatted in the'
+      ' input files. For example, "MM/DD/YYYY".',
+      flag_values=flag_values,
+  )
+
+
+def define_datetime_format(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'datetime_format',
+      None,
+      'Format elements that define how the DATETIME values are formatted in'
+      ' the input files. For example, "MM/DD/YYYY HH24:MI:SS.FF3".',
+      flag_values=flag_values,
+  )
+
+
+def define_time_format(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'time_format',
+      None,
+      'Format elements that define how the TIME values are formatted in the'
+      ' input files. For example, "HH24:MI:SS.FF3".',
+      flag_values=flag_values,
+  )
+
+
+def define_timestamp_format(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_string(
+      'timestamp_format',
+      None,
+      'Format elements that define how the TIMESTAMP values are formatted in'
+      ' the input files. For example, "MM/DD/YYYY HH24:MI:SS.FF3".',
+      flag_values=flag_values,
+  )
+
+
 def define_parquet_map_target_type(
     flag_values: flags.FlagValues,
 ) -> flags.FlagHolder[Optional[str]]:

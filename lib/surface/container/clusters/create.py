@@ -27,6 +27,7 @@ from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
+from googlecloudsdk.api_lib.functions import api_enablement
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -547,6 +548,7 @@ def ParseCreateOptionsBase(
       ),
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
+      enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
   )
 
 
@@ -790,6 +792,7 @@ flags_to_add = {
         ),
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
+        'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -985,6 +988,7 @@ flags_to_add = {
         ),
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
+        'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1186,6 +1190,7 @@ flags_to_add = {
         ),
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
+        'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
     },
 }
 
@@ -1340,6 +1345,8 @@ class Create(base.CreateCommand):
         )
       else:
         log.status.Print(constants.MONITORING_DISABLED_WARNING)
+    # container API is mandatory for cluster creation.
+    api_enablement.PromptToEnableApiIfDisabled('container.googleapis.com')
 
     operation = None
     try:
@@ -1525,6 +1532,7 @@ class CreateBeta(Create):
     )
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
+    ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
     return ops
 
 
@@ -1679,4 +1687,5 @@ class CreateAlpha(Create):
     )
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
+    ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
     return ops

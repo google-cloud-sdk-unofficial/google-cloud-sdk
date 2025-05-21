@@ -279,6 +279,10 @@
           "description": "Output only. The Disaster Recovery(DR) replication status of the reservation. This is only available for the primary replicas of DR\/failover reservations and provides information about the both the staleness of the secondary and the last error encountered while trying to replicate changes from the primary to the secondary. If this field is blank, it means that the reservation is either not a DR reservation or the reservation is a DR secondary or that any replication operations on the reservation have succeeded.",
           "readOnly": true,
           "$ref": "ReplicationStatus"
+        },
+        "projectScheduling": {
+          "description": "Optional. Distribute resources fairly across projects, possibly subject to per-project caps.",
+          "$ref": "ProjectScheduling"
         }
       }
     },
@@ -360,6 +364,23 @@
               "description": "Properties of the object. Contains field @type with type URL."
             }
           }
+        }
+      }
+    },
+    "ProjectScheduling": {
+      "id": "ProjectScheduling",
+      "description": "Configures project fair scheduling within the reservation.",
+      "type": "object",
+      "properties": {
+        "concurrency": {
+          "description": "Optional. If present, the reservation will attempt to limit the per-project concurrency of jobs running under the reservation to the specified number of jobs.",
+          "type": "string",
+          "format": "int64"
+        },
+        "maxSlots": {
+          "description": "Optional. If present, the reservation will attempt to limit the average slot usage of any project running within it to the specified rate.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },

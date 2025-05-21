@@ -31,7 +31,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Disk(base.Command):
   """Restores a Compute Disk Backup."""

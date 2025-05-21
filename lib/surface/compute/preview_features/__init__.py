@@ -18,7 +18,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class PreviewFeatures(base.Group):
   """Read and manipulate Compute Engine Preview Features."""
 

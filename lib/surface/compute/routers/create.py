@@ -196,7 +196,7 @@ class CreateBeta(Create):
   tunnels and interconnects.
   """
 
-  pass
+  _support_ncc_gateway = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

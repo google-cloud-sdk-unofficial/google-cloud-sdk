@@ -306,6 +306,8 @@ class UpdateAlpha(UpdateBeta):
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
     flags.AddDdosProtectionConfigOld(parser)
+    flags.AddNetworkDdosAdaptiveProtection(parser)
+    flags.AddNetworkDdosImpactedBaselineThreshold(parser)
 
     parser.add_argument(
         '--enable-ml',
@@ -332,6 +334,8 @@ class UpdateAlpha(UpdateBeta):
         or args.IsSpecified('user_ip_request_headers')
         or args.IsSpecified('recaptcha_redirect_site_key')
         or args.IsSpecified('network_ddos_protection')
+        or args.IsSpecified('network_ddos_adaptive_protection')
+        or args.IsSpecified('network_ddos_impacted_baseline_threshold')
         or args.IsSpecified('ddos_protection')
     ):
       parameter_names = [
@@ -346,6 +350,8 @@ class UpdateAlpha(UpdateBeta):
           '--user-ip-request-headers',
           '--recaptcha-redirect-site-key',
           '--network-ddos-protection',
+          '--network-ddos-adaptive-protection',
+          '--network-ddos-impacted-baseline-threshold',
           '--ddos-protection',
       ]
       raise exceptions.MinimumArgumentException(
@@ -411,6 +417,14 @@ class UpdateAlpha(UpdateBeta):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
+    if args.IsSpecified('network_ddos_adaptive_protection'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithDdosAdaptiveProtection(
+          holder.client, args, ddos_protection_config
+      )
+    if args.IsSpecified('network_ddos_impacted_baseline_threshold'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithNetworkDdosImpactedBaselineThreshold(
+          holder.client, args, ddos_protection_config
+      )
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,

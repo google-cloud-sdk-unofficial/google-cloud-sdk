@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +33,12 @@
         Format:
          `organizations/{organization_id}/locations/{location}/principalAccessBoundaryPolicies/{principal_access_boundary_policy_id}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:organization_location_principal_access_boundary_policy
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3beta_resources:organizations_locations_principal_access_boundary_policies
       required: true
   request:
     api_version: v3beta
     collection:
     - iam.organizations.locations.principalAccessBoundaryPolicies
     method: searchPolicyBindings
+  command_type: GENERIC

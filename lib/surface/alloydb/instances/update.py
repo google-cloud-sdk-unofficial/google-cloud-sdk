@@ -57,6 +57,7 @@ class Update(base.UpdateCommand):
       parser: argparse.Parser, Parser object for command line inputs
     """
     base.ASYNC_FLAG.AddToParser(parser)
+    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
     # Update runs for a long time, it is better to default to async mode so that
     # users can query the operation status and find the status.
     base.ASYNC_FLAG.SetDefault(parser, True)
@@ -85,6 +86,8 @@ class Update(base.UpdateCommand):
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.ClearPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnectionGroup(parser)
+    flags.AddActivationPolicy(parser, alloydb_messages)
+
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -166,7 +169,6 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-    alloydb_messages = api_util.GetMessagesModule(cls.ReleaseTrack())
 
     # Connection pooling flags.
     flags.AddEnableConnectionPooling(parser)
@@ -178,7 +180,6 @@ class UpdateAlpha(UpdateBeta):
     flags.AddConnectionPoolingQueryWaitTimeout(parser)
     flags.AddConnectionPoolingStatsUsers(parser)
     flags.AddConnectionPoolingIgnoreStartupParameters(parser)
-    flags.AddActivationPolicy(parser, alloydb_messages)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

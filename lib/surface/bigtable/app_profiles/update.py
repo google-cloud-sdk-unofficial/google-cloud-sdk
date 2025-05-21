@@ -233,7 +233,6 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting(
             required=False,
-            allow_failover_radius=True,
         )
         .AddIsolation()
         .AddForce('update')
@@ -262,7 +261,6 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
         description=args.description,
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
-        failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,

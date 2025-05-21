@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to describe the specified kafka source."""
+"""Command to describe the specified Kafka source."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.eventarc import flags
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To describe the kafka source `my-kafka-source` in location `us-central1`, run:
+        To describe the Kafka source `my-kafka-source` in location `us-central1`, run:
 
           $ {command} my-kafka-source --location=us-central1
         """,
@@ -35,7 +35,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
-  """Describe an Eventarc kafka source."""
+  """Describe an Eventarc Kafka source."""
 
   detailed_help = _DETAILED_HELP
 

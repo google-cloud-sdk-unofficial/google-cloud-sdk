@@ -30,7 +30,6 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.deploy import delivery_pipeline_util
 from googlecloudsdk.command_lib.deploy import deploy_policy_util
 from googlecloudsdk.command_lib.deploy import deploy_util
-from googlecloudsdk.command_lib.deploy import exceptions as deploy_exceptions
 from googlecloudsdk.command_lib.deploy import flags
 from googlecloudsdk.command_lib.deploy import promote_util
 from googlecloudsdk.command_lib.deploy import release_util
@@ -174,26 +173,6 @@ class Create(base.CreateCommand):
       raise c_exceptions.ConflictingArgumentsException(
           '--disable-initial-rollout', '--to-target'
       )
-    # check that `--from-run-container` and `--services` are always paired
-    if args.services:
-      if not args.from_run_container:
-        raise deploy_exceptions.MissingCoupledArgumentsException(
-            ['--from-run-container', '--services']
-        )
-    if args.from_run_container:
-      if args.build_artifacts:
-        raise c_exceptions.ConflictingArgumentsException(
-            '--from-run-container',
-            '--build-artifacts',
-        )
-      if args.images:
-        raise c_exceptions.ConflictingArgumentsException(
-            '--from-run-container', '--images'
-        )
-      if not args.services:
-        raise deploy_exceptions.MissingCoupledArgumentsException(
-            ['--from-run-container', '--services']
-        )
 
     args.CONCEPTS.parsed_args.release = release_util.RenderPattern(
         args.CONCEPTS.parsed_args.release
@@ -246,8 +225,6 @@ class Create(base.CreateCommand):
         pipeline_obj.uid,
         args.from_k8s_manifest,
         args.from_run_manifest,
-        args.from_run_container,
-        args.services,
         pipeline_obj,
         args.deploy_parameters,
     )

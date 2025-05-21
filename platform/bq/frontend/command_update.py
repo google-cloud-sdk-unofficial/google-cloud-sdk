@@ -469,6 +469,16 @@ class Update(bigquery_command.BigqueryCmd):
         'The format of inline definition is "schema@format=uri@connection". ',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'external_catalog_dataset_options',
+        None,
+        'Options defining open source compatible datasets living in the'
+        ' BigQuery catalog. Contains metadata of open source database or'
+        ' default storage location represented by the current dataset. The'
+        ' value can be either an inline JSON definition or a path to a file'
+        ' containing a JSON definition.',
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'metadata_cache_mode',
         None,
@@ -678,6 +688,19 @@ class Update(bigquery_command.BigqueryCmd):
         'clear_all_tags',
         False,
         'Clear all tags attached to the dataset or table',
+        flag_values=fv,
+    )
+    flags.DEFINE_enum_class(
+        'update_mode',
+        None,
+        bq_client_utils.UpdateMode,
+        ''.join([
+            'Specifies which dataset fields are updated. By default, both ',
+            'metadata and ACL information are updated. ',
+            'Options include:\n ',
+            '\n '.join([e.value for e in bq_client_utils.UpdateMode]),
+            '\n If not set, defaults as UPDATE_FULL',
+        ]),
         flag_values=fv,
     )
     self._ProcessCommandRc(fv)
@@ -1063,6 +1086,8 @@ class Update(bigquery_command.BigqueryCmd):
           tags_to_attach=tags_to_attach,
           tags_to_remove=tags_to_remove,
           clear_all_tags=self.clear_all_tags,
+          external_catalog_dataset_options=self.external_catalog_dataset_options,
+          update_mode=self.update_mode,
       )
       self.printSuccessMessage('Dataset', reference)
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
@@ -1087,6 +1112,10 @@ class Update(bigquery_command.BigqueryCmd):
           expiration = int(self.expiration + time.time()) * 1000
       if self.default_table_expiration:
         raise app.UsageError('Cannot specify default expiration for a table.')
+      if self.external_catalog_dataset_options is not None:
+        raise app.UsageError(
+            'Cannot specify external_catalog_dataset_options for a table.'
+        )
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = frontend_utils.GetExternalDataConfig(
@@ -1263,6 +1292,8 @@ def _UpdateDataset(
     tags_to_attach: Optional[Dict[str, str]] = None,
     tags_to_remove: Optional[List[str]] = None,
     clear_all_tags: Optional[bool] = None,
+    external_catalog_dataset_options: Optional[str] = None,
+    update_mode: Optional[bq_client_utils.UpdateMode] = None,
 ):
   """Updates a dataset.
 
@@ -1270,28 +1301,30 @@ def _UpdateDataset(
   dataset update.
 
   Args:
-    client: the BigQuery client.
-    reference: the DatasetReference to update.
-    description: an optional dataset description.
-    source: an optional filename containing the JSON payload.
-    default_table_expiration_ms: optional number of milliseconds for the default
-      expiration duration for new tables created in this dataset.
-    default_partition_expiration_ms: optional number of milliseconds for the
+    client: The BigQuery client.
+    reference: The DatasetReference to update.
+    description: An optional dataset description.
+    source: An optional filename containing the JSON payload.
+    default_table_expiration_ms: An optional number of milliseconds for the
+      default expiration duration for new tables created in this dataset.
+    default_partition_expiration_ms: An optional number of milliseconds for the
       default partition expiration duration for new partitioned tables created
       in this dataset.
-    labels_to_set: an optional dict of labels to set on this dataset.
+    labels_to_set: An optional dict of labels to set on this dataset.
     label_keys_to_remove: an optional list of label keys to remove from this
       dataset.
-    default_kms_key: an optional CMEK encryption key for all new tables in the
+    default_kms_key: An optional CMEK encryption key for all new tables in the
       dataset.
     max_time_travel_hours: Optional. Define the max time travel in hours. The
       value can be from 48 to 168 hours (2 to 7 days). The default value is 168
       hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
-    tags_to_attach: an optional dict of tags to attach to the dataset.
-    tags_to_remove: an optional list of tag keys to remove from the dataset.
-    clear_all_tags: if set, clears all the tags attached to the dataset.
+    tags_to_attach: An optional dict of tags to attach to the dataset.
+    tags_to_remove: An optional list of tag keys to remove from the dataset.
+    clear_all_tags: If set, clears all the tags attached to the dataset.
+    external_catalog_dataset_options: An optional JSON string or file path
+      containing the external catalog dataset options to update.
 
   Raises:
     UsageError: when incorrect usage or invalid args are used.
@@ -1313,4 +1346,6 @@ def _UpdateDataset(
       tags_to_attach=tags_to_attach,
       tags_to_remove=tags_to_remove,
       clear_all_tags=clear_all_tags,
+      external_catalog_dataset_options=external_catalog_dataset_options,
+      update_mode=update_mode,
   )

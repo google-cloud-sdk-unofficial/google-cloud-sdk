@@ -105,6 +105,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddClusterTierFlag(parser)
   flags.AddKubecontextOverrideFlag(parser)
   flags.AddAnonymousAuthenticationConfigFlag(parser)
+  flags.AddEnableLegacyLustrePortFlag(parser, hidden=True)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

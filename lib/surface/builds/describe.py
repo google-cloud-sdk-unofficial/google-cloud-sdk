@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
-from googlecloudsdk.api_lib.cloudbuild import endpoint_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
 from googlecloudsdk.core import properties
@@ -32,11 +31,11 @@ class Describe(base.DescribeCommand):
 
   detailed_help = {
       'DESCRIPTION': 'Get information about a particular build.',
-      'EXAMPLES': """
+      'EXAMPLES': ("""
             To describe a build `123-456-789`:
 
                 $ {command} '123-456-789'
-            """,
+            """),
   }
 
   @staticmethod
@@ -59,20 +58,17 @@ class Describe(base.DescribeCommand):
         or properties.VALUES.builds.region.Get()
         or cloudbuild_util.DEFAULT_REGION
     )
-    with endpoint_util.CloudBuildEndpointOverrides(region=build_region):
-      client = cloudbuild_util.GetClientInstance()
 
-      build_ref = resources.REGISTRY.Parse(
-          args.build,
-          params={
-              'projectsId': properties.VALUES.core.project.GetOrFail,
-              'locationsId': build_region,
-              'buildsId': args.build,
-          },
-          collection='cloudbuild.projects.locations.builds',
-      )
-      return client.projects_locations_builds.Get(
-          client.MESSAGES_MODULE.CloudbuildProjectsLocationsBuildsGetRequest(
-              name=build_ref.RelativeName()
-          )
-      )
+    client = cloudbuild_util.GetClientInstance()
+
+    build_ref = resources.REGISTRY.Parse(
+        args.build,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': build_region,
+            'buildsId': args.build,
+        },
+        collection='cloudbuild.projects.locations.builds')
+    return client.projects_locations_builds.Get(
+        client.MESSAGES_MODULE.CloudbuildProjectsLocationsBuildsGetRequest(
+            name=build_ref.RelativeName()))

@@ -34,6 +34,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
+# gcloud timeout for monitoring the switchover LRO
+_SWITCHOVER_OPERATION_TIMEOUT_SECONDS = 3600
+
 DETAILED_HELP = {
     'EXAMPLES': """\
         To switch over an instance to its replica called replica-instance:
@@ -117,7 +120,8 @@ def RunBaseSwitchoverCommand(args):
     )
 
   operations.OperationsV1Beta4.WaitForOperation(
-      sql_client, operation_ref, 'Switching over to Cloud SQL replica'
+      sql_client, operation_ref, 'Switching over to Cloud SQL replica',
+      _SWITCHOVER_OPERATION_TIMEOUT_SECONDS
   )
 
   log.status.write(

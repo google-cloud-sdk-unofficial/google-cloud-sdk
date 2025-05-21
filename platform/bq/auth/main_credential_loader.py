@@ -60,7 +60,7 @@ def GetCredentialsFromFlags() -> GoogleAuthCredentialsUnionType:
     logging.info('Loading auth credentials with --use_gce_service_account')
     return compute_engine.Credentials(
         quota_project_id=bq_utils.GetResolvedQuotaProjectID(
-            bq_auth_flags.QUOTA_PROJECT_ID.value, fallback_project_id=None
+            bq_auth_flags.QUOTA_PROJECT_ID.value, bq_flags.PROJECT_ID.value
         ),
     )
   else:

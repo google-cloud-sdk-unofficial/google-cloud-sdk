@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a new association between a firewall policy and a network.
@@ -36,6 +37,7 @@ class Create(base.CreateCommand):
   """
   NEWORK_FIREWALL_POLICY_ARG = None
   _support_priority = False
+  _support_associated_policy_to_be_replaced = False
 
   @classmethod
   def Args(cls, parser):
@@ -43,7 +45,11 @@ class Create(base.CreateCommand):
         flags.NetworkFirewallPolicyAssociationArgument(
             required=True, operation='create'))
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
-    flags.AddArgsCreateAssociation(parser, cls._support_priority)
+    flags.AddArgsCreateAssociation(
+        parser,
+        cls._support_priority,
+        cls._support_associated_policy_to_be_replaced,
+    )
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
@@ -73,6 +79,12 @@ class Create(base.CreateCommand):
     if self._support_priority and args.IsSpecified('priority'):
       priority = association_utils.ConvertPriorityToInt(args.priority)
 
+    associated_policy_to_be_replaced = None
+    if self._support_associated_policy_to_be_replaced and args.IsSpecified(
+        'associated_policy_to_be_replaced'
+    ):
+      associated_policy_to_be_replaced = args.associated_policy_to_be_replaced
+
     replace_existing_association = False
     if args.replace_association_on_target:
       replace_existing_association = True
@@ -91,9 +103,13 @@ class Create(base.CreateCommand):
         association=association,
         firewall_policy=args.firewall_policy,
         replace_existing_association=replace_existing_association,
-        only_generate_request=False)
+        associated_policy_to_be_replaced=associated_policy_to_be_replaced,
+        support_associated_policy_to_be_replaced=self._support_associated_policy_to_be_replaced,
+        only_generate_request=False,
+    )
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a new association between a firewall policy and a network.
@@ -104,8 +120,10 @@ class CreateBeta(Create):
   """
 
   _support_priority = False
+  _support_associated_policy_to_be_replaced = False
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a new association between a firewall policy and a network.
@@ -116,6 +134,7 @@ class CreateAlpha(Create):
   """
 
   _support_priority = True
+  _support_associated_policy_to_be_replaced = True
 
 
 Create.detailed_help = {

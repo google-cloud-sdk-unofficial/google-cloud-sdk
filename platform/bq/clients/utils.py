@@ -1177,7 +1177,7 @@ def ReadSchema(schema: str) -> List[str]:
         % (schema,)
     )
   else:
-    return [NewField(entry) for entry in schema.split(',')]
+    return [NewField(entry) for entry in schema.split(',')]  # pytype: disable=bad-return-type
 
 
 def NormalizeProjectReference(

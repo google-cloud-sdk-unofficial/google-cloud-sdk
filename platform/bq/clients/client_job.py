@@ -1417,6 +1417,8 @@ def Load(
     copy_files_only: Optional. True to configures the load job to only copy
       files to the destination BigLake managed table, without reading file
       content and writing them to new files.
+    source_column_match: Optional. Controls the strategy used to match loaded
+      columns to the schema.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -1463,6 +1465,8 @@ def Load(
   if timestamp_format is not None:
     load_config['timestampFormat'] = timestamp_format
 
+  if source_column_match is not None:
+    load_config['sourceColumnMatch'] = source_column_match
 
   bq_processor_utils.ApplyParameters(
       load_config,

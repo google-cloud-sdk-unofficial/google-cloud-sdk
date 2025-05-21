@@ -27,11 +27,12 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
-  """Delete all entries from a log in the ```_Default``` log bucket.
+  """Delete all entries from a log in the global ```_Default``` log bucket.
 
   ## EXAMPLES
 
-  To delete all entries from log 'my-log' in the ```_Default``` log bucket:
+  To delete all entries from log 'my-log' in the global ```_Default``` log
+  bucket:
 
     $ {command} my-log
   """

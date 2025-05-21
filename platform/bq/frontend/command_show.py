@@ -170,6 +170,19 @@ class Show(bigquery_command.BigqueryCmd):
         'Shows details for the connection described by this identifier.',
         flag_values=fv,
     )
+    flags.DEFINE_enum(
+        'dataset_view',
+        None,
+        ['METADATA', 'ACL', 'FULL'],
+        'Specifies the view that determines which dataset information is '
+        'returned. By default, metadata and ACL information are returned. '
+        'Options include:'
+        '\n METADATA'
+        '\n ACL'
+        '\n FULL'
+        '\n If not set, defaults as FULL',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str = '') -> Optional[int]:
@@ -214,6 +227,11 @@ class Show(bigquery_command.BigqueryCmd):
       self.PossiblyDelegateToGcloudAndExit('datasets', 'show', identifier)
       reference = bq_client_utils.GetDatasetReference(
           id_fallbacks=client, identifier=identifier
+      )
+      object_info = client_dataset.GetDataset(
+          apiclient=client.apiclient,
+          reference=reference,
+          dataset_view=self.dataset_view,
       )
     elif self.view:
       reference = bq_client_utils.GetTableReference(
@@ -336,6 +354,11 @@ class Show(bigquery_command.BigqueryCmd):
 
     if isinstance(reference, DatasetReference) and not object_info:
       self.PossiblyDelegateToGcloudAndExit('datasets', 'show', identifier)
+      object_info = client_dataset.GetDataset(
+          apiclient=client.apiclient,
+          reference=reference,
+          dataset_view=self.dataset_view,
+      )
       pass
 
     if object_info is None:

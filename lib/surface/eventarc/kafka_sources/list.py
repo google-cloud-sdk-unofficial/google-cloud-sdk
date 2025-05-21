@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to list all kafka sources in a project and location."""
+"""Command to list all Kafka sources in a project and location."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -25,11 +25,11 @@ from googlecloudsdk.command_lib.eventarc import flags
 _DETAILED_HELP = {
     "DESCRIPTION": "{description}",
     "EXAMPLES": """\
-        To list all kafka sources in location ``us-central1'', run:
+        To list all Kafka sources in location ``us-central1'', run:
 
           $ {command} --location=us-central1
 
-        To list all kafka sources in all locations, run:
+        To list all Kafka sources in all locations, run:
 
           $ {command} --location=-
 
@@ -51,7 +51,7 @@ table(
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
-  """List Eventarc kafka sources."""
+  """List Eventarc Kafka sources."""
 
   detailed_help = _DETAILED_HELP
 
@@ -59,7 +59,7 @@ class List(base.ListCommand):
   def Args(parser):
     flags.AddLocationResourceArg(
         parser,
-        "Location for which to list kafka sources. This should be one of the"
+        "Location for which to list Kafka sources. This should be one of the"
         " supported regions.",
         required=False,
         allow_aggregation=True,

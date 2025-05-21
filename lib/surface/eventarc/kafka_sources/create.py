@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create a kafka source."""
+"""Command to create a Kafka source."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,35 +29,35 @@ _DETAILED_HELP = {
     'EXAMPLES': """ \
         To create a new Kafka source `my-kafka-source` in location `us-central1` with the required fields: bootstrap server URI 'https://example-cluster.com:9092', Kafka topics `topic1` and `topic2`, network attachment 'my-network-attachment', and message bus `my-message-bus`, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` with an initial offset of `newest`, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --initial-offset=newest
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --initial-offset=newest
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` with consumer group ID `my-kafka-source-group`, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --consumer-group-id=my-kafka-source-group
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --consumer-group-id=my-kafka-source-group
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` SASL/Plain authentication with the Kafka broker, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=PLAIN --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=PLAIN --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` SASL/SCRAM-SHA-256 authentication with the Kafka broker, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=SCRAM-SHA-256 --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=SCRAM-SHA-256 --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` SASL/SCRAM-SHA-512 authentication with the Kafka broker, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=SCRAM-SHA-512 --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --sasl-mechanism=SCRAM-SHA-512 --sasl-username=kafka-username --sasl-password=projects/12345/secrets/my-sasl-secret/versions/1
 
         To create a new Kafka source `my-kafka-source` in location `us-central1` Mutual TLS (mTLS) authentication with the Kafka broker, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --tls-client-certificate=projects/12345/secrets/my-tls-cert/versions/1 --tls-client-key=projects/12345/secrets/my-tls-key/versions/1
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --tls-client-certificate=projects/12345/secrets/my-tls-cert/versions/1 --tls-client-key=projects/12345/secrets/my-tls-key/versions/1
 
-        To create a new Kafka source `my-kafka-source` in location `us-central1` with an a INFO level logging configuration, run:
+        To create a new Kafka source `my-kafka-source` in location `us-central1` with an INFO level logging configuration, run:
 
-          $ {command} my-kafka-source --location=us-central1 --bootstrap-uris='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --logging_config=INFO
+          $ {command} my-kafka-source --location=us-central1 --bootstrap-servers='https://example-cluster.com:9092' --topics='topic1,topic2' --network_attachment=my-network-attachment --message-bus=my-message-bus --logging_config=INFO
         """,
 }
 
@@ -65,7 +65,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
-  """Create an Eventarc kafka source."""
+  """Create an Eventarc Kafka source."""
 
   detailed_help = _DETAILED_HELP
 

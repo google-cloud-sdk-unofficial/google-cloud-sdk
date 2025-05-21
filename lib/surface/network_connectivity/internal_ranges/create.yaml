@@ -71,7 +71,6 @@
                     have some other use.
                   type: arg_list
                 - arg_name: allocation_strategy
-                  release_tracks: [ALPHA]
                   api_field: internalRange.allocationOptions.allocationStrategy
                   help_text: |
                     Allocation strategy to be used when searching for a free range.
@@ -102,7 +101,6 @@
                       Pick the smallest but fitting available range. This deterministic strategy
                       minimizes fragmentation of the address space.
                 - arg_name: first_available_ranges_lookup_size
-                  release_tracks: [ALPHA]
                   api_field: internalRange.allocationOptions.firstAvailableRangesLookupSize
                   help_text: |
                     The number of ranges to be considered when using the

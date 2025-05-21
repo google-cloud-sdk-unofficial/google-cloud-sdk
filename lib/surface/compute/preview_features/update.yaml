@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Update a preview feature's activation status.
     description: Update a preview feature's activation status.
@@ -10,6 +10,8 @@
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
 
     collection: compute.previewFeatures
     method: update

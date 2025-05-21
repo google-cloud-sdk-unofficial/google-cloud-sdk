@@ -74,6 +74,13 @@ class Load(bigquery_command.BigqueryCmd):
         'If true existing data is erased when new data is loaded.',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'replace_data',
+        False,
+        'If true, erase existing contents but not other table metadata like'
+        ' schema before loading new data.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'quote',
         None,
@@ -531,6 +538,8 @@ class Load(bigquery_command.BigqueryCmd):
       opts['copy_files_only'] = self.copy_files_only
     if self.replace:
       opts['write_disposition'] = 'WRITE_TRUNCATE'
+    elif self.replace_data:
+      opts['write_disposition'] = 'WRITE_TRUNCATE_DATA'
     if self.field_delimiter is not None:
       opts['field_delimiter'] = frontend_utils.NormalizeFieldDelimiter(
           self.field_delimiter
@@ -608,6 +617,8 @@ class Load(bigquery_command.BigqueryCmd):
       opts['time_format'] = self.time_format
     if self.timestamp_format is not None:
       opts['timestamp_format'] = self.timestamp_format
+    if self.source_column_match is not None:
+      opts['source_column_match'] = self.source_column_match
     if opts['source_format'] == 'THRIFT':
       thrift_options = {}
       if self.thrift_schema_idl_root_dir is not None:

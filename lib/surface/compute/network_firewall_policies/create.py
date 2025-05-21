@@ -25,6 +25,8 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine Network firewall policy.
 
@@ -32,36 +34,62 @@ class Create(base.CreateCommand):
   firewall policy is a set of rules that controls access to various resources.
   """
 
+  support_policy_type = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = flags.NetworkFirewallPolicyArgument(
-        required=True, operation='create')
+        required=True, operation='create'
+    )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddArgNetworkFirewallPolicyCreation(parser)
+
+    if cls.support_policy_type:
+      flags.AddPolicyType(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources
+    )
 
     network_firewall_policy = client.NetworkFirewallPolicy(
-        ref, compute_client=holder.client)
+        ref, compute_client=holder.client
+    )
     if hasattr(ref, 'region'):
       network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
-          ref, compute_client=holder.client)
+          ref, compute_client=holder.client
+      )
 
     firewall_policy = holder.client.messages.FirewallPolicy(
-        description=args.description, name=ref.Name())
+        description=args.description, name=ref.Name()
+    )
+    if self.support_policy_type and args.IsSpecified('policy_type'):
+      firewall_policy.policyType = (
+          holder.client.messages.FirewallPolicy.PolicyTypeValueValuesEnum(
+              args.policy_type
+          )
+      )
 
     return network_firewall_policy.Create(
-        firewall_policy=firewall_policy, only_generate_request=False)
+        firewall_policy=firewall_policy, only_generate_request=False
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Compute Engine Network firewall policy.
+
+  *{command}* is used to create network firewall policies. A network
+  firewall policy is a set of rules that controls access to various resources.
+  """
+
+  support_policy_type = True
 
 
 Create.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To create a global network firewall policy named ``my-policy'' under project
     with ID ``test-project'', run:
 

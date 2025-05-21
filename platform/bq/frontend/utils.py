@@ -61,6 +61,9 @@ PARQUET_LIST_INFERENCE_DESCRIPTION = (
 CONNECTION_ID_PATTERN = re.compile(r'[\w-]+')
 _RANGE_PATTERN = re.compile(r'^\[(\S+.+\S+), (\S+.+\S+)\)$')
 
+_PARAMETERS_KEY = 'parameters'
+_DEFAULT_STORAGE_LOCATION_URI_KEY = 'defaultStorageLocationUri'
+
 _DELIMITER_MAP = {
     'tab': '\t',
     '\\t': '\t',
@@ -460,6 +463,11 @@ def CreateExternalTableDefinition(
     encoding=None,
     file_set_spec_type=None,
     null_marker=None,
+    time_zone=None,
+    date_format=None,
+    datetime_format=None,
+    time_format=None,
+    timestamp_format=None,
     parquet_map_target_type=None,
 ):
   """Creates an external table definition with the given URIs and the schema.
@@ -520,6 +528,11 @@ def CreateExternalTableDefinition(
       manifest files, where each line contains a URI (No wild-card URIs are
       supported).
     null_marker: Specifies a string that represents a null value in a CSV file.
+    time_zone: Specifies the time zone for a CSV or JSON file.
+    date_format: Specifies the date format for a CSV or JSON file.
+    datetime_format: Specifies the datetime format for a CSV or JSON file.
+    time_format: Specifies the time format for a CSV or JSON file.
+    timestamp_format: Specifies the timestamp format for a CSV or JSON file.
     parquet_map_target_type: Indicate the target type for parquet maps. If
       unspecified, we represent parquet maps as map {repeated key_value {key,
       value}}. This option can simplify this by omiting the key_value record if
@@ -550,6 +563,16 @@ def CreateExternalTableDefinition(
       external_table_def['fileSetSpecType'] = file_set_spec_type
     if metadata_cache_mode is not None:
       external_table_def['metadataCacheMode'] = metadata_cache_mode
+    if time_zone is not None:
+      external_table_def['timeZone'] = time_zone
+    if date_format is not None:
+      external_table_def['dateFormat'] = date_format
+    if datetime_format is not None:
+      external_table_def['datetimeFormat'] = datetime_format
+    if time_format is not None:
+      external_table_def['timeFormat'] = time_format
+    if timestamp_format is not None:
+      external_table_def['timestampFormat'] = timestamp_format
     if object_metadata is not None:
       supported_obj_metadata_types = ['DIRECTORY', 'SIMPLE']
 
@@ -683,6 +706,11 @@ def GetExternalDataConfig(
     reference_file_schema_uri=None,
     file_set_spec_type=None,
     null_marker=None,
+    time_zone=None,
+    date_format=None,
+    datetime_format=None,
+    time_format=None,
+    timestamp_format=None,
     parquet_map_target_type=None,
 ):
   """Returns a ExternalDataConfiguration from the file or specification string.
@@ -773,8 +801,93 @@ def GetExternalDataConfig(
         reference_file_schema_uri=reference_file_schema_uri,
         file_set_spec_type=file_set_spec_type,
         null_marker=null_marker,
+        time_zone=time_zone,
+        date_format=date_format,
+        datetime_format=datetime_format,
+        time_format=time_format,
+        timestamp_format=timestamp_format,
         parquet_map_target_type=parquet_map_target_type,
     )
+
+
+def GetJson(
+    file_path_or_json_string: str,
+) -> Optional[Dict[str, Any]]:
+  """Returns a JSON object from the file or a JSON string.
+
+  Determines if the input string is a file path or a string,
+  then returns either the parsed file contents, or the parsed JSON from
+  string. The file content is expected to be a JSON string.
+
+  Args:
+    file_path_or_json_string: Path to the JSON file or a JSON string.
+
+  Raises:
+    UsageError: when incorrect usage or invalid args are used.
+  """
+  maybe_filepath = os.path.expanduser(file_path_or_json_string)
+  if os.path.isfile(maybe_filepath):
+    try:
+      with open(maybe_filepath) as json_file:
+        return json.load(json_file)
+    except json.decoder.JSONDecodeError as e:
+      raise app.UsageError(
+          'Error decoding JSON from file %s: %s' % (maybe_filepath, e)
+      )
+  else:
+    try:
+      return json.loads(file_path_or_json_string)
+    except json.decoder.JSONDecodeError as e:
+      raise app.UsageError(
+          'Error decoding JSON from string %s: %s'
+          % (file_path_or_json_string, e)
+      )
+
+
+def UpdateExternalCatalogDatasetOptions(
+    current_options: Dict[str, Any],
+    external_options_str: str,
+) -> Dict[str, Any]:
+  """Updates the external catalog dataset options.
+
+  Args:
+    current_options: The current external catalog dataset options.
+    external_options_str: The new external catalog dataset options as a JSON
+      string or a file path.
+
+  Returns:
+    The updated external catalog dataset options.
+  """
+  # Clear the parameters if they are present in the existing dataset but not
+  # in the new external catalog dataset options.
+  if (
+      _PARAMETERS_KEY in current_options
+      and current_options[_PARAMETERS_KEY] is not None
+  ):
+    for key in current_options[_PARAMETERS_KEY].keys():
+      current_options[_PARAMETERS_KEY][key] = None
+  external_catalog_dataset_options_dict = GetJson(external_options_str)
+  if _PARAMETERS_KEY in external_catalog_dataset_options_dict:
+    current_options.setdefault(_PARAMETERS_KEY, {})
+    for key, value in external_catalog_dataset_options_dict[
+        _PARAMETERS_KEY
+    ].items():
+      current_options[_PARAMETERS_KEY][key] = value
+  elif (
+      _PARAMETERS_KEY in current_options
+      and current_options[_PARAMETERS_KEY] is not None
+  ):
+    current_options[_PARAMETERS_KEY] = None
+  if _DEFAULT_STORAGE_LOCATION_URI_KEY in external_catalog_dataset_options_dict:
+    current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = (
+        external_catalog_dataset_options_dict[_DEFAULT_STORAGE_LOCATION_URI_KEY]
+    )
+  elif (
+      _DEFAULT_STORAGE_LOCATION_URI_KEY in current_options
+      and current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] is not None
+  ):
+    current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = None
+  return current_options
 
 
 def PrintPageToken(page_token):
@@ -1023,6 +1136,14 @@ def PrintJobMessages(printable_job_info):
   For DML queries prints number of affected rows.
   For DDL queries prints the performed operation and the target.
   """
+  messages = GetJobMessagesForPrinting(printable_job_info)
+  if messages:
+    print(messages)
+
+
+def GetJobMessagesForPrinting(printable_job_info):
+  """Similar to _PrintJobMessages(), but returns a string, rather than printing."""
+  result_lines = []
 
   job_ref = '(unknown)'  # Should never be seen, but beats a weird crash.
   if 'jobReference' in printable_job_info:
@@ -1034,10 +1155,12 @@ def PrintJobMessages(printable_job_info):
     error_result = printable_job_info['status']['errorResult']
     error_ls = printable_job_info['status'].get('errors', [])
     error = bq_error.CreateBigqueryError(error_result, error_result, error_ls)
-    print('Error encountered during job execution:\n%s\n' % (error,))
+    result_lines.append(
+        'Error encountered during job execution:\n%s\n' % (error,)
+    )
   elif 'errors' in printable_job_info['status']:
     warnings = printable_job_info['status']['errors']
-    print((
+    result_lines.append((
         'Warning%s encountered during job execution:\n'
         % ('' if len(warnings) == 1 else 's')
     ))
@@ -1055,11 +1178,13 @@ def PrintJobMessages(printable_job_info):
           message = w['message']
         if message is not None:
           message = message.encode('utf-8')
-        print('%s\n' % message)
+        result_lines.append('%s\n' % message)
     if recommend_show:
-      print('Use "bq show -j %s" to view job warnings.' % job_ref)
+      result_lines.append('Use "bq show -j %s" to view job warnings.' % job_ref)
   elif 'Affected Rows' in printable_job_info:
-    print('Number of affected rows: %s\n' % printable_job_info['Affected Rows'])
+    result_lines.append(
+        'Number of affected rows: %s\n' % printable_job_info['Affected Rows']
+    )
   elif 'DDL Target Table' in printable_job_info:
     ddl_target_table = printable_job_info['DDL Target Table']
     project_id = ddl_target_table.get('projectId')
@@ -1075,7 +1200,7 @@ def PrintJobMessages(printable_job_info):
         ddl_affected_row_access_policy_count = printable_job_info[
             'DDL Affected Row Access Policy Count'
         ]
-        print(
+        result_lines.append(
             '{op} {count} row access policies on table '
             '{project}.{dataset}.{table}\n'.format(
                 op=op,
@@ -1090,7 +1215,7 @@ def PrintJobMessages(printable_job_info):
           and 'INDEX' in printable_job_info['Statement Type']
       ):
         if 'SEARCH_INDEX' in printable_job_info['Statement Type']:
-          print(
+          result_lines.append(
               '%s search index on table %s.%s.%s\n'
               % (
                   stringutil.ensure_str(op),
@@ -1109,7 +1234,7 @@ def PrintJobMessages(printable_job_info):
                 'Please query %s.%s.INFORMATION_SCHEMA to check the progress '
                 ' of the index.\n'
             ) % (project_id, dataset_id)
-          print(
+          result_lines.append(
               '%s vector index on table %s.%s.%s\n%s'
               % (
                   stringutil.ensure_str(op),
@@ -1120,7 +1245,7 @@ def PrintJobMessages(printable_job_info):
               )
           )
       else:
-        print(
+        result_lines.append(
             '%s %s.%s.%s\n'
             % (
                 stringutil.ensure_str(op),
@@ -1139,7 +1264,7 @@ def PrintJobMessages(printable_job_info):
               target_type = 'model'
             else:
               target_type = 'table'
-            print(
+            result_lines.append(
                 'Default connection created for %s [%s] in project [%s] in'
                 ' region [%s]\n'
                 % (
@@ -1150,7 +1275,7 @@ def PrintJobMessages(printable_job_info):
                 )
             )
           if 'permissionUpdated' in default_connection_stats:
-            print(
+            result_lines.append(
                 'Your IAM policy has been updated for the default connection\n'
             )
   elif 'DDL Target Routine' in printable_job_info:
@@ -1163,9 +1288,11 @@ def PrintJobMessages(printable_job_info):
     )
     temp_object_name = MaybeGetSessionTempObjectName(dataset_id, routine_id)
     if temp_object_name is not None:
-      print('%s temporary routine %s' % (op, temp_object_name))
+      result_lines.append('%s temporary routine %s' % (op, temp_object_name))
     else:
-      print('%s %s.%s.%s' % (op, project_id, dataset_id, routine_id))
+      result_lines.append(
+          '%s %s.%s.%s' % (op, project_id, dataset_id, routine_id)
+      )
   elif 'DDL Target Row Access Policy' in printable_job_info:
     ddl_target_row_access_policy = printable_job_info[
         'DDL Target Row Access Policy'
@@ -1178,7 +1305,7 @@ def PrintJobMessages(printable_job_info):
         printable_job_info.get('DDL Operation Performed')
     )
     if project_id and dataset_id and table_id and row_access_policy_id and op:
-      print(
+      result_lines.append(
           '{op} row access policy {policy} on table {project}.{dataset}.{table}'
           .format(
               op=op,
@@ -1189,10 +1316,12 @@ def PrintJobMessages(printable_job_info):
           )
       )
   elif 'Assertion' in printable_job_info:
-    print('Assertion successful')
+    result_lines.append('Assertion successful')
 
   if 'Session Id' in printable_job_info:
-    print('In session: %s' % printable_job_info['Session Id'])
+    result_lines.append('In session: %s' % printable_job_info['Session Id'])
+
+  return '\n'.join(result_lines)
 
 
 def PrintObjectInfo(

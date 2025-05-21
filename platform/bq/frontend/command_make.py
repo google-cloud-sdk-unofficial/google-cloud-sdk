@@ -744,6 +744,16 @@ class Make(bigquery_command.BigqueryCmd):
         ),
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'external_catalog_dataset_options',
+        None,
+        'Options defining open source compatible datasets living in the'
+        ' BigQuery catalog. Contains metadata of open source database or'
+        ' default storage location represented by the current dataset. The'
+        ' value can be either an inline JSON or a path to a file containing a'
+        ' JSON definition.',
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'parquet_enum_as_string',
         False,
@@ -835,6 +845,15 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
+    self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
+    self.date_format_flag = frontend_flags.define_date_format(flag_values=fv)
+    self.datetime_format_flag = frontend_flags.define_datetime_format(
+        flag_values=fv
+    )
+    self.time_format_flag = frontend_flags.define_time_format(flag_values=fv)
+    self.timestamp_format_flag = frontend_flags.define_timestamp_format(
+        flag_values=fv
+    )
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
@@ -1256,16 +1275,11 @@ class Make(bigquery_command.BigqueryCmd):
         )
 
       if self.external_source:
-        if self.external_source.startswith('google-cloudspanner:/'):
-          if self.connection_id:
+        if not self.connection_id:
+          if not self.external_source.startswith('google-cloudspanner:/'):
             raise app.UsageError(
-                'connection_id is not required for CloudSpanner'
-                ' external source.'
+                'connection_id is required when external_source is specified.'
             )
-        elif not self.connection_id:
-          raise app.UsageError(
-              'connection_id is required when external_source is specified.'
-          )
       resource_tags = None
       if self.add_tags is not None:
         resource_tags = bq_utils.ParseTags(self.add_tags)
@@ -1296,6 +1310,7 @@ class Make(bigquery_command.BigqueryCmd):
           source_dataset_reference=source_dataset_reference,
           external_source=self.external_source,
           connection_id=self.connection_id,
+          external_catalog_dataset_options=self.external_catalog_dataset_options,
           max_time_travel_hours=self.max_time_travel_hours,
           storage_billing_model=self.storage_billing_model,
           resource_tags=resource_tags,
@@ -1336,6 +1351,10 @@ class Make(bigquery_command.BigqueryCmd):
         raise app.UsageError('Cannot specify data location for a table.')
       if self.default_table_expiration:
         raise app.UsageError('Cannot specify default expiration for a table.')
+      if self.external_catalog_dataset_options is not None:
+        raise app.UsageError(
+            'Cannot specify external_catalog_dataset_options for a table.'
+        )
       if self.expiration:
         expiration = int(self.expiration + time.time()) * 1000
       view_query_arg = self.view or None
@@ -1354,6 +1373,11 @@ class Make(bigquery_command.BigqueryCmd):
             self.reference_file_schema_uri,
             self.file_set_spec_type,
             self.null_marker_flag.value,
+            self.time_zone_flag.value,
+            self.date_format_flag.value,
+            self.datetime_format_flag.value,
+            self.time_format_flag.value,
+            self.timestamp_format_flag.value,
             parquet_map_target_type=self.parquet_map_target_type_flag.value,
         )
         if (self.require_partition_filter is not None) and (

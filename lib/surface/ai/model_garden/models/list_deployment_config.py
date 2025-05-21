@@ -39,7 +39,9 @@ _DEFAULT_FORMAT = """
     """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class ListDeployMentConfig(base.ListCommand):
   """List the machine specifications supported by and verified for a model in Model Garden.

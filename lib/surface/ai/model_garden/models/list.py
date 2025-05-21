@@ -57,7 +57,9 @@ _FULL_RESOURCE_NAME_TABLE_FORMAT = (
 )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List the publisher models in Model Garden.

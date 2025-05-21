@@ -75,6 +75,12 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         '%s IAM policy for connection described by this identifier.' % verb,
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'routine',
+        False,
+        '%s IAM policy for routine described by this identifier.' % verb,
+        flag_values=fv,
+    )
     # Subclasses should call self._ProcessCommandRc(fv) after calling this
     # superclass initializer and adding their own flags.
 
@@ -84,9 +90,10 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         self.d,
         self.t,
         self.connection,
+        self.routine,
     ):
       raise app.UsageError(
-          'Cannot specify more than one of -d, -t or -connection.'
+          'Cannot specify more than one of -d, -t, --routine or --connection.'
       )
 
     if not identifier:
@@ -108,6 +115,10 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
           identifier=identifier,
           default_location=bq_flags.LOCATION.value,
       )
+    elif self.routine:
+      reference = bq_client_utils.GetRoutineReference(
+          id_fallbacks=client, identifier=identifier
+      )
     else:
       reference = bq_client_utils.GetReference(
           id_fallbacks=client, identifier=identifier
@@ -117,6 +128,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
           (
               bq_id_utils.ApiClientHelper.DatasetReference,
               bq_id_utils.ApiClientHelper.TableReference,
+              bq_id_utils.ApiClientHelper.RoutineReference,
           ),
           'Invalid identifier "%s" for %s.' % (identifier, self._command_name),
           is_usage_error=True,
@@ -146,6 +158,10 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ConnectionReference):
       return client_connection.GetConnectionIAMPolicy(
           client=client.GetConnectionV1ApiClient(), reference=reference
+      )
+    elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
+      return client_routine.GetRoutineIAMPolicy(
+          apiclient=client.GetIAMPolicyApiClient(), reference=reference
       )
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference))
@@ -177,6 +193,12 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     elif isinstance(reference, bq_id_utils.ApiClientHelper.ConnectionReference):
       return client_connection.SetConnectionIAMPolicy(
           client=client.GetConnectionV1ApiClient(),
+          reference=reference,
+          policy=policy,
+      )
+    elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
+      return client_routine.SetRoutineIAMPolicy(
+          apiclient=client.GetIAMPolicyApiClient(),
           reference=reference,
           policy=policy,
       )

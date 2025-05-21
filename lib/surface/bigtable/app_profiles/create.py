@@ -217,9 +217,7 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
     (
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
-        .AddAppProfileRouting(
-            allow_failover_radius=True,
-        )
+        .AddAppProfileRouting()
         .AddIsolation()
         .AddForce('create')
     )
@@ -246,7 +244,6 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         description=args.description,
         multi_cluster=args.route_any,
         restrict_to=args.restrict_to,
-        failover_radius=args.failover_radius,
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,

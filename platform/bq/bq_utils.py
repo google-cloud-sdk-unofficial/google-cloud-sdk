@@ -69,7 +69,7 @@ def GetBigqueryRcFilename() -> Optional[str]:
   Returns:
     bigqueryrc filename as a string.
   """
-  return (
+  return (  # pytype: disable=bad-return-type
       (FLAGS['bigqueryrc'].present and FLAGS.bigqueryrc)
       or os.environ.get('BIGQUERYRC')
       or FLAGS.bigqueryrc

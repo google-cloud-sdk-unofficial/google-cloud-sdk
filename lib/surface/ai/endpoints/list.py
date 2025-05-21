@@ -49,6 +49,13 @@ def _AddArgs(parser):
   parser.display_info.AddUriFunc(_GetUri)
   flags.AddRegionResourceArg(
       parser, 'to list endpoints', prompt_func=region_util.PromptForOpRegion)
+  parser.add_argument(
+      '--list-model-garden-endpoints-only',
+      action='store_true',
+      default=False,
+      required=False,
+      help='Whether to only list endpoints related to Model Garden.',
+  )
 
 
 def _Run(args, version):
@@ -57,10 +64,7 @@ def _Run(args, version):
   args.region = region_ref.AsDict()['locationsId']
 
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
-    if (
-        version == constants.BETA_VERSION
-        and args.list_model_garden_endpoints_only
-    ):
+    if args.list_model_garden_endpoints_only:
       return client.EndpointsClient(version=version).List(
           region_ref,
           ' OR '.join([_API_DEPLOY_FILTER, _ONE_CLICK_DEPLOY_FILTER]),
@@ -80,6 +84,12 @@ class ListGa(base.ListCommand):
   run:
 
     $ {command} --project=example --region=us-central1
+
+  To list the endpoints under project ``example'' in region ``us-central1''
+  that are created from Model Garden, run:
+
+    $ {command} --project=example --region=us-central1
+    --list-model-garden-endpoints-only
   """
 
   @staticmethod
@@ -92,7 +102,7 @@ class ListGa(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class ListBeta(base.ListCommand):
+class ListBeta(ListGa):
   """List existing Vertex AI endpoints.
 
   ## EXAMPLES
@@ -108,17 +118,6 @@ class ListBeta(base.ListCommand):
     $ {command} --project=example --region=us-central1
     --list-model-garden-endpoints-only
   """
-
-  @staticmethod
-  def Args(parser):
-    _AddArgs(parser)
-    parser.add_argument(
-        '--list-model-garden-endpoints-only',
-        action='store_true',
-        default=False,
-        required=False,
-        help='Whether to only list endpoints created from Model Garden.',
-    )
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

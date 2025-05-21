@@ -20,7 +20,6 @@ from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
-from googlecloudsdk.api_lib.cloudbuild import endpoint_util
 from googlecloudsdk.api_lib.cloudbuild import filter_rewrite
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
@@ -104,28 +103,28 @@ class List(base.ListCommand):
         or properties.VALUES.builds.region.Get()
         or cloudbuild_util.DEFAULT_REGION
     )
-    with endpoint_util.CloudBuildEndpointOverrides(region=build_region):
-      client = cloudbuild_util.GetClientInstance()
-      messages = cloudbuild_util.GetMessagesModule()
 
-      project_id = properties.VALUES.core.project.GetOrFail()
-      parent_resource = resources.REGISTRY.Create(
-          collection='cloudbuild.projects.locations',
-          projectsId=project_id,
-          locationsId=build_region)
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
 
-      display_info = args.GetDisplayInfo()
-      defaults = resource_projection_spec.ProjectionSpec(
-          symbols=display_info.transforms, aliases=display_info.aliases)
-      args.filter, server_filter = filter_rewrite.Backend(args.ongoing).Rewrite(
-          args.filter, defaults=defaults)
+    project_id = properties.VALUES.core.project.GetOrFail()
+    parent_resource = resources.REGISTRY.Create(
+        collection='cloudbuild.projects.locations',
+        projectsId=project_id,
+        locationsId=build_region)
 
-      return list_pager.YieldFromList(
-          client.projects_locations_builds,
-          messages.CloudbuildProjectsLocationsBuildsListRequest(
-              parent=parent_resource.RelativeName(),
-              pageSize=args.page_size,
-              filter=server_filter),
-          field='builds',
-          batch_size=args.page_size,
-          batch_size_attribute='pageSize')
+    display_info = args.GetDisplayInfo()
+    defaults = resource_projection_spec.ProjectionSpec(
+        symbols=display_info.transforms, aliases=display_info.aliases)
+    args.filter, server_filter = filter_rewrite.Backend(args.ongoing).Rewrite(
+        args.filter, defaults=defaults)
+
+    return list_pager.YieldFromList(
+        client.projects_locations_builds,
+        messages.CloudbuildProjectsLocationsBuildsListRequest(
+            parent=parent_resource.RelativeName(),
+            pageSize=args.page_size,
+            filter=server_filter),
+        field='builds',
+        batch_size=args.page_size,
+        batch_size_attribute='pageSize')

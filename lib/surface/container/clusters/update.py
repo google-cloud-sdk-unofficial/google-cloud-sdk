@@ -448,6 +448,7 @@ class Update(base.UpdateCommand):
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -594,6 +595,7 @@ class Update(base.UpdateCommand):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     return opts
 
   def Run(self, args):
@@ -945,6 +947,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'enable_legacy_lustre_port', None) is not None:
+      try:
+        op_ref = adapter.ModifyLegacyLustrePortEnabled(
+            cluster_ref,
+            args.enable_legacy_lustre_port,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (
         getattr(args, 'enable_insecure_binding_system_authenticated', None)
         is not None
@@ -1206,6 +1216,7 @@ class UpdateBeta(Update):
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1403,6 +1414,7 @@ class UpdateBeta(Update):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     return opts
 
 
@@ -1546,6 +1558,7 @@ class UpdateAlpha(Update):
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1739,4 +1752,5 @@ class UpdateAlpha(Update):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     return opts

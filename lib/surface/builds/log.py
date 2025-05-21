@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
-from googlecloudsdk.api_lib.cloudbuild import endpoint_util
 from googlecloudsdk.api_lib.cloudbuild import logs as cb_logs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.builds import flags
@@ -72,30 +71,30 @@ class Log(base.Command):
         or properties.VALUES.builds.region.Get()
         or cloudbuild_util.DEFAULT_REGION
     )
-    with endpoint_util.CloudBuildEndpointOverrides(region=build_region):
-      client = cloudbuild_util.GetClientInstance()
-      messages = cloudbuild_util.GetMessagesModule()
 
-      build_ref = resources.REGISTRY.Parse(
-          args.build,
-          params={
-              'projectsId': properties.VALUES.core.project.GetOrFail,
-              'locationsId': build_region,
-          },
-          collection='cloudbuild.projects.locations.builds')
+    client = cloudbuild_util.GetClientInstance()
+    messages = cloudbuild_util.GetMessagesModule()
 
-      logger = cb_logs.CloudBuildClient(client, messages, self._support_gcl)
-      if args.stream:
-        if not self._support_gcl:
-          log.status.Print(
-              '\ngcloud builds log --stream only displays logs from Cloud'
-              ' Storage. To view logs from Cloud Logging, run:\ngcloud beta'
-              ' builds log --stream\n')
-        logger.Stream(build_ref)
-        return
+    build_ref = resources.REGISTRY.Parse(
+        args.build,
+        params={
+            'projectsId': properties.VALUES.core.project.GetOrFail,
+            'locationsId': build_region,
+        },
+        collection='cloudbuild.projects.locations.builds')
 
-      # Just print out what's available now.
-      logger.PrintLog(build_ref)
+    logger = cb_logs.CloudBuildClient(client, messages, self._support_gcl)
+    if args.stream:
+      if not self._support_gcl:
+        log.status.Print(
+            '\ngcloud builds log --stream only displays logs from Cloud'
+            ' Storage. To view logs from Cloud Logging, run:\ngcloud beta'
+            ' builds log --stream\n')
+      logger.Stream(build_ref)
+      return
+
+    # Just print out what's available now.
+    logger.PrintLog(build_ref)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -110,3 +109,4 @@ class LogAlpha(LogBeta):
   """Stream the logs for a build."""
 
   _support_gcl = True
+

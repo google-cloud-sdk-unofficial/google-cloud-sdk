@@ -469,11 +469,18 @@ def CreateCapacityCommitment(
       reference.projectId,
       reference.location,
   )
+  capacity_commitment_id = None
+  if reference.capacityCommitmentId and reference.capacityCommitmentId != ' ':
+    capacity_commitment_id = reference.capacityCommitmentId
   request = (
       client.projects()
       .locations()
       .capacityCommitments()
-      .create(parent=parent, body=capacity_commitment)
+      .create(
+          parent=parent,
+          body=capacity_commitment,
+          capacityCommitmentId=capacity_commitment_id,
+      )
   )
   return request.execute()
 

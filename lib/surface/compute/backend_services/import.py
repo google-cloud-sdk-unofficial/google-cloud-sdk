@@ -44,6 +44,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class ImportGA(base.UpdateCommand):
   """Import a backend service.
 
@@ -192,6 +193,22 @@ class ImportGA(base.UpdateCommand):
         cleared_fields.append('cdnPolicy.requestCoalescing')
     else:
       cleared_fields.append('cdnPolicy')
+    if not backend_service.haPolicy:
+      cleared_fields.append('haPolicy')
+    else:
+      ha_policy = backend_service.haPolicy
+      if not ha_policy.fastIPMove:
+        cleared_fields.append('haPolicy.fastIPMove')
+      if not ha_policy.leader:
+        cleared_fields.append('haPolicy.leader')
+      else:
+        leader = ha_policy.leader
+        if not leader.backendGroup:
+          cleared_fields.append('haPolicy.leader.backendGroup')
+        if leader.networkEndpoint and not leader.networkEndpoint.instance:
+          cleared_fields.append('haPolicy.leader.networkEndpoint.instance')
+        elif not leader.networkEndpoint:
+          cleared_fields.append('haPolicy.leader.networkEndpoint')
     return cleared_fields
 
   def Run(self, args):
@@ -248,7 +265,7 @@ class ImportGA(base.UpdateCommand):
                                    backend_service)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class ImportAlphaBeta(ImportGA):
   """Import a backend service.
 
@@ -258,47 +275,3 @@ class ImportAlphaBeta(ImportGA):
   edit its configuration, and then import the new configuration.
   """
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ImportAlpha(ImportGA):
-  """Import a backend service.
-
-  If the specified backend service already exists, it will be overwritten.
-  Otherwise, a new backend service will be created.
-  To edit a backend service you can export the backend service to a file,
-  edit its configuration, and then import the new configuration.
-  """
-
-  def GetClearedFieldList(self, backend_service):
-    """Retrieves a list of fields to clear for the backend service being inserted.
-
-    Args:
-      backend_service: The backend service being inserted.
-
-    Returns:
-      The the list of fields to clear for a GA resource.
-    """
-
-    # TODO(b/321258406) This entire section ought to use a library which
-    # walks the schema and compares it to the resource being imported
-    # and the utility must be tested to verify that deeply nested structures
-    # are creating field masks appropriately.
-    cleared_fields = super().GetClearedFieldList(backend_service)
-    if backend_service.haPolicy:
-      ha_policy = backend_service.haPolicy
-      if not ha_policy.fastIPMove:
-        cleared_fields.append('haPolicy.fastIPMove')
-      if ha_policy.leader:
-        leader = ha_policy.leader
-        if not leader.backendGroup:
-          cleared_fields.append('haPolicy.leader.backendGroup')
-        if leader.networkEndpoint:
-          if not leader.networkEndpoint.instance:
-            cleared_fields.append('haPolicy.leader.networkEndpoint.instance')
-        else:
-          cleared_fields.append('haPolicy.leader.networkEndpoint')
-      else:
-        cleared_fields.append('haPolicy.leader')
-    else:
-      cleared_fields.append('haPolicy')
-    return cleared_fields

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to delete the specified kafka source."""
+"""Command to delete the specified Kafka source."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,7 +26,7 @@ from googlecloudsdk.core.console import console_io
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To delete the kafka source `my-kafka-source` in location `us-central1`, run:
+        To delete the Kafka source `my-kafka-source` in location `us-central1`, run:
 
           $ {command} my-kafka-source --location=us-central1
         """,
@@ -36,14 +36,14 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
-  """Delete an Eventarc kafka source."""
+  """Delete an Eventarc Kafka source."""
 
   detailed_help = _DETAILED_HELP
 
   @classmethod
   def Args(cls, parser):
     flags.AddKafkaSourceResourceArg(
-        parser, 'Kafka Source to delete.', required=True
+        parser, 'Kafka source to delete.', required=True
     )
     base.ASYNC_FLAG.AddToParser(parser)
 
@@ -54,7 +54,7 @@ class Delete(base.DeleteCommand):
 
     console_io.PromptContinue(
         message=(
-            'The following kafka source will be deleted.\n'
+            'The following Kafka source will be deleted.\n'
             '[{name}] in location [{location}]'.format(
                 name=kafka_source_ref.kafkaSourcesId,
                 location=kafka_source_ref.locationsId,

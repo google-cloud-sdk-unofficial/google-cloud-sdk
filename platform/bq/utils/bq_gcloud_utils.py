@@ -12,6 +12,10 @@ import bq_utils
 from gcloud_wrapper import gcloud_runner
 
 
+# Cache of `gcloud config list` to be used in load_config().
+_config_cache = None
+
+
 def _use_gcloud_value_if_exists_and_flag_is_default_value(
     flag_values: flags._flagvalues.FlagValues,
     flag_name: str,
@@ -133,8 +137,13 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
 
 
 def load_config() -> Dict[str, Dict[str, str]]:
-  """Loads the user configs from gcloud and returns them as a dictionary."""
-  config = {}
+  """Loads the user configs from gcloud, cache the result, and returns them as a dictionary."""
+  global _config_cache
+  if _config_cache is not None:
+    logging.info('Using cached gcloud config')
+    return _config_cache
+
+  _config_cache = {}
 
   try:
     process = gcloud_runner.run_gcloud_command(
@@ -146,20 +155,20 @@ def load_config() -> Dict[str, Dict[str, str]]:
     logging.warning(
         'Continuing with empty gcloud config data due to error: %s', str(e)
     )
-    return config
+    return _config_cache
 
   if err:
     logging.warning(
         'Continuing with empty gcloud config data due to error: %s', err
     )
-    return config
+    return _config_cache
 
   try:
-    config = json.loads(out)
+    _config_cache = json.loads(out)
   except json.JSONDecodeError as e:
     logging.warning(
         'Continuing with empty gcloud config data due to invalid config'
         ' format: %s',
         e,
     )
-  return config
+  return _config_cache

@@ -73,6 +73,7 @@ def _CommonArgs(
     support_disk_labels=False,
     support_igmp_query=False,
     support_flex_start=False,
+    support_display_device=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -209,6 +210,8 @@ The type of reservation for instances created from this template.
     instances_flags.AddGracefulShutdownArgs(parser, is_create=True)
 
   instances_flags.AddTurboModeArgs(parser)
+  if support_display_device:
+    instances_flags.AddDisplayDeviceArg(parser)
 
 
 def _ValidateInstancesFlags(
@@ -569,6 +572,7 @@ def _RunCreate(
     support_graceful_shutdown=False,
     support_watchdog_timer=False,
     support_disk_labels=False,
+    support_display_device=False,
 ):
   """Common routine for creating instance template.
 
@@ -620,6 +624,7 @@ def _RunCreate(
         supported.
       support_watchdog_timer: Indicate whether the watchdog timer is supported.
       support_disk_labels: Indicate whether disk labels are supported.
+      support_display_device: Indicate whether display device is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -1068,6 +1073,11 @@ def _RunCreate(
       )
     instance_template.properties.partnerMetadata = partner_metadata_message
 
+  if support_display_device and args.IsSpecified('enable_display_device'):
+    instance_template.properties.displayDevice = (
+        client.messages.DisplayDevice(enableDisplay=args.enable_display_device)
+    )
+
   request = client.messages.ComputeInstanceTemplatesInsertRequest(
       instanceTemplate=instance_template, project=instance_template_ref.project
   )
@@ -1149,6 +1159,7 @@ class Create(base.CreateCommand):
   _support_igmp_query = False
   _support_host_error_timeout_seconds = True
   _support_flex_start = False
+  _support_display_device = False
 
   @classmethod
   def Args(cls, parser):
@@ -1177,6 +1188,7 @@ class Create(base.CreateCommand):
         support_igmp_query=cls._support_igmp_query,
         support_host_error_timeout_seconds=cls._support_host_error_timeout_seconds,
         support_flex_start=cls._support_flex_start,
+        support_display_device=cls._support_display_device,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1227,6 +1239,7 @@ class Create(base.CreateCommand):
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
         support_host_error_timeout_seconds=self._support_host_error_timeout_seconds,
+        support_display_device=self._support_display_device,
     )
 
 
@@ -1275,6 +1288,7 @@ class CreateBeta(Create):
   _support_ipv6_only = True
   _support_igmp_query = False
   _support_flex_start = True
+  _support_display_device = True
 
   @classmethod
   def Args(cls, parser):
@@ -1303,6 +1317,7 @@ class CreateBeta(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_igmp_query=cls._support_igmp_query,
         support_flex_start=cls._support_flex_start,
+        support_display_device=cls._support_display_device,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1356,6 +1371,7 @@ class CreateBeta(Create):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
+        support_display_device=self._support_display_device,
     )
 
 
@@ -1404,6 +1420,7 @@ class CreateAlpha(Create):
   _support_disk_labels = True
   _support_igmp_query = True
   _support_flex_start = True
+  _support_display_device = True
 
   @classmethod
   def Args(cls, parser):
@@ -1433,6 +1450,7 @@ class CreateAlpha(Create):
         support_disk_labels=cls._support_disk_labels,
         support_igmp_query=cls._support_igmp_query,
         support_flex_start=cls._support_flex_start,
+        support_display_device=cls._support_display_device,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1489,6 +1507,7 @@ class CreateAlpha(Create):
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_watchdog_timer=self._support_watchdog_timer,
         support_disk_labels=self._support_disk_labels,
+        support_display_device=self._support_display_device,
     )
 
 

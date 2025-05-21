@@ -10,7 +10,18 @@ from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
 
+EXTERNAL_CATALOG_DATASET_OPTIONS_FIELD_NAME = 'externalCatalogDatasetOptions'
 
+
+def GetDataset(apiclient: discovery.Resource, reference, dataset_view=None):
+  """Get dataset with dataset_view parameter."""
+  request = dict(reference)
+  request['accessPolicyVersion'] = (
+      bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
+  )
+  if dataset_view is not None:
+    request['datasetView'] = dataset_view
+  return apiclient.datasets().get(**request).execute()
 
 
 def ListDatasets(
@@ -207,6 +218,7 @@ def CreateDataset(
     source_dataset_reference=None,
     external_source=None,
     connection_id=None,
+    external_catalog_dataset_options=None,
     max_time_travel_hours=None,
     storage_billing_model=None,
     resource_tags=None,
@@ -214,13 +226,13 @@ def CreateDataset(
   """Create a dataset corresponding to DatasetReference.
 
   Args:
-    apiclient: the apiclient used to make the request.
-    reference: the DatasetReference to create.
+    apiclient: The apiclient used to make the request.
+    reference: The DatasetReference to create.
     ignore_existing: (boolean, default False) If False, raise an exception if
       the dataset already exists.
-    description: an optional dataset description.
-    display_name: an optional friendly name for the dataset.
-    acl: an optional ACL for the dataset, as a list of dicts.
+    description: An optional dataset description.
+    display_name: An optional friendly name for the dataset.
+    acl: An optional ACL for the dataset, as a list of dicts.
     default_table_expiration_ms: Default expiration time to apply to new tables
       in this dataset.
     default_partition_expiration_ms: Default partition expiration time to apply
@@ -236,15 +248,17 @@ def CreateDataset(
       will be the source of this linked dataset. #
     external_source: External source that backs this dataset.
     connection_id: Connection used for accessing the external_source.
+    external_catalog_dataset_options: An optional JSON string or file path
+      containing the external catalog dataset options to create.
     max_time_travel_hours: Optional. Define the max time travel in hours. The
       value can be from 48 to 168 hours (2 to 7 days). The default value is 168
       hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
-    resource_tags: an optional dict of tags to attach to the dataset.
+    resource_tags: An optional dict of tags to attach to the dataset.
 
   Raises:
-    BigqueryTypeError: if reference is not an ApiClientHelper.DatasetReference
+    BigqueryTypeError: If reference is not an ApiClientHelper.DatasetReference
       or if source_dataset_reference is provided but is not an
       bq_id_utils.ApiClientHelper.DatasetReference.
       or if both external_dataset_reference and source_dataset_reference
@@ -298,7 +312,10 @@ def CreateDataset(
         'externalSource': external_source,
         'connection': connection_id,
     }
-
+  if external_catalog_dataset_options is not None:
+    body[EXTERNAL_CATALOG_DATASET_OPTIONS_FIELD_NAME] = frontend_utils.GetJson(
+        external_catalog_dataset_options
+    )
   if max_time_travel_hours is not None:
     body['maxTimeTravelHours'] = max_time_travel_hours
   if storage_billing_model is not None:
@@ -332,24 +349,26 @@ def UpdateDataset(
     tags_to_attach: Optional[Dict[str, str]] = None,
     tags_to_remove: Optional[List[str]] = None,
     clear_all_tags: Optional[bool] = False,
+    external_catalog_dataset_options: Optional[str] = None,
+    update_mode: Optional[bq_client_utils.UpdateMode] = None,
 ):
   """Updates a dataset.
 
   Args:
-    apiclient: the apiclient used to make the request.
-    reference: the DatasetReference to update.
-    description: an optional dataset description.
-    display_name: an optional friendly name for the dataset.
-    acl: an optional ACL for the dataset, as a list of dicts.
-    default_table_expiration_ms: optional number of milliseconds for the default
+    apiclient: The apiclient used to make the request.
+    reference: The DatasetReference to update.
+    description: An optional dataset description.
+    display_name: An optional friendly name for the dataset.
+    acl: An optional ACL for the dataset, as a list of dicts.
+    default_table_expiration_ms: Optional number of milliseconds for the default
       expiration duration for new tables created in this dataset.
-    default_partition_expiration_ms: optional number of milliseconds for the
+    default_partition_expiration_ms: Optional number of milliseconds for the
       default partition expiration duration for new partitioned tables created
       in this dataset.
-    labels_to_set: an optional dict of labels to set on this dataset.
-    label_keys_to_remove: an optional list of label keys to remove from this
+    labels_to_set: An optional dict of labels to set on this dataset.
+    label_keys_to_remove: An optional list of label keys to remove from this
       dataset.
-    etag: if set, checks that etag in the existing dataset matches.
+    etag: If set, checks that etag in the existing dataset matches.
     default_kms_key: An optional kms dey that will apply to all newly created
       tables in the dataset, if no explicit key is supplied in the creating
       request.
@@ -358,12 +377,17 @@ def UpdateDataset(
       hours if this is not set.
     storage_billing_model: Optional. Sets the storage billing model for the
       dataset.
-    tags_to_attach: an optional dict of tags to attach to the dataset
-    tags_to_remove: an optional list of tag keys to remove from the dataset
-    clear_all_tags: if set, clears all the tags attached to the dataset
+    tags_to_attach: An optional dict of tags to attach to the dataset
+    tags_to_remove: An optional list of tag keys to remove from the dataset
+    clear_all_tags: If set, clears all the tags attached to the dataset
+    external_catalog_dataset_options: An optional JSON string or file path
+      containing the external catalog dataset options to update.
+    update_mode: An optional flag indicating which datasets fields to update,
+      either metadata fields only, ACL fields only, or both metadata and ACL
+      fields.
 
   Raises:
-    BigqueryTypeError: if reference is not a DatasetReference.
+    BigqueryTypeError: If reference is not a DatasetReference.
   """
   bq_id_utils.typecheck(
       reference,
@@ -414,11 +438,22 @@ def UpdateDataset(
   # resourceTags is used to add a new tag binding, update value of existing
   # tag and also to remove a tag binding
   dataset['resourceTags'] = resource_tags
+
+  if external_catalog_dataset_options is not None:
+    dataset.setdefault(EXTERNAL_CATALOG_DATASET_OPTIONS_FIELD_NAME, {})
+    current_options = dataset[EXTERNAL_CATALOG_DATASET_OPTIONS_FIELD_NAME]
+    dataset[EXTERNAL_CATALOG_DATASET_OPTIONS_FIELD_NAME] = (
+        frontend_utils.UpdateExternalCatalogDatasetOptions(
+            current_options, external_catalog_dataset_options
+        )
+    )
+
   _ExecutePatchDatasetRequest(
       apiclient,
       reference,
       dataset,
       etag,
+      update_mode,
   )
 
 
@@ -451,6 +486,7 @@ def _ExecutePatchDatasetRequest(
     reference,
     dataset,
     etag: Optional[str] = None,
+    update_mode: Optional[bq_client_utils.UpdateMode] = None,
 ):
   """Executes request to patch dataset.
 
@@ -459,11 +495,14 @@ def _ExecutePatchDatasetRequest(
     reference: the DatasetReference to patch.
     dataset: the body of request
     etag: if set, checks that etag in the existing dataset matches.
+    update_mode: a flag indicating which datasets fields to update.
   """
   parameters = dict(reference)
   parameters['accessPolicyVersion'] = (
       bq_client_utils.MAX_SUPPORTED_IAM_POLICY_VERSION
   )
+  if update_mode is not None:
+    parameters['updateMode'] = update_mode.value
 
   request = apiclient.datasets().patch(body=dataset, **parameters)
 

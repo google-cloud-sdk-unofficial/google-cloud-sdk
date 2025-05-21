@@ -100,8 +100,7 @@ class Rm(base.Command):
         help=(
             'Recursively delete the contents of buckets or directories that'
             ' match the path expression.'
-            # TODO(b/301935143): Uncomment the following line:
-            # ' By default, this will delete managed folders as well.
+            ' By default, this will delete managed folders as well.'
             ' If the path is set to a bucket, like'
             " ``gs://bucket'', the bucket is also deleted. This option"
             ' implies the `--all-versions` option. If you want to delete only'

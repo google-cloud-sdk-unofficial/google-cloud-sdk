@@ -77,7 +77,7 @@ class Create(base.CreateCommand):
         --cert-output-file=./cert.pem \
         --validity=P30D
 
-    To create a certificate using a client-generated key:
+  To create a certificate using a client-generated key:
 
       $ {command} frontend-server-tls \
         --issuer-pool=my-pool --issuer-location=us-west1 \
