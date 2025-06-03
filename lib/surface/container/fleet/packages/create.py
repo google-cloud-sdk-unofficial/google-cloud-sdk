@@ -33,11 +33,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create Package Rollouts Fleet Package."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -47,7 +48,7 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.FleetPackagesClient()
+    client = apis.FleetPackagesClient(self._api_version)
     data = console_io.ReadFromFileOrStdin(
         utils.ExpandPathForUser(args.source), binary=False
     )
@@ -72,3 +73,10 @@ class Create(base.CreateCommand):
     return client.Create(
         fleet_package=fleet_package, fleet_package_id=args.name, parent=parent
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Package Rollouts Fleet Package."""
+
+  _api_version = 'v1alpha'

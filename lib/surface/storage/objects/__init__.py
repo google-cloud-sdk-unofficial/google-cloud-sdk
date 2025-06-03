@@ -26,7 +26,3 @@ from googlecloudsdk.calliope import base
 class Objects(base.Group):
   """Manage Cloud Storage objects."""
 
-  def Filter(self, context, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
-    del context, args

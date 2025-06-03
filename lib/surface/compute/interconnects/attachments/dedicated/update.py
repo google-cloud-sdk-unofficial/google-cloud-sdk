@@ -93,6 +93,8 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -149,5 +151,3 @@ class UpdateAlpha(UpdateBeta):
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
     attachment_flags.AddEnableMulticast(parser, update=True)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

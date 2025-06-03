@@ -38,11 +38,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -62,7 +63,7 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Run the update command."""
-    client = apis.ReleasesClient()
+    client = apis.ReleasesClient(self._api_version)
     update_mask_attrs = []
     if args.source:
       glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
@@ -86,3 +87,11 @@ class Update(base.UpdateCommand):
         variants=variants,
         update_mask=update_mask,
     )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Package Rollouts Release."""
+
+  _api_version = 'v1alpha'

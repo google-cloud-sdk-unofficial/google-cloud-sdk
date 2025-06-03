@@ -45,9 +45,9 @@
           help_text: |-
             Use a predefined rollout plan.
           choices:
-          - arg_value: rollout-plan-fast-rollout
+          - arg_value: fast-rollout
             enum_value: ROLLOUT_PLAN_FAST_ROLLOUT
-          - arg_value: rollout-plan-two-day-rollout
+          - arg_value: two-day-rollout
             enum_value: ROLLOUT_PLAN_TWO_DAY_ROLLOUT
         - arg_name: custom-rollout-plan
           api_field: previewFeatureResource.rolloutOperation.rolloutInput.name

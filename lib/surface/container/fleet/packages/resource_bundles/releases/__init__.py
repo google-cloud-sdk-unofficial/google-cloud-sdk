@@ -18,9 +18,19 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Releases(base.Group):
   """Commands for managing Package Rollouts Releases.
 
-  See `gcloud alpha container fleet packages resource-bundles releases --help`
-  for help.
+  See `gcloud beta container fleet packages resource-bundles releases
+  --help` for help.
+  """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ReleasesAlpha(Releases):
+  """Commands for managing Package Rollouts Releases.
+
+  See `gcloud alpha container fleet packages resource-bundles releases
+  --help` for help.
   """

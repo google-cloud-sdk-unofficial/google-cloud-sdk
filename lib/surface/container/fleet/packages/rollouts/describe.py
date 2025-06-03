@@ -31,12 +31,13 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe Rollout resource."""
 
   detailed_help = _DETAILED_HELP
   show_less = False
+  _api_version = 'v1beta'
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed and self.show_less:
@@ -57,7 +58,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.RolloutsClient()
+    client = apis.RolloutsClient(self._api_version)
 
     output = client.Describe(
         fleet_package=args.fleet_package,
@@ -71,3 +72,10 @@ class Describe(base.DescribeCommand):
         if not args.less:
           self.show_less = True
     return output
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe Rollout resource."""
+
+  _api_version = 'v1alpha'

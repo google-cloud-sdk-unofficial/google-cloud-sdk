@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for creating partner customer interconnect attachments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -144,6 +140,10 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateBeta, cls).Args(parser)
+    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
+    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
 
 @base.UniverseCompatible
@@ -160,7 +160,3 @@ class CreateAlpha(CreateBeta):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
-    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

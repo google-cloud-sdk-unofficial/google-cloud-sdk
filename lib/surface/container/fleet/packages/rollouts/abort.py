@@ -29,12 +29,13 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Abort(base.Command):
   """Abort Rollout resource."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -51,7 +52,7 @@ class Abort(base.Command):
 
   def Run(self, args):
     """Run the abort command."""
-    client = apis.RolloutsClient()
+    client = apis.RolloutsClient(self._api_version)
     return client.Abort(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
@@ -59,3 +60,10 @@ class Abort(base.Command):
         rollout=args.rollout,
         reason=args.reason,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AbortAlpha(Abort):
+  """Abort Rollout resource."""
+
+  _api_version = 'v1alpha'

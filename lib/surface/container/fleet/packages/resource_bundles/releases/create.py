@@ -38,11 +38,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -64,7 +65,7 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.ReleasesClient()
+    client = apis.ReleasesClient(self._api_version)
     utils.ValidateSource(args.source)
     glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
         args.source, args.variants_pattern
@@ -79,3 +80,10 @@ class Create(base.CreateCommand):
         lifecycle=args.lifecycle,
         variants=variants,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Package Rollouts Release."""
+
+  _api_version = 'v1alpha'

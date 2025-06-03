@@ -30,11 +30,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Abort(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class Resume(base.Command):
   """Resume suspended Rollout."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -51,7 +52,7 @@ class Abort(base.Command):
 
   def Run(self, args):
     """Run the resume command."""
-    client = apis.RolloutsClient()
+    client = apis.RolloutsClient(self._api_version)
     return client.Resume(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
@@ -59,3 +60,10 @@ class Abort(base.Command):
         rollout=args.rollout,
         reason=args.reason,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ResumeAlpha(Resume):
+  """Resume suspended Rollout."""
+
+  _api_version = 'v1alpha'

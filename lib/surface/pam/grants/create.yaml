@@ -14,6 +14,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.pam.util:SetRequestedPrivilegedAccessInCreateGrantRequest
     BETA:
       api_version: v1beta
     GA:
@@ -47,6 +49,29 @@
       repeated: true
       help_text: |
         Additional email addresses that are notified for all actions performed on the grant.
+    # Group for grant scope selection.
+    - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        hidden: true
+        help_text: |
+          Specify the grant's scope using either high-level resource or a fine-grained scope
+          configuration.
+        params:
+        - arg_name: requested-resources
+          type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+          help_text: |
+            The Google Cloud resources to be granted access to.
+            Format: `{resource-type}/{resource_id}`.
+            Example: `projects/{project_id}` or `folders/{folder_id}` or
+            `organizations/{organization_id}`.
+            This command currently accepts only one resource.
+        - arg_name: requested-access-from-file
+          api_field: grant.requestedPrivilegedAccess
+          type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+          processor: googlecloudsdk.command_lib.pam.util:LoadGrantScopeFromYaml
+          help_text: |
+            Path to a YAML file defining the fine-grained scope for the grant.
 
   output:
     format: yaml

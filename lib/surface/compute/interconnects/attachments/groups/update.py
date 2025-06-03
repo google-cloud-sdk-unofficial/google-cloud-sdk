@@ -49,6 +49,7 @@ DETAILED_HELP = {
 
           $ {command} example-attachment-group
           --attachments=region-1/attachment-1,region-2/attachment-2
+          --update-mask=attachments
 
         Although you can add or remove member attachments using this command, it
         is recommended to add or remove member attachments using the
@@ -80,6 +81,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddIntendedAvailabilitySlaForUpdate(parser)
     flags.GetMemberInterconnectAttachmentsForCreate(parser)
+    flags.AddUpdateMask(parser)
 
   def Collection(self):
     return 'compute.interconnectAttachmentGroups'
@@ -108,6 +110,7 @@ class Update(base.UpdateCommand):
         description=args.description,
         availability_sla=availability_sla,
         attachments=attachments,
+        update_mask=args.update_mask,
     )
 
 

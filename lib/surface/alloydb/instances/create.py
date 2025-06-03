@@ -86,6 +86,7 @@ class Create(base.CreateCommand):
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnections(parser)
+    flags.AddAllocatedIPRangeOverride(parser)
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 

@@ -29,11 +29,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Resource Bundle."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -42,7 +43,15 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.ResourceBundlesClient()
+    client = apis.ResourceBundlesClient(self._api_version)
     project = flags.GetProject(args)
     location = flags.GetLocation(args)
     return client.Describe(project=project, location=location, name=args.name)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe Package Rollouts Resource Bundle."""
+
+  detailed_help = _DETAILED_HELP
+  _api_version = 'v1alpha'

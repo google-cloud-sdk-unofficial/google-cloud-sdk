@@ -47,6 +47,7 @@ def _Args(
     support_specific_then_x_affinity=False,
     support_disk_labels=False,
     support_ipv6_only=False,
+    support_flex_start=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -102,6 +103,9 @@ def _Args(
       group_text="""Specifies the reservation for instances created from this template.""",
       affinity_text="""The type of reservation for instances created from this template.""",
       support_specific_then_x_affinity=support_specific_then_x_affinity,
+  )
+  instances_flags.AddProvisioningModelVmArgs(
+      parser, support_flex_start=support_flex_start
   )
 
   if enable_guest_accelerators:
@@ -403,6 +407,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
+        support_flex_start=True,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -528,6 +533,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_specific_then_x_affinity=True,
         support_disk_labels=True,
         support_ipv6_only=True,
+        support_flex_start=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

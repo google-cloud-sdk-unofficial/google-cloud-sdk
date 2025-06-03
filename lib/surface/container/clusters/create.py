@@ -549,6 +549,7 @@ def ParseCreateOptionsBase(
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
+      enable_default_compute_class=get_default('enable_default_compute_class'),
   )
 
 
@@ -632,6 +633,7 @@ flags_to_add = {
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'hpaprofile': flags.AddHPAProfilesFlag,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
+        'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'args': _Args,
         'basicauth': flags.AddBasicAuthFlags,
@@ -671,6 +673,9 @@ flags_to_add = {
         'gatewayapi': flags.AddGatewayFlags,
         'gvnic': flags.AddEnableGvnicFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
+        'alphaclusterfeaturegates': (
+            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
+        ),
         'labels': flags.AddLabelsFlag,
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'localssds': flags.AddLocalSSDsGAFlags,
@@ -793,6 +798,7 @@ flags_to_add = {
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -805,6 +811,7 @@ flags_to_add = {
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
+        'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
         'basicauth': flags.AddBasicAuthFlags,
         'binauthz': lambda p: flags.AddBinauthzFlags(
             p, release_track=base.ReleaseTrack.BETA
@@ -989,6 +996,7 @@ flags_to_add = {
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1000,6 +1008,7 @@ flags_to_add = {
         'autoprovisioning': AddAutoprovisioning,
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
+        'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
         'hpaprofile': flags.AddHPAProfilesFlag,
         'basicauth': flags.AddBasicAuthFlags,
         'cloudlogging': flags.AddEnableCloudLogging,
@@ -1191,6 +1200,7 @@ flags_to_add = {
         'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
     },
 }
 
@@ -1533,6 +1543,9 @@ class CreateBeta(Create):
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
+    ops.enable_default_compute_class = get_default(
+        'enable_default_compute_class'
+    )
     return ops
 
 
@@ -1688,4 +1701,7 @@ class CreateAlpha(Create):
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
+    ops.enable_default_compute_class = get_default(
+        'enable_default_compute_class'
+    )
     return ops

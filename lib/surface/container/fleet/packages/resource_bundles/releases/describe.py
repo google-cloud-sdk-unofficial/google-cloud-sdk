@@ -32,11 +32,12 @@ _VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED = 'nested'
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -46,7 +47,7 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.ReleasesClient()
+    client = apis.ReleasesClient(self._api_version)
     release = client.Describe(
         release=args.release,
         project=flags.GetProject(args),
@@ -67,3 +68,11 @@ class Describe(base.DescribeCommand):
           release.variants = None
           break
     return release
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe Package Rollouts Release."""
+
+  _api_version = 'v1alpha'

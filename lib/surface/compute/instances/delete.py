@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute.instances import flags
+from googlecloudsdk.core import resources as cloud_resources
 from googlecloudsdk.core.console import console_io
 from six.moves import zip
 
@@ -136,20 +137,26 @@ class Delete(base.DeleteCommand):
     """Prompts if disks with False autoDelete will be deleted.
 
     Args:
-      disks_to_warn_for: list of references to disk resources.
+      disks_to_warn_for: list of tuple of (references to disk resources, disk
+        type). disk_type(str)-> either 'zonalDisk' or 'regionalDisk'.
     """
     if not disks_to_warn_for:
       return
 
     prompt_list = []
-    for ref in disks_to_warn_for:
-      prompt_list.append('[{0}] in [{1}]'.format(ref.Name(), ref.zone))
+    for ref, disk_type in disks_to_warn_for:
+      prompt_list.append(
+          '[{0}] in [{1}]'.format(
+              ref.Name(), ref.zone if disk_type == 'zonalDisk' else ref.region
+          )
+      )
 
     prompt_message = utils.ConstructList(
         'The following disks are not configured to be automatically deleted '
         'with instance deletion, but they will be deleted as a result of '
         'this operation if they are not attached to any other instances:',
-        prompt_list)
+        prompt_list,
+    )
     if not console_io.PromptContinue(message=prompt_message):
       raise compute_exceptions.AbortedError('Deletion aborted by user.')
 
@@ -202,9 +209,25 @@ class Delete(base.DeleteCommand):
           # Yay, computer science! :) :) :)
           new_auto_delete = not disk.autoDelete
           if new_auto_delete:
-            disks_to_warn_for.append(holder.resources.Parse(
-                disk.source, collection='compute.disks',
-                params={'zone': ref.zone}))
+            # Parse the disk as zonal and if it fails, parse it as regional.
+            try:
+              disks_to_warn_for.append((
+                  holder.resources.Parse(
+                      disk.source,
+                      collection='compute.disks',
+                      params={'zone': ref.zone},
+                  ),
+                  'zonalDisk',
+              ))
+            except cloud_resources.WrongResourceCollectionException:
+              disks_to_warn_for.append((
+                  holder.resources.Parse(
+                      disk.source,
+                      collection='compute.regionDisks',
+                      params={'zone': ref.zone},
+                  ),
+                  'regionalDisk',
+              ))
 
           set_auto_delete_requests.append((
               client.apitools_client.instances,

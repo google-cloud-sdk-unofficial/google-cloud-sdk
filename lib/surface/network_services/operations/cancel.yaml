@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Cancel a Network Services long running operation.
   description: Cancel a Network Services long running operation.
@@ -14,4 +14,8 @@ request: &request
   method: cancel
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.operations

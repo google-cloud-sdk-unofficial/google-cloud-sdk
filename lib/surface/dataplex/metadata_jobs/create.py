@@ -132,6 +132,24 @@ class Create(base.Command):
         metavar='IMPORT_ASPECT_TYPES',
         help="""The list of aspect types to import metadata jobs into.""",
     )
+    import_scope.add_argument(
+        '--import-glossaries',
+        type=arg_parsers.ArgList(),
+        metavar='IMPORT_GLOSSARIES',
+        help="""The list of glossaries to import metadata jobs into.""",
+    )
+    import_scope.add_argument(
+        '--import-entry-link-types',
+        type=arg_parsers.ArgList(),
+        metavar='IMPORT_ENTRY_LINK_TYPES',
+        help="""The list of entry link types to import metadata jobs into.""",
+    )
+    import_scope.add_argument(
+        '--import-referenced-entry-scopes',
+        type=arg_parsers.ArgList(),
+        metavar='IMPORT_REFERENCED_ENTRY_SCOPES',
+        help="""The list of referenced entry scopes to import metadata jobs into.""",
+    )
 
     import_spec.add_argument(
         '--import-source-storage-uri',

@@ -49,6 +49,7 @@ DETAILED_HELP = {
 
           $ {command} example-interconnect-group
           --interconnects=interconnect-1,interconnect-2
+          --update-mask=interconnects
 
         Although you can add or remove member interconnects using this command,
         it is recommended to add or remove member interconnects using the
@@ -77,6 +78,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddIntendedTopologyCapabilityForUpdate(parser)
     flags.GetMemberInterconnectsForUpdate(parser)
+    flags.AddUpdateMask(parser)
 
   def Collection(self):
     return 'compute.interconnectGroups'
@@ -106,6 +108,7 @@ class Update(base.UpdateCommand):
         description=args.description,
         topology_capability=topology_capability,
         interconnects=args.interconnects,
+        update_mask=args.update_mask,
     )
 
 Update.detailed_help = DETAILED_HELP

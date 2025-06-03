@@ -75,9 +75,6 @@ class Create(base.CreateCommand):
     workstations_flags.AddEnableNestedVirtualization(parser)
     workstations_flags.AddGrantWorkstationAdminRoleOnCreate(parser)
     workstations_flags.AddBootDiskSize(parser)
-    workstations_flags.AddPdDiskType(parser)
-    workstations_flags.AddPdDiskSizeOrSnapshot(parser)
-    workstations_flags.AddPdReclaimPolicy(parser)
     workstations_flags.AddContainerImageField(parser)
     workstations_flags.AddContainerCommandField(parser)
     workstations_flags.AddContainerArgsField(parser)
@@ -92,6 +89,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddVmTags(parser)
     workstations_flags.AddAllowedPortsFlag(parser)
     workstations_flags.AddMaxUsableWorkstationsCount(parser)
+    workstations_flags.AddNoPersistentStorageOrPd(parser)
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddAllowUnauthenticatedCorsPreflightRequestsFlag(
           parser

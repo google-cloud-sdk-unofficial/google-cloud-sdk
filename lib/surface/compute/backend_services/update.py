@@ -638,6 +638,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_tls_settings = True
   _support_ip_port_dynamic_forwarding = True
+  _support_zonal_affinity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for updating partner provider interconnect attachments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -121,6 +117,8 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     super(UpdateBeta, cls).Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
 
 @base.UniverseCompatible
@@ -142,5 +140,3 @@ class UpdateAlpha(UpdateBeta):
     attachment_flags.AddCandidateIpv6Subnets(parser)
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

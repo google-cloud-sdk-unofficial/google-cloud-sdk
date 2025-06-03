@@ -407,7 +407,9 @@ class Update(base.UpdateCommand):
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
+    flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
+    flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
     flags.AddEnableMultiNetworkingFlag(group)
     flags.AddContainerdConfigFlag(group)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
@@ -449,6 +451,7 @@ class Update(base.UpdateCommand):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddEnableDefaultComputeClassFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -596,6 +599,7 @@ class Update(base.UpdateCommand):
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.enable_default_compute_class = args.enable_default_compute_class
     return opts
 
   def Run(self, args):
@@ -1172,7 +1176,9 @@ class UpdateBeta(Update):
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
+    flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
+    flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
@@ -1217,6 +1223,7 @@ class UpdateBeta(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddEnableDefaultComputeClassFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1415,6 +1422,7 @@ class UpdateBeta(Update):
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.enable_default_compute_class = args.enable_default_compute_class
     return opts
 
 
@@ -1514,7 +1522,9 @@ class UpdateAlpha(Update):
     flags.AddWorkloadVulnScanningEnumFlag(group)
     flags.AddRuntimeVulnerabilityInsightFlag(group)
     flags.AddWorkloadPoliciesFlag(group)
+    flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
+    flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
@@ -1559,6 +1569,7 @@ class UpdateAlpha(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddEnableDefaultComputeClassFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1753,4 +1764,5 @@ class UpdateAlpha(Update):
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.enable_default_compute_class = args.enable_default_compute_class
     return opts

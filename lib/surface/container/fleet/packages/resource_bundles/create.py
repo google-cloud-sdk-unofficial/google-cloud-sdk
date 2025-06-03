@@ -29,11 +29,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create Package Rollouts Resource Bundle."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -43,7 +44,15 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     """Run the create command."""
-    client = apis.ResourceBundlesClient()
+    client = apis.ResourceBundlesClient(self._api_version)
     project = flags.GetProject(args)
     location = flags.GetLocation(args)
     return client.Create(project=project, location=location, name=args.name)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create Package Rollouts Resource Bundle."""
+
+  _api_version = 'v1alpha'

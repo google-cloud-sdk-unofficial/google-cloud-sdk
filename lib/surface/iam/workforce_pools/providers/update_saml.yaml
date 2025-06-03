@@ -50,7 +50,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.description
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.detailed_audit_logging
-      hidden: true
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_mapping
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.saml_idp_metadata_path

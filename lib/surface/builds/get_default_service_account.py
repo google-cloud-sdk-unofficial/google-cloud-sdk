@@ -36,6 +36,7 @@ class GetDefaultServiceAccount(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddRegionFlag(parser)
+    parser.display_info.AddFormat('value(serviceAccountEmail.segment(3))')
 
   def Run(self, args):
     serviceaccount_region = (

@@ -39,27 +39,36 @@ _FORMAT = """table(name.basename():label=NAME,
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Package Rollouts Fleet Packages."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(_FORMAT)
-    parser.display_info.AddUriFunc(apis.GetFleetPackageURI)
     parser.display_info.AddTransforms(
         {'fleet_package_errors': utils.TransformListFleetPackageErrors}
     )
+    flags.AddUriFlags(parser, apis.FLEET_PACKAGE_COLLECTION, cls._api_version)
+
     flags.AddLocationFlag(parser)
 
   def Run(self, args):
     """Run the list command."""
-    client = apis.FleetPackagesClient()
+    client = apis.FleetPackagesClient(self._api_version)
     return client.List(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
         limit=args.limit,
         page_size=args.page_size,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Package Rollouts Fleet Packages."""
+
+  _api_version = 'v1alpha'

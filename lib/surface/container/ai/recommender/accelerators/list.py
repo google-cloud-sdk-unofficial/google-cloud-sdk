@@ -98,7 +98,8 @@ class List(commands.List):
         "modelAndModelServerInfo.modelServerName,"
         "modelAndModelServerInfo.modelServerVersion,"
         "resourcesUsed.acceleratorCount,"
-        "performanceStats.outputTokensPerSecond"
+        "performanceStats.outputTokensPerSecond,"
+        "performanceStats.ntpotMilliseconds"
         ")"
     )
 

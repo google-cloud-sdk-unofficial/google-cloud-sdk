@@ -792,6 +792,7 @@ class Deploy(base.Command):
               prefetch=service,
               build_image=image,
               build_pack=pack,
+              build_region=flags.GetFirstRegion(args),
               build_source=source,
               repo_to_create=repo_to_create,
               already_activated_services=already_activated_services,
@@ -1091,11 +1092,18 @@ class BetaDeploy(Deploy):
           has_latest,
           iap,
       )
+    include_validate_service = bool(
+        build_from_source
+    ) and self.ReleaseTrack() in [
+        base.ReleaseTrack.ALPHA,
+        base.ReleaseTrack.BETA,
+    ]
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
-        include_route=False,
+        include_route=has_latest,
+        include_validate_service=include_validate_service,
         include_build=bool(build_from_source),
-        include_create_repo=False,
+        include_create_repo=repo_to_create is not None,
         include_create_revision=True,
         include_iap=iap is not None,
     )

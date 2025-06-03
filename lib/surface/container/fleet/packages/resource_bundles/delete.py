@@ -29,11 +29,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete Package Rollouts Resource Bundle."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -43,9 +44,17 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     """Run the delete command."""
-    client = apis.ResourceBundlesClient()
+    client = apis.ResourceBundlesClient(self._api_version)
     project = flags.GetProject(args)
     location = flags.GetLocation(args)
     return client.Delete(
         project=project, location=location, name=args.name, force=args.force
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete Package Rollouts Resource Bundle."""
+
+  detailed_help = _DETAILED_HELP
+  _api_version = 'v1alpha'

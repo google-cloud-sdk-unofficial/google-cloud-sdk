@@ -21,14 +21,29 @@ from googlecloudsdk.calliope import base
 
 class NetworkConnectivityAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO: b/190537535 - Determine if command group works with project number.
+    base.RequireProjectID(args)
+    del context, args
 
 
 class NetworkConnectivityBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO: b/190537535 - Determine if command group works with project number.
+    base.RequireProjectID(args)
+    del context, args
 
 
 class NetworkConnectivityGa(base.Group):
   """Optional no-auto-generated code for GA."""
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.NETWORKING_CATEGORY
+
+  def Filter(self, context, args):
+    # TODO: b/190537535 - Determine if command group works with project number.
+    base.RequireProjectID(args)
+    del context, args

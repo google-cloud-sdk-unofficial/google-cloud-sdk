@@ -42,6 +42,10 @@ EXAMPLES_GA = ("""\
     To retrieve the latest recovery time for an instance:
 
     $ {command} instance-foo
+
+    To retrieve the latest recovery time for an instance that has been deleted:
+
+    $ {command} instance-foo --source-instance-deletion-time '2012-11-15T16:19:00.094Z'
     """)
 
 DETAILED_HELP = {
@@ -70,6 +74,17 @@ class GetLatestRecoveryTime(base.Command):
         'instance',
         completer=flags.InstanceCompleter,
         help='Cloud SQL instance ID.')
+    parser.add_argument(
+        '--source-instance-deletion-time',
+        type=arg_parsers.Datetime.Parse,
+        completer=flags.InstanceCompleter,
+        required=False,
+        help=(
+            'The deletion time of the source instance. This is used to identify'
+            ' the instance if it has been deleted.'
+        ),
+        hidden=True,
+    )
 
   def Run(self, args):
     """Displays the latest recovery time to which a Cloud SQL instance can be restored to.
@@ -99,8 +114,11 @@ class GetLatestRecoveryTime(base.Command):
     try:
       request = sql_messages.SqlProjectsInstancesGetLatestRecoveryTimeRequest(
           project=instance_ref.project, instance=instance_ref.instance)
-      response = sql_client.projects_instances.GetLatestRecoveryTime(request)
-      return response
+      if args.source_instance_deletion_time:
+        request.sourceInstanceDeletionTime = (
+            args.source_instance_deletion_time.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        )
+      return sql_client.projects_instances.GetLatestRecoveryTime(request)
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(
@@ -134,11 +152,11 @@ class GetLatestRecoveryTimeBeta(base.Command):
         type=arg_parsers.Datetime.Parse,
         completer=flags.InstanceCompleter,
         required=False,
-        hidden=True,
         help=(
             'The deletion time of the source instance. This is used to identify'
             ' the instance if it has been deleted.'
         ),
+        hidden=True,
     )
 
   def Run(self, args):

@@ -26,10 +26,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataDiscovery(base.Command):
   """Create a Dataplex data discovery scan job.
 
@@ -38,12 +39,12 @@ class DataDiscovery(base.Command):
   """
 
   detailed_help = {
-      'EXAMPLES': """\
+      'EXAMPLES': f"""\
 
           To create a data discovery scan `data-discovery-datascan`
           in project `test-project` located in `us-central1` on Cloud Storage bucket `test-bucket`, run:
 
-            $ {command} data-discovery-datascan --project=test-project --location=us-central1 --data-source-resource="//storage.googleapis.com/projects/test-project/buckets/test-bucket"
+            $ {{command}} data-discovery-datascan --project=test-project --location=us-central1 --data-source-resource="//storage.{properties.VALUES.core.universe_domain.Get()}/projects/test-project/buckets/test-bucket"
 
           """,
   }

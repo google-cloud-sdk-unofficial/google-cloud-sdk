@@ -66,6 +66,7 @@ class CreateSecondary(base.CreateCommand):
     flags.AddAllowedPSCProjects(parser)
     flags.AddPSCNetworkAttachmentUri(parser)
     flags.AddPSCAutoConnections(parser)
+    flags.AddAllocatedIPRangeOverride(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

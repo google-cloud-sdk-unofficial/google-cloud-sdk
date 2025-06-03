@@ -34,11 +34,12 @@ _ROLLOUT_BASENAME_INDEX = 7
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Fleet Package."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -61,8 +62,8 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     """Run the describe command."""
-    client = apis.FleetPackagesClient()
-    rollouts_client = rollouts_apis.RolloutsClient()
+    client = apis.FleetPackagesClient(self._api_version)
+    rollouts_client = rollouts_apis.RolloutsClient(self._api_version)
     result = client.Describe(
         project=flags.GetProject(args),
         location=flags.GetLocation(args),
@@ -85,3 +86,10 @@ class Describe(base.DescribeCommand):
         return described_rollout
 
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe Package Rollouts Fleet Package."""
+
+  _api_version = 'v1alpha'

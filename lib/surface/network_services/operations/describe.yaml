@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA, GA]
 help_text:
   brief: Show details of a Network Services long running operation.
   description: Show details of a Network Services long running operation.
@@ -15,4 +15,8 @@ arguments:
 request: &request
   ALPHA:
     api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  GA:
+    api_version: v1
   collection: networkservices.projects.locations.operations

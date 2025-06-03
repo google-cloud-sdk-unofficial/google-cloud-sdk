@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for creating partner provider interconnect attachments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -27,7 +23,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine partner provider interconnect attachment.
 
@@ -122,8 +118,28 @@ class Create(base.CreateCommand):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine partner provider interconnect attachment.
+
+  *{command}* is used to create partner provider interconnect attachments. An
+  interconnect attachment binds the underlying connectivity of an Interconnect
+  to a path into and out of the customer's cloud network. Partner provider
+  attachments can only be created by approved network partners.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
+    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a Compute Engine partner provider interconnect attachment.
 
   *{command}* is used to create partner provider interconnect attachments. An
@@ -140,7 +156,3 @@ class CreateAlpha(Create):
     attachment_flags.AddCandidateIpv6Subnets(parser)
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
-    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
-    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)

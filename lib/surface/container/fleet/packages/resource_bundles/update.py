@@ -29,11 +29,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update Package Rollouts Resource Bundle."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -43,7 +44,7 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Run the update command."""
-    client = apis.ResourceBundlesClient()
+    client = apis.ResourceBundlesClient(self._api_version)
     project = flags.GetProject(args)
     location = flags.GetLocation(args)
     return client.Update(
@@ -52,3 +53,10 @@ class Update(base.UpdateCommand):
         name=args.name,
         description=args.description,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Package Rollouts Resource Bundle."""
+
+  _api_version = 'v1alpha'

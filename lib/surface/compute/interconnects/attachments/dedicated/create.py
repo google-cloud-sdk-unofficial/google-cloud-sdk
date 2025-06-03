@@ -28,7 +28,7 @@ _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicat
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine dedicated interconnect attachment.
 
@@ -154,8 +154,31 @@ class Create(base.CreateCommand):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine dedicated interconnect attachment.
+
+  *{command}* is used to create a dedicated interconnect attachments. An
+  interconnect attachment is what binds the underlying connectivity of an
+  interconnect to a path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
+    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
+
+  def Run(self, args):
+    """See base.CreateCommand."""
+    return self._Run(args)
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a Compute Engine dedicated interconnect attachment.
 
   *{command}* is used to create a dedicated interconnect attachments. An
@@ -168,10 +191,6 @@ class CreateAlpha(Create):
     super(CreateAlpha, cls).Args(parser)
     attachment_flags.AddEnableMulticast(parser)
     attachment_flags.AddDryRun(parser)
-    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
-    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     """See base.CreateCommand."""

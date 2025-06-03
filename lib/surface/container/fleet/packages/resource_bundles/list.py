@@ -33,21 +33,22 @@ _FORMAT = 'table(name.basename(), createTime)'
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List Package Rollouts Resource Bundles."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(_FORMAT)
-    parser.display_info.AddUriFunc(apis.GetResourceBundleURI)
     flags.AddLocationFlag(parser)
+    flags.AddUriFlags(parser, apis.RESOURCE_BUNDLE_COLLECTION, cls._api_version)
 
   def Run(self, args):
     """Run the list command."""
-    client = apis.ResourceBundlesClient()
+    client = apis.ResourceBundlesClient(self._api_version)
     project = flags.GetProject(args)
     location = flags.GetLocation(args)
     return client.List(
@@ -56,3 +57,10 @@ class List(base.ListCommand):
         limit=args.limit,
         page_size=args.page_size,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(List):
+  """List Package Rollouts Resource Bundles."""
+
+  _api_version = 'v1alpha'

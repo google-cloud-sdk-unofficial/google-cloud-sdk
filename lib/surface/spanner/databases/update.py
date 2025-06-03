@@ -31,8 +31,6 @@ from googlecloudsdk.command_lib.spanner import resource_args
 class Update(base.UpdateCommand):
   """Update a Cloud Spanner database."""
 
-  # TODO(b/331587247): Add example for `kms-keys` flag after hidden field
-  # is removed.
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
         To enable database deletion protection on a Cloud Spanner database
@@ -44,6 +42,11 @@ class Update(base.UpdateCommand):
         'my-database', run:
 
           $ {command} my-database --no-enable-drop-protection
+
+        To update KMS key references for a Cloud Spanner database
+        'my-database', run:
+
+          $ {command} my-database --kms-keys="KEY1,KEY2"
         """),
   }
 

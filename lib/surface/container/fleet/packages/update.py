@@ -33,11 +33,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update Package Rollouts Fleet Package."""
 
   detailed_help = _DETAILED_HELP
+  _api_version = 'v1beta'
 
   @staticmethod
   def Args(parser):
@@ -52,7 +53,7 @@ class Update(base.UpdateCommand):
 
   def Run(self, args):
     """Run the update command."""
-    client = apis.FleetPackagesClient()
+    client = apis.FleetPackagesClient(self._api_version)
     data = console_io.ReadFromFileOrStdin(
         utils.ExpandPathForUser(args.source), binary=False
     )
@@ -87,3 +88,10 @@ class Update(base.UpdateCommand):
         name=fully_qualified_name,
         update_mask=update_mask,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update Package Rollouts Fleet Package."""
+
+  _api_version = 'v1alpha'

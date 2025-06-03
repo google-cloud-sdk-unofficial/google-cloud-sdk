@@ -321,7 +321,6 @@ class Update(base.UpdateCommand):
         )
       if args.IsSpecified('target_forwarding_rules'):
         target_forwarding_rules = args.target_forwarding_rules
-        cleared_fields.append('targetForwardingRules')
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=new_priority,

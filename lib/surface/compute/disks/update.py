@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for labels update to disks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import dataclasses
 from typing import List
 
@@ -28,6 +24,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -86,8 +83,8 @@ def _CommonArgs(
     scope = parser.add_group()
     scope.add_argument(
         '--append-licenses',
-        type=arg_parsers.ArgList(),
-        metavar='LICENSE,LICENSE...',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='LICENSE',
         action=arg_parsers.UpdateAction,
         help=(
             '"A list of license URIs or license codes. These licenses will'
@@ -98,8 +95,8 @@ def _CommonArgs(
     )
     scope.add_argument(
         '--remove-licenses',
-        type=arg_parsers.ArgList(),
-        metavar='LICENSE,LICENSE...',
+        type=arg_parsers.ArgList(min_length=1),
+        metavar='LICENSE',
         action=arg_parsers.UpdateAction,
         help=(
             'A list of license URIs or license codes. If'
@@ -112,7 +109,7 @@ def _CommonArgs(
     scope.add_argument(
         '--replace-license',
         type=arg_parsers.ArgList(min_length=2, max_length=2),
-        metavar='OLD_LICENSE,NEW_LICENSE',
+        metavar='LICENSE',
         action=arg_parsers.UpdateAction,
         help=(
             'A list of license URIs or license codes. The first'
@@ -254,6 +251,50 @@ class Update(base.UpdateCommand):
     return (
         support_licenses and _LicensesFlagsIncluded(args)
     ) or _GuestOsFeatureFlagsIncluded(args)
+
+  def _VerifyLicenseArgsDoNotMixLicensesAndLicenseCodes(self, args):
+    """Verifies that license args do not mix licenses and license codes.
+
+    Args:
+      args: The arguments that were provided by the user, which contains the
+        license mutations.
+
+    Raises:
+      exceptions.InvalidArgumentException: If the user provided a mix of
+      licenses and license codes.
+    """
+
+    all_licenses = []
+    if args.IsSpecified('append_licenses'):
+      all_licenses.extend(args.append_licenses)
+    if args.IsSpecified('remove_licenses'):
+      all_licenses.extend(args.remove_licenses)
+    if args.IsSpecified('replace_license'):
+      all_licenses.extend(args.replace_license)
+
+    is_mixing_licenses_and_license_codes = any(
+        self._isInt(license) for license in all_licenses
+    ) and any(not self._isInt(license) for license in all_licenses)
+
+    if is_mixing_licenses_and_license_codes:
+      if args.IsSpecified('append_licenses'):
+        raise exceptions.InvalidArgumentException(
+            '--append-licenses',
+            'Values must be either all license codes or all licenses, not a mix'
+            ' of both.',
+        )
+      if args.IsSpecified('remove_licenses'):
+        raise exceptions.InvalidArgumentException(
+            '--remove-licenses',
+            'Values must be either all license codes or all licenses, not a mix'
+            ' of both.',
+        )
+      if args.IsSpecified('replace_license'):
+        raise exceptions.InvalidArgumentException(
+            '--replace-license',
+            'Values must be either all license codes or all licenses, not a mix'
+            ' of both.',
+        )
 
   def _LicenseUpdateFormatIsCode(self, appended_licenses, removed_licenses):
     return all(self._isInt(license) for license in appended_licenses) and all(
@@ -404,6 +445,7 @@ class Update(base.UpdateCommand):
         disk_update_request.paths.append('userLicenses')
 
       if support_licenses and _LicensesFlagsIncluded(args):
+        self._VerifyLicenseArgsDoNotMixLicensesAndLicenseCodes(args)
         license_update_data = self._ConstructLicenseUpdateData(
             args, holder, disk, disk_ref
         )

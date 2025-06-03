@@ -65,6 +65,7 @@ auto_flags = [
     'enableAuthorizedNetworksOnPrivateEndpoint',
     'enableAutoIpam',
     'enableK8sTokensViaDns',
+    'enableDefaultComputeClass',
 ]
 
 # Change default flag values in create-auto

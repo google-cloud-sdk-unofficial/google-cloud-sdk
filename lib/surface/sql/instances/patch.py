@@ -320,6 +320,9 @@ def AddBaseArgs(parser):
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
   flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
+  psc_na_uri_update_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
+  flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
 
 
 def AddBetaArgs(parser):
@@ -337,9 +340,8 @@ def AddBetaArgs(parser):
   flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
-  psc_na_uri_update_group = parser.add_mutually_exclusive_group(hidden=True)
-  flags.AddPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
-  flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
+  flags.AddFinalBackup(parser)
+  flags.AddFinalbackupTtlDays(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -52,6 +52,14 @@
       help_text: |-
         Whether customer data sharing should be enabled.
       default: null
+    - arg_name: disable-web-grounding
+      api_field: geminiGcpEnablementSetting.disableWebGrounding
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Whether web grounding should be disabled.
+      default: null
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataDiscovery(base.Command):
   """Update a Dataplex data discovery scan job.
 

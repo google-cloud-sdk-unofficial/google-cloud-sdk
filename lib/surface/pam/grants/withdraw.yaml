@@ -1,0 +1,28 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Withdraw a Privileged Access Manager (PAM) grant.
+    description: Withdraw a Privileged Access Manager (PAM) grant.
+    examples: |
+      The following command withdraws a grant with the full name ``GRANT_NAME'':
+
+      $ {command} GRANT_NAME
+
+  request:
+    ALPHA:
+      api_version: v1alpha
+    method: withdraw
+    collection:
+    - privilegedaccessmanager.projects.locations.entitlements.grants
+    - privilegedaccessmanager.folders.locations.entitlements.grants
+    - privilegedaccessmanager.organizations.locations.entitlements.grants
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.pam.resources:grant
+      help_text: |
+        Name of the grant to withdraw.
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.pam.util:FormatWithdrawResponse
