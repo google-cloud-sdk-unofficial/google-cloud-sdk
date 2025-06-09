@@ -30,11 +30,11 @@ from googlecloudsdk.core import resources
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class CreateInstance(base.CreateCommand):
   """Create a new Bigtable instance."""
+
+  _support_tags = False
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
@@ -54,8 +54,8 @@ class CreateInstance(base.CreateCommand):
           """),
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     """Register flags for this command."""
     (
         arguments.ArgAdder(parser)
@@ -68,6 +68,10 @@ class CreateInstance(base.CreateCommand):
         .AddAsync()
         .AddDeprecatedInstanceType()
     )
+
+    if cls._support_tags:
+      arguments.ArgAdder(parser).AddTags()
+
     arguments.AddInstanceResourceArg(parser, 'to create', positional=True)
     parser.display_info.AddCacheUpdater(arguments.InstanceCompleter)
 
@@ -106,9 +110,14 @@ class CreateInstance(base.CreateCommand):
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
         instance=msgs.Instance(
-            displayName=args.display_name, type=instance_type),
+            displayName=args.display_name,
+            type=instance_type,
+            tags=self._Tags(args),
+        ),
         clusters=msgs.CreateInstanceRequest.ClustersValue(
-            additionalProperties=clusters_properties))
+            additionalProperties=clusters_properties
+        ),
+    )
     result = cli.projects_instances.Create(msg)
     operation_ref = util.GetOperationRef(result)
 
@@ -233,3 +242,38 @@ class CreateInstance(base.CreateCommand):
               '--autoscaling-cpu-target', 'All of --autoscaling-min-nodes '
               '--autoscaling-max-nodes --autoscaling-cpu-target must be set to '
               'enable Autoscaling.')
+
+  @classmethod
+  def _Tags(cls, args, tags_arg_name='tags'):
+    """Get the tags from command arguments.
+
+    Args:
+      args: the argparse namespace from Run().
+      tags_arg_name: the name of the tags argument.
+
+    Returns:
+      A dict mapping from tag key to tag value.
+    """
+
+    if not cls._support_tags:
+      return None
+
+    tags = getattr(args, tags_arg_name)
+    if not tags:
+      return None
+
+    tags_message = util.GetAdminMessages().Instance.TagsValue
+    # Sorted for test stability.
+    return tags_message(
+        additionalProperties=[
+            tags_message.AdditionalProperty(key=key, value=value)
+            for key, value in sorted(tags.items())
+        ]
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateInstanceAlpha(CreateInstance):
+  """Create a new Bigtable instance."""
+
+  _support_tags = True

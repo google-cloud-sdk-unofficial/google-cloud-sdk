@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine Network firewall policy.
 
@@ -75,6 +75,17 @@ class Create(base.CreateCommand):
     return network_firewall_policy.Create(
         firewall_policy=firewall_policy, only_generate_request=False
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine Network firewall policy.
+
+  *{command}* is used to create network firewall policies. A network
+  firewall policy is a set of rules that controls access to various resources.
+  """
+
+  support_policy_type = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -150,6 +150,9 @@ class BadListsChecker(Checker):
                 'flag [{flg}] has nargs={nargs}'.format(
                     flg=flag.option_strings[0],
                     nargs="'{}'".format(six.text_type(flag.nargs))))))
+      if isinstance(flag.type, arg_parsers.ArgObject):
+        # No metavar requirements for ArgObject.
+        return
       if isinstance(flag.type, arg_parsers.ArgDict):
         if not (flag.metavar or flag.type.spec):
           self._issues.append(

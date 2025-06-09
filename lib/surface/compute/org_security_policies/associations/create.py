@@ -37,6 +37,10 @@ class Create(base.CreateCommand):
   *{command}* is used to create organization security policy associations. An
   organization security policy is a set of rules that controls access to various
   resources.
+
+  This command has billing implications. Projects in the hierarchy with
+  effective hierarchical security policies will be automatically enrolled into
+  Cloud Armor Enterprise if not already enrolled.
   """
 
   @classmethod
@@ -97,6 +101,10 @@ class Create(base.CreateCommand):
         excludedFolders=excluded_folders,
     )
 
+    log.status.Print("""\
+  This command has billing implications. Projects in the hierarchy with
+  effective organization security policies will be automatically enrolled into
+  Cloud Armor Enterprise if not already enrolled.""")
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         org_security_policy,
         args.security_policy,

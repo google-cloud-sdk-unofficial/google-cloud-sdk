@@ -44,6 +44,8 @@ arguments:
         default: null
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
         release_tracks: [ALPHA]
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
+        release_tracks: [ALPHA]
 
 async:
   collection: managedkafka.projects.locations.operations

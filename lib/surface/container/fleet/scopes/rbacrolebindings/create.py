@@ -46,6 +46,13 @@ class Create(base.CreateCommand):
 
     $ {command} RBRB --scope=SCOPE --role=viewer
     --group=people@google.com
+
+  To create an RBAC RoleBinding with a custom role `custom-role` in scope
+  `SCOPE` for user `person@google.com`, run:
+
+    $ {command} RBRB --scope=SCOPE --role=admin
+    --user=person@google.com
+    --custom-role=custom-role
   """
 
   @classmethod
@@ -76,12 +83,11 @@ class Create(base.CreateCommand):
         choices=['admin', 'edit', 'view'],
         help='Predefined role to assign to principal (admin, edit, view).',
     )
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      roledef.add_argument(
-          '--custom-role',
-          type=str,
-          help='Custom role to assign to principal.',
-      )
+    roledef.add_argument(
+        '--custom-role',
+        type=str,
+        help='Custom role to assign to principal.',
+    )
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -91,10 +97,7 @@ class Create(base.CreateCommand):
         fleetclient.messages.RBACRoleBinding.LabelsValue, None
     ).GetOrNone()
     # Only set the custom role field if the release track is alpha.
-    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      custom_role = args.custom_role
-    else:
-      custom_role = None
+    custom_role = args.custom_role
     return fleetclient.CreateScopeRBACRoleBinding(
         resources.RBACResourceName(args),
         role=args.role,

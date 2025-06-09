@@ -17,22 +17,13 @@
 from googlecloudsdk.api_lib.container.fleet.packages import releases as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
-from googlecloudsdk.command_lib.container.fleet.packages import utils
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
         To update Release `v1.0.0` for Resource Bundle `my-bundle` in `us-central1`, run:
 
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=manifest.yaml
-
-        To update a Release with multiple variants in one directory, run:
-
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=/manifests/ --variants-pattern=manifest-*.yaml
-
-        To update a Release with multiple variants across multiple directories, ex:
-
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=/manifests/ --variants-pattern=dir-*/
+          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --lifecycle=PUBLISHED
         """,
 }
 
@@ -51,28 +42,11 @@ class Update(base.UpdateCommand):
     flags.AddLocationFlag(parser)
     flags.AddResourceBundleFlag(parser)
     flags.AddLifecycleFlag(parser)
-    flags.AddVariantsPatternFlag(parser)
-    parser.add_argument(
-        '--source',
-        required=False,
-        help="""Source file or directory to update the Release from.
-          e.g. ``--source=manifest.yaml'', ``--source=/manifests-dir/''
-          Can optionally be paired with the ``--variants-pattern'' arg to create
-          multiple variants of a Release.""",
-    )
 
   def Run(self, args):
     """Run the update command."""
     client = apis.ReleasesClient(self._api_version)
     update_mask_attrs = []
-    if args.source:
-      glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
-          args.source, args.variants_pattern
-      )
-      variants = utils.VariantsFromGlobPattern(glob_pattern)
-      update_mask_attrs.append('variants')
-    else:
-      variants = None
 
     if args.lifecycle:
       update_mask_attrs.append('lifecycle')
@@ -84,7 +58,6 @@ class Update(base.UpdateCommand):
         location=flags.GetLocation(args),
         resource_bundle=args.resource_bundle,
         lifecycle=args.lifecycle,
-        variants=variants,
         update_mask=update_mask,
     )
 

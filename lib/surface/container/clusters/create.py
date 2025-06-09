@@ -706,7 +706,7 @@ flags_to_add = {
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
         'performancemonitoringunit': (
-            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True)
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=False)
         ),
         'placementtype': flags.AddPlacementTypeFlag,
         'placementpolicy': flags.AddPlacementPolicyFlag,
@@ -896,7 +896,7 @@ flags_to_add = {
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
         'performancemonitoringunit': (
-            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True)
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=False)
         ),
         'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
         'preemptible': flags.AddPreemptibleFlag,
@@ -1097,7 +1097,7 @@ flags_to_add = {
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
         'performancemonitoringunit': (
-            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=True)
+            lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=False)
         ),
         'podsecuritypolicy': flags.AddPodSecurityPolicyFlag,
         'preemptible': flags.AddPreemptibleFlag,

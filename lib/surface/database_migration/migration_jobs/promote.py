@@ -94,7 +94,7 @@ class PromoteGA(_Promote, base.Command):
         the command line after this command. Positional arguments are allowed.
     """
     _Promote.Args(parser)
-    mj_flags.AddMigrationJobObjectsConfigFlagForRestartAndPromote(parser)
+    mj_flags.AddMigrationJobObjectsConfigFlagForPromote(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

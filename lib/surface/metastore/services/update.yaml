@@ -357,6 +357,53 @@
               api_field: service.scheduledBackup.backupLocation
               help_text: |
                 Set the Cloud Storage URI to store the scheduled backups of the metastore service.
+    - group:
+        release_tracks: [ALPHA, BETA]
+        hidden: true
+        help_text: |
+          Configuration required for migrating to BigQuery Metastore service.
+        params:
+        - arg_name: bigquery-project-id
+          api_field: service.bigqueryMetastoreMigrationConfig.bigqueryProjectId
+          help_text: |
+            Project ID where the BigQuery resources (e.g. datasets, tables, etc.)
+            should be created.
+        - arg_name: bigquery-dataset-location
+          api_field: service.bigqueryMetastoreMigrationConfig.bigqueryDatasetLocation
+          help_text: |
+            The location where the BigQuery resources (e.g. datasets, tables, etc.)
+            should be created (e.g. us-central1, us, eu, etc.).
+        - arg_name: desired-migration-state
+          api_field: service.bigqueryMetastoreMigrationConfig.desiredMigrationState
+          help_text: |
+            The desired state of the migration. Note that this also reflects the
+            current state of the migration. If an attempt to update to a new desired
+            state fails, the migration will revert to the previous state.
+          choices:
+          - arg_value: migrate
+            enum_value: MIGRATE
+            help_text:  |
+              By setting the desired migration state to `MIGRATE`, metadata updates in
+              Dataproc Metastore will be replicated to the BigQuery Metastore service,
+              ensuring that it remains consistently synchronized with Dataproc
+              Metastore. Note that this includes initial backfill of existing metadata.
+          - arg_value: cutover
+            enum_value: CUTOVER
+            help_text:  |
+              By setting the desired migration state to `CUTOVER`, all metadata
+              requests are routed to BigQuery Metastore service and Dataproc Metastore
+              only functions as a proxy. This state can be considered as the completion
+              of the migration.
+          - arg_value: cancel
+            enum_value: CANCEL
+            help_text:  |
+              By setting the desired migration state to `CANCEL`, the migration is
+              effectively cancelled. If the previous migration state was `MIGRATE`,
+              then replication to BigQuery Metastore will be cancelled. If the previous
+              state was `CUTOVER`, then metadata requests will now be served from
+              Dataproc Metastore instead of BigQuery Metastore. Note that existing
+              metadata changes replicated to BigQuery Metastore service are not rolled
+              back.
     labels:
       api_field: service.labels
 

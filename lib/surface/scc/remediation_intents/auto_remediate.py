@@ -184,7 +184,7 @@ class AutoRemediate(base.SilentCommand, base.CacheCommand):
 
     git.push_commit(
         updated_tf_files,
-        const.GIT_MSG.format(
+        const.COMMIT_MSG.format(
             project_id=intent_updated.findingData.findingName.split("/")[1],
             finding_id=intent_updated.findingData.findingName.split("/")[-1],
             category=intent_updated.findingData.category,
@@ -195,13 +195,17 @@ class AutoRemediate(base.SilentCommand, base.CacheCommand):
     log.Print("Commit pushed successfully.")
     # Add the remediation explanation to the PR description.
     pr_status, pr_msg = git.create_pr(
-        const.GIT_MSG.format(
+        const.PR_TITLE.format(
             project_id=intent_updated.findingData.findingName.split("/")[1],
             finding_id=intent_updated.findingData.findingName.split("/")[-1],
             category=intent_updated.findingData.category,
         ),
-        intent_updated.remediatedOutput.remediationExplanation.replace(
-            "`", r"\`"
+        const.PR_DESC.format(
+            remediation_explanation=intent_updated.remediatedOutput.remediationExplanation.replace(
+                "`", r"\`"
+            ),
+            file_modifiers=git.get_file_modifiers(updated_tf_files),
+            file_owners=git.get_file_modifiers(updated_tf_files, first=True),
         ),
         git_config_data["remote"],
         git_config_data["branch-prefix"],
@@ -229,11 +233,6 @@ class AutoRemediate(base.SilentCommand, base.CacheCommand):
     intent_updated.remediationArtifacts = messages.RemediationArtifacts(
         prData=messages.PullRequest(url=pr_msg)
     )
-    file_modifiers = git.get_file_modifiers(updated_tf_files)
-    if file_modifiers is not None:
-      intent_updated.remediationArtifacts.prData.modifiedFileOwners = (
-          file_modifiers
-      )
     update_mask = "state,remediation_artifacts"
     _ = client.update_remediation_intent(
         intent_name, update_mask, intent_updated

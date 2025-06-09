@@ -23,6 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.Hidden  # TODO(b/335409087): unhide for GA.
+@base.Hidden  # TODO(b/420436006): unhide for GA.
 class SchemaBundles(base.Group):
   """Manage Bigtable schema bundles."""

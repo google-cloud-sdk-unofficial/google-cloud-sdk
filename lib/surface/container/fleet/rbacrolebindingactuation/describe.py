@@ -21,8 +21,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(feature_base.DescribeCommand):
   """Describe the status of the RbacRoleBinding Actuation Feature in a fleet.
 

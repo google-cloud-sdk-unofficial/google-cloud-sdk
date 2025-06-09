@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a Dataplex Metadata Job.
 

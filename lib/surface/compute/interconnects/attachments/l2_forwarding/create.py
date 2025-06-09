@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddGeneveVni(parser)
     attachment_flags.AddDefaultApplianceIpAddress(parser)
     attachment_flags.AddTunnelEndpointIpAddress(parser)
+    attachment_flags.AddZ2zVlan(parser)
     attachment_flags.AddDryRun(parser)
 
   def _Run(self, args):
@@ -101,6 +102,7 @@ class Create(base.CreateCommand):
         tunnel_endpoint_ip_address=getattr(
             args, 'tunnel_endpoint_ip_address', None
         ),
+        vlan_tag_802_1q=getattr(args, 'z2z_vlan', None),
     )
 
   def Epilog(self, resources_were_displayed):

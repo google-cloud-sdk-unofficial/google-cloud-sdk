@@ -106,6 +106,7 @@ class GetCredentials(base.Command):
     flags.AddGetCredentialsArgs(parser)
     flags.AddDnsEndpointFlag(parser)
     flags.AddKubecontextOverrideFlag(parser)
+    flags.AddUseIamTokenFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -125,6 +126,7 @@ class GetCredentials(base.Command):
         use_dns_endpoint=args.dns_endpoint,
         impersonate_service_account=args.impersonate_service_account,
         kubecontext_override=args.kubecontext_override,
+        use_iam_token=args.use_iam_token,
     )
 
 
@@ -174,6 +176,7 @@ class GetCredentialsBeta(base.Command):
     flags.AddPrivateEndpointFQDNFlag(parser)
     flags.AddDnsEndpointFlag(parser)
     flags.AddKubecontextOverrideFlag(parser)
+    flags.AddUseIamTokenFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -195,6 +198,7 @@ class GetCredentialsBeta(base.Command):
         args.private_endpoint_fqdn,
         args.dns_endpoint,
         kubecontext_override=args.kubecontext_override,
+        use_iam_token=args.use_iam_token,
     )
 
 
@@ -249,6 +253,7 @@ class GetCredentialsAlpha(base.Command):
     flags.AddPrivateEndpointFQDNFlag(parser)
     flags.AddDnsEndpointFlag(parser)
     flags.AddKubecontextOverrideFlag(parser)
+    flags.AddUseIamTokenFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -270,4 +275,5 @@ class GetCredentialsAlpha(base.Command):
         args.private_endpoint_fqdn,
         args.dns_endpoint,
         kubecontext_override=args.kubecontext_override,
+        use_iam_token=args.use_iam_token,
     )

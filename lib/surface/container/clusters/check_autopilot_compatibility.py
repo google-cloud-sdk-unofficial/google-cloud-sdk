@@ -22,12 +22,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
 
 
-class CheckAutopliotCompatibility(base.ListCommand):
+@base.UniverseCompatible
+class CheckAutopilotCompatibility(base.ListCommand):
   """Check autopilot compatibility of a running cluster."""
 
   detailed_help = {
-      'DESCRIPTION':
-          '{description}',
+      'DESCRIPTION': (
+          '{description}' +
+          '\n\nFor clusters with GKE version 1.31.6-gke.1027000 or later, you ' +
+          'must enable the control plane component that performs the check by ' +
+          'running the `gcloud container clusters update` command with the ' +
+          '[`--enable-autopilot-compatiblity-auditing`](https://cloud.google.com/sdk/gcloud/reference/container/clusters/update#--%5Bno-%5Denable-autopilot-compatibility-auditing) ' +
+          ' flag.'
+      ),
       'EXAMPLES':
           """\
           To check autopilot compatibility of an existing cluster, run:

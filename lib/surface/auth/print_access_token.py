@@ -163,7 +163,7 @@ class AccessToken(base.Command):
       ]:
         # TODO(b/223649175): Add support for other credential types(e.g GCE).
         log.warning(
-            '`--scopes` flag may not working as expected and will be ignored '
+            '`--scopes` flag may not work as expected and will be ignored '
             'for account type {}.'.format(cred_type.key)
         )
       scopes = args.scopes + [auth_util.OPENID, auth_util.USER_EMAIL_SCOPE]

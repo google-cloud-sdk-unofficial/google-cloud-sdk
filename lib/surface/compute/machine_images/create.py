@@ -29,9 +29,11 @@ from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 
 
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine machine image."""
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
+  _SUPPORT_DISK_FILTERING = False
 
   detailed_help = {
       'brief':
@@ -44,8 +46,8 @@ class Create(base.CreateCommand):
        """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.display_info.AddFormat(machine_image_flags.DEFAULT_LIST_FORMAT)
     Create.MACHINE_IMAGE_ARG = machine_image_flags.MakeMachineImageArg()
     Create.MACHINE_IMAGE_ARG.AddArgument(parser, operation_type='create')
@@ -57,6 +59,10 @@ class Create(base.CreateCommand):
     flags.AddGuestFlushFlag(parser, 'machine image')
     flags.AddSourceDiskCsekKeyArg(parser)
     kms_resource_args.AddKmsKeyResourceArg(parser, 'machine image')
+
+    if cls._SUPPORT_DISK_FILTERING:
+      machine_image_flags.AddDiskFilterArgs(parser)
+
     Create.SOURCE_INSTANCE = machine_image_flags.MakeSourceInstanceArg()
     Create.SOURCE_INSTANCE.AddArgument(parser)
 
@@ -95,6 +101,17 @@ class Create(base.CreateCommand):
     if args.IsSpecified('guest_flush'):
       machine_image.guestFlush = args.guest_flush
 
+    if self._SUPPORT_DISK_FILTERING:
+      if args.IsSpecified('include_disks'):
+        machine_image.params = client.messages.MachineImageParams(
+            includedDisks=args.include_disks
+        )
+
+      if args.IsSpecified('exclude_disks'):
+        machine_image.params = client.messages.MachineImageParams(
+            excludedDisks=args.exclude_disks
+        )
+
     source_csek_keys = getattr(args, 'source_disk_csek_key', [])
 
     disk_keys = {}
@@ -130,3 +147,17 @@ class Create(base.CreateCommand):
         machineImage=machine_image, project=machine_image_ref.project)
     return client.MakeRequests([(client.apitools_client.machineImages, 'Insert',
                                  request)])
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine machine image."""
+
+  _SUPPORT_DISK_FILTERING = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine machine image."""
+
+  _SUPPORT_DISK_FILTERING = True

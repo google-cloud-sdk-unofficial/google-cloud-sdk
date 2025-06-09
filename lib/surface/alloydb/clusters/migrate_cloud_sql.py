@@ -37,8 +37,8 @@ from googlecloudsdk.core import resources
 # @base.UniverseCompatible once b/312466999 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class MigrateCloudSqlBeta(base.RestoreCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class MigrateCloudSqlGA(base.RestoreCommand):
   """Migrate Cloud SQL instance to an AlloyDB cluster using an existing Cloud SQL backup."""
 
   detailed_help = {
@@ -101,7 +101,7 @@ class MigrateCloudSqlBeta(base.RestoreCommand):
     Returns:
       The Migrate Cloud Sql request based on args.
     """
-    return cluster_helper.ConstructMigrateCloudSqlRequestFromArgsBeta(
+    return cluster_helper.ConstructMigrateCloudSqlRequestFromArgsGA(
         alloydb_messages, location_ref, args
     )
 
@@ -140,9 +140,47 @@ class MigrateCloudSqlBeta(base.RestoreCommand):
     return op
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class MigrateCloudSqlBeta(MigrateCloudSqlGA):
+  """Migrate Cloud SQL instance to an AlloyDB cluster.
+
+  This command migrates a Cloud SQL instance to an AlloyDB cluster using an
+  existing Cloud SQL backup.
+  """
+
+  @classmethod
+  def Args(cls, parser: argparse.PARSER) -> None:
+    super(MigrateCloudSqlBeta, cls).Args(parser)
+
+  def ConstructMigrateCloudSqlRequestFromArgs(
+      self,
+      alloydb_messages: types.ModuleType,
+      location_ref: resources.Resource,
+      args: argparse.Namespace,
+  ) -> messages.Message:
+    """Constructs the Migrate Cloud Sql request.
+
+    Args:
+      alloydb_messages: The AlloyDB messages module.
+      location_ref: The location reference for the request.
+      args: An object that contains the values for the arguments specified in
+        the .Args() method.
+
+    Returns:
+      The Migrate Cloud Sql request based on args.
+    """
+    return cluster_helper.ConstructMigrateCloudSqlRequestFromArgsBeta(
+        alloydb_messages, location_ref, args
+    )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MigrateCloudSqlAlpha(MigrateCloudSqlBeta):
-  """Migrate Cloud SQL instance to an AlloyDB cluster using an existing Cloud SQL backup."""
+class MigrateCloudSqlAlpha(MigrateCloudSqlGA):
+  """Migrate Cloud SQL instance to an AlloyDB cluster.
+
+  This command migrates a Cloud SQL instance to an AlloyDB cluster using an
+  existing Cloud SQL backup.
+  """
 
   @classmethod
   def Args(cls, parser: argparse.PARSER) -> None:

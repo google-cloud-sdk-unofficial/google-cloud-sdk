@@ -19,6 +19,5 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class LbEdgeExtensions(base.Group):
   """Manage Service Extensions `LbEdgeExtension` resources."""

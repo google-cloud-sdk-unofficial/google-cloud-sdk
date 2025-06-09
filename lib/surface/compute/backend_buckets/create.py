@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
@@ -37,13 +39,15 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_load_balancing_scheme = False
+  _support_regional_global_flags = False
 
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
-    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'create')
+    backend_buckets_flags.AddUpdatableArgs(
+        cls, parser, 'create', cls._support_regional_global_flags
+    )
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
         backend_buckets_flags.BackendBucketsCompleter)
@@ -53,8 +57,7 @@ class Create(base.CreateCommand):
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
     backend_buckets_flags.AddCompressionMode(parser)
-    if cls._support_load_balancing_scheme:
-      backend_buckets_flags.AddLoadBalancingScheme(parser)
+    backend_buckets_flags.AddLoadBalancingScheme(parser)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -62,7 +65,7 @@ class Create(base.CreateCommand):
     client = holder.client
 
     backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
 
     enable_cdn = args.enable_cdn or False
 
@@ -70,25 +73,28 @@ class Create(base.CreateCommand):
         description=args.description,
         name=backend_buckets_ref.Name(),
         bucketName=args.gcs_bucket_name,
-        enableCdn=enable_cdn)
+        enableCdn=enable_cdn,
+    )
 
     backend_buckets_utils.ApplyCdnPolicyArgs(client, args, backend_bucket)
 
     if args.custom_response_header is not None:
       backend_bucket.customResponseHeaders = args.custom_response_header
-    if (backend_bucket.cdnPolicy is not None and
-        backend_bucket.cdnPolicy.cacheMode and args.enable_cdn is not False):  # pylint: disable=g-bool-id-comparison
+    if (
+        backend_bucket.cdnPolicy is not None
+        and backend_bucket.cdnPolicy.cacheMode
+        and args.enable_cdn is not False  # pylint: disable=g-bool-id-comparison
+    ):
       backend_bucket.enableCdn = True
 
     if args.compression_mode is not None:
       backend_bucket.compressionMode = (
           client.messages.BackendBucket.CompressionModeValueValuesEnum(
-              args.compression_mode))
+              args.compression_mode
+          )
+      )
 
-    if (
-        self._support_load_balancing_scheme
-        and args.load_balancing_scheme is not None
-    ):
+    if args.load_balancing_scheme is not None:
       backend_bucket.loadBalancingScheme = (
           client.messages.BackendBucket.LoadBalancingSchemeValueValuesEnum(
               args.load_balancing_scheme
@@ -102,15 +108,45 @@ class Create(base.CreateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, holder.resources)
-
     backend_bucket = self.CreateBackendBucket(args)
 
+    if self._support_regional_global_flags:
+      ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client),
+          default_scope=compute_scope.ScopeEnum.GLOBAL
+      )
+      if ref.Collection() == 'compute.backendBuckets':
+        requests = self._CreateGlobalRequests(backend_bucket, ref)
+      elif ref.Collection() == 'compute.regionBackendBuckets':
+        requests = self._CreateRegionalRequests(args, backend_bucket, ref)
+
+      return client.MakeRequests(requests)
+
+    backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+        args, holder.resources)
+    return client.MakeRequests(
+        self._CreateGlobalRequests(backend_bucket, backend_buckets_ref)
+    )
+
+  def _CreateGlobalRequests(self, backend_bucket, backend_buckets_ref):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
     request = client.messages.ComputeBackendBucketsInsertRequest(
-        backendBucket=backend_bucket, project=backend_buckets_ref.project)
-    return client.MakeRequests([(client.apitools_client.backendBuckets,
-                                 'Insert', request)])
+        backendBucket=backend_bucket, project=backend_buckets_ref.project
+    )
+    return [(client.apitools_client.backendBuckets, 'Insert', request)]
+
+  def _CreateRegionalRequests(self, args, backend_bucket, backend_buckets_ref):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    request = client.messages.ComputeRegionBackendBucketsInsertRequest(
+        backendBucket=backend_bucket,
+        project=backend_buckets_ref.project,
+        region=args.region,
+    )
+    return [(client.apitools_client.regionBackendBuckets, 'Insert', request)]
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -123,7 +159,7 @@ class CreateBeta(Create):
   maps define which requests are sent to which backend buckets.
   """
 
-  _support_load_balancing_scheme = True
+  _support_regional_global_flags = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -135,3 +171,4 @@ class CreateAlpha(CreateBeta):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
+  _support_regional_global_flags = True

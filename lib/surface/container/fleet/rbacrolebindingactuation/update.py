@@ -29,7 +29,9 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 RBACROLEBINDING_ACTUATION_FEATURE = 'rbacrolebindingactuation'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Update(feature_base.UpdateCommand):
   r"""Update RbacRoleBinding Actuation Feature.
@@ -42,8 +44,10 @@ class Update(feature_base.UpdateCommand):
 
     $ gcloud container fleet rbacrolebinding-actuation update \
         --allowed-custom-roles=role1,role2
+
     $ gcloud container fleet rbacrolebinding-actuation update \
         --add-allowed-custom-role=role1
+
     $ gcloud container fleet rbacrolebinding-actuation update \
         --remove-allowed-custom-role=role2
   """

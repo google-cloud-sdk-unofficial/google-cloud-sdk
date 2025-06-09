@@ -1,0 +1,44 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: enable zonal service
+    description: Enables a zonal service.
+    examples: |
+      To enable `vmm` service in location `us-central1` in `test-project` project and `test-zone` zone, run:
+
+      $ {command} vmm --location=us-central1 --project=test-project --zone=test-zone
+
+  request:
+    collection: edgecontainer.projects.locations.zonalServices
+    disable_resource_check: true
+    api_version: v1alpha
+    method: enable
+
+  arguments:
+    params:
+    - arg_name: id
+      api_field: enableZonalServiceRequest.zonalServiceId
+      required: false
+      help_text: Zonal service ID.
+    - arg_name: location
+      resource_spec: !REF googlecloudsdk.command_lib.zone_management.service.resources:location
+      is_parent_resource: true
+      is_primary_resource: true
+      is_positional: false
+      required: true
+      help_text: |
+        Location of the entitlements.
+    - arg_name: zone
+      api_field: enableZonalServiceRequest.zonalService.zone
+      help_text: Zone name.
+    - arg_name: cluster
+      api_field: enableZonalServiceRequest.zonalService.cluster
+      help_text: Cluster name.
+    - arg_name: service_selector
+      api_field: enableZonalServiceRequest.zonalService.serviceSelector
+      is_positional: true
+      required: true
+      help_text: Service selector.
+
+  async:
+    collection: edgecontainer.projects.locations.operations

@@ -41,6 +41,11 @@ class Update(base.UpdateCommand):
     $ {command} RBRB --scope=SCOPE --role=viewer
 
   To update the RBAC RoleBinding `RBRB` in scope `SCOPE` in the active
+  project to the custom role `custom-role`:
+
+    $ {command} RBRB --scope=SCOPE --custom-role=custom-role
+
+  To update the RBAC RoleBinding `RBRB` in scope `SCOPE` in the active
   project to the user `someone@google.com`:
 
     $ {command} RBRB --scope=SCOPE --user=someone@google.com
@@ -74,12 +79,11 @@ class Update(base.UpdateCommand):
         choices=['admin', 'edit', 'view'],
         help='Predefined role to assign to principal (admin, edit, view).',
     )
-    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      roledef.add_argument(
-          '--custom-role',
-          type=str,
-          help='Custom role to assign to principal.',
-      )
+    roledef.add_argument(
+        '--custom-role',
+        type=str,
+        help='Custom role to assign to principal.',
+    )
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -108,11 +112,8 @@ class Update(base.UpdateCommand):
     # if there's nothing to update, then return
     if not mask:
       return
-    # Only set the custom role field if the release track is alpha.
-    if self.ReleaseTrack() is base.ReleaseTrack.ALPHA:
-      custom_role = args.custom_role
-    else:
-      custom_role = None
+
+    custom_role = args.custom_role
 
     return fleetclient.UpdateScopeRBACRoleBinding(
         resources.RBACResourceName(args),

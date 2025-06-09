@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command to create Cloud Firestore Database in Native mode."""
+"""Command to create a Cloud Firestore Database."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,7 +36,7 @@ class CreateFirestoreAPI(base.Command):
   ## EXAMPLES
 
   To create a Firestore Enterprise database named `foo` in `nam5` for use with
-  Ignite APIs.
+  MongoDB Compatibility.
 
       $ {command} --database=foo --edition=enterprise --location=nam5
 

@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Creates a Backup and DR Backup Vault."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 
@@ -30,7 +27,92 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+def _add_common_args(parser: argparse.ArgumentParser):
+  """Specifies additional command flags.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+  """
+  flags.AddBackupVaultResourceArg(
+      parser,
+      'Name of the backup vault to create.  A vault name cannot be changed'
+      ' after creation. It must be between 3-63 characters long and must be'
+      ' unique within the project and location.',
+  )
+  flags.AddNoAsyncFlag(parser)
+  flags.AddEnforcedRetention(parser, True)
+  flags.AddDescription(parser)
+  flags.AddEffectiveTime(parser)
+  flags.AddLabels(parser)
+  flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
+
+
+def _run(args: argparse.Namespace, support_backup_retention_inheritance: bool):
+  """Constructs and sends request.
+
+  Args:
+    args: argparse.Namespace, An object that contains the values for the
+      arguments specified in the .Args() method.
+    support_backup_retention_inheritance: bool, A boolean that indicates if the
+      backup vault supports setting the backup_retention_inheritance field.
+
+  Returns:
+    ProcessHttpResponse of the request made.
+  """
+  client = BackupVaultsClient()
+  backup_vault = args.CONCEPTS.backup_vault.Parse()
+  backup_min_enforced_retention = command_util.ConvertIntToStr(
+      args.backup_min_enforced_retention
+  )
+  description = args.description
+  effective_time = command_util.VerifyDateInFuture(
+      args.effective_time, 'effective-time'
+  )
+  labels = labels_util.ParseCreateArgs(
+      args, client.messages.BackupVault.LabelsValue
+  )
+  no_async = args.no_async
+  access_restriction = args.access_restriction
+  backup_retention_inheritance = None
+  if support_backup_retention_inheritance:
+    backup_retention_inheritance = args.backup_retention_inheritance
+
+  try:
+    operation = client.Create(
+        backup_vault,
+        support_backup_retention_inheritance,
+        backup_min_enforced_retention,
+        description,
+        labels,
+        effective_time,
+        access_restriction,
+        backup_retention_inheritance,
+    )
+
+  except apitools_exceptions.HttpError as e:
+    raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
+
+  if no_async:
+    resource = client.WaitForOperation(
+        operation_ref=client.GetOperationRef(operation),
+        message=(
+            'Creating backup vault [{}]. (This operation could'
+            ' take up to 2 minutes.)'.format(backup_vault.RelativeName())
+        ),
+    )
+    log.CreatedResource(backup_vault.RelativeName(), kind='backup vault')
+    return resource
+
+  log.CreatedResource(
+      backup_vault.RelativeName(),
+      kind='backup vault',
+      is_async=True,
+      details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
+  )
+  return operation
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Backup and DR backup vault."""
@@ -80,18 +162,7 @@ class Create(base.CreateCommand):
     Args:
       parser: argparse.Parser: Parser object for command line inputs.
     """
-    flags.AddBackupVaultResourceArg(
-        parser,
-        'Name of the backup vault to create.  A vault name cannot be changed'
-        ' after creation. It must be between 3-63 characters long and must be'
-        ' unique within the project and location.',
-    )
-    flags.AddNoAsyncFlag(parser)
-    flags.AddEnforcedRetention(parser, True)
-    flags.AddDescription(parser)
-    flags.AddEffectiveTime(parser)
-    flags.AddLabels(parser)
-    flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
+    _add_common_args(parser)
 
   def Run(self, args: argparse.Namespace):
     """Constructs and sends request.
@@ -103,48 +174,31 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    client = BackupVaultsClient()
-    backup_vault = args.CONCEPTS.backup_vault.Parse()
-    backup_min_enforced_retention = command_util.ConvertIntToStr(
-        args.backup_min_enforced_retention
-    )
-    description = args.description
-    effective_time = command_util.VerifyDateInFuture(
-        args.effective_time, 'effective-time'
-    )
-    labels = labels_util.ParseCreateArgs(
-        args, client.messages.BackupVault.LabelsValue
-    )
-    no_async = args.no_async
-    access_restriction = args.access_restriction
+    _run(args, support_backup_retention_inheritance=False)
 
-    try:
-      operation = client.Create(
-          backup_vault,
-          backup_min_enforced_retention,
-          description,
-          labels,
-          effective_time,
-          access_restriction,
-      )
-    except apitools_exceptions.HttpError as e:
-      raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 
-    if no_async:
-      resource = client.WaitForOperation(
-          operation_ref=client.GetOperationRef(operation),
-          message=(
-              'Creating backup vault [{}]. (This operation could'
-              ' take up to 2 minutes.)'.format(backup_vault.RelativeName())
-          ),
-      )
-      log.CreatedResource(backup_vault.RelativeName(), kind='backup vault')
-      return resource
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a Backup and DR backup vault."""
 
-    log.CreatedResource(
-        backup_vault.RelativeName(),
-        kind='backup vault',
-        is_async=True,
-        details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
-    )
-    return operation
+  @staticmethod
+  def Args(parser):
+    """Specifies additional command flags.
+
+    Args:
+      parser: argparse.Parser: Parser object for command line inputs.
+    """
+    _add_common_args(parser)
+    flags.AddBackupRetentionInheritance(parser)
+
+  def Run(self, args: argparse.Namespace):
+    """Constructs and sends request.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      ProcessHttpResponse of the request made.
+    """
+    _run(args, support_backup_retention_inheritance=True)

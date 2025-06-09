@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: List Metadata Job resources under a project.
     description: List all Metadata Job resource under a specific project and location.
