@@ -673,9 +673,7 @@ flags_to_add = {
         'gatewayapi': flags.AddGatewayFlags,
         'gvnic': flags.AddEnableGvnicFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
-        'alphaclusterfeaturegates': (
-            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
-        ),
+        'alphaclusterfeaturegates': flags.AddAlphaClusterFeatureGatesFlags,
         'labels': flags.AddLabelsFlag,
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'localssds': flags.AddLocalSSDsGAFlags,
@@ -850,9 +848,7 @@ flags_to_add = {
         'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig': flags.AddIstioConfigFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
-        'alphaclusterfeaturegates': (
-            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
-        ),
+        'alphaclusterfeaturegates': flags.AddAlphaClusterFeatureGatesFlags,
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
         'gvnic': flags.AddEnableGvnicFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
@@ -1054,9 +1050,7 @@ flags_to_add = {
         'issueclientcert': flags.AddIssueClientCertificateFlag,
         'istioconfig': flags.AddIstioConfigFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
-        'alphaclusterfeaturegates': (
-            lambda p: flags.AddAlphaClusterFeatureGatesFlags(p, hidden=True)
-        ),
+        'alphaclusterfeaturegates': flags.AddAlphaClusterFeatureGatesFlags,
         'labels': flags.AddLabelsFlag,
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'linuxsysctl': flags.AddLinuxSysctlFlags,

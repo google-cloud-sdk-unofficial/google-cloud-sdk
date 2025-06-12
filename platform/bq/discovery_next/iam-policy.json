@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250514",
+  "revision": "20250528",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3283,7 +3283,7 @@
           "type": "string"
         },
         "jobCreationReason": {
-          "description": "Output only. The reason why a Job was created. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "description": "Output only. The reason why a Job was created.",
           "readOnly": true,
           "$ref": "JobCreationReason"
         }
@@ -6548,7 +6548,7 @@
     },
     "JobCreationReason": {
       "id": "JobCreationReason",
-      "description": "Reason about why a Job was created from a [`jobs.query`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/query) method when used with `JOB_CREATION_OPTIONAL` Job creation mode. For [`jobs.insert`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/insert) method calls it will always be `REQUESTED`. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+      "description": "Reason about why a Job was created from a [`jobs.query`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/query) method when used with `JOB_CREATION_OPTIONAL` Job creation mode. For [`jobs.insert`](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/jobs\/insert) method calls it will always be `REQUESTED`.",
       "type": "object",
       "properties": {
         "code": {
@@ -6820,7 +6820,7 @@
           "type": "boolean"
         },
         "jobCreationMode": {
-          "description": "Optional. If not set, jobs are always required. If set, the query request will follow the behavior described JobCreationMode. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "description": "Optional. If not set, jobs are always required. If set, the query request will follow the behavior described JobCreationMode.",
           "type": "string",
           "enumDescriptions": [
             "If unspecified JOB_CREATION_REQUIRED is the default.",
@@ -6872,11 +6872,11 @@
           "$ref": "JobReference"
         },
         "jobCreationReason": {
-          "description": "Optional. The reason why a Job was created. Only relevant when a job_reference is present in the response. If job_reference is not present it will always be unset. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "description": "Optional. The reason why a Job was created. Only relevant when a job_reference is present in the response. If job_reference is not present it will always be unset.",
           "$ref": "JobCreationReason"
         },
         "queryId": {
-          "description": "Auto-generated ID for the query. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "description": "Auto-generated ID for the query.",
           "type": "string"
         },
         "location": {
@@ -7197,6 +7197,14 @@
             "DATA_GOVERNANCE_TYPE_UNSPECIFIED",
             "DATA_MASKING"
           ]
+        },
+        "pythonOptions": {
+          "description": "Optional. Options for Python UDF. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "$ref": "PythonOptions"
+        },
+        "externalRuntimeOptions": {
+          "description": "Optional. Options for the runtime of the external system executing the routine. This field is only applicable for Python UDFs. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "$ref": "ExternalRuntimeOptions"
         }
       }
     },
@@ -7348,6 +7356,53 @@
         },
         "mainClass": {
           "description": "The fully qualified name of a class in jar_uris, for example, com.example.wordcount. Exactly one of main_class and main_jar_uri field should be set for Java\/Scala language type.",
+          "type": "string"
+        }
+      }
+    },
+    "PythonOptions": {
+      "id": "PythonOptions",
+      "description": "Options for a user-defined Python function.",
+      "type": "object",
+      "properties": {
+        "entryPoint": {
+          "description": "Required. The entry point function in the user's Python code.",
+          "type": "string"
+        },
+        "packages": {
+          "description": "Optional. A list of package names along with versions to be installed. Follows requirements.txt syntax (e.g. numpy==2.0, permutation, urllib3<2.2.1)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ExternalRuntimeOptions": {
+      "id": "ExternalRuntimeOptions",
+      "description": "Options for the runtime of the external system.",
+      "type": "object",
+      "properties": {
+        "containerMemory": {
+          "description": "Optional. Amount of memory provisioned for the container instance. Format: {number}{unit} where unit is one of \"M\", \"G\", \"Mi\" and \"Gi\" (e.g. 1G, 512Mi). If not specified, the default value is 512Mi.",
+          "type": "string"
+        },
+        "containerCpu": {
+          "description": "Optional. Amount of CPU provisioned for the container instance. If not specified, the default value is 0.33 vCPUs.",
+          "type": "number",
+          "format": "double"
+        },
+        "runtimeConnection": {
+          "description": "Optional. Fully qualified name of the connection whose service account will be used to execute the code in the container. Format: ```\"projects\/{project_id}\/locations\/{location_id}\/connections\/{connection_id}\"```",
+          "type": "string"
+        },
+        "maxBatchingRows": {
+          "description": "Optional. Maximum number of rows in each batch sent to the external runtime. If absent or if 0, BigQuery dynamically decides the number of rows in a batch.",
+          "type": "string",
+          "format": "int64"
+        },
+        "runtimeVersion": {
+          "description": "Optional. Language runtime version (e.g. python-3.11).",
           "type": "string"
         }
       }
@@ -8709,9 +8764,9 @@
               "type": "string",
               "enumDescriptions": [
                 "The default value. Default to the FULL view.",
-                "Updates metadata information for the dataset, such as friendlyName, description, labels, etc.",
-                "Updates ACL information for the dataset, which defines dataset access for one or more entities.",
-                "Updates both dataset metadata and ACL information."
+                "View metadata information for the dataset, such as friendlyName, description, labels, etc.",
+                "View ACL information for the dataset, which defines dataset access for one or more entities.",
+                "View both dataset metadata and ACL information."
               ],
               "enum": [
                 "DATASET_VIEW_UNSPECIFIED",
@@ -10858,8 +10913,33 @@
   },
   "endpoints": [
     {
+      "endpointUrl": "https://bigquery.asia-south1.rep.googleapis.com/",
+      "location": "asia-south1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.asia-south2.rep.googleapis.com/",
+      "location": "asia-south2",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.europe-west1.rep.googleapis.com/",
+      "location": "europe-west1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.europe-west2.rep.googleapis.com/",
+      "location": "europe-west2",
+      "description": "Regional Endpoint"
+    },
+    {
       "endpointUrl": "https://bigquery.europe-west3.rep.googleapis.com/",
       "location": "europe-west3",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigquery.europe-west6.rep.googleapis.com/",
+      "location": "europe-west6",
       "description": "Regional Endpoint"
     },
     {

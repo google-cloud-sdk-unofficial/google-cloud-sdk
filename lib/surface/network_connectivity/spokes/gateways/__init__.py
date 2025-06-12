@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GatewaySpokes(base.Group):
   """Manage Gateway spokes."""

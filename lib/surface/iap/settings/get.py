@@ -21,14 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class Get(base.Command):
-  """Get the setting for an IAP resource."""
-
-  detailed_help = {
-      'EXAMPLES': """\
+EXAMPLES = """\
           To get the IAP setting for the resources within an organization, run:
 
             $ {command} --organization=ORGANIZATION_ID
@@ -84,7 +77,28 @@ class Get(base.Command):
             $ {command} --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
               --region=REGION_ID
 
-          """,
+          """
+
+NON_GA_EXAMPLES = EXAMPLES + """\
+
+          To get the IAP setting for all Cloud Run services within a region of a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID
+
+          To get the IAP setting for a Cloud Run service within a project, run:
+
+            $ {command} --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID --service=SERVICE_ID
+
+          """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Get(base.Command):
+  """Get the setting for an IAP resource."""
+
+  detailed_help = {
+      'EXAMPLES': EXAMPLES,
   }
 
   _support_cloud_run = False
@@ -123,6 +137,8 @@ class Get(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetBeta(Get):
   """Get the setting for an IAP resource."""
+  detailed_help = {
+      'EXAMPLES': NON_GA_EXAMPLES,
+  }
 
   _support_cloud_run = True
-

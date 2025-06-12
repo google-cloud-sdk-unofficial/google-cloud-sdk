@@ -59,19 +59,6 @@
       api_field: deidentifyDatasetRequest.config.fhir
       help_text: |
         Deidentify FHIR data with default configurations.
-    - arg_name: annotation-store
-      release_tracks: [ALPHA, BETA]
-      ALPHA:
-        processor: googlecloudsdk.command_lib.healthcare.util:InsertAnnotationConfig:api_version=v1alpha2
-      BETA:
-        processor: googlecloudsdk.command_lib.healthcare.util:InsertAnnotationConfig:api_version=v1beta1
-      api_field: deidentifyDatasetRequest.config.annotation
-      help_text: |
-        The name of the annotation store to output the location of sensitive data
-        (e.g., projects/{projectId}/locations/{locationId}/datasets/{datasetId}/annotationStores/{annotationStoreId}).
-        The annotation store, if not in the destination dataset, must already exist. The generated
-        annotations will contain the original values of the de-identified data in the 'quote' field.
-        See https://cloud.google.com/healthcare/docs/how-tos/annotations-deidentify for more details.
 
   async:
     collection: healthcare.projects.locations.datasets.operations

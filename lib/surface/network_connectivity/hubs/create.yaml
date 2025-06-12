@@ -22,10 +22,31 @@
     - arg_name: preset-topology
       api_field: googleCloudNetworkconnectivityV1betaHub.presetTopology
       help_text: Topology of the hub. Only applicable when ``--policy-mode=PRESET''.
-    - arg_name: export-psc
-      api_field: googleCloudNetworkconnectivityV1betaHub.exportPsc
-      help_text: |-
-        This boolean controls whether Private Service Connect transitivity is enabled for the hub.
+    - group:
+        mutex: true
+        required: false
+        params:
+        - arg_name: export-psc
+          api_field: googleCloudNetworkconnectivityV1betaHub.exportPsc
+          default: null
+          help_text: |-
+            This boolean controls whether Private Service Connect transitivity is enabled for the hub.
+        - group:
+            hidden: true
+            required: false
+            params:
+            - arg_name: export-psc-published-services-and-regional-google-apis
+              api_field: googleCloudNetworkconnectivityV1betaHub.exportPscConfig.publishedServicesAndRegionalGoogleApis
+              hidden: true
+              default: null
+              help_text: |-
+                This boolean control whether Private Service Connect endpoints for regional ILBs and regional Google APIs should be propagated.
+            - arg_name: export-psc-global-google-apis
+              api_field: googleCloudNetworkconnectivityV1betaHub.exportPscConfig.globalGoogleApis
+              hidden: true
+              default: null
+              help_text: |-
+                This boolean controls whether Private Service Connect endpoints for global Google APIs should be propagated.
     - arg_name: exchange-pupi
       api_field: googleCloudNetworkconnectivityV1betaHub.exchangePupi
       hidden: true
@@ -44,6 +65,7 @@
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:AppendLocationsGlobalToParent
+    - googlecloudsdk.command_lib.network_connectivity.util:SetExportPscBeta
 
 - release_tracks: [ALPHA, GA]
 
@@ -71,11 +93,16 @@
       release_tracks: [GA]
       api_field: hub.presetTopology
       help_text: Topology of the hub. Only applicable when ``--policy-mode=PRESET''.
-    - arg_name: export-psc
-      release_tracks: [GA]
-      api_field: hub.exportPsc
-      help_text: |-
-        This boolean controls whether Private Service Connect transitivity is enabled for the hub.
+    - group:
+        release_tracks: [GA]
+        mutex: true
+        required: false
+        params:
+        - arg_name: export-psc
+          release_tracks: [GA]
+          api_field: hub.exportPsc
+          help_text: |-
+            This boolean controls whether Private Service Connect transitivity is enabled for the hub.
     - arg_name: exchange-pupi
       release_tracks: [GA]
       api_field: hub.exchangePupi
@@ -97,3 +124,5 @@
     method: create
     modify_request_hooks:
     - googlecloudsdk.command_lib.network_connectivity.util:AppendLocationsGlobalToParent
+    # TODO: b/420998347 - Remove this hook once v1 supports HYBRID_INSPECTION.
+    - googlecloudsdk.command_lib.network_connectivity.util:ProhibitHybridInspection

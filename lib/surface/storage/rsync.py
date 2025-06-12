@@ -297,8 +297,7 @@ character. When using Windows PowerShell, use `'` instead of
     )
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
+
     encryption_util.initialize_key_store(args)
     cp_command_util.validate_include_managed_folders(
         args,

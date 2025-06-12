@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,27 +19,30 @@
   - BETA
   auto_generated: true
   help_text:
-    brief: List all VPC Flow Logs configurations in the project.
-    description: Lists all VPC Flow Logs configurations in the project.
+    brief: List all VPC Flow Logs configurations in the organization.
+    description: Lists all VPC Flow Logs configurations in the organization.
     examples: |-
-      To list all the VPC Flow Logs configurations within the project, run:
+      To list all the VPC Flow Logs configurations within the organization, run:
 
-      $ {command} --location=global
+      $ {command} --location=global --organization=<my-org-number>
 
-      To list all the VPC Flow Logs configurations within the project with state 'ENABLED', run:
+      To list all the VPC Flow Logs configurations within the organization with state 'ENABLED', run:
 
-      $ {command} --location=global --filter="state:ENABLED"
+      $ {command} --location=global --organization=<my-org-number> --filter="state:ENABLED"
   arguments:
     params:
     - help_text: |-
         The parent resource of the VpcFlowLogsConfig:
             `projects/{project_id}/locations/global`
+            `organizations/{organization_id}/locations/global`
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1beta1_resources:project_location
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1beta1_resources:organizations_or_projects_locations
       required: true
   request:
     api_version: v1beta1
     collection:
+    - networkmanagement.organizations.locations.vpcFlowLogsConfigs
     - networkmanagement.projects.locations.vpcFlowLogsConfigs
   response:
     id_field: name

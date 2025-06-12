@@ -194,6 +194,7 @@ class Create(base.CreateCommand):
     secrets_args.AddCreateRotationGroup(parser)
     secrets_args.AddRegionalKmsKeyName(parser)
     secrets_args.AddCreateVersionDestroyTTL(parser)
+    secrets_args.GetTagsArg().AddToParser(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -215,6 +216,7 @@ class Create(base.CreateCommand):
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
     labels = labels_util.ParseCreateArgs(args, messages.Secret.LabelsValue)
+    tags = secrets_args.GetTagsFromArgs(args, messages.Secret.TagsValue)
     replication_policy = args.replication_policy
     locations = args.locations
     kms_keys = []
@@ -334,6 +336,7 @@ class Create(base.CreateCommand):
     response = secrets_api.Secrets(api_version=api_version).Create(
         secret_ref,
         labels=labels,
+        tags=tags,
         locations=locations,
         policy=replication_policy,
         expire_time=args.expire_time,
@@ -534,6 +537,7 @@ class CreateBeta(base.CreateCommand):
     secrets_args.AddTopics(parser)
     secrets_args.AddRegionalKmsKeyName(parser)
     secrets_args.AddCreateVersionDestroyTTL(parser)
+    secrets_args.GetTagsArg().AddToParser(parser)
     annotations = parser.add_group(mutex=True, help='Annotations')
     map_util.AddMapSetFlag(annotations, 'annotations', 'Annotations', str, str)
 
@@ -546,6 +550,7 @@ class CreateBeta(base.CreateCommand):
     replication_policy_contents = secrets_util.ReadFileOrStdin(
         args.replication_policy_file, is_binary=False)
     labels = labels_util.ParseCreateArgs(args, messages.Secret.LabelsValue)
+    tags = secrets_args.GetTagsFromArgs(args, messages.Secret.TagsValue)
     replication_policy = args.replication_policy
     locations = args.locations
     kms_keys = []
@@ -667,6 +672,7 @@ class CreateBeta(base.CreateCommand):
     response = secrets_api.Secrets(api_version=api_version).Create(
         secret_ref,
         labels=labels,
+        tags=tags,
         locations=locations,
         policy=replication_policy,
         expire_time=args.expire_time,

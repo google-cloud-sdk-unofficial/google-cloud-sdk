@@ -57,7 +57,7 @@ class RemoveIamPolicyBinding(base.Command):
     url = storage_url.storage_url_from_string(args.url)
     errors_util.raise_error_if_not_gcs_folder_type(args.command_path, url)
     policy = api_factory.get_api(url.scheme).get_managed_folder_iam_policy(
-        url.bucket_name, url.object_name
+        url.bucket_name, url.resource_name
     )
     return iam_command_util.remove_iam_binding_from_resource(
         args,

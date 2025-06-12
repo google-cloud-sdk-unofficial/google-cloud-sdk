@@ -41,7 +41,9 @@ class BigqueryGcloudDelegationUserError(Exception):
   """Class to represent a user error during gcloud delegation."""
 
 
-if sys.version_info >= (3, 9):
+# This Callable annotation would cause a type error before Python 3.9.2, see
+# https://docs.python.org/3/whatsnew/3.9.html#notable-changes-in-python-3-9-2.
+if sys.version_info >= (3, 9, 2):
   ConvertFlagValuesFunction: TypeAlias = Callable[
       [PrimitiveFlagValue], PrimitiveFlagValue
   ]

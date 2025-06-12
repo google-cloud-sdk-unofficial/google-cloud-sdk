@@ -35,6 +35,7 @@ def _AddArgsCommon(parser):
   flags.GetPolicyAltNameServersArg().AddToParser(parser)
   flags.GetPolicyLoggingArg().AddToParser(parser)
   flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
+  flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
 
 
 @base.UniverseCompatible
@@ -59,7 +60,8 @@ class CreateGA(base.UpdateCommand):
         --networks=network1,network2 \
         --alternative-name-servers=192.168.1.1,192.168.1.2 \
         --enable-inbound-forwarding \
-        --enable-logging
+        --enable-logging \
+        --enable-dns64-all-queries
   """
 
   @staticmethod
@@ -114,6 +116,17 @@ class CreateGA(base.UpdateCommand):
     if args.IsSpecified('enable_logging'):
       policy.enableLogging = args.enable_logging
 
+    if args.IsSpecified('enable_dns64_all_queries'):
+      policy.dns64Config = messages.PolicyDns64Config(
+          scope=messages.PolicyDns64ConfigScope(
+              allQueries=args.enable_dns64_all_queries
+          )
+      )
+    else:
+      policy.dns64Config = messages.PolicyDns64Config(
+          scope=messages.PolicyDns64ConfigScope(allQueries=False)
+      )
+
     if args.IsSpecified('description'):
       policy.description = args.description
 
@@ -159,7 +172,6 @@ class CreateBeta(CreateGA):
     resource_args.AddPolicyResourceArg(
         parser, verb='to create', api_version='v1beta2')
     _AddArgsCommon(parser)
-    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -263,5 +275,4 @@ class CreateAlpha(CreateBeta):
     resource_args.AddPolicyResourceArg(
         parser, verb='to create', api_version='v1alpha2')
     _AddArgsCommon(parser)
-    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')

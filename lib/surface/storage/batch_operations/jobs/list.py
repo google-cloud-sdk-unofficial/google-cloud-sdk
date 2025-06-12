@@ -24,6 +24,30 @@ from googlecloudsdk.calliope import base
 _SBO_CLH_LOCATION_GLOBAL = "global"
 
 
+def _TransformTransformation(job):
+  """Transform for the TRANSFORMATION field in the table output.
+
+  TRANSFORMATION is generated from the oneof field transformation.
+
+  Args:
+    job: job dictionary for transform
+
+  Returns:
+    A dictionary of the transformation type and its values.
+  """
+  transformation = {}
+  transform_types = [
+      "putObjectHold",
+      "deleteObject",
+      "putMetadata",
+      "rewriteObject",
+  ]
+  for transform in transform_types:
+    if transform in job:
+      transformation[transform] = job[transform]
+      return transformation
+
+
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List batch-operations jobs."""
@@ -57,14 +81,17 @@ class List(base.ListCommand):
     parser.display_info.AddFormat("""
       table(
         name.basename():wrap=20:label=BATCH_JOB_ID,
-        firstof(prefixList, manifest):wrap=20:label=SOURCE,
-        firstof(putObjectHold, deleteObject, putKmsKey, putMetadata):wrap=20:label=TRANSFORMATION,
+        bucketList.buckets:wrap=20:label=SOURCE,
+        transformation():wrap=20:label=TRANSFORMATION,
         createTime:wrap=20:label=CREATE_TIME,
         counters:wrap=20:label=COUNTERS,
         errorSummaries:wrap=20:label=ERROR_SUMMARIES,
         state:wrap=20:label=STATE
       )
     """)
+    parser.display_info.AddTransforms({
+        "transformation": _TransformTransformation,
+    })
 
   def Run(self, args):
     return storage_batch_operations_api.StorageBatchOperationsApi().list_batch_jobs(

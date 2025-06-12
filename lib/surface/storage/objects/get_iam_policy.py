@@ -58,5 +58,5 @@ class GetIamPolicy(base.Command):
     errors_util.raise_error_if_not_gcs(args.command_path, url_object)
     matching_url = iam_command_util.get_single_matching_url(args.url)
     return api_factory.get_api(matching_url.scheme).get_object_iam_policy(
-        matching_url.bucket_name, matching_url.object_name,
+        matching_url.bucket_name, matching_url.resource_name,
         matching_url.generation)

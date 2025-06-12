@@ -342,11 +342,20 @@ def AddBetaArgs(parser):
   flags.AddNodeCount(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupTtlDays(parser)
+  flags.AddReconcilePsaNetworking(parser)
 
 
 def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
   pass
+
+
+def IsBetaOrNewer(release_track):
+  """Returns true if the release track is beta or newer."""
+  return (
+      release_track == base.ReleaseTrack.BETA
+      or release_track == base.ReleaseTrack.ALPHA
+  )
 
 
 def RunBasePatchCommand(args, release_track):
@@ -417,6 +426,31 @@ def RunBasePatchCommand(args, release_track):
   original_instance_resource = sql_client.instances.Get(
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
+
+  if IsBetaOrNewer(release_track) and args.IsSpecified(
+      'reconcile_psa_networking'
+  ):
+    if (
+        not original_instance_resource.settings.ipConfiguration
+        or not original_instance_resource.settings.ipConfiguration.privateNetwork
+    ):
+      raise exceptions.ArgumentError(
+          'argument --reconcile-psa-networking can be used only with instances'
+          ' that have a private network'
+      )
+    # Do not allow reconcile-psa-networking flag to be specified with other
+    # arguments.
+    for key in args.GetSpecifiedArgsDict():
+      # positional argument does not have a flag argument
+      if key == 'instance':
+        continue
+      if key == 'reconcile_psa_networking':
+        continue
+      if not args.GetFlagArgument(key).is_global:
+        raise exceptions.ArgumentError(
+            'argument --reconcile-psa-networking cannot be specified with other'
+            ' arguments excluding gcloud wide flags'
+        )
 
   patch_instance = command_util.InstancesV1Beta4.ConstructPatchInstanceFromArgs(
       sql_messages,

@@ -84,13 +84,11 @@ class Create(base.CreateCommand):
     else:
       network_ref = None
 
-    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
-
     return interconnect_attachment.Create(
         description=args.description,
         interconnect=interconnect_ref,
         attachment_type='L2_DEDICATED',
-        admin_enabled=admin_enabled,
+        admin_enabled=args.enable_admin,
         bandwidth=getattr(args, 'bandwidth', None),
         validate_only=getattr(args, 'dry_run', None),
         mtu=getattr(args, 'mtu', None),

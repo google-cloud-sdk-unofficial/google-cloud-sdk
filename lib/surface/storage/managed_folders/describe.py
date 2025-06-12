@@ -57,7 +57,7 @@ class Describe(base.Command):
     client = api_factory.get_api(url.scheme)
     resource = client.get_managed_folder(
         url.bucket_name,
-        url.object_name,
+        url.resource_name,
     )
     return resource_util.get_display_dict_for_resource(
         resource,

@@ -42,7 +42,7 @@ def _Run(args):
   if args.audiences:
     if not auth_util.ValidIdTokenCredential(cred):
       raise auth_exceptions.WrongAccountTypeError(
-          'Invalid account Type for `--audiences`. '
+          'Invalid account type for `--audiences`. '
           'Requires valid service account.')
     # TODO(b/170394261): Avoid changing constant values.
     config.CLOUDSDK_CLIENT_ID = args.audiences
@@ -81,6 +81,7 @@ def _Run(args):
   return credential
 
 
+@base.UniverseCompatible
 class IdentityToken(base.Command):
   """Print an identity token for the specified account."""
   detailed_help = {

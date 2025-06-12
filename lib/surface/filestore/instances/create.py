@@ -47,7 +47,7 @@ class Create(base.CreateCommand):
           """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -90,6 +90,12 @@ class Create(base.CreateCommand):
     tier = instances_flags.GetTierArg(client.messages).GetEnumForChoice(
         args.tier
     )
+    protocol = None
+    if args.protocol is not None:
+      protocol = instances_flags.GetProtocolArg(
+          client.messages
+      ).GetEnumForChoice(args.protocol)
+    ldap = args.ldap or None
     labels = labels_util.ParseCreateArgs(args,
                                          client.messages.Instance.LabelsValue)
     tags = instances_flags.GetTagsFromArgs(args,
@@ -104,6 +110,7 @@ class Create(base.CreateCommand):
 
     instance = client.ParseFilestoreConfig(
         tier=tier,
+        protocol=protocol,
         description=args.description,
         file_share=args.file_share,
         network=args.network,
@@ -113,6 +120,7 @@ class Create(base.CreateCommand):
         zone=instance_ref.locationsId,
         nfs_export_options=nfs_export_options,
         kms_key_name=instances_flags.GetAndValidateKmsKeyName(args),
+        ldap=ldap,
         source_instance=args.source_instance,
         deletion_protection_enabled=args.deletion_protection,
         deletion_protection_reason=args.deletion_protection_reason)

@@ -90,7 +90,7 @@ To start a local datastore emulator, run:
     except java.JavaVersionError:
       log.warning(
           'Cloud Datastore Emulator support for Java JRE version 11 will be '
-          'dropped after gcloud command-line tool release 508.0.0. Please '
+          'dropped after gcloud command-line tool release 528.0.0. Please '
           'upgrade to Java JRE version 21 or higher to continue using the '
           'latest Cloud Datastore Emulator.')
     except java.JavaError:

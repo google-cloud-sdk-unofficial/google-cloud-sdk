@@ -495,7 +495,7 @@ class Update(base.UpdateCommand):
       )
       if user_sa_mapping_update.needs_update:
         changed_fields.append(
-            'configuration.security_config.identity_config.user_service_account_mapping'
+            'config.security_config.identity_config.user_service_account_mapping'
         )
         has_changes = True
       user_sa_mapping = user_sa_mapping_update.GetOrNone()
@@ -508,7 +508,7 @@ class Update(base.UpdateCommand):
           clusters.ParseIdentityConfigFile(dataproc, args.identity_config_file)
       )
       changed_fields.append(
-          'configuration.security_config.identity_config.user_service_account_mapping'
+          'config.security_config.identity_config.user_service_account_mapping'
       )
       has_changes = True
 

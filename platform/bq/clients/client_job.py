@@ -1011,10 +1011,11 @@ def RunQueryRpc(
               statistics=dict(
                   query=dict(
                       totalBytesProcessed=result['totalBytesProcessed'],
-                      cacheHit=result['cacheHit'],
                   )
               )
           )
+          if 'cacheHit' in result:
+            execution['statistics']['query']['cacheHit'] = result['cacheHit']
           if 'schema' in result:
             execution['statistics']['query']['schema'] = result['schema']
           return ([], [], execution)

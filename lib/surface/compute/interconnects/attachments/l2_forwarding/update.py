@@ -73,10 +73,9 @@ class Update(base.UpdateCommand):
       if labels is not None:
         label_fingerprint = old_attachment.labelFingerprint
 
-    admin_enabled = attachment_flags.GetAdminEnabledFlag(args)
     return interconnect_attachment.Patch(
         description=args.description,
-        admin_enabled=admin_enabled,
+        admin_enabled=args.enable_admin,
         labels=labels,
         label_fingerprint=label_fingerprint,
         bandwidth=getattr(args, 'bandwidth', None),

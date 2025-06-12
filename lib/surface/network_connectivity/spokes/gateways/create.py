@@ -31,7 +31,7 @@ from googlecloudsdk.core import resources
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.Command):
   """Create a new Gateway spoke.
 
@@ -40,7 +40,7 @@ class Create(base.Command):
 
   @staticmethod
   def Args(parser):
-    messages = apis.GetMessagesModule('networkconnectivity', 'v1')
+    messages = apis.GetMessagesModule('networkconnectivity', 'v1beta')
 
     flags.AddSpokeResourceArg(
         parser, 'to create', flags.ResourceLocationType.REGION_ONLY
@@ -53,7 +53,9 @@ class Create(base.Command):
     flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
     flags.AddAsyncFlag(parser)
     flags.AddLandingNetworkFlag(parser)
-    flags.AddCapacityFlag(messages.Gateway, parser)
+    flags.AddCapacityFlag(
+        messages.GoogleCloudNetworkconnectivityV1betaGateway, parser
+    )
     flags.AddIpRangeReservationsFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -157,36 +159,6 @@ class Create(base.Command):
     )
     log.CreatedResource(spoke_ref.Name(), kind='spoke')
     return res
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBETA(Create):
-  """Create a new Gateway spoke.
-
-  Create a new Gateway spoke.
-  """
-
-  @staticmethod
-  def Args(parser):
-    messages = apis.GetMessagesModule('networkconnectivity', 'v1beta')
-
-    flags.AddSpokeResourceArg(
-        parser, 'to create', flags.ResourceLocationType.REGION_ONLY
-    )
-    flags.AddRegionFlag(
-        parser, supports_region_wildcard=False, hidden=False, required=True
-    )
-    flags.AddHubFlag(parser)
-    flags.AddGroupFlag(parser, required=True)
-    flags.AddDescriptionFlag(parser, 'Description of the spoke to create.')
-    flags.AddAsyncFlag(parser)
-    flags.AddLandingNetworkFlag(parser)
-    flags.AddCapacityFlag(
-        messages.GoogleCloudNetworkconnectivityV1betaGateway, parser
-    )
-    flags.AddIpRangeReservationsFlag(parser)
-    labels_util.AddCreateLabelsFlags(parser)
 
 
 Create.detailed_help = {

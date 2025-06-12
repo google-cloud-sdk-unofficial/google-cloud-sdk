@@ -70,10 +70,10 @@ class AddIamPolicyBinding(base.Command):
 
     try:
       policy = api_client.get_managed_folder_iam_policy(
-          url.bucket_name, url.object_name
+          url.bucket_name, url.resource_name
       )
     except api_errors.NotFoundError:
-      api_client.create_managed_folder(url.bucket_name, url.object_name)
+      api_client.create_managed_folder(url.bucket_name, url.resource_name)
       policy = messages.Policy()
 
     return iam_command_util.add_iam_binding_to_resource(

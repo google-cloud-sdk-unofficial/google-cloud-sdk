@@ -23,6 +23,5 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class GatewayAdvertisedRoutes(base.Group):
   """Manage gateway advertised routes."""

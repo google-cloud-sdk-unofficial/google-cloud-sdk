@@ -92,6 +92,8 @@ OVERRIDE_FLAGS_SET = (
     'server_ca_mode',
     'region',
     'retain_backups_on_delete',
+    'final_backup',
+    'final_backup_ttl_days'
 )
 
 
@@ -170,6 +172,8 @@ def AddInstanceSettingsArgs(parser):
   flags.AddServerCaMode(parser, hidden=True)
   flags.AddTags(parser, hidden=True)
   flags.AddRetainBackupsOnDelete(parser, hidden=True)
+  flags.AddFinalBackup(parser)
+  flags.AddFinalbackupTtlDays(parser)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):

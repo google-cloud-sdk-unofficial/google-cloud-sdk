@@ -25,9 +25,6 @@ from frontend import bq_cached_client
 from frontend import utils as frontend_utils
 from utils import bq_id_utils
 
-
-FLAGS = flags.FLAGS
-
 # These aren't relevant for user-facing docstrings:
 # pylint: disable=g-doc-return-or-yield
 # pylint: disable=g-doc-args
@@ -93,7 +90,8 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         self.routine,
     ):
       raise app.UsageError(
-          'Cannot specify more than one of -d, -t, --routine or --connection.'
+          'Cannot specify more than one of -d, -t, --routine, --connection,'
+          ' --reservation or --reservation_assignment.'
       )
 
     if not identifier:

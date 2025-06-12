@@ -23,10 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
 
-
-_MESSAGE = apis.GetMessagesModule('managedkafka', 'v1')
-_CLIENT = apis.GetClientInstance('managedkafka', 'v1', no_http=True)
-
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
@@ -60,6 +56,8 @@ class Describe(base.UpdateCommand):
     Returns:
       The schema registry.
     """
+    message = apis.GetMessagesModule('managedkafka', 'v1')
+    client = apis.GetClientInstance('managedkafka', 'v1')
 
     project_id = args.project
     location = args.location
@@ -74,32 +72,32 @@ class Describe(base.UpdateCommand):
     )
 
     print('Describing schema registry: {}'.format(name))
-    schema_registry = _MESSAGE.SchemaRegistry()
+    schema_registry = message.SchemaRegistry()
     schema_registry.name = name
     schema_registry_request = (
-        _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesGetRequest(
+        message.ManagedkafkaProjectsLocationsSchemaRegistriesGetRequest(
             name=name
         )
     )
     schema_registry_mode_request = (
-        _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
+        message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
             name=name + '/mode'
         )
     )
     schema_registry_config_request = (
-        _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
+        message.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
             name=name + '/config'
         )
     )
 
-    schema_registry = _CLIENT.projects_locations_schemaRegistries.Get(
+    schema_registry = client.projects_locations_schemaRegistries.Get(
         request=schema_registry_request
     )
-    schema_registry_mode = _CLIENT.projects_locations_schemaRegistries_mode.Get(
+    schema_registry_mode = client.projects_locations_schemaRegistries_mode.Get(
         request=schema_registry_mode_request
     )
     schema_registry_config = (
-        _CLIENT.projects_locations_schemaRegistries_config.Get(
+        client.projects_locations_schemaRegistries_config.Get(
             request=schema_registry_config_request,
         )
     )

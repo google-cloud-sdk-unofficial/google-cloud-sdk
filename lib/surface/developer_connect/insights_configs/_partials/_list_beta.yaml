@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List insightsConfigs
     description: List insightsConfigs

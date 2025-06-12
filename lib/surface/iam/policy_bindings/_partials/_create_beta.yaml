@@ -111,6 +111,20 @@
                     * `//cloudresourcemanager.googleapis.com/projects/PROJECT_ID`
                   * Workload Identity Pool:
                   `//iam.googleapis.com/projects/PROJECT_NUMBER/locations/LOCATION/workloadIdentityPools/WORKLOAD_POOL_ID`
+            - arg_name: target-resource
+              api_field: googleIamV3betaPolicyBinding.target.resource
+              required: false
+              repeated: false
+              help_text: |-
+                Full Resource Name used for access policy bindings
+                Examples:
+
+                * Organization:
+                `//cloudresourcemanager.googleapis.com/organizations/ORGANIZATION_ID`
+                * Folder: `//cloudresourcemanager.googleapis.com/folders/FOLDER_ID`
+                * Project:
+                    * `//cloudresourcemanager.googleapis.com/projects/PROJECT_NUMBER`
+                    * `//cloudresourcemanager.googleapis.com/projects/PROJECT_ID`
     - arg_name: policy-kind
       api_field: googleIamV3betaPolicyBinding.policyKind
       required: false
@@ -125,6 +139,11 @@
         enum_value: PRINCIPAL_ACCESS_BOUNDARY
         help_text: |-
           Principal access boundary policy kind
+      - arg_value: access
+        enum_value: ACCESS
+        help_text: |-
+          Access policy kind. Keep behind visibility label until Access Policy
+          launch.
     - arg_name: policy
       api_field: googleIamV3betaPolicyBinding.policy
       required: true

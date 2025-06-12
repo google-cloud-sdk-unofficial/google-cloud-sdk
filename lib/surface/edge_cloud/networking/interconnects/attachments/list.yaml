@@ -27,12 +27,24 @@
       spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:zone
 
   output:
-    format: |
-      table(
-        name.basename():label=NAME,
-        mtu:label=MTU,
-        vlanId:label=VLANID,
-        interconnect.basename():label=INTERCONNECT,
-        network.basename():label=NETWORK,
-        state.sub("STATE_", ""):label=STATE
-      )
+    GA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          mtu:label=MTU,
+          vlanId:label=VLANID,
+          interconnect.basename():label=INTERCONNECT,
+          network.basename():label=NETWORK,
+          state.sub("STATE_", ""):label=STATE
+        )
+    ALPHA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          mtu:label=MTU,
+          vlanId:label=VLANID,
+          interconnect.basename():label=INTERCONNECT,
+          peeringType.sub("REMOTE_PEERING_NETWORK_TYPE_", ""):label=REMOTEPEERINGTYPE,
+          network.basename():label=NETWORK,
+          state.sub("STATE_", ""):label=STATE
+        )

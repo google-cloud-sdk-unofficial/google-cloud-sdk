@@ -99,6 +99,7 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
       )
 
     if hasattr(res, 'firewallPolicys') and res.firewallPolicys:
+      all_unsorted_firewall_policy = []
       for fp in res.firewallPolicys:
         firewall_policy_rule = firewalls_utils.SortFirewallPolicyRules(
             client, fp.rules
@@ -111,8 +112,12 @@ class GetEffectiveFirewalls(base.DescribeCommand, base.ListCommand):
             rules=firewall_policy_rule,
             packetMirroringRules=packet_mirroring_rules,
             type=fp.type,
+            priority=fp.priority,
         )
-        all_firewall_policy.append(fp_response)
+        all_unsorted_firewall_policy.append(fp_response)
+      all_firewall_policy = firewalls_utils.SortFirewallPolicies(
+          client, all_unsorted_firewall_policy
+      )
 
     if args.IsSpecified('format') and args.format == 'json':
       return client.messages.RegionNetworkFirewallPoliciesGetEffectiveFirewallsResponse(

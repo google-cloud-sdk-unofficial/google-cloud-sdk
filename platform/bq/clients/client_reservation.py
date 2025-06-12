@@ -146,7 +146,12 @@ def CreateReservation(
   )
 
 
-def ListReservations(client, reference, page_size, page_token):
+def ListReservations(
+    client: ...,
+    reference: ...,
+    page_size: int,
+    page_token: Optional[str],
+) -> Any:
   """List reservations in the project and location for the given reference.
 
   Arguments:

@@ -36,7 +36,8 @@
             enableLogging:label=LOGGING,
             alternativeNameServerConfig.targetNameServers.extract(
             ipv4Address).map().join(", ").list():label=ALTERNATE_NAME_SERVERS,
-            networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS
+            networks.firstof(networkUrl).map().scope().join(", "):label=NETWORKS,
+            dns64Config.scope.allQueries:label=DNS64_ALL_QUERIES
       )
 
 - <<: *GA

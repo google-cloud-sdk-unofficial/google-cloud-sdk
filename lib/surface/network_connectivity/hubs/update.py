@@ -42,7 +42,7 @@ class Update(base.Command):
   def Args(parser):
     flags.AddHubResourceArg(parser, 'to be updated')
     flags.AddDescriptionFlag(parser, 'New description of the hub.')
-    flags.AddExportPscFlag(parser)
+    flags.AddPscGroup(parser)
     flags.AddAsyncFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 

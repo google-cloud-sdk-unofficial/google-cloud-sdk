@@ -58,7 +58,7 @@
       type: "arg_list"
       help_text: |
         A double-quote (`"`) wrapped list of family name and corresponding garbage collection rules
-        concatenated by `:`, where the rules are optional. For example: \
+        concatenated by `:`, where the rules are optional. For example:
         `"family_1,family_2:maxage=5d&&maxversions=2,family_3:maxage=10d||maxversions=5"`
       processor: googlecloudsdk.api_lib.bigtable.tables:ParseColumnFamilies
     - api_field: createTableRequest.initialSplits

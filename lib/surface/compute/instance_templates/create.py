@@ -1282,7 +1282,7 @@ class CreateBeta(Create):
   _support_maintenance_interval = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = True
-  _support_vlan_nic = False
+  _support_vlan_nic = True
   _support_watchdog_timer = False
   _support_disk_labels = True
   _support_ipv6_only = True

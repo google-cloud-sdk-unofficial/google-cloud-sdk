@@ -1,4 +1,4 @@
-- release_tracks: [BETA, GA]
+- release_tracks: [BETA]
 
   help_text:
     brief: Update a Gateway spoke.
@@ -17,14 +17,10 @@
     - arg_name: description
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaSpoke.description
-      GA:
-        api_field: spoke.description
       help_text: New description of the spoke.
     - arg_name: capacity
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaSpoke.gateway.capacity
-      GA:
-        api_field: spoke.gateway.capacity
       choices:
       - enum_value: CAPACITY_1_GBPS
         arg_value: 1g
@@ -36,8 +32,6 @@
     labels:
       BETA:
         api_field: googleCloudNetworkconnectivityV1betaSpoke.labels
-      GA:
-        api_field: spoke.labels
 
   update:
     read_modify_update: true
@@ -48,7 +42,5 @@
   request:
     BETA:
       api_version: v1beta
-    GA:
-      api_version: v1
     collection: networkconnectivity.projects.locations.spokes
     method: patch

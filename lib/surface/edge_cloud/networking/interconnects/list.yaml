@@ -27,10 +27,20 @@
       spec: !REF googlecloudsdk.command_lib.edge_cloud.networking.resources:zone
 
   output:
-    format: |
-      table(
-        name.basename():label=NAME,
-        uuid:label=UUID,
-        deviceCloudResourceName:label=DEVICECLOUDRESOURCENAME,
-        physicalPorts.list():label=PHYSICALPORTS
-      )
+    GA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          uuid:label=UUID,
+          deviceCloudResourceName:label=DEVICECLOUDRESOURCENAME,
+          physicalPorts.list():label=PHYSICALPORTS
+        )
+    ALPHA:
+      format: |
+        table(
+          name.basename():label=NAME,
+          uuid:label=UUID,
+          deviceCloudResourceName:label=DEVICECLOUDRESOURCENAME,
+          physicalPorts.list():label=PHYSICALPORTS,
+          remotePeeringNetworkType.sub("REMOTE_PEERING_NETWORK_TYPE_", ""):label=REMOTEPEERINGTYPE
+        )

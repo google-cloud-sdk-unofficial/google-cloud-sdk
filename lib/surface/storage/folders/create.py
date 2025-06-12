@@ -73,4 +73,4 @@ class Create(base.Command):
     for url in urls:
       client = api_factory.get_api(url.scheme)
       log.status.Print('Creating {}...'.format(url))
-      client.create_folder(url.bucket_name, url.object_name, args.recursive)
+      client.create_folder(url.bucket_name, url.resource_name, args.recursive)

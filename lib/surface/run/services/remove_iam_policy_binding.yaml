@@ -39,3 +39,8 @@
       enable_condition: true
       policy_version: 3
       get_iam_policy_version_path: options_requestedPolicyVersion
+  GA:
+    iam:
+      enable_condition: true
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion

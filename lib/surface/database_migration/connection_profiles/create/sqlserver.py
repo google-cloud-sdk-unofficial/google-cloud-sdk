@@ -67,6 +67,7 @@ class _SQLServer(base.Command):
     cp_flags.AddDisplayNameFlag(parser)
     cp_flags.AddRoleFlag(parser)
     cp_flags.AddSslServerOnlyOrRequiredConfigGroup(parser)
+    cp_flags.AddSslFlags(parser)
     sqlserver_flags.AddCloudSqlInstanceFlags(parser)
     sqlserver_flags.AddCpDetailsFlag(parser)
     sqlserver_flags.AddDatabaseFlag(parser)

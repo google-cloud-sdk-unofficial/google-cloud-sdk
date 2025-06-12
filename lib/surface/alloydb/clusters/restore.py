@@ -32,6 +32,7 @@ from googlecloudsdk.core import resources
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Restore(base.RestoreCommand):
+  # TODO(b/407008589): update the description and examples for Backup DR.
   """Restore an AlloyDB cluster from a given backup or a source cluster and a timestamp."""
 
   detailed_help = {

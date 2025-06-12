@@ -62,7 +62,7 @@ class RemoveIamPolicyBinding(base.Command):
 
     client = api_factory.get_api(url_object.scheme)
     policy = client.get_object_iam_policy(url_object.bucket_name,
-                                          url_object.object_name,
+                                          url_object.resource_name,
                                           url_object.generation)
 
     return iam_command_util.remove_iam_binding_from_resource(

@@ -73,7 +73,7 @@ class Create(base.Command):
       destination = storage_url.CloudUrl(
           scheme=source_bucket.scheme,
           bucket_name=source_bucket.bucket_name,
-          object_name='inventory_reports/')
+          resource_name='inventory_reports/')
 
     if args.schedule_starts is not None:
       start_date = args.schedule_starts

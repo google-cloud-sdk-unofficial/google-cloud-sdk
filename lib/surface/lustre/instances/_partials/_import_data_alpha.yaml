@@ -45,7 +45,8 @@
         `/`. Default is `/`. If you're importing data into Managed Lustre, any
         path other than the default must already exist on the file system.
     - help_text: |-
-        Name of the resource.
+        The name of the Managed Lustre instance in the format
+        `projects/{project}/locations/{location}/instances/{instance}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_instances

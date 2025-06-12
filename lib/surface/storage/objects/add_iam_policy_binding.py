@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.storage.tasks import set_iam_policy_task
 
 
 @base.Hidden
+@base.UniverseCompatible
 class AddIamPolicyBinding(base.Command):
   """Grant a principal access to an object."""
 
@@ -64,7 +65,7 @@ class AddIamPolicyBinding(base.Command):
     errors_util.raise_error_if_not_gcs(args.command_path, url_object)
 
     policy = api_factory.get_api(url_object.scheme).get_object_iam_policy(
-        url_object.bucket_name, url_object.object_name, url_object.generation)
+        url_object.bucket_name, url_object.resource_name, url_object.generation)
     return iam_command_util.add_iam_binding_to_resource(
         args,
         url_object,

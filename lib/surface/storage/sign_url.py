@@ -222,8 +222,7 @@ class SignUrl(base.Command):
     )
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
+
     key = None
     delegates = None
     delegate_chain = args.impersonate_service_account or (
@@ -298,7 +297,8 @@ class SignUrl(base.Command):
           path = '/{}'.format(resource.storage_url.bucket_name)
         else:
           path = '/{}/{}'.format(
-              resource.storage_url.bucket_name, resource.storage_url.object_name
+              resource.storage_url.bucket_name,
+              resource.storage_url.resource_name,
           )
 
         parameters = dict(args.query_params)

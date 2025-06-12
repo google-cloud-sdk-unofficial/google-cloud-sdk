@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.Deprecate(
     # In 2 weeks, set to True. In 4 weeks, delete the command group and
     # associated tests/utils.
-    is_removed=False,
+    is_removed=True,
     warning=(
         'The `gcloud alpha anthos config sync` command group is deprecated and'
         ' will be removed in an upcoming release. Use the [nomos command line'

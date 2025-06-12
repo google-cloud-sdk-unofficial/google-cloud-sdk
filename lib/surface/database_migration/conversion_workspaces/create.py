@@ -19,6 +19,7 @@ from typing import Optional, Type, TypeVar
 
 from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import command_mixin
 from googlecloudsdk.command_lib.database_migration.conversion_workspaces import flags as cw_flags
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -40,9 +41,11 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         To create a conversion workspace:
 
             $ {command} my-conversion-workspace --region=us-central1
-            --display-name=cw1 --source-database-engine=ORACLE
-            --source-database-version=11 --destination-database-engine=POSTGRESQL
-            --destination-database-version=8
+            --display-name=cw1
+            --source-database-engine=ORACLE
+            --source-database-version=11
+            --destination-database-engine=POSTGRESQL
+            --destination-database-version=15
       """,
   }
 
@@ -57,7 +60,8 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
     resource_args.AddConversionWorkspaceResourceArg(parser, 'to create')
     cw_flags.AddNoAsyncFlag(parser)
     cw_flags.AddDisplayNameFlag(parser)
-    cw_flags.AddDatabaseEngineFlag(parser)
+    cw_flags.AddDatabaseEngineFlags(parser)
+    cw_flags.AddDatabaseProviderFlags(parser)
     cw_flags.AddDatabaseVersionFlag(parser)
     cw_flags.AddGlobalSettingsFlag(parser)
 
@@ -72,14 +76,18 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
       A dict object representing the operations resource describing the create
       operation if the create was successful.
     """
+    self._ValidateEngineProviderFlags(args)
+
     conversion_workspace_ref = args.CONCEPTS.conversion_workspace.Parse()
 
     result_operation = self.client.crud.Create(
         parent_ref=conversion_workspace_ref.Parent().RelativeName(),
         conversion_workspace_id=conversion_workspace_ref.conversionWorkspacesId,
         display_name=args.display_name,
+        source_database_provider=args.source_database_provider,
         source_database_engine=args.source_database_engine,
         source_database_version=args.source_database_version,
+        destination_database_provider=args.destination_database_provider,
         destination_database_engine=args.destination_database_engine,
         destination_database_version=args.destination_database_version,
         global_settings=self._BuildGlobalSettings(
@@ -94,6 +102,32 @@ class Create(command_mixin.ConversionWorkspacesCommandMixin, base.Command):
         operation_name='Created',
         sync=args.IsKnownAndSpecified('no_async'),
     )
+
+  def _ValidateEngineProviderFlags(self, args: argparse.Namespace) -> None:
+    """Validates the engine and provider flags."""
+    if (
+        args.source_database_provider
+        not in args.source_database_engine.supported_providers
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--source_database_engine, --source_database_provider',
+          f'Source database engine {args.source_database_engine} is not'
+          ' supported by the source database provider'
+          f' {args.source_database_provider}.\nSupported providers are:'
+          f' {", ".join(map(str, args.source_database_engine.supported_providers))}.',
+      )
+
+    if (
+        args.destination_database_provider
+        not in args.destination_database_engine.supported_providers
+    ):
+      raise exceptions.InvalidArgumentException(
+          '--destination_database_engine, --destination_database_provider',
+          f'Destination database engine {args.destination_database_engine} is'
+          ' not supported by the destination database provider'
+          f' {args.destination_database_provider}.\nSupported providers are:'
+          f' {", ".join(map(str, args.destination_database_engine.supported_providers))}.',
+      )
 
   def _BuildGlobalSettings(
       self,

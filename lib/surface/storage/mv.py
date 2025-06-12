@@ -86,8 +86,7 @@ class Mv(base.Command):
     flags.add_per_object_retention_flags(parser)
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
+
     for url_string in args.source:
       url = storage_url.storage_url_from_string(url_string)
       if isinstance(url, storage_url.CloudUrl) and not url.is_object():

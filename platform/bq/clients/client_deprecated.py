@@ -14,7 +14,9 @@ from utils import bq_id_utils
 from utils import bq_processor_utils
 
 
-if sys.version_info >= (3, 9):
+# This Callable annotation would cause a type error before Python 3.9.2, see
+# https://docs.python.org/3/whatsnew/3.9.html#notable-changes-in-python-3-9-2.
+if sys.version_info >= (3, 9, 2):
   GetApiClienFunction: TypeAlias = Callable[[], discovery.Resource]
 else:
   GetApiClienFunction: TypeAlias = Callable

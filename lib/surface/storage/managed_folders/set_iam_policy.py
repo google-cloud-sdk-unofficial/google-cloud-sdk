@@ -61,7 +61,7 @@ def _set_iam_policy_task_iterator(url_strings, policy):
       continue
     url = storage_url.storage_url_from_string(url_string)
     api_factory.get_api(url.scheme).create_managed_folder(
-        url.bucket_name, url.object_name
+        url.bucket_name, url.resource_name
     )
     yield set_iam_policy_task.SetManagedFolderIamPolicyTask(url, policy)
 

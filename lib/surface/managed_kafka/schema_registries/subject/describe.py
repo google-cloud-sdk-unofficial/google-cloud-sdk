@@ -23,10 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
 
-
-_MESSAGE = apis.GetMessagesModule('managedkafka', 'v1')
-_CLIENT = apis.GetClientInstance('managedkafka', 'v1', no_http=True)
-
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
@@ -75,6 +71,8 @@ class Describe(base.UpdateCommand):
     Returns:
       The subject.
     """
+    message = apis.GetMessagesModule('managedkafka', 'v1')
+    client = apis.GetClientInstance('managedkafka', 'v1')
 
     project_id = args.project
     location = args.location
@@ -96,20 +94,20 @@ class Describe(base.UpdateCommand):
     print('Describing subject: {}'.format(subject_resource_path))
 
     subject_mode_request = (
-        _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
+        message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
             name=f'{name}/mode/{subject}'
         )
     )
     subject_config_request = (
-        _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
+        message.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
             name=f'{name}/config/{subject}'
         )
     )
 
-    subject_mode = _CLIENT.projects_locations_schemaRegistries_mode.Get(
+    subject_mode = client.projects_locations_schemaRegistries_mode.Get(
         request=subject_mode_request
     )
-    subject_config = _CLIENT.projects_locations_schemaRegistries_config.Get(
+    subject_config = client.projects_locations_schemaRegistries_config.Get(
         request=subject_config_request,
     )
 

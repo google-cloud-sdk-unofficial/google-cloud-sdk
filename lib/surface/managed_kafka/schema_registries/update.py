@@ -23,10 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
-
-_MESSAGE = apis.GetMessagesModule('managedkafka', 'v1')
-_CLIENT = apis.GetClientInstance('managedkafka', 'v1', no_http=True)
-
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
@@ -76,6 +72,9 @@ class Update(base.UpdateCommand):
       The updated schema registry.
     """
 
+    message = apis.GetMessagesModule('managedkafka', 'v1')
+    client = apis.GetClientInstance('managedkafka', 'v1')
+
     project_id = args.project
     location = args.location
     name = '{}{}/{}{}/{}{}'.format(
@@ -89,32 +88,32 @@ class Update(base.UpdateCommand):
 
     if args.mode:
       name = name + '/mode'
-      updatemoderequest = _MESSAGE.UpdateSchemaModeRequest()
+      updatemoderequest = message.UpdateSchemaModeRequest()
       updatemoderequest.mode = (
           managedkafka_v1_messages.UpdateSchemaModeRequest.ModeValueValuesEnum(
               args.mode
           )
       )
-      request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesContextsModeUpdateRequest(
+      request = message.ManagedkafkaProjectsLocationsSchemaRegistriesContextsModeUpdateRequest(
           name=name, updateSchemaModeRequest=updatemoderequest
       )
       response = (
-          _CLIENT.projects_locations_schemaRegistries_contexts_mode.Update(
+          client.projects_locations_schemaRegistries_contexts_mode.Update(
               request=request
           )
       )
       print('Updated schema registry mode to %s' % response.mode)
     if args.compatibility:
       name = name + '/config'
-      updateconfigrequest = _MESSAGE.UpdateSchemaConfigRequest()
+      updateconfigrequest = message.UpdateSchemaConfigRequest()
       updateconfigrequest.compatibility = managedkafka_v1_messages.UpdateSchemaConfigRequest.CompatibilityValueValuesEnum(
           args.compatibility
       )
-      request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesContextsConfigUpdateRequest(
+      request = message.ManagedkafkaProjectsLocationsSchemaRegistriesContextsConfigUpdateRequest(
           name=name, updateSchemaConfigRequest=updateconfigrequest
       )
       response = (
-          _CLIENT.projects_locations_schemaRegistries_contexts_config.Update(
+          client.projects_locations_schemaRegistries_contexts_config.Update(
               request=request
           )
       )

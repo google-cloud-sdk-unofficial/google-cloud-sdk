@@ -139,7 +139,7 @@ def _async_restore_task_iterator(args, user_request_args):
           ' without the --async flag. URL without wildcards: {}'.format(url)
       )
     bucket_to_globs[storage_url.CloudUrl(url.scheme, url.bucket_name)].append(
-        url.object_name
+        url.resource_name
     )
 
   for bucket_url, object_globs in bucket_to_globs.items():
@@ -331,9 +331,7 @@ class Restore(base.Command):
     )
 
   def Run(self, args):
-    # TODO(b/190541521): Determine if command group works with project number.
     # TODO(b/383682645): Add support for restoring managed folders.
-    base.RequireProjectID(args)
     task_status_queue = task_graph_executor.multiprocessing_context.Queue()
 
     if args.asyncronous:

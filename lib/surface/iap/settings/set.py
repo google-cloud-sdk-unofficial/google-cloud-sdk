@@ -21,14 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class Set(base.Command):
-  """Set the setting for an IAP resource."""
-
-  detailed_help = {
-      'EXAMPLES': """\
+EXAMPLES = """\
           To set the IAP setting for the resources within an organization, run:
 
             $ {command} iap_settings.yaml --organization=ORGANIZATION_ID
@@ -83,8 +76,27 @@ class Set(base.Command):
 
             $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
               --region=REGION_ID
+          """
 
-          """,
+NON_GA_EXAMPLES = EXAMPLES + """\
+
+    To set the IAP setting for the all cloud run services within a region of a project, run:
+
+      $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID
+
+    To set the IAP setting for a cloud run service within a project, run:
+
+      $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID --service=SERVICE_ID
+    """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class Set(base.Command):
+  """Set the setting for an IAP resource."""
+
+  detailed_help = {
+      'EXAMPLES': EXAMPLES,
   }
 
   _support_cloud_run = False
@@ -124,6 +136,8 @@ class Set(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Set the setting for an IAP resource."""
+  detailed_help = {
+      'EXAMPLES': NON_GA_EXAMPLES,
+  }
 
   _support_cloud_run = True
-

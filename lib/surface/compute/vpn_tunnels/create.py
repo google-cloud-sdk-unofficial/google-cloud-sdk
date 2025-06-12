@@ -479,7 +479,7 @@ class CreateBeta(CreateGA):
   gateway.
   """
 
-  _support_cipher_suite = False
+  _support_cipher_suite = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

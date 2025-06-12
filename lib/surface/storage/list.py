@@ -118,8 +118,7 @@ class List(base.ListCommand):
         )""" % List.OBJECT_FORMAT_STRING)
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
+
     paths = args.path or ['gs://']
     expander = expansion.GCSPathExpander()
     objects, dirs = expander.ExpandPaths(paths)

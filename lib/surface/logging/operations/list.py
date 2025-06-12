@@ -85,20 +85,40 @@ class List(base.ListCommand):
 
 
 List.detailed_help = {
-    'DESCRIPTION':
-        """
-        Return a list of long running operation details in given LOCATION. The
-        operations were scheduled by other gcloud commands. For example: a
-        copy_log_entries operation scheduled by command: gcloud alpha logging
-        operations copy BUCKET_ID DESTINATION --location=LOCATION. Note: while
-        listing the operations, the request_type must be specified in filter.
-        Example: --operation-filter=request_type=CopyLogEntries, Supported
-        operation types are: CopyLogEntries, CreateBucket and UpdateBucket.
-        Other supported filter expression are: operation_start_time,
-        operation_finish_time and operation_state.
+    'DESCRIPTION': """
+        Return a list of long running operations in the given LOCATION. The
+        operations were scheduled by other gcloud commands.
+
+        For example, a CopyLogEntries operation may be scheduled by the command:
+        `gcloud logging copy BUCKET_ID DESTINATION --location=LOCATION`.
+
+        The `--operation-filter` flag is required and must specify the
+        `request_type`. Supported request types include but are not limited to:
+        `CopyLogEntries`, `CreateBucket` and `UpdateBucket`.
+
+        Additional supported filter expressions include: `operation_start_time`,
+        `operation_finish_time` and `operation_state`. These can be combined
+        with the case-sensitive keyword `AND` between them.
+
+        For `operation_start_time` and `operation_end_time`, the operators >=,
+        >, <=, and < are supported.
+
+        Timestamps must be in either RFC3339 or ISO8601 formats. If the
+        timestamp contains a time value, then it must be quoted. For examples:
+        "YYYY-MM-DDTHH:MM:SSZ", "YYYY-MM-DDTHH:MM:SS.mmmZ", "YY-MM-DD",
+        "YYYY-MM-DDTHH:MM:SS-0000", "YYYY-MM-DDTHH:MM+0000", "YYYY-MM-DD",
+        YYYY-MM-DD, YY-MM-DD, etc.
+
+        The `operation_state` filter expression can be used to filter for
+        operations that are in a specific state. The value can be one of the
+        following: `SCHEDULED`, `WAITING_FOR_PRECONDITIONS`, `RUNNING`,
+        `SUCCESS`, `FAILURE`, `CANCELLED`, `PENDING`.
+
+        For `operation_state`, the operators = and != are supported.
+
+        Other filter options are not supported.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To list CopyLogEntries operations, run:
 
             $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries'
@@ -111,12 +131,12 @@ List.detailed_help = {
 
             $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_finish_time<="2023-11-20T00:00:00Z"'
 
-        To list CopyLogEntries operations that have a specified state, run:
+        To list CopyLogEntries operations that completed successfully, run:
 
-            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state=STATE'
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state=SUCCESS'
 
-        To list CopyLogEntries operations that don't have a specified state, run:
+        To list CopyLogEntries operations that have not failed, run:
 
-            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state!=STATE'
-        """
+            $ {command} --location=LOCATION --operation-filter='request_type=CopyLogEntries AND operation_state!=FAILURE'
+        """,
 }

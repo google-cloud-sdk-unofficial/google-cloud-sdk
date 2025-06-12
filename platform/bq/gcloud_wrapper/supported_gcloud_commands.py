@@ -15,7 +15,7 @@ CommandMapping = bq_to_gcloud_config_classes.CommandMapping
 
 
 def _bq_apilog_to_gcloud_verbosity(apilog: str) -> str:
-  if apilog != 'stdout':
+  if apilog not in ('', '-', '1', 'true', 'stdout'):
     logging.warning(
         'Gcloud only supports logging to stdout and apilog is set to %s', apilog
     )

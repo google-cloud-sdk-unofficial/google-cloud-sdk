@@ -34,6 +34,18 @@ def _AddArgsCommon(parser):
   flags.GetPolicyAltNameServersArg().AddToParser(parser)
   flags.GetPolicyLoggingArg().AddToParser(parser)
   flags.GetPolicyPrivateAltNameServersArg().AddToParser(parser)
+  flags.GetEnableDns64AllQueriesArg(update=True).AddToParser(parser)
+
+
+def _ArgsNeededForUpdateCommon():
+  return (
+      'networks',
+      'description',
+      'enable_inbound_forwarding',
+      'enable_logging',
+      'alternative_name_servers',
+      'enable_dns64_all_queries',
+  )
 
 
 @base.UniverseCompatible
@@ -74,13 +86,7 @@ class UpdateGA(base.UpdateCommand):
     # Get Policy
     policy_ref = args.CONCEPTS.policy.Parse()
     to_update = self._FetchPolicy(policy_ref, api_version)
-    args_needed_for_update = (
-        'networks',
-        'description',
-        'enable_inbound_forwarding',
-        'enable_logging',
-        'alternative_name_servers',
-    )
+    args_needed_for_update = _ArgsNeededForUpdateCommon()
     if not any(args.IsSpecified(arg) for arg in args_needed_for_update):
       log.status.Print('Nothing to update.')
       return to_update
@@ -107,6 +113,13 @@ class UpdateGA(base.UpdateCommand):
 
     if args.IsSpecified('enable_logging'):
       to_update.enableLogging = args.enable_logging
+
+    if args.IsSpecified('enable_dns64_all_queries'):
+      to_update.dns64Config = messages.PolicyDns64Config(
+          scope=messages.PolicyDns64ConfigScope(
+              allQueries=args.enable_dns64_all_queries
+          )
+      )
 
     if args.IsSpecified('description'):
       to_update.description = args.description
@@ -143,7 +156,6 @@ class UpdateBeta(UpdateGA):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1beta2')
     _AddArgsCommon(parser)
-    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')
 
   def Run(self, args):
@@ -154,14 +166,7 @@ class UpdateBeta(UpdateGA):
     # Get Policy
     policy_ref = args.CONCEPTS.policy.Parse()
     to_update = self._FetchPolicy(policy_ref, api_version)
-    args_needed_for_update = (
-        'networks',
-        'description',
-        'enable_inbound_forwarding',
-        'enable_logging',
-        'alternative_name_servers',
-        'enable_dns64_all_queries',
-    )
+    args_needed_for_update = _ArgsNeededForUpdateCommon()
     if not any(args.IsSpecified(arg) for arg in args_needed_for_update):
       log.status.Print('Nothing to update.')
       return to_update
@@ -229,5 +234,4 @@ class UpdateAlpha(UpdateBeta):
     resource_args.AddPolicyResourceArg(
         parser, verb='to update', api_version='v1alpha2')
     _AddArgsCommon(parser)
-    flags.GetEnableDns64AllQueriesArg().AddToParser(parser)
     parser.display_info.AddFormat('json')

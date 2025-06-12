@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,21 +22,25 @@
     brief: Deletes the specified VPC Flow Logs configuration.
     description: Deletes the specified VPC Flow Logs configuration.
     examples: |-
-      To delete a VPC Flow Logs configuration `my-config`, run:
+      To delete a VPC Flow Logs configuration `my-config` within the organization `my-org-number`, run:
 
-      $ {command} my-config --location=global
+      $ {command} my-config --location=global --organization=<my-org-number>
   arguments:
     params:
     - help_text: |-
-        `VpcFlowLogsConfig` resource name using the form:
+        `VpcFlowLogsConfig` resource name using one of the form:
             `projects/{project_id}/locations/global/vpcFlowLogsConfigs/{vpc_flow_logs_config}`
+            `organizations/{organization_id}/locations/global/vpcFlowLogsConfigs/{vpc_flow_logs_config}`
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1beta1_resources:project_location_vpc_flow_logs_config
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1beta1_resources:organizations_or_projects_locations_vpc_flow_logs_configs
       required: true
   request:
     api_version: v1beta1
     collection:
+    - networkmanagement.organizations.locations.vpcFlowLogsConfigs
     - networkmanagement.projects.locations.vpcFlowLogsConfigs
   async:
     collection:
+    - networkmanagement.organizations.locations.global.operations
     - networkmanagement.projects.locations.global.operations

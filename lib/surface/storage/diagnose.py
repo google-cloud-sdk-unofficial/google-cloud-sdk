@@ -383,8 +383,7 @@ class Diagnose(base.Command):
       return test_results
 
   def Run(self, args):
-    # TODO(b/190541521):  Determine if command group works with project number
-    base.RequireProjectID(args)
+
     default_tests = [
         TestType.DOWNLOAD_THROUGHPUT.value,
         TestType.LATENCY.value,

@@ -518,6 +518,8 @@ class Update(base.UpdateCommand):
                     batch_url=holder.client.batch_url,
                     errors=errors,
                 )))
+        if errors:
+          utils.RaiseToolException(errors)
 
     if self._support_scheduling_type:
       if args.IsSpecified('scheduling_type'):
@@ -534,6 +536,8 @@ class Update(base.UpdateCommand):
                 )
             )
         )
+        if errors:
+          utils.RaiseToolException(errors)
 
     return result
 

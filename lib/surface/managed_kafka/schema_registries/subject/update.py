@@ -23,10 +23,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
-
-_MESSAGE = apis.GetMessagesModule('managedkafka', 'v1')
-_CLIENT = apis.GetClientInstance('managedkafka', 'v1', no_http=True)
-
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
@@ -90,6 +86,10 @@ class Update(base.UpdateCommand):
     Returns:
       The updated schema registry.
     """
+
+    message = apis.GetMessagesModule('managedkafka', 'v1')
+    client = apis.GetClientInstance('managedkafka', 'v1')
+
     project_id = args.project
     location = args.location
     schema_registry_id = args.schema_registry
@@ -106,7 +106,7 @@ class Update(base.UpdateCommand):
 
     if args.mode:
       name = f'{name}/mode/{args.CONCEPTS.subject.Parse().subjectsId}'
-      updatemoderequest = _MESSAGE.UpdateSchemaModeRequest()
+      updatemoderequest = message.UpdateSchemaModeRequest()
       updatemoderequest.mode = (
           managedkafka_v1_messages.UpdateSchemaModeRequest.ModeValueValuesEnum(
               args.mode
@@ -114,19 +114,19 @@ class Update(base.UpdateCommand):
       )
       # Check if context is provided.
       if args.context:
-        request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesContextsModeUpdateRequest(
+        request = message.ManagedkafkaProjectsLocationsSchemaRegistriesContextsModeUpdateRequest(
             name=name, updateSchemaModeRequest=updatemoderequest
         )
         response = (
-            _CLIENT.projects_locations_schemaRegistries_contexts_mode.Update(
+            client.projects_locations_schemaRegistries_contexts_mode.Update(
                 request=request
             )
         )
       else:
-        request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesModeUpdateRequest(
+        request = message.ManagedkafkaProjectsLocationsSchemaRegistriesModeUpdateRequest(
             name=name, updateSchemaModeRequest=updatemoderequest
         )
-        response = _CLIENT.projects_locations_schemaRegistries_mode.Update(
+        response = client.projects_locations_schemaRegistries_mode.Update(
             request=request
         )
 
@@ -134,25 +134,25 @@ class Update(base.UpdateCommand):
 
     if args.compatibility:
       name = f'{name}/config/{args.CONCEPTS.subject.Parse().subjectsId}'
-      updateconfigrequest = _MESSAGE.UpdateSchemaConfigRequest()
+      updateconfigrequest = message.UpdateSchemaConfigRequest()
       updateconfigrequest.compatibility = managedkafka_v1_messages.UpdateSchemaConfigRequest.CompatibilityValueValuesEnum(
           args.compatibility
       )
       # Check if context is provided.
       if args.context:
-        request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesContextsConfigUpdateRequest(
+        request = message.ManagedkafkaProjectsLocationsSchemaRegistriesContextsConfigUpdateRequest(
             name=name, updateSchemaConfigRequest=updateconfigrequest
         )
         response = (
-            _CLIENT.projects_locations_schemaRegistries_contexts_config.Update(
+            client.projects_locations_schemaRegistries_contexts_config.Update(
                 request=request
             )
         )
       else:
-        request = _MESSAGE.ManagedkafkaProjectsLocationsSchemaRegistriesConfigUpdateRequest(
+        request = message.ManagedkafkaProjectsLocationsSchemaRegistriesConfigUpdateRequest(
             name=name, updateSchemaConfigRequest=updateconfigrequest
         )
-        response = _CLIENT.projects_locations_schemaRegistries_config.Update(
+        response = client.projects_locations_schemaRegistries_config.Update(
             request=request
         )
 

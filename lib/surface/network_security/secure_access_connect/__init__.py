@@ -23,7 +23,14 @@ from googlecloudsdk.calliope import base
 
 @base.DefaultUniverseOnly
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SecureAccessConnect(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class SecureAccessConnectAlpha(base.Group):
+  """Manage Secure Access Connect resources."""
+  category = base.NETWORK_SECURITY_CATEGORY
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class SecureAccessConnectBeta(base.Group):
   """Manage Secure Access Connect resources."""
   category = base.NETWORK_SECURITY_CATEGORY
