@@ -129,6 +129,8 @@ class Update(base.UpdateCommand):
     flags.AddMachineTypeFlag(node_config_group, update=True)
     flags.AddDiskTypeFlag(node_config_group)
     flags.AddDiskSizeFlag(node_config_group)
+    flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
+    flags.AddBootDiskProvisionedIopsFlag(node_config_group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -179,6 +181,8 @@ class Update(base.UpdateCommand):
         if hasattr(args, 'disk_size')
         else None,
         resource_manager_tags=args.resource_manager_tags,
+        boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
+        boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
     )
 
   def Run(self, args):
@@ -323,6 +327,8 @@ class UpdateBeta(Update):
     flags.AddMachineTypeFlag(node_config_group, update=True)
     flags.AddDiskTypeFlag(node_config_group)
     flags.AddDiskSizeFlag(node_config_group)
+    flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
+    flags.AddBootDiskProvisionedIopsFlag(node_config_group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -375,6 +381,8 @@ class UpdateBeta(Update):
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,
+        boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
+        boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
     )
     return ops
 
@@ -450,6 +458,8 @@ class UpdateAlpha(Update):
     flags.AddMachineTypeFlag(node_config_group, update=True)
     flags.AddDiskTypeFlag(node_config_group)
     flags.AddDiskSizeFlag(node_config_group)
+    flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
+    flags.AddBootDiskProvisionedIopsFlag(node_config_group)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -502,6 +512,8 @@ class UpdateAlpha(Update):
         disk_size_gb=utils.BytesToGb(args.disk_size)
         if hasattr(args, 'disk_size')
         else None,
+        boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
+        boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
     )
     return ops
 

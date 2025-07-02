@@ -1,3 +1,46 @@
+Changes for v3.6.2 (2025-04-02)
+===============================
+
+- Revert “zsh: skip repeat Python runs in the same completion run” This
+  reverts a regression introduced in zsh tab completion configurations
+  utilizing multiple matchers.
+
+Changes for v3.6.1 (2025-03-22)
+===============================
+
+- zsh: add global completion system install dir to user fpath if not
+  present
+
+- Update shell_integration.py to support spaces in script file path.
+  (#525)
+
+- Fix completion when wordbreak is first character (#526)
+
+Changes for v3.6.0 (2025-03-05)
+===============================
+
+- Support namespace package traversal when completing Python entry
+  points
+
+- zsh: skip repeat Python runs in the same completion run
+
+- Make \_parse_known_args signature more general for future API changes
+
+Changes for v3.5.3 (2024-12-31)
+===============================
+
+-  Use interactive shells and bind to make environment variable name
+   completions work in older Bash versions (#506)
+
+Changes for v3.5.2 (2024-12-06)
+===============================
+
+-  Fix \_parse_known_args monkeypatching
+
+   - Note: This fix is required to restore compatibility with Python 3.12.8 and 3.13.1.
+
+-  CI improvements
+
 Changes for v3.5.1 (2024-10-06)
 ===============================
 

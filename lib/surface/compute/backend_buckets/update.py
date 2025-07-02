@@ -19,12 +19,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
-
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import exceptions
+from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
 from googlecloudsdk.command_lib.compute.backend_buckets import flags as backend_buckets_flags
@@ -34,6 +34,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a backend bucket.
 
@@ -43,10 +44,14 @@ class Update(base.UpdateCommand):
   BACKEND_BUCKET_ARG = None
   EDGE_SECURITY_POLICY_ARG = None
 
+  support_regional_global_flags = False
+
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
-    backend_buckets_flags.AddUpdatableArgs(cls, parser, 'update')
+    backend_buckets_flags.AddUpdatableArgs(
+        cls, parser, 'update', cls.support_regional_global_flags
+    )
     backend_buckets_flags.GCS_BUCKET_ARG.AddArgument(parser)
     signed_url_flags.AddSignedUrlCacheMaxAge(
         parser, required=False, unspecified_help='')
@@ -91,6 +96,16 @@ class Update(base.UpdateCommand):
 
   def GetGetRequest(self, client, backend_bucket_ref):
     """Returns a request to retrieve the backend bucket."""
+    if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
+      return (
+          client.apitools_client.regionBackendBuckets,
+          'Get',
+          client.messages.ComputeRegionBackendBucketsGetRequest(
+              project=backend_bucket_ref.project,
+              region=backend_bucket_ref.region,
+              backendBucket=backend_bucket_ref.Name(),
+          ),
+      )
     return (client.apitools_client.backendBuckets, 'Get',
             client.messages.ComputeBackendBucketsGetRequest(
                 project=backend_bucket_ref.project,
@@ -98,6 +113,17 @@ class Update(base.UpdateCommand):
 
   def GetSetRequest(self, client, backend_bucket_ref, replacement):
     """Returns a request to update the backend bucket."""
+    if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
+      return (
+          client.apitools_client.regionBackendBuckets,
+          'Patch',
+          client.messages.ComputeRegionBackendBucketsPatchRequest(
+              project=backend_bucket_ref.project,
+              region=backend_bucket_ref.region,
+              backendBucket=backend_bucket_ref.Name(),
+              backendBucketResource=replacement,
+          ),
+      )
     return (client.apitools_client.backendBuckets, 'Patch',
             client.messages.ComputeBackendBucketsPatchRequest(
                 project=backend_bucket_ref.project,
@@ -107,6 +133,9 @@ class Update(base.UpdateCommand):
   def GetSetEdgeSecurityPolicyRequest(self, client, backend_bucket_ref,
                                       security_policy_ref):
     """Returns a request to set the edge policy for the backend bucket."""
+    if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
+      raise exceptions.ArgumentError(
+          'Regional backend buckets do not support edge security policies.')
     return (client.apitools_client.backendBuckets, 'SetEdgeSecurityPolicy',
             client.messages.ComputeBackendBucketsSetEdgeSecurityPolicyRequest(
                 project=backend_bucket_ref.project,
@@ -161,8 +190,17 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_bucket_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
-        args, holder.resources)
+    if self.support_regional_global_flags:
+      backend_bucket_ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
+          args,
+          holder.resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client),
+          default_scope=compute_scope.ScopeEnum.GLOBAL,
+      )
+    else:
+      backend_bucket_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
+          args, holder.resources
+      )
     get_request = self.GetGetRequest(client, backend_bucket_ref)
 
     objects = client.MakeRequests([get_request])
@@ -187,6 +225,11 @@ class Update(base.UpdateCommand):
 
     # Empty string is a valid value.
     if getattr(args, 'edge_security_policy', None) is not None:
+      if backend_bucket_ref.Collection() == 'compute.regionBackendBuckets':
+        raise exceptions.ArgumentError(
+            'argument --edge-security-policy: Regional backend buckets do not'
+            ' support edge security policies.'
+        )
       if getattr(args, 'edge_security_policy', None):
         security_policy_ref = self.EDGE_SECURITY_POLICY_ARG.ResolveAsResource(
             args, holder.resources).SelfLink()
@@ -214,16 +257,22 @@ class Update(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class UpdateBeta(Update):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
   """
 
+  support_regional_global_flags = False
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class UpdateAlpha(UpdateBeta):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
   """
+
+  support_regional_global_flags = True

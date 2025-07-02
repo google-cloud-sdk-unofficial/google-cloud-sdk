@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class HttpsHealthChecks(base.Group):
   """Read and manipulate HTTPS health checks for load balanced instances."""
 

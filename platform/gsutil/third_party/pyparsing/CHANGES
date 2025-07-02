@@ -2,22 +2,248 @@
 Change Log
 ==========
 
-NOTE: In the future release 3.2.0, use of many of the pre-PEP8 methods (such as
-`ParserElement.parseString`) will start to raise `DeprecationWarnings`. 3.2.0 should
-get released some time later in 2024. I currently plan to completely
-drop the pre-PEP8 methods in pyparsing 4.0, though we won't see that release until
-at least late 2024 if not 2025. So there is plenty of time to convert existing parsers to
-the new function names before the old functions are completely removed. (Big
-help from Devin J. Pohly in structuring the code to enable this peaceful transition.)
+RELEASE PLANNING NOTES:
 
-Version 3.2.0 will also discontinue support for Python versions 3.6 and 3.7.
+In the pyparsing release 3.3.0, use of many of the pre-PEP8 methods (such as
+`ParserElement.parseString`) will start to raise `DeprecationWarnings`. I plan to
+completely drop the pre-PEP8 methods in pyparsing 4.0, though we won't see that release
+until some time in 2026. So there is plenty of time to convert existing parsers to
+the new function names before the old functions are completely removed. (Big help from
+Devin J. Pohly in structuring the code to enable this peaceful transition.)
+
+===========================================================================================
+ The version 3.3.0 release will begin emitting `DeprecationWarnings` for pyparsing methods
+ that have been renamed to PEP8-compliant names (introduced in pyparsing 3.0.0, in August,
+ 2021, with legacy names retained as aliases). In preparation, I have added in pyparsing
+ 3.2.2 a utility for finding and replacing the legacy method names with the new names.
+ This utility is located at `pyparsing/tools/cvt_pep8_names.py`. This script will scan all
+ Python files specified on the command line, and if the `-u` option is selected, will
+ replace all occurrences of the old method names with the new PEP8-compliant names,
+ updating the files in place.
+
+ Here is an example that converts all the files in the pyparsing `/examples` directory:
+
+      python -m pyparsing.tools.cvt_pyparsing_pep8_names -u examples/*.py
+
+ The new names are compatible with pyparsing versions 3.0.0 and later.
+===========================================================================================
+
+
+Required Python versions by pyparsing version
+---------------------------------------------
+
++--------------------------------------------------+-------------------+
+| pyparsing version                                | Required Python   |
++==================================================+===================+
+| 3.2.0 - later                                    | 3.9 or later      |
+| 3.0.8 - 3.1.4                                    | 3.6.8 or later    |
+| 3.0.0 - 3.0.7 (these versions are discouraged)   | 3.6 or later      |
+| 2.4.7                                            | 2.7 or later      |
+| 1.5.7                                            | 2.6 - 2.7         |
++--------------------------------------------------+-------------------+
+
+
+Version 3.2.3 - March, 2025
+---------------------------
+- Fixed bug released in 3.2.2 in which `nested_expr` could overwrite parse actions
+  for defined content, and could truncate list of items within a nested list.
+  Fixes Issue #600, reported by hoxbro and luisglft, with helpful diag logs and
+  repro code.
+
+
+Version 3.2.2 - March, 2025
+---------------------------
+- Released `cvt_pyparsing_pep8_names.py` conversion utility to upgrade pyparsing-based
+  programs and libraries that use legacy camelCase names to use the new PEP8-compliant
+  snake_case method names. The converter can also be imported into other scripts as
+
+        from pyparsing.tools.cvt_pyparsing_pep8_names import pep8_converter
+
+- Fixed bug in `nested_expr` where nested contents were stripped of whitespace when
+  the default whitespace characters were cleared (raised in this StackOverflow
+  question https://stackoverflow.com/questions/79327649 by Ben Alan). Also addressed
+  bug in resolving PEP8 compliant argument name and legacy argument name.
+
+- Fixed bug in `rest_of_line` and the underlying `Regex` class, in which matching a
+  pattern that could match an empty string (such as `".*"` or `"[A-Z]*"` would not raise
+  a `ParseException` at or beyond the end of the input string. This could cause an
+  infinite parsing loop when parsing `rest_of_line` at the end of the input string.
+  Reported by user Kylotan, thanks! (Issue #593)
+
+- Enhancements and extra input validation for `pyparsing.util.make_compressed_re` - see
+  usage in `examples/complex_chemical_formulas.py` and result in the generated railroad
+  diagram `examples/complex_chemical_formulas_diagram.html`. Properly escapes characters
+  like "." and "*" that have special meaning in regular expressions.
+
+- Fixed bug in `one_of()` to properly escape characters that are regular expression markers
+  (such as '*', '+', '?', etc.) before building the internal regex.
+
+- Better exception message for `MatchFirst` and `Or` expressions, showing all alternatives
+  rather than just the first one. Fixes Issue #592, reported by Focke, thanks!
+
+- Added return type annotation of "-> None" for all `__init__()` methods, to satisfy
+  `mypy --strict` type checking. PR submitted by FeRD, thank you!
+
+- Added optional argument `show_hidden` to `create_diagram` to show
+  elements that are used internally by pyparsing, but are not part of the actual
+  parser grammar. For instance, the `Tag` class can insert values into the parsed
+  results but it does not actually parse any input, so by default it is not included
+  in a railroad diagram. By calling `create_diagram` with `show_hidden` = `True`,
+  these internal elements will be included. (You can see this in the tag_metadata.py
+  script in the examples directory.)
+
+- Fixed bug in `number_words.py` example. Also added `ebnf_number_words.py` to demonstrate
+  using the `ebnf.py` EBNF parser generator to build a similar parser directly from
+  EBNF.
+
+- Fixed syntax warning raised in `bigquery_view_parser.py`, invalid escape sequence "\s".
+  Reported by sameer-google, nice catch! (Issue #598)
+
+- Added support for Python 3.14.
+
+
+Version 3.2.1 - December, 2024
+------------------------------
+- Updated generated railroad diagrams to make non-terminal elements links to their related
+  sub-diagrams. This _greatly_ improves navigation of the diagram, especially for
+  large, complex parsers.
+
+- Simplified railroad diagrams emitted for parsers using `infix_notation`, by hiding
+  lookahead terms. Renamed internally generated expressions for clarity, and improved
+  diagramming.
+
+- Improved performance of `cpp_style_comment`, `c_style_comment`, `common.fnumber`
+  and `common.ieee_float` Regex expressions. PRs submitted by Gabriel Gerlero,
+  nice work, thanks!
+
+- Add missing type annotations to `match_only_at_col`, `replace_with`, `remove_quotes`,
+  `with_attribute`, and `with_class`. Issue #585 reported by rafrafrek.
+
+- Added generated diagrams for many of the examples.
+
+- Replaced old `examples/0README.html` file with `examples/README.md` file.
+
+
+Version 3.2.0 - October, 2024
+-------------------------------
+- Discontinued support for Python 3.6, 3.7, and 3.8. Adopted new Python features from
+  Python versions 3.7-3.9:
+  - Updated type annotations to use built-in container types instead of names
+    imported from the `typing` module (e.g., `list[str]` vs `List[str]`).
+  - Reworked portions of the packrat cache to leverage insertion-preserving ordering
+    in dicts (including removal of uses of `OrderedDict`).
+  - Changed `pdb.set_trace()` call in `ParserElement.set_break()` to `breakpoint()`.
+  - Converted `typing.NamedTuple` to `dataclasses.dataclass` in railroad diagramming
+    code.
+  - Added `from __future__ import annotations` to clean up some type annotations.
+  (with assistance from ISyncWithFoo, issue #535, thanks for the help!)
+
+- POSSIBLE BREAKING CHANGES
+
+    The following bugfixes may result in subtle changes in the results returned or
+    exceptions raised by pyparsing.
+
+    - Fixed code in `ParseElementEnhance` subclasses that
+      replaced detailed exception messages raised in contained expressions with a
+      less-specific and less-informative generic exception message and location.
+
+      If your code has conditional logic based on the message content in raised
+      `ParseExceptions`, this bugfix may require changes in your code.
+
+    - Fixed bug in `transform_string()` where whitespace
+      in the input string was not properly preserved in the output string.
+
+      If your code uses `transform_string`, this bugfix may require changes in
+      your code.
+
+    - Fixed bug where an `IndexError` raised in a parse action was
+      incorrectly handled as an `IndexError` raised as part of the `ParserElement`
+      parsing methods, and reraised as a `ParseException`. Now an `IndexError`
+      that raises inside a parse action will properly propagate out as an `IndexError`.
+      (Issue #573, reported by August Karlstedt, thanks!)
+
+      If your code raises `IndexError`s in parse actions, this bugfix may require
+      changes in your code.
+
+- FIXES AND NEW FEATURES
+
+    - Added type annotations to remainder of `pyparsing` package, and added `mypy`
+      run to `tox.ini`, so that type annotations are now run as part of pyparsing's CI.
+      Addresses Issue #373, raised by Iwan Aucamp, thanks!
+
+    - Exception message format can now be customized, by overriding
+      `ParseBaseException.format_message`:
+
+          def custom_exception_message(exc) -> str:
+              found_phrase = f", found {exc.found}" if exc.found else ""
+              return f"{exc.lineno}:{exc.column} {exc.msg}{found_phrase}"
+
+          ParseBaseException.formatted_message = custom_exception_message
+
+      (PR #571 submitted by Odysseyas Krystalakos, nice work!)
+
+    - `run_tests` now detects if an exception is raised in a parse action, and will
+      report it with an enhanced error message, with the exception type, string,
+      and parse action name.
+
+    - `QuotedString` now handles translation of escaped integer, hex, octal, and
+      Unicode sequences to their corresponding characters.
+
+    - Fixed the displayed output of `Regex` terms to deduplicate repeated backslashes,
+      for easier reading in debugging, printing, and railroad diagrams.
+
+    - Fixed (or at least reduced) elusive bug when generating railroad diagrams,
+      where some diagram elements were just empty blocks. Fix submitted by RoDuth,
+      thanks a ton!
+
+    - Fixed railroad diagrams that get generated with a parser containing a Regex element
+      defined using a verbose pattern - the pattern gets flattened and comments removed
+      before creating the corresponding diagram element.
+
+    - Defined a more performant regular expression used internally by `common_html_entity`.
+
+    - `Regex` instances can now be created using a callable that takes no arguments
+      and just returns a string or a compiled regular expression, so that creating complex
+      regular expression patterns can be deferred until they are actually used for the first
+      time in the parser.
+
+    - Added optional `flatten` Boolean argument to `ParseResults.as_list()`, to
+      return the parsed values in a flattened list.
+
+    - Added `indent` and `base_1` arguments to `pyparsing.testing.with_line_numbers`. When
+      using `with_line_numbers` inside a parse action, set `base_1`=False, since the
+      reported `loc` value is 0-based. `indent` can be a leading string (typically of
+      spaces or tabs) to indent the numbered string passed to `with_line_numbers`.
+      Added while working on #557, reported by Bernd Wechner.
+
+- NEW/ENHANCED EXAMPLES
+
+    - Added query syntax to `mongodb_query_expression.py` with:
+      - better support for array fields ("contains all",
+        "contains any", and "contains none")
+      - "like" and "not like" operators to support SQL "%" wildcard matching
+        and "=~" operator to support regex matching
+      - text search using "search for"
+      - dates and datetimes as query values
+      - `a[0]` style array referencing
+
+    - Added `lox_parser.py` example, a parser for the Lox language used as a tutorial in
+      Robert Nystrom's "Crafting Interpreters" (http://craftinginterpreters.com/).
+      With helpful corrections from RoDuth.
+
+    - Added `complex_chemical_formulas.py` example, to add parsing capability for
+      formulas such as "3(C₆H₅OH)₂".
+
+    - Updated `tag_emitter.py` to use new `Tag` class, introduced in pyparsing
+      3.1.3.
 
 
 Version 3.1.4 - August, 2024
 ----------------------------
-- Fix to type annotation that referenced `re.Pattern`. Since this type was introduced in
-  Python 3.7, using this type definition broke Python 3.6 installs of pyparsing. PR
-  submitted by Felix Fontein, nice work!
+- Fixed a regression introduced in pyparsing 3.1.3, addition of a type annotation that
+  referenced `re.Pattern`. Since this type was introduced in Python 3.7, using this type
+  definition broke Python 3.6 installs of pyparsing 3.1.3. PR submitted by Felix Fontein,
+  nice work!
 
 
 Version 3.1.3 - August, 2024

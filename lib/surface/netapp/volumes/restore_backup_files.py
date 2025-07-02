@@ -29,7 +29,6 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class RestoreBackupFiles(base.Command):
   """Restore specific files from a backup to a Volume."""
 

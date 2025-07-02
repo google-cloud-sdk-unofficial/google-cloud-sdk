@@ -1,24 +1,43 @@
 #!/usr/bin/env python
 """Provides Logic for Fetching and Storing Discovery Documents from an on-disc cache."""
 
-import errno
+import hashlib
 import os
-import shutil
+import pathlib
 import tempfile
 from typing import Optional
+
 from absl import logging
+
 from pyglib import stringutil
+
 
 _DISCOVERY_CACHE_FILE = 'api_discovery.json'
 
 
+def _get_cache_file_name(
+    cache_root: str, discovery_url: str, api_name: str, api_version: str
+) -> pathlib.Path:
+  """Returns the cache file name for the given api and version."""
+  # Use the sha1 hash as this is not security-related, just need a stable hash.
+  url_hash = hashlib.sha1(discovery_url.encode('utf-8')).hexdigest()
+  return pathlib.Path(
+      cache_root,
+      url_hash,
+      api_name,
+      api_version,
+      _DISCOVERY_CACHE_FILE,
+  )
+
+
 def get_from_cache(
-    cache_root: str, api_name: str, api_version: str
+    cache_root: str, discovery_url: str, api_name: str, api_version: str
 ) -> Optional[str]:
   """Loads a discovery document from the on-disc cache using key `api` and `version`.
 
   Args:
     cache_root: [str], a directory where all cache files are stored.
+    discovery_url: [str], URL where the discovery document was fetched from.
     api_name: [str], Name of api `discovery_document` to be saved.
     api_version: [str], Version of document to get
 
@@ -26,8 +45,8 @@ def get_from_cache(
     Discovery document as a dict.
     None if any errors occur during loading, or parsing the document
   """
-  # TODO(b/263521050): use pathlib for whole function.
-  file = os.path.join(cache_root, api_name, api_version, _DISCOVERY_CACHE_FILE)
+
+  file = _get_cache_file_name(cache_root, discovery_url, api_name, api_version)
 
   if not os.path.isfile(file):
     logging.info('Discovery doc not in cache. %s', file)
@@ -44,12 +63,17 @@ def get_from_cache(
 
 
 def save_to_cache(
-    cache_root: str, api_name: str, api_version: str, discovery_document: str
+    cache_root: str,
+    discovery_url: str,
+    api_name: str,
+    api_version: str,
+    discovery_document: str,
 ) -> None:
   """Saves a discovery document to the on-disc cache with key `api` and `version`.
 
   Args:
     cache_root: [str], a directory where all cache files are stored.
+    discovery_url: [str], URL where the discovery document was fetched from.
     api_name: [str], Name of api `discovery_document` to be saved.
     api_version: [str], Version of `discovery_document`.
     discovery_document: [str]. Discovery document as a json string.
@@ -57,22 +81,15 @@ def save_to_cache(
   Raises:
     OSError: If an error occurs when the file is written.
   """
-  # TODO(b/263521050): use pathlib for whole function.
-  # Store all files as: $cache_root/$api_name/$api_version
-  directory = os.path.join(cache_root, api_name, api_version)
-  file = os.path.join(directory, _DISCOVERY_CACHE_FILE)
+
+  file = _get_cache_file_name(cache_root, discovery_url, api_name, api_version)
+  directory = file.parent
 
   # Return. File already cached.
-  if os.path.isfile(file):
+  if file.exists():
     return
 
-  # TODO(b/263521050): Cleanup try block w/ `exist_ok=True`
-  # Ensure `directory` & ancestors exist.
-  try:
-    os.makedirs(directory)
-  except OSError as e:
-    if e.errno != errno.EEXIST:
-      raise
+  directory.mkdir(parents=True, exist_ok=True)
 
   # Here we will write the discovery doc to a temp file and then rename that
   # temp file to our destination cache file. This is to ensure we have an
@@ -82,17 +99,13 @@ def save_to_cache(
   # invocations don't conflict; both will be able to write to their temp
   # file, and the last one will move to final place.
   # TOO
-  tmpdir = tempfile.mkdtemp(dir=directory)
-  try:
-    # TODO(b/263521050): switch to tempfile.TemporaryDirectory() after py3 move.
-    temp_file_path = os.path.join(tmpdir, 'tmp.json')
-    with open(temp_file_path, 'wb') as f:
+  with tempfile.TemporaryDirectory(dir=directory) as tmpdir:
+    temp_file_path = pathlib.Path(tmpdir) / 'tmp.json'
+    with temp_file_path.open('wb') as f:
       f.write(stringutil.ensure_binary(discovery_document, 'utf8'))
       # Flush followed by fsync to ensure all data is written to temp file
       # before our rename operation.
       f.flush()
       os.fsync(f.fileno())
     # Atomically create (via rename) the 'real' cache file.
-    os.rename(temp_file_path, file)
-  finally:
-    shutil.rmtree(tmpdir, ignore_errors=True)
+    temp_file_path.rename(file)

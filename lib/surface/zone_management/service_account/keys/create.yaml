@@ -20,6 +20,9 @@
       is_positional: false
       arg_name: service-account
     params:
+    - arg_name: ca-cert-path
+      api_field: generateServiceAccountKeyRequest.caCertPath
+      help_text: Path to the CA certificate file.
     - arg_name: output_file
       is_positional: true
       required: true

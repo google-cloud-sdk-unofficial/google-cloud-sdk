@@ -23,6 +23,7 @@
 from __future__ import absolute_import
 
 import functools
+import importlib
 import itertools
 import operator
 import sys
@@ -183,6 +184,11 @@ class _SixMetaPathImporter(object):
     def find_module(self, fullname, path=None):
         if fullname in self.known_modules:
             return self
+        return None
+    
+    def find_spec(self, fullname, path, target=None):
+        if fullname in self.known_modules:
+            return importlib.machinery.ModuleSpec(fullname, self)
         return None
 
     def __get_module(self, fullname):

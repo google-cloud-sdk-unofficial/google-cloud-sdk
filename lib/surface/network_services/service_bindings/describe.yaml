@@ -4,7 +4,6 @@ help_text:
   brief: |
     Describe a service binding.
   description: Show details of a service binding.
-
   examples: |
     Show details about a service binding named 'my-service-binding'.
 

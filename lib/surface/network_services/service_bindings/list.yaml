@@ -6,7 +6,7 @@ help_text:
   description: |
     List all service bindings in the specified location of the current project.
   examples: |
-    To list the service bindings in the current project, run:
+    To list all the global service bindings in the current project, run:
 
       $ {command} --location=global
 

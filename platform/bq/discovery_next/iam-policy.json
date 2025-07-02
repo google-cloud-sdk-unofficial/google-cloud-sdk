@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250528",
+  "revision": "20250618",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -5790,6 +5790,7 @@
             "Indicates the base table is too small (below a certain threshold). The index does not provide noticeable search performance gains when the base table is too small.",
             "Indicates that the total size of indexed base tables in your organization exceeds your region's limit and the index is not used in the query. To index larger base tables, you can use your own reservation for index-management jobs.",
             "Indicates that the estimated performance gain from using the search index is too low for the given search query.",
+            "Indicates that the column metadata index (which the search index depends on) is not used. User can refer to the [column metadata index usage](https:\/\/cloud.google.com\/bigquery\/docs\/metadata-indexing-managed-tables#view_column_metadata_index_usage) for more details on why it was not used.",
             "Indicates that search indexes can not be used for search query with STANDARD edition.",
             "Indicates that an option in the search function that cannot make use of the index has been selected.",
             "Indicates that the query was cached, and thus the search index was not used.",
@@ -5813,6 +5814,7 @@
             "BASE_TABLE_TOO_SMALL",
             "BASE_TABLE_TOO_LARGE",
             "ESTIMATED_PERFORMANCE_GAIN_TOO_LOW",
+            "COLUMN_METADATA_INDEX_NOT_USED",
             "NOT_SUPPORTED_IN_STANDARD_EDITION",
             "INDEX_SUPPRESSED_BY_FUNCTION_OPTION",
             "QUERY_CACHE_HIT",
@@ -7641,12 +7643,12 @@
           "enumDescriptions": [
             "No managed table type specified.",
             "The managed table is a native BigQuery table.",
-            "The managed table is a BigQuery table for Apache Iceberg."
+            "The managed table is a BigLake table for Apache Iceberg in BigQuery."
           ],
           "enum": [
             "MANAGED_TABLE_TYPE_UNSPECIFIED",
             "NATIVE",
-            "ICEBERG"
+            "BIGLAKE"
           ]
         },
         "location": {
@@ -10042,6 +10044,36 @@
             "https://www.googleapis.com/auth/cloud-platform.read-only"
           ],
           "description": "Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set."
+        },
+        "testIamPermissions": {
+          "id": "bigquery.routines.testIamPermissions",
+          "path": "bigquery/v2/{+resource}:testIamPermissions",
+          "flatPath": "bigquery/v2/projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}:testIamPermissions",
+          "httpMethod": "POST",
+          "parameters": {
+            "resource": {
+              "description": "REQUIRED: The resource for which the policy detail is being requested. See [Resource names](https:\/\/cloud.google.com\/apis\/design\/resource_names) for the appropriate value for this field.",
+              "pattern": "^projects\/[^\/]+\/datasets\/[^\/]+\/routines\/[^\/]+$",
+              "location": "path",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "parameterOrder": [
+            "resource"
+          ],
+          "request": {
+            "$ref": "TestIamPermissionsRequest"
+          },
+          "response": {
+            "$ref": "TestIamPermissionsResponse"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/bigquery",
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/cloud-platform.read-only"
+          ],
+          "description": "Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a `NOT_FOUND` error. Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may \"fail open\" without warning."
         }
       }
     },

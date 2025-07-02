@@ -12,6 +12,8 @@
       $ {command} --data-source=my-data-source --backup-vault=my-vault --location=my-location
   request:
     collection: backupdr.projects.locations.backupVaults.dataSources.backups
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.backupdr.declarative:SetBasicViewByDefaultRequestHook
 
   response:
     id_field: name

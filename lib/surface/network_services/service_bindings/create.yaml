@@ -6,9 +6,9 @@ help_text:
   description: |
     Create a new service binding with the given name.
   examples: |
-    Create a service binding with the name 'my-service-binding', service-directory-region 'my-region', service-directory-namespace 'my-namespace', service-directory-service 'my-service' and location 'global'.
+    Create a service binding with the name 'my-service-binding' and location 'global'.
 
-      $ {command} my-service-binding --service-directory-region="my-region" --service-directory-namespace="my-namespace" --service-directory-service="my-service" --location="global"
+      $ {command} my-service-binding --location=global
 
 arguments:
   resource:
@@ -16,15 +16,6 @@ arguments:
     help_text: |
       Name of the service binding to be created.
   params:
-  - arg_name: service-directory-region
-    required: true
-    help_text: Region of the Service Directory service.
-  - arg_name: service-directory-namespace
-    required: true
-    help_text: Namespace of the Service Directory service.
-  - arg_name: service-directory-service
-    required: true
-    help_text: Service name of the Service Directory service.
   - arg_name: description
     api_field: serviceBinding.description
     help_text: The description for the service binding.
@@ -41,5 +32,3 @@ request: &request
     api_version: v1
   collection: networkservices.projects.locations.serviceBindings
   method: create
-  modify_request_hooks:
-  - googlecloudsdk.command_lib.network_services.util:ConstructServiceBindingServiceNameFromArgs

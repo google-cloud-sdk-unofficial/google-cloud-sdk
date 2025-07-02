@@ -37,7 +37,7 @@ requires = [
     'pyOpenSSL>=0.13',
     'retry_decorator>=1.0.0',
     'six>=1.12.0',
-    'google-auth==2.17.0',
+    'google-auth==2.39.0',
     'google-auth-httplib2>=0.2.0'
 ]
 
@@ -50,7 +50,7 @@ extras_require = {
 
 setup(
     name='gcs-oauth2-boto-plugin',
-    version='3.2',
+    version='3.3',
     url='https://developers.google.com/storage/docs/gspythonlibrary',
     download_url=('https://github.com/GoogleCloudPlatform'
                   '/gcs-oauth2-boto-plugin'),

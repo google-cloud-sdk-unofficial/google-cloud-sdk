@@ -499,6 +499,7 @@ def ParseCreateOptionsBase(
       containerd_config_from_file=get_default('containerd_config_from_file'),
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
+      membership_type=get_default('membership_type'),
       enable_secret_manager=get_default('enable_secret_manager'),
       enable_cilium_clusterwide_network_policy=get_default(
           'enable_cilium_clusterwide_network_policy'
@@ -551,8 +552,12 @@ def ParseCreateOptionsBase(
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
       enable_default_compute_class=get_default('enable_default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
-  )
 
+      boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
+      boot_disk_provisioned_throughput=get_default(
+          'boot_disk_provisioned_throughput'
+      ),
+  )
 
 GA = 'ga'
 BETA = 'beta'
@@ -642,6 +647,7 @@ flags_to_add = {
             p, release_track=base.ReleaseTrack.GA
         ),
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
+        'bootdisk': flags.AddBootDiskConfigFlags,
         'cloudlogging': flags.AddEnableCloudLogging,
         'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
@@ -817,6 +823,7 @@ flags_to_add = {
             p, release_track=base.ReleaseTrack.BETA
         ),
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
+        'bootdisk': flags.AddBootDiskConfigFlags,
         'cloudlogging': flags.AddEnableCloudLogging,
         'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
@@ -944,6 +951,7 @@ flags_to_add = {
         'enableGoogleCloudAccess': flags.AddEnableGoogleCloudAccess,
         'managedConfig': flags.AddManagedConfigFlag,
         'fleetProject': flags.AddFleetProjectFlag,
+        'membershipType': flags.AddMembershipTypeFlags,
         'loggingvariant': flags.AddLoggingVariantFlag,
         'enableMultiNetworking': flags.AddEnableMultiNetworkingFlag,
         'enableSecurityPosture': flags.AddSecurityPostureFlag,
@@ -1017,6 +1025,7 @@ flags_to_add = {
             p, release_track=base.ReleaseTrack.ALPHA
         ),
         'bootdiskkms': flags.AddBootDiskKmsKeyFlag,
+        'bootdisk': flags.AddBootDiskConfigFlags,
         'cloudmonitoring': flags.AddEnableCloudMonitoring,
         'cloudrunalpha': flags.AddEnableCloudRunAlphaFlag,
         'cloudrunconfig': flags.AddCloudRunConfigFlag,
@@ -1147,6 +1156,7 @@ flags_to_add = {
         'enableGoogleCloudAccess': flags.AddEnableGoogleCloudAccess,
         'managedConfig': flags.AddManagedConfigFlag,
         'fleetProject': flags.AddFleetProjectFlag,
+        'membershipType': flags.AddMembershipTypeFlags,
         'loggingvariant': flags.AddLoggingVariantFlag,
         'enableMultiNetworking': flags.AddEnableMultiNetworkingFlag,
         'enableSecurityPosture': flags.AddSecurityPostureFlag,
@@ -1500,6 +1510,7 @@ class CreateBeta(Create):
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
+    ops.membership_type = get_default('membership_type')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.compliance = get_default('compliance')
     ops.compliance_standards = get_default('compliance_standards')
@@ -1661,6 +1672,7 @@ class CreateAlpha(Create):
     ops.managed_config = get_default('managed_config')
     ops.fleet_project = get_default('fleet_project')
     ops.enable_fleet = get_default('enable_fleet')
+    ops.membership_type = get_default('membership_type')
     ops.enable_multi_networking = get_default('enable_multi_networking')
     ops.compliance = get_default('compliance')
     ops.compliance_standards = get_default('compliance_standards')

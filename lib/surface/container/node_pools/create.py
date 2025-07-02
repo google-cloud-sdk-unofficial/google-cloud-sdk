@@ -117,6 +117,8 @@ for examples.
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
   flags.AddDiskTypeFlag(parser)
+  flags.AddBootDiskProvisionedThroughputFlag(parser)
+  flags.AddBootDiskProvisionedIopsFlag(parser)
   flags.AddMetadataFlags(parser)
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
@@ -224,6 +226,8 @@ def ParseCreateNodePoolOptionsBase(args):
       resource_manager_tags=args.resource_manager_tags,
       enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,
       enable_nested_virtualization=args.enable_nested_virtualization,
+      boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
+      boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
   )
 
 
@@ -309,6 +313,7 @@ class Create(base.CreateCommand):
     ops.tpu_topology = args.tpu_topology
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
+
     return ops
 
   def Run(self, args):

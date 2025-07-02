@@ -88,8 +88,8 @@ class TestRailroadDiagrams(unittest.TestCase):
     def test_example_rr_diags(self):
         subtests = [
             ("jsonObject", jsonObject, 8),
-            ("boolExpr", boolExpr, 7),
-            ("simpleSQL", simpleSQL, 22),
+            ("boolExpr", boolExpr, 6),
+            ("simpleSQL", simpleSQL, 20),
             ("calendars", calendars, 13),
         ]
         for label, example_expr, expected_rr_len in subtests:
@@ -132,9 +132,9 @@ class TestRailroadDiagrams(unittest.TestCase):
         outer <<= inner
 
         railroad = self.generate_railroad(outer, "inner_only")
-        assert len(railroad) == 2
+        assert len(railroad) == 1
         railroad = self.generate_railroad(outer, "inner_only", show_results_names=True)
-        assert len(railroad) == 2
+        assert len(railroad) == 1
 
     def test_each_grammar(self):
 
@@ -207,10 +207,12 @@ class TestRailroadDiagrams(unittest.TestCase):
         pp.autoname_elements()
         railroad_diag = to_railroad(grammar)
         assert len(railroad_diag) == 3
-        assert isinstance(railroad_diag[1][1].items[1].item, railroad.Sequence)
-        assert isinstance(railroad_diag[1][1].items[1].item.items[0], AnnotatedItem)
+        assert isinstance(railroad_diag[1].diagram.items[1].item, railroad.Sequence)
         assert isinstance(
-            railroad_diag[1][1].items[1].item.items[1], railroad.NonTerminal
+            railroad_diag[1].diagram.items[1].item.items[0], AnnotatedItem
+        )
+        assert isinstance(
+            railroad_diag[1].diagram.items[1].item.items[1], railroad.NonTerminal
         )
 
     def test_kwargs_pass_thru_create_diagram(self):

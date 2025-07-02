@@ -754,6 +754,16 @@ class Make(bigquery_command.BigqueryCmd):
         ' JSON definition.',
         flag_values=fv,
     )
+    flags.DEFINE_string(
+        'external_catalog_table_options',
+        None,
+        'Options defining the metadata of an open source compatible table'
+        ' living in the BigQuery catalog. Contains metadata of open source'
+        ' table including serializer/deserializer information, table schema,'
+        ' etc. The value can be either an inline JSON or a path to a file'
+        ' containing a JSON definition.',
+        flag_values=fv,
+    )
     flags.DEFINE_boolean(
         'parquet_enum_as_string',
         False,
@@ -1273,7 +1283,10 @@ class Make(bigquery_command.BigqueryCmd):
         raise app.UsageError(
             'Cannot specify both external_source and linked dataset.'
         )
-
+      if self.external_catalog_table_options is not None:
+        raise app.UsageError(
+            'Cannot specify external_catalog_table_options for a dataset.'
+        )
       if self.external_source:
         if not self.connection_id:
           if not self.external_source.startswith('google-cloudspanner:/'):
@@ -1461,6 +1474,7 @@ class Make(bigquery_command.BigqueryCmd):
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
           biglake_config=biglake_config,
+          external_catalog_table_options=self.external_catalog_table_options,
           labels=labels,
           time_partitioning=time_partitioning,
           clustering=clustering,

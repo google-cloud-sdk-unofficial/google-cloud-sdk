@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class MachineTypes(base.Group):
   """Read Compute Engine virtual machine types."""
 

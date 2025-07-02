@@ -45,7 +45,6 @@ class SimulateBeta(base.Group):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class SimulateGA(base.Group):
   """Simulate changes to organization policies."""
   detailed_help = {

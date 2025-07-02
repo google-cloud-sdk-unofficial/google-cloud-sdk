@@ -23,16 +23,28 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List subnetworks."""
 
+  _include_view = False
+
   _default_list_format = flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD
+  _utilization_details_list_format = (
+      flags.DEFAULT_LIST_FORMAT_WITH_UTILIZATION_FIELD
+  )
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat(cls._default_list_format)
+
+    if cls._include_view:
+      parser.display_info.AddFormat(cls._utilization_details_list_format)
+    else:
+      parser.display_info.AddFormat(cls._default_list_format)
     lister.AddRegionsArg(parser)
     parser.display_info.AddCacheUpdater(flags.SubnetworksCompleter)
 
@@ -40,16 +52,52 @@ class List(base.ListCommand):
         '--network',
         help='Only show subnetworks of a specific network.')
 
+    if cls._include_view:
+      parser.add_argument(
+          '--view',
+          choices={
+              'WITH_UTILIZATION': (
+                  'Output includes the IP utilization data of all subnetwork'
+                  ' ranges, showing total allocated and free IPv4 and IPv6 IPs.'
+              ),
+          },
+          type=arg_utils.ChoiceToEnumName,
+          action='append',
+          help=(
+              'Specifies the information that the output should contain.'
+          ),
+      )
+
+  def _GetSubnetworkViews(self, view, request_message):
+    views = []
+    if view is None:
+      return views
+    for v in view:
+      if v == 'WITH_UTILIZATION':
+        views.append(request_message.ViewsValueValuesEnum.WITH_UTILIZATION)
+    return views
+
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
     request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
-    list_implementation = lister.MultiScopeLister(
-        client=client,
-        regional_service=client.apitools_client.subnetworks,
-        aggregation_service=client.apitools_client.subnetworks)
+    if self._include_view:
+      list_implementation = lister.MultiScopeLister(
+          client=client,
+          regional_service=client.apitools_client.subnetworks,
+          aggregation_service=client.apitools_client.subnetworks,
+          subnetwork_views_flag=self._GetSubnetworkViews(
+              args.view, client.messages.ComputeSubnetworksListRequest
+          ),
+      )
+    else:
+      list_implementation = lister.MultiScopeLister(
+          client=client,
+          regional_service=client.apitools_client.subnetworks,
+          aggregation_service=client.apitools_client.subnetworks,
+      )
 
     for resource in lister.Invoke(request_data, list_implementation):
       if args.network is None:
@@ -58,6 +106,22 @@ class List(base.ListCommand):
         network_ref = holder.resources.Parse(resource['network'])
         if network_ref.Name() == args.network:
           yield resource
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class ListBeta(List):
+  """Create a subnet in the Beta release track."""
+
+  _include_view = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class ListAlpha(ListBeta):
+  """Describe a subnet in the Alpha release track."""
+
+  _include_view = True
 
 
 List.detailed_help = base_classes.GetRegionalListerHelp('subnetworks')

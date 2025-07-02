@@ -26,6 +26,8 @@ from googlecloudsdk.core.util import files
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class SignUrl(base.Command):
   """Sign specified URL for use with Cloud CDN Signed URLs.
 

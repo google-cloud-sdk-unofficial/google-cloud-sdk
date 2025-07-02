@@ -22,6 +22,8 @@ from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.scc.postures import util as securityposture_client
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.scc import errors
+from googlecloudsdk.command_lib.scc import util as scc_util
 from googlecloudsdk.command_lib.scc.posture_templates import flags
 
 
@@ -39,6 +41,8 @@ class List(base.ListCommand):
 
             $ {command} organizations/123/locations/global
 
+            $ {command} --organization=123 --location=global
+
             """,
       "API REFERENCE": (
           """
@@ -52,14 +56,36 @@ class List(base.ListCommand):
     # Remove URI flag.
     base.URI_FLAG.RemoveFromParser(parser)
 
-    flags.PARENT_FLAG.AddToParser(parser)
+    # Add shared flags and parent positional argument.
+    flags.AddParentOrFlagsGroup(parser)
 
   def Run(self, args):
+    version = scc_util.GetVersionFromArguments(
+        args, version_specific_existing_resource=True
+    )
 
     messages = securityposture_client.GetMessagesModule(base.ReleaseTrack.GA)
     client = securityposture_client.GetClientInstance(base.ReleaseTrack.GA)
 
-    parent = args.PARENT
+    location = scc_util.ValidateAndGetLocation(args, version)
+
+    if (args.IsKnownAndSpecified("PARENT")) and (
+        args.IsSpecified("organization") and args.IsSpecified("location")
+    ):
+      raise errors.InvalidSCCInputError(
+          "Cannot provide both a positional `PARENT` and argument "
+          "(`--organization`, `--location`) flags."
+      )
+
+    if (args.IsKnownAndSpecified("PARENT")):
+      parent = args.PARENT
+    elif (args.IsSpecified("organization") and args.IsSpecified("location")):
+      parent = f"{scc_util.GetParentFromPositionalArguments(args)}/locations/{location}"
+    else:
+      raise errors.InvalidSCCInputError(
+          "Must provide either positional `PARENT` or both `--organization` "
+          "and `--location` flags."
+      )
 
     # Build request.
     request = messages.SecuritypostureOrganizationsLocationsPostureTemplatesListRequest(
@@ -91,6 +117,8 @@ class ListAlpha(base.ListCommand):
 
             $ {command} organizations/123/locations/global
 
+            $ {command} --organization=123 --location=global
+
             """,
       "API REFERENCE": """
       This command uses the securityposture/v1alpha API. The full documentation for this API can be found at:
@@ -102,14 +130,36 @@ class ListAlpha(base.ListCommand):
     # Remove URI flag.
     base.URI_FLAG.RemoveFromParser(parser)
 
-    flags.PARENT_FLAG.AddToParser(parser)
+    # Add shared flags and parent positional argument.
+    flags.AddParentOrFlagsGroup(parser)
 
   def Run(self, args):
+    version = scc_util.GetVersionFromArguments(
+        args, version_specific_existing_resource=True
+    )
 
     messages = securityposture_client.GetMessagesModule(base.ReleaseTrack.ALPHA)
     client = securityposture_client.GetClientInstance(base.ReleaseTrack.ALPHA)
 
-    parent = args.PARENT
+    location = scc_util.ValidateAndGetLocation(args, version)
+
+    if (args.IsKnownAndSpecified("PARENT")) and (
+        args.IsSpecified("organization") and args.IsSpecified("location")
+    ):
+      raise errors.InvalidSCCInputError(
+          "Cannot provide both a positional `PARENT` and argument "
+          "(`--organization`, `--location`) flags."
+      )
+
+    if (args.IsKnownAndSpecified("PARENT")):
+      parent = args.PARENT
+    elif (args.IsSpecified("organization") and args.IsSpecified("location")):
+      parent = f"{scc_util.GetParentFromPositionalArguments(args)}/locations/{location}"
+    else:
+      raise errors.InvalidSCCInputError(
+          "Must provide either positional `PARENT` or both `--organization` "
+          "and `--location` flags."
+      )
 
     # Build request.
     request = messages.SecuritypostureOrganizationsLocationsPostureTemplatesListRequest(

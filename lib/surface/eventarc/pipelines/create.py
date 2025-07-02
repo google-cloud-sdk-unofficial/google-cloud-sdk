@@ -35,21 +35,21 @@ _DETAILED_HELP = {
 
           $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',http_endpoint_message_binding_template='{"headers": {"new-header-key": "new-header-value"}}',network_attachment=my-network-attachment
 
-        To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Workflow destination `my-workflow` and network attachment `my-network-attachment`, run:
+        To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Workflow destination `my-workflow`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=workflow=my-workflow,network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=workflow=my-workflow
 
-        To create a new pipeline `my-pipeline` in location `us-central1` with a message bus destination `my-message-bus` and network attachment `my-network-attachment`, run:
+        To create a new pipeline `my-pipeline` in location `us-central1` with a message bus destination `my-message-bus`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=message_bus=my-message-bus,network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=message_bus=my-message-bus
 
-        To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Pub/Sub Topic destination `my-topic` and network attachment `my-network-attachment`, run:
+        To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Pub/Sub Topic destination `my-topic`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=pubsub_topic=my-topic,network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=pubsub_topic=my-topic
 
         To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Workflow in project `example-project` and location `us-east1`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=workflow=my-workflow,project=example-project,location=us-east1,network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=workflow=my-workflow,project=example-project,location=us-east1
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a service account `example-service-account@example-project.gserviceaccount.iam.com` for OIDC authentication, run:
 

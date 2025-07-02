@@ -1,4 +1,4 @@
-- release_tracks: [GA]
+- release_tracks: [GA, BETA]
 
   help_text:
     brief: Sets the IAM policy for a workbench instance.

@@ -153,8 +153,17 @@ IMPERSONATED_SERVICE_ACCOUNT_SERVICE_ACCOUNT_SOURCE_FILE = os.path.join(
     DATA_DIR, "impersonated_service_account_service_account_source.json"
 )
 
+IMPERSONATED_SERVICE_ACCOUNT_EXTERNAL_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE = os.path.join(
+    DATA_DIR,
+    "impersonated_service_account_external_account_authorized_user_source.json",
+)
+
 EXTERNAL_ACCOUNT_AUTHORIZED_USER_FILE = os.path.join(
     DATA_DIR, "external_account_authorized_user.json"
+)
+
+EXTERNAL_ACCOUNT_AUTHORIZED_USER_NON_GDU_FILE = os.path.join(
+    DATA_DIR, "external_account_authorized_user_non_gdu.json"
 )
 
 MOCK_CREDENTIALS = mock.Mock(spec=credentials.CredentialsWithQuotaProject)
@@ -358,6 +367,17 @@ def test_load_credentials_from_file_impersonated_with_service_account_source():
     )
     assert isinstance(credentials, impersonated_credentials.Credentials)
     assert isinstance(credentials._source_credentials, service_account.Credentials)
+    assert not credentials._quota_project_id
+
+
+def test_load_credentials_from_file_impersonated_with_external_account_authorized_user_source():
+    credentials, _ = _default.load_credentials_from_file(
+        IMPERSONATED_SERVICE_ACCOUNT_EXTERNAL_ACCOUNT_AUTHORIZED_USER_SOURCE_FILE
+    )
+    assert isinstance(credentials, impersonated_credentials.Credentials)
+    assert isinstance(
+        credentials._source_credentials, external_account_authorized_user.Credentials
+    )
     assert not credentials._quota_project_id
 
 
@@ -574,6 +594,15 @@ def test_load_credentials_from_file_external_account_authorized_user():
 
     assert isinstance(credentials, external_account_authorized_user.Credentials)
     assert project_id is None
+
+
+def test_load_credentials_from_file_external_account_authorized_user_non_gdu():
+    credentials, _ = _default.load_credentials_from_file(
+        EXTERNAL_ACCOUNT_AUTHORIZED_USER_NON_GDU_FILE, request=mock.sentinel.request
+    )
+
+    assert isinstance(credentials, external_account_authorized_user.Credentials)
+    assert credentials.universe_domain == "fake_universe_domain"
 
 
 def test_load_credentials_from_file_external_account_authorized_user_bad_format(tmpdir):
@@ -867,6 +896,38 @@ def test__get_gce_credentials_explicit_request(ping):
 )
 def test_default_early_out(unused_get):
     assert _default.default() == (MOCK_CREDENTIALS, mock.sentinel.project_id)
+
+
+@mock.patch(
+    "google.auth._default.load_credentials_from_file",
+    return_value=(MOCK_CREDENTIALS, mock.sentinel.project_id),
+    autospec=True,
+)
+def test_default_cred_file_path_env_var(unused_load_cred, monkeypatch):
+    monkeypatch.setenv(environment_vars.CREDENTIALS, "/path/to/file")
+    cred, _ = _default.default()
+    assert (
+        cred._cred_file_path
+        == "/path/to/file file via the GOOGLE_APPLICATION_CREDENTIALS environment variable"
+    )
+
+
+@mock.patch("os.path.isfile", return_value=True, autospec=True)
+@mock.patch(
+    "google.auth._cloud_sdk.get_application_default_credentials_path",
+    return_value="/path/to/adc/file",
+    autospec=True,
+)
+@mock.patch(
+    "google.auth._default.load_credentials_from_file",
+    return_value=(MOCK_CREDENTIALS, mock.sentinel.project_id),
+    autospec=True,
+)
+def test_default_cred_file_path_gcloud(
+    unused_load_cred, unused_get_adc_file, unused_isfile
+):
+    cred, _ = _default.default()
+    assert cred._cred_file_path == "/path/to/adc/file"
 
 
 @mock.patch(

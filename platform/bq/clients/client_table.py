@@ -6,9 +6,12 @@ from typing import Dict, List, Optional, cast
 from googleapiclient import discovery
 
 from clients import table_reader as bq_table_reader
+from frontend import utils as bq_frontend_utils
 from utils import bq_error
 from utils import bq_id_utils
 from utils import bq_processor_utils
+
+_EXTERNAL_CATALOG_TABLE_OPTIONS_FIELD_NAME = 'externalCatalogTableOptions'
 
 
 def get_table_schema(
@@ -242,6 +245,7 @@ def create_table(
     max_staleness: Optional[str] = None,
     external_data_config=None,
     biglake_config=None,
+    external_catalog_table_options=None,
     view_udf_resources=None,
     use_legacy_sql: Optional[bool] = None,
     labels: Optional[Dict[str, str]] = None,
@@ -279,6 +283,8 @@ def create_table(
     external_data_config: defines a set of external resources used to create an
       external table. For example, a BigQuery table backed by CSV files in GCS.
     biglake_config: specifies the configuration of a BigLake managed table.
+    external_catalog_table_options: Specifies the configuration of an external
+      catalog table.
     view_udf_resources: optional UDF resources used in a view.
     use_legacy_sql: The choice of using Legacy SQL for the query is optional. If
       not specified, the server will automatically determine the dialect based
@@ -339,6 +345,10 @@ def create_table(
       body['externalDataConfiguration'] = external_data_config
     if biglake_config is not None:
       body['biglakeConfiguration'] = biglake_config
+    if external_catalog_table_options is not None:
+      body['externalCatalogTableOptions'] = bq_frontend_utils.GetJson(
+          external_catalog_table_options
+      )
     if labels is not None:
       body['labels'] = labels
     if time_partitioning is not None:
@@ -357,9 +367,7 @@ def create_table(
       body['table_constraints'] = table_constraints
     if resource_tags is not None:
       body['resourceTags'] = resource_tags
-    apiclient.tables().insert(
-        body=body, **dict(reference.GetDatasetReference())
-    ).execute()
+    _execute_insert_table_request(apiclient, reference, body)
   except bq_error.BigqueryDuplicateError:
     if not ignore_existing:
       raise
@@ -378,6 +386,7 @@ def update_table(
     refresh_interval_ms: Optional[int] = None,
     max_staleness: Optional[str] = None,
     external_data_config=None,
+    external_catalog_table_options=None,
     view_udf_resources=None,
     use_legacy_sql: Optional[bool] = None,
     labels_to_set: Optional[Dict[str, str]] = None,
@@ -417,6 +426,8 @@ def update_table(
       staleness is allowed.
     external_data_config: defines a set of external resources used to create an
       external table. For example, a BigQuery table backed by CSV files in GCS.
+    external_catalog_table_options: Specifies the configuration of an external
+      catalog table.
     view_udf_resources: optional UDF resources used in a view.
     use_legacy_sql: The choice of using Legacy SQL for the query is optional. If
       not specified, the server will automatically determine the dialect based
@@ -537,6 +548,18 @@ def update_table(
   # tag and also to remove a tag binding
   # check go/bq-table-tags-api for details
   table['resourceTags'] = resource_tags
+
+  if external_catalog_table_options is not None:
+    existing_table = _execute_get_table_request(
+        apiclient=apiclient, reference=reference
+    )
+    existing_table.setdefault(_EXTERNAL_CATALOG_TABLE_OPTIONS_FIELD_NAME, {})
+    table[_EXTERNAL_CATALOG_TABLE_OPTIONS_FIELD_NAME] = (
+        bq_frontend_utils.UpdateExternalCatalogTableOptions(
+            existing_table[_EXTERNAL_CATALOG_TABLE_OPTIONS_FIELD_NAME],
+            external_catalog_table_options,
+        )
+    )
   _execute_patch_table_request(
       apiclient=apiclient,
       reference=reference,
@@ -580,6 +603,16 @@ def _execute_patch_table_request(
   if etag:
     request.headers['If-Match'] = etag if etag else table['etag']
   request.execute()
+
+
+def _execute_insert_table_request(
+    apiclient: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.TableReference,
+    body,
+):
+  apiclient.tables().insert(
+      body=body, **dict(reference.GetDatasetReference())
+  ).execute()
 
 
 def delete_table(

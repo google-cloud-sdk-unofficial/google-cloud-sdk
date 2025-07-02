@@ -24,7 +24,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class RequestDelete(base.Command):
   r"""Request deletion of a Compute Engine network peering.
 
@@ -39,7 +39,7 @@ class RequestDelete(base.Command):
 
         $ {command} peering-name --network=peer-network
 
-    To complete the deletion, run gcloud alpha compute networks peerings delete
+    To complete the deletion, run gcloud compute networks peerings delete
     for each side of the peering.
   """
 

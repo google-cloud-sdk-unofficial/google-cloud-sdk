@@ -262,7 +262,6 @@
             Managed backup to import from. For example, `projects/PROJECT_ID/locations/REGION/backupCollections/BACKUP_COLLECTION_ID/backups/BACKUP_ID`.
     - arg_name: kms-key
       api_field: cluster.kmsKey
-      release_tracks: [ALPHA, BETA]
       help_text: |
         The resource name of the customer-managed encryption key (CMEK) to use for the cluster.
         It must use this format:

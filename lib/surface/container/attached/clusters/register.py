@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,6 +60,15 @@ $ {command} my-cluster --location=us-west1 --platform-version=PLATFORM_VERSION -
 To register and set cluster admin users, run:
 
 $ {command} my-cluster --location=us-west1 --platform-version=PLATFORM_VERSION --fleet-project=FLEET_PROJECT_NUM --distribution=DISTRIBUTION --context=CLUSTER_CONTEXT --issuer-url=https://ISSUER_URL --admin-users=USER1,USER2
+
+To specify custom tolerations and labels for system component pods, run:
+
+$ {command} my-cluster --location=us-west1 --platform-version=PLATFORM_VERSION --fleet-project=FLEET_PROJECT_NUM --distribution=DISTRIBUTION --context=CLUSTER_CONTEXT --system-component-tolerations=TOLERATIONS --system-component-labels=LABELS
+
+where TOLERATIONS have the format:
+  key=value:Effect:NoSchedule (examples: key1=value1:Equal:NoSchedule,key2:Exists:PreferNoSchedule, :Exists:NoExecute)
+and LABELS have the format:
+  key=value (examples: key1=value1,key2="")
 """
 
 
@@ -82,6 +91,8 @@ class Register(base.CreateCommand):
     attached_flags.AddKubectl(parser)
     attached_flags.AddProxyConfig(parser)
     attached_flags.AddSkipClusterAdminCheck(parser)
+    attached_flags.AddSystemComponentTolerations(parser)
+    attached_flags.AddSystemComponentLabels(parser)
 
     flags.AddAnnotations(parser)
     flags.AddValidateOnly(parser, 'cluster to create')
@@ -106,6 +117,8 @@ class Register(base.CreateCommand):
           'Distributions of type "eks" cannot use the `has-private-issuer`'
           ' flag.'
       )
+    # Validate system component tolerations early to fail fast.
+    attached_flags.GetSystemComponentTolerations(args)
     with endpoint_util.GkemulticloudEndpointOverride(location):
       cluster_ref = resource_args.ParseAttachedClusterResourceArg(args)
       manifest = self._get_manifest(args, cluster_ref)

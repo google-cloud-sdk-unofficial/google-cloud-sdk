@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import json
 import time
 from typing import Any, Dict, List, Optional
 
@@ -17,6 +18,7 @@ from clients import bigquery_client_extended
 from clients import client_connection
 from clients import client_data_transfer
 from clients import client_dataset
+from clients import client_job
 from clients import client_model
 from clients import client_reservation
 from clients import client_row_access_policy
@@ -476,6 +478,16 @@ class Update(bigquery_command.BigqueryCmd):
         ' BigQuery catalog. Contains metadata of open source database or'
         ' default storage location represented by the current dataset. The'
         ' value can be either an inline JSON definition or a path to a file'
+        ' containing a JSON definition.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'external_catalog_table_options',
+        None,
+        'Options defining the metadata of an open source compatible table'
+        ' living in the BigQuery catalog. Contains metadata of open source'
+        ' table including serializer/deserializer information, table schema,'
+        ' etc. The value can be either an inline JSON or a path to a file'
         ' containing a JSON definition.',
         flag_values=fv,
     )
@@ -1058,6 +1070,10 @@ class Update(bigquery_command.BigqueryCmd):
         )
       if self.source and self.description:
         raise app.UsageError('Cannot specify description with a source.')
+      if self.external_catalog_table_options is not None:
+        raise app.UsageError(
+            'Cannot specify external_catalog_table_options for a dataset.'
+        )
       default_table_exp_ms = None
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
@@ -1181,6 +1197,7 @@ class Update(bigquery_command.BigqueryCmd):
           view_udf_resources=view_udf_resources,
           use_legacy_sql=self.use_legacy_sql,
           external_data_config=external_data_config,
+          external_catalog_table_options=self.external_catalog_table_options,
           labels_to_set=labels_to_set,
           label_keys_to_remove=label_keys_to_remove,
           time_partitioning=time_partitioning,

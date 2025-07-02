@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Disks(base.Group):
   """Read and manipulate Compute Engine disks."""
 

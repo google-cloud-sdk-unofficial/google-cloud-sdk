@@ -75,6 +75,7 @@ class Credentials(
         revoke_url=None,
         scopes=None,
         quota_project_id=None,
+        universe_domain=credentials.DEFAULT_UNIVERSE_DOMAIN,
     ):
         """Instantiates a external account authorized user credentials object.
 
@@ -98,6 +99,8 @@ class Credentials(
         quota_project_id (str): The optional project ID used for quota and billing.
             This project may be different from the project used to
             create the credentials.
+        universe_domain (Optional[str]): The universe domain. The default value
+            is googleapis.com.
 
         Returns:
             google.auth.external_account_authorized_user.Credentials: The
@@ -116,6 +119,8 @@ class Credentials(
         self._revoke_url = revoke_url
         self._quota_project_id = quota_project_id
         self._scopes = scopes
+        self._universe_domain = universe_domain or credentials.DEFAULT_UNIVERSE_DOMAIN
+        self._cred_file_path = None
 
         if not self.valid and not self.can_refresh:
             raise exceptions.InvalidOperation(
@@ -162,6 +167,7 @@ class Credentials(
             "revoke_url": self._revoke_url,
             "scopes": self._scopes,
             "quota_project_id": self._quota_project_id,
+            "universe_domain": self._universe_domain,
         }
 
     @property
@@ -285,17 +291,38 @@ class Credentials(
     def _make_sts_request(self, request):
         return self._sts_client.refresh_token(request, self._refresh_token)
 
+    @_helpers.copy_docstring(credentials.Credentials)
+    def get_cred_info(self):
+        if self._cred_file_path:
+            return {
+                "credential_source": self._cred_file_path,
+                "credential_type": "external account authorized user credentials",
+            }
+        return None
+
+    def _make_copy(self):
+        kwargs = self.constructor_args()
+        cred = self.__class__(**kwargs)
+        cred._cred_file_path = self._cred_file_path
+        return cred
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):
-        kwargs = self.constructor_args()
-        kwargs.update(quota_project_id=quota_project_id)
-        return self.__class__(**kwargs)
+        cred = self._make_copy()
+        cred._quota_project_id = quota_project_id
+        return cred
 
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):
-        kwargs = self.constructor_args()
-        kwargs.update(token_url=token_uri)
-        return self.__class__(**kwargs)
+        cred = self._make_copy()
+        cred._token_url = token_uri
+        return cred
+
+    @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
+    def with_universe_domain(self, universe_domain):
+        cred = self._make_copy()
+        cred._universe_domain = universe_domain
+        return cred
 
     @classmethod
     def from_info(cls, info, **kwargs):
@@ -330,6 +357,9 @@ class Credentials(
             revoke_url=info.get("revoke_url"),
             quota_project_id=info.get("quota_project_id"),
             scopes=info.get("scopes"),
+            universe_domain=info.get(
+                "universe_domain", credentials.DEFAULT_UNIVERSE_DOMAIN
+            ),
             **kwargs
         )
 

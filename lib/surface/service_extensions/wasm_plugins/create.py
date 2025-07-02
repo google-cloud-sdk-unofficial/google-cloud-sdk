@@ -34,7 +34,7 @@ def _GetLogConfig(args, api_version):
 
   Args:
     args: args with log_level parsed ordered dict. If log-level flag is set,
-          enable option should also be set.
+      enable option should also be set.
     api_version: API version (e.g. v1apha1)
 
   Returns:
@@ -52,7 +52,9 @@ def GetPluginConfigData(args):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a `WasmPlugin` resource."""
 
@@ -66,7 +68,7 @@ class Create(base.CreateCommand):
 
           $ {command} my-plugin --main-version=v1
           --image=...-docker.pkg.dev/my-project/repository/container:tag
-          """)
+          """),
   }
 
   @classmethod
@@ -96,13 +98,16 @@ class Create(base.CreateCommand):
     api_version = util.GetApiVersion(self.ReleaseTrack())
     if args.main_version is None:
       raise calliope_exceptions.RequiredArgumentException(
-          '--main-version', 'Flag --main-version is mandatory.')
+          '--main-version', 'Flag --main-version is mandatory.'
+      )
     if not args.main_version:
       raise calliope_exceptions.RequiredArgumentException(
-          '--main-version', 'Flag --main-version cannot be empty.')
+          '--main-version', 'Flag --main-version cannot be empty.'
+      )
     if args.image is None:
       raise calliope_exceptions.RequiredArgumentException(
-          '--image', 'Flag --image is mandatory.')
+          '--image', 'Flag --image is mandatory.'
+      )
 
     wp_client = wasm_plugin_api.Client(self.ReleaseTrack())
 
@@ -128,8 +133,9 @@ class Create(base.CreateCommand):
         main_version=args.main_version,
         versions=versions,
     )
-    log.status.Print('Create request issued for: [{}]'.format(
-        wasm_plugin_ref.Name()))
+    log.status.Print(
+        'Create request issued for: [{}]'.format(wasm_plugin_ref.Name())
+    )
 
     if args.async_:
       log.status.Print('Check operation [{}] for status.'.format(op_ref.name))

@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Diagnose(base.Group):
   """Debugging tools for Compute Engine virtual machine instances."""
 

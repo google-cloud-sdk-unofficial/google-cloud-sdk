@@ -53,10 +53,7 @@ def _MakeRequests(client, requests, is_async):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.BETA,
-    base.ReleaseTrack.GA,
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   r"""Create a Compute Engine network peering.
 
@@ -196,7 +193,7 @@ class Create(base.Command):
     return _MakeRequests(client, requests, args.async_)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CreateAlpha(Create):
   r"""Create a Compute Engine network peering.
 

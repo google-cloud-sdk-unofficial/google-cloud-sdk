@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Restore(base.RestoreCommand):
   """Restores the workbench instance to a snapshot state."""
 

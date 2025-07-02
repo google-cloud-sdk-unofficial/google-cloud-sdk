@@ -27,8 +27,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 from googlecloudsdk.core.resource import resource_projector
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA,
-                    base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Compute Engine network peerings."""
@@ -84,7 +83,7 @@ class List(base.ListCommand):
         yield synthesized_network
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListAlpha(List):
   """List Compute Engine network peerings."""
 

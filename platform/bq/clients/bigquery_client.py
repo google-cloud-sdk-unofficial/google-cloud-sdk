@@ -288,34 +288,24 @@ class BigqueryClient:
     #     //depot/google3/cloud/helix/testing/e2e/python_api_client/api_client_util.py:http_authorization,
     # )
 
-  def LoadDiscoveryDocument(
+
+  def _LoadDiscoveryDocumentLocal(
       self,
       service: Service,
-      http: AuthorizedHttp,
-      discovery_url: Optional[str] = None,
-      api_version: Optional[str] = None,
-      domain_root: Optional[str] = None,
-      labels: Optional[str] = None,
+      discovery_url: Optional[str],
+      api_version: str,
   ) -> Optional[Union[str, bytes, object]]:
-    """Loads the discovery document for the given service.
-
-    This may be cached, remote, or local.
+    """Loads the local discovery document for the given service.
 
     Args:
       service: The BigQuery service being used.
-      http: Http object to be used to execute request.
       discovery_url: The URL to load the discovery doc from.
       api_version: The API version for the targeted discovery doc.
-      domain_root: If there is no discovery_url, then use this to construct it.
-      labels: The labels for the targeted discovery doc.
 
     Returns:
       discovery_document The loaded discovery document.
-
-    Raises:
-      bq_error.BigqueryClientError: If the request to load the discovery
-      document fails.
     """
+
     discovery_document = None
     if self.discovery_document != _DEFAULT:
       discovery_document = self.discovery_document
@@ -345,90 +335,106 @@ class BigqueryClient:
                 service=service, api=self.api, api_version=api_version
             )
         )
+        if discovery_document:
+          logging.info('The "%s" discovery doc is already loaded', service)
       except FileNotFoundError as e:
         logging.warning(
             'Failed to load the "%s" discovery doc from local files: %s',
             service,
             e,
         )
+    return discovery_document
 
-    if discovery_document is not None:
-      logging.info('The "%s" discovery doc is already loaded', service)
-    else:
-      # Attempt to retrieve discovery doc with retry logic for transient,
-      # retry-able errors.
-      max_retries = 3
-      iterations = 0
-      headers = (
-          {'X-ESF-Use-Cloud-UberMint-If-Enabled': '1'}
-          if hasattr(self, 'use_uber_mint') and self.use_uber_mint
-          else None
-      )
-      while iterations < max_retries and discovery_document is None:
-        if iterations > 0:
-          # Wait briefly before retrying with exponentially increasing wait.
-          time.sleep(2**iterations)
-        iterations += 1
-        try:
-          if discovery_url is None:
-            discovery_url = self.GetDiscoveryUrl(
-                service=service,
-                api_version=api_version,
-                domain_root=domain_root,
-                labels=labels,
-            )
-          logging.info(
-              'Requesting "%s" discovery document from %s',
-              service,
+
+  def _LoadDiscoveryDocumentUrl(
+      self,
+      service: Service,
+      http: AuthorizedHttp,
+      discovery_url: str,
+  ) -> Optional[Union[str, bytes, object]]:
+    """Loads the discovery document from the provided URL.
+
+    Args:
+      service: The BigQuery service being used.
+      http: Http object to be used to execute request.
+      discovery_url: The URL to load the discovery doc from.
+
+    Returns:
+      discovery_document The loaded discovery document.
+
+    Raises:
+      bq_error.BigqueryClientError: If the request to load the discovery
+      document fails.
+    """
+
+    discovery_document = None
+    # Attempt to retrieve discovery doc with retry logic for transient,
+    # retry-able errors.
+    max_retries = 3
+    iterations = 0
+    headers = (
+        {'X-ESF-Use-Cloud-UberMint-If-Enabled': '1'}
+        if hasattr(self, 'use_uber_mint') and self.use_uber_mint
+        else None
+    )
+    while iterations < max_retries and discovery_document is None:
+      if iterations > 0:
+        # Wait briefly before retrying with exponentially increasing wait.
+        time.sleep(2**iterations)
+      iterations += 1
+      try:
+        logging.info(
+            'Requesting "%s" discovery document from %s',
+            service,
+            discovery_url,
+        )
+        if headers:
+          response_metadata, discovery_document = http.request(
+              discovery_url, headers=headers
+          )
+        else:
+          response_metadata, discovery_document = http.request(discovery_url)
+        discovery_document = discovery_document.decode('utf-8')
+        if int(response_metadata.get('status')) >= 400:
+          msg = 'Got %s response from discovery url: %s' % (
+              response_metadata.get('status'),
               discovery_url,
           )
-          if headers:
-            response_metadata, discovery_document = http.request(
-                discovery_url, headers=headers
+          logging.error('%s:\n%s', msg, discovery_document)
+          raise bq_error.BigqueryCommunicationError(msg)
+      except (
+          httplib2.HttpLib2Error,
+          googleapiclient.errors.HttpError,
+          http_client_lib.HTTPException,
+      ) as e:
+        # We can't find the specified server. This can be thrown for
+        # multiple reasons, so inspect the error.
+        if hasattr(e, 'content'):
+          if iterations == max_retries:
+            content = ''
+            if hasattr(e, 'content'):
+              content = e.content
+            raise bq_error.BigqueryCommunicationError(
+                'Cannot contact server. Please try again.\nError: %r'
+                '\nContent: %s' % (e, content)
             )
-          else:
-            response_metadata, discovery_document = http.request(discovery_url)
-          discovery_document = discovery_document.decode('utf-8')
-          if int(response_metadata.get('status')) >= 400:
-            msg = 'Got %s response from discovery url: %s' % (
-                response_metadata.get('status'),
-                discovery_url,
-            )
-            logging.error('%s:\n%s', msg, discovery_document)
-            raise bq_error.BigqueryCommunicationError(msg)
-        except (
-            httplib2.HttpLib2Error,
-            googleapiclient.errors.HttpError,
-            http_client_lib.HTTPException,
-        ) as e:
-          # We can't find the specified server. This can be thrown for
-          # multiple reasons, so inspect the error.
-          if hasattr(e, 'content'):
-            if iterations == max_retries:
-              content = ''
-              if hasattr(e, 'content'):
-                content = e.content
-              raise bq_error.BigqueryCommunicationError(
-                  'Cannot contact server. Please try again.\nError: %r'
-                  '\nContent: %s' % (e, content)
-              )
-          else:
-            if iterations == max_retries:
-              raise bq_error.BigqueryCommunicationError(
-                  'Cannot contact server. Please try again.\nTraceback: %s'
-                  % (traceback.format_exc(),)
-              )
-        except IOError as e:
+        else:
           if iterations == max_retries:
             raise bq_error.BigqueryCommunicationError(
-                'Cannot contact server. Please try again.\nError: %r' % (e,)
+                'Cannot contact server. Please try again.\nTraceback: %s'
+                % (traceback.format_exc(),)
             )
-        except googleapiclient.errors.UnknownApiNameOrVersion as e:
-          # We can't resolve the discovery url for the given server.
-          # Don't retry in this case.
+      except IOError as e:
+        if iterations == max_retries:
           raise bq_error.BigqueryCommunicationError(
-              'Invalid API name or version: %s' % (str(e),)
+              'Cannot contact server. Please try again.\nError: %r' % (e,)
           )
+      except googleapiclient.errors.UnknownApiNameOrVersion as e:
+        # We can't resolve the discovery url for the given server.
+        # Don't retry in this case.
+        raise bq_error.BigqueryCommunicationError(
+            'Invalid API name or version: %s' % (str(e),)
+        )
     return discovery_document
 
   def BuildApiClient(
@@ -471,14 +477,35 @@ class BigqueryClient:
     http_client = self.GetHttp()
     http = self.GetAuthorizedHttp(self.credentials, http_client)
 
-    discovery_document = self.LoadDiscoveryDocument(
-        service=service,
-        http=http,
-        discovery_url=discovery_url,
-        api_version=api_version,
-        domain_root=domain_root,
-        labels=labels,
-    )
+    discovery_document = None
+    # First, trying to load the discovery document from the local package.
+    if discovery_document is None:
+      discovery_document = self._LoadDiscoveryDocumentLocal(
+          service=service,
+          discovery_url=discovery_url,
+          api_version=api_version,
+      )
+
+    # If document was not loaded from the local package and
+    # discovery_url is not provided, we will generate the url to fetch from the
+    # server.
+    discovery_url_not_provided = discovery_url is None
+    if discovery_document is None and discovery_url is None:
+      discovery_url = self.GetDiscoveryUrl(
+          service=service,
+          api_version=api_version,
+          domain_root=domain_root,
+          labels=labels,
+      )
+
+
+    # If discovery_document is still not loaded, fetch it from the server.
+    if not discovery_document:
+      discovery_document = self._LoadDiscoveryDocumentUrl(
+          service=service,
+          http=http,
+          discovery_url=discovery_url,
+      )
 
     discovery_document_to_build_client = self.OverrideEndpoint(
         discovery_document=discovery_document, service=service
@@ -490,7 +517,6 @@ class BigqueryClient:
         apilog=bq_flags.APILOG.value,
     )
 
-    built_client = None
     try:
       # If the underlying credentials object used for authentication is of type
       # google.auth, its quota project ID will have been removed earlier in this

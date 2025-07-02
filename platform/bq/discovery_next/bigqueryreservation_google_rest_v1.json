@@ -7,7 +7,7 @@
   "version": "v1",
   "revision": "0",
   "title": "BigQuery Reservation API",
-  "description": "A service to modify your BigQuery flat-rate reservations.",
+  "description": "A service to modify your BigQuery reservations.",
   "ownerDomain": "google.com",
   "ownerName": "Google",
   "icons": {
@@ -265,14 +265,14 @@
           ]
         },
         "labels": {
-          "description": "Optional. The labels associated with this reservation. You can use these to organize and group your reservations. You can set this property when inserting or updating a reservation.",
+          "description": "Optional. The labels associated with this reservation. You can use these to organize and group your reservations. You can set this property when you create or update a reservation.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
           }
         },
         "reservationGroup": {
-          "description": "Optional. The reservation group this reservation belongs to. You can set this property when inserting or updating a reservation. Reservations do not need to belong to a reservation group. Format: projects\/{project}\/locations\/{location}\/reservationGroups\/{reservation_group} or just {reservation_group}",
+          "description": "Optional. The reservation group that this reservation belongs to. You can set this property when you create or update a reservation. Reservations do not need to belong to a reservation group. Format: projects\/{project}\/locations\/{location}\/reservationGroups\/{reservation_group} or just {reservation_group}",
           "type": "string"
         },
         "replicationStatus": {
@@ -2523,6 +2523,7 @@
                   "httpMethod": "GET",
                   "parameters": {
                     "name": {
+                      "description": "Required. Resource name of the reservation group to retrieve. E.g., `projects\/myproject\/locations\/US\/reservationGroups\/team1-prod`",
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/reservationGroups\/[^\/]+$",
                       "location": "path",
                       "required": true,
@@ -2548,6 +2549,7 @@
                   "httpMethod": "DELETE",
                   "parameters": {
                     "name": {
+                      "description": "Required. Resource name of the reservation group to retrieve. E.g., `projects\/myproject\/locations\/US\/reservationGroups\/team1-prod`",
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/reservationGroups\/[^\/]+$",
                       "location": "path",
                       "required": true,
@@ -2573,6 +2575,7 @@
                   "httpMethod": "GET",
                   "parameters": {
                     "parent": {
+                      "description": "Required. The parent resource name containing project and location, e.g.: `projects\/myproject\/locations\/US`",
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+$",
                       "location": "path",
                       "required": true,
@@ -2611,8 +2614,33 @@
   },
   "endpoints": [
     {
+      "endpointUrl": "https://bigqueryreservation.asia-south1.rep.googleapis.com/",
+      "location": "asia-south1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.asia-south2.rep.googleapis.com/",
+      "location": "asia-south2",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.europe-west1.rep.googleapis.com/",
+      "location": "europe-west1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.europe-west2.rep.googleapis.com/",
+      "location": "europe-west2",
+      "description": "Regional Endpoint"
+    },
+    {
       "endpointUrl": "https://bigqueryreservation.europe-west3.rep.googleapis.com/",
       "location": "europe-west3",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.europe-west6.rep.googleapis.com/",
+      "location": "europe-west6",
       "description": "Regional Endpoint"
     },
     {

@@ -72,6 +72,18 @@
         help_text: |
           A non-production edition of Looker (Google Cloud core) product for deploying and maintaining external analytics and
           custom applications at scale. This can be purchased via an annual contract.
+      - enum_value: LOOKER_CORE_TRIAL_STANDARD
+        arg_value: core-trial-standard
+        help_text: |
+          A standard trial edition of Looker (Google Cloud core) product.
+      - enum_value: LOOKER_CORE_TRIAL_ENTERPRISE
+        arg_value: core-trial-enterprise
+        help_text: |
+          An enterprise trial edition of Looker (Google Cloud core) product.
+      - enum_value: LOOKER_CORE_TRIAL_EMBED
+        arg_value: core-trial-embed
+        help_text: |
+          An embed trial edition of Looker (Google Cloud core) product.
     # Flags - Public IP
     - arg_name: public-ip-enabled
       api_field: instance.publicIpEnabled

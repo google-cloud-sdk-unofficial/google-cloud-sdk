@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
 PROJECTS_RESOURCE_PATH = 'projects/'
@@ -56,12 +57,12 @@ class Update(base.UpdateCommand):
     group.add_argument(
         '--mode',
         type=str,
-        help='The mode and compatibility of the schema registry.',
+        help='The mode of the schema registry to update.',
     )
     group.add_argument(
         '--compatibility',
         type=str,
-        help='The mode and compatibility of the schema registry.',
+        help='The compatibility of the schema registry to update.',
     )
 
   def Run(self, args):
@@ -79,17 +80,20 @@ class Update(base.UpdateCommand):
 
     project_id = util.ParseProject(args.project)
     location = args.location
-    name = '{}{}/{}{}/{}{}'.format(
-        PROJECTS_RESOURCE_PATH,
-        project_id,
-        LOCATIONS_RESOURCE_PATH,
-        location,
-        SCHEMA_REGISTRIES_RESOURCE_PATH,
-        args.CONCEPTS.schema_registry.Parse().schemaRegistriesId,
+    schema_registry_resource = resources.REGISTRY.Parse(
+        args.schema_registry,
+        collection='managedkafka.projects.locations.schemaRegistries',
+        params={
+            'projectsId': project_id,
+            'locationsId': location,
+            'schemaRegistriesId': args.schema_registry,
+        },
     )
 
+    schema_registry_path = schema_registry_resource.RelativeName()
+
     if args.mode:
-      name = name + '/mode'
+      name = schema_registry_path + '/mode'
       updatemoderequest = message.UpdateSchemaModeRequest()
       updatemoderequest.mode = (
           managedkafka_v1_messages.UpdateSchemaModeRequest.ModeValueValuesEnum(
@@ -106,7 +110,7 @@ class Update(base.UpdateCommand):
       )
       log.status.Print('Updated schema registry mode to %s' % response.mode)
     if args.compatibility:
-      name = name + '/config'
+      name = schema_registry_path + '/config'
       updateconfigrequest = message.UpdateSchemaConfigRequest()
       updateconfigrequest.compatibility = managedkafka_v1_messages.UpdateSchemaConfigRequest.CompatibilityValueValuesEnum(
           args.compatibility
@@ -125,6 +129,6 @@ class Update(base.UpdateCommand):
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.
       log.status.Print(
-          'Current schema registry config is \n compatibility = %s'
+          'Current schema registry config: \n - compatibility: %s'
           % (response.compatibility)
       )

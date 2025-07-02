@@ -63,6 +63,8 @@ _RANGE_PATTERN = re.compile(r'^\[(\S+.+\S+), (\S+.+\S+)\)$')
 
 _PARAMETERS_KEY = 'parameters'
 _DEFAULT_STORAGE_LOCATION_URI_KEY = 'defaultStorageLocationUri'
+_STORAGE_DESCRIPTOR_KEY = 'storageDescriptor'
+_CONNECTION_ID_KEY = 'connectionId'
 
 _DELIMITER_MAP = {
     'tab': '\t',
@@ -844,6 +846,56 @@ def GetJson(
       )
 
 
+def UpdateExternalCatalogTableOptions(
+    current_options: Dict[str, Any],
+    external_options_str: str,
+) -> Dict[str, Any]:
+  """Updates the external catalog table options.
+
+  Args:
+    current_options: The current external catalog table options.
+    external_options_str: The new external catalog table options as a JSON
+      string or a file path.
+
+  Returns:
+    The updated external catalog table options.
+  """
+  # Clear the parameters if they are present in the existing options but not
+  # in the new external catalog table options.
+  if current_options.get(_PARAMETERS_KEY) is not None:
+    current_options[_PARAMETERS_KEY] = {
+        k: None for k in current_options[_PARAMETERS_KEY]
+    }
+  # Clear the storage descriptor if they are present in the existing options
+  # but not in the new external catalog table options.
+  if current_options.get(_STORAGE_DESCRIPTOR_KEY) is not None:
+    current_options[_STORAGE_DESCRIPTOR_KEY] = {
+        k: None for k in current_options[_STORAGE_DESCRIPTOR_KEY]
+    }
+
+  external_catalog_table_options_dict = GetJson(external_options_str)
+  if _PARAMETERS_KEY in external_catalog_table_options_dict:
+    current_options.setdefault(_PARAMETERS_KEY, {})
+    current_options[_PARAMETERS_KEY].update(
+        external_catalog_table_options_dict[_PARAMETERS_KEY]
+    )
+  else:
+    current_options[_PARAMETERS_KEY] = None
+  if _STORAGE_DESCRIPTOR_KEY in external_catalog_table_options_dict:
+    current_options[_STORAGE_DESCRIPTOR_KEY] = (
+        external_catalog_table_options_dict[_STORAGE_DESCRIPTOR_KEY]
+    )
+  else:
+    current_options[_STORAGE_DESCRIPTOR_KEY] = None
+  if _CONNECTION_ID_KEY in external_catalog_table_options_dict:
+    current_options[_CONNECTION_ID_KEY] = external_catalog_table_options_dict[
+        _CONNECTION_ID_KEY
+    ]
+  else:
+    current_options[_CONNECTION_ID_KEY] = None
+  return current_options
+
+
 def UpdateExternalCatalogDatasetOptions(
     current_options: Dict[str, Any],
     external_options_str: str,
@@ -860,12 +912,10 @@ def UpdateExternalCatalogDatasetOptions(
   """
   # Clear the parameters if they are present in the existing dataset but not
   # in the new external catalog dataset options.
-  if (
-      _PARAMETERS_KEY in current_options
-      and current_options[_PARAMETERS_KEY] is not None
-  ):
-    for key in current_options[_PARAMETERS_KEY].keys():
-      current_options[_PARAMETERS_KEY][key] = None
+  if current_options.get(_PARAMETERS_KEY) is not None:
+    current_options[_PARAMETERS_KEY] = {
+        k: None for k in current_options[_PARAMETERS_KEY]
+    }
   external_catalog_dataset_options_dict = GetJson(external_options_str)
   if _PARAMETERS_KEY in external_catalog_dataset_options_dict:
     current_options.setdefault(_PARAMETERS_KEY, {})
@@ -873,19 +923,13 @@ def UpdateExternalCatalogDatasetOptions(
         _PARAMETERS_KEY
     ].items():
       current_options[_PARAMETERS_KEY][key] = value
-  elif (
-      _PARAMETERS_KEY in current_options
-      and current_options[_PARAMETERS_KEY] is not None
-  ):
+  else:
     current_options[_PARAMETERS_KEY] = None
   if _DEFAULT_STORAGE_LOCATION_URI_KEY in external_catalog_dataset_options_dict:
     current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = (
         external_catalog_dataset_options_dict[_DEFAULT_STORAGE_LOCATION_URI_KEY]
     )
-  elif (
-      _DEFAULT_STORAGE_LOCATION_URI_KEY in current_options
-      and current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] is not None
-  ):
+  else:
     current_options[_DEFAULT_STORAGE_LOCATION_URI_KEY] = None
   return current_options
 

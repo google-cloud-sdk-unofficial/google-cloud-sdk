@@ -14,7 +14,6 @@
 # limitations under the License.
 """The gcloud Firestore databases restore command."""
 
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -22,6 +21,7 @@ from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.api_lib.firestore import databases
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.command_lib.firestore import util as utils
@@ -29,9 +29,8 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-class RestoreBeta(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+class RestoreFirestoreAPI(base.Command):
   """Restores a Cloud Firestore database from a backup.
 
   ## EXAMPLES
@@ -94,7 +93,63 @@ class RestoreBeta(base.Command):
         args.source_backup,
         args.destination_database,
         self.EncryptionConfig(args),
+        tags=None,
     )
 
   def EncryptionConfig(self, args):
     return utils.ExtractEncryptionConfig(args)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RestoreAlpha(RestoreFirestoreAPI):
+  """Restores a Cloud Firestore database from a backup.
+
+  ## EXAMPLES
+
+  To restore a database from a backup.
+
+      $ {command}
+      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
+      --destination-database=DATABASE_ID
+
+  To restore a database from a backup with tags.
+
+      $ {command}
+      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
+      --destination-database=DATABASE_ID
+      --tags=key1=value1,key2=value2
+
+  To restore to a CMEK-enabled database.
+
+      $ {command}
+      --source-backup=projects/PROJECT_ID/locations/LOCATION_ID/backups/BACKUP_ID
+      --destination-database=DATABASE_ID
+      --encryption-type=customer-managed-encryption
+      --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    RestoreFirestoreAPI.Args(parser)
+    parser.add_argument(
+        '--tags',
+        help=textwrap.dedent("""\
+            Tags to attach to the database.
+
+            Example: --tags=key1=value1,key2=value2
+            """),
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        default=None,
+    )
+
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    return databases.RestoreDatabase(
+        project,
+        args.source_backup,
+        args.destination_database,
+        self.EncryptionConfig(args),
+        args.tags,
+    )

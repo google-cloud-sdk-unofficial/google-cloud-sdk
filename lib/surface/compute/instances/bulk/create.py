@@ -149,39 +149,14 @@ def _GetResult(
 class Create(base.Command):
   """Create Compute Engine virtual machine instances."""
 
-  _support_nvdimm = False
-  _support_public_dns = False
-  _support_erase_vss = True
-  _support_min_node_cpu = True
-  _support_source_snapshot_csek = False
-  _support_image_csek = True
-  _support_confidential_compute = True
-  _support_post_key_revocation_action_type = True
-  _support_rsa_encrypted = True
-  _deprecate_maintenance_policy = True
-  _support_create_disk_snapshots = True
-  _support_boot_snapshot_uri = True
   _support_display_device = False
-  _support_local_ssd_size = True
   _support_secure_tags = False
-  _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_visible_core_count = True
-  _support_max_run_duration = True
-  _support_enable_target_shape = True
-  _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
-  _support_no_address_in_networking = True
   _support_max_count_per_zone = True
-  _support_local_ssd_recovery_timeout = True
-  _support_network_queue_count = True
-  _support_performance_monitoring_unit = True
   _support_custom_hostnames = False
   _support_specific_then_x_affinity = False
   _support_watchdog_timer = False
-  _support_per_interface_stack_type = True
-  _support_ipv6_only = True
   _support_graceful_shutdown = True
   _support_flex_start = False
 
@@ -192,29 +167,13 @@ class Create(base.Command):
     bulk_flags.AddCommonBulkInsertArgs(
         parser,
         base.ReleaseTrack.GA,
-        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        support_min_node_cpu=cls._support_min_node_cpu,
-        support_erase_vss=cls._support_erase_vss,
-        snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek,
         support_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration,
-        support_enable_target_shape=cls._support_enable_target_shape,
-        support_confidential_compute_type=cls._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
-        support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_network_queue_count=cls._support_network_queue_count,
-        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
-        support_per_interface_stack_type=cls._support_per_interface_stack_type,
-        support_ipv6_only=cls._support_ipv6_only,
         support_flex_start=cls._support_flex_start,
     )
     cls.AddSourceInstanceTemplate(parser)
@@ -247,32 +206,11 @@ class Create(base.Command):
       scope,
   ):
     supported_features = bulk_util.SupportedFeatures(
-        self._support_nvdimm,
-        self._support_public_dns,
-        self._support_erase_vss,
-        self._support_min_node_cpu,
-        self._support_source_snapshot_csek,
-        self._support_image_csek,
-        self._support_confidential_compute,
-        self._support_post_key_revocation_action_type,
-        self._support_rsa_encrypted,
-        self._deprecate_maintenance_policy,
-        self._support_create_disk_snapshots,
-        self._support_boot_snapshot_uri,
         self._support_display_device,
-        self._support_local_ssd_size,
         self._support_secure_tags,
-        self._support_host_error_timeout_seconds,
         self._support_numa_node_count,
-        self._support_visible_core_count,
-        self._support_max_run_duration,
-        self._support_local_ssd_recovery_timeout,
-        self._support_enable_target_shape,
-        self._support_confidential_compute_type,
-        self._support_confidential_compute_type_tdx,
         self._support_snp_svsm,
         self._support_max_count_per_zone,
-        self._support_performance_monitoring_unit,
         self._support_custom_hostnames,
         self._support_specific_then_x_affinity,
         self._support_watchdog_timer,
@@ -323,10 +261,6 @@ class Create(base.Command):
     """
     bulk_flags.ValidateBulkInsertArgs(
         args,
-        support_enable_target_shape=self._support_enable_target_shape,
-        support_max_run_duration=self._support_max_run_duration,
-        support_image_csek=self._support_image_csek,
-        support_source_snapshot_csek=self._support_source_snapshot_csek,
         support_max_count_per_zone=self._support_max_count_per_zone,
         support_custom_hostnames=self._support_custom_hostnames,
     )
@@ -363,16 +297,14 @@ class Create(base.Command):
       except exceptions.HttpException as error:
         raise error
 
-    errors_to_collect = []
     response = compute_client.MakeRequests(
         [(instances_service, 'BulkInsert', request)],
-        errors_to_collect=errors_to_collect,
         log_result=False,
         always_return_operation=True,
         no_followup=True,
     )
 
-    self._errors = errors_to_collect
+    self._errors = []
     if response:
       operation_group_id = response[0].operationGroupId
       result = _GetResult(
@@ -416,57 +348,28 @@ class CreateBeta(Create):
 
   _support_display_device = True
   _support_secure_tags = False
-  _support_host_error_timeout_seconds = True
   _support_numa_node_count = False
-  _support_visible_core_count = True
-  _support_max_run_duration = True
-  _support_enable_target_shape = True
-  _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = True
   _support_snp_svsm = False
-  _support_no_address_in_networking = True
   _support_max_count_per_zone = True
-  _support_local_ssd_recovery_timeout = True
-  _support_network_queue_count = True
-  _support_local_ssd_size = True
-  _support_performance_monitoring_unit = True
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
   _support_watchdog_timer = False
-  _support_per_interface_stack_type = True
-  _support_ipv6_only = True
   _support_graceful_shutdown = True
   _support_flex_start = False
-  _support_igmp_query = True
+  _support_igmp_query = False
 
   @classmethod
   def Args(cls, parser):
     bulk_flags.AddCommonBulkInsertArgs(
         parser,
         base.ReleaseTrack.BETA,
-        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        support_min_node_cpu=cls._support_min_node_cpu,
-        support_erase_vss=cls._support_erase_vss,
-        snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek,
         support_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration,
-        support_enable_target_shape=cls._support_enable_target_shape,
-        support_confidential_compute_type=cls._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
-        support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_network_queue_count=cls._support_network_queue_count,
-        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
         support_watchdog_timer=cls._support_watchdog_timer,
-        support_per_interface_stack_type=cls._support_per_interface_stack_type,
-        support_ipv6_only=cls._support_ipv6_only,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
         support_igmp_query=cls._support_igmp_query,
@@ -484,26 +387,13 @@ class CreateAlpha(Create):
 
   # LINT.IfChange(alpha_spec)
   _support_display_device = True
-  _support_local_ssd_size = True
   _support_secure_tags = True
-  _support_host_error_timeout_seconds = True
   _support_numa_node_count = True
-  _support_visible_core_count = True
-  _support_max_run_duration = True
-  _support_enable_target_shape = True
-  _support_confidential_compute_type = True
-  _support_confidential_compute_type_tdx = True
   _support_snp_svsm = True
-  _support_no_address_in_networking = True
   _support_max_count_per_zone = True
-  _support_local_ssd_recovery_timeout = True
-  _support_network_queue_count = True
-  _support_performance_monitoring_unit = True
   _support_custom_hostnames = True
   _support_specific_then_x_affinity = True
-  _support_ipv6_only = True
   _support_watchdog_timer = True
-  _support_per_interface_stack_type = True
   _support_igmp_query = True
   _support_graceful_shutdown = True
   _support_flex_start = False
@@ -513,29 +403,13 @@ class CreateAlpha(Create):
     bulk_flags.AddCommonBulkInsertArgs(
         parser,
         base.ReleaseTrack.ALPHA,
-        deprecate_maintenance_policy=cls._deprecate_maintenance_policy,
-        support_min_node_cpu=cls._support_min_node_cpu,
-        support_erase_vss=cls._support_erase_vss,
-        snapshot_csek=cls._support_source_snapshot_csek,
-        image_csek=cls._support_image_csek,
         support_display_device=cls._support_display_device,
-        support_local_ssd_size=cls._support_local_ssd_size,
         support_numa_node_count=cls._support_numa_node_count,
-        support_visible_core_count=cls._support_visible_core_count,
-        support_max_run_duration=cls._support_max_run_duration,
-        support_enable_target_shape=cls._support_enable_target_shape,
-        support_confidential_compute_type=cls._support_confidential_compute_type,
-        support_confidential_compute_type_tdx=cls._support_confidential_compute_type_tdx,
         support_snp_svsm=cls._support_snp_svsm,
-        support_no_address_in_networking=cls._support_no_address_in_networking,
         support_max_count_per_zone=cls._support_max_count_per_zone,
-        support_network_queue_count=cls._support_network_queue_count,
-        support_performance_monitoring_unit=cls._support_performance_monitoring_unit,
         support_custom_hostnames=cls._support_custom_hostnames,
         support_specific_then_x_affinity=cls._support_specific_then_x_affinity,
-        support_ipv6_only=cls._support_ipv6_only,
         support_watchdog_timer=cls._support_watchdog_timer,
-        support_per_interface_stack_type=cls._support_per_interface_stack_type,
         support_igmp_query=cls._support_igmp_query,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,

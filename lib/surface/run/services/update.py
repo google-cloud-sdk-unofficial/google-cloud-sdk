@@ -44,12 +44,11 @@ Container Flags
     If the --container or --remove-containers flag is specified the following
     arguments may only be specified after a --container flag.
     """
-  del release_track  # Unused.
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.ImageArg(required=False))
   group.AddArgument(flags.PortArg())
   group.AddArgument(flags.Http2Flag())
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.CommandFlag())
@@ -98,6 +97,7 @@ class Update(base.Command):
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
     flags.AddCpuThrottlingFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
+    flags.AddDefaultUrlFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
@@ -297,7 +297,6 @@ class BetaUpdate(Update):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
@@ -322,7 +321,6 @@ class AlphaUpdate(BetaUpdate):
 
     # Flags specific to managed CR
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddDefaultUrlFlag(parser)
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)

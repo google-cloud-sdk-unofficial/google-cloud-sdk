@@ -51,7 +51,7 @@ Container Flags
           required=False,
       )
   )
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:

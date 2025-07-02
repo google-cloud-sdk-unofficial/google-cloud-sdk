@@ -29,6 +29,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class ListBetaGA(base.ListCommand):
   """List VPN tunnels."""
 
@@ -52,7 +53,9 @@ class ListBetaGA(base.ListCommand):
         symbols=display_info.transforms, aliases=display_info.aliases)
     args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
         args.filter, defaults=defaults)
-    return helper.List(project=project, filter_expr=filter_expr)
+    return helper.List(
+        project=project, filter_expr=filter_expr, regions=args.regions
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

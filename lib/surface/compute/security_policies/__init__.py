@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class SecurityPolicies(base.Group):
   """Read and manipulate Cloud Armor security policies."""
   pass

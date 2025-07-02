@@ -132,6 +132,7 @@ class Deploy(base.Command):
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
     flags.AddCpuThrottlingFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
+    flags.AddDefaultUrlFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
@@ -666,10 +667,10 @@ class Deploy(base.Command):
       allow_unauth,
       has_latest,
       iap,
+      skip_build,
   ):
-    include_validate_service = bool(
-        build_from_source
-    ) and self.ReleaseTrack() in [
+    requires_build = bool(build_from_source) and not skip_build
+    include_validate_service = requires_build and self.ReleaseTrack() in [
         base.ReleaseTrack.ALPHA,
         base.ReleaseTrack.BETA,
     ]
@@ -677,11 +678,12 @@ class Deploy(base.Command):
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
         include_validate_service=include_validate_service,
-        include_build=bool(build_from_source),
+        include_upload_source=bool(build_from_source),
+        include_build=requires_build,
         include_create_repo=repo_to_create is not None,
         include_iap=iap is not None,
     )
-    if build_from_source:
+    if requires_build:
       header = 'Building and deploying'
     else:
       header = 'Deploying'
@@ -875,6 +877,7 @@ class Deploy(base.Command):
             allow_unauth,
             has_latest,
             iap,
+            skip_build,
         ) as tracker:
           return operations.ReleaseService(
               service_ref,
@@ -1118,7 +1121,6 @@ class BetaDeploy(Deploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDefaultUrlFlag(parser)
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddRegionsArg(parser)
     flags.AddScalingFlag(parser)
@@ -1189,6 +1191,7 @@ class BetaDeploy(Deploy):
       allow_unauth,
       has_latest,
       iap,
+      skip_build,
   ):
     if not self.__is_multi_region:
       return super()._GetTracker(
@@ -1200,10 +1203,10 @@ class BetaDeploy(Deploy):
           allow_unauth,
           has_latest,
           iap,
+          skip_build,
       )
-    include_validate_service = bool(
-        build_from_source
-    ) and self.ReleaseTrack() in [
+    requires_build = bool(build_from_source) and not skip_build
+    include_validate_service = requires_build and self.ReleaseTrack() in [
         base.ReleaseTrack.ALPHA,
         base.ReleaseTrack.BETA,
     ]
@@ -1211,7 +1214,7 @@ class BetaDeploy(Deploy):
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
         include_validate_service=include_validate_service,
-        include_build=bool(build_from_source),
+        include_build=requires_build,
         include_create_repo=repo_to_create is not None,
         include_create_revision=True,
         include_iap=iap is not None,
@@ -1248,7 +1251,6 @@ class AlphaDeploy(BetaDeploy):
 
     # Flags specific to managed CR
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddDefaultUrlFlag(parser)
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)

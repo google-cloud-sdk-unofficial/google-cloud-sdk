@@ -35,7 +35,7 @@ def _GetLogConfig(args, api_version):
 
   Args:
     args: args with log_level parsed ordered dict. If log-level flag is set,
-          enable option should also be set.
+      enable option should also be set.
     api_version: API version (e.g. v1apha1)
 
   Returns:
@@ -53,7 +53,9 @@ def GetPluginConfigData(args):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a `WasmPlugin` resource."""
 
@@ -90,7 +92,7 @@ class Update(base.UpdateCommand):
           $ {command} my-plugin --main-version=v1
           --description="A new description." --labels=label1=value1
           --image=...-docker.pkg.dev/my-project/repository/container:tag
-          """)
+          """),
   }
 
   @classmethod
@@ -143,7 +145,7 @@ class Update(base.UpdateCommand):
     else:
       raise calliope_exceptions.ConflictingArgumentsException(
           '--async',
-          'If --async flag is set, --image and --config flags can\'t be used.',
+          "If --async flag is set, --image and --config flags can't be used.",
       )
     # --main-version="" is not allowed.
     if args.IsSpecified('main_version') and not args.main_version:
@@ -207,8 +209,9 @@ class Update(base.UpdateCommand):
         log_config=log_config,
     )
 
-    log.status.Print('Update request issued for: [{}]'.format(
-        wasm_plugin_ref.Name()))
+    log.status.Print(
+        'Update request issued for: [{}]'.format(wasm_plugin_ref.Name())
+    )
 
     if args.async_:
       log.status.Print('Check operation [{}] for status.'.format(op_ref.name))

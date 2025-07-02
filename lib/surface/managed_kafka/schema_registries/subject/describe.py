@@ -18,16 +18,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
-SUBJECTS_RESOURCE_PATH = 'subjects/'
+SUBJECTS_RESOURCE_PATH = '/subjects/'
 CONTEXTS_RESOURCE_PATH = '/contexts/'
 
 
@@ -72,42 +75,93 @@ class Describe(base.UpdateCommand):
     location = args.location
     schema_registry_id = args.schema_registry
     subject = args.CONCEPTS.subject.Parse().subjectsId
-    name = '{}{}/{}{}/{}{}'.format(
-        PROJECTS_RESOURCE_PATH,
-        project_id,
-        LOCATIONS_RESOURCE_PATH,
-        location,
-        SCHEMA_REGISTRIES_RESOURCE_PATH,
-        schema_registry_id,
+    subject_run_resource = resources.REGISTRY.Parse(
+        args.subject,
+        collection='managedkafka.projects.locations.schemaRegistries.subjects',
+        params={
+            'projectsId': project_id,
+            'locationsId': location,
+            'schemaRegistriesId': schema_registry_id,
+            'subjectsId': subject,
+        },
     )
+    schema_registry_resource = subject_run_resource.Parent().RelativeName()
+    subject_resource_path = subject_run_resource.RelativeName()
     if args.context:
-      name = f'{name}{CONTEXTS_RESOURCE_PATH}{args.context}'
+      subject_resource_path = f'{schema_registry_resource}{CONTEXTS_RESOURCE_PATH}{args.context}{SUBJECTS_RESOURCE_PATH}{subject}'
+      schema_registry_resource = (
+          f'{schema_registry_resource}{CONTEXTS_RESOURCE_PATH}{args.context}'
+      )
 
-    subject_resource_path = f'{name}/{SUBJECTS_RESOURCE_PATH}{subject}'
-
-    log.status.Print('Describing subject: {}'.format(subject_resource_path))
+    log.status.Print(
+        'Describing subject: {}'.format(subject_resource_path) + '\n'
+    )
 
     subject_mode_request = (
         message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
-            name=f'{name}/mode/{subject}'
+            name=f'{schema_registry_resource}/mode/{subject}'
         )
     )
     subject_config_request = (
         message.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
-            name=f'{name}/config/{subject}'
+            name=f'{schema_registry_resource}/config/{subject}'
         )
     )
 
-    subject_mode = client.projects_locations_schemaRegistries_mode.Get(
-        request=subject_mode_request
-    )
-    subject_config = client.projects_locations_schemaRegistries_config.Get(
-        request=subject_config_request,
-    )
+    mode = 'None'
+    compatibility = 'None'
+    mode_from_registry = False
+    compatibility_from_registry = False
+    try:
+      subject_mode = client.projects_locations_schemaRegistries_mode.Get(
+          request=subject_mode_request
+      )
+      mode = util.ParseMode(subject_mode.mode)
+    except apitools_exceptions.HttpNotFoundError as e:
+      api_error = exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
+      if 'Resource not found' in api_error.message:
+        raise exceptions.HttpException(
+            e, error_format='Subject {} not found.'.format(subject)
+        )
+      try:
+        schema_registry_mode_request = (
+            message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
+                name=f'{schema_registry_resource}/mode'
+            )
+        )
+        schema_registry_mode = (
+            client.projects_locations_schemaRegistries_mode.Get(
+                request=schema_registry_mode_request
+            )
+        )
+        mode = util.ParseMode(schema_registry_mode.mode)
+        mode_from_registry = True
+      except apitools_exceptions.HttpNotFoundError as inner_e:
+        # Should not happen.
+        raise exceptions.HttpException(inner_e)
 
-    mode = util.ParseMode(subject_mode.mode)
-
-    compatibility = util.ParseCompatibility(subject_config.compatibility)
+    try:
+      subject_config = client.projects_locations_schemaRegistries_config.Get(
+          request=subject_config_request,
+      )
+      compatibility = util.ParseCompatibility(subject_config.compatibility)
+    except apitools_exceptions.HttpNotFoundError:
+      try:
+        schema_registry_config_request = message.ManagedkafkaProjectsLocationsSchemaRegistriesConfigGetRequest(
+            name=f'{schema_registry_resource}/config'
+        )
+        schema_registry_config = (
+            client.projects_locations_schemaRegistries_config.Get(
+                request=schema_registry_config_request,
+            )
+        )
+        compatibility = util.ParseCompatibility(
+            schema_registry_config.compatibility
+        )
+        compatibility_from_registry = True
+      except apitools_exceptions.HttpNotFoundError as inner_e:
+        # Should not happen.
+        raise exceptions.HttpException(inner_e)
 
     verbose_subject = {
         'name': subject_resource_path,
@@ -115,6 +169,23 @@ class Describe(base.UpdateCommand):
         'compatibility': compatibility,
     }
 
-    log.status.Print(verbose_subject)
+    log.status.Print('name: {}'.format(verbose_subject['name']))
+    if mode_from_registry:
+      log.status.Print(
+          'mode: {} (registry default)'.format(verbose_subject['mode'])
+      )
+    else:
+      log.status.Print('mode: {}'.format(verbose_subject['mode']))
+    log.status.Print('config:')
+    if compatibility_from_registry:
+      log.status.Print(
+          '  - compatibility: {} (registry default)'.format(
+              verbose_subject['compatibility']
+          )
+      )
+    else:
+      log.status.Print(
+          '  - compatibility: {}'.format(verbose_subject['compatibility'])
+      )
 
     return verbose_subject

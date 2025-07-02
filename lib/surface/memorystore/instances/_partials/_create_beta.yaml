@@ -105,19 +105,6 @@
     - group:
         mutex: true
         help_text: |-
-          Arguments for the  simulate maintenance event.
-        params:
-        - arg_name: simulate-maintenance-event
-          api_field: instance.simulateMaintenanceEvent
-          action: store_true
-          required: false
-          type: bool
-          help_text: |-
-            Simulate a maintenance event.
-          default: null
-    - group:
-        mutex: true
-        help_text: |-
           Arguments for the  ondemand maintenance.
         params:
         - arg_name: ondemand-maintenance

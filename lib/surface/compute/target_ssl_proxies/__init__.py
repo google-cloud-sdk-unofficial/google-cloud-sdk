@@ -22,6 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class TargetSSLProxies(base.Group):
   """List, create, and delete target SSL proxies."""
 

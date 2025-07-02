@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all container update args."""
 
   help_text = """
@@ -40,7 +40,7 @@ Container Flags
 """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.ImageArg(required=False))
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.CommandFlag())

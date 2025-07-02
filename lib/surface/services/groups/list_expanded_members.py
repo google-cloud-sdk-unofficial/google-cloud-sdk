@@ -30,7 +30,7 @@ _GROUP_RESOURCE = 'groups/%s'
 # TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListExpandedMembers(base.ListCommand):
   """List expanded members of a specific service and group.
 

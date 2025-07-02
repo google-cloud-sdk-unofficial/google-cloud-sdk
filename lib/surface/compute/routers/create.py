@@ -233,7 +233,7 @@ class CreateBeta(Create):
   """
 
   _support_ncc_gateway = True
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

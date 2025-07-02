@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
 PROJECTS_RESOURCE_PATH = 'projects/'
@@ -65,22 +66,22 @@ class Update(base.UpdateCommand):
     group.add_argument(
         '--mode',
         type=str,
-        help='The mode and compatibility of the schema registry.',
+        help='The mode of the subject to update.',
     )
     group.add_argument(
         '--compatibility',
         type=str,
-        help='The mode and compatibility of the schema registry.',
+        help='The compatibility of the subject to update.',
     )
 
   def Run(self, args):
-    """Called when the user runs gcloud managed-kafka schema-registries update ...
+    """Called when the user runs gcloud managed-kafka schema-registries subject update ...
 
     Args:
       args: all the arguments that were provided to this command invocation.
 
     Returns:
-      The updated schema registry.
+      The updated subject.
     """
 
     message = apis.GetMessagesModule('managedkafka', 'v1')
@@ -89,19 +90,25 @@ class Update(base.UpdateCommand):
     project_id = util.ParseProject(args.project)
     location = args.location
     schema_registry_id = args.schema_registry
-    name = '{}{}/{}{}/{}{}'.format(
-        PROJECTS_RESOURCE_PATH,
-        project_id,
-        LOCATIONS_RESOURCE_PATH,
-        location,
-        SCHEMA_REGISTRIES_RESOURCE_PATH,
-        schema_registry_id,
+    subject = args.CONCEPTS.subject.Parse().subjectsId
+    subject_run_resource = resources.REGISTRY.Parse(
+        args.subject,
+        collection='managedkafka.projects.locations.schemaRegistries.subjects',
+        params={
+            'projectsId': project_id,
+            'locationsId': location,
+            'schemaRegistriesId': schema_registry_id,
+            'subjectsId': subject,
+        },
     )
+    schema_registry_resource = subject_run_resource.Parent().RelativeName()
     if args.context:
-      name = f'{name}{CONTEXTS_RESOURCE_PATH}{args.context}'
+      schema_registry_resource = (
+          f'{schema_registry_resource}{CONTEXTS_RESOURCE_PATH}{args.context}'
+      )
 
     if args.mode:
-      name = f'{name}/mode/{args.CONCEPTS.subject.Parse().subjectsId}'
+      name = f'{schema_registry_resource}/mode/{args.CONCEPTS.subject.Parse().subjectsId}'
       updatemoderequest = message.UpdateSchemaModeRequest()
       updatemoderequest.mode = (
           managedkafka_v1_messages.UpdateSchemaModeRequest.ModeValueValuesEnum(
@@ -129,7 +136,7 @@ class Update(base.UpdateCommand):
       log.status.Print('Updated subject mode to %s' % response.mode)
 
     if args.compatibility:
-      name = f'{name}/config/{args.CONCEPTS.subject.Parse().subjectsId}'
+      name = f'{schema_registry_resource}/config/{args.CONCEPTS.subject.Parse().subjectsId}'
       updateconfigrequest = message.UpdateSchemaConfigRequest()
       updateconfigrequest.compatibility = managedkafka_v1_messages.UpdateSchemaConfigRequest.CompatibilityValueValuesEnum(
           args.compatibility
@@ -158,6 +165,6 @@ class Update(base.UpdateCommand):
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.
       log.status.Print(
-          'Current subject config is \n compatibility = %s'
+          'Current subject config: \n - compatibility: %s'
           % (response.compatibility)
       )

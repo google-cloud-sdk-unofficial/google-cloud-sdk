@@ -285,7 +285,7 @@
       required: false
       repeated: false
       help_text: |-
-        The subnet CIDR range for the Autonmous Database.
+        The subnet CIDR range for the Autonomous Database.
     - arg_name: odb-network
       help_text: |-
         The name of the OdbNetwork associated with the Autonomous Database.
@@ -312,7 +312,7 @@
         api_field: autonomousDatabase.sourceConfig
         required: false
         help_text: |-
-          The source configuration for the standby Autonomnous Database.
+          The source configuration for the standby Autonomous Database.
         params:
         - arg_name: source-config-autonomous-database
           help_text: |-

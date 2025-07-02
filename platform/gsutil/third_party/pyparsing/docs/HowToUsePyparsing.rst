@@ -5,10 +5,10 @@ Using the pyparsing module
 :author: Paul McGuire
 :address: ptmcg.pm+pyparsing@gmail.com
 
-:revision: 3.1.3
-:date: August, 2024
+:revision: 3.2.0
+:date: October, 2024
 
-:copyright: Copyright |copy| 2003-2023 Paul McGuire.
+:copyright: Copyright |copy| 2003-2024 Paul McGuire.
 
 .. |copy| unicode:: 0xA9
 
@@ -42,9 +42,9 @@ synonyms, but the synonyms will be removed in a future release.*
 
 *If you are using this documentation, but working with a 2.4.x version of pyparsing,
 you'll need to convert methods and arguments from the documented snake_case
-names to the legacy camelCase names. In pyparsing 3.0.x and 3.1.x, both forms are
+names to the legacy camelCase names. In pyparsing 3.x, both forms are
 supported, but the legacy forms are deprecated; they will be dropped in a
-future release.*
+future 4.0 release.*
 
 -----------
 
@@ -374,6 +374,14 @@ methods for code to use are:
   basic element can be referenced multiple times and given
   different names within a complex grammar.
 
+.. _using_each:
+
+- ``using_each(list_of_symbols)`` a short-cut for defining a number of
+  symbols of a particular ``ParserElement`` subclass::
+
+     LBRACK, RBRACK, LBRACE, RBRACE, LPAR, RPAR = Suppress.using_each("[]{}()")
+     AND, OR, NOT = Keyword.using_each("and or not".split())
+
 .. _set_parse_action:
 
 - ``set_parse_action(*fn)`` - specify one or more functions to call after successful
@@ -412,7 +420,7 @@ methods for code to use are:
   
   A nice short-cut for calling ``set_parse_action`` is to use it as a decorator::
   
-    identifier = Word(alphas, alphanums+"_")
+    identifier = Word(alphas, alphanums + "_")
     
     @identifier.set_parse_action
     def resolve_identifier(results: ParseResults):
@@ -463,9 +471,11 @@ methods for code to use are:
   when trying to match this element
 
 - ``validate()`` - function to verify that the defined grammar does not
-  contain infinitely recursive constructs (``validate()`` is deprecated, and
+  contain infinitely recursive constructs.
+
+  *(``validate()`` is deprecated, and
   will be removed in a future pyparsing release. Pyparsing now supports
-  left-recursive parsers, which this function attempted to catch.)
+  left-recursive parsers, which this function attempted to catch.)*
 
 .. _parse_with_tabs:
 
@@ -613,7 +623,7 @@ Basic ParserElement subclasses
 
   ``SkipTo`` can also be written using ``...``::
 
-    LBRACE, RBRACE = map(Literal, "{}")
+    LBRACE, RBRACE = Literal.using_each("{}")
 
     brace_expr = LBRACE + SkipTo(RBRACE) + RBRACE
     # can also be written as
@@ -771,6 +781,8 @@ Expression operators
   equivalent to ``OneOrMore(expr)``, and ``expr[..., 3]`` is equivalent to "up to 3 instances
   of ``expr``".
 
+- ``[:stop_on]`` - specifies a stopping expression for the current repetition (may be combined
+  with ``...`` or ``min, max``), as in ``Keyword("start") + Word(alphas)[...:Keyword("end")] + Keyword("end")``
 
 Positional subclasses
 ---------------------
@@ -820,7 +832,7 @@ Special subclasses
 
 - ``Tag`` - a non-parsing token that always matches, and inserts
   a tag and value into the current parsed tokens; useful for adding
-  metadata or annotations to parsed results (see tag_example.py_).
+  metadata or annotations to parsed results (see `examples/tag_example.py <../examples/tag_example.py>`_).
 
 
 Other classes
@@ -986,7 +998,7 @@ Exception classes and Troubleshooting
 
       expr = pp.Word(pp.alphanums).set_name("word").set_debug()
       print(ppt.with_line_numbers(data))
-      expr[...].parseString(data)
+      expr[...].parse_string(data)
 
   prints::
 
@@ -1117,6 +1129,22 @@ Helper methods
       this expression to parse input strings, or incorporate it
       into a larger, more complex grammar.
 
+  Here is an ``infix_notation`` definition for 4-function arithmetic,
+  taking numbers or variables as operands. The order of definition of
+  the operators follows the standard precedence of operations for
+  arithmetic::
+
+        number = pp.common.number()
+        variable = pp.common.identifier()
+        arithmetic_expression = pp.infix_notation(
+            integer | variable,
+            [
+                ("-", 1, pp.OpAssoc.RIGHT),
+                (pp.one_of("* /"), 2, pp.OpAssoc.LEFT),
+                (pp.one_of("+ -"), 2, pp.OpAssoc.LEFT),
+            ]
+        )
+
   ``infix_notation`` also supports optional arguments ``lpar`` and ``rpar``, to
   parse groups with symbols other than "(" and ")". They may be passed as strings
   (in which case they will be converted to ``Suppress`` objects, and suppressed from
@@ -1127,7 +1155,7 @@ Helper methods
 
         expr = infix_notation(int_expr,
             [
-                (one_of("+ -"), 2, opAssoc.LEFT),
+                (one_of("+ -"), 2, OpAssoc.LEFT),
             ],
             lpar="<",
             rpar=">"
@@ -1142,7 +1170,7 @@ Helper methods
 
         expr = infix_notation(int_expr,
             [
-                (one_of("+ -"), 2, opAssoc.LEFT),
+                (one_of("+ -"), 2, OpAssoc.LEFT),
             ],
             lpar=Literal("<"),
             rpar=Literal(">")
@@ -1405,27 +1433,27 @@ access them using code like the following::
 
 The following language ranges are defined.
 
-==========================    =================     ================================================
+==========================    =================     ========================================================
 Unicode set                   Alternate names       Description
---------------------------    -----------------     ------------------------------------------------
-Arabic                        العربية
-Chinese                       中文
-CJK                                                 Union of Chinese, Japanese, and Korean sets
-Cyrillic                      кириллица
-Devanagari                    देवनागरी
-Greek                         Ελληνικά
-Hangul                        Korean, 한국어
-Hebrew                        עִברִית
-Japanese                      日本語                 Union of Kanji, Katakana, and Hiragana sets
-Japanese.Hiragana             ひらがな
-Japanese.Kanji                漢字
-Japanese.Katakana             カタカナ
-Latin1                                              All Unicode characters up to code point 255
-LatinA
-LatinB
-Thai                          ไทย
-BasicMultilingualPlane        BMP                   All Unicode characters up to code point 65535
-==========================    =================     ================================================
+--------------------------    -----------------     --------------------------------------------------------
+``Arabic``                        العربية
+``Chinese``                   中文
+``CJK``                                             Union of Chinese, Japanese, and Korean sets
+``Cyrillic``                  кириллица
+``Devanagari``                देवनागरी
+``Greek``                     Ελληνικά
+``Hangul``                    Korean, 한국어
+``Hebrew``                        עִברִית
+``Japanese``                  日本語                 Union of Kanji, Katakana, and Hiragana sets
+``Japanese.Hiragana``         ひらがな
+``Japanese.Kanji``            漢字
+``Japanese.Katakana``         カタカナ
+``Latin1``                                          All Unicode characters up to code point 0x7f (255)
+``LatinA``                                          Unicode characters for code points 0x100-0x17f (256-383)
+``LatinB``                                          Unicode characters for code points 0x180-0x24f (384-591)
+``Thai``                      ไทย
+``BasicMultilingualPlane``    BMP                   All Unicode characters up to code point 0xffff (65535)
+==========================    =================     ========================================================
 
 The base ``unicode`` class also includes definitions based on all Unicode code points up to ``sys.maxunicode``. This
 set will include emojis, wingdings, and many other specialized and typographical variant characters.
@@ -1451,7 +1479,7 @@ Create your parser as you normally would. Then call ``create_diagram()``, passin
 
 This will result in the railroad diagram being written to ``street_address_diagram.html``.
 
-`create_diagrams` takes the following arguments:
+`create_diagram` takes the following arguments:
 
 - ``output_html`` (str or file-like object) - output target for generated diagram HTML
 
@@ -1460,6 +1488,8 @@ This will result in the railroad diagram being written to ``street_address_diagr
 - ``show_results_names`` - bool flag whether diagram should show annotations for defined results names
 
 - ``show_groups`` - bool flag whether groups should be highlighted with an unlabeled surrounding box
+
+- ``show_hidden`` - bool flag whether internal pyparsing elements that are normally omitted in diagrams should be shown (default=False)
 
 - ``embed`` - bool flag whether generated HTML should omit <HEAD>, <BODY>, and <DOCTYPE> tags to embed
   the resulting HTML in an enclosing HTML source (such as PyScript HTML)
@@ -1475,7 +1505,7 @@ Example
 -------
 You can view an example railroad diagram generated from `a pyparsing grammar for
 SQL SELECT statements <_static/sql_railroad.html>`_ (generated from
-`examples/select_parser.py <../examples/select_parser.py>`_).
+`examples/select_parser.py <https://github.com/pyparsing/pyparsing/blob/master/examples/select_parser.py>`_).
 
 Naming tip
 ----------

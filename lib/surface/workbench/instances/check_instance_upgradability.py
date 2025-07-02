@@ -37,7 +37,8 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class IsUpgradeable(base.DescribeCommand):
   """Checks if a workbench instance is upgradeable."""
 

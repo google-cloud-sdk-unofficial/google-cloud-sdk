@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 import time
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 import uuid
 
 # To configure apiclient logging.
@@ -324,6 +324,7 @@ def DeleteJob(
   except bq_error.BigqueryNotFoundError:
     if not ignore_not_found:
       raise
+
 
 
 #################################

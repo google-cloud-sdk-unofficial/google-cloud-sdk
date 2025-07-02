@@ -30,6 +30,8 @@ ENCOURAGE_SCP_INFO = (
     'Proxy tunneling.')
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class CopyFiles(base.Command):
   """Copy files to and from Google Compute Engine virtual machines via scp."""
 

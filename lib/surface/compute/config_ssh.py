@@ -232,6 +232,8 @@ def _BuildComputeSection(instances, private_key_file, known_hosts_file):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.ALPHA)
 class ConfigSSH(base.Command):
   """Populate SSH config files with Host entries from each instance.
 

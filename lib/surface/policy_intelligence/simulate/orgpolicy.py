@@ -222,7 +222,6 @@ class SimulateBeta(base.Command):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class SimulateGA(base.Command):
   """Simulate changes to organization policies."""
 

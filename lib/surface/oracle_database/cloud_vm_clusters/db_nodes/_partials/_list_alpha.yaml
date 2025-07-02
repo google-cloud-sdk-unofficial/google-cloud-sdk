@@ -31,13 +31,15 @@
     - help_text: |-
         The parent value for database node in the following format:
         projects/{project}/locations/{location}/cloudVmClusters/{cloudVmCluster}.
+        .
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_vm_clusters
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_vm_clusters_or_exadb_vm_clusters
       required: true
   request:
     api_version: v1alpha
     collection:
     - oracledatabase.projects.locations.cloudVmClusters.dbNodes
+    - oracledatabase.projects.locations.exadbVmClusters.dbNodes
   response:
     id_field: name

@@ -54,7 +54,7 @@ class Update(base.UpdateCommand):
     attachment_flags.AddEnableAdmin(parser)
     attachment_flags.AddBandwidth(parser, required=False)
     attachment_flags.AddMtu(parser)
-    attachment_flags.AddGeneveVni(parser)
+    attachment_flags.AddGeneveVni(parser, required=False)
     attachment_flags.AddDefaultApplianceIpAddress(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 

@@ -52,7 +52,7 @@ Container Flags
   group = base.ArgumentGroup(help=help_text)
   # Verify image flag is specified in Run function for better error message.
   group.AddArgument(flags.ImageArg(image=EXAMPLE_JOB_IMAGE, required=False))
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:

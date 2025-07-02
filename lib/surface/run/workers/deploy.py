@@ -42,7 +42,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.GA):
   """Returns an argument group with all container deploy args."""
 
   help_text = """
@@ -52,7 +52,7 @@ Container Flags
 """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.SourceAndImageFlags())
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())

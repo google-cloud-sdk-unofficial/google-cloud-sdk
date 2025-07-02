@@ -425,7 +425,7 @@ class Update(base.UpdateCommand):
         group, release_track=base.ReleaseTrack.GA
     )
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
-    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
@@ -1169,7 +1169,6 @@ class UpdateBeta(Update):
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddGatewayFlags(group, hidden=False)
-    flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddComplianceFlags(group, hidden=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
@@ -1199,7 +1198,7 @@ class UpdateBeta(Update):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
-    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
@@ -1227,6 +1226,9 @@ class UpdateBeta(Update):
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
     flags.AddEnableDefaultComputeClassFlag(group)
+    group_fleet_flags = group.add_group()
+    flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
+    flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1357,6 +1359,8 @@ class UpdateBeta(Update):
     opts.gateway_api = args.gateway_api
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
+    opts.membership_type = args.membership_type
+    opts.unset_membership_type = args.unset_membership_type
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs
@@ -1517,7 +1521,6 @@ class UpdateAlpha(Update):
     group_add_pod_ipv4_ranges = group.add_group(hidden=False)
     flags.AddAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
     flags.AddRemoveAdditionalPodIpv4RangesFlag(group_add_pod_ipv4_ranges)
-    flags.AddFleetProjectFlag(group, is_update=True)
     flags.AddComplianceFlags(group, hidden=True)
     flags.AddSecurityPostureFlag(group)
     flags.AddClusterNetworkPerformanceConfigFlags(group)
@@ -1547,7 +1550,7 @@ class UpdateAlpha(Update):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
-    group_add_additional_ip_ranges = group.add_group(hidden=True)
+    group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
@@ -1575,6 +1578,9 @@ class UpdateAlpha(Update):
     flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
     flags.AddEnableDefaultComputeClassFlag(group)
+    group_fleet_flags = group.add_group()
+    flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
+    flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1701,6 +1707,8 @@ class UpdateAlpha(Update):
     opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
+    opts.membership_type = args.membership_type
+    opts.unset_membership_type = args.unset_membership_type
     opts.clear_fleet_project = args.clear_fleet_project
     opts.enable_security_posture = args.enable_security_posture
     opts.network_performance_config = args.network_performance_configs

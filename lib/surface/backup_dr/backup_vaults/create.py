@@ -174,7 +174,7 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    _run(args, support_backup_retention_inheritance=False)
+    return _run(args, support_backup_retention_inheritance=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -201,4 +201,4 @@ class CreateAlpha(Create):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    _run(args, support_backup_retention_inheritance=True)
+    return _run(args, support_backup_retention_inheritance=True)
