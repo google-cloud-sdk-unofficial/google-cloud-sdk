@@ -14,10 +14,6 @@
 # limitations under the License.
 """Update a Filestore instance."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import textwrap
 
 from googlecloudsdk.api_lib.filestore import filestore_client
@@ -27,7 +23,6 @@ from googlecloudsdk.command_lib.filestore.instances import dp_util
 from googlecloudsdk.command_lib.filestore.instances import flags as instances_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
-import six
 
 
 def _CommonArgs(parser, api_version=filestore_client.V1_API_VERSION):
@@ -125,7 +120,7 @@ class Update(base.CreateCommand):
         )
     except KeyError as err:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(err)
+          '--file-share', str(err)
       )
 
     if labels_diff.MayHaveUpdates():
@@ -142,13 +137,23 @@ class Update(base.CreateCommand):
           labels=labels,
           file_share=args.file_share,
           performance=args.performance,
+          ldap=args.ldap,
+          disconnect_ldap=args.disconnect_ldap,
           clear_nfs_export_options=args.clear_nfs_export_options,
           deletion_protection_enabled=args.deletion_protection,
           deletion_protection_reason=args.deletion_protection_reason,
       )
+    except filestore_client.InvalidDisconnectLdapError as e:
+      raise exceptions.InvalidArgumentException(
+          '--disconnect-ldap', str(e)
+      )
+    except filestore_client.InvalidDisconnectManagedADError as e:
+      raise exceptions.InvalidArgumentException(
+          '--disconnect-managed-ad', str(e)
+      )
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(e)
+          '--file-share', str(e)
       )
 
     updated_fields = []
@@ -165,6 +170,8 @@ class Update(base.CreateCommand):
     if args.IsSpecified('performance'):
       updated_fields.append('performanceConfig')
     updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)
+    if args.IsSpecified('ldap') or args.IsSpecified('disconnect_ldap'):
+      updated_fields.append('directoryServices')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateInstance(
@@ -260,7 +267,7 @@ class UpdateAlpha(Update):
         )
     except KeyError as err:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(err)
+          '--file-share', str(err)
       )
 
     if labels_diff.MayHaveUpdates():
@@ -280,7 +287,7 @@ class UpdateAlpha(Update):
       )
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(e)
+          '--file-share', str(e)
       )
 
     updated_fields = []
@@ -399,7 +406,7 @@ class UpdateBeta(Update):
         )
     except KeyError as e:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(e)
+          '--file-share', str(e)
       )
     if labels_diff.MayHaveUpdates():
       labels = labels_diff.Apply(
@@ -417,13 +424,23 @@ class UpdateBeta(Update):
           performance=args.performance,
           managed_ad=args.managed_ad,
           disconnect_managed_ad=args.disconnect_managed_ad,
+          ldap=args.ldap,
+          disconnect_ldap=args.disconnect_ldap,
           clear_nfs_export_options=args.clear_nfs_export_options,
           deletion_protection_enabled=args.deletion_protection,
           deletion_protection_reason=args.deletion_protection_reason,
       )
+    except filestore_client.InvalidDisconnectLdapError as e:
+      raise exceptions.InvalidArgumentException(
+          '--disconnect-ldap', str(e)
+      )
+    except filestore_client.InvalidDisconnectManagedADError as e:
+      raise exceptions.InvalidArgumentException(
+          '--disconnect-managed-ad', str(e)
+      )
     except filestore_client.Error as e:
       raise exceptions.InvalidArgumentException(
-          '--file-share', six.text_type(e)
+          '--file-share', str(e)
       )
 
     updated_fields = []
@@ -441,7 +458,7 @@ class UpdateBeta(Update):
       updated_fields.append('performanceConfig')
     if args.IsSpecified('managed_ad') or args.IsSpecified(
         'disconnect_managed_ad'
-    ):
+    ) or args.IsSpecified('ldap') or args.IsSpecified('disconnect_ldap'):
       updated_fields.append('directoryServices')
 
     updated_fields += dp_util.GetDeletionProtectionUpdateMask(args)

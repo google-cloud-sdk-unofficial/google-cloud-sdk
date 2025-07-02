@@ -54,8 +54,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     resource_args.AddInstanceResourceArg(parser, 'to create')
     flags.AddKmsKey(parser)
-    flags.AddCAPool(parser)
-    flags.AddIsPrivate(parser)
+    flags.AddPrivateConfigGroup(parser)
     flags.AddEnableWorkforceIdentityFederation(parser)
     flags.AddMaxWait(parser, '60m')  # Default to 60 minutes wait.
     # Create --async flag and set default to be true.

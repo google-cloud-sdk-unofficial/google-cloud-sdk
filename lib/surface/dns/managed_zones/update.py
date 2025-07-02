@@ -28,33 +28,36 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 
 
-def _CommonArgs(parser, messages, release_track):
+def _CommonArgs(parser, messages):
   """Helper function to retrieve necessary flag values."""
   flags.GetZoneResourceArg(
-      'The name of the managed-zone to be updated.').AddToParser(parser)
+      'The name of the managed-zone to be updated.'
+  ).AddToParser(parser)
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   base.ASYNC_FLAG.AddToParser(parser)
-  flags.GetForwardingTargetsArg(release_track).AddToParser(parser)
+  flags.GetForwardingTargetsArg().AddToParser(parser)
   flags.GetDnsPeeringArgs().AddToParser(parser)
-  flags.GetPrivateForwardingTargetsArg(release_track).AddToParser(parser)
+  flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
   flags.GetManagedZoneGkeClustersArg().AddToParser(parser)
   flags.GetLocationArg().AddToParser(parser)
 
 
-def _Update(zones_client,
-            args,
-            private_visibility_config=None,
-            forwarding_config=None,
-            peering_config=None,
-            reverse_lookup_config=None,
-            cloud_logging_config=None,
-            api_version='v1',
-            cleared_fields=None):
+def _Update(
+    zones_client,
+    args,
+    private_visibility_config=None,
+    forwarding_config=None,
+    peering_config=None,
+    reverse_lookup_config=None,
+    cloud_logging_config=None,
+    api_version='v1',
+    cleared_fields=None,
+):
   """Helper function to perform the update.
 
   Args:
@@ -78,20 +81,24 @@ def _Update(zones_client,
   zone_ref = registry.Parse(
       args.zone,
       util.GetParamsForRegistry(api_version, args),
-      collection='dns.managedZones')
+      collection='dns.managedZones',
+  )
 
-  dnssec_config = command_util.ParseDnssecConfigArgs(args,
-                                                     zones_client.messages,
-                                                     api_version)
+  dnssec_config = command_util.ParseDnssecConfigArgs(
+      args, zones_client.messages, api_version
+  )
   labels_update = labels_util.ProcessUpdateArgsLazy(
-      args, zones_client.messages.ManagedZone.LabelsValue,
-      lambda: zones_client.Get(zone_ref).labels)
+      args,
+      zones_client.messages.ManagedZone.LabelsValue,
+      lambda: zones_client.Get(zone_ref).labels,
+  )
 
   update_results = []
 
   if labels_update.GetOrNone():
     update_results.append(
-        zones_client.UpdateLabels(zone_ref, labels_update.GetOrNone()))
+        zones_client.UpdateLabels(zone_ref, labels_update.GetOrNone())
+    )
 
   kwargs = {}
   if private_visibility_config:
@@ -114,14 +121,17 @@ def _Update(zones_client,
             description=args.description,
             labels=None,
             cleared_fields=cleared_fields,
-            **kwargs))
+            **kwargs,
+        )
+    )
 
   return update_results
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.UniverseCompatible
 class UpdateGA(base.UpdateCommand):
   """Update an existing Cloud DNS managed-zone.
 
@@ -136,19 +146,20 @@ class UpdateGA(base.UpdateCommand):
   To change the description of a zonal managed-zone in us-east1-a, run:
 
     $ {command} my-zone --description="Hello, world!" --location=us-east1-a
-
   """
 
   @classmethod
   def _BetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
+    return cls.ReleaseTrack() in (
+        base.ReleaseTrack.BETA,
+        base.ReleaseTrack.ALPHA,
+    )
 
   @classmethod
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
-    _CommonArgs(parser, messages, cls.ReleaseTrack())
+    _CommonArgs(parser, messages)
 
   def Run(self, args):
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
@@ -165,19 +176,23 @@ class UpdateGA(base.UpdateCommand):
               messages=messages,
               server_list=args.forwarding_targets,
               private_server_list=args.private_forwarding_targets,
-              allow_ipv6_and_fqdn=self._BetaOrAlpha(),
           )
       )
-    else:
-      forwarding_config = None
 
     peering_config = None
     if args.target_project and args.target_network:
-      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
-          args.target_project, args.target_network)
+      peering_network = (
+          f'https://www.{properties.VALUES.core.universe_domain.Get()}/compute/v1'
+          '/projects/{}/global/networks/{}'.format(
+              args.target_project, args.target_network
+          )
+      )
       peering_config = messages.ManagedZonePeeringConfig()
-      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
-          networkUrl=peering_network)
+      peering_config.targetNetwork = (
+          messages.ManagedZonePeeringConfigTargetNetwork(
+              networkUrl=peering_network
+          )
+      )
 
     visibility_config = None
 
@@ -201,12 +216,15 @@ class UpdateGA(base.UpdateCommand):
       networks = args.networks if args.networks else []
 
       def GetNetworkSelfLink(network):
-        return util.GetRegistry(api_version).Parse(
-            network,
-            collection='compute.networks',
-            params={
-                'project': properties.VALUES.core.project.GetOrFail
-            }).SelfLink()
+        return (
+            util.GetRegistry(api_version)
+            .Parse(
+                network,
+                collection='compute.networks',
+                params={'project': properties.VALUES.core.project.GetOrFail},
+            )
+            .SelfLink()
+        )
 
       network_urls = [GetNetworkSelfLink(n) for n in networks]
       network_configs = [
@@ -222,14 +240,19 @@ class UpdateGA(base.UpdateCommand):
 
       gkecluster_configs = [
           messages.ManagedZonePrivateVisibilityConfigGKECluster(
-              gkeClusterName=name) for name in gkeclusters
+              gkeClusterName=name
+          )
+          for name in gkeclusters
       ]
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs, gkeClusters=gkecluster_configs)
+          networks=network_configs, gkeClusters=gkecluster_configs
+      )
 
     reverse_lookup_config = None
-    if args.IsSpecified(
-        'managed_reverse_lookup') and args.managed_reverse_lookup:
+    if (
+        args.IsSpecified('managed_reverse_lookup')
+        and args.managed_reverse_lookup
+    ):
       reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
 
     cloud_logging_config = None
@@ -246,4 +269,5 @@ class UpdateGA(base.UpdateCommand):
         reverse_lookup_config=reverse_lookup_config,
         cloud_logging_config=cloud_logging_config,
         api_version=api_version,
-        cleared_fields=cleared_fields)
+        cleared_fields=cleared_fields,
+    )

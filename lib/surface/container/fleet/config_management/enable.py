@@ -22,7 +22,6 @@ import apitools
 from googlecloudsdk import api_lib
 from googlecloudsdk import core
 from googlecloudsdk.command_lib.container.fleet.config_management import command
-from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base
 import six
 
@@ -70,9 +69,6 @@ class Enable(base.EnableCommand, base.UpdateCommand, command.Common):
     )
 
   def Run(self, args):
-    # Convenience to help PoCo users migrate to the new standalone feature.
-    utils.enable_poco_api_if_disabled(self.Project())
-
     try:
       _ = self.enable_feature_with_fdc(args)
     except apitools.base.py.exceptions.HttpError as e:

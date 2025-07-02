@@ -35,9 +35,9 @@ class Export(base.Command):
   detailed_help = {
       "DESCRIPTION": "Export Security Command Center findings to bigquery.",
       "EXAMPLES": """
-      To export findings for a given parent ``organizations/123/sources/456/locations/global``, dataset ``projects/project_id/datasets/dataset_id`` and up to export_time ``2024-08-20T00:00:00Z`` run:
+      To export findings for a given parent ``organizations/123/sources/456/locations/global`` and dataset ``projects/project_id/datasets/dataset_id`` run:
 
-        $ {command} organizations/123 --dataset=projects/project_id/datasets/dataset_id --export-time=2024-08-20T00:00:00Z --source=456 --location=global
+        $ {command} organizations/123 --dataset=projects/project_id/datasets/dataset_id --source=456 --location=global
 
       """,
       "API REFERENCE": (
@@ -55,15 +55,6 @@ class Export(base.Command):
     scc_flags.LOCATION_FLAG.AddToParser(parser)
 
     parser.add_argument(
-        "--export-time",
-        help=(
-            "The cut off time for findings to be exported. Only findings with"
-            " an `eventTime` before this will be included in the export"
-        ),
-        required=True,
-    )
-
-    parser.add_argument(
         "--dataset",
         help="BigQuery dataset to export findings to.",
         required=True,
@@ -78,11 +69,8 @@ class Export(base.Command):
         messages.SecuritycenterOrganizationsSourcesLocationsFindingsExportRequest()
     )
 
-    formatted_export_time = util.ValidateAndFormatExportTime(args.export_time)
     validated_dataset = util.ValidateDataset(args.dataset)
-
     request.exportFindingsRequest = messages.ExportFindingsRequest(
-        exportTime=formatted_export_time,
         bigQueryDestination=messages.BigQueryDestination(
             dataset=validated_dataset
         ),

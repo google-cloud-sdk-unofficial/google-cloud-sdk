@@ -18,6 +18,7 @@
 from googlecloudsdk.api_lib.storage import insights_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
+from googlecloudsdk.command_lib.storage.insights.dataset_configs import create_update_util
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import log_util
 from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource_args
 from googlecloudsdk.core.console import console_io
@@ -53,8 +54,44 @@ class Update(base.Command):
 
   @staticmethod
   def Args(parser):
+    parser.add_argument(
+        '--auto-add-new-buckets',
+        hidden=True,
+        choices=['true', 'false'],
+        help=(
+            'Automatically include any new buckets created if they satisfy'
+            ' criteria defined in config settings.'
+        ),
+    )
+
     resource_args.add_dataset_config_resource_arg(parser, 'to update')
     flags.add_dataset_config_create_update_flags(parser, is_update=True)
+
+  def _get_source_projects_list(self, args):
+    if args.source_projects is not None:
+      return args.source_projects
+    elif args.source_projects_file is not None:
+      return create_update_util.get_source_configs_list(
+          args.source_projects_file, create_update_util.ConfigType.PROJECTS
+      )
+    return None
+
+  def _get_source_folders_list(self, args):
+    if args.source_folders is not None:
+      return args.source_folders
+    elif args.source_folders_file is not None:
+      return create_update_util.get_source_configs_list(
+          args.source_folders_file, create_update_util.ConfigType.FOLDERS
+      )
+    return None
+
+  def _get_auto_add_new_buckets(self, args):
+    if args.auto_add_new_buckets is not None:
+      if args.auto_add_new_buckets == 'true':
+        return True
+      elif args.auto_add_new_buckets == 'false':
+        return False
+    return None
 
   def Run(self, args):
     client = insights_api.InsightsApi()
@@ -74,8 +111,49 @@ class Update(base.Command):
       else:
         raise ValueError('retention-period-days value must be greater than 0')
 
+    # TODO: b/418690611 - Update this once the API supports organizationScope
+    # without organizationNumber.
+    organization_number = None
+    if args.enable_organization_scope:
+      organization_number = client.get_dataset_config(
+          dataset_config_relative_name
+      ).organizationNumber
+
+    source_projects_list = self._get_source_projects_list(args)
+    source_folders_list = self._get_source_folders_list(args)
+    new_scope = create_update_util.get_new_source_config(
+        organization_number,
+        source_projects_list,
+        source_folders_list,
+    )
+
+    if new_scope is not None:
+      existing_scope = create_update_util.get_existing_source_config(
+          dataset_config_relative_name, client
+      )
+      message = (
+          'You are about to change scope of dataset config: {} from {} to {}'
+          .format(dataset_config_relative_name, existing_scope, new_scope)
+      )
+      console_io.PromptContinue(
+          message=message, throw_if_unattended=True, cancel_on_no=True
+      )
+
+    auto_add_new_buckets = self._get_auto_add_new_buckets(args)
+
     update_dataset_config_operation = client.update_dataset_config(
         dataset_config_relative_name,
+        organization_scope=args.enable_organization_scope,
+        source_projects_list=source_projects_list,
+        source_folders_list=source_folders_list,
+        organization_number=organization_number,
+        include_buckets_name_list=args.include_bucket_names,
+        include_buckets_prefix_regex_list=args.include_bucket_prefix_regexes,
+        exclude_buckets_name_list=args.exclude_bucket_names,
+        exclude_buckets_prefix_regex_list=args.exclude_bucket_prefix_regexes,
+        include_source_locations=args.include_source_locations,
+        exclude_source_locations=args.exclude_source_locations,
+        auto_add_new_buckets=auto_add_new_buckets,
         retention_period=args.retention_period_days,
         description=args.description,
     )

@@ -30,6 +30,59 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
+def UpdatedPscFields(args, export_psc_config):
+  """UpdatedPscFields returns the updated PSC field values.
+
+  This method uses the existing hub and the flags to determine the new values.
+
+  Args:
+    args: The arguments that the user specified.
+    export_psc_config: The existing hub's exportPscConfig.
+
+  Returns:
+    A tuple of the updated exportPsc field and updated exportPscConfig field.
+  """
+  # If the user did not specify any PSC flags, we can return early.
+  if not (
+      args.IsSpecified('export_psc')
+      or args.IsSpecified(
+          'export_psc_published_services_and_regional_google_apis'
+      )
+      or args.IsSpecified('export_psc_global_google_apis')
+  ):
+    return None, None
+
+  # Check if this is the legacy case. We can ignore the other flags because the
+  # mutex group ensures that the other flags are not set.
+  if args.export_psc is not None:
+    if args.export_psc:
+      # If true, enable only PSC-ILB propagation.
+      export_psc_config.publishedServicesAndRegionalGoogleApis = True
+      return True, export_psc_config
+
+    # If false, disable PSC-ILB and PSC-GAPI propagation.
+    export_psc_config.publishedServicesAndRegionalGoogleApis = False
+    export_psc_config.globalGoogleApis = False
+    return False, export_psc_config
+
+  # If this is not the legacy case, handle the new PSC flags.
+  # 1. Update the new exportPscConfig values if they are set.
+  if args.export_psc_published_services_and_regional_google_apis is not None:
+    export_psc_config.publishedServicesAndRegionalGoogleApis = (
+        args.export_psc_published_services_and_regional_google_apis
+    )
+  if args.export_psc_global_google_apis is not None:
+    export_psc_config.globalGoogleApis = args.export_psc_global_google_apis
+
+  # 2. If either of the values in the updated exportPscConfig are true, then set
+  # exportPsc to true. Otherwise, set exportPsc to false.
+  updated_export_psc = (
+      export_psc_config.publishedServicesAndRegionalGoogleApis
+      or export_psc_config.globalGoogleApis
+  )
+  return updated_export_psc, export_psc_config
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
@@ -55,14 +108,22 @@ class Update(base.Command):
     description = args.description
     if description is not None:
       update_mask.append('description')
-    export_psc = args.export_psc
-    if export_psc is not None:
-      update_mask.append('export_psc')
 
+    # Fetch the hub so we can update the PSC fields.
+    original_hub = client.Get(hub_ref)
+    updated_export_psc, updated_export_psc_config = UpdatedPscFields(
+        args, original_hub.exportPscConfig
+    )
+    # We use both the export_psc field and the new export_psc_config, so we need
+    # to include both in the mask.
+    if updated_export_psc is not None:
+      update_mask.append('exportPsc')
+      update_mask.append('exportPscConfig')
+
+    # Update the labels (using the original hub as well).
     labels = None
     labels_diff = labels_util.Diff.FromUpdateArgs(args)
     if labels_diff.MayHaveUpdates():
-      original_hub = client.Get(hub_ref)
       labels_update = labels_diff.Apply(
           client.messages.GoogleCloudNetworkconnectivityV1betaHub.LabelsValue,
           original_hub.labels,
@@ -72,7 +133,10 @@ class Update(base.Command):
         update_mask.append('labels')
 
     hub = client.messages.GoogleCloudNetworkconnectivityV1betaHub(
-        description=description, exportPsc=export_psc, labels=labels
+        description=description,
+        exportPsc=updated_export_psc,
+        exportPscConfig=updated_export_psc_config,
+        labels=labels,
     )
     op_ref = client.UpdateHubBeta(hub_ref, hub, update_mask)
 
@@ -99,6 +163,7 @@ class Update(base.Command):
         poller,
         op_resource,
         'Waiting for operation [{}] to complete'.format(op_ref.name),
+        max_wait_ms=3600000,  # 1 hour
     )
     log.UpdatedResource(hub_ref.Name(), kind='hub')
     return res

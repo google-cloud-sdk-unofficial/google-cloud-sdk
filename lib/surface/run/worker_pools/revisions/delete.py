@@ -52,7 +52,7 @@ class Delete(base.Command):
   def CommonArgs(parser):
     revision_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL_REVISION',
-        resource_args.GetV2WorkerPoolRevisionResourceSpec(),
+        resource_args.GetV2WorkerPoolRevisionResourceSpec(prompt=True),
         'Worker pool revision to delete.',
         required=True,
         prefixes=False,

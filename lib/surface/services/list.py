@@ -15,10 +15,6 @@
 
 """services list command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -26,6 +22,7 @@ from googlecloudsdk.command_lib.services import common_flags
 
 
 # TODO(b/321801975) make command public after preview.
+@base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
@@ -122,7 +119,7 @@ class ListAlpha(base.ListCommand):
     else:
       organization = None
     if args.IsSpecified('limit'):
-      return serviceusage.ListServicesV2Alpha(
+      return serviceusage.ListServicesV2Beta(
           project,
           args.enabled,
           args.page_size,
@@ -131,7 +128,7 @@ class ListAlpha(base.ListCommand):
           organization=organization,
       )
     else:
-      return serviceusage.ListServicesV2Alpha(
+      return serviceusage.ListServicesV2Beta(
           project,
           args.enabled,
           args.page_size,

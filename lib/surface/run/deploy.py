@@ -85,7 +85,9 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.BuildServiceAccountMutexGroup())
   group.AddArgument(flags.BuildWorkerPoolMutexGroup())
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
-  group.AddArgument(flags.SourceAndImageFlags(mutex=False))
+  group.AddArgument(
+      flags.SourceAndImageFlags(mutex=False, release_track=release_track)
+  )
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
   group.AddArgument(flags.GpuFlag(hidden=False))
@@ -291,7 +293,44 @@ class Deploy(base.Command):
               '--image',
               message,
           )
+    self._ValidateNoBuildFromSource(build_from_source)
     return build_from_source
+
+  def _ValidateNoBuildFromSource(self, build_from_source):
+    """Extra validation for Zip deployments.
+
+    This is a no-op for if the --no-build flag is not set.
+
+    Args:
+      build_from_source: The build from source map of container name to
+        container object.
+    """
+    if not _IsNoBuildFromSource(self.ReleaseTrack(), build_from_source):
+      return
+
+    # TODO(b/424567464): Remove this check once we support multiple containers
+    # with --no-build.
+    container = next(iter(build_from_source.items()))[1]
+    if not container.IsSpecified('base_image'):
+      raise c_exceptions.InvalidArgumentException(
+          '--no-build',
+          'Source deployment must specify --base-image when skipping'
+          'Cloud Build.',
+      )
+    if not container.IsSpecified('command'):
+      raise c_exceptions.InvalidArgumentException(
+          '--no-build',
+          'Source deployment must specify --command when skipping Cloud Build.',
+      )
+    if (
+        container.IsSpecified('image')
+        and getattr(container, 'image') != 'scratch'
+    ):
+      raise c_exceptions.InvalidArgumentException(
+          '--image',
+          'Source deployment --image must be set to "scratch" when skipping'
+          'Cloud Build.',
+      )
 
   def _GetBaseImageForSourceContainer(self, container_args, service):
     """Returns the base image for the container.
@@ -708,12 +747,26 @@ class Deploy(base.Command):
     build_from_source_container_name = ''
     enable_automatic_updates = None
     source_bucket = None
+    skip_build = False
     with serverless_operations.Connect(
         conn_context, already_activated_services
     ) as operations:
       service = operations.GetService(service_ref)
       # Build an image from source if source specified
-      if build_from_source:
+      if _IsNoBuildFromSource(self.ReleaseTrack(), build_from_source):
+        image = 'scratch'
+        skip_build = True
+        build_from_source_container_name, container_args = next(
+            iter(build_from_source.items())
+        )
+        # re-use the existing container name if it is not specified.
+        if not build_from_source_container_name and service:
+          build_from_source_container_name = (
+              service.template.container.name or ''
+          )
+        source = container_args.source
+        container_args.image = 'scratch'
+      elif build_from_source:
         (
             is_function,
             image,
@@ -813,6 +866,7 @@ class Deploy(base.Command):
               source_bucket=source_bucket,
               kms_key=kms_key,
               iap_enabled=iap,
+              skip_build=skip_build,
           )
 
       try:
@@ -830,6 +884,17 @@ class Deploy(base.Command):
 
       self._DisplaySuccessMessage(service, args)
       return service
+
+
+def _IsNoBuildFromSource(release_track, build_from_source):
+  """Checks if this is a source deployment that should skip the Cloud Build step."""
+  if release_track != base.ReleaseTrack.ALPHA:
+    return False
+
+  if not build_from_source or len(build_from_source) != 1:
+    return False
+  container = next(iter(build_from_source.items()))[1]
+  return container.IsSpecified('no_build')
 
 
 def _ValidateArRepository(

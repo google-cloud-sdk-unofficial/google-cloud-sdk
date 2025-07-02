@@ -307,6 +307,7 @@ class UpdateBeta(Update):
   """
 
   support_ipv6_assignment = False
+  support_igmp_query = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

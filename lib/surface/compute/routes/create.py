@@ -66,7 +66,7 @@ def _AddGaHops(next_hop_group):
       help=('The target VPN tunnel that will receive forwarded traffic.'))
 
 
-def _Args(parser, include_resource_manager_tags):
+def _Args(parser):
   """Add arguments for route creation."""
 
   parser.add_argument(
@@ -136,15 +136,14 @@ def _Args(parser, include_resource_manager_tags):
       help=('The region of the next hop forwarding rule. ' +
             compute_flags.REGION_PROPERTY_EXPLANATION))
 
-  if include_resource_manager_tags:
-    parser.add_argument(
-        '--resource-manager-tags',
-        type=arg_parsers.ArgDict(),
-        metavar='KEY=VALUE',
-        help="""\
-            A comma-separated list of Resource Manager tags to apply to the route.
-        """,
-    )
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help="""\
+          A comma-separated list of Resource Manager tags to apply to the route.
+      """,
+  )
 
   parser.display_info.AddCacheUpdater(completers.RoutesCompleter)
 
@@ -195,8 +194,6 @@ class Create(base.CreateCommand):
   ILB_ARG = None
   ROUTE_ARG = None
 
-  _include_resource_manager_tags = False
-
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
@@ -208,7 +205,7 @@ class Create(base.CreateCommand):
     cls.ILB_ARG = ilb_flags.ForwardingRuleArgumentForRoute(required=False)
     cls.ROUTE_ARG = flags.RouteArgument()
     cls.ROUTE_ARG.AddArgument(parser, operation_type='create')
-    _Args(parser, cls._include_resource_manager_tags)
+    _Args(parser)
 
   def Run(self, args):
     """Issue API requests for route creation, callable from multiple tracks."""
@@ -290,11 +287,10 @@ class Create(base.CreateCommand):
     )
     request.route.nextHopIlb = next_hop_ilb_uri
 
-    if self._include_resource_manager_tags:
-      if args.resource_manager_tags is not None:
-        request.route.params = _CreateRouteParams(
-            client.messages, args.resource_manager_tags
-        )
+    if args.resource_manager_tags is not None:
+      request.route.params = _CreateRouteParams(
+          client.messages, args.resource_manager_tags
+      )
 
     return client.MakeRequests(
         [(client.apitools_client.routes, 'Insert', request)]
@@ -356,5 +352,3 @@ class CreateAlphaBeta(Create):
       --next-hop-gateway=default-internet-gateway
 
   """
-
-  _include_resource_manager_tags = True

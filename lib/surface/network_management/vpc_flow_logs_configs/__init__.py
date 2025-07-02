@@ -27,6 +27,8 @@ class VpcFlowLogsConfigsBeta(extensions.VpcFlowLogsConfigsBeta):
   """Manage the VPC Flow Logs configurations.
 
   The flag --location=global is required for all the commands.
+
+  You can either specify resources for project-level configurations, or use the --organization flag to apply organization-level configurations.
   """
 
 

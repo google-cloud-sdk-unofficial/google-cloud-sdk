@@ -42,7 +42,7 @@ class ListAppOperatorBindings(base.ListCommand):
   required for an app operator, including usage of fleet scopes, connect
   gateway, logging, and metrics. The overarching principal role
   (view/edit/admin, or custom) is determined by (1) the fleet scope RBAC role
-  (view, edit, or admin), (2) the fleet scope-level IAM role
+  (view, edit, admin or a custom role), (2) the fleet scope-level IAM role
   (roles/gkehub.scopeViewer, roles/gkehub.scopeEditor, or
   roles/gkehub.scopeAdmin), (3) the project-level IAM role
   (roles/gkehub.scopeViewerProjectLevel, or

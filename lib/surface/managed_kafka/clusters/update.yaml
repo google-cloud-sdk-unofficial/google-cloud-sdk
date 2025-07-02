@@ -46,6 +46,9 @@ arguments:
         release_tracks: [ALPHA]
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
         release_tracks: [ALPHA]
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allow-broker-downscale-on-cluster-upscale
+    release_tracks: [ALPHA]
+    hidden: true
 
 async:
   collection: managedkafka.projects.locations.operations

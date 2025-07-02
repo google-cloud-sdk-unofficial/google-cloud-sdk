@@ -334,6 +334,14 @@ class Create(base.CreateCommand):
         log.status.Print('Note: ' + constants.KUBERNETES_GPU_LIMITATION_MSG)
         log.status.Print('Note: ' +
                          constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG)
+        gpu_driver_version = options.accelerators.get(
+            'gpu-driver-version', None
+        )
+        if gpu_driver_version == 'disabled':
+          log.status.Print(
+              'Note: '
+              + constants.KUBERNETES_GPU_DRIVER_DISABLED_NEEDS_MANUAL_INSTALL_MSG
+          )
 
       elif options.image_type and options.image_type.upper().startswith(
           'WINDOWS_SAC'):

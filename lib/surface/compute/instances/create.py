@@ -836,7 +836,7 @@ class CreateBeta(Create):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = True
   _support_graceful_shutdown = True
-  _support_igmp_query = False
+  _support_igmp_query = True
   _support_watchdog_timer = False
   _support_disk_labels = True
   _support_ipv6_only = True

@@ -49,6 +49,7 @@ Container Flags
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
+  group.AddArgument(flags.GpuFlag())
   # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())

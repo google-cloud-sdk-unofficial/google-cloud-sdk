@@ -55,8 +55,6 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
     )
 
   def Run(self, args):
-    utils.enable_poco_api_if_disabled(self.Project())
-
     f = self.GetFeature()
     new_version = args.version
     membership = base.ParseMembership(

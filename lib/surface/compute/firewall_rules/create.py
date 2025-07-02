@@ -39,8 +39,6 @@ class Create(base.CreateCommand):
   FIREWALL_RULE_ARG = None
   NETWORK_ARG = None
 
-  _with_resource_manager_tags = False
-
   @classmethod
   def Args(cls, parser):
     messages = apis.GetMessagesModule('compute',
@@ -52,7 +50,6 @@ class Create(base.CreateCommand):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
-        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)
@@ -133,7 +130,7 @@ class Create(base.CreateCommand):
         ).GetEnumForChoice(args.logging_metadata)
       firewall.logConfig = log_config
 
-    if self._with_resource_manager_tags and args.IsSpecified(
+    if args.IsSpecified(
         'resource_manager_tags'
     ):
       firewall.params = self._CreateFirewallParams(
@@ -179,8 +176,6 @@ class Create(base.CreateCommand):
 class BetaCreate(Create):
   """Create a Compute Engine firewall rule."""
 
-  _with_resource_manager_tags = True
-
   @classmethod
   def Args(cls, parser):
     messages = apis.GetMessagesModule('compute',
@@ -192,7 +187,6 @@ class BetaCreate(Create):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
-        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)
@@ -216,7 +210,6 @@ class AlphaCreate(BetaCreate):
         'The network to which this rule is attached.', required=False)
     firewalls_utils.AddCommonArgs(
         parser,
-        cls._with_resource_manager_tags,
         for_update=False,
         with_egress_support=True,
         with_service_account=True)

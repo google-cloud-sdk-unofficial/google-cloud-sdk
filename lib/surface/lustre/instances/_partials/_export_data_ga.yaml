@@ -45,7 +45,8 @@
         format `gs://<bucket_name>/<optional_path_inside_bucket>/`. If a path
         inside the bucket is specified, it must end with a forward slash (`/`).
     - help_text: |-
-        The name of the Managed Lustre instance.
+        The name of the Managed Lustre instance in the format
+        `projects/{project}/locations/{location}/instances/{instance}`.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.lustre.v1_resources:projects_locations_instances

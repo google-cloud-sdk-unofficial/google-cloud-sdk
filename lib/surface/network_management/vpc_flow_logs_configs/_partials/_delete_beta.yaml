@@ -25,6 +25,10 @@
       To delete a VPC Flow Logs configuration `my-config` within the organization `my-org-number`, run:
 
       $ {command} my-config --location=global --organization=<my-org-number>
+
+      To delete a VPC Flow Logs configuration `my-config`, run:
+
+      $ {command} my-config --location=global
   arguments:
     params:
     - help_text: |-

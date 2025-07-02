@@ -56,6 +56,7 @@ def _AddArgs(parser):
   flags.GetEndpointNetworkArg().AddToParser(parser)
   flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
   flags.GetGdceZoneArg().AddToParser(parser)
+  flags.GetGdcZoneArg().AddToParser(parser)
   flags.AddRequestResponseLoggingConfigGroupArgs(parser)
 
 
@@ -82,18 +83,21 @@ def _Run(args, version):
           request_response_logging_rate=args.request_response_logging_rate)
     else:
       op = endpoints_client.CreateBeta(
-          region_ref, args.display_name,
+          region_ref,
+          args.display_name,
           labels_util.ParseCreateArgs(
               args,
-              endpoints_client.messages.GoogleCloudAiplatformV1beta1Endpoint
-              .LabelsValue),
+              endpoints_client.messages.GoogleCloudAiplatformV1beta1Endpoint.LabelsValue,
+          ),
           description=args.description,
           network=args.network,
           endpoint_id=args.endpoint_id,
           encryption_kms_key_name=args.encryption_kms_key_name,
           gdce_zone=args.gdce_zone,
+          gdc_zone=args.gdc_zone,
           request_response_logging_table=args.request_response_logging_table,
-          request_response_logging_rate=args.request_response_logging_rate)
+          request_response_logging_rate=args.request_response_logging_rate,
+      )
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:

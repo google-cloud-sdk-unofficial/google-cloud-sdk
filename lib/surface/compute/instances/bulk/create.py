@@ -433,6 +433,7 @@ class CreateBeta(Create):
   _support_ipv6_only = True
   _support_graceful_shutdown = True
   _support_flex_start = False
+  _support_igmp_query = True
 
   @classmethod
   def Args(cls, parser):
@@ -464,6 +465,7 @@ class CreateBeta(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
+        support_igmp_query=cls._support_igmp_query,
     )
     cls.AddSourceInstanceTemplate(parser)
 

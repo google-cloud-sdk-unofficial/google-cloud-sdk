@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class AddAppOperatorBinding(base.CreateCommand):
   """Add project-level and fleet scope-level IAM bindings and create a fleet scope RBAC role binding for an app operator principal.
 
   One binding consists of an app operator principal (user/group) and a role
-  (view/edit/admin).
+  (view/edit/admin or a custom role).
 
   This command sets up the different permissions required for an app operator,
   including usage of fleet scopes, connect gateway, logging, and metrics. The
@@ -94,6 +94,24 @@ class AddAppOperatorBinding(base.CreateCommand):
   condition where bucket corresponds to `SCOPE`
   * creates fleet scope RBAC role binding: role `admin` with a random ID
   for user `person@google.com`.
+
+  ---
+
+  The following command:
+
+    $ {command} SCOPE --custom-role=my-custom-role --user=person@google.com
+    --project=PROJECT_ID
+
+  * adds IAM policy binding: roles/gkehub.scopeViewer on `SCOPE`
+  * adds IAM policy binding: roles/gkehub.scopeEditorProjectLevel on
+  `PROJECT_ID`
+  * adds IAM policy binding: roles/logging.viewAccessor on `PROJECT_ID` with
+  condition where bucket corresponds to `SCOPE`
+  * creates fleet scope RBAC role binding: role `my-custom-role` with a random
+  ID for user `person@google.com`.
+
+  For any tailored IAM permissions required when using a custom role, the user
+  or group can separately be granted additional IAM permissions on the project.
   """
 
   @classmethod
@@ -118,11 +136,16 @@ class AddAppOperatorBinding(base.CreateCommand):
         type=str,
         help='Group for the role binding.',
     )
-    parser.add_argument(
+    roledef = parser.add_mutually_exclusive_group(required=True)
+    roledef.add_argument(
         '--role',
-        required=True,
         choices=['admin', 'edit', 'view'],
-        help='Role to assign.',
+        help='Predefined role to assign to principal (admin, edit, view).',
+    )
+    roledef.add_argument(
+        '--custom-role',
+        type=str,
+        help='Custom role to assign to principal.',
     )
     labels_util.AddCreateLabelsFlags(parser)
 
@@ -135,21 +158,37 @@ class AddAppOperatorBinding(base.CreateCommand):
     scope_id = scope_arg.Name()
     scope_path = scope_arg.RelativeName()
     iam_member = scopes_util.IamMemberFromRbac(args.user, args.group)
-    iam_scope_level_role = scopes_util.IamScopeLevelScopeRoleFromRbac(args.role)
-    iam_project_level_role = scopes_util.IamProjectLevelScopeRoleFromRbac(
-        args.role
-    )
-
+    # If a custom role is specified, the scope-level role is view and the
+    # project-level role is edit.
+    if args.custom_role is not None:
+      iam_scope_level_role = scopes_util.IamScopeLevelScopeRoleFromRbac(
+          args.custom_role
+      )
+      iam_project_level_role = scopes_util.IamProjectLevelScopeRoleFromRbac(
+          args.custom_role
+      )
+    else:
+      iam_scope_level_role = scopes_util.IamScopeLevelScopeRoleFromRbac(
+          args.role
+      )
+      iam_project_level_role = scopes_util.IamProjectLevelScopeRoleFromRbac(
+          args.role
+      )
+    custom_role = args.custom_role
     scope_rrbs = fleetclient.ListScopeRBACRoleBindings(project, scope_id)
     for existing_rrb in scope_rrbs:
       if existing_rrb.user == args.user and existing_rrb.group == args.group:
+        if existing_rrb.role.predefinedRole:
+          printed_role = encoding.MessageToPyValue(existing_rrb.role)[
+              'predefinedRole'
+          ].lower()
+        else:
+          printed_role = existing_rrb.role.customRole
         log.error(
             '`{}` already has role `{}` for scope `{}` via an existing RBAC'
             ' role binding: `{}`'.format(
                 iam_member,
-                encoding.MessageToPyValue(existing_rrb.role)[
-                    'predefinedRole'
-                ].lower(),
+                printed_role,
                 scope_id,
                 existing_rrb.name,
             )
@@ -157,6 +196,11 @@ class AddAppOperatorBinding(base.CreateCommand):
         # It's enough to just show the first matching scope rrb.
         return
 
+    # Prompt the user to confirm the bindings to be added.
+    if custom_role:
+      printed_role = custom_role
+    else:
+      printed_role = args.role
     if console_io.CanPrompt():
       console_io.PromptContinue(
           message=(
@@ -169,7 +213,7 @@ class AddAppOperatorBinding(base.CreateCommand):
               ' `{member}`'.format(
                   scope=scope_id,
                   proj=project,
-                  arg_role=args.role,
+                  arg_role=printed_role,
                   member=iam_member,
                   scope_role=iam_scope_level_role,
                   proj_role=iam_project_level_role,
@@ -220,7 +264,7 @@ class AddAppOperatorBinding(base.CreateCommand):
     return fleetclient.CreateScopeRBACRoleBinding(
         name=scope_rrb,
         role=args.role,
-        custom_role=None,
+        custom_role=custom_role,
         user=args.user,
         group=args.group,
         labels=labels,

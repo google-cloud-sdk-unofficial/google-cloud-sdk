@@ -25,6 +25,10 @@
       To update the state field to be 'DISABLED' in the VPC Flow Logs configuration `my-config`, run:
 
       $ {command} my-config --location=global --organization=<my-org-number> --state=DISABLED
+
+      To update the state field to be 'DISABLED' in the VPC Flow Logs configuration `my-config`, run:
+
+      $ {command} my-config --location=global --state=DISABLED
   arguments:
     params:
     - group:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,7 +90,23 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
 
   The following command:
 
-    $ {command} SCOPE --role=admin --user=person@google.com --project=PROJECT_ID
+    $ {command} SCOPE --user=person@google.com --project=PROJECT_ID
+
+  assuming the user already has a custom role:
+  * removes IAM policy binding: roles/gkehub.scopeViewer from `SCOPE`
+  * removes IAM policy binding: roles/gkehub.scopeEditorProjectLevel from
+  `PROJECT_ID`  if the user does not have the `edit`/`admin` role for any other
+  scope under the project
+  * removes IAM policy binding: roles/logging.viewAccessor from `PROJECT_ID`
+  condition where bucket corresponds to `SCOPE`
+  * deletes existing fleet scope RBAC role binding: role `admin` for user
+  `person@google.com`.
+
+  ---
+
+  The following command:
+
+    $ {command} SCOPE --user=person@google.com --project=PROJECT_ID
 
   assuming the user already has the `admin` role:
   * removes IAM policy binding: roles/gkehub.scopeAdmin from `SCOPE`
@@ -185,7 +201,8 @@ class RemoveAppOperatorBinding(base.DeleteCommand):
           'admin': ['edit', 'admin'],
       }
       for scope_rrb in scope_rrbs:
-        for r in roles_to_check[role]:
+        # Custom roles have `roles/gkehub.scopeEditorProjectLevel` permissions.
+        for r in roles_to_check.get(role, ['edit', 'admin']):
           if bindings_match(scope_rrb, r, args.user, args.group):
             another_scope_needs_project_level_permission = True
 

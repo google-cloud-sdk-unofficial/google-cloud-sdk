@@ -50,7 +50,15 @@
       required: false
       type: bool
       help_text: |-
-        Whether preview data sharing should be enabled.
+        Whether data sharing should be enabled in Preview products.
+      default: null
+    - arg_name: enable-data-sharing
+      api_field: dataSharingWithGoogleSetting.enableDataSharing
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Whether data sharing should be enabled in GA products.
       default: null
     - arg_name: request-id
       api_field: requestId

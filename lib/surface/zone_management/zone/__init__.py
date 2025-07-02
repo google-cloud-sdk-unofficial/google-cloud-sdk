@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2022 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Exceptions for config sync commands."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+"""The Zone Management Zone command group."""
 
-from googlecloudsdk.core import exceptions
+from googlecloudsdk.calliope import base
 
 
-class ConfigSyncError(exceptions.Error):
-  """Exception class for Config Sync."""
-  pass
+@base.Hidden
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ZoneManagementZone(base.Group):
+  """Zone Management Zone gcloud commands."""

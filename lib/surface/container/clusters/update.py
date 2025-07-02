@@ -446,6 +446,7 @@ class Update(base.UpdateCommand):
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
@@ -598,6 +599,7 @@ class Update(base.UpdateCommand):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     return opts
@@ -1218,6 +1220,7 @@ class UpdateBeta(Update):
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
@@ -1421,6 +1424,7 @@ class UpdateBeta(Update):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     return opts
@@ -1564,6 +1568,7 @@ class UpdateAlpha(Update):
     )
     flags.AddEnableDNSAccessFlag(group_for_control_plane_endpoints)
     flags.AddEnableK8sTokensViaDnsFlag(group_for_control_plane_endpoints)
+    flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
     flags.AddPatchUpdateFlag(group)
@@ -1763,6 +1768,7 @@ class UpdateAlpha(Update):
     opts.enable_auto_ipam = args.enable_auto_ipam
     opts.disable_auto_ipam = args.disable_auto_ipam
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
+    opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     return opts

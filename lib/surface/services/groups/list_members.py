@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """services groups list members command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import collections
 
 from googlecloudsdk.api_lib.services import serviceusage
@@ -68,7 +64,8 @@ class ListGroupMembers(base.ListCommand):
 
     parser.display_info.AddFormat("""
           table(
-            name:label=''
+            name,
+            reason
           )
         """)
 
@@ -91,7 +88,7 @@ class ListGroupMembers(base.ListCommand):
     else:
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE.format(project)
-    response = serviceusage.ListGroupMembersV2Alpha(
+    member_states = serviceusage.ListGroupMembers(
         resource_name,
         '{}/{}'.format(
             _SERVICE_RESOURCE.format(args.service),
@@ -100,14 +97,14 @@ class ListGroupMembers(base.ListCommand):
         args.page_size,
     )
 
-    group_members = []
-    result = collections.namedtuple('ListMembers', ['name'])
+    members = []
+    results = collections.namedtuple('Member', ['name', 'reason'])
 
-    for member_list in response:
-      member = member_list.member
+    for member_state in member_states:
+      member = member_state.member
       if member.groupName:
-        group_members.append(result(member.groupName))
+        members.append(results(member.groupName, member.reason))
       else:
-        group_members.append(result(member.serviceName))
+        members.append(results(member.serviceName, member.reason))
 
-    return group_members
+    return members

@@ -550,6 +550,7 @@ def ParseCreateOptionsBase(
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
       enable_default_compute_class=get_default('enable_default_compute_class'),
+      enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
   )
 
 
@@ -797,6 +798,7 @@ flags_to_add = {
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -993,6 +995,7 @@ flags_to_add = {
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1195,6 +1198,7 @@ flags_to_add = {
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
+        'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
     },
 }
 
@@ -1325,6 +1329,17 @@ class Create(base.CreateCommand):
       log.status.Print(
           'Note: ' + constants.KUBERNETES_GPU_DRIVER_AUTO_INSTALL_MSG
       )
+      # gpu-driver-version: The NVIDIA driver version to install. It must be one
+      # of: default, latest, disabled.
+      # https://cloud.google.com/sdk/gcloud/reference/container/clusters/create
+      gpu_driver_version = options.accelerators.get('gpu-driver-version', None)
+      # disabled: Skip automatic driver installation. User must manually install
+      # a driver after creating the cluster.
+      if gpu_driver_version == 'disabled':
+        log.status.Print(
+            'Note: '
+            + constants.KUBERNETES_GPU_DRIVER_DISABLED_NEEDS_MANUAL_INSTALL_MSG
+        )
 
     # image streaming feature requires Container File System API to be enabled.
     # Checking whether the API has been enabled, and warning if not.
@@ -1540,6 +1555,7 @@ class CreateBeta(Create):
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
+    ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     return ops
 
 
@@ -1698,4 +1714,5 @@ class CreateAlpha(Create):
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
+    ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     return ops

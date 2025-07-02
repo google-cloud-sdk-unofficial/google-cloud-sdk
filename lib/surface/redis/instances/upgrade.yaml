@@ -22,7 +22,7 @@
       api_field: upgradeInstanceRequest.redisVersion
       required: true
       metavar: VERSION
-      help_text: Target version of Redis software. You can only upgrade to the next highest version. For example, you must upgrade an instance from redis_3_2 to redis_4_0 before you can upgrade the instance to redis_5_0.
+      help_text: Target version of Redis software.
       choices:
       - enum_value: REDIS_4_0
         arg_value: redis_4_0

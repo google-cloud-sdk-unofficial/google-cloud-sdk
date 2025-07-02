@@ -23,9 +23,9 @@
     description: |
       Creates a Managed Lustre instance.
     examples: |-
-      To create an instance `my-instance` in location `us-central1-a` with 2048 Gib capacity run:
+      To create an instance `my-instance` in location `us-central1-a` with 18000 Gib capacity run:
 
-      $ {command} my-instance --capacity-gib=2048 --location=us-central1-a --network=projects/my-project/global/networks/default --filesystem=lustrefs
+      $ {command} my-instance --capacity-gib=18000 --location=us-central1-a --network=projects/my-project/global/networks/default --filesystem=lustrefs --per-unit-storage-throughput=1000
   arguments:
     params:
     - help_text: |-
@@ -51,7 +51,7 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from `18000` to `936000`, in increments of 9000.
+        are from `18000` to `954000`, in increments of 9000.
     - arg_name: network
       help_text: |-
         The full name of the VPC network to which the instance is connected.
@@ -80,13 +80,12 @@
       - api_field: value
     - arg_name: per-unit-storage-throughput
       api_field: instance.perUnitStorageThroughput
-      required: false
+      required: true
       repeated: false
       type: long
       help_text: |-
         The throughput of the instance in MB/s/TiB.
-        Valid values are 250, 500, 1000.
-        Default value is 1000.
+        Valid values are 125, 250, 500, 1000.
     - arg_name: gke-support-enabled
       api_field: instance.gkeSupportEnabled
       action: store_true

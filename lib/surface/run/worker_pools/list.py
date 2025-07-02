@@ -14,21 +14,25 @@
 # limitations under the License.
 """Command for listing available worker-pools."""
 
-from googlecloudsdk.api_lib.util import apis
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
-from googlecloudsdk.command_lib.run import exceptions
+from googlecloudsdk.command_lib.run import connection_context
+from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
-from googlecloudsdk.command_lib.run.printers.v2 import printer_util
-from googlecloudsdk.command_lib.run.v2 import worker_pools_operations
+from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class List(base.Command):
+class List(commands.List):
   """List available worker-pools."""
 
   detailed_help = {
@@ -44,31 +48,31 @@ class List(base.Command):
 
   @classmethod
   def CommonArgs(cls, parser):
-    region_presentation = presentation_specs.ResourcePresentationSpec(
-        '--region',
-        resource_args.GetRegionResourceSpec(),
-        'Region to list worker-pools in.',
+    # Flags specific to connecting to a cluster
+    project_presentation = presentation_specs.ResourcePresentationSpec(
+        '--project',
+        resource_args.GetNamespaceResourceSpec(),
+        'Project to list worker-pools in.',
         required=True,
         prefixes=False,
+        hidden=True,
     )
-    concept_parsers.ConceptParser([region_presentation]).AddToParser(parser)
+    flags.AddRegionArg(parser)
+    concept_parsers.ConceptParser([project_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
-        f'table(ready_symbol().{pretty_print.READY_COLUMN_COLOR},'
-        'name():label="WORKER POOL",region():label=REGION,'
+        'table('
+        '{ready_column},'
+        'name:label=WORKER_POOL,'
+        'region:label=REGION,'
         'last_modifier:label="LAST DEPLOYED BY",'
-        'last_transition_time().date("%Y-%m-%d %H:%M:%S %Z"):'
-        'label="LAST DEPLOYED AT")'
+        'last_transition_time:label="LAST DEPLOYED AT",'
+        'author:label="CREATED BY",'
+        'creation_timestamp:label=CREATED):({alias})'.format(
+            ready_column=pretty_print.READY_COLUMN,
+            alias=commands.SATISFIES_PZS_ALIAS,
+        )
     )
-    parser.display_info.AddTransforms(
-        {'ready_symbol': printer_util.GetReadySymbolFromDict}
-    )
-    parser.display_info.AddTransforms({'name': printer_util.GetNameFromDict})
-    parser.display_info.AddTransforms(
-        {'region': printer_util.GetRegionFromDict}
-    )
-    parser.display_info.AddTransforms(
-        {'last_transition_time': printer_util.GetLastTransitionTimeFromDict}
-    )
+    parser.display_info.AddUriFunc(cls._GetResourceUri)
 
   @classmethod
   def Args(cls, parser):
@@ -76,22 +80,19 @@ class List(base.Command):
 
   def Run(self, args):
     """List available worker-pools."""
-    # TODO(b/382273085): Support YAML format once WorkerPools V1 API is ready.
-    if 'format' in args and args.format == 'yaml':
-      raise exceptions.ArgumentError(
-          'YAML format is not supported for worker pools yet.'
+    # Use the mixer for global request if there's no --region flag.
+    project_ref = args.CONCEPTS.project.Parse()
+    if not args.IsSpecified('region'):
+      client = global_methods.GetServerlessClientInstance(api_version='v1')
+      self.SetPartialApiEndpoint(client.url)
+      # Don't consider region property here, we'll default to all regions
+      return commands.SortByName(
+          global_methods.ListWorkerPools(client, project_ref)
       )
 
-    def DeriveRegionalEndpoint(endpoint):
-      region = args.CONCEPTS.region.Parse().locationsId
-      return region + '-' + endpoint
-
-    region_ref = args.CONCEPTS.region.Parse()
-    run_client = apis.GetGapicClientInstance(
-        'run', 'v2', address_override_func=DeriveRegionalEndpoint
+    conn_context = connection_context.GetConnectionContext(
+        args, flags.Product.RUN, self.ReleaseTrack()
     )
-    worker_pools_client = worker_pools_operations.WorkerPoolsOperations(
-        run_client
-    )
-    response = worker_pools_client.ListWorkerPools(region_ref)
-    return commands.SortByName(response.worker_pools)
+    with serverless_operations.Connect(conn_context) as client:
+      self.SetCompleteApiEndpoint(conn_context.endpoint)
+      return commands.SortByName(client.ListWorkerPools(project_ref))

@@ -138,6 +138,7 @@ def _CommonArgs(
     support_pd_interface=False,
     support_user_licenses=False,
     support_source_snapshot_region=False,
+    support_gmi_restore=False,
 ):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -204,6 +205,10 @@ def _CommonArgs(
   disks_flags.STORAGE_POOL_ARG.AddArgument(parser)
 
   disks_flags.AddAccessModeFlag(parser, messages)
+
+  if support_gmi_restore:
+    disks_flags.AddSourceMachineImageNameArg(parser)
+    disks_flags.AddSourceMachineImageDiskDeviceNameArg(parser)
 
   if support_user_licenses:
     parser.add_argument(
@@ -480,6 +485,7 @@ class Create(base.Command):
       support_user_licenses=False,
       support_enable_confidential_compute=True,
       support_source_snapshot_region=False,
+      support_gmi_restore=False,
   ):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
@@ -635,6 +641,9 @@ class Create(base.Command):
       if args.IsSpecified('storage_pool'):
         disk.storagePool = self.GetStoragePoolUri(args, compute_holder)
 
+      if support_gmi_restore:
+        _SetSourceMachineImageOptions(args, disk)
+
       if disk_ref.Collection() == 'compute.disks':
         request = client.messages.ComputeDisksInsertRequest(
             disk=disk, project=disk_ref.project, zone=disk_ref.zone)
@@ -720,6 +729,7 @@ class CreateAlpha(CreateBeta):
         support_pd_interface=True,
         support_user_licenses=True,
         support_source_snapshot_region=True,
+        support_gmi_restore=True,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -739,6 +749,7 @@ class CreateAlpha(CreateBeta):
         support_user_licenses=True,
         support_enable_confidential_compute=True,
         support_source_snapshot_region=True,
+        support_gmi_restore=True,
     )
 
 
@@ -788,5 +799,43 @@ def _ValidateAndParseDiskRefsRegionalReplica(
 
   return disk_refs
 
+
+def _SetSourceMachineImageOptions(args, disk):
+  """Sets source machine image options on the disk.
+
+  Args:
+    args: The arguments namespace.
+    disk: The disk message.
+
+  Raises:
+    exceptions.RequiredArgumentException: If only one of the source machine
+      image arguments is specified.
+  """
+
+  has_source_machine_image = args.IsSpecified('source_machine_image')
+  has_disk_device_name = args.IsSpecified(
+      'source_machine_image_disk_device_name'
+  )
+  if has_source_machine_image ^ has_disk_device_name:
+    missing_option = (
+        '--source-machine-image-disk-device-name'
+        if has_source_machine_image
+        else '--source-machine-image'
+    )
+    provided_option = (
+        '--source-machine-image'
+        if has_source_machine_image
+        else '--source-machine-image-disk-device-name'
+    )
+    raise exceptions.RequiredArgumentException(
+        missing_option,
+        f'{missing_option} must be specified when {provided_option} is'
+        ' specified.',
+    )
+  elif has_source_machine_image and has_disk_device_name:
+    disk.sourceMachineImageDiskDeviceName = (
+        args.source_machine_image_disk_device_name
+    )
+    disk.sourceMachineImage = args.source_machine_image
 
 Create.detailed_help = DETAILED_HELP

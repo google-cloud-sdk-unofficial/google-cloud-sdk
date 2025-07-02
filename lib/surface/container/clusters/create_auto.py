@@ -66,6 +66,7 @@ auto_flags = [
     'enableAutoIpam',
     'enableK8sTokensViaDns',
     'enableDefaultComputeClass',
+    'enableK8sCertsViaDns',
 ]
 
 # Change default flag values in create-auto

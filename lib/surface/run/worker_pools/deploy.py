@@ -64,6 +64,7 @@ Container Flags
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.CommandFlag())
+  group.AddArgument(flags.GpuFlag())
   # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
@@ -110,6 +111,7 @@ class Deploy(base.Command):
     flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
     flags.AddScalingFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddGpuTypeFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddEgressSettingsFlag(parser)

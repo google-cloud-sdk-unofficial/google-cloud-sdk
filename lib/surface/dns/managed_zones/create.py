@@ -26,21 +26,23 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.dns import util as command_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
-def _AddArgsCommon(parser, messages, release_track):
+def _AddArgsCommon(parser, messages):
   """Adds the common arguments for all versions."""
   flags.GetDnsZoneArg(
-      'The name of the managed-zone to be created.').AddToParser(parser)
+      'The name of the managed-zone to be created.'
+  ).AddToParser(parser)
   flags.GetManagedZonesDnsNameArg().AddToParser(parser)
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   flags.AddCommonManagedZonesDnssecArgs(parser, messages)
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
-  flags.GetForwardingTargetsArg(release_track).AddToParser(parser)
+  flags.GetForwardingTargetsArg().AddToParser(parser)
   flags.GetDnsPeeringArgs().AddToParser(parser)
-  flags.GetPrivateForwardingTargetsArg(release_track).AddToParser(parser)
+  flags.GetPrivateForwardingTargetsArg().AddToParser(parser)
   flags.GetReverseLookupArg().AddToParser(parser)
   flags.GetServiceDirectoryArg().AddToParser(parser)
   flags.GetManagedZoneLoggingArg().AddToParser(parser)
@@ -52,25 +54,31 @@ def _MakeDnssecConfig(args, messages, api_version='v1'):
   """Parse user-specified args into a DnssecConfig message."""
   dnssec_config = None
   if args.dnssec_state is not None:
-    dnssec_config = command_util.ParseDnssecConfigArgs(args, messages,
-                                                       api_version)
+    dnssec_config = command_util.ParseDnssecConfigArgs(
+        args, messages, api_version
+    )
   else:
     bad_args = [
-        'denial_of_existence', 'ksk_algorithm', 'zsk_algorithm',
-        'ksk_key_length', 'zsk_key_length'
+        'denial_of_existence',
+        'ksk_algorithm',
+        'zsk_algorithm',
+        'ksk_key_length',
+        'zsk_key_length',
     ]
     for bad_arg in bad_args:
       if getattr(args, bad_arg, None) is not None:
         raise exceptions.InvalidArgumentException(
             bad_arg,
             'DNSSEC must be enabled in order to use other DNSSEC arguments. '
-            'Please set --dnssec-state to "on" or "transfer".')
+            'Please set --dnssec-state to "on" or "transfer".',
+        )
   return dnssec_config
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   r"""Create a Cloud DNS managed-zone.
 
@@ -99,14 +107,16 @@ class Create(base.CreateCommand):
 
   @classmethod
   def _BetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
+    return cls.ReleaseTrack() in (
+        base.ReleaseTrack.BETA,
+        base.ReleaseTrack.ALPHA,
+    )
 
   @classmethod
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
-    _AddArgsCommon(parser, messages, cls.ReleaseTrack())
+    _AddArgsCommon(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):
@@ -117,22 +127,29 @@ class Create(base.CreateCommand):
         raise exceptions.InvalidArgumentException(
             '--networks',
             'If --visibility is set to public (default), setting networks is '
-            'not allowed.')
+            'not allowed.',
+        )
       # We explicitly want to allow --gkeclusters='' as an optional flag.
       elif args.IsSpecified('gkeclusters'):
         raise exceptions.InvalidArgumentException(
             '--gkeclusters',
-            'If --visibility is set to public (default), setting gkeclusters is '
-            'not allowed.')
+            'If --visibility is set to public (default), setting gkeclusters is'
+            ' not allowed.',
+        )
 
-    if args.visibility == 'private' and args.networks is None and args.gkeclusters is None:
+    if (
+        args.visibility == 'private'
+        and args.networks is None
+        and args.gkeclusters is None
+    ):
       raise exceptions.RequiredArgumentException(
           '--networks, --gkeclusters',
           ("""If --visibility is set to private, a list of networks or list of
            GKE clusters must be provided.'
          NOTE: You can provide an empty value ("") for private zones that
           have NO network or GKE clusters binding.
-          """))
+          """),
+      )
 
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns = util.GetApiClient(api_version)
@@ -142,7 +159,8 @@ class Create(base.CreateCommand):
     zone_ref = registry.Parse(
         args.dns_zone,
         util.GetParamsForRegistry(api_version, args),
-        collection='dns.managedZones')
+        collection='dns.managedZones',
+    )
 
     visibility_flag = args.visibility
     private_enum = None
@@ -156,67 +174,81 @@ class Create(base.CreateCommand):
     visibility_config = None
     if visibility == private_enum:
       # Handle explicitly empty networks case (--networks='')
-      networks = args.networks if args.networks and args.networks != [''
-                                                                     ] else []
+      networks = (
+          args.networks if args.networks and args.networks != [''] else []
+      )
 
       def GetNetworkSelfLink(network):
         return registry.Parse(
             network,
             collection='compute.networks',
-            params={
-                'project': zone_ref.project
-            }).SelfLink()
+            params={'project': zone_ref.project},
+        ).SelfLink()
 
       network_urls = [GetNetworkSelfLink(n) for n in networks]
       network_configs = [
-          messages.ManagedZonePrivateVisibilityConfigNetwork(
-              networkUrl=nurl)
-          for nurl in network_urls]
+          messages.ManagedZonePrivateVisibilityConfigNetwork(networkUrl=nurl)
+          for nurl in network_urls
+      ]
 
       # Handle the case when '--gkeclusters' is not specified.
       gkeclusters = args.gkeclusters or []
 
       gkecluster_configs = [
           messages.ManagedZonePrivateVisibilityConfigGKECluster(
-              gkeClusterName=name) for name in gkeclusters
+              gkeClusterName=name
+          )
+          for name in gkeclusters
       ]
       visibility_config = messages.ManagedZonePrivateVisibilityConfig(
-          networks=network_configs, gkeClusters=gkecluster_configs)
+          networks=network_configs, gkeClusters=gkecluster_configs
+      )
 
+    forwarding_config = None
     if args.forwarding_targets or args.private_forwarding_targets:
       forwarding_config = (
           command_util.ParseManagedZoneForwardingConfigWithForwardingPath(
               messages=messages,
               server_list=args.forwarding_targets,
               private_server_list=args.private_forwarding_targets,
-              allow_ipv6_and_fqdn=self._BetaOrAlpha(),
           )
       )
-    else:
-      forwarding_config = None
 
     dnssec_config = _MakeDnssecConfig(args, messages, api_version)
     labels = labels_util.ParseCreateArgs(args, messages.ManagedZone.LabelsValue)
 
     peering_config = None
     if args.target_project and args.target_network:
-      peering_network = 'https://www.googleapis.com/compute/v1/projects/{}/global/networks/{}'.format(
-          args.target_project, args.target_network)
+      peering_network = (
+          f'https://www.{properties.VALUES.core.universe_domain.Get()}/compute/v1/projects'
+          '/{}/global/networks/{}'.format(
+              args.target_project, args.target_network
+          )
+      )
       peering_config = messages.ManagedZonePeeringConfig()
-      peering_config.targetNetwork = messages.ManagedZonePeeringConfigTargetNetwork(
-          networkUrl=peering_network)
+      peering_config.targetNetwork = (
+          messages.ManagedZonePeeringConfigTargetNetwork(
+              networkUrl=peering_network
+          )
+      )
 
     reverse_lookup_config = None
-    if args.IsSpecified(
-        'managed_reverse_lookup') and args.managed_reverse_lookup:
+    if (
+        args.IsSpecified('managed_reverse_lookup')
+        and args.managed_reverse_lookup
+    ):
       reverse_lookup_config = messages.ManagedZoneReverseLookupConfig()
 
     service_directory_config = None
-    if args.IsSpecified(
-        'service_directory_namespace') and args.service_directory_namespace:
+    if (
+        args.IsSpecified('service_directory_namespace')
+        and args.service_directory_namespace
+    ):
       service_directory_config = messages.ManagedZoneServiceDirectoryConfig(
           namespace=messages.ManagedZoneServiceDirectoryConfigNamespace(
-              namespaceUrl=args.service_directory_namespace))
+              namespaceUrl=args.service_directory_namespace
+          )
+      )
 
     cloud_logging_config = None
     if args.IsSpecified('log_dns_queries'):
@@ -235,10 +267,12 @@ class Create(base.CreateCommand):
         peeringConfig=peering_config,
         reverseLookupConfig=reverse_lookup_config,
         serviceDirectoryConfig=service_directory_config,
-        cloudLoggingConfig=cloud_logging_config)
+        cloudLoggingConfig=cloud_logging_config,
+    )
 
     request = messages.DnsManagedZonesCreateRequest(
-        managedZone=zone, project=zone_ref.project)
+        managedZone=zone, project=zone_ref.project
+    )
 
     if api_version == 'v2':
       # For a request with location, use v2 api.

@@ -42,7 +42,7 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from `18000` to `936000`, in increments of 9000.
+        are from `18000` to `954000`, in increments of 9000.
     - arg_name: description
       api_field: instance.description
       required: false
@@ -66,8 +66,7 @@
       type: long
       help_text: |-
         The throughput of the instance in MB/s/TiB.
-        Valid values are 250, 500, 1000.
-        Default value is 1000.
+        Valid values are 125, 250, 500, 1000.
     - arg_name: gke-support-enabled
       api_field: instance.gkeSupportEnabled
       action: store_true_false

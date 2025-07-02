@@ -19,16 +19,17 @@
   - BETA
   auto_generated: true
   help_text:
-    brief: List all VPC Flow Logs configurations in the organization.
-    description: Lists all VPC Flow Logs configurations in the organization.
+    brief: List all VPC Flow Logs configurations.
+    description: By default, lists all project-level VPC Flow Logs configurations.
+      Use the --organization flag to list all organization-level configurations.
     examples: |-
-      To list all the VPC Flow Logs configurations within the organization, run:
+      To list all the VPC Flow Logs configurations within the project, run:
 
-      $ {command} --location=global --organization=<my-org-number>
+      $ {command} --location=global
 
-      To list all the VPC Flow Logs configurations within the organization with state 'ENABLED', run:
+      To list all the VPC Flow Logs configurations within the project with state 'ENABLED', run:
 
-      $ {command} --location=global --organization=<my-org-number> --filter="state:ENABLED"
+      $ {command} --location=global --filter="state:ENABLED"
   arguments:
     params:
     - help_text: |-

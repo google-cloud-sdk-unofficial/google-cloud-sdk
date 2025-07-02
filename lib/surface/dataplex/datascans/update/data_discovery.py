@@ -85,6 +85,15 @@ class DataDiscovery(base.Command):
         ),
     )
     bigquery_publishing_config_arg.add_argument(
+        '--bigquery-publishing-dataset-project',
+        help=(
+            'The project of the BigQuery dataset to publish BigLake external'
+            ' or non-BigLake external tables to. If not specified, the cloud'
+            ' resource bucket project will be used to create the dataset.'
+            ' The format is "projects/{project_id_or_number}.'
+        ),
+    )
+    bigquery_publishing_config_arg.add_argument(
         '--bigquery-publishing-dataset-location',
         help=(
             'The location of the BigQuery dataset to publish BigLake external'

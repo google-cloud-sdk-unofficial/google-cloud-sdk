@@ -113,8 +113,6 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
     # Initialize and defend against more than 1 call to Run.
     self.__feature_cache = None
 
-    # Help PoCo migrate to its own feature.
-    utils.enable_poco_api_if_disabled(self.Project())
     self.membership = fleet_base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
