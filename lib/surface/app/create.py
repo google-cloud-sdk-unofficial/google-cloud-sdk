@@ -70,7 +70,6 @@ class Create(base.CreateCommand):
           args.region,
           service_account=args.service_account,
           ssl_policy=args.ssl_policy,
-          release_track=self.ReleaseTrack(),
       )
     elif console_io.CanPrompt():
       create_util.CheckAppNotExists(api_client, project)
@@ -79,7 +78,6 @@ class Create(base.CreateCommand):
           project,
           service_account=args.service_account,
           ssl_policy=args.ssl_policy,
-          release_track=self.ReleaseTrack(),
       )
     else:
       raise create_util.UnspecifiedRegionError(
@@ -111,7 +109,6 @@ class CreateBeta(base.CreateCommand):
           args.region,
           service_account=args.service_account,
           ssl_policy=args.ssl_policy,
-          release_track=self.ReleaseTrack(),
       )
     elif console_io.CanPrompt():
       create_util.CheckAppNotExists(api_client, project)
@@ -120,7 +117,6 @@ class CreateBeta(base.CreateCommand):
           project,
           service_account=args.service_account,
           ssl_policy=args.ssl_policy,
-          release_track=self.ReleaseTrack(),
       )
     else:
       raise create_util.UnspecifiedRegionError(

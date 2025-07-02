@@ -102,7 +102,7 @@ class ListGa(base.ListCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class ListBeta(ListGa):
+class ListBeta(base.ListCommand):
   """List existing Vertex AI endpoints.
 
   ## EXAMPLES
@@ -118,6 +118,11 @@ class ListBeta(ListGa):
     $ {command} --project=example --region=us-central1
     --list-model-garden-endpoints-only
   """
+
+  @staticmethod
+  def Args(parser):
+    _AddArgs(parser)
+    flags.GetGdcZoneArg().AddToParser(parser)
 
   def Run(self, args):
     return _Run(args, constants.BETA_VERSION)

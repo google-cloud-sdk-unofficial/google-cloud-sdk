@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.privateca import update_utils
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update an existing subordinate certificate authority.
@@ -53,8 +54,13 @@ class Update(base.UpdateCommand):
     base.Argument(
         '--pem-chain',
         required=False,
-        help=('A file containing a list of PEM-encoded certificates that '
-              'represent the issuing chain of this CA.')).AddToParser(parser)
+        help=(
+            'A file containing a list of PEM-encoded certificates that'
+            ' represent the issuing chain of this CA. Please note'
+            ' that the certificate corresponding to this specific CA should be'
+            ' excluded.'
+        ),
+    ).AddToParser(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -65,26 +71,31 @@ class Update(base.UpdateCommand):
     ca_name = ca_ref.RelativeName()
 
     current_ca = client.projects_locations_caPools_certificateAuthorities.Get(
-        messages
-        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
-            name=ca_name))
+        messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesGetRequest(
+            name=ca_name
+        )
+    )
 
     resource_args.CheckExpectedCAType(
         messages.CertificateAuthority.TypeValueValuesEnum.SUBORDINATE,
         current_ca,
-        version='v1')
+        version='v1',
+    )
 
     ca_to_update, update_mask = update_utils.UpdateCAFromArgs(
-        args, current_ca.labels)
+        args, current_ca.labels
+    )
 
     # Patch is the gcloud client lib method to update a CA.
     operation = client.projects_locations_caPools_certificateAuthorities.Patch(
-        messages
-        .PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesPatchRequest(
+        messages.PrivatecaProjectsLocationsCaPoolsCertificateAuthoritiesPatchRequest(
             name=ca_name,
             certificateAuthority=ca_to_update,
             updateMask=','.join(update_mask),
-            requestId=request_utils.GenerateRequestId()))
+            requestId=request_utils.GenerateRequestId(),
+        )
+    )
 
     return operations.Await(
-        operation, 'Updating Subordinate CA.', api_version='v1')
+        operation, 'Updating Subordinate CA.', api_version='v1'
+    )

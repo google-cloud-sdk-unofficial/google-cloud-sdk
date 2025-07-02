@@ -32,7 +32,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core.console import progress_tracker
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.BETA):
   """Returns an argument group with all container update args."""
 
   help_text = """
@@ -49,17 +49,18 @@ Container Flags
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
-  group.AddArgument(flags.GpuFlag())
-  # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
+  # ALPHA features
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.GpuFlag())
 
   return group
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update Cloud Run environment variables and other configuration settings."""
 
@@ -80,29 +81,24 @@ class Update(base.Command):
   )
 
   @classmethod
-  def Args(cls, parser):
+  def CommonArgs(cls, parser):
     flags.AddBinAuthzPolicyFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags_parser.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
+    flags.AddDescriptionFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
-    flags.AddWorkerPoolMinInstancesFlag(parser)
-    flags.AddWorkerPoolMaxInstancesFlag(parser)
-    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
-    flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
-    flags.AddScalingFlag(parser)
     flags.AddRevisionSuffixArg(parser)
+    flags.AddRuntimeFlag(parser)
+    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
+    flags.AddScalingFlag(
+        parser, release_track=cls.ReleaseTrack(), resource_kind='worker'
+    )
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
-    flags.AddRuntimeFlag(parser)
-    flags.AddDescriptionFlag(parser)
-    flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
-    container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddGeneralAnnotationFlags(parser)
@@ -122,6 +118,12 @@ class Update(base.Command):
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
 
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    container_args = ContainerArgGroup()
+    container_parser.AddContainerFlags(parser, container_args)
+
   def _AssertChanges(self, changes, flags_text, ignore_empty):
     if ignore_empty:
       return
@@ -139,7 +141,9 @@ class Update(base.Command):
 
   def _GetBaseChanges(self, args, ignore_empty=False):
     """Returns the worker pool config changes with some default settings."""
-    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(
+        args, self.ReleaseTrack()
+    )
     self._AssertChanges(changes, self.input_flags, ignore_empty)
     changes.insert(
         0,
@@ -216,3 +220,22 @@ class Update(base.Command):
           pretty_print.Success(msg + ' has been updated.')
         else:
           pretty_print.Success(msg + ' has been deployed.')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a Cloud Run worker-pool."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
+    flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
+    flags.AddGpuTypeFlag(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
+
+
+AlphaUpdate.__doc__ = Update.__doc__

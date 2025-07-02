@@ -204,8 +204,16 @@ class AutoRemediate(base.SilentCommand, base.CacheCommand):
             remediation_explanation=intent_updated.remediatedOutput.remediationExplanation.replace(
                 "`", r"\`"
             ),
-            file_modifiers=git.get_file_modifiers(updated_tf_files),
-            file_owners=git.get_file_modifiers(updated_tf_files, first=True),
+            file_modifiers="\n".join(
+                f"{fp}: {ea}"
+                for fp, ea in (git.get_file_modifiers(updated_tf_files)).items()
+            ),
+            file_owners="\n".join(
+                f"{fp}: {ea}"
+                for fp, ea in (
+                    git.get_file_modifiers(updated_tf_files, first=True)
+                ).items()
+            ),
         ),
         git_config_data["remote"],
         git_config_data["branch-prefix"],
@@ -231,7 +239,15 @@ class AutoRemediate(base.SilentCommand, base.CacheCommand):
         messages.RemediationIntent.StateValueValuesEnum.PR_GENERATION_SUCCESS
     )
     intent_updated.remediationArtifacts = messages.RemediationArtifacts(
-        prData=messages.PullRequest(url=pr_msg)
+        prData=messages.PullRequest(
+            url=pr_msg,
+            modifiedFileOwners=list(
+                (git.get_file_modifiers(updated_tf_files, first=True)).values()
+            ),
+            modifiedFilePaths=list(
+                (git.get_file_modifiers(updated_tf_files, first=True)).keys()
+            ),
+        )
     )
     update_mask = "state,remediation_artifacts"
     _ = client.update_remediation_intent(

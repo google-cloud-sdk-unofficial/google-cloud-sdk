@@ -46,6 +46,18 @@ DETAILED_HELP = {
         To list only the labels when describing a resource, use --format to filter the result:
 
             $ {parent_command} describe example-disk --format="default(labels)"
+
+        To append licenses to the disk, run:
+
+            $ {command} example-disk --zone=us-central1-a --append-licenses=projects/license-project/global/licenses/license-1,projects/license-project/global/licenses/license-2
+
+        To remove licenses from the disk, run:
+
+            $ {command} example-disk --zone=us-central1-a --replace-licenses=projects/license-project/global/licenses/license-1,projects/license-project/global/licenses/license-2
+
+        To replace a license on the disk, run:
+
+            $ {command} example-disk --zone=us-central1-a --replace-license=projects/license-project/global/licenses/old-license,projects/license-project/global/licenses/new-license
         """,
 }
 
@@ -55,7 +67,7 @@ def _CommonArgs(
     cls,
     parser,
     support_user_licenses=False,
-    support_licenses=False,
+    support_licenses=True,
     support_add_guest_os_features=False,
 ):
   """Add arguments used for parsing in all command tracks."""
@@ -388,14 +400,14 @@ class Update(base.UpdateCommand):
     return self._Run(
         args,
         support_user_licenses=False,
-        support_licenses=False,
+        support_licenses=True,
     )
 
   def _Run(
       self,
       args,
       support_user_licenses=False,
-      support_licenses=False,
+      support_licenses=True,
   ):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client.apitools_client
@@ -548,7 +560,8 @@ class UpdateBeta(Update):
   def Run(self, args):
     return self._Run(
         args,
-        support_user_licenses=True)
+        support_user_licenses=True,
+        support_licenses=True)
 
 
 @base.DefaultUniverseOnly
@@ -582,20 +595,4 @@ Update.detailed_help = DETAILED_HELP
 
 UpdateBeta.detailed_help = Update.detailed_help
 
-UpdateAlpha.detailed_help = {
-    'DESCRIPTION': UpdateBeta.detailed_help['DESCRIPTION'],
-    'EXAMPLES': UpdateBeta.detailed_help['EXAMPLES'] + """\
-
-        To append licenses to the disk, run:
-
-            $ {command} example-disk --zone=us-central1-a --append-licenses=projects/license-project/global/licenses/license-1,projects/license-project/global/licenses/license-2
-
-        To remove licenses from the disk, run:
-
-            $ {command} example-disk --zone=us-central1-a --replace-licenses=projects/license-project/global/licenses/license-1,projects/license-project/global/licenses/license-2
-
-        To replace a license on the disk, run:
-
-            $ {command} example-disk --zone=us-central1-a --replace-license=projects/license-project/global/licenses/old-license,projects/license-project/global/licenses/new-license
-        """,
-}
+UpdateAlpha.detailed_help = UpdateBeta.detailed_help

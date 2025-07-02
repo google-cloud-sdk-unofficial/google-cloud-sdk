@@ -41,7 +41,7 @@ from googlecloudsdk.core.console import progress_tracker
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Replace(base.Command):
   """Create or replace a worker-pool from a YAML worker-pool specification."""
 

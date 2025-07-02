@@ -27,6 +27,7 @@ from googlecloudsdk.core import exceptions
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Show details about the Cloud API Gateway operation."""
 

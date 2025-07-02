@@ -46,13 +46,23 @@ class Describe(base.DescribeCommand):
     client = cloudkms_base.GetClientInstance()
     messages = cloudkms_base.GetMessagesModule()
 
-    name, key_project = parsing.ReadAutokeyConfigFromConfigFile(
+    name, key_project, etag = parsing.ReadAutokeyConfigFromConfigFile(
         args.CONFIG_FILE
     )
+    if not etag:
+      return client.folders.UpdateAutokeyConfig(
+          messages.CloudkmsFoldersUpdateAutokeyConfigRequest(
+              autokeyConfig=messages.AutokeyConfig(
+                  name=name, keyProject=key_project
+              ),
+              name=name,
+              updateMask="keyProject",
+          ),
+      )
     return client.folders.UpdateAutokeyConfig(
         messages.CloudkmsFoldersUpdateAutokeyConfigRequest(
             autokeyConfig=messages.AutokeyConfig(
-                name=name, keyProject=key_project
+                name=name, keyProject=key_project, etag=etag
             ),
             name=name,
             updateMask="keyProject",

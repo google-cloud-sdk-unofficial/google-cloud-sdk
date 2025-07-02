@@ -35,6 +35,7 @@
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_cluster
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_description
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:deactivated
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:backup_plan_tags
     # Retention policy
     - group:
         required: false

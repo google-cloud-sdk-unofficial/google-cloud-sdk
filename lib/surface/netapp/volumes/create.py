@@ -104,6 +104,13 @@ class Create(base.CreateCommand):
     )
     large_capacity = args.large_capacity
     multiple_endpoints = args.multiple_endpoints
+    if (
+        self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
+        or self._RELEASE_TRACK == base.ReleaseTrack.BETA
+    ):
+      cache_parameters = args.cache_parameters
+    else:
+      cache_parameters = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
         self._RELEASE_TRACK == base.ReleaseTrack.GA):
       backup_config = args.backup_config
@@ -136,6 +143,7 @@ class Create(base.CreateCommand):
         multiple_endpoints=multiple_endpoints,
         tiering_policy=args.tiering_policy,
         hybrid_replication_parameters=args.hybrid_replication_parameters,
+        cache_parameters=cache_parameters,
     )
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:
@@ -167,4 +175,3 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, CreateAlpha._RELEASE_TRACK)
-

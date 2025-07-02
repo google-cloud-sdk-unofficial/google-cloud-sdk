@@ -33,7 +33,7 @@ from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AdjustInstanceSplit(base.Command):
   """Adjust the instance assignments for a Cloud Run worker-pool."""
 
@@ -101,7 +101,9 @@ class AdjustInstanceSplit(base.Command):
 
   def _GetBaseChanges(self, args):
     """Returns the worker pool config changes with some default settings."""
-    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(
+        args, self.ReleaseTrack()
+    )
     if not changes:
       raise serverless_exceptions.NoConfigurationChangeError(
           'No instance split configuration change requested.'

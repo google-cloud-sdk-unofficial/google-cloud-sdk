@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
+from googlecloudsdk.core import log
 
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
@@ -59,7 +60,7 @@ class Describe(base.UpdateCommand):
     message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
 
-    project_id = args.project
+    project_id = util.ParseProject(args.project)
     location = args.location
 
     name = '{}{}/{}{}/{}{}'.format(
@@ -71,7 +72,7 @@ class Describe(base.UpdateCommand):
         args.CONCEPTS.schema_registry.Parse().schemaRegistriesId,
     )
 
-    print('Describing schema registry: {}'.format(name))
+    log.status.Print('Describing schema registry: {}'.format(name))
     schema_registry = message.SchemaRegistry()
     schema_registry.name = name
     schema_registry_request = (
@@ -115,6 +116,6 @@ class Describe(base.UpdateCommand):
         'compatibility': compatibility,
     }
 
-    print(verbose_schema_registry)
+    log.status.Print(verbose_schema_registry)
 
     return verbose_schema_registry

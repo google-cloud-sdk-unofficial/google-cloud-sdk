@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.api_gateway import resource_args
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List APIs."""
 

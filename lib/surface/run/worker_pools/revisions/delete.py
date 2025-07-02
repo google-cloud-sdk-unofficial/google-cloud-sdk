@@ -33,7 +33,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Delete(base.Command):
   """Delete a worker pool revision."""
 

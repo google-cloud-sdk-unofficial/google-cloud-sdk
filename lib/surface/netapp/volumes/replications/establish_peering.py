@@ -51,10 +51,10 @@ class EstablishPeering(base.Command):
             'The Hybrid replication to establish peering for.'
         )
     ]).AddToParser(parser)
-    replications_flags.AddReplicationPeerClusterNameArg(parser)
-    replications_flags.AddReplicationPeerSvmNameArg(parser)
-    replications_flags.AddReplicationPeerVolumeNameArg(parser)
-    replications_flags.AddReplicationPeerIpAddressesArg(parser)
+    flags.AddResourcePeerClusterNameArg(parser)
+    flags.AddResourcePeerSvmNameArg(parser)
+    flags.AddResourcePeerVolumeNameArg(parser)
+    flags.AddResourcePeerIpAddressesArg(parser)
     replications_flags.AddReplicationVolumeArg(parser)
     flags.AddResourceAsyncFlag(parser)
 

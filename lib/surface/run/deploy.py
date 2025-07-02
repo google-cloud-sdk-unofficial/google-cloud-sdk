@@ -49,6 +49,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 _PROJECT_TOML_FILE_NAME = 'project.toml'
+_GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
 
 
 class BuildType(enum.Enum):
@@ -396,6 +397,39 @@ class Deploy(base.Command):
       return True if automatic_updates_annotation.lower() == 'true' else False
     return automatic_updates
 
+  def _GetMachineType(self, container_args, service):
+    """Gets the default pool build machine type to use based on the user flags and annotations.
+
+    User flags take precedence over annotations for an existing service.
+
+    Args:
+      container_args: base.ArgumentGroup, Container arguments using source
+        build.
+      service: Service, existing Cloud run service.
+
+    Returns:
+      build_machine_type or
+      None meaning default machine type should be used
+    """
+    gpu_type = getattr(container_args, 'gpu_type', None)
+    gpu_count = getattr(container_args, 'gpu', None)
+
+    if gpu_count is not None and gpu_count == '0':
+      return None
+
+    if gpu_type is not None or gpu_count is not None:
+      return _GPU_BUILD_MACHINE_TYPE
+
+    if service is not None:
+      if k8s_object.GPU_TYPE_NODE_SELECTOR in service.template.node_selector:
+        accelerator_value = service.template.node_selector[
+            k8s_object.GPU_TYPE_NODE_SELECTOR
+        ]
+        if accelerator_value:
+          return _GPU_BUILD_MACHINE_TYPE
+
+    return None
+
   def _BuildFromSource(
       self,
       args,
@@ -457,6 +491,11 @@ class Deploy(base.Command):
     docker_file = source + '/Dockerfile'
     base_image = self._GetBaseImageForSourceContainer(container_args, service)
     automatic_updates = self._GetAutomaticUpdates(container_args, service)
+
+    build_machine_type = None
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      build_machine_type = self._GetMachineType(container_args, service)
+
     if os.path.exists(docker_file):
       build_type = BuildType.DOCKERFILE
       # TODO(b/310727875): check --function is not provided
@@ -516,6 +555,7 @@ class Deploy(base.Command):
         changes,
         name,
         build_worker_pool,
+        build_machine_type,
         build_env_vars,
         automatic_updates,
         source_bucket,
@@ -743,6 +783,7 @@ class Deploy(base.Command):
     build_service_account = None
     build_env_vars = None
     build_worker_pool = None
+    build_machine_type = None
     build_changes = []
     build_from_source_container_name = ''
     enable_automatic_updates = None
@@ -779,6 +820,7 @@ class Deploy(base.Command):
             build_changes,
             build_from_source_container_name,
             build_worker_pool,
+            build_machine_type,
             build_env_vars,
             enable_automatic_updates,
             source_bucket,
@@ -860,6 +902,7 @@ class Deploy(base.Command):
               build_from_source_container_name=build_from_source_container_name,
               build_service_account=build_service_account,
               build_worker_pool=build_worker_pool,
+              build_machine_type=build_machine_type,
               build_env_vars=build_env_vars,
               enable_automatic_updates=enable_automatic_updates,
               is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
@@ -1081,6 +1124,7 @@ class BetaDeploy(Deploy):
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
+    flags.AddServiceMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -1217,6 +1261,7 @@ class AlphaDeploy(BetaDeploy):
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)

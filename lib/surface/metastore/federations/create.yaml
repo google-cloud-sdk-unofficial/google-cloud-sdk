@@ -57,7 +57,6 @@
           `METASTORE_NAME` is the relative resource name of the metastore. If only the name of the metastore is specified (e.g. `dpms1`),
           project and location will be inferred from the project and location used to create the federation.
     - arg_name: tags
-      hidden: true
       api_field: federation.tags.additionalProperties
       metavar: KEY=VALUE
       help_text: |

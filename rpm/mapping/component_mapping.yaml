@@ -16,7 +16,7 @@ cloud-build-local: google-cloud-sdk-cloud-build-local
 cloud-run-proxy: google-cloud-sdk-cloud-run-proxy
 cloud_sql_proxy: unavailable
 cloud-sql-proxy: unavailable
-run-compose: unavailable
+run-compose: google-cloud-sdk-run-compose
 cloud-datastore-emulator: google-cloud-sdk-datastore-emulator
 cloud-firestore-emulator: google-cloud-sdk-firestore-emulator
 cloud-spanner-emulator: google-cloud-sdk-spanner-emulator
@@ -45,3 +45,4 @@ config-connector: google-cloud-sdk-config-connector
 terraform-tools: google-cloud-sdk-terraform-tools
 bundled-python3-unix: google-cloud-sdk-bundled-python3
 managed-flink-client: google-cloud-sdk-managed-flink-client
+spanner-cli: google-cloud-cli-spanner-cli

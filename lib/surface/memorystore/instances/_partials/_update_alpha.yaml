@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,6 +61,18 @@
     - group:
         mutex: true
         help_text: |-
+          Arguments for the  simulate maintenance event.
+        params:
+        - arg_name: simulate-maintenance-event
+          api_field: instance.simulateMaintenanceEvent
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Simulate a maintenance event.
+    - group:
+        mutex: true
+        help_text: |-
           Arguments for the  ondemand maintenance.
         params:
         - arg_name: ondemand-maintenance
@@ -85,6 +97,21 @@
             can be deleted asynchronously. That is, such an instance endpoint can be
             de-registered before the forwarding rules in the instance endpoint are
             deleted.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  kms key.
+        params:
+        - arg_name: kms-key
+          help_text: |-
+            The KMS key used to encrypt the at-rest data of the cluster.
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.memorystore.v1alpha_resources:projects_locations_key_rings_crypto_keys
+          resource_method_params:
+            instance.kmsKey: '{__relative_name__}'
+          required: false
+          clearable: true
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}

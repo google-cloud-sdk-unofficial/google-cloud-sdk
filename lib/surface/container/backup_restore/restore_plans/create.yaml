@@ -34,6 +34,7 @@
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_cluster
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_backup_plan
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_description
+    - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:restore_plan_tags
 
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy
     - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:volume_data_restore_policy_bindings

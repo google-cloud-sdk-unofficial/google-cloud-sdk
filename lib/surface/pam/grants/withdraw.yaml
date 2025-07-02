@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   hidden: true
   help_text:
     brief: Withdraw a Privileged Access Manager (PAM) grant.
@@ -11,6 +11,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: withdraw
     collection:
     - privilegedaccessmanager.projects.locations.entitlements.grants

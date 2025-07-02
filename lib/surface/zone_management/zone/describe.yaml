@@ -13,16 +13,3 @@
     resource:
       help_text: Zone
       spec: !REF googlecloudsdk.command_lib.zone_management.zone.resources:zone
-    params:
-    - arg_name: organization
-      resource_spec: !REF googlecloudsdk.command_lib.zone_management.zone.resources:organization
-      required: true
-      help_text: |
-        Organization of the zone.
-    - arg_name: location
-      resource_spec: !REF googlecloudsdk.command_lib.zone_management.zone.resources:orglocation
-      required: true
-      is_parent_resource: true
-      is_primary_resource: false
-      help_text: |
-        Location of the zone.

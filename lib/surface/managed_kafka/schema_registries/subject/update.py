@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
+from googlecloudsdk.command_lib.managed_kafka import util
+from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
 PROJECTS_RESOURCE_PATH = 'projects/'
@@ -49,14 +51,8 @@ class Update(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    arguments.AddSubjectArgToParser(parser)
 
-    parser.add_argument(
-        '--schema_registry',
-        type=str,
-        required=True,
-        help='The schema registry of the subject.',
-    )
+    arguments.AddSubjectArgToParser(parser)
 
     parser.add_argument(
         '--context',
@@ -90,7 +86,7 @@ class Update(base.UpdateCommand):
     message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
 
-    project_id = args.project
+    project_id = util.ParseProject(args.project)
     location = args.location
     schema_registry_id = args.schema_registry
     name = '{}{}/{}{}/{}{}'.format(
@@ -130,7 +126,7 @@ class Update(base.UpdateCommand):
             request=request
         )
 
-      print('Updated subject mode to %s' % response.mode)
+      log.status.Print('Updated subject mode to %s' % response.mode)
 
     if args.compatibility:
       name = f'{name}/config/{args.CONCEPTS.subject.Parse().subjectsId}'
@@ -156,10 +152,12 @@ class Update(base.UpdateCommand):
             request=request
         )
 
-      print('Updated subject compatibility to %s' % response.compatibility)
+      log.status.Print(
+          'Updated subject compatibility to %s' % response.compatibility
+      )
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.
-      print(
+      log.status.Print(
           'Current subject config is \n compatibility = %s'
           % (response.compatibility)
       )

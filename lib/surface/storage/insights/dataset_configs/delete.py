@@ -33,23 +33,23 @@ class Delete(base.Command):
       """,
       'EXAMPLES': """
 
-      To delete a dataset config with config name "my-config" in location
+      To delete a dataset config with config name "my_config" in location
       "us-central1":
 
-          $ {command} my-config --location=us-central1
+          $ {command} my_config --location=us-central1
 
       To delete the same dataset config with fully specified name:
 
-          ${command} projects/foo/locations/us-central1/datasetConfigs/my-config
+          ${command} projects/foo/locations/us-central1/datasetConfigs/my_config
 
       To delete the same dataset config and unlink it from the BigQuery
       instance:
 
-          $ {command} my-config --location=us-central1 --auto-delete-link
+          $ {command} my_config --location=us-central1 --auto-delete-link
 
       To delete the same dataset config without taking user consent:
 
-          $ {command} my-config --location=us-central1 --auto-delete-link
+          $ {command} my_config --location=us-central1 --auto-delete-link
           --force
       """,
   }

@@ -175,7 +175,7 @@ def AddBetaArgs(parser):
   flags.AddNodeCount(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddFinalBackup(parser)
-  flags.AddFinalbackupTtlDays(parser)
+  flags.AddFinalbackupRetentionDays(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):

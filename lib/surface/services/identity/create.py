@@ -33,11 +33,20 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  To create a service identity for a project, folder, or organization, run:
+  To create a service identity for a project, run:
 
     $ {command} --service=example.googleapis.com --project=helloworld
+
+  Using a project number:
+
     $ {command} --service=example.googleapis.com --project=1234567890
+
+  To create a service identity for a folder, run:
+
     $ {command} --service=example.googleapis.com --folder=1234567890
+
+  To create a service identity for an organization, run:
+
     $ {command} --service=example.googleapis.com --organization=1234567890
   """
 

@@ -93,7 +93,7 @@ OVERRIDE_FLAGS_SET = (
     'region',
     'retain_backups_on_delete',
     'final_backup',
-    'final_backup_ttl_days'
+    'final_backup_retention_days',
 )
 
 
@@ -173,7 +173,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddTags(parser, hidden=True)
   flags.AddRetainBackupsOnDelete(parser, hidden=True)
   flags.AddFinalBackup(parser)
-  flags.AddFinalbackupTtlDays(parser)
+  flags.AddFinalbackupRetentionDays(parser, hidden=True)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):

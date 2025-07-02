@@ -302,6 +302,7 @@ class BetaUpdate(Update):
     flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
+    flags.AddServiceMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -335,6 +336,7 @@ class AlphaUpdate(BetaUpdate):
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(parser, container_args)
 
 

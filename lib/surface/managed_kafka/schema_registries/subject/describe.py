@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
 from googlecloudsdk.command_lib.managed_kafka import util
+from googlecloudsdk.core import log
 
 PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
@@ -48,13 +49,6 @@ class Describe(base.UpdateCommand):
     """Register flags for this command."""
 
     parser.add_argument(
-        '--schema_registry',
-        type=str,
-        required=True,
-        help='The schema registry of the subject.',
-    )
-
-    parser.add_argument(
         '--context',
         type=str,
         help='The context of the subject.',
@@ -74,7 +68,7 @@ class Describe(base.UpdateCommand):
     message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
 
-    project_id = args.project
+    project_id = util.ParseProject(args.project)
     location = args.location
     schema_registry_id = args.schema_registry
     subject = args.CONCEPTS.subject.Parse().subjectsId
@@ -91,7 +85,7 @@ class Describe(base.UpdateCommand):
 
     subject_resource_path = f'{name}/{SUBJECTS_RESOURCE_PATH}{subject}'
 
-    print('Describing subject: {}'.format(subject_resource_path))
+    log.status.Print('Describing subject: {}'.format(subject_resource_path))
 
     subject_mode_request = (
         message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
@@ -121,6 +115,6 @@ class Describe(base.UpdateCommand):
         'compatibility': compatibility,
     }
 
-    print(verbose_subject)
+    log.status.Print(verbose_subject)
 
     return verbose_subject

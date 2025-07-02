@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class WorkerPools(base.Group):
   """View and manage your Cloud Run worker pools.
 

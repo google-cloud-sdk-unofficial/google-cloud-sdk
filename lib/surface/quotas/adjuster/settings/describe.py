@@ -22,15 +22,19 @@ from googlecloudsdk.command_lib.quotas import flags
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class DescribeBeta(base.DescribeCommand):
-  """Gets details of the QuotaAdjusterSettings for a project.
+  """Gets details of the QuotaAdjusterSettings for a resource container.
 
-  This command gets the QuotaAdjusterSettings for a project.
+  This command gets the QuotaAdjusterSettings for a resource container.
 
   ## EXAMPLES
 
-  To get the QuotaAdjusterSettings for container 'projects/12321', run:
+  To get the QuotaAdjusterSettings for 'projects/12321', run:
 
     $ {command} --project=12321
+
+  To get the QuotaAdjusterSettings for 'folders/123', run:
+
+    $ {command} --folder=123
   """
 
   @staticmethod
@@ -41,7 +45,7 @@ class DescribeBeta(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddProjectFlag(parser, 'container id')
+    flags.AddResourceFlags(parser, 'container id')
 
   def Run(self, args):
     """Run command.
@@ -62,15 +66,19 @@ class DescribeBeta(base.DescribeCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class DescribeAlpha(base.DescribeCommand):
-  """Gets details of the QuotaAdjusterSettings for a project.
+  """Gets details of the QuotaAdjusterSettings for a resource container.
 
-  This command gets the QuotaAdjusterSettings for a project.
+  This command gets the QuotaAdjusterSettings for a resource container.
 
   ## EXAMPLES
 
-  To get the QuotaAdjusterSettings for container 'projects/12321', run:
+  To get the QuotaAdjusterSettings for 'projects/12321', run:
 
     $ {command} --project=12321
+
+  To get the QuotaAdjusterSettings for 'folders/123', run:
+
+    $ {command} --folder=123
   """
 
   @staticmethod
@@ -81,7 +89,7 @@ class DescribeAlpha(base.DescribeCommand):
       parser: An argparse parser that you can use to add arguments that go on
         the command line after this command. Positional arguments are allowed.
     """
-    flags.AddProjectFlag(parser, 'container id')
+    flags.AddResourceFlags(parser, 'container id')
 
   def Run(self, args):
     """Run command.

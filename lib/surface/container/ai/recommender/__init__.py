@@ -23,6 +23,19 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command group is deprecated. Use `gcloud alpha '
+        'container ai profiles` '
+        'command group instead.'
+    ),
+    error=(
+        'This command group is deprecated. Use `gcloud alpha '
+        'container ai profiles` '
+        'command group instead.'
+    ),
+)
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Recommender(base.Group):

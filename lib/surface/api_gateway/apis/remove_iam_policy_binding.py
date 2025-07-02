@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.iam import iam_util
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding to a gateway."""
 

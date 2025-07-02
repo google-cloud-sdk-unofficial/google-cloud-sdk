@@ -61,10 +61,12 @@ class Startup(base.TopicCommand):
   example:
 
     # Use the python3 interpreter on your path
+
     $ export CLOUDSDK_PYTHON=python3
 
 
     # Use a python you have installed in a special location
+
     $ export CLOUDSDK_PYTHON=/usr/local/my-custom-python-install/python
 
   `gsutil` versions 5.0 and later support Python 3.8-3.11. To use a different

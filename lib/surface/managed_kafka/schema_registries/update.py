@@ -21,6 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.managed_kafka import arguments
+from googlecloudsdk.command_lib.managed_kafka import util
+from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.managedkafka.v1 import managedkafka_v1_messages
 
 PROJECTS_RESOURCE_PATH = 'projects/'
@@ -75,7 +77,7 @@ class Update(base.UpdateCommand):
     message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
 
-    project_id = args.project
+    project_id = util.ParseProject(args.project)
     location = args.location
     name = '{}{}/{}{}/{}{}'.format(
         PROJECTS_RESOURCE_PATH,
@@ -102,7 +104,7 @@ class Update(base.UpdateCommand):
               request=request
           )
       )
-      print('Updated schema registry mode to %s' % response.mode)
+      log.status.Print('Updated schema registry mode to %s' % response.mode)
     if args.compatibility:
       name = name + '/config'
       updateconfigrequest = message.UpdateSchemaConfigRequest()
@@ -117,12 +119,12 @@ class Update(base.UpdateCommand):
               request=request
           )
       )
-      print(
+      log.status.Print(
           'Updated schema registry compatibility to %s' % response.compatibility
       )
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.
-      print(
+      log.status.Print(
           'Current schema registry config is \n compatibility = %s'
           % (response.compatibility)
       )

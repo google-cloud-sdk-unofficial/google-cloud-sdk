@@ -74,9 +74,7 @@ def _GetOperations(
     ])
     if len(regions) != 1:
       errors_to_collect.append(
-          exceptions.ToolException(
-              'Region count is not 1: {}'.format(location)
-          )
+          exceptions.ToolException('Region count is not 1: {}'.format(location))
       )
       return None, errors_to_collect
     zones += [resource_parser.Parse(zone).zone for zone in regions[0].zones]
@@ -84,13 +82,16 @@ def _GetOperations(
     zones += [location]
 
   operations_response = compute_client.MakeRequests(
-      [(
-          compute_client.apitools_client.zoneOperations,
-          'List',
-          compute_client.apitools_client.zoneOperations.GetRequestType('List')(
-              filter=operation_filter, project=project, zone=zone
-          ),
-      ) for zone in zones],
+      [
+          (
+              compute_client.apitools_client.zoneOperations,
+              'List',
+              compute_client.apitools_client.zoneOperations.GetRequestType(
+                  'List'
+              )(filter=operation_filter, project=project, zone=zone),
+          )
+          for zone in zones
+      ],
       errors_to_collect=errors_to_collect,
       log_result=False,
       always_return_operation=True,
@@ -226,7 +227,8 @@ class Create(base.Command):
   @classmethod
   def AddSourceInstanceTemplate(cls, parser):
     cls.SOURCE_INSTANCE_TEMPLATE = (
-        bulk_flags.MakeBulkSourceInstanceTemplateArg())
+        bulk_flags.MakeBulkSourceInstanceTemplateArg()
+    )
     cls.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
 
   # LINT.ThenChange(../../queued_resources/create.py:instance_template)
@@ -389,7 +391,8 @@ class Create(base.Command):
   def Epilog(self, resources_were_displayed):
     del resources_were_displayed
     if self._errors:
-      log.error(self._errors[0][1])
+      for error in self._errors:
+        log.error(error[1])
     elif self._log_async:
       log.status.Print(
           'Bulk instance creation in progress: {}'.format(
@@ -398,7 +401,8 @@ class Create(base.Command):
       )
     else:
       if self._errors:
-        log.warning(self._errors[0][1])
+        for error in self._errors:
+          log.warning(error[1])
       log.status.Print(
           'Bulk create request finished with status message: [{}]'.format(
               self._status_message
@@ -544,6 +548,7 @@ class CreateAlpha(Create):
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddMaintenanceInterval().AddToParser(parser)
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
+
   # LINT.ThenChange(../../queued_resources/create.py:alpha_spec)
 
 

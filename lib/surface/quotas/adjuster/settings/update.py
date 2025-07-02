@@ -26,9 +26,9 @@ from googlecloudsdk.core import log
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class UpdateBeta(base.UpdateCommand):
-  """Update the QuotaAdjusterSettings of a project.
+  """Update the QuotaAdjusterSettings of a resource container.
 
-  This command updates the enablement state of a project.
+  This command updates the enablement state of a resource container.
 
   ## EXAMPLES
 
@@ -37,6 +37,12 @@ class UpdateBeta(base.UpdateCommand):
     $ {command}
     --enablement=enabled
     --project=12321
+
+  To update QuotaAdjusterSettings for `folders/123`, run:
+
+    $ {command}
+    --enablement=inherited
+    --folder=123
   """
 
   @staticmethod
@@ -48,7 +54,7 @@ class UpdateBeta(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.AddProjectFlag(parser, 'container id')
+    flags.AddResourceFlags(parser, 'container id')
     flags.Enablement().AddToParser(parser)
 
     # optional flags
@@ -88,9 +94,9 @@ class UpdateBeta(base.UpdateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class UpdateAlpha(base.UpdateCommand):
-  """Update the QuotaAdjusterSettings of a project.
+  """Update the QuotaAdjusterSettings of a resource container.
 
-  This command updates the enablement state of the project.
+  This command updates the enablement state of the resource container.
 
   ## EXAMPLES
 
@@ -99,6 +105,12 @@ class UpdateAlpha(base.UpdateCommand):
     $ {command}
     --enablement=Enabled
     --project=12321
+
+    To update QuotaAdjusterSettings for `folders/123`, run:
+
+    $ {command}
+    --enablement=inherited
+    --folder=123
   """
 
   @staticmethod
@@ -110,7 +122,7 @@ class UpdateAlpha(base.UpdateCommand):
         the command line after this command. Positional arguments are allowed.
     """
     # required flags
-    flags.AddProjectFlag(parser, 'container id')
+    flags.AddResourceFlags(parser, 'container id')
     flags.Enablement().AddToParser(parser)
 
     # optional flags

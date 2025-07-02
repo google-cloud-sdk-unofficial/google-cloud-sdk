@@ -31,7 +31,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
@@ -208,8 +207,7 @@ class Update(base.UpdateCommand):
       return backup_rules.get('backup-rules')
     except Exception as exc:  # pylint: disable=broad-except
       raise self.YamlOrJsonLoadError(
-          'Could not parse content in the backup rules file: {0}'
-          .format(exc)
+          'Could not parse content in the backup rules file: {0}'.format(exc)
       ) from exc
 
   def Run(self, args) -> any:
@@ -230,9 +228,8 @@ class Update(base.UpdateCommand):
     add_backup_rules = args.add_backup_rule
     remove_backup_rules = args.remove_backup_rule
 
-    if (
-        backup_rules_file_content
-        and (update_backup_rules or add_backup_rules or remove_backup_rules)
+    if backup_rules_file_content and (
+        update_backup_rules or add_backup_rules or remove_backup_rules
     ):
       raise core_exceptions.Error(
           '--backup-rules-from-file flag cannot be used with'
@@ -259,10 +256,13 @@ class Update(base.UpdateCommand):
           log_retention_days,
       )
       update_mask = []
-      if description and description != current_backup_plan.description:
+      if (
+          description is not None
+          and description != current_backup_plan.description
+      ):
         update_mask.append('description')
       if (
-          log_retention_days
+          log_retention_days is not None
           and log_retention_days != current_backup_plan.logRetentionDays
       ):
         update_mask.append('logRetentionDays')

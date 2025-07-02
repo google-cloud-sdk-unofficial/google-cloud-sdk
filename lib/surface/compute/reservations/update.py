@@ -401,7 +401,7 @@ class Update(base.UpdateCommand):
   _support_share_with_flag = False
   _support_auto_delete = False
   _support_reservation_sharing_policy = True
-  _support_emergent_maintenance = False
+  _support_emergent_maintenance = True
   _support_share_type = False
   _support_scheduling_type = False
 
@@ -413,6 +413,7 @@ class Update(base.UpdateCommand):
     r_flags.GetRemoveShareWithFlag().AddToParser(parser)
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
+    r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
 
   def Run(self, args):
     """Common routine for updating reservation."""

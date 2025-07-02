@@ -126,6 +126,7 @@ for examples.
   flags.AddAdditionalPodNetworkFlag(parser)
   flags.AddAsyncFlag(parser)
   flags.AddSoleTenantNodeAffinityFileFlag(parser)
+  flags.AddSoleTenantMinNodeCpusFlag(parser, hidden=True)
   flags.AddContainerdConfigFlag(parser)
   flags.AddEnableKubeletReadonlyPortFlag(parser)
 
@@ -218,6 +219,7 @@ def ParseCreateNodePoolOptionsBase(args):
       additional_node_network=args.additional_node_network,
       additional_pod_network=args.additional_pod_network,
       sole_tenant_node_affinity_file=args.sole_tenant_node_affinity_file,
+      sole_tenant_min_node_cpus=args.sole_tenant_min_node_cpus,
       containerd_config_from_file=args.containerd_config_from_file,
       resource_manager_tags=args.resource_manager_tags,
       enable_insecure_kubelet_readonly_port=args.enable_insecure_kubelet_readonly_port,

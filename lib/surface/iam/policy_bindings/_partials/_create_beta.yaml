@@ -115,6 +115,7 @@
               api_field: googleIamV3betaPolicyBinding.target.resource
               required: false
               repeated: false
+              hidden: true
               help_text: |-
                 Full Resource Name used for access policy bindings
                 Examples:

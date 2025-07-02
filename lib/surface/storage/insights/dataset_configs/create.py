@@ -35,17 +35,17 @@ class Create(base.Command):
        Create a new dataset config for Insights.
       """,
       'EXAMPLES': """
-      To create a dataset config with config name as "my-config" in location
+      To create a dataset config with config name as "my_config" in location
       "us-central1" and project numbers "123456" and "456789" belonging to
       organization number "54321":
 
-         $ {command} my-config --location=us-central1
+         $ {command} my_config --location=us-central1
          --source-projects=123456,456789 --organization=54321 --retention-period-days=1
 
       To create a dataset config that automatically adds new buckets into
       config:
 
-         $ {command} my-config --location=us-central1
+         $ {command} my_config --location=us-central1
          --source-projects=123456,456789 --organization=54321
          --auto-add-new-buckets --retention-period-days=1
       """,

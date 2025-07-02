@@ -31,7 +31,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(commands.List):
   """List available worker-pools."""
 

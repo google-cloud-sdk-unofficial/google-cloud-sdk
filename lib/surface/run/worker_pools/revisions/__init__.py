@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.run import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Revisions(base.Group):
   """View and manage your Cloud Run WorkerPools revisions.
 

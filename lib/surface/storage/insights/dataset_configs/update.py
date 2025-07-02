@@ -35,19 +35,19 @@ class Update(base.Command):
       """,
       'EXAMPLES': """
 
-      To update the description for a dataset config "my-config" in
+      To update the description for a dataset config "my_config" in
       location "us-central1":
 
-          $ {command} my-config --location=us-central1 --description="a user provided description"
+          $ {command} my_config --location=us-central1 --description="a user provided description"
 
       To update the same dataset config with fully specified name:
 
-          $ {command} projects/foo/locations/us-central1/datasetConfigs/my-config
+          $ {command} projects/foo/locations/us-central1/datasetConfigs/my_config
 
-      To update the retention period days for the dataset config "my-config" in
+      To update the retention period days for the dataset config "my_config" in
       location "us-central1":
 
-          $ {command} my-config --location=us-central1
+          $ {command} my_config --location=us-central1
           --retention-period-days=20
       """,
   }
@@ -56,7 +56,6 @@ class Update(base.Command):
   def Args(parser):
     parser.add_argument(
         '--auto-add-new-buckets',
-        hidden=True,
         choices=['true', 'false'],
         help=(
             'Automatically include any new buckets created if they satisfy'
@@ -132,8 +131,11 @@ class Update(base.Command):
           dataset_config_relative_name, client
       )
       message = (
-          'You are about to change scope of dataset config: {} from {} to {}'
-          .format(dataset_config_relative_name, existing_scope, new_scope)
+          'You are about to change scope of dataset config:'
+          f' {dataset_config_relative_name} from {existing_scope} to'
+          f' {new_scope}. Refer'
+          ' https://cloud.google.com/storage/docs/insights/datasets#dataset-config'
+          ' for more details.'
       )
       console_io.PromptContinue(
           message=message, throw_if_unattended=True, cancel_on_no=True

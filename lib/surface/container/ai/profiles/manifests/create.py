@@ -90,6 +90,14 @@ class Create(base.CreateCommand):
             " terminal."
         ),
     )
+    parser.add_argument(
+        "--model-bucket-uri",
+        hidden=True,
+        help=(
+            "GCS bucket URI to pull model from. If not specified, default"
+            " to the model hoster."
+        ),
+    )
 
   def Run(self, args):
     client = util.GetClientInstance(base.ReleaseTrack.ALPHA)
@@ -103,6 +111,7 @@ class Create(base.CreateCommand):
           targetNtpotMilliseconds=args.target_ntpot_milliseconds,
           acceleratorType=args.accelerator_type,
           kubernetesNamespace=args.namespace,
+          storageConfig_modelBucketUri=args.model_bucket_uri,
       )
       response = client.v1alpha1.OptimizedManifest(request)
       return response

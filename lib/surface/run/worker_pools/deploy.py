@@ -47,7 +47,7 @@ class BuildType(enum.Enum):
   BUILDPACKS = 'Buildpacks'
 
 
-def ContainerArgGroup():
+def ContainerArgGroup(release_track=base.ReleaseTrack.BETA):
   """Returns an argument group with all container deploy args."""
 
   help_text = """
@@ -57,24 +57,25 @@ Container Flags
 """
   group = base.ArgumentGroup(help=help_text)
   group.AddArgument(flags.SourceAndImageFlags())
-  group.AddArgument(flags.MutexEnvVarsFlags())
+  group.AddArgument(flags.MutexEnvVarsFlags(release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags_parser.SecretsFlags())
   group.AddArgument(flags.DependsOnFlag())
   group.AddArgument(flags.CommandFlag())
-  group.AddArgument(flags.GpuFlag())
-  # ALPHA features
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
+  # ALPHA features
+  if release_track == base.ReleaseTrack.ALPHA:
+    group.AddArgument(flags.GpuFlag())
 
   return group
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Deploy(base.Command):
   """Create or update a Cloud Run worker-pool."""
 
@@ -95,26 +96,23 @@ class Deploy(base.Command):
   }
 
   @classmethod
-  def Args(cls, parser):
+  def CommonArgs(cls, parser):
     flags.AddBinAuthzPolicyFlags(parser)
     flags.AddBinAuthzBreakglassFlag(parser)
     flags_parser.AddCloudSQLFlags(parser)
     flags.AddCmekKeyFlag(parser)
     flags.AddCmekKeyRevocationActionTypeFlag(parser)
     flags.AddDescriptionFlag(parser)
+    flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddRevisionSuffixArg(parser)
     flags.AddRuntimeFlag(parser)
-    flags.AddWorkerPoolMinInstancesFlag(parser)
-    flags.AddWorkerPoolMaxInstancesFlag(parser)
-    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
-    flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
-    flags.AddScalingFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddGpuTypeFlag(parser)
+    flags.AddScalingFlag(
+        parser, release_track=cls.ReleaseTrack(), resource_kind='worker'
+    )
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
-    flags.AddEgressSettingsFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
@@ -132,15 +130,20 @@ class Deploy(base.Command):
     concept_parsers.ConceptParser([worker_pool_presentation]).AddToParser(
         parser
     )
-    container_args = ContainerArgGroup()
-    container_parser.AddContainerFlags(parser, container_args)
-
     # No output by default, can be overridden by --format
-    # parser.display_info.AddFormat('none')
+    parser.display_info.AddFormat('none')
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
 
   def _GetBaseChanges(self, args):
     """Returns the worker pool config changes with some default settings."""
-    changes = flags_parser.GetWorkerPoolConfigurationChanges(args)
+    changes = flags_parser.GetWorkerPoolConfigurationChanges(
+        args, self.ReleaseTrack()
+    )
     changes.insert(
         0,
         config_changes_mod.BinaryAuthorizationChange(
@@ -370,7 +373,7 @@ class Deploy(base.Command):
               response.metadata.latest_created_revision
           )
           msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-        pretty_print.Success(msg +' has been deployed.')
+        pretty_print.Success(msg + ' has been deployed.')
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
@@ -384,3 +387,22 @@ def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
           {'envs': ['GOOGLE_ENTRYPOINT="{command}"'.format(command=command)]}
       )
   return pack
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(Deploy):
+  """Create or update a Cloud Run worker-pool."""
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
+    flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
+    flags.AddWorkerPoolMinInstancesFlag(parser)
+    flags.AddWorkerPoolMaxInstancesFlag(parser)
+    flags.AddGpuTypeFlag(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_parser.AddContainerFlags(parser, container_args)
+
+
+AlphaDeploy.__doc__ = Deploy.__doc__

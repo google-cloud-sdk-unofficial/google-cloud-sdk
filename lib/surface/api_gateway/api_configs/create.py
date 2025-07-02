@@ -42,6 +42,7 @@ MAX_SERVICE_CONFIG_ID_LENGTH = 50
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Add a new config to an API."""
 
@@ -74,7 +75,7 @@ class Create(base.CreateCommand):
         '--openapi-spec',
         type=arg_parsers.ArgList(),
         metavar='FILE',
-        help=('The OpenAPI v2 specifications containing service '
+        help=('The OpenAPI specifications containing service '
               'configuration information, and API specification for the gateway'
               '.'))
 
@@ -152,19 +153,15 @@ class Create(base.CreateCommand):
 
       config_dict = self.__ValidJsonOrYaml(config_file, config_contents)
       if config_dict:
-        if 'swagger' in config_dict:
+        if 'swagger' in config_dict or 'openapi' in config_dict:
           # Always use YAML for OpenAPI because JSON is a subset of YAML.
           document = self.__MakeApigatewayApiConfigFileMessage(config_contents,
                                                                config_file)
           config_files.append(messages.ApigatewayApiConfigOpenApiDocument(
               document=document))
-        elif 'openapi' in config_dict:
-          raise calliope_exceptions.BadFileException(
-              'API Gateway does not currently support OpenAPI v3 configurations.'
-              )
         else:
           raise calliope_exceptions.BadFileException(
-              'The file {} is not a valid OpenAPI v2 configuration file.'
+              'The file {} is not a valid OpenAPI configuration file.'
               .format(config_file))
       else:
         raise calliope_exceptions.BadFileException(

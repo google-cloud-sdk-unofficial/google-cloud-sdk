@@ -341,7 +341,7 @@ def AddBetaArgs(parser):
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
   flags.AddFinalBackup(parser)
-  flags.AddFinalbackupTtlDays(parser)
+  flags.AddFinalbackupRetentionDays(parser, hidden=True)
   flags.AddReconcilePsaNetworking(parser)
 
 

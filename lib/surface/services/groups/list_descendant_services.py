@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """services groups list descendant services command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -29,7 +26,7 @@ _SERVICE_RESOURCE = 'services/%s'
 _GROUP_RESOURCE = 'groups/%s'
 
 
-# TODO(b/321801975) make command public after suv2alpha launch.
+# TODO(b/402831836): Do not make the command public.
 @base.UniverseCompatible
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)

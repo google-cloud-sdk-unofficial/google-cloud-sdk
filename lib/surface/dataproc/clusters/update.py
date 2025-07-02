@@ -122,8 +122,7 @@ class Update(base.UpdateCommand):
     idle_delete_group.add_argument(
         '--max-idle',
         type=arg_parsers.Duration(),
-        # TODO: b/368979261 - Hide this flag when --delete-max-idle is GA.
-        # hidden=True,
+        hidden=True,
         help="""\
         The duration after the last job completes to auto-delete the cluster,
         such as "2h" or "1d".
@@ -132,8 +131,7 @@ class Update(base.UpdateCommand):
     idle_delete_group.add_argument(
         '--no-max-idle',
         action='store_true',
-        # TODO: b/368979261 - Hide this flag when --no-delete-max-idle is GA.
-        # hidden=True,
+        hidden=True,
         help="""\
         Cancels the cluster auto-deletion by cluster idle duration (configured
          by --max-idle flag)
@@ -159,8 +157,7 @@ class Update(base.UpdateCommand):
     auto_delete_group.add_argument(
         '--max-age',
         type=arg_parsers.Duration(),
-        # TODO: b/368979261 - Hide this flag when --delete-max-age is GA.
-        # hidden=True,
+        hidden=True,
         help="""\
         The lifespan of the cluster, with auto-deletion upon completion,
         "2h" or "1d".
@@ -169,8 +166,7 @@ class Update(base.UpdateCommand):
     auto_delete_group.add_argument(
         '--expiration-time',
         type=arg_parsers.Datetime.Parse,
-        # TODO: b/368979261 - Hide this flag when --delete-expiration-time is GA
-        # hidden=True,
+        hidden=True,
         help="""\
         The time when the cluster will be auto-deleted, such as
         "2017-08-29T18:52:51.142Z". See $ gcloud topic datetimes for
@@ -179,8 +175,7 @@ class Update(base.UpdateCommand):
     auto_delete_group.add_argument(
         '--no-max-age',
         action='store_true',
-        # TODO: b/368979261 - Hide this flag when --no-delete-max-age is GA.
-        # hidden=True,
+        hidden=True,
         help="""\
         Cancels the cluster auto-deletion by maximum cluster age (configured by
          --max-age or --expiration-time flags)
@@ -210,10 +205,7 @@ class Update(base.UpdateCommand):
         by --delete-max-age or --delete-expiration-time flags)
         """)
 
-    idle_stop_group = parser.add_mutually_exclusive_group(
-        # TODO: b/368979261 - Unhide scheduled stop flags after release.
-        hidden=True,
-    )
+    idle_stop_group = parser.add_mutually_exclusive_group()
     idle_stop_group.add_argument(
         '--stop-max-idle',
         type=arg_parsers.Duration(),
@@ -230,10 +222,7 @@ class Update(base.UpdateCommand):
         by --stop-max-idle flag)
         """)
 
-    auto_stop_group = parser.add_mutually_exclusive_group(
-        # TODO: b/368979261 - Unhide scheduled stop flags after release.
-        hidden=True,
-    )
+    auto_stop_group = parser.add_mutually_exclusive_group()
     auto_stop_group.add_argument(
         '--stop-max-age',
         type=arg_parsers.Duration(),
@@ -241,8 +230,7 @@ class Update(base.UpdateCommand):
         The lifespan of the cluster, with auto-stop upon completion,
         such as "2h" or "1d".
         See $ gcloud topic datetimes for information on duration formats.
-        """,
-    )
+        """)
     auto_stop_group.add_argument(
         '--stop-expiration-time',
         type=arg_parsers.Datetime.Parse,
