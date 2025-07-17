@@ -26,3 +26,8 @@ class FloorSettingsAlpha(extensions.TemplatesAlpha):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class FloorSettingsGA(extensions.TemplatesGa):
   """Manage FloorSettings resources."""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class FloorSettingsBeta(extensions.TemplatesBeta):
+  """Manage FloorSettings resources."""

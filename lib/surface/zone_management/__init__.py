@@ -21,12 +21,11 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ZoneManagement(base.Group):
   """Zone Management gcloud commands."""
-  category = base.COMPUTE_CATEGORY
+  category = base.GDCC_ZONE_CATEGORY
 
   def Filter(self, context, args):
     del context, args

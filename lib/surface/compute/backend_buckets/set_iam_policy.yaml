@@ -1,4 +1,4 @@
-release_tracks: [GA, BETA, ALPHA]
+release_tracks: [GA, BETA]
 
 help_text:
   brief: Set the IAM policy binding for a Compute Engine backend bucket.

@@ -70,7 +70,7 @@ class _SQLServer(base.Command):
     cp_flags.AddSslFlags(parser)
     sqlserver_flags.AddCloudSqlInstanceFlags(parser)
     sqlserver_flags.AddCpDetailsFlag(parser)
-    sqlserver_flags.AddDatabaseFlag(parser)
+    cp_flags.AddDatabaseFlag(parser)
     flags.AddLabelsCreateFlags(parser)
 
   def Run(self, args):

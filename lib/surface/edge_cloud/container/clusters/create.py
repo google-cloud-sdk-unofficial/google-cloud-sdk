@@ -83,6 +83,7 @@ class Create(base.CreateCommand):
     container_flags.AddVersion(parser)
     container_flags.AddZoneStorageKMSKey(parser)
     container_flags.AddContainerDefaultRuntimeClass(parser)
+    container_flags.AddEnableGoogleGroupAuthentication(parser)
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -153,5 +154,4 @@ class CreateAlpha(Create):
     container_flags.AddExternalLbIpv6AddressPools(parser)
     container_flags.AddExternalLoadBalancerAddressPools(parser)
     container_flags.AddEnableClusterIsolation(parser)
-    container_flags.AddEnableGoogleGroupAuthentication(parser)
     container_flags.AddEnableRemoteBackup(parser)

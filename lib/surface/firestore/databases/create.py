@@ -22,14 +22,15 @@ import textwrap
 
 from googlecloudsdk.api_lib.firestore import api_utils
 from googlecloudsdk.api_lib.firestore import databases
-from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
@@ -43,6 +44,10 @@ class CreateFirestoreAPI(base.Command):
   To create a Firestore Native database in `nam5`.
 
       $ {command} --location=nam5
+
+  To create a Firestore Native database in `us-central1` with tags.
+
+      $ {command} --location=us-central1 --tags=key1=value1,key2=value2
 
   To create a Datastore Mode database in `us-east1`.
 
@@ -134,7 +139,7 @@ class CreateFirestoreAPI(base.Command):
         self.DatabaseDeleteProtectionState(args.delete_protection),
         self.DatabasePitrState(args.enable_pitr),
         self.DatabaseCmekConfig(args),
-        tags=None,
+        args.tags,
     )
 
   @classmethod
@@ -194,79 +199,4 @@ class CreateFirestoreAPI(base.Command):
         default=None,
     )
     flags.AddKmsKeyNameFlag(parser)
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateFirestoreAPIAlpha(CreateFirestoreAPI):
-  """Create a Google Cloud Firestore database via Firestore API.
-
-  ## EXAMPLES
-
-  To create a Firestore Enterprise database named `foo` in `nam5` for use with
-  MongoDB Compatibility.
-
-      $ {command} --database=foo --edition=enterprise --location=nam5
-
-  To create a Firestore Native database in `nam5`.
-
-      $ {command} --location=nam5
-
-  To create a Firestore Native database in `us-central1` with tags.
-
-      $ {command} --location=us-central1 --tags=key1=value1,key2=value2
-
-  To create a Datastore Mode database in `us-east1`.
-
-      $ {command} --location=us-east1 --type=datastore-mode
-
-  To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
-
-      $ {command} --database=foo --location=us-east1 --type=datastore-mode
-
-  To create a Firestore Native database in `nam5` with delete protection
-  enabled.
-
-      $ {command} --location=nam5 --delete-protection
-
-  To create a Firestore Native database in `nam5` with Point In Time Recovery
-  (PITR) enabled.
-
-      $ {command} --location=nam5 --enable-pitr
-
-  To create a Firestore Native database in `nam5` encrypted by a
-  Customer-managed encryption key (CMEK).
-
-      $ {command}
-      --location=nam5
-      --kms-key-name=projects/PROJECT_ID/locations/us/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
-  """
-
-  def Run(self, args):
-    project = properties.VALUES.core.project.Get(required=True)
-    return databases.CreateDatabase(
-        project,
-        args.location,
-        args.database,
-        self.DatabaseType(args.type),
-        self.DatabaseEdition(args.edition),
-        self.DatabaseDeleteProtectionState(args.delete_protection),
-        self.DatabasePitrState(args.enable_pitr),
-        self.DatabaseCmekConfig(args),
-        args.tags,
-    )
-
-  @classmethod
-  def Args(cls, parser):
-    CreateFirestoreAPI.Args(parser)
-    parser.add_argument(
-        '--tags',
-        help=textwrap.dedent("""\
-            Tags to attach to the database
-
-            Example: --tags=key1=value1,key2=value2
-            """),
-        type=arg_parsers.ArgDict(),
-        metavar='KEY=VALUE',
-        default=None,
-    )
+    flags.AddTags(parser, 'database')

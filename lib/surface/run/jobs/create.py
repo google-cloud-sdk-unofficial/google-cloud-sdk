@@ -238,6 +238,7 @@ class BetaCreate(Create):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -251,6 +252,6 @@ class AlphaCreate(BetaCreate):
     cls.CommonArgs(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)

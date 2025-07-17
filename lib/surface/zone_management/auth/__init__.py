@@ -22,13 +22,12 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.projects import util
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ZoneManagementAuth(base.Group):
   """Zone Management Auth gcloud commands."""
 
-  category = base.MANAGEMENT_TOOLS_CATEGORY
+  category = base.GDCC_ZONE_CATEGORY
 
   @staticmethod
   def Args(parser):

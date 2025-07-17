@@ -1267,6 +1267,7 @@ class AlphaDeploy(BetaDeploy):
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)
+    flags.AddPresetFlag(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

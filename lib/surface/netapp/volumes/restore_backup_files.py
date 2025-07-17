@@ -81,3 +81,17 @@ class RestoreBackupFiles(base.Command):
           ' volumes:\n$ {}'.format(command)
       )
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class RestoreBackupFilesBeta(RestoreBackupFiles):
+  """Restore specific files from a backup to a Volume."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+# @base.Hidden  # TODO(b/409505431): Uncomment this and make for GA launch
+# @base.ReleaseTracks(base.ReleaseTrack.GA)
+# class RestoreBackupFilesGA(RestoreBackupFiles):
+#   """Restore specific files from a backup to a Volume."""
+
+#   _RELEASE_TRACK = base.ReleaseTrack.GA

@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Create an IAM Workforce Pool Provider SCIM Tenant Token.
+    description: |
+      Create a new SCIM Token associated with a specific Workforce Pool Provider SCIM Tenant.
+
+      Upon successful creation, the command returns the created SCIM Token resource.
+    examples: |
+      To create a SCIM token with ID `my-token` under tenant `my-tenant` provider `my-provider` in pool `my-pool` located in `global`:
+
+        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --tenant=my-tenant
+
+  request:
+    collection: iam.locations.workforcePools.providers.scimTenants.tokens
+
+  arguments:
+    resource:
+      help_text: The ID of the SCIM token to create. Must be 4-32 characters, alphanumeric ([a-z0-9-]), and cannot start with gcp-.
+      spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_scim_token
+      is_positional: true
+
+    params:
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider_scim_token.display_name
+      required: false
+  output:
+    format: yaml

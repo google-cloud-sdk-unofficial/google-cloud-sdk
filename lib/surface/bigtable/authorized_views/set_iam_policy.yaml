@@ -6,10 +6,10 @@
       Set an IAM policy on a Cloud Bigtable authorized view.
 
     examples: |
-      To set the IAM policy from file 'my-policy' on the authorized view 'my-authorized-view' in
-      instance 'my-instance' and table 'my-table', run:
+      To set the IAM policy from file `my-policy` on the authorized view `my-authorized-view` in
+      instance `my-instance` and table `my-table`, run:
 
-        $ {command} my-authorized-view --instance='my-instance' --table='my-table' my-policy
+        $ {command} my-authorized-view --instance=`my-instance` --table=`my-table` my-policy
 
       See https://cloud.google.com/iam/docs/managing-policies for more information.
 

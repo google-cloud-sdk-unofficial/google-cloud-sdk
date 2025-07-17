@@ -5,8 +5,8 @@
     brief: Create a new Bigtable schema bundle.
     description: Create a new Bigtable schema bundle.
     examples: |
-      To create a schema bundle 'my-schema-bundle' in instance 'my-instance' and table
-      'my-table', using the descriptor file 'my-descriptor-file.pb':
+      To create a schema bundle `my-schema-bundle` in instance `my-instance` and table
+      `my-table`, using the descriptor file `my-descriptor-file.pb`:
 
         $ {command} my-schema-bundle --instance=test-instance --table=test-table --proto-descriptors-file=my-descriptor-file.pb
 

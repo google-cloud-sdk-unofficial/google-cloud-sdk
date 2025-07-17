@@ -75,8 +75,8 @@ class Update(base.UpdateCommand):
       The updated schema registry.
     """
 
-    message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
+    message = client.MESSAGES_MODULE
 
     project_id = util.ParseProject(args.project)
     location = args.location
@@ -108,7 +108,9 @@ class Update(base.UpdateCommand):
               request=request
           )
       )
-      log.status.Print('Updated schema registry mode to %s' % response.mode)
+      log.UpdatedResource(
+          args.schema_registry, details='mode to %s' % response.mode
+      )
     if args.compatibility:
       name = schema_registry_path + '/config'
       updateconfigrequest = message.UpdateSchemaConfigRequest()
@@ -123,8 +125,9 @@ class Update(base.UpdateCommand):
               request=request
           )
       )
-      log.status.Print(
-          'Updated schema registry compatibility to %s' % response.compatibility
+      log.UpdatedResource(
+          args.schema_registry,
+          details='compatibility to %s' % response.compatibility,
       )
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.

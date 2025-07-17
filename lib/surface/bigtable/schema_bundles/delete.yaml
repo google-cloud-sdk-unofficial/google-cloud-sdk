@@ -5,8 +5,8 @@
     brief: Delete a Bigtable schema bundle.
     description: Delete a Bigtable schema bundle.
     examples: |
-      To delete the schema bundle 'my-schema-bundle' in instance 'my-instance' and table
-      'my-table':
+      To delete the schema bundle `my-schema-bundle` in instance `my-instance` and table
+      `my-table`:
 
         $ {command} my-schema-bundle --instance=test-instance --table=test-table
 

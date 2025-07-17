@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import flags
 from googlecloudsdk.command_lib.composer import resource_args
@@ -36,8 +37,7 @@ DETAILED_HELP = {
 }
 
 
-# TODO(b/371178112): Remove this annotation once the command is ready for TPC.
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the Cloud Composer environments under a project and location.
 
@@ -66,10 +66,15 @@ class List(base.ListCommand):
         parser,
         'in which to list environments',
         positional=False,
-        required=False,
+        required=arg_parsers.ArgRequiredInUniverse(
+            default_universe=False, non_default_universe=True
+        ),
         plural=True,
-        help_supplement='If not specified, the location stored in the property '
-        ' [composer/location] will be used.')
+        help_supplement=(
+            'If not specified, the location stored in the property '
+            ' [composer/location] will be used.'
+        ),
+    )
     parser.display_info.AddFormat('table[box]('
                                   'name.segment(5):label=NAME,'
                                   'name.segment(3):label=LOCATION,'

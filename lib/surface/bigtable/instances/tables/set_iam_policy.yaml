@@ -5,10 +5,10 @@ help_text:
     Set an IAM policy on a Cloud Bigtable table.
 
   examples: |
-    To set the IAM policy from file 'my-policy' on the table 'my-table' in
-    instance 'my-instance', run:
+    To set the IAM policy from file `my-policy` on the table `my-table` in
+    instance `my-instance`, run:
 
-      $ {command} my-table --instance='my-instance' my-policy
+      $ {command} my-table --instance=`my-instance` my-policy
 
     See https://cloud.google.com/iam/docs/managing-policies for more information.
 

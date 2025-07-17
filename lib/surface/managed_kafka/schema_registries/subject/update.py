@@ -73,6 +73,16 @@ class Update(base.UpdateCommand):
         type=str,
         help='The compatibility of the subject to update.',
     )
+    group.add_argument(
+        '--delete-mode',
+        action='store_true',
+        help='Delete the mode of the subject.',
+    )
+    group.add_argument(
+        '--delete-config',
+        action='store_true',
+        help='Delete the config of the subject.',
+    )
 
   def Run(self, args):
     """Called when the user runs gcloud managed-kafka schema-registries subject update ...
@@ -84,8 +94,8 @@ class Update(base.UpdateCommand):
       The updated subject.
     """
 
-    message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
+    message = client.MESSAGES_MODULE
 
     project_id = util.ParseProject(args.project)
     location = args.location
@@ -107,12 +117,19 @@ class Update(base.UpdateCommand):
           f'{schema_registry_resource}{CONTEXTS_RESOURCE_PATH}{args.context}'
       )
 
+    if args.delete_config:
+      util.DeleteSubjectConfig(subject, schema_registry_resource, args.context)
+
+    if args.delete_mode:
+      util.DeleteSubjectMode(subject, schema_registry_resource, args.context)
+
     if args.mode:
+      mode = args.mode.upper()
       name = f'{schema_registry_resource}/mode/{args.CONCEPTS.subject.Parse().subjectsId}'
       updatemoderequest = message.UpdateSchemaModeRequest()
       updatemoderequest.mode = (
           managedkafka_v1_messages.UpdateSchemaModeRequest.ModeValueValuesEnum(
-              args.mode
+              mode
           )
       )
       # Check if context is provided.
@@ -133,13 +150,14 @@ class Update(base.UpdateCommand):
             request=request
         )
 
-      log.status.Print('Updated subject mode to %s' % response.mode)
+      log.UpdatedResource(subject, details='mode to %s' % response.mode)
 
     if args.compatibility:
+      compatibility = args.compatibility.upper()
       name = f'{schema_registry_resource}/config/{args.CONCEPTS.subject.Parse().subjectsId}'
       updateconfigrequest = message.UpdateSchemaConfigRequest()
       updateconfigrequest.compatibility = managedkafka_v1_messages.UpdateSchemaConfigRequest.CompatibilityValueValuesEnum(
-          args.compatibility
+          compatibility
       )
       # Check if context is provided.
       if args.context:
@@ -159,9 +177,10 @@ class Update(base.UpdateCommand):
             request=request
         )
 
-      log.status.Print(
-          'Updated subject compatibility to %s' % response.compatibility
+      log.UpdatedResource(
+          subject, details='compatibility to %s' % response.compatibility
       )
+
       # TODO: b/418768300 - Add normalize and alias to the output once they
       # are supported.
       log.status.Print(

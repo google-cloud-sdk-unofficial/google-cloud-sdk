@@ -421,9 +421,7 @@ class Update(base.UpdateCommand):
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
-    flags.AddSecretManagerEnableFlagGroup(
-        group, release_track=base.ReleaseTrack.GA
-    )
+    flags.AddSecretManagerEnableFlagGroup(group, hidden=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
@@ -449,10 +447,12 @@ class Update(base.UpdateCommand):
     flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddControlPlaneDiskEncryptionKeyFlag(group)
     flags.AddPatchUpdateFlag(group)
-    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
-    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddAutoIpamFlag(group, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddEnableDefaultComputeClassFlag(group)
+    flags.AddNetworkTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -568,6 +568,10 @@ class Update(base.UpdateCommand):
     opts.enable_ray_cluster_logging = args.enable_ray_cluster_logging
     opts.enable_ray_cluster_monitoring = args.enable_ray_cluster_monitoring
     opts.enable_secret_manager = args.enable_secret_manager
+    opts.enable_secret_manager_rotation = args.enable_secret_manager_rotation
+    opts.secret_manager_rotation_interval = (
+        args.secret_manager_rotation_interval
+    )
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )
@@ -594,6 +598,9 @@ class Update(base.UpdateCommand):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.control_plane_disk_encryption_key = (
+        args.control_plane_disk_encryption_key
+    )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
@@ -602,6 +609,7 @@ class Update(base.UpdateCommand):
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.network_tier = args.network_tier
     return opts
 
   def Run(self, args):
@@ -1189,9 +1197,7 @@ class UpdateBeta(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlagGroup(
-        group, release_track=base.ReleaseTrack.BETA
-    )
+    flags.AddSecretManagerEnableFlagGroup(group)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1222,13 +1228,15 @@ class UpdateBeta(Update):
     flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddControlPlaneDiskEncryptionKeyFlag(group)
     flags.AddPatchUpdateFlag(group)
-    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
-    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddAutoIpamFlag(group, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
+    flags.AddNetworkTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1423,6 +1431,9 @@ class UpdateBeta(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.control_plane_disk_encryption_key = (
+        args.control_plane_disk_encryption_key
+    )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
@@ -1431,6 +1442,7 @@ class UpdateBeta(Update):
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.network_tier = args.network_tier
     return opts
 
 
@@ -1541,9 +1553,7 @@ class UpdateAlpha(Update):
     flags.AddConvertToAutopilotFlag(group)
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
-    flags.AddSecretManagerEnableFlagGroup(
-        group, release_track=base.ReleaseTrack.ALPHA
-    )
+    flags.AddSecretManagerEnableFlagGroup(group)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1574,13 +1584,15 @@ class UpdateAlpha(Update):
     flags.AddEnableK8sCertsViaDnsFlag(group_for_control_plane_endpoints)
     flags.AddServiceAccountVerificationKeysFlag(group)
     flags.AddServiceAccountSigningKeysFlag(group)
+    flags.AddControlPlaneDiskEncryptionKeyFlag(group)
     flags.AddPatchUpdateFlag(group)
-    flags.AddAutoIpamFlag(group, hidden=True, is_update=True)
-    flags.AddEnableLegacyLustrePortFlag(group, hidden=True)
+    flags.AddAutoIpamFlag(group, is_update=True)
+    flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
+    flags.AddNetworkTierFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1771,6 +1783,9 @@ class UpdateAlpha(Update):
         args.service_account_verification_keys
     )
     opts.service_account_signing_keys = args.service_account_signing_keys
+    opts.control_plane_disk_encryption_key = (
+        args.control_plane_disk_encryption_key
+    )
     opts.anonymous_authentication_config = args.anonymous_authentication_config
     opts.patch_update = args.patch_update
     opts.enable_auto_ipam = args.enable_auto_ipam
@@ -1779,4 +1794,5 @@ class UpdateAlpha(Update):
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
+    opts.network_tier = args.network_tier
     return opts

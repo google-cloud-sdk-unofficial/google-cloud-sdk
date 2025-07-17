@@ -4,18 +4,18 @@
     brief: Update an existing Cloud Bigtable authorized view.
     description: Update an existing Cloud Bigtable authorized view.
     examples: |
-      To update the authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table', using the definition file 'authorized_view.json':
+      To update the authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`, using the definition file `authorized_view.json`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table --definition-file=authorized_view.json
 
-      To update the authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table', using the pre-encoded definition file 'authorized_view_pre_encoded.json':
+      To update the authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`, using the pre-encoded definition file `authorized_view_pre_encoded.json`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table --definition-file=authorized_view_pre_encoded.json --pre-encoded
 
-      To update the authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table', using the definition file 'authorized_view.json' and skip the prompt to proceed or
+      To update the authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`, using the definition file `authorized_view.json` and skip the prompt to proceed or
       cancel the update:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table --definition-file=authorized_view.json --no-interactive
@@ -35,7 +35,7 @@
       help_text: |
         Path to a JSON or YAML file containing a valid authorized view protobuf.
 
-        The 'name' field is ignored. The name is deduced from the other command line arguments.
+        The `name` field is ignored. The name is deduced from the other command line arguments.
 
         Example:
         {

@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_connectivity import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -78,10 +79,10 @@ class RejectSpoke(base.Command):
 
 RejectSpoke.detailed_help = {
     'EXAMPLES':
-        """ \
+        f""" \
   To reject a spoke named ``my-spoke'' from a hub named ``my-hub'' with reason ``my-reason'', run:
 
-    $ {command} my-hub --spoke="https://www.googleapis.com/networkconnectivity/v1/projects/spoke-project/locations/global/hubs/my-spoke" --details=my-reason
+    $ {{command}} my-hub --spoke="https://networkconnectivity.{properties.VALUES.core.universe_domain.Get()}/v1/projects/spoke-project/locations/global/spokes/my-spoke" --details=my-reason
   """,
     'API REFERENCE':
         """ \

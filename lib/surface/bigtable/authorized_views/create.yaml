@@ -4,13 +4,13 @@
     brief: Create a new Cloud Bigtable authorized view.
     description: Create a new Cloud Bigtable authorized view.
     examples: |
-      To create an authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table', using the definition file 'authorized_view.json':
+      To create an authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`, using the definition file `authorized_view.json`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table --definition-file=authorized_view.json
 
-      To create an authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table', using the pre-encoded definition file 'authorized_view_pre_encoded.json':
+      To create an authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`, using the pre-encoded definition file `authorized_view_pre_encoded.json`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table --definition-file=authorized_view_pre_encoded.json --pre-encoded
 
@@ -29,7 +29,7 @@
       help_text: |
         Path to a JSON or YAML file containing a valid authorized view protobuf.
 
-        The 'name' field is ignored. The name is deduced from the other command line arguments.
+        The `name` field is ignored. The name is deduced from the other command line arguments.
 
         Example:
         {

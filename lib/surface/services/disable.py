@@ -15,10 +15,6 @@
 
 """services disable command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -150,9 +146,7 @@ class DisableAlpha(base.SilentCommand):
             f' command to wait for its completion:\n {cmd}'
         )
         continue
-      op = services_util.WaitOperation(
-          op.name, serviceusage.GetOperationV2Alpha
-      )
+      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
 
       if args.validate_only:
         services_util.PrintOperation(op)

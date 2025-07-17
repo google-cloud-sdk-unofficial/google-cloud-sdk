@@ -501,6 +501,12 @@ def ParseCreateOptionsBase(
       enable_fleet=get_default('enable_fleet'),
       membership_type=get_default('membership_type'),
       enable_secret_manager=get_default('enable_secret_manager'),
+      enable_secret_manager_rotation=get_default(
+          'enable_secret_manager_rotation'
+      ),
+      secret_manager_rotation_interval=get_default(
+          'secret_manager_rotation_interval'
+      ),
       enable_cilium_clusterwide_network_policy=get_default(
           'enable_cilium_clusterwide_network_policy'
       ),
@@ -557,6 +563,7 @@ def ParseCreateOptionsBase(
       boot_disk_provisioned_throughput=get_default(
           'boot_disk_provisioned_throughput'
       ),
+      network_tier=get_default('network_tier'),
   )
 
 GA = 'ga'
@@ -769,7 +776,7 @@ flags_to_add = {
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
-            p, release_track=base.ReleaseTrack.GA
+            p, hidden=True
         ),
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
@@ -800,11 +807,12 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
-        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
+        'networkTier': flags.AddNetworkTierFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -972,9 +980,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
-            p, release_track=base.ReleaseTrack.BETA
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -999,11 +1005,12 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
-        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
+        'networkTier': flags.AddNetworkTierFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1124,7 +1131,9 @@ flags_to_add = {
         'spot': flags.AddSpotFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
         'securityprofile': flags.AddSecurityProfileForCreateFlags,
-        'stacktype': flags.AddStackTypeFlag,
+        'stacktype': lambda p: flags.AddStackTypeFlag(
+            p, release_track=base.ReleaseTrack.ALPHA
+        ),
         'storagePools': flags.AddStoragePoolsFlag,
         'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
         'dataCacheCount': flags.AddDataCacheCountFlag,
@@ -1177,9 +1186,7 @@ flags_to_add = {
         'enableFqdnNetworkPolicy': flags.AddEnableFqdnNetworkPolicyFlag,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
-            p, release_track=base.ReleaseTrack.ALPHA
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1204,11 +1211,12 @@ flags_to_add = {
         'anonymousAuthenticationConfig': (
             flags.AddAnonymousAuthenticationConfigFlag
         ),
-        'enableAutoIpam': lambda p: flags.AddAutoIpamFlag(p, hidden=True),
+        'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
+        'networkTier': flags.AddNetworkTierFlag,
     },
 }
 

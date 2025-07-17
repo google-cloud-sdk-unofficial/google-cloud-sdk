@@ -67,6 +67,7 @@ auto_flags = [
     'enableK8sTokensViaDns',
     'enableDefaultComputeClass',
     'enableK8sCertsViaDns',
+    'membershipType',
 ]
 
 # Change default flag values in create-auto
@@ -95,8 +96,8 @@ def AddAutoFlags(parser, release_track):
   flags.AddAutoprovisioningResourceManagerTagsCreate(parser)
   flags.AddAdditiveVPCScopeFlags(parser)
   flags.AddIPAliasRelatedFlags(parser, autopilot=True)
-  flags.AddEnableConfidentialNodesFlag(parser, hidden=True)
-  flags.AddEnableLustreCSIDriverFlag(parser, hidden=True)
+  flags.AddEnableConfidentialNodesFlag(parser)
+  flags.AddEnableLustreCSIDriverFlag(parser, hidden=False)
   flags.AddEnableRayOperatorFlag(parser, hidden=False)
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
@@ -107,7 +108,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddClusterTierFlag(parser)
   flags.AddKubecontextOverrideFlag(parser)
   flags.AddAnonymousAuthenticationConfigFlag(parser)
-  flags.AddEnableLegacyLustrePortFlag(parser, hidden=True)
+  flags.AddEnableLegacyLustrePortFlag(parser, hidden=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

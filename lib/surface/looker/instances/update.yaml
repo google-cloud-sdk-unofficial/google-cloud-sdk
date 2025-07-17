@@ -35,6 +35,17 @@
       type: long
       help_text: |
         The Looker Studio Pro project number to be linked.
+    # Class Type for PD SSD
+    - arg_name: class-type
+      required: false
+      api_field: instance.classType
+      help_text: |
+        The class type of the Looker instance.
+      choices:
+      - arg_value: r1
+        enum_value: R1
+      - arg_value: p1
+        enum_value: P1
     # Group for Maintanence Windows
     - group:
         required: false
@@ -237,17 +248,25 @@
               help_text: |
                 Service attachments representing egress connections for the Looker instance.
                 This flag can be repeated.
-                (Example: --psc-service-attachment domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa" --psc-service-attachments domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa")
+                (Example: --psc-service-attachment domain="mydomain.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa" --psc-service-attachments domain="mydomain2.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa2")
+
+                You can also assign multiple domains to a single service attachment.
+                (Example: --psc-service-attachment multiple-domains="mydomain.com;mydomain2.com",attachment="projects/my-project/regions/us-east1/serviceAttachments/sa")
               type:
                 arg_dict:
                   flatten: false
                   spec:
                   - api_field: localFqdn
                     arg_name: domain
+                    required: false
                     type: str
                   - api_field: targetServiceAttachmentUri
                     arg_name: attachment
                     type: str
+                  - api_field: localFqdns
+                    required: false
+                    arg_name: multiple-domains
+                    type: 'googlecloudsdk.calliope.arg_parsers:ArgList:custom_delim_char=;'
             - arg_name: clear-psc-service-attachments
               action: store_true
               help_text: |

@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for describing reservation sub blocks."""
+"""Command for describing reservation sub-blocks."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,7 +30,7 @@ from googlecloudsdk.command_lib.compute.reservations.sub_blocks import flags
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
-  """Describe a Compute Engine reservation sub block."""
+  """Describe a Compute Engine reservation sub-block."""
 
   @staticmethod
   def Args(parser):
@@ -67,8 +67,8 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'EXAMPLES':
         """\
-    To describe a reservation sub block in reservation exr1 in my-zone
-    with block name my-block and sub block name my-sub-block, run:
+    To describe a reservation sub-block in reservation exr1 in my-zone
+    with block name my-block and sub-block name my-sub-block, run:
 
       $ {command} exr1 --zone=my-zone --block-name=my-block --sub-block-name=my-sub-block
     """,

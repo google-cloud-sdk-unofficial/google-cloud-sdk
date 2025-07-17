@@ -360,6 +360,7 @@ class BetaDeploy(Deploy):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
@@ -373,7 +374,7 @@ class AlphaDeploy(BetaDeploy):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=True)
+    flags.GpuZonalRedundancyFlag(parser, hidden=False)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)

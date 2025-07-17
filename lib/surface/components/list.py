@@ -110,11 +110,11 @@ class List(base.ListCommand):
     latest_version_string = ('' if self._latest_version is None
                              else ' [{}]'.format(self._latest_version))
     log.status.write("""\
-To install or remove components at your current SDK version [{current}], run:
+To install or remove components at your current Google Cloud CLI version [{current}], run:
   $ gcloud components install COMPONENT_ID
   $ gcloud components remove COMPONENT_ID
 
-To update your SDK installation to the latest version{latest}, run:
+To update your Google Cloud CLI installation to the latest version{latest}, run:
   $ gcloud components update
 
 """.format(current=self._current_version, latest=latest_version_string))

@@ -28,7 +28,7 @@
           --display-name="My Workforce Pool Provider" \
           --description="My workforce pool provider description." \
           --disabled \
-          --detailed_audit_logging \
+          --detailed-audit-logging \
           --attribute-mapping="google.subject=assertion.sub" \
           --attribute-condition="true" \
           --client-id="client-id" \

@@ -47,6 +47,7 @@ class Create(base.CreateCommand):
     flags.AddLoggingConfigArg(
         parser, 'The logging config for the Google API source.'
     )
+    flags.AddWideScopeSubscriptionArg(parser, with_clear=False)
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -72,6 +73,10 @@ class Create(base.CreateCommand):
             args.logging_config,
             args.crypto_key,
             labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
+            args.organization_subscription
+            if args.IsSpecified('organization_subscription')
+            else None,
+            args.project_subscriptions,
         ),
     )
 

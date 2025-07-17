@@ -260,6 +260,35 @@
           repeated: true
           help_text: |-
             The list of allowlisted IP addresses for the Autonomous Database.
+        - group:
+            api_field: autonomousDatabase.properties.encryptionKey
+            required: false
+            help_text: |-
+              The encryption key used to encrypt the Autonomous Database.
+            params:
+            - arg_name: encryption-key-provider
+              api_field: autonomousDatabase.properties.encryptionKey.provider
+              required: false
+              help_text: |-
+                The provider of the encryption key.
+              choices:
+              - arg_value: google-managed
+                enum_value: GOOGLE_MANAGED
+                help_text: |-
+                  Google Managed KMS key, if selected, please provide the KMS key name.
+              - arg_value: oracle-managed
+                enum_value: ORACLE_MANAGED
+                help_text: |-
+                  Oracle Managed.
+            - arg_name: encryption-key-kms
+              api_field: autonomousDatabase.properties.encryptionKey.kmsKey
+              required: false
+              repeated: false
+              help_text: |-
+                The KMS key used to encrypt the Autonomous Database.
+                This field is required if the provider is GOOGLE_MANAGED.
+                The name of the KMS key resource in the following format:
+                `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false

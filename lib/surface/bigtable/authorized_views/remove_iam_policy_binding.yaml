@@ -7,16 +7,16 @@
       a role, and an optional condition.
 
     examples: |
-      To remove an IAM policy binding for the role of 'roles/editor' for the user 'test-user@gmail.com'
-      with authorized view 'my-authorized-view' in instance 'my-instance' and table 'my-table', run:
+      To remove an IAM policy binding for the role of `roles/editor` for the user `test-user@gmail.com`
+      with authorized view `my-authorized-view` in instance `my-instance` and table `my-table`, run:
 
-        $ {command} my-authorized-view --instance='my-instance' --table='my-table' --member='user:test-user@gmail.com' --role='roles/editor'
+        $ {command} my-authorized-view --instance=`my-instance` --table=`my-table` --member=`user:test-user@gmail.com` --role=`roles/editor`
 
       To remove an IAM policy binding which expires at the end of the year 2020 for the role of
-      'roles/bigtable.admin' and the user 'test-user@gmail.com' with authorized view 'my-authorized-view'
-      in instance 'my-instance' and cluster 'my-cluster', run:
+      `roles/bigtable.admin` and the user `test-user@gmail.com` with authorized view `my-authorized-view`
+      in instance `my-instance` and cluster `my-cluster`, run:
 
-        $ {command} my-authorized-view --instance='my-instance' --table='my-table' --member='user:test-user@gmail.com' --role='roles/bigtable.admin' --condition='expression=request.time < timestamp("2021-01-01T00:00:00Z"),title=expires_end_of_2020,description=Expires at midnight on 2020-12-31'
+        $ {command} my-authorized-view --instance=`my-instance` --table=`my-table` --member=`user:test-user@gmail.com` --role=`roles/bigtable.admin` --condition=`expression=request.time < timestamp("2021-01-01T00:00:00Z"),title=expires_end_of_2020,description=Expires at midnight on 2020-12-31`
 
       See https://cloud.google.com/iam/docs/managing-policies for details of
       policy role and member types.

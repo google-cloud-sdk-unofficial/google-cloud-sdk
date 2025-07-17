@@ -116,6 +116,17 @@
           OAuth Application Credentials - Looker Instance OAuth login settings. Setup an OAuth
           app that will allow users to authenticate and access the instance. For more
           information see: https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred
+    # Class Type for PD SSD
+    - arg_name: class-type
+      required: false
+      api_field: instance.classType
+      help_text: |
+        The class type of the Looker instance.
+      choices:
+      - arg_value: r1
+        enum_value: R1
+      - arg_value: p1
+        enum_value: P1
     # Group for Private IP
     - group:
         required: false

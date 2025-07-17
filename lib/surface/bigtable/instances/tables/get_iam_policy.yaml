@@ -5,9 +5,9 @@ help_text:
     Get an IAM policy on a Cloud Bigtable table.
 
   examples: |
-    To get the IAM policy on the table 'my-table' in instance 'my-instance', run:
+    To get the IAM policy on the table `my-table` in instance `my-instance`, run:
 
-      $ {command} my-table --instance='my-instance'
+      $ {command} my-table --instance=`my-instance`
 
     See https://cloud.google.com/iam/docs/managing-policies for more information.
 

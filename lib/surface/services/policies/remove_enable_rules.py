@@ -154,9 +154,7 @@ class RemovedEnableRules(base.SilentCommand):
             f'completion:\n {cmd}'
         )
         return
-      op = services_util.WaitOperation(
-          op.name, serviceusage.GetOperationV2Alpha
-      )
+      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
       if args.validate_only:
         services_util.PrintOperation(op)
       else:

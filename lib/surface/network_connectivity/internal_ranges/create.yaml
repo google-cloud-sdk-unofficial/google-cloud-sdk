@@ -70,7 +70,7 @@
                     This can be used to exclude specific ranges that are already intended to
                     have some other use.
                   type: arg_list
-                - arg_name: allocation_strategy
+                - arg_name: allocation-strategy
                   api_field: internalRange.allocationOptions.allocationStrategy
                   help_text: |
                     Allocation strategy to be used when searching for a free range.
@@ -100,12 +100,12 @@
                     help_text: |
                       Pick the smallest but fitting available range. This deterministic strategy
                       minimizes fragmentation of the address space.
-                - arg_name: first_available_ranges_lookup_size
+                - arg_name: first-available-ranges-lookup-size
                   api_field: internalRange.allocationOptions.firstAvailableRangesLookupSize
                   help_text: |
                     The number of ranges to be considered when using the
                     RANDOM_FIRST_N_AVAILABLE allocation strategy. This is only allowed when
-                    allocation_strategy is set to RANDOM_FIRST_N_AVAILABLE.
+                    allocation-strategy is set to RANDOM_FIRST_N_AVAILABLE.
     - arg_name: labels
       api_field: internalRange.labels.additionalProperties
       metavar: KEY=VALUE

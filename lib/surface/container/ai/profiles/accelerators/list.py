@@ -17,14 +17,25 @@
 from googlecloudsdk.api_lib.ai.recommender import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
+from googlecloudsdk.command_lib.run.printers import profiles_printer
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
+from googlecloudsdk.core.resource import resource_printer
 
 _EXAMPLES = """
 To list compatible accelerator profiles for a model, run:
 
 $ {command} --model=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
 """
+
+
+def decimal_to_amount(decimal_value):
+  """Converts a decimal representation to an Amount proto."""
+
+  units = int(decimal_value)
+  nanos = int((decimal_value - units) * 1e9)
+
+  return (units, nanos)
 
 
 @base.DefaultUniverseOnly
@@ -80,17 +91,50 @@ class List(commands.List):
             " their highest throughput performance."
         ),
     )
+
     parser.add_argument(
-        "--format",
-        choices=["table", "yaml"],
-        default="table",
+        "--target-cost-per-million-output-tokens",
+        hidden=True,
+        type=float,
+        required=False,
         help=(
-            "The output format. Default is table, which displays select"
-            " information in a table format. Use --format=yaml to display all"
-            " details."
+            "The target cost per million output tokens to filter profiles by,"
+            " unit is 1 USD up to 5 decimal places."
+        ),
+    )
+    parser.add_argument(
+        "--target-cost-per-million-input-tokens",
+        hidden=True,
+        type=float,
+        required=False,
+        help=(
+            "The target cost per million input tokens to filter profiles by,"
+            " unit is 1 USD up to 5 decimal places."
+        ),
+    )
+    parser.add_argument(
+        "--pricing-model",
+        hidden=True,
+        required=False,
+        type=str,
+        help=(
+            "The pricing model to use to calculate token cost. Currently, this"
+            " supports on-demand, spot, 3-years-cud, 1-year-cud"
         ),
     )
 
+    parser.add_argument(
+        "--format",
+        type=str,
+        help="The format to use for the output. Default is table. yaml|table",
+    )
+
+    resource_printer.RegisterFormatter(
+        profiles_printer.PROFILES_PRINTER_FORMAT,
+        profiles_printer.ProfilePrinter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(profiles_printer.PROFILES_PRINTER_FORMAT)
     parser.display_info.AddFormat(
         "table("
         "acceleratorType,"
@@ -113,7 +157,28 @@ class List(commands.List):
           modelServerName=args.model_server,
           modelServerVersion=args.model_server_version,
           performanceRequirements_maxNtpotMilliseconds=args.max_ntpot_milliseconds,
+          performanceRequirements_cost_pricingModel=args.pricing_model,
       )
+      if args.target_cost_per_million_output_tokens:
+        units, nanos = decimal_to_amount(
+            args.target_cost_per_million_output_tokens
+        )
+        request.performanceRequirements_cost_costPerMillionNormalizedOutputTokens_units = (
+            units
+        )
+        request.performanceRequirements_cost_costPerMillionNormalizedOutputTokens_nanos = (
+            nanos
+        )
+      if args.target_cost_per_million_input_tokens:
+        units, nanos = decimal_to_amount(
+            args.target_cost_per_million_input_tokens
+        )
+        request.performanceRequirements_cost_costPerMillionInputTokens_units = (
+            units
+        )
+        request.performanceRequirements_cost_costPerMillionInputTokens_nanos = (
+            nanos
+        )
       response = client.accelerators.List(request)
       if response.acceleratorOptions:
         return response.acceleratorOptions

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command for listing reservation sub blocks."""
+"""Command for listing reservation sub-blocks."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,11 +31,11 @@ from googlecloudsdk.command_lib.compute.reservations.sub_blocks import flags
 DETAILED_HELP = {
     'DESCRIPTION':
         """\
-        {command} displays all Compute Engine reservation sub blocks in an extended reservation's block.
+        {command} displays all Compute Engine reservation sub-blocks in an extended reservation's block.
       """,
     'EXAMPLES':
         """\
-        To list all reservation sub blocks in an extended reservation's block my-block in table form,
+        To list all reservation sub-blocks in an extended reservation's block my-block in table form,
         run:
 
         $ {command} extended-reservation --block-name=my-block --zone=us-central1-a --project=my-project
@@ -51,7 +51,7 @@ DETAILED_HELP = {
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class List(base.ListCommand):
-  """List Compute Engine reservation sub blocks."""
+  """List Compute Engine reservation sub-blocks."""
 
   detailed_help = DETAILED_HELP
 
@@ -98,7 +98,7 @@ class List(base.ListCommand):
       args: the argparse arguments that this command was invoked with.
 
     Returns:
-      List of reservation sub blocks.
+      List of reservation sub-blocks.
     """
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return self._Run(args, holder)

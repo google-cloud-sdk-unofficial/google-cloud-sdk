@@ -44,7 +44,6 @@ def AddAudienceArg(parser):
            'Currently, only one audience can be specified.')
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class IdentityToken(base.DescribeCommand):

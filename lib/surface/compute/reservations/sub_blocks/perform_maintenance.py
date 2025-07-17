@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for performing maintenance on a reservation sub block."""
+"""Command for performing maintenance on a reservation sub-block."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,9 +27,10 @@ from googlecloudsdk.command_lib.compute.reservations.sub_blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class PerformMaintenance(base.UpdateCommand):
-  """Perform maintenance on a reservation sub block within a reservation."""
+  """Perform maintenance on a reservation sub-block."""
 
   @staticmethod
   def Args(parser):
@@ -65,8 +66,8 @@ class PerformMaintenance(base.UpdateCommand):
 PerformMaintenance.detailed_help = {
     'EXAMPLES':
         """\
-    To perform maintenance on a reservation sub block in reservation exr-1
-    in ZONE with block name block-1 and sub block name sub-block-1, run:
+    To perform maintenance on a reservation sub-block in reservation exr-1
+    in ZONE with block name block-1 and sub-block name sub-block-1, run:
 
       $ {command} exr-1 --zone=ZONE --block-name=block-1
           --sub-block-name=sub-block-1

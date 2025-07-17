@@ -136,5 +136,5 @@ class UpdateGA(_Update, base.Command):
     )  # Add all choices in update command
     sqlserver_flags.AddSourceUpdateFlag(parser)
     sqlserver_flags.AddCloudSqlProjectIdFlag(parser)
-    sqlserver_flags.AddDatabaseFlag(parser)
+    cp_flags.AddDatabaseFlag(parser)
     oracle_flags.AddDatabaseServiceFlag(parser, required=False)

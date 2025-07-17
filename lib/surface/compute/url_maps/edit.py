@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import io
+
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import property_selector
 from googlecloudsdk.calliope import base
@@ -39,10 +39,8 @@ import six
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Modify URL maps',
-      'DESCRIPTION':
-          """\
+      'brief': 'Modify URL maps',
+      'DESCRIPTION': """\
       *{command}* can be used to modify a URL map. The URL map
       resource is fetched from the server and presented in a text
       editor. After the file is saved and closed, this command will
@@ -55,8 +53,16 @@ def _DetailedHelp():
   }
 
 
-def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
-                           original_record, modifiable_record, args):
+def _ProcessEditedResource(
+    holder,
+    url_map_ref,
+    file_contents,
+    original_object,
+    original_record,
+    modifiable_record,
+    args,
+    enable_regional_backend_buckets=False,
+):
   """Returns an updated resource that was edited by the user."""
 
   # It's very important that we replace the characters of comment
@@ -67,15 +73,20 @@ def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
   # sure those numbers map back to what the user actually had in
   # front of him or her otherwise the errors will not be very
   # useful.
-  non_comment_lines = '\n'.join(' ' *
-                                len(line) if line.startswith('#') else line
-                                for line in file_contents.splitlines())
+  non_comment_lines = '\n'.join(
+      ' ' * len(line) if line.startswith('#') else line
+      for line in file_contents.splitlines()
+  )
 
   modified_record = base_classes.DeserializeValue(
-      non_comment_lines, args.format or Edit.DEFAULT_FORMAT)
+      non_comment_lines, args.format or Edit.DEFAULT_FORMAT
+  )
 
   reference_normalizer = property_selector.PropertySelector(
-      transformations=_GetReferenceNormalizers(holder.resources))
+      transformations=_GetReferenceNormalizers(
+          holder.resources, enable_regional_backend_buckets
+      )
+  )
   modified_record = reference_normalizer.Apply(modified_record)
 
   if modifiable_record == modified_record:
@@ -87,8 +98,9 @@ def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
     if fingerprint:
       modified_record['fingerprint'] = fingerprint
 
-    new_object = encoding.DictToMessage(modified_record,
-                                        holder.client.messages.UrlMap)
+    new_object = encoding.DictToMessage(
+        modified_record, holder.client.messages.UrlMap
+    )
 
   # If existing object is equal to the proposed object or if
   # there is no new object, then there is no work to be done, so we
@@ -97,10 +109,19 @@ def _ProcessEditedResource(holder, url_map_ref, file_contents, original_object,
     return [original_object]
 
   return holder.client.MakeRequests(
-      [_GetSetRequest(holder.client, url_map_ref, new_object)])
+      [_GetSetRequest(holder.client, url_map_ref, new_object)]
+  )
 
 
-def _EditResource(args, client, holder, original_object, url_map_ref, track):
+def _EditResource(
+    args,
+    client,
+    holder,
+    original_object,
+    url_map_ref,
+    track,
+    enable_regional_backend_buckets=False,
+):
   """Allows user to edit the URL Map."""
   original_record = encoding.MessageToDict(original_object)
 
@@ -117,8 +138,9 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
   )
   modifiable_record = field_selector.Apply(original_record)
 
-  buf = _BuildFileContents(args, client, modifiable_record, original_record,
-                           track)
+  buf = _BuildFileContents(
+      args, client, modifiable_record, original_record, track
+  )
   file_contents = buf.getvalue()
   while True:
     try:
@@ -126,12 +148,24 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
     except edit.NoSaveException:
       raise compute_exceptions.AbortedError('Edit aborted by user.')
     try:
-      resource_list = _ProcessEditedResource(holder, url_map_ref, file_contents,
-                                             original_object, original_record,
-                                             modifiable_record, args)
+      enable_regional_backend_buckets = track in ['alpha']
+      resource_list = _ProcessEditedResource(
+          holder,
+          url_map_ref,
+          file_contents,
+          original_object,
+          original_record,
+          modifiable_record,
+          args,
+          enable_regional_backend_buckets,
+      )
       break
-    except (ValueError, yaml.YAMLParseError, messages.ValidationError,
-            exceptions.ToolException) as e:
+    except (
+        ValueError,
+        yaml.YAMLParseError,
+        messages.ValidationError,
+        exceptions.ToolException,
+    ) as e:
       message = getattr(e, 'message', six.text_type(e))
 
       if isinstance(e, exceptions.ToolException):
@@ -139,11 +173,13 @@ def _EditResource(args, client, holder, original_object, url_map_ref, track):
       else:
         problem_type = 'parsing'
 
-      message = ('There was a problem {0} your changes: {1}'.format(
-          problem_type, message))
+      message = 'There was a problem {0} your changes: {1}'.format(
+          problem_type, message
+      )
       if not console_io.PromptContinue(
           message=message,
-          prompt_string='Would you like to edit the resource again?'):
+          prompt_string='Would you like to edit the resource again?',
+      ):
         raise compute_exceptions.AbortedError('Edit aborted by user.')
   return resource_list
 
@@ -159,16 +195,20 @@ def _BuildFileContents(args, client, modifiable_record, original_record, track):
     buf.write('\n')
   buf.write('\n')
   buf.write(
-      base_classes.SerializeDict(modifiable_record, args.format or
-                                 Edit.DEFAULT_FORMAT))
+      base_classes.SerializeDict(
+          modifiable_record, args.format or Edit.DEFAULT_FORMAT
+      )
+  )
   buf.write('\n')
   example = base_classes.SerializeDict(
-      encoding.MessageToDict(_GetExampleResource(client, track)), args.format or
-      Edit.DEFAULT_FORMAT)
+      encoding.MessageToDict(_GetExampleResource(client, track)),
+      args.format or Edit.DEFAULT_FORMAT,
+  )
   base_classes.WriteResourceInCommentBlock(example, 'Example resource:', buf)
   buf.write('#\n')
-  original = base_classes.SerializeDict(original_record, args.format or
-                                        Edit.DEFAULT_FORMAT)
+  original = base_classes.SerializeDict(
+      original_record, args.format or Edit.DEFAULT_FORMAT
+  )
   base_classes.WriteResourceInCommentBlock(original, 'Original resource:', buf)
   return buf
 
@@ -177,14 +217,14 @@ def _GetExampleResource(client, track):
   """Gets an example URL Map."""
   backend_service_uri_prefix = (
       'https://compute.googleapis.com/compute/%(track)s/projects/'
-      'my-project/global/backendServices/' % {
-          'track': track
-      })
+      'my-project/global/backendServices/'
+      % {'track': track}
+  )
   backend_bucket_uri_prefix = (
       'https://compute.googleapis.com/compute/%(track)s/projects/'
-      'my-project/global/backendBuckets/' % {
-          'track': track
-      })
+      'my-project/global/backendBuckets/'
+      % {'track': track}
+  )
   return client.messages.UrlMap(
       name='site-map',
       defaultService=backend_service_uri_prefix + 'default-service',
@@ -261,7 +301,9 @@ def _GetExampleResource(client, track):
   )
 
 
-def _GetReferenceNormalizers(resource_registry):
+def _GetReferenceNormalizers(
+    resource_registry, enable_regional_backend_buckets=False
+):
   """Gets normalizers that translate short names to URIs."""
 
   def MakeReferenceNormalizer(field_name, allowed_collections):
@@ -274,20 +316,33 @@ def _GetReferenceNormalizers(resource_registry):
       except resources.UnknownCollectionException:
         raise InvalidResourceError(
             '[{field_name}] must be referenced using URIs.'.format(
-                field_name=field_name))
+                field_name=field_name
+            )
+        )
 
       if value_ref.Collection() not in allowed_collections:
         raise InvalidResourceError(
             'Invalid [{field_name}] reference: [{value}].'.format(
-                field_name=field_name, value=reference))
+                field_name=field_name, value=reference
+            )
+        )
       return value_ref.SelfLink()
 
     return NormalizeReference
 
-  allowed_collections = [
-      'compute.backendServices', 'compute.backendBuckets',
-      'compute.regionBackendServices'
-  ]
+  if enable_regional_backend_buckets:
+    allowed_collections = [
+        'compute.backendServices',
+        'compute.backendBuckets',
+        'compute.regionBackendServices',
+        'compute.regionBackendBuckets',
+    ]
+  else:
+    allowed_collections = [
+        'compute.backendServices',
+        'compute.backendBuckets',
+        'compute.regionBackendServices',
+    ]
   return [
       (
           'defaultService',
@@ -313,40 +368,59 @@ def _GetReferenceNormalizers(resource_registry):
 
 
 def _GetGetRequest(client, url_map_ref):
+  """Gets the request for getting the URL Map."""
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
-    return (client.apitools_client.regionUrlMaps, 'Get',
-            client.messages.ComputeRegionUrlMapsGetRequest(
-                urlMap=url_map_ref.Name(),
-                project=url_map_ref.project,
-                region=url_map_ref.region))
+    return (
+        client.apitools_client.regionUrlMaps,
+        'Get',
+        client.messages.ComputeRegionUrlMapsGetRequest(
+            urlMap=url_map_ref.Name(),
+            project=url_map_ref.project,
+            region=url_map_ref.region,
+        ),
+    )
 
-  return (client.apitools_client.urlMaps, 'Get',
-          client.messages.ComputeUrlMapsGetRequest(**url_map_ref.AsDict()))
+  return (
+      client.apitools_client.urlMaps,
+      'Get',
+      client.messages.ComputeUrlMapsGetRequest(**url_map_ref.AsDict()),
+  )
 
 
 def _GetSetRequest(client, url_map_ref, replacement):
+  """Gets the request for setting the URL Map."""
   if url_maps_utils.IsRegionalUrlMapRef(url_map_ref):
-    return (client.apitools_client.regionUrlMaps, 'Update',
-            client.messages.ComputeRegionUrlMapsUpdateRequest(
-                urlMap=url_map_ref.Name(),
-                urlMapResource=replacement,
-                project=url_map_ref.project,
-                region=url_map_ref.region))
+    return (
+        client.apitools_client.regionUrlMaps,
+        'Update',
+        client.messages.ComputeRegionUrlMapsUpdateRequest(
+            urlMap=url_map_ref.Name(),
+            urlMapResource=replacement,
+            project=url_map_ref.project,
+            region=url_map_ref.region,
+        ),
+    )
 
-  return (client.apitools_client.urlMaps, 'Update',
-          client.messages.ComputeUrlMapsUpdateRequest(
-              urlMapResource=replacement, **url_map_ref.AsDict()))
+  return (
+      client.apitools_client.urlMaps,
+      'Update',
+      client.messages.ComputeUrlMapsUpdateRequest(
+          urlMapResource=replacement, **url_map_ref.AsDict()
+      ),
+  )
 
 
 def _Run(args, holder, track, url_map_arg):
   """Issues requests necessary to edit URL maps."""
   client = holder.client
   url_map_ref = url_map_arg.ResolveAsResource(
-      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+      args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+  )
   get_request = _GetGetRequest(client, url_map_ref)
   objects = client.MakeRequests([get_request])
-  resource_list = _EditResource(args, client, holder, objects[0], url_map_ref,
-                                track)
+  resource_list = _EditResource(
+      args, client, holder, objects[0], url_map_ref, track
+  )
   for resource in resource_list:
     yield resource
 

@@ -4,8 +4,8 @@
     brief: Describe a Cloud Bigtable authorized view.
     description: Describe a Cloud Bigtable authorized view.
     examples: |
-      To describe the authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table':
+      To describe the authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table
 

@@ -30,10 +30,8 @@ from googlecloudsdk.command_lib.compute.url_maps import url_maps_utils
 
 def _DetailedHelp():
   return {
-      'brief':
-          'Create a URL map.',
-      'DESCRIPTION':
-          """
+      'brief': 'Create a URL map.',
+      'DESCRIPTION': """
       *{command}* is used to create URL maps which map HTTP and
       HTTPS request URLs to backend services and backend buckets.
       Mappings are done using a longest-match strategy.
@@ -53,8 +51,7 @@ def _DetailedHelp():
       or by using `gcloud compute url-maps add-path-matcher`
       and `gcloud compute url-maps add-host-rule`.
       """,
-      'EXAMPLES':
-          """
+      'EXAMPLES': """
         To create a global URL map with a default service, run:
 
         $ {command} URL_MAP_NAME --default-service=BACKEND_SERVICE_NAME
@@ -73,19 +70,26 @@ def _DetailedHelp():
 def _Args(parser):
   """Common arguments to create commands for each release track."""
   parser.add_argument(
-      '--description', help='An optional, textual description for the URL map.')
+      '--description', help='An optional, textual description for the URL map.'
+  )
 
   group = parser.add_mutually_exclusive_group(required=True)
   group.add_argument(
       '--default-service',
-      help=('A backend service that will be used for requests for which this '
-            'URL map has no mappings. Exactly one of --default-service or '
-            '--default-backend-bucket is required.'))
+      help=(
+          'A backend service that will be used for requests for which this '
+          'URL map has no mappings. Exactly one of --default-service or '
+          '--default-backend-bucket is required.'
+      ),
+  )
   group.add_argument(
       '--default-backend-bucket',
-      help=('A backend bucket that will be used for requests for which this '
-            'URL map has no mappings. Exactly one of --default-service or '
-            '--default-backend-bucket is required.'))
+      help=(
+          'A backend bucket that will be used for requests for which this '
+          'URL map has no mappings. Exactly one of --default-service or '
+          '--default-backend-bucket is required.'
+      ),
+  )
   parser.display_info.AddCacheUpdater(flags.UrlMapsCompleter)
 
 
@@ -95,9 +99,12 @@ def _MakeGlobalRequest(args, url_map_ref, default_backend_uri, client):
       urlMap=client.messages.UrlMap(
           defaultService=default_backend_uri,
           description=args.description,
-          name=url_map_ref.Name()))
-  return client.MakeRequests([(client.apitools_client.urlMaps, 'Insert',
-                               request)])
+          name=url_map_ref.Name(),
+      ),
+  )
+  return client.MakeRequests(
+      [(client.apitools_client.urlMaps, 'Insert', request)]
+  )
 
 
 def _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client):
@@ -106,13 +113,23 @@ def _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client):
       urlMap=client.messages.UrlMap(
           defaultService=default_backend_uri,
           description=args.description,
-          name=url_map_ref.Name()),
-      region=url_map_ref.region)
-  return client.MakeRequests([(client.apitools_client.regionUrlMaps, 'Insert',
-                               request)])
+          name=url_map_ref.Name(),
+      ),
+      region=url_map_ref.region,
+  )
+  return client.MakeRequests(
+      [(client.apitools_client.regionUrlMaps, 'Insert', request)]
+  )
 
 
-def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
+def _Run(
+    args,
+    holder,
+    backend_bucket_arg,
+    backend_service_arg,
+    url_map_arg,
+    supports_regional_backend_bucket=False,
+):
   """Issues requests necessary to create a Url Map."""
   client = holder.client
 
@@ -120,14 +137,22 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
       args,
       holder.resources,
       default_scope=compute_scope.ScopeEnum.GLOBAL,
-      scope_lister=compute_flags.GetDefaultScopeLister(client))
+      scope_lister=compute_flags.GetDefaultScopeLister(client),
+  )
 
   if args.default_service:
     default_backend_uri = url_maps_utils.ResolveUrlMapDefaultService(
-        args, backend_service_arg, url_map_ref, holder.resources).SelfLink()
+        args, backend_service_arg, url_map_ref, holder.resources
+    ).SelfLink()
   else:
-    default_backend_uri = backend_bucket_arg.ResolveAsResource(
-        args, holder.resources).SelfLink()
+    if supports_regional_backend_bucket:
+      default_backend_uri = url_maps_utils.ResolveUrlMapDefaultBackendBucket(
+          args, backend_bucket_arg, url_map_ref, holder.resources
+      ).SelfLink()
+    else:
+      default_backend_uri = backend_bucket_arg.ResolveAsResource(
+          args, holder.resources
+      ).SelfLink()
 
   if url_maps_utils.IsGlobalUrlMapRef(url_map_ref):
     return _MakeGlobalRequest(args, url_map_ref, default_backend_uri, client)
@@ -135,11 +160,12 @@ def _Run(args, holder, backend_bucket_arg, backend_service_arg, url_map_arg):
     return _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a URL map."""
 
+  _supports_regional_backend_bucket = False
   detailed_help = _DetailedHelp()
   BACKEND_BUCKET_ARG = None
   BACKEND_SERVICE_ARG = None
@@ -148,15 +174,38 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    cls.BACKEND_BUCKET_ARG = (
-        backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False))
+    if cls._supports_regional_backend_bucket:
+      cls.BACKEND_BUCKET_ARG = (
+          backend_bucket_flags.RegionSupportingBackendBucketArgumentForUrlMap(
+              required=False
+          )
+      )
+    else:
+      cls.BACKEND_BUCKET_ARG = (
+          backend_bucket_flags.BackendBucketArgumentForUrlMap(required=False)
+      )
     cls.BACKEND_SERVICE_ARG = (
-        backend_service_flags.BackendServiceArgumentForUrlMap(required=False))
+        backend_service_flags.BackendServiceArgumentForUrlMap(required=False)
+    )
     cls.URL_MAP_ARG = flags.UrlMapArgument()
     cls.URL_MAP_ARG.AddArgument(parser, operation_type='create')
     _Args(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self.BACKEND_BUCKET_ARG, self.BACKEND_SERVICE_ARG,
-                self.URL_MAP_ARG)
+    return _Run(
+        args,
+        holder,
+        self.BACKEND_BUCKET_ARG,
+        self.BACKEND_SERVICE_ARG,
+        self.URL_MAP_ARG,
+        self._supports_regional_backend_bucket,
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class CreateAlpha(Create):
+  """Create a URL map."""
+
+  _supports_regional_backend_bucket = True

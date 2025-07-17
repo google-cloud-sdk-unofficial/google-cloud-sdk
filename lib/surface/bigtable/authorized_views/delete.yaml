@@ -4,8 +4,8 @@
     brief: Delete a Cloud Bigtable authorized view.
     description: Delete new Cloud Bigtable authorized view.
     examples: |
-      To delete the authorized view 'my-authorized-view' in instance 'my-instance' and table
-      'my-table':
+      To delete the authorized view `my-authorized-view` in instance `my-instance` and table
+      `my-table`:
 
         $ {command} my-authorized-view --instance=test-instance --table=test-table
 

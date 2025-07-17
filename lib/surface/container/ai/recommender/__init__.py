@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.projects import util
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command group is deprecated. Use `gcloud alpha '
         'container ai profiles` '

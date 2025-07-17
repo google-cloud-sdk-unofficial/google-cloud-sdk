@@ -35,8 +35,10 @@ from googlecloudsdk.command_lib.transfer import creds_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import gce_cache
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 from googlecloudsdk.core.util import platforms
 from oauth2client import client as oauth2_client
+
 
 COUNT_FLAG_HELP_TEXT = """
 Specify the number of agents to install on your current machine.
@@ -135,8 +137,12 @@ CONTAINER_MANAGER_INSTALLATION_GUIDE_URL_MAP = {
             platforms.OperatingSystem.LINUX: (
                 'https://docs.docker.com/engine/install/'
             ),
-            platforms.OperatingSystem.WINDOWS: 'https://docs.docker.com/engine/install/binaries/#install-server-and-client-binaries-on-windows',
-            platforms.OperatingSystem.MACOSX: 'https://docs.docker.com/engine/install/binaries/#install-client-binaries-on-macos',
+            platforms.OperatingSystem.WINDOWS: (
+                'https://docs.docker.com/engine/install/binaries/#install-server-and-client-binaries-on-windows'
+            ),
+            platforms.OperatingSystem.MACOSX: (
+                'https://docs.docker.com/engine/install/binaries/#install-client-binaries-on-macos'
+            ),
         },
     ),
     agents_util.ContainerManager.PODMAN: collections.defaultdict(
@@ -390,8 +396,18 @@ def _get_container_run_command(
     base_container_command.append('--env')
     base_container_command.append('HTTPS_PROXY={}'.format(args.proxy))
 
+  # default docker_uri_prefix is gcr.io/
+  docker_uri_prefix = 'gcr.io/'
+
+  if not properties.IsDefaultUniverse():
+    universe_descriptor_obj = universe_descriptor.GetUniverseDomainDescriptor()
+    docker_uri_prefix = (
+        f'docker.{universe_descriptor_obj.artifact_registry_domain}'
+        f'/{universe_descriptor_obj.project_prefix}/cloud-ingest/'
+    )
+
   agent_args = [
-      'gcr.io/cloud-ingest/tsop-agent:latest',
+      f'{docker_uri_prefix}cloud-ingest/tsop-agent:latest',
       '--agent-pool={}'.format(args.pool),
       '--hostname={}'.format(socket.gethostname()),
       '--log-dir={}'.format(expanded_logs_directory_path),

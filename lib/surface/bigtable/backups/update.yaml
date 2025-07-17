@@ -4,22 +4,22 @@ help_text:
   description: |
     Update a backup, only supported for the following fields: --expiration-date and --retention-period.
   examples: |
-    To update the expire time of backup 'BACKUP_NAME' to 7 days from now, run:
+    To update the expire time of backup `BACKUP_NAME` to 7 days from now, run:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
       --retention-period=7d
 
-    To update the hot-to-standard time of backup 'BACKUP_NAME' to '2019-03-31T10:49:41Z', run:
+    To update the hot-to-standard time of backup `BACKUP_NAME` to `2019-03-31T10:49:41Z`, run:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
       --hot-to-standard-time=2019-03-31T10:49:41Z
 
-    To update the hot-to-standard time of backup 'BACKUP_NAME' to 7 days from now, run:
+    To update the hot-to-standard time of backup `BACKUP_NAME` to 7 days from now, run:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
       --hot-to-standard-time=+P7d
 
-    To clear the hot-to-standard time of backup 'BACKUP_NAME', run:
+    To clear the hot-to-standard time of backup `BACKUP_NAME`, run:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
       --hot-to-standard-time=''

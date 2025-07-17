@@ -33,10 +33,23 @@ SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
 SUBJECTS_RESOURCE_PATH = '/subjects/'
 CONTEXTS_RESOURCE_PATH = '/contexts/'
 
+SUBJECT_FORMAT = """
+    table(
+      subject:format='yaml(compatibility, subject.compatibility, mode, subject.mode, name, subject.name)'
+    )
+"""
+
+
+class _Results(object):
+  """Encapsulate results into a single object to fit the Run() model."""
+
+  def __init__(self, subject):
+    self.subject = subject
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-class Describe(base.UpdateCommand):
+class Describe(base.DescribeCommand):
   """Describe a subject in a schema registry with all of its fields.
 
   ## EXAMPLES
@@ -50,6 +63,8 @@ class Describe(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
+
+    parser.display_info.AddFormat(SUBJECT_FORMAT)
 
     parser.add_argument(
         '--context',
@@ -68,8 +83,8 @@ class Describe(base.UpdateCommand):
     Returns:
       The subject.
     """
-    message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
+    message = client.MESSAGES_MODULE
 
     project_id = util.ParseProject(args.project)
     location = args.location
@@ -93,9 +108,7 @@ class Describe(base.UpdateCommand):
           f'{schema_registry_resource}{CONTEXTS_RESOURCE_PATH}{args.context}'
       )
 
-    log.status.Print(
-        'Describing subject: {}'.format(subject_resource_path) + '\n'
-    )
+    log.status.Print('Describing subject [{}].'.format(subject) + '\n')
 
     subject_mode_request = (
         message.ManagedkafkaProjectsLocationsSchemaRegistriesModeGetRequest(
@@ -110,8 +123,6 @@ class Describe(base.UpdateCommand):
 
     mode = 'None'
     compatibility = 'None'
-    mode_from_registry = False
-    compatibility_from_registry = False
     try:
       subject_mode = client.projects_locations_schemaRegistries_mode.Get(
           request=subject_mode_request
@@ -135,7 +146,7 @@ class Describe(base.UpdateCommand):
             )
         )
         mode = util.ParseMode(schema_registry_mode.mode)
-        mode_from_registry = True
+        mode = f'{mode} (from registry)'
       except apitools_exceptions.HttpNotFoundError as inner_e:
         # Should not happen.
         raise exceptions.HttpException(inner_e)
@@ -158,7 +169,7 @@ class Describe(base.UpdateCommand):
         compatibility = util.ParseCompatibility(
             schema_registry_config.compatibility
         )
-        compatibility_from_registry = True
+        compatibility = f'{compatibility} (from registry)'
       except apitools_exceptions.HttpNotFoundError as inner_e:
         # Should not happen.
         raise exceptions.HttpException(inner_e)
@@ -169,23 +180,4 @@ class Describe(base.UpdateCommand):
         'compatibility': compatibility,
     }
 
-    log.status.Print('name: {}'.format(verbose_subject['name']))
-    if mode_from_registry:
-      log.status.Print(
-          'mode: {} (registry default)'.format(verbose_subject['mode'])
-      )
-    else:
-      log.status.Print('mode: {}'.format(verbose_subject['mode']))
-    log.status.Print('config:')
-    if compatibility_from_registry:
-      log.status.Print(
-          '  - compatibility: {} (registry default)'.format(
-              verbose_subject['compatibility']
-          )
-      )
-    else:
-      log.status.Print(
-          '  - compatibility: {}'.format(verbose_subject['compatibility'])
-      )
-
-    return verbose_subject
+    return _Results(verbose_subject)

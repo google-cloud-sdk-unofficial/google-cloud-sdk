@@ -3,32 +3,32 @@
     brief: Creates a backup of a Cloud Bigtable table.
     description: Creates a backup of a Cloud Bigtable table.
     examples: |
-      To create a backup 'BACKUP_NAME' asyncronously from table 'TABLE_NAME' which expires at
-      '2019-03-30T10:49:41Z', run:
+      To create a backup `BACKUP_NAME` asyncronously from table `TABLE_NAME` which expires at
+      `2019-03-30T10:49:41Z`, run:
 
         $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
         --table=TABLE_NAME --expiration-date=2019-03-30T10:49:41Z --async
 
-      To create a backup 'BACKUP_NAME' syncronously from table 'TABLE_NAME' which expires in 2 weeks
+      To create a backup `BACKUP_NAME` syncronously from table `TABLE_NAME` which expires in 2 weeks
       from now, run:
 
         $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
         --table=TABLE_NAME --retention-period=2w
 
-      To create a hot backup 'BACKUP_NAME' from table 'TABLE_NAME' which expires in 2 weeks
+      To create a hot backup `BACKUP_NAME` from table `TABLE_NAME` which expires in 2 weeks
       from now, run:
 
         $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
         --table=TABLE_NAME --retention-period=2w --backup-type=HOT
 
-      To create a hot backup 'BACKUP_NAME' from table 'TABLE_NAME' which will be converted to a
-      standard backup at '2019-03-31T10:49:41Z' and expires in 2 weeks from now, run:
+      To create a hot backup `BACKUP_NAME` from table `TABLE_NAME` which will be converted to a
+      standard backup at `2019-03-31T10:49:41Z` and expires in 2 weeks from now, run:
 
         $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME
         --table=TABLE_NAME --retention-period=2w --backup-type=HOT
         --hot-to-standard-time=2019-03-31T10:49:41Z
 
-      To create a hot backup 'BACKUP_NAME' from table 'TABLE_NAME' which will be converted to a
+      To create a hot backup `BACKUP_NAME` from table `TABLE_NAME` which will be converted to a
       standard backup in 1 week from now and expires in 2 weeks from now, run:
 
       $ {command} BACKUP_NAME --instance=INSTANCE_NAME --cluster=CLUSTER_NAME

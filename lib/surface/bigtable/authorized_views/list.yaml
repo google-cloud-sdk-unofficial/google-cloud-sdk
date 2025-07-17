@@ -4,7 +4,7 @@
     brief: List all authorized views of a Cloud Bigtable table.
     description: List all authorized views of a Cloud Bigtable table.
     examples: |
-      To list the authorized views in instance 'my-instance' and table 'my-table':
+      To list the authorized views in instance `my-instance` and table `my-table`:
 
         $ {command} --instance=test-instance --table=test-table
 

@@ -56,6 +56,7 @@ class Update(base.UpdateCommand):
     flags.AddLoggingConfigArg(
         parser, 'The logging config of the Google API source.'
     )
+    flags.AddWideScopeSubscriptionArg(parser, with_clear=True)
     flags.AddCryptoKeyArg(parser, with_clear=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -66,7 +67,8 @@ class Update(base.UpdateCommand):
     google_api_source_ref = args.CONCEPTS.google_api_source.Parse()
 
     log.debug(
-        'Updating Google API source {} for project {} in location {}'.format(
+        'Updating Google API source {} for project {} in location {}'
+        .format(
             google_api_source_ref.googleApiSourcesId,
             google_api_source_ref.projectsId,
             google_api_source_ref.locationsId,
@@ -84,6 +86,9 @@ class Update(base.UpdateCommand):
         crypto_key=args.IsSpecified('crypto_key'),
         clear_crypto_key=args.clear_crypto_key,
         labels=labels_update_result.needs_update,
+        organization_subscription=args.IsSpecified('organization_subscription'),
+        project_subscriptions=args.IsSpecified('project_subscriptions'),
+        clear_project_subscriptions=args.clear_project_subscriptions,
     )
 
     operation = client.Patch(
@@ -94,6 +99,10 @@ class Update(base.UpdateCommand):
             logging_config=args.logging_config,
             crypto_key_name=args.crypto_key,
             labels=labels_update_result.GetOrNone(),
+            organization_subscription=args.organization_subscription
+            if args.IsSpecified('organization_subscription')
+            else None,
+            project_subscriptions=args.project_subscriptions,
         ),
         update_mask,
     )

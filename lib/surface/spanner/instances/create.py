@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for spanner instances create."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import textwrap
 
 from googlecloudsdk.api_lib.spanner import instance_operations
@@ -92,6 +88,7 @@ class Create(base.CreateCommand):
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+    flags.AddTags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -123,6 +120,7 @@ class Create(base.CreateCommand):
         expire_behavior=expire_behavior,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
+        tags=args.tags,
     )
     if args.async_:
       return op
@@ -193,6 +191,7 @@ class BetaCreate(base.CreateCommand):
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+    flags.AddTags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -224,6 +223,7 @@ class BetaCreate(base.CreateCommand):
         expire_behavior=expire_behavior,
         edition=args.edition,
         default_backup_schedule_type=args.default_backup_schedule_type,
+        tags=args.tags,
     )
     if args.async_:
       return op
@@ -281,6 +281,7 @@ class AlphaCreate(Create):
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
+    flags.AddTags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -315,6 +316,7 @@ class AlphaCreate(Create):
         args.ssd_cache,
         args.edition,
         args.default_backup_schedule_type,
+        args.tags,
     )
     if args.async_:
       return op

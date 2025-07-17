@@ -37,7 +37,12 @@ DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+# TODO(b/371178112): Reconsider this annotation once the command is ready for
+# other universes.
+@base.DefaultUniverseOnly
 class RestartWebServer(base.Command):
   """Restart web server for a Cloud Composer environment."""
 

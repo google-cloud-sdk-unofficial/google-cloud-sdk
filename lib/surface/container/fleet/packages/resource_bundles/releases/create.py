@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
           Can optionally be paired with the ``--variants-pattern'' arg to create
           multiple variants of a Release.""",
     )
+    flags.AddSkipCreatingVariantResourcesFlag(parser)
 
   def Run(self, args):
     """Run the create command."""
@@ -79,6 +80,7 @@ class Create(base.CreateCommand):
         location=flags.GetLocation(args),
         lifecycle=args.lifecycle,
         variants=variants,
+        skip_creating_variant_resources=args.skip_creating_variant_resources,
     )
 
 

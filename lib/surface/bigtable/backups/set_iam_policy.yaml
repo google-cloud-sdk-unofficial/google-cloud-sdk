@@ -4,10 +4,10 @@ help_text:
     Set an IAM policy on a Cloud Bigtable Backup.
 
   examples: |
-    To set the IAM policy from file 'my-policy' on the backup 'my-backup' in
-    instance 'my-instance' and cluster 'my-cluster', run:
+    To set the IAM policy from file `my-policy` on the backup `my-backup` in
+    instance `my-instance` and cluster `my-cluster`, run:
 
-      $ {command} my-backup --instance='my-instance' --cluster='my-cluster' my-policy
+      $ {command} my-backup --instance=`my-instance` --cluster=`my-cluster` my-policy
 
     See https://cloud.google.com/iam/docs/managing-policies for more information.
 

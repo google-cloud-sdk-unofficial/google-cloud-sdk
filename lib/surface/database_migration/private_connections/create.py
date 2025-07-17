@@ -24,13 +24,19 @@ from googlecloudsdk.api_lib.database_migration import resource_args
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.database_migration import flags
 from googlecloudsdk.command_lib.database_migration.private_connections import flags as pc_flags
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 
 DESCRIPTION = 'Create a Database Migration private connection'
 EXAMPLES = """\
-    To create a private connection called 'my-private-connection', run:
+    To create a private connection with VPC Peering called 'my-private-connection', run:
 
         $ {command} my-private-connection --region=us-central1 --display-name=my-private-connection --vpc=vpc-example --subnet=10.0.0.0/29
+
+        To create a private connection with PSC Interface called 'my-privateConnection', run:
+
+        $ {command} my-private-connection --location=us-central1 --display-name=my-private-connection --network-attachment=network-attachment-example
 
         To use a private connection, all migrations and connection profiles that use this configuration must be in the same region.
 
@@ -59,7 +65,35 @@ class Create(base.Command):
     pc_flags.AddDisplayNameFlag(parser)
     pc_flags.AddNoAsyncFlag(parser)
     pc_flags.AddSkipValidationFlag(parser)
+    pc_flags.AddValidateOnlyFlag(parser)
     flags.AddLabelsCreateFlags(parser)
+
+    config_group = parser.add_group(mutex=True, required=True)
+
+    vpc_peering_group = config_group.add_group(
+        help='Arguments for VPC Peering configuration.'
+    )
+    vpc_peering_group.add_argument(
+        '--subnet',
+        help="""A free subnet for peering. (CIDR of /29).""",
+        required=True,
+    )
+
+    # Add VPC resource arg inside the VPC Peering group
+    vpc_spec = presentation_specs.ResourcePresentationSpec(
+        '--vpc',
+        resource_args.GetVpcResourceSpec(),
+        'Resource ID of the VPC network to peer with.',
+        group=vpc_peering_group,
+        required=True,
+    )  # Ensure VPC is required within this group
+    concept_parsers.ConceptParser([vpc_spec]).AddToParser(vpc_peering_group)
+
+    # --- PSC Interface Group ---
+    psc_group = config_group.add_group(
+        help='Arguments for Private Service Connect Interface configuration.'
+    )
+    pc_flags.AddNetworkAttachmentFlag(psc_group)
 
   @staticmethod
   def Args(parser):

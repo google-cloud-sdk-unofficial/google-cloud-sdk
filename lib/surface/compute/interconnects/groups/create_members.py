@@ -55,6 +55,7 @@ _ADMIN_ENABLED = 'admin-enabled'
 _NO_ADMIN_ENABLED = 'no-admin-enabled'
 _NOC_CONTACT_EMAIL = 'noc-contact-email'
 _CUSTOMER_NAME = 'customer-name'
+_REMOTE_LOCATION = 'remote-location'
 _REQUESTED_FEATURES = 'requested-features'
 
 
@@ -80,6 +81,7 @@ class CreateMembers(base.UpdateCommand):
     )
     flags.AddMemberInterconnectsForCreateMembers(parser)
     flags.AddFacility(parser)
+    flags.AddRemoteLocation(parser)
     flags.AddIntentMismatchBehavior(parser)
     interconnect_flags.AddCreateGaArgs(parser, required=False)
 
@@ -109,7 +111,7 @@ class CreateMembers(base.UpdateCommand):
             admin_enabled=args.admin_enabled,
             noc_contact_email=args.noc_contact_email,
             customer_name=args.customer_name,
-            remote_location=None,
+            remote_location=args.remote_location,
             requested_features=flags.GetRequestedFeatures(
                 messages, args.requested_features
             ),
@@ -136,7 +138,7 @@ class CreateMembers(base.UpdateCommand):
               admin_enabled=admin_enabled,
               noc_contact_email=ic_args.get(_NOC_CONTACT_EMAIL),
               customer_name=ic_args.get(_CUSTOMER_NAME),
-              remote_location=None,
+              remote_location=ic_args.get(_REMOTE_LOCATION),
               requested_features=flags.GetRequestedFeatures(
                   messages, ic_args.get(_REQUESTED_FEATURES)
               ),

@@ -18,11 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base as features_base
 
 
-class Disable(base.UpdateCommand, base.DisableCommand):
+@base.DefaultUniverseOnly
+class Disable(features_base.DisableCommand):
   """Disable Config Delivery Argo CD Feature on a membership.
 
   This command disables Config Delivery Argo CD Feature on a membership.
@@ -46,7 +48,7 @@ class Disable(base.UpdateCommand, base.DisableCommand):
     # Error will be raised if feature is not enabled
     self.GetFeature()
 
-    config_membership = base.ParseMembership(
+    config_membership = features_base.ParseMembership(
         args, prompt=True, flag_override='config_membership')
 
     membership_specs = {}

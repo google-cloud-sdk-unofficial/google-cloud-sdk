@@ -5,8 +5,8 @@
     brief: Describe a Bigtable schema bundle.
     description: Describe a Bigtable schema bundle.
     examples: |
-      To describe the schema bundle 'my-schema-bundle' in instance 'my-instance' and table
-      'my-table':
+      To describe the schema bundle `my-schema-bundle` in instance `my-instance` and table
+      `my-table`:
 
         $ {command} my-schema-bundle --instance=test-instance --table=test-table
 

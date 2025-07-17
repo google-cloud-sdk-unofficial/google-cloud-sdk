@@ -136,11 +136,10 @@
                 help_text: |
                   Does not display the "I'm not a robot" checkbox, but may show CAPTCHA
                   challenges after risk analysis
-              - enum_value: SCORE_AND_CHALLENGE
-                arg_value: score-and-challenge
+              - enum_value: POLICY_BASED_CHALLENGE
+                arg_value: policy-based-challenge
                 help_text: |
-                  Conditionally displays a challenge based on the score. This is in private
-                  preview. If you want to onboard, contact your Google Cloud sales representative.
+                  Conditionally displays a challenge based on the score
 
             - arg_name: security-preference
               api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.challengeSecurityPreference
@@ -152,21 +151,19 @@
                             security: show more and harder challenges.
             - group:
                 help_text: |
-                  Configure if you want to use the SCORE_AND_CHALLENGE option.
+                  Configure if you want to use the POLICY_BASED_CHALLENGE option.
                 required: false
-                # TODO(b/333454370): remove hidden once GA.
-                hidden: true
                 params:
                 - arg_name: default-score-threshold
                   type: float
                   required: true
                   api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.challengeSettings.defaultSettings.scoreThreshold
                   help_text: |
-                    The global threshold to be used for SCORE_AND_CHALLENGE if no action specific one exists.
+                    The global threshold to be used for POLICY_BASED_CHALLENGE if no action specific one exists.
                 - arg_name: action-score-thresholds
                   api_field: googleCloudRecaptchaenterpriseV1Key.webSettings.challengeSettings.actionSettings
                   help_text: |
-                    The action to score threshold used for SCORE_AND_CHALLENGE. For example:
+                    The action to score threshold used for POLICY_BASED_CHALLENGE. For example:
                     --action-score-thresholds=login='{"scoreThreshold": "0.3"}',signup='{"scoreThreshold": "0.1"}'
                     or --action-score-thresholds=file_path.(json|yaml)
                   required: false

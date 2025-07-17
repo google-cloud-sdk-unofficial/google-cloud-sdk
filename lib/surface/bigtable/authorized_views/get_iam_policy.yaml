@@ -6,9 +6,9 @@
       Get an IAM policy on a Cloud Bigtable authorized view.
 
     examples: |
-      To get the IAM policy on the authorized view 'my-authorized-view' in instance 'my-instance' and table 'my-table', run:
+      To get the IAM policy on the authorized view `my-authorized-view` in instance `my-instance` and table `my-table`, run:
 
-        $ {command} my-authorized-view --instance='my-instance' --table='my-table'
+        $ {command} my-authorized-view --instance=`my-instance` --table=`my-table`
 
       See https://cloud.google.com/iam/docs/managing-policies for more information.
 

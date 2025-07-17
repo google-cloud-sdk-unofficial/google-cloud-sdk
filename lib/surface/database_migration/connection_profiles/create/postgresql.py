@@ -64,7 +64,7 @@ class PostgreSQL(base.Command):
 
     cp_flags.AddNoAsyncFlag(parser)
     cp_flags.AddDisplayNameFlag(parser)
-    cp_flags.AddDatabaseParamsFlags(parser)
+    cp_flags.AddDatabaseParamsFlags(parser, with_database_name=True)
     cp_flags.AddSslConfigGroup(parser, base.ReleaseTrack.GA)
     cp_flags.AddCloudSQLInstanceFlag(parser)
     cp_flags.AddAlloydbClusterFlag(parser)

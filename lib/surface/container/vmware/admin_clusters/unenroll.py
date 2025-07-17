@@ -37,6 +37,7 @@ $ {command} my-cluster --location=us-west1
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Unenroll(base.Command):
   """Unenroll an Anthos on VMware admin cluster."""
 
@@ -50,6 +51,7 @@ class Unenroll(base.Command):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddValidationOnly(parser)
     flags.AddAllowMissingUnenrollCluster(parser)
+    flags.AddIgnoreErrorsAdminCluster(parser)
 
   def Run(self, args):
     """Runs the unenroll command."""

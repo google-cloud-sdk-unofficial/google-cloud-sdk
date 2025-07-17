@@ -29,10 +29,23 @@ PROJECTS_RESOURCE_PATH = 'projects/'
 LOCATIONS_RESOURCE_PATH = 'locations/'
 SCHEMA_REGISTRIES_RESOURCE_PATH = 'schemaRegistries/'
 
+SCHEMA_REGISTRY_FORMAT = """
+    table(
+      schema_registry:format='yaml(compatibility, schema_registry.compatibility, mode, schema_registry.mode, name, schema_registry.name, contexts, schema_registry.contexts)'
+    )
+"""
+
+
+class _Results(object):
+  """Encapsulate results into a single object to fit the Run() model."""
+
+  def __init__(self, schema_registry):
+    self.schema_registry = schema_registry
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-class Describe(base.UpdateCommand):
+class Describe(base.DescribeCommand):
   """Describe a schema registry with all of its fields.
 
   ## EXAMPLES
@@ -47,6 +60,8 @@ class Describe(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
 
+    parser.display_info.AddFormat(SCHEMA_REGISTRY_FORMAT)
+
     arguments.AddSchemaRegistryArgToParser(parser)
 
   def Run(self, args):
@@ -58,26 +73,26 @@ class Describe(base.UpdateCommand):
     Returns:
       The schema registry.
     """
-    message = apis.GetMessagesModule('managedkafka', 'v1')
     client = apis.GetClientInstance('managedkafka', 'v1')
+    message = client.MESSAGES_MODULE
 
     project_id = util.ParseProject(args.project)
     location = args.location
-
+    schema_registry_id = args.schema_registry
     schema_registry_resource = resources.REGISTRY.Parse(
-        args.schema_registry,
+        schema_registry_id,
         collection='managedkafka.projects.locations.schemaRegistries',
         params={
             'projectsId': project_id,
             'locationsId': location,
-            'schemaRegistriesId': args.schema_registry,
+            'schemaRegistriesId': schema_registry_id,
         },
     )
 
     schema_registry_path = schema_registry_resource.RelativeName()
 
     log.status.Print(
-        'Describing schema registry: {}'.format(schema_registry_path) + '\n'
+        'Describing schema registry [{}].'.format(schema_registry_id) + '\n'
     )
 
     schema_registry_request = (
@@ -114,21 +129,11 @@ class Describe(base.UpdateCommand):
         schema_registry_config.compatibility
     )
 
-    verbose_schema_registry = {
+    schema_registry = {
         'name': schema_registry.name,
         'contexts': schema_registry.contexts,
         'mode': mode,
         'compatibility': compatibility,
     }
 
-    log.status.Print('name: {}'.format(verbose_schema_registry['name']))
-    log.status.Print('mode: {}'.format(verbose_schema_registry['mode']))
-    log.status.Print('config:')
-    log.status.Print(
-        '  - compatibility: {}'.format(verbose_schema_registry['compatibility'])
-    )
-    log.status.Print('contexts:')
-    for context in verbose_schema_registry['contexts']:
-      log.status.Print('  - {}'.format(context))
-
-    return verbose_schema_registry
+    return _Results(schema_registry)

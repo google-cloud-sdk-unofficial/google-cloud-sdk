@@ -4,7 +4,7 @@
     description: |
       Describe a Cloud Bigtable operation.
     examples: |
-      To view details for operation 'OPERATION_ID', run:
+      To view details for operation `OPERATION_ID`, run:
 
         $ {command} OPERATION_ID
 

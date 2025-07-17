@@ -128,7 +128,7 @@ for examples.
   flags.AddAdditionalPodNetworkFlag(parser)
   flags.AddAsyncFlag(parser)
   flags.AddSoleTenantNodeAffinityFileFlag(parser)
-  flags.AddSoleTenantMinNodeCpusFlag(parser, hidden=True)
+  flags.AddSoleTenantMinNodeCpusFlag(parser)
   flags.AddContainerdConfigFlag(parser)
   flags.AddEnableKubeletReadonlyPortFlag(parser)
 
