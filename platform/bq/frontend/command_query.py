@@ -624,7 +624,7 @@ class Query(bigquery_command.BigqueryCmd):
         frontend_utils.PrintDryRunInfo(execution)
       else:
         bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-            fields, rows
+            fields, rows, use_full_timestamp=False
         )
         # If we are here, the job succeeded, but print warnings if any.
         frontend_utils.PrintJobMessages(execution)
@@ -836,7 +836,7 @@ class Query(bigquery_command.BigqueryCmd):
           max_rows=self.max_rows,
       )
       bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-          fields, rows
+          fields, rows, use_full_timestamp=False
       )
     elif json_escape:
       print(

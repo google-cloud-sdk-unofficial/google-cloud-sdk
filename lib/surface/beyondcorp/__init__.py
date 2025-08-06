@@ -42,7 +42,6 @@ class BeyondcorpAlpha(extensions.BeyondcorpAlpha):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.DefaultUniverseOnly
 class BeyondcorpBeta(extensions.BeyondcorpBeta):
   """Manage secure access to applications with integrated threat and data protection.
 

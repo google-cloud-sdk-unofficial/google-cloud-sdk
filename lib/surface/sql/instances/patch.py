@@ -311,6 +311,7 @@ def AddBaseArgs(parser):
   flags.AddEnableGoogleMLIntegration(parser)
   flags.AddEnableDataplexIntegration(parser)
   flags.AddUpgradeSqlNetworkArchitecture(parser)
+  flags.AddForceSqlNetworkArchitecture(parser)
   flags.AddSimulateMaintenanceEvent(parser)
   flags.AddSwitchTransactionLogsToCloudStorage(parser)
   flags.AddFailoverDrReplicaName(parser)
@@ -320,9 +321,11 @@ def AddBaseArgs(parser):
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
   flags.AddEnablePrivateServiceConnect(parser, show_negated_in_help=True)
-  psc_na_uri_update_group = parser.add_mutually_exclusive_group(hidden=True)
-  flags.AddPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
-  flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group, hidden=True)
+  psc_na_uri_update_group = parser.add_mutually_exclusive_group()
+  flags.AddPSCNetworkAttachmentUri(psc_na_uri_update_group)
+  flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group)
+  flags.AddInstanceType(parser)
+  flags.AddNodeCount(parser)
 
 
 def AddBetaArgs(parser):
@@ -338,11 +341,10 @@ def AddBetaArgs(parser):
   connection_pool_flags_group = parser.add_mutually_exclusive_group()
   flags.AddConnectionPoolFlags(connection_pool_flags_group)
   flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
-  flags.AddInstanceType(parser)
-  flags.AddNodeCount(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser, hidden=True)
   flags.AddReconcilePsaNetworking(parser)
+  flags.AddEnableAcceleratedReplicaMode(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -451,6 +453,14 @@ def RunBasePatchCommand(args, release_track):
             'argument --reconcile-psa-networking cannot be specified with other'
             ' arguments excluding gcloud wide flags'
         )
+
+  if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+    if not api_util.InstancesV1Beta4.IsMysqlDatabaseVersion(
+        original_instance_resource.databaseVersion
+    ):
+      raise exceptions.ArgumentError(
+          '--enable-accelerated-replica-mode is only supported for MySQL.'
+      )
 
   patch_instance = command_util.InstancesV1Beta4.ConstructPatchInstanceFromArgs(
       sql_messages,

@@ -15,21 +15,20 @@
 #
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants list
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: List IAM Workforce Pool Provider SCIM Tenants.
+    brief: List IAM workforce identity pool provider SCIM tenants.
     description: |
-      List all SCIM Tenants associated with a specific Workforce Pool Provider.
+      List all SCIM tenants associated with a specific workforce identity pool provider.
 
     examples: |
       To list all SCIM tenants under provider `my-okta-provider` in pool `my-pool` located in `global`:
 
-        $ {command} --location=global --workforce-pool=my-pool --provider=my-okta-provider
+        $ {command} --location=global  --workforce-pool=my-pool  --provider=my-okta-provider
 
       To list deleted SCIM tenants as well:
 
-        $ {command} --location=global --workforce-pool=my-pool --provider=my-okta-provider --show-deleted
+        $ {command} --location=global  --workforce-pool=my-pool  --provider=my-okta-provider   --show-deleted
 
   request:
     collection: iam.locations.workforcePools.providers.scimTenants
@@ -37,14 +36,14 @@
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider
-      help_text: The Workforce Pool Provider under which to list SCIM Tenants.
+      help_text: The workforce identity pool provider under which to list SCIM tenants.
       is_positional: false
 
     params:
     - arg_name: show-deleted
       api_field: showDeleted
       required: false
-      help_text: Include SCIM Tenants that have been deleted.
+      help_text: Include SCIM tenants that have been deleted.
 
   output:
     format: |

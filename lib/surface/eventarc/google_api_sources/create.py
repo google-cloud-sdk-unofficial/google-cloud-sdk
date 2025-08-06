@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc Google API source."""
@@ -64,7 +64,6 @@ class Create(base.CreateCommand):
             google_api_source_ref.locationsId,
         )
     )
-    client.RaiseErrorIfGoogleApiSourceExists(google_api_source_ref.projectsId)
     operation = client.Create(
         google_api_source_ref,
         client.BuildGoogleApiSource(

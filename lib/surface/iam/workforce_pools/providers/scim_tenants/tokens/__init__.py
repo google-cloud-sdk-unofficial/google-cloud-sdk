@@ -18,11 +18,12 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Tokens(base.Group):
-  """Manage IAM Workforce Pool Provider SCIM Tenant Tokens.
+  """Manage IAM workforce identity pool provider SCIM tenant tokens.
 
   Commands for creating, describing, listing, updating, and deleting
-  SCIM Tokens associated with IAM Workforce Pool Provider SCIM Tenants.
+  SCIM tokens associated with IAM workforce identity pool provider SCIM tenants.
   """

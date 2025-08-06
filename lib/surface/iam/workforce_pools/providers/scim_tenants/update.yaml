@@ -15,12 +15,11 @@
 #
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants update
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Update an IAM Workforce Pool Provider SCIM Tenant.
+    brief: Update an IAM workforce identity pool provider SCIM tenant.
     description: |
-      Update the configuration of an existing SCIM Tenant associated with a specific Workforce Pool Provider.
+      Update the configuration of an existing SCIM tenant associated with a specific workforce identity pool provider.
       Only fields specified in the command will be modified.
     examples: |
       To update the display name and description of a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:
@@ -38,7 +37,7 @@
 
   arguments:
     resource:
-      help_text: The SCIM Tenant to update.
+      help_text: The SCIM tenant to update.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_scim_tenant
       is_positional: true
 

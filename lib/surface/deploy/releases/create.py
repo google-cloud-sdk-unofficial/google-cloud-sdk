@@ -21,9 +21,7 @@ from __future__ import unicode_literals
 import datetime
 import os.path
 
-from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import client_util
-from googlecloudsdk.api_lib.clouddeploy import config
 from googlecloudsdk.api_lib.clouddeploy import release
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -72,6 +70,7 @@ _DETAILED_HELP = {
     """,
 }
 _RELEASE = 'release'
+_MAINTENANCE_WARNING_DAYS = 28
 
 
 def _CommonArgs(parser):
@@ -89,6 +88,11 @@ def _CommonArgs(parser):
   flags.AddDescription(parser, 'Description of the release.')
   flags.AddAnnotationsFlag(parser, _RELEASE)
   flags.AddLabelsFlag(parser, _RELEASE)
+  flags.AddDockerVersion(parser)
+  flags.AddHelmVersion(parser)
+  flags.AddKptVersion(parser)
+  flags.AddKubectlVersion(parser)
+  flags.AddKustomizeVersion(parser)
   flags.AddSkaffoldVersion(parser)
   flags.AddConfigSourcesGroup(parser)
   flags.AddInitialRolloutGroup(parser)
@@ -109,62 +113,101 @@ class Create(base.CreateCommand):
   def Args(parser):
     _CommonArgs(parser)
 
-  def _CheckSupportedVersion(self, release_ref, skaffold_version):
-    config_client = config.ConfigClient()
-    try:
-      c = config_client.GetConfig(
-          release_ref.AsDict()['projectsId'],
-          release_ref.AsDict()['locationsId'],
-      )
-    except apitools_exceptions.HttpForbiddenError:
-      # We can't display any preemptive warnings, but the server will still
-      # prevent any mischief later.
+  def _CheckIfNearMaintenance(self, release_obj):
+    """Checks to see if a release is close to the maintenance window."""
+
+    def _ParseDt(dt):
+      """Parses the maintenance dt, returning a datetime or None."""
+      if dt is None:
+        return None
+      try:
+        return times.ParseDateTime(dt)
+      except (times.DateTimeSyntaxError, times.DateTimeValueError):
+        return None
+
+    release_condition = release_obj.condition
+    if release_condition is None:
       return
 
-    version_obj = None
-    for v in c.supportedVersions:
-      if v.version == skaffold_version:
-        version_obj = v
-        break
-    if not version_obj:
+    has_tool_versions = (
+        release_condition.dockerVersionSupportedCondition
+        or release_condition.helmVersionSupportedCondition
+        or release_condition.kptVersionSupportedCondition
+        or release_condition.kubectlVersionSupportedCondition
+        or release_condition.kustomizeVersionSupportedCondition
+        or release_condition.skaffoldVersionSupportedCondition
+    )
+    if not has_tool_versions:
+      if release_condition.skaffoldSupportedCondition is None:
+        return
+      maintenance_dt = _ParseDt(
+          release_condition.skaffoldSupportedCondition.maintenanceModeTime
+      )
+      # It is possible to have no maintenance mode time.
+      # Like `skaffold_preview` for example.
+      if (
+          maintenance_dt is not None
+          and maintenance_dt - times.Now()
+          <= datetime.timedelta(days=_MAINTENANCE_WARNING_DAYS)
+      ):
+        log.status.Print(
+            "WARNING: This release's Skaffold version will be"
+            ' in maintenance mode beginning on {date}.'
+            " After that you won't be able to create releases"
+            ' using this version of Skaffold.\n'
+            'https://cloud.google.com/deploy/docs/using-skaffold'
+            '/select-skaffold#skaffold_version_deprecation'
+            '_and_maintenance_policy'.format(
+                date=maintenance_dt.strftime('%Y-%m-%d')
+            )
+        )
       return
 
-    try:
-      maintenance_dt = times.ParseDateTime(version_obj.maintenanceModeTime)
-    except (times.DateTimeSyntaxError, times.DateTimeValueError):
-      maintenance_dt = None
-    try:
-      support_expiration_dt = times.ParseDateTime(
-          version_obj.supportExpirationTime
-      )
-    except (times.DateTimeSyntaxError, times.DateTimeValueError):
-      support_expiration_dt = None
-    if maintenance_dt and (maintenance_dt - times.Now()) <= datetime.timedelta(
-        days=28
-    ):
+    # use an array to have deterministic ordering.
+    tools_supported_condition_to_process = [
+        (
+            release_util.Tools.DOCKER,
+            release_condition.dockerVersionSupportedCondition,
+        ),
+        (
+            release_util.Tools.HELM,
+            release_condition.helmVersionSupportedCondition,
+        ),
+        (
+            release_util.Tools.KPT,
+            release_condition.kptVersionSupportedCondition,
+        ),
+        (
+            release_util.Tools.KUBECTL,
+            release_condition.kubectlVersionSupportedCondition,
+        ),
+        (
+            release_util.Tools.KUSTOMIZE,
+            release_condition.kustomizeVersionSupportedCondition,
+        ),
+        (
+            release_util.Tools.SKAFFOLD,
+            release_condition.skaffoldVersionSupportedCondition,
+        ),
+    ]
+    tools_almost_in_maintenance = []
+    for tool, condition in tools_supported_condition_to_process:
+      if not condition:
+        continue
+      maintenance_dt = _ParseDt(condition.maintenanceModeTime)
+      if (
+          maintenance_dt is not None
+          and maintenance_dt - times.Now()
+          <= datetime.timedelta(days=_MAINTENANCE_WARNING_DAYS)
+      ):
+        tools_almost_in_maintenance.append(tool)
+    if tools_almost_in_maintenance:
+      joined = ', '.join([tool.value for tool in tools_almost_in_maintenance])
       log.status.Print(
-          "WARNING: This release's Skaffold version will be"
-          ' in maintenance mode beginning on {date}.'
-          " After that you won't be able to create releases"
-          ' using this version of Skaffold.\n'
-          'https://cloud.google.com/deploy/docs/using-skaffold'
-          '/select-skaffold#skaffold_version_deprecation'
-          '_and_maintenance_policy'.format(
-              date=maintenance_dt.strftime('%Y-%m-%d')
-          )
-      )
-    if support_expiration_dt and times.Now() > support_expiration_dt:
-      raise core_exceptions.Error(
-          "The Skaffold version you've chosen is no longer supported.\n"
-          'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
-          '#skaffold_version_deprecation_and_maintenance_policy'
-      )
-    if maintenance_dt and times.Now() > maintenance_dt:
-      raise core_exceptions.Error(
-          "You can't create a new release using a Skaffold version"
-          ' that is in maintenance mode.\n'
-          'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
-          '#skaffold_version_deprecation_and_maintenance_policy'
+          f'WARNING: The versions used for tools: [{joined}] will be in'
+          " maintenance mode soon. After that you won't be able to create"
+          ' releases using these versions of the tools.\n'
+          'https://cloud.google.com/deploy/docs/select-tool-version'
       )
 
   def Run(self, args):
@@ -235,9 +278,6 @@ class Create(base.CreateCommand):
           os.path.abspath(args.deploy_config_file), os.path.abspath(source)
       )
 
-    if args.skaffold_version:
-      self._CheckSupportedVersion(release_ref, args.skaffold_version)
-
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
@@ -247,6 +287,11 @@ class Create(base.CreateCommand):
         args.images,
         args.build_artifacts,
         args.description,
+        args.docker_version,
+        args.helm_version,
+        args.kpt_version,
+        args.kubectl_version,
+        args.kustomize_version,
         args.skaffold_version,
         args.skaffold_file,
         args.deploy_config_file,
@@ -276,6 +321,7 @@ class Create(base.CreateCommand):
     )
 
     release_obj = release.ReleaseClient().Get(release_ref.RelativeName())
+    self._CheckIfNearMaintenance(release_obj)
     if args.disable_initial_rollout:
       return release_obj
     # On the command line deploy policy IDs are provided, but for the

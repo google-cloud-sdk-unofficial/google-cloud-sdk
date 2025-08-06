@@ -15,16 +15,15 @@
 #
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants undelete
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Undelete an IAM Workforce Pool Provider SCIM Tenant Token.
+    brief: Undelete an IAM workforce identity pool provider SCIM tenant token.
     description: |
-      Undelete a SCIM Token associated with a specific Workforce Pool Provider SCIM Tenant.
+      Undelete a SCIM token associated with a specific workforce identity pool provider SCIM tenant.
     examples: |
       To undelete a SCIM token with ID `my-token` under tenant `my-tenant` provider `my-provider` in pool `my-pool` located in `global`:
 
-        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --tenant=my-tenant
+        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --scim-tenant=my-tenant
 
   request:
     collection: iam.locations.workforcePools.providers.scimTenants.tokens

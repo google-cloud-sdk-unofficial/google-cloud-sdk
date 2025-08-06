@@ -26,9 +26,27 @@
       Choose an available gi-versions in your location by running
       `gcloud oracle-database db-system-shapes list --location=us-east4`.
       To create CloudVmCluster instance with id `my-instance` in the location `us-east4`
-      with display-name `my instance`, cidr `10.1.0.0/24`, network `projects/my-project/locations/global/networks/default`,
+      with display-name `my instance`, odb-network `projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork`,
+      odb-subnet `projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet`,
+      backup-odb-subnet `projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-backup-odbsubnet`,
+      cidr `10.1.0.0/24`, network `projects/my-project/locations/global/networks/default`,
       backup-subnet-cidr `10.2.0.0/24`, license-type `LICENSE_INCLUDED`, ssh-public-keys `VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02`,
       hostname-prefix `hostname1`, cpu-core-count `4` and choosen gi-version `xx.0.0.0`, run:
+
+      To set the network configuration use one of the following options:
+
+      ODBNetwork based configuration(This is the recommended way):
+
+      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+       --odb-network=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork \
+       --odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet \
+       --backup-odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-backup-odbsubnet \
+       --properties-license-type=LICENSE_INCLUDED \
+       --properties-ssh-public-keys="VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02" \
+       --properties-gi-version=xx.0.0.0  --properties-hostname-prefix=hostname1 \
+       --properties-cpu-core-count=4
+
+      Network and CIDR based configuration:
 
       $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --cidr=10.1.0.0/24 --network=projects/my-project/locations/global/networks/default \

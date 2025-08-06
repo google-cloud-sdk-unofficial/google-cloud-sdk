@@ -98,7 +98,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc pipeline."""

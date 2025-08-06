@@ -212,7 +212,7 @@ class _BaseDeploy(object):
       # The above command will print a message to the human user, but it needs a
       # newline when the command is successful.
       log.status.Print('\n')
-    except services_exceptions.EnableServicePermissionDeniedException:
+    except services_exceptions.EnableServiceException:
       log.warning(('Attempted to enable service [{0}] on project [{1}], but '
                    'did not have required permissions. Please ensure this '
                    'service is enabled before using your Endpoints '

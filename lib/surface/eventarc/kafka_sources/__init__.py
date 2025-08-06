@@ -26,3 +26,5 @@ from googlecloudsdk.calliope import base
 @base.Hidden
 class KafkaSources(base.Group):
   """Manage Eventarc kafka sources."""
+
+  category = base.SERVERLESS_CATEGORY

@@ -62,6 +62,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountFlag(parser)
     flags.AddWorkerPoolFlag(parser)
     flags.AddArtifactsGCSBucketFlag(parser)
+    flags.AddProviderSourceFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -122,4 +123,5 @@ class Create(base.CreateCommand):
         args.inputs_file,
         args.labels,
         args.annotations,
+        args.provider_source,
     )

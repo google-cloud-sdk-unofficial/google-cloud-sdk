@@ -3,11 +3,10 @@
     brief: "Create a health aggregation policy."
     description: "Create a health aggregation policy."
     examples: |
-      The following command creates a new health aggregation policy named
-      "my-health-aggregation-policy":
+      The following command creates a new health aggregation policy:
 
-        $ {command} my-health-aggregation-policy \
-          --region=us-east1 \
+        $ {command} <HEALTH_AGGREGATION_POLICY_NAME> \
+          --region=<REGION> \
           --healthy-percent-threshold 60 \
           --min-healthy-threshold 2 \
           --policy-type=BACKEND_SERVICE_POLICY
@@ -34,6 +33,10 @@
       spec: !REF googlecloudsdk.command_lib.compute.resources:health_aggregation_policy
 
     params:
+    - arg_name: description
+      api_field: healthAggregationPolicy.description
+      help_text: |
+        A textual description of the health aggregation policy.
 
     - arg_name: healthy-percent-threshold
       api_field: healthAggregationPolicy.healthyPercentThreshold
@@ -72,8 +75,7 @@
     - arg_name: policy-type
       api_field: healthAggregationPolicy.policyType
       help_text: |
-        Specifies the type of the healthAggregationPolicy. The only allowed value
-        for global resources is DNS_PUBLIC_IP_POLICY. The only allowed
+        Specifies the type of the healthAggregationPolicy. The only allowed
         value for regional resources is BACKEND_SERVICE_POLICY. Must
         be specified when the healthAggregationPolicy is created, and cannot be
         mutated.

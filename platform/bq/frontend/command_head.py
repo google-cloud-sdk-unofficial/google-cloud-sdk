@@ -105,5 +105,5 @@ class Head(bigquery_command.BigqueryCmd):
       raise app.UsageError("Invalid identifier '%s' for head." % (identifier,))
 
     bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-        fields, rows
+        fields, rows, use_full_timestamp=False
     )

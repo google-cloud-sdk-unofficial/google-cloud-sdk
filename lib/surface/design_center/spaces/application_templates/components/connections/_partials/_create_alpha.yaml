@@ -57,20 +57,6 @@
       repeated: false
       help_text: |-
         The destination component URI used to generate the connection.
-    - arg_name: parameters
-      api_field: connection.parameters
-      required: false
-      repeated: true
-      help_text: |-
-        The connection parameters.
-      spec:
-      - api_field: key
-        help_text: |-
-          The key of the parameter.
-      - api_field: value
-        type: arg_json
-        help_text: |-
-          The value of the parameter.
     - arg_name: source-component-parameters
       api_field: connection.sourceComponentParameters
       required: false

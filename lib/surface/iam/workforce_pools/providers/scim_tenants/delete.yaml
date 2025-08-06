@@ -15,12 +15,11 @@
 #
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants delete
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Delete an IAM Workforce Pool Provider SCIM Tenant.
+    brief: Delete an IAM workforce identity pool provider SCIM tenant.
     description: |
-      Delete an existing SCIM Tenant associated with a specific Workforce Pool Provider.
+      Delete an existing SCIM tenant associated with a specific workforce identity pool provider.
       This operation marks the tenant for deletion, and it may be recoverable using the `undelete` command for a period.
     examples: |
       To delete a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:
@@ -32,6 +31,6 @@
 
   arguments:
     resource:
-      help_text: The SCIM Tenant to delete.
+      help_text: The SCIM tenant to delete.
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_scim_tenant
       is_positional: true

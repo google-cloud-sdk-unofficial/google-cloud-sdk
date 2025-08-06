@@ -15,16 +15,15 @@
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants describe
 
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Describe an IAM Workforce Pool Provider SCIM Tenant.
+    brief: Describe an IAM workforce identity pool provider SCIM tenant.
     description: |
-      Describe an existing SCIM Tenant associated with a specific Workforce Pool Provider.
+      Describe an existing SCIM tenant associated with a specific workforce identity pool provider.
     examples: |
-      To describe a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:
+      To describe a SCIM tenant with ID `my-tenant` under provider `my-provider` in pool `my-pool` located in `global`:
 
-      $ {command} my-tenant --location=global --workforce-pool=my-pool --provider=my-okta-provider
+      $ {command} my-tenant --location=global --workforce-pool=my-pool --provider=my-provider
 
 
   request:
@@ -35,5 +34,5 @@
   arguments:
     resource:
       spec: !REF googlecloudsdk.command_lib.iam.resources:workforce_pool_provider_scim_tenant
-      help_text: The SCIM Tenant to describe.
+      help_text: The SCIM tenant to describe.
       is_positional: true

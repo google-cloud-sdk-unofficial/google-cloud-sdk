@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete an Eventarc Google API source."""

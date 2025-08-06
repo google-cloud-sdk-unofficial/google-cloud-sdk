@@ -423,6 +423,9 @@ def _get_container_run_command(
     else:
       agent_id_prefix = args.id_prefix
     agent_args.append('--agent-id-prefix={}'.format(agent_id_prefix))
+  gcs_api_endpoint = getattr(args, 'gcs_api_endpoint', None)
+  if gcs_api_endpoint:
+    agent_args.append('--gcs-api-endpoint={}'.format(gcs_api_endpoint))
 
   _add_container_flag_if_user_arg_present(args, agent_args)
 
@@ -811,4 +814,12 @@ class InstallAlpha(Install):
         '--network',
         dest='network',
         help=NETWORK_HELP_TEXT.format(container_managers='(docker or podman)'),
+    )
+    parser.add_argument(
+        '--gcs-api-endpoint',
+        help=(
+            'The API endpoint for Google Cloud Storage. Override to use a'
+            ' regional endpoint, ensuring data remains within designated'
+            ' geographic boundaries.'
+        ),
     )

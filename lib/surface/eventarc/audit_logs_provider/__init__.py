@@ -22,5 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class AuditLogsProvider(base.Group):
   """Explore provider serviceNames and methodNames for event type `google.cloud.audit.log.v1.written` in Eventarc."""
+
+  category = base.SERVERLESS_CATEGORY

@@ -22,5 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class GoogleChannels(base.Group):
   """Manage Eventarc Google channels."""
+
+  category = base.SERVERLESS_CATEGORY

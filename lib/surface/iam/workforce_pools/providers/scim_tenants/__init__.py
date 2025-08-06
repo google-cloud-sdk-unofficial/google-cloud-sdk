@@ -19,13 +19,13 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ScimTenants(base.Group):
-  """Manage IAM Workforce Pool Provider SCIM Tenants.
+  """Manage IAM workforce identity pool provider SCIM tenants.
 
   Commands for creating, describing, listing, updating, and deleting
-  SCIM Tenants associated with IAM Workforce Pool Providers. SCIM Tenants
-  enable automated user and group provisioning.
+  SCIM tenants associated with IAM workforce identity pool providers. SCIM
+  tenants enable automated user and group provisioning.
   """
-

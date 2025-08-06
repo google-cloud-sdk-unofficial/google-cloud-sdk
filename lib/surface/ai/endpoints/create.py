@@ -55,7 +55,7 @@ def _AddArgs(parser):
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetEndpointNetworkArg().AddToParser(parser)
   flags.GetEncryptionKmsKeyNameArg().AddToParser(parser)
-  flags.GetGdceZoneArg().AddToParser(parser)
+  flags.GetHiddenGdceZoneArg().AddToParser(parser)
   flags.GetGdcZoneArg().AddToParser(parser)
   flags.AddRequestResponseLoggingConfigGroupArgs(parser)
 

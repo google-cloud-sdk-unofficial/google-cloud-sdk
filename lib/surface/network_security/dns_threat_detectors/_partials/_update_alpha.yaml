@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Update dnsThreatDetectors
-    description: Update a dnsThreatDetector
+    brief: Update a DnsThreatDetector resource
+    description: Update a DnsThreatDetector resource.
     examples: |-
-      To update the dnsThreatDetector, run:
+      To update `DnsThreatDetector` resource `my-dns-threat-detector` with an additional excluded network, run:
 
-      $ {command}
+      $ {command} --location=global --add-excluded-networks=projects/.../global/networks/my-excluded-network my-dns-threat-detector
   arguments:
     params:
     - help_text: |-

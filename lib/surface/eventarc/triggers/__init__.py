@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Triggers(base.Group):
   """Manage Eventarc triggers."""
+
+  category = base.SERVERLESS_CATEGORY

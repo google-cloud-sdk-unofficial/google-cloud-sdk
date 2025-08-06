@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update applications
     description: Update an application
@@ -66,6 +65,30 @@
       help_text: |-
         An arbitrary user-provided name for the Application resource.
         Cannot exceed 64 characters.
+    - arg_name: upstreams
+      api_field: googleCloudBeyondcorpSecuritygatewaysV1Application.upstreams
+      required: false
+      repeated: true
+      help_text: |-
+        Which upstream resources to forward traffic to.
+      clearable: true
+      spec:
+      - api_field: network
+        one_of_index: 0
+        help_text: |-
+          Network to forward traffic to.
+        spec:
+        - api_field: name
+          help_text: |-
+            Network name is of the format:
+            `projects/{project}/global/networks/{network}
+      - api_field: egressPolicy
+        help_text: |-
+          Routing policy information.
+        spec:
+        - api_field: regions
+          help_text: |-
+            List of the regions where the application sends traffic.
     - arg_name: request-id
       api_field: requestId
       required: false

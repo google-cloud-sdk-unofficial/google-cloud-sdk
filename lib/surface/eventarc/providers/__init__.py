@@ -22,5 +22,8 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Providers(base.Group):
   """Explore event providers available in Eventarc."""
+
+  category = base.SERVERLESS_CATEGORY

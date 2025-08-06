@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class Locations(base.Group):
   """Explore locations available for Eventarc."""
+
+  category = base.SERVERLESS_CATEGORY

@@ -48,7 +48,7 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Eventarc message buses."""

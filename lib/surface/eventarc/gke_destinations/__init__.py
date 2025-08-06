@@ -23,5 +23,8 @@ from googlecloudsdk.calliope import base
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class GKEDestinations(base.Group):
   """Manage Eventarc with Cloud Run for Anthos/GKE destinations."""
+
+  category = base.SERVERLESS_CATEGORY

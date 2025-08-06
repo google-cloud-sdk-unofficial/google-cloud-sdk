@@ -26,7 +26,6 @@ from googlecloudsdk.command_lib.scc.findings import flags
 from googlecloudsdk.command_lib.scc.findings import util
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Export(base.Command):

@@ -28,24 +28,11 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 _DETAILED_HELP = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """ \
+    'DESCRIPTION': '{description}',
+    'EXAMPLES': """ \
         To create a new trigger ``my-trigger'' for events of type ``google.cloud.pubsub.topic.v1.messagePublished'' with destination Cloud Run service ``my-service'', run:
 
           $ {command} my-trigger --event-filters="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=my-service
-        """,
-}
-
-_DETAILED_HELP_BETA = {
-    'DESCRIPTION':
-        '{description}',
-    'EXAMPLES':
-        """ \
-        To create a new trigger ``my-trigger'' for events of type ``google.cloud.pubsub.topic.v1.messagePublished'' with destination Cloud Run service ``my-service'', run:
-
-          $ {command} my-trigger --matching-criteria="type=google.cloud.pubsub.topic.v1.messagePublished" --destination-run-service=my-service
         """,
 }
 
@@ -196,22 +183,28 @@ class Create(base.CreateCommand):
     if types.IsPubsubType(self._event_type):
       topic = trigger_dict['transport']['pubsub']['topic']
       if args.IsSpecified('transport_topic'):
-        log.status.Print('Publish to Pub/Sub topic [{}] to receive events '
-                         'in {}.'.format(topic, dest_str))
+        log.status.Print(
+            'Publish to Pub/Sub topic [{}] to receive events in {}.'.format(
+                topic, dest_str
+            )
+        )
       else:
         log.status.Print('Created Pub/Sub topic [{}].'.format(topic))
         log.status.Print(
-            'Publish to this topic to receive events in {}.'.format(dest_str))
+            'Publish to this topic to receive events in {}.'.format(dest_str)
+        )
     return response
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed:
       log.warning(
           'It may take up to {} minutes for the new trigger to become active.'
-          .format(triggers.MAX_ACTIVE_DELAY_MINUTES))
+          .format(triggers.MAX_ACTIVE_DELAY_MINUTES)
+      )
 
-  def GetDestinationLocation(self, args, trigger_ref, location_arg_name,
-                             destination_type):
+  def GetDestinationLocation(
+      self, args, trigger_ref, location_arg_name, destination_type
+  ):
     # If no Destination region was provided, use the trigger's location instead.
     if not args.IsSpecified(location_arg_name):
       destination_location = trigger_ref.Parent().Name()
@@ -219,7 +212,9 @@ class Create(base.CreateCommand):
         raise NoDestinationLocationSpecifiedError(
             'The `{}` flag is required when creating a global trigger with a '
             'destination {}.'.format(
-                args.GetFlag(location_arg_name), destination_type))
+                args.GetFlag(location_arg_name), destination_type
+            )
+        )
     else:
       destination_location = args.GetValue(location_arg_name)
 

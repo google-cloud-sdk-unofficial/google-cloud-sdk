@@ -18,9 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import time
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai import operations
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
+from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
@@ -72,7 +75,9 @@ class Deploy(base.Command):
             ' `{publisher_name}/{model_name}@{model_version_name}, e.g.'
             ' `google/gemma2@gemma-2-2b`. If it is a Hugging Face model, it'
             ' should be in the convention of Hugging Face models, e.g.'
-            ' `meta-llama/Meta-Llama-3-8B`.'
+            ' `meta-llama/Meta-Llama-3-8B`. If it is a Custom Weights model, it'
+            ' should be in the format of `gs://{gcs_bucket_uri}`, e.g. `gs://'
+            '-model-garden-public-us/llama3.1/Meta-Llama-3.1-8B-Instruct`.'
         ),
     ).AddToParser(parser)
     base.Argument(
@@ -111,6 +116,15 @@ class Deploy(base.Command):
             ' the model. Use `gcloud ai model-garden models'
             ' list-deployment-config` to check the supported accelerator types.'
         ),
+        required=False,
+    ).AddToParser(parser)
+    base.Argument(
+        '--accelerator-count',
+        help=(
+            'The accelerator count to serve the model. Accelerator count'
+            ' should be non-negative.'
+        ),
+        type=int,
         required=False,
     ).AddToParser(parser)
     base.Argument(
@@ -311,7 +325,9 @@ class Deploy(base.Command):
     )
 
   def Run(self, args):
-    validation.ValidateModelGardenModelArgs(args)
+    is_custom_weights_model = args.model.startswith('gs://')
+    if not is_custom_weights_model:
+      validation.ValidateModelGardenModelArgs(args)
     validation.ValidateDisplayName(args.endpoint_display_name)
     region_ref = args.CONCEPTS.region.Parse()
     args.region = region_ref.AsDict()['locationsId']
@@ -321,84 +337,150 @@ class Deploy(base.Command):
     with endpoint_util.AiplatformEndpointOverrides(
         version, region='us-central1'
     ):
-      # Step 1: Fetch PublisherModel data, including deployment configs. Use
-      # us-central1 because all data are stored in us-central1.
-      mg_client = client_mg.ModelGardenClient()
-      if is_hf_model:
-        # Convert to lower case because API only takes in lower case.
-        publisher_name, model_name = args.model.lower().split('/')
+      # Custom weights model deployment.
+      if is_custom_weights_model:
 
-        try:
-          publisher_model = mg_client.GetPublisherModel(
-              model_name=f'publishers/{publisher_name}/models/{model_name}',
-              is_hugging_face_model=True,
-          )
-        except apitools_exceptions.HttpNotFoundError:
-          raise c_exceptions.UnknownArgumentException(
-              '--model',
-              f'{args.model} is not a supported Hugging Face'
-              ' model for deployment in Model Garden.',
+        if not (
+            bool(args.machine_type)
+            == bool(args.accelerator_type)
+            == bool(args.accelerator_count)
+        ):
+          raise c_exceptions.InvalidArgumentException(
+              '--machine-type, --accelerator-type and --accelerator-count',
+              ' Arguments for MachineType, AcceleratorType and AcceleratorCount'
+              ' must either all be provided or all be empty for custom weights'
+              ' model deployment.',
           )
 
-        default_endpoint_name = '-'.join(
-            [publisher_name, model_name, 'hf', 'mg-cli-deploy']
-        )
-        api_model_arg = f'{publisher_name}/{model_name}'
+        machine_spec = None
+        # Check accelerator quota.
+        if args.machine_type:
+          model_garden_utils.CheckAcceleratorQuota(
+              args,
+              machine_type=args.machine_type,
+              accelerator_type=args.accelerator_type,
+              accelerator_count=args.accelerator_count,
+          )
+          client = apis.GetClientInstance(
+              constants.AI_PLATFORM_API_NAME,
+              constants.AI_PLATFORM_API_VERSION[version],
+          )
+
+          machine_spec = client.MESSAGES_MODULE.GoogleCloudAiplatformV1beta1MachineSpec(
+              machineType=args.machine_type,
+              acceleratorType=client.MESSAGES_MODULE.GoogleCloudAiplatformV1beta1MachineSpec.AcceleratorTypeValueValuesEnum(
+                  args.accelerator_type
+              ),
+              acceleratorCount=args.accelerator_count,
+          )
+
+        # Deploy the model.
+        with endpoint_util.AiplatformEndpointOverrides(
+            version, region=args.region
+        ):
+          default_endpoint_name = '-'.join([
+              'custom-weights',
+              str(time.time()).split('.')[0],
+              'mg-cli-deploy',
+          ])
+          mg_client = client_mg.ModelGardenClient()
+          operation_client = operations.OperationsClient(version=version)
+          endpoint_name = (
+              args.endpoint_display_name
+              if args.endpoint_display_name
+              else default_endpoint_name
+          )
+
+          model_garden_utils.Deploy(
+              args,
+              machine_spec,
+              endpoint_name,
+              args.model,
+              operation_client,
+              mg_client,
+          )
       else:
-        # Convert to lower case because API only takes in lower case.
-        publisher_name, model_and_version_name = args.model.lower().split('/')
+        # Model Garden model deployment.
+        # Step 1: Fetch PublisherModel data, including deployment configs. Use
+        # us-central1 because all data are stored in us-central1.
+        mg_client = client_mg.ModelGardenClient()
+        if is_hf_model:
+          # Convert to lower case because API only takes in lower case.
+          publisher_name, model_name = args.model.lower().split('/')
 
-        try:
-          publisher_model = mg_client.GetPublisherModel(
+          try:
+            publisher_model = mg_client.GetPublisherModel(
+                model_name=f'publishers/{publisher_name}/models/{model_name}',
+                is_hugging_face_model=True,
+            )
+          except apitools_exceptions.HttpNotFoundError:
+            raise c_exceptions.UnknownArgumentException(
+                '--model',
+                f'{args.model} is not a supported Hugging Face'
+                ' model for deployment in Model Garden.',
+            )
+
+          default_endpoint_name = '-'.join(
+              [publisher_name, model_name, 'hf', 'mg-cli-deploy']
+          )
+          api_model_arg = f'{publisher_name}/{model_name}'
+        else:
+          # Convert to lower case because API only takes in lower case.
+          publisher_name, model_and_version_name = args.model.lower().split('/')
+
+          try:
+            publisher_model = mg_client.GetPublisherModel(
+                f'publishers/{publisher_name}/models/{model_and_version_name}'
+            )
+          except apitools_exceptions.HttpNotFoundError:
+            raise c_exceptions.UnknownArgumentException(
+                '--model',
+                f'{args.model} is not a supported Model Garden model for'
+                ' deployment in Model Garden.',
+            )
+
+          default_endpoint_name = '-'.join([
+              publisher_name,
+              model_and_version_name.split('@')[1],
+              'mg-cli-deploy',
+          ])
+          api_model_arg = (
               f'publishers/{publisher_name}/models/{model_and_version_name}'
           )
-        except apitools_exceptions.HttpNotFoundError:
-          raise c_exceptions.UnknownArgumentException(
-              '--model',
-              f'{args.model} is not a supported Model Garden model for'
-              ' deployment in Model Garden.',
+
+        deploy_config = model_garden_utils.GetDeployConfig(
+            args, publisher_model
+        )
+
+        # Step 2: Check accelerator quota.
+        model_garden_utils.CheckAcceleratorQuota(
+            args,
+            machine_type=deploy_config.dedicatedResources.machineSpec.machineType,
+            accelerator_type=str(
+                deploy_config.dedicatedResources.machineSpec.acceleratorType
+            ),
+            accelerator_count=deploy_config.dedicatedResources.machineSpec.acceleratorCount,
+        )
+        # Clear the aiplatform URI value so that new values can be set.
+        properties.VALUES.api_endpoint_overrides.aiplatform.Set(None)
+
+        # Step 3: Deploy the model.
+        with endpoint_util.AiplatformEndpointOverrides(
+            version, region=args.region
+        ):
+          mg_client = client_mg.ModelGardenClient()
+          operation_client = operations.OperationsClient(version=version)
+          endpoint_name = (
+              args.endpoint_display_name
+              if args.endpoint_display_name
+              else default_endpoint_name
           )
 
-        default_endpoint_name = '-'.join([
-            publisher_name,
-            model_and_version_name.split('@')[1],
-            'mg-cli-deploy',
-        ])
-        api_model_arg = (
-            f'publishers/{publisher_name}/models/{model_and_version_name}'
-        )
-
-      deploy_config = model_garden_utils.GetDeployConfig(args, publisher_model)
-
-      # Step 2: Check accelerator quota.
-      model_garden_utils.CheckAcceleratorQuota(
-          args,
-          machine_type=deploy_config.dedicatedResources.machineSpec.machineType,
-          accelerator_type=str(
-              deploy_config.dedicatedResources.machineSpec.acceleratorType
-          ),
-          accelerator_count=deploy_config.dedicatedResources.machineSpec.acceleratorCount,
-      )
-      # Clear the aiplatform URI value so that new values can be set.
-      properties.VALUES.api_endpoint_overrides.aiplatform.Set(None)
-
-      # Step 3: Deploy the model.
-      with endpoint_util.AiplatformEndpointOverrides(
-          version, region=args.region
-      ):
-        mg_client = client_mg.ModelGardenClient()
-        operation_client = operations.OperationsClient(version=version)
-        endpoint_name = (
-            args.endpoint_display_name
-            if args.endpoint_display_name
-            else default_endpoint_name
-        )
-
-        model_garden_utils.Deploy(
-            args,
-            deploy_config.dedicatedResources.machineSpec,
-            endpoint_name,
-            api_model_arg,
-            operation_client,
-            mg_client,
-        )
+          model_garden_utils.Deploy(
+              args,
+              deploy_config.dedicatedResources.machineSpec,
+              endpoint_name,
+              api_model_arg,
+              operation_client,
+              mg_client,
+          )

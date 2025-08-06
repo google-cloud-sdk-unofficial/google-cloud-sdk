@@ -164,13 +164,23 @@ def ProcessSource(description: str, source: str) -> Tuple[Any, Any]:
 
 def PrintDryRunInfo(job):
   """Prints the dry run info."""
+  if FLAGS.format in ['prettyjson', 'json']:
+    bq_utils.PrintFormattedJsonObject(job)
+    return
+  # TODO: b/422281423 - Revert this check once server returns this field for
+  # all dry run queries again.
+  if 'totalBytesProcessed' not in job['statistics']['query']:
+    print(
+        'Query successfully validated. No information about number of bytes'
+        ' processed. To see the full details of the job, run this query with'
+        ' `--format=json` or `--format=prettyjson`.'
+    )
+    return
   num_bytes = job['statistics']['query']['totalBytesProcessed']
   num_bytes_accuracy = job['statistics']['query'].get(
       'totalBytesProcessedAccuracy', 'PRECISE'
   )
-  if FLAGS.format in ['prettyjson', 'json']:
-    bq_utils.PrintFormattedJsonObject(job)
-  elif FLAGS.format == 'csv':
+  if FLAGS.format == 'csv':
     print(num_bytes)
   else:
     if job['statistics']['query'].get('statementType', '') == 'LOAD_DATA':
@@ -339,34 +349,37 @@ class TablePrinter(object):
           )
 
   @staticmethod
-  def _NormalizeRecord(field, value):
+  def _NormalizeRecord(field, value, use_full_timestamp):
     """Returns bq-specific formatting of a RECORD type."""
     result = collections.OrderedDict()
     for subfield, subvalue in zip(field.get('fields', []), value):
       result[subfield.get('name', '')] = TablePrinter.NormalizeField(
-          subfield, subvalue
+          subfield, subvalue, use_full_timestamp
       )
     return result
 
   @staticmethod
-  def _NormalizeTimestamp(unused_field, value):
+  def _NormalizeTimestamp(unused_field, value, use_full_timestamp):
     """Returns bq-specific formatting of a TIMESTAMP type."""
     try:
-      date = datetime.datetime.fromtimestamp(
-          0, tz=datetime.timezone.utc
-      ) + datetime.timedelta(seconds=float(value))
-      # Remove the extra timezone info "+00:00" at the end of the date.
-      date = date.replace(tzinfo=None)
-      # Our goal is the equivalent of '%Y-%m-%d %H:%M:%S' via strftime but that
-      # doesn't work for dates with years prior to 1900.  Instead we zero out
-      # fractional seconds then call isoformat with a space separator.
-      date = date.replace(microsecond=0)
-      return date.isoformat(' ')
+      if use_full_timestamp:
+        return value
+      else:
+        date = datetime.datetime.fromtimestamp(
+            0, tz=datetime.timezone.utc
+        ) + datetime.timedelta(seconds=float(value))
+        # Remove the extra timezone info "+00:00" at the end of the date.
+        date = date.replace(tzinfo=None)
+        # Our goal is the equivalent of '%Y-%m-%d %H:%M:%S' via strftime but that
+        # doesn't work for dates with years prior to 1900.  Instead we zero out
+        # fractional seconds then call isoformat with a space separator.
+        date = date.replace(microsecond=0)
+        return date.isoformat(' ')
     except (ValueError, OverflowError):
       return '<date out of range for display>'
 
   @staticmethod
-  def _NormalizeRange(field, value):
+  def _NormalizeRange(field, value, use_full_timestamp):
     """Returns bq-specific formatting of a RANGE type."""
     parsed = ParseRangeString(value)
     if parsed is None:
@@ -378,38 +391,42 @@ class TablePrinter(object):
       end = end.upper() if IsRangeBoundaryUnbounded(end) else end
       return '[%s, %s)' % (start, end)
 
-    normalized_start = (
-        start.upper()
-        if IsRangeBoundaryUnbounded(start)
-        else TablePrinter._NormalizeTimestamp(field, start)
-    )
-    normalized_end = (
-        end.upper()
-        if IsRangeBoundaryUnbounded(end)
-        else TablePrinter._NormalizeTimestamp(field, end)
-    )
+    if IsRangeBoundaryUnbounded(start):
+      normalized_start = start.upper()
+    else:
+      normalized_start = TablePrinter._NormalizeTimestamp(
+          field, start, use_full_timestamp
+      )
+    if IsRangeBoundaryUnbounded(end):
+      normalized_end = end.upper()
+    else:
+      normalized_end = TablePrinter._NormalizeTimestamp(
+          field, end, use_full_timestamp
+      )
     return '[%s, %s)' % (normalized_start, normalized_end)
 
-  _FIELD_NORMALIZERS = {
-      # TODO(b/324243535): Re-enable once more typing has been added.
-      # pytype: disable=attribute-error
-      'RECORD': _NormalizeRecord.__func__,
-      'TIMESTAMP': _NormalizeTimestamp.__func__,
-      'RANGE': _NormalizeRange.__func__,
-      # pytype: enable=attribute-error
-  }
-
   @staticmethod
-  def NormalizeField(field, value):
+  def NormalizeField(field, value, use_full_timestamp: bool):
     """Returns bq-specific formatting of a field."""
     if value is None:
       return None
-    normalizer = TablePrinter._FIELD_NORMALIZERS.get(
-        field.get('type', '').upper(), lambda _, x: x
-    )
     if field.get('mode', '').upper() == 'REPEATED':
-      return [normalizer(field, value) for value in value]
-    return normalizer(field, value)
+      return [
+          TablePrinter._NormalizeSingleValue(field, value, use_full_timestamp)
+          for value in value
+      ]
+    return TablePrinter._NormalizeSingleValue(field, value, use_full_timestamp)
+
+  @staticmethod
+  def _NormalizeSingleValue(field, value, use_full_timestamp: bool):
+    """Returns formatting of a single field value."""
+    if field.get('type', '').upper() == 'RECORD':
+      return TablePrinter._NormalizeRecord(field, value, use_full_timestamp)
+    elif field.get('type', '').upper() == 'TIMESTAMP':
+      return TablePrinter._NormalizeTimestamp(field, value, use_full_timestamp)
+    elif field.get('type', '').upper() == 'RANGE':
+      return TablePrinter._NormalizeRange(field, value, use_full_timestamp)
+    return value
 
   @staticmethod
   def MaybeConvertToJson(value):
@@ -419,10 +436,10 @@ class TablePrinter(object):
     return value
 
   @staticmethod
-  def FormatRow(fields, row, formatter):
+  def FormatRow(fields, row, formatter, use_full_timestamp: bool):
     """Convert fields in a single row to bq-specific formatting."""
     values = [
-        TablePrinter.NormalizeField(field, value)
+        TablePrinter.NormalizeField(field, value, use_full_timestamp)
         for field, value in zip(fields, row)
     ]
     # Convert complex values to JSON if we're not already outputting as such.
@@ -435,12 +452,13 @@ class TablePrinter(object):
       values = ['NULL' if value is None else value for value in values]
     return values
 
-  def PrintTable(self, fields, rows):
+  def PrintTable(self, fields, rows, use_full_timestamp: bool):
     formatter = utils_flags.get_formatter_from_flags(secondary_format='pretty')
     self._ValidateFields(fields, formatter)
     formatter.AddFields(fields)
     formatter.AddRows(
-        TablePrinter.FormatRow(fields, row, formatter) for row in rows
+        TablePrinter.FormatRow(fields, row, formatter, use_full_timestamp)
+        for row in rows
     )
     formatter.Print()
 

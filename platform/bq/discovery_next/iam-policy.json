@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250709",
+  "revision": "20250722",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3321,6 +3321,11 @@
           "description": "Optional. Job timeout in milliseconds. If this time limit is exceeded, BigQuery will attempt to stop a longer job, but may not always succeed in canceling it before the job completes. For example, a job that takes more than 60 seconds to complete has a better chance of being stopped than a job that takes 10 seconds to complete.",
           "type": "string",
           "format": "int64"
+        },
+        "maxSlots": {
+          "description": "Optional. INTERNAL: DO NOT USE. The maximum rate of slot consumption to allow for this job. If set, the number of slots used to execute the job will be throttled to try and keep its slot consumption below the requested rate.",
+          "type": "integer",
+          "format": "int32"
         },
         "labels": {
           "description": "The labels associated with this job. You can use these to organize and group your jobs. Label keys and values can be no longer than 63 characters, can only contain lowercase letters, numeric characters, underscores and dashes. International characters are allowed. Label values are optional. Label keys must start with a letter and each label in the list must have a different key.",
@@ -6768,6 +6773,11 @@
           "type": "string",
           "format": "int64"
         },
+        "maxSlots": {
+          "description": "Optional. INTERNAL: DO NOT USE. The maximum rate of slot consumption to allow for this job. If set, the number of slots used to execute the job will be throttled to try and keep its slot consumption below the requested rate. This limit is best effort.",
+          "type": "integer",
+          "format": "int32"
+        },
         "destinationEncryptionConfiguration": {
           "description": "Optional. Custom encryption configuration (e.g., Cloud KMS keys)",
           "$ref": "EncryptionConfiguration"
@@ -7173,7 +7183,7 @@
           }
         },
         "definitionBody": {
-          "description": "Required. The body of the routine. For functions, this is the expression in the AS clause. If language=SQL, it is the substring inside (but excluding) the parentheses. For example, for the function created with the following statement: `CREATE FUNCTION JoinLines(x string, y string) as (concat(x, \"\\n\", y))` The definition_body is `concat(x, \"\\n\", y)` (\\n is not replaced with linebreak). If language=JAVASCRIPT, it is the evaluated string in the AS clause. For example, for the function created with the following statement: `CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'` The definition_body is `return \"\\n\";\\n` Note that both \\n are replaced with linebreaks.",
+          "description": "Required. The body of the routine. For functions, this is the expression in the AS clause. If `language = \"SQL\"`, it is the substring inside (but excluding) the parentheses. For example, for the function created with the following statement: `CREATE FUNCTION JoinLines(x string, y string) as (concat(x, \"\\n\", y))` The definition_body is `concat(x, \"\\n\", y)` (\\n is not replaced with linebreak). If `language=\"JAVASCRIPT\"`, it is the evaluated string in the AS clause. For example, for the function created with the following statement: `CREATE FUNCTION f() RETURNS STRING LANGUAGE js AS 'return \"\\n\";\\n'` The definition_body is `return \"\\n\";\\n` Note that both \\n are replaced with linebreaks. If `definition_body` references another routine, then that routine must be fully qualified with its project ID.",
           "type": "string"
         },
         "description": {
@@ -7233,7 +7243,7 @@
           ]
         },
         "pythonOptions": {
-          "description": "Optional. Options for Python UDF. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
+          "description": "Optional. Options for the Python UDF. [Preview](https:\/\/cloud.google.com\/products\/#product-launch-stages)",
           "$ref": "PythonOptions"
         },
         "externalRuntimeOptions": {
@@ -7400,11 +7410,11 @@
       "type": "object",
       "properties": {
         "entryPoint": {
-          "description": "Required. The entry point function in the user's Python code.",
+          "description": "Required. The name of the function defined in Python code as the entry point when the Python UDF is invoked.",
           "type": "string"
         },
         "packages": {
-          "description": "Optional. A list of package names along with versions to be installed. Follows requirements.txt syntax (e.g. numpy==2.0, permutation, urllib3<2.2.1)",
+          "description": "Optional. A list of Python package names along with versions to be installed. Example: [\"pandas>=2.1\", \"google-cloud-translate==3.11\"]. For more information, see [Use third-party packages](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions-python#third-party-packages).",
           "type": "array",
           "items": {
             "type": "string"
@@ -7418,11 +7428,11 @@
       "type": "object",
       "properties": {
         "containerMemory": {
-          "description": "Optional. Amount of memory provisioned for the container instance. Format: {number}{unit} where unit is one of \"M\", \"G\", \"Mi\" and \"Gi\" (e.g. 1G, 512Mi). If not specified, the default value is 512Mi.",
+          "description": "Optional. Amount of memory provisioned for a Python UDF container instance. Format: {number}{unit} where unit is one of \"M\", \"G\", \"Mi\" and \"Gi\" (e.g. 1G, 512Mi). If not specified, the default value is 512Mi. For more information, see [Configure container limits for Python UDFs](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions-python#configure-container-limits)",
           "type": "string"
         },
         "containerCpu": {
-          "description": "Optional. Amount of CPU provisioned for the container instance. If not specified, the default value is 0.33 vCPUs.",
+          "description": "Optional. Amount of CPU provisioned for a Python UDF container instance. For more information, see [Configure container limits for Python UDFs](https:\/\/cloud.google.com\/bigquery\/docs\/user-defined-functions-python#configure-container-limits)",
           "type": "number",
           "format": "double"
         },
@@ -7436,7 +7446,7 @@
           "format": "int64"
         },
         "runtimeVersion": {
-          "description": "Optional. Language runtime version (e.g. python-3.11).",
+          "description": "Optional. Language runtime version. Example: `python-3.11`.",
           "type": "string"
         }
       }

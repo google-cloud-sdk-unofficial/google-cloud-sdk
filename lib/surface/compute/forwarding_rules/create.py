@@ -35,7 +35,7 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_all_protocol):
+def _Args(parser, support_traffic_disabled, support_all_protocol):
   """Add the flags to create a forwarding rule."""
 
   flags.AddCreateArgs(
@@ -53,6 +53,9 @@ def _Args(parser, support_all_protocol):
   flags.AddDisableAutomateDnsZone(parser)
   flags.AddIsMirroringCollector(parser)
   flags.AddServiceDirectoryRegistration(parser)
+
+  if support_traffic_disabled:
+    flags.AddTrafficDisabled(parser)
 
   parser.add_argument(
       '--service-label',
@@ -80,19 +83,23 @@ class CreateHelper(object):
   def __init__(
       self,
       holder,
+      support_traffic_disabled,
       support_all_protocol,
       support_sd_registration_for_regional,
   ):
     self._holder = holder
+    self._support_traffic_disabled = support_traffic_disabled
     self._support_all_protocol = support_all_protocol
     self._support_sd_registration_for_regional = (
         support_sd_registration_for_regional
     )
 
   @classmethod
-  def Args(cls, parser, support_all_protocol):
+  def Args(cls, parser, support_traffic_disabled, support_all_protocol):
     """Inits the class args for supported features."""
-    cls.FORWARDING_RULE_ARG = _Args(parser, support_all_protocol)
+    cls.FORWARDING_RULE_ARG = _Args(
+        parser, support_traffic_disabled, support_all_protocol
+    )
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -403,6 +410,9 @@ class CreateHelper(object):
       forwarding_rule.portRange = _MakeSingleUnifiedPortRange(
           args.port_range, range_list)
 
+    if self._support_traffic_disabled and args.IsSpecified('traffic_disabled'):
+      forwarding_rule.trafficDisabled = args.traffic_disabled
+
     if hasattr(args, 'service_label'):
       forwarding_rule.serviceLabel = args.service_label
 
@@ -538,18 +548,21 @@ class CreateHelper(object):
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
-
+  _support_traffic_disabled = False
   _support_all_protocol = False
   _support_sd_registration_for_regional = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser, cls._support_all_protocol)
+    CreateHelper.Args(
+        parser, cls._support_traffic_disabled, cls._support_all_protocol
+        )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return CreateHelper(
         holder,
+        self._support_traffic_disabled,
         self._support_all_protocol,
         self._support_sd_registration_for_regional,
     ).Run(args)
@@ -558,6 +571,7 @@ class Create(base.CreateCommand):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
+  _support_traffic_disabled = False
   _support_all_protocol = False
   _support_sd_registration_for_regional = True
 
@@ -565,6 +579,7 @@ class CreateBeta(Create):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
+  _support_traffic_disabled = True
   _support_all_protocol = True
   _support_sd_registration_for_regional = True
 

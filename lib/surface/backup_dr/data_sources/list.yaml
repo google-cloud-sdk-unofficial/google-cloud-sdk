@@ -4,8 +4,11 @@
     description: Displays all data sources in a project.
     examples: |
       To list data sources for all backup vaults and locations, run:
+
       $ {command}
+
       To list all data sources for a backup vault ``my-vault'' in a location ``my-location'', run:
+
       $ {command} --backup-vault=my-vault --location=my-location
   request:
     collection: backupdr.projects.locations.backupVaults.dataSources

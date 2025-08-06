@@ -25,3 +25,5 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 class ChannelConnections(base.Group):
   """Manage Eventarc channel connections."""
+
+  category = base.SERVERLESS_CATEGORY

@@ -40,7 +40,7 @@ table(
 """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class ListEnrollments(base.ListCommand):
   """List Eventarc enrollments attached to an Eventarc message bus."""

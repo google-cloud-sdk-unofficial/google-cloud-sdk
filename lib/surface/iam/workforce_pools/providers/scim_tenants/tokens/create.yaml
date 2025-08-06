@@ -1,15 +1,14 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Create an IAM Workforce Pool Provider SCIM Tenant Token.
+    brief: Create an IAM workforce identity pool provider SCIM tenant token.
     description: |
-      Create a new SCIM Token associated with a specific Workforce Pool Provider SCIM Tenant.
+      Create a new SCIM token associated with a specific workforce identity pool provider SCIM tenant.
 
-      Upon successful creation, the command returns the created SCIM Token resource.
+      Upon successful creation, the command returns the created SCIM token resource.
     examples: |
       To create a SCIM token with ID `my-token` under tenant `my-tenant` provider `my-provider` in pool `my-pool` located in `global`:
 
-        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --tenant=my-tenant
+        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --scim-tenant=my-tenant
 
   request:
     collection: iam.locations.workforcePools.providers.scimTenants.tokens

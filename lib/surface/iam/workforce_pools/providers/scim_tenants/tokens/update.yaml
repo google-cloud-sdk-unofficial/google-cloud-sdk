@@ -15,16 +15,15 @@
 #
 # Implementation definition for gcloud iam workforce-pools providers scim-tenants tokens update
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Update an IAM Workforce Pool Provider SCIM Tenant Token.
+    brief: Update an IAM workforce identity pool provider SCIM tenant token.
     description: |
-      Update an existing SCIM Token associated with a specific Workforce Pool Provider SCIM Tenant.
+      Update an existing SCIM token associated with a specific workforce identity pool provider SCIM tenant.
     examples: |
       To update the display name of a SCIM token with ID `my-token` under tenant `my-tenant` provider `my-provider` in pool `my-pool` located in `global`:
 
-        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --tenant=my-tenant --display-name="New display name"
+        $ {command} my-token --location=global --workforce-pool=my-pool --provider=my-provider --scim-tenant=my-tenant --display-name="New display name"
 
   request:
     collection: iam.locations.workforcePools.providers.scimTenants.tokens

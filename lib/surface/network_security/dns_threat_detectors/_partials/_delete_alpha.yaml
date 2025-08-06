@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Delete dnsThreatDetectors
-    description: Delete a dnsThreatDetector
+    brief: Delete a DnsThreatDetector resource
+    description: Delete a DnsThreatDetector resource.
     examples: |-
-      To delete the dnsThreatDetector, run:
+      To delete `DnsThreatDetector` resource `my-dns-threat-detector`, run:
 
-      $ {command}
+      $ {command} --location=global my-dns-threat-detector
   arguments:
     params:
     - help_text: |-

@@ -154,6 +154,9 @@ def AddBaseArgs(parser):
   flags.AddServerCaPool(parser)
   flags.AddStorageProvisionedIops(parser)
   flags.AddStorageProvisionedThroughput(parser)
+  flags.AddInstanceType(parser)
+  flags.AddNodeCount(parser)
+  flags.AddForceSqlNetworkArchitecture(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -171,11 +174,10 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableConnectionPooling(parser)
   flags.AddConnectionPoolFlags(parser)
-  flags.AddInstanceType(parser)
-  flags.AddNodeCount(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser, hidden=True)
+  flags.AddEnableAcceleratedReplicaMode(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -259,6 +261,14 @@ def RunBaseCreateCommand(args, release_track):
     ):
       args.tier = master_instance_resource.settings.tier
 
+    if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+      if not (
+          master_instance_resource.databaseVersion.name.startswith('MYSQL_')
+      ):
+        raise sql_exceptions.ArgumentError(
+            '--enable-accelerated-replica-mode is only supported for MySQL.'
+        )
+
     # Validate master/replica CMEK configurations.
     if master_instance_resource.diskEncryptionConfiguration:
       if args.region == master_instance_resource.region:
@@ -297,6 +307,13 @@ def RunBaseCreateCommand(args, release_track):
           '`--cascadable-replica` can only be specified when '
           '`--master-instance-name` is specified.',
       )
+
+    if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
+      if args.IsSpecified('database_version'):
+        if not args.database_version.startswith('MYSQL_'):
+          raise sql_exceptions.ArgumentError(
+              '--enable-accelerated-replica-mode is only supported for MySQL.'
+          )
 
   # --root-password is required when creating SQL Server instances
   if (

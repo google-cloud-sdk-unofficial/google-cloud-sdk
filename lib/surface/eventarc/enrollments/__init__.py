@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Enrollments(base.Group):
   """Manage Eventarc enrollments."""
+
+  category = base.SERVERLESS_CATEGORY

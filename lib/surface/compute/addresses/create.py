@@ -50,6 +50,7 @@ def _Args(cls, parser, support_psc_google_apis):
   cls.NETWORK_ARG.AddArgument(parser)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Reserve IP addresses.

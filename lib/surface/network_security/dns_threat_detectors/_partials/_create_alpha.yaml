@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Create dnsThreatDetectors
-    description: Create a dnsThreatDetector
+    brief: Create a DnsThreatDetector resource
+    description: Create a DnsThreatDetector resource.
     examples: |-
-      To create the dnsThreatDetector, run:
+      To create `DnsThreatDetector` resource `my-dns-threat-detector`, and using the Infoblox threat detection engine, run:
 
-      $ {command}
+      $ {command} --location=global --provider=infoblox my-dns-threat-detector
   arguments:
     params:
     - help_text: |-

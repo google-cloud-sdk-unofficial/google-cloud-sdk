@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, BETA, GA]
   help_text:
-    brief: Create an IAM Workforce Pool Provider SCIM Tenant.
+    brief: Create an IAM workforce identity pool provider SCIM tenant.
     description: |
-      Create a new SCIM Tenant associated with a specific Workforce Pool Provider.
+      Create a new SCIM tenant associated with a specific workforce identity pool provider.
 
-      Upon successful creation, the command returns the created SCIM Tenant resource.
+      Upon successful creation, the command returns the created SCIM tenant resource.
     examples: |
       To create a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:
 

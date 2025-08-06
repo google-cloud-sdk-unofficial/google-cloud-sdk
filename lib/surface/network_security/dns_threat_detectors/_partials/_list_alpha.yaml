@@ -19,12 +19,12 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: List dnsThreatDetectors
-    description: List dnsThreatDetectors
+    brief: Lists DnsThreatDetector resources
+    description: Lists all DnsThreatDetector resources.
     examples: |-
-      To list all dnsThreatDetectors, run:
+      To list all `DnsThreatDetector` resources, run:
 
-      $ {command}
+      $ {command} --location=global
   arguments:
     params:
     - help_text: |-

@@ -62,12 +62,13 @@ class Up(base.BinaryBackedCommand):
     """Deploy a container from the source Compose file to Cloud Run."""
     region = flags.GetRegion(args, prompt=True)
     self._SetRegionConfig(region)
+    project = properties.VALUES.core.project.Get(required=True)
     repo = self._GenerateRepositoryName(
-        properties.VALUES.core.project.Get(required=True),
+        project,
         region,
     )
     docker_repo = docker_util.DockerRepo(
-        project_id=properties.VALUES.core.project.Get(required=True),
+        project_id=project,
         location_id=region,
         repo_id=DEFAULT_REPO_NAME,
     )

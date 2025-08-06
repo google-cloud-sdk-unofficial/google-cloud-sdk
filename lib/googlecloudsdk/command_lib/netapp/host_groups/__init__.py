@@ -13,15 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The command group for the investigations CLI."""
-
-
-from googlecloudsdk.calliope import base
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class InvestigationsAlpha(base.Group):
-  """Create and manage Gemini Cloud Assist investigations."""
-
-  category = base.UNCATEGORIZED_CATEGORY
+"""A helper library for the Cloud NetApp Host Groups sub-command group."""

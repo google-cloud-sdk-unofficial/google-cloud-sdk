@@ -23,10 +23,24 @@
     description: Create a new AutonomousDatabase.
     examples: |-
       To create AutonomousDatabase with id `my-instance` in the location `us-east4` with display-name `my instance`,
+      odb-network `projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork`,
+      odb-subnet `projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet`,
       network `projects/my-project/locations/global/networks/default`, location `us-east4`, database `testadb`,
       admin-password `123Abpassdord`, cidr `12.2.0.0/24`, properties-compute-count `2`, properties-db-version `19c`,
       properties-license-type `LICENSE_INCLUDED`, properties-db-workload `DW`.
       run:
+      To set the network configuration use one of the following options:
+
+      ODBNetwork based configuration(This is the recommended way):
+
+      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+       --location=us-east4 --database=testadb --admin-password=123Abpassdord \
+       --properties-compute-count=2 --properties-db-version=19c \
+       --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW \
+       --odb-network=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork \
+       --odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet
+
+      Network and CIDR based configuration:
 
       $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --network=projects/my-project/locations/global/networks/default --cidr=12.2.0.0/24 \
@@ -284,12 +298,34 @@
       required: false
       repeated: false
       help_text: |-
-        The subnet CIDR range for the Autonmous Database.
+        The subnet CIDR range for the Autonomous Database.
+    - arg_name: odb-network
+      help_text: |-
+        The name of the OdbNetwork associated with the Autonomous Database.
+        Format: projects/{project}/locations/{location}/odbNetworks/{odb_network}
+        It is optional but if specified, this should match the parent ODBNetwork of
+        the OdbSubnet.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_odb_networks
+      resource_method_params:
+        autonomousDatabase.odbNetwork: '{__relative_name__}'
+      required: false
+    - arg_name: odb-subnet
+      help_text: |-
+        The name of the OdbSubnet associated with the Autonomous Database. Format:
+        projects/{project}/locations/{location}/odbNetworks/{odb_network}/odbSubnets/{odb_subnet}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_odb_networks_odb_subnets
+      resource_method_params:
+        autonomousDatabase.odbSubnet: '{__relative_name__}'
+      required: false
     - group:
         api_field: autonomousDatabase.sourceConfig
         required: false
         help_text: |-
-          The source configuration for the standby Autonomnous Database.
+          The source configuration for the standby Autonomous Database.
         params:
         - arg_name: source-config-autonomous-database
           help_text: |-

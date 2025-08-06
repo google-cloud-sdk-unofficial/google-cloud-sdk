@@ -66,7 +66,7 @@ def _InputPayloadFormat(pipeline):
   return "Unknown Format"
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Eventarc pipelines."""

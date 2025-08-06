@@ -83,7 +83,7 @@ class Create(base.CreateCommand):
           ca_pool=ca_pool,
           enable_workforce_identity_federation=enable_workforce_identity_federation,
       )
-    except exceptions.EnableServicePermissionDeniedException:
+    except exceptions.EnableServiceException:
       # Display a message indicating the special invitation only status of SSM
       # upon failure to enable the service.
       log.warning(

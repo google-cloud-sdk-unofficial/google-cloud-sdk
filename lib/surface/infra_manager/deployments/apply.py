@@ -103,6 +103,7 @@ Add an annotation to an existing deployment:
     flags.AddArtifactsGCSBucketFlag(parser)
     flags.AddTFVersionConstraintFlag(parser)
     flags.AddQuotaValidationFlag(parser)
+    flags.AddProviderSourceFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -148,4 +149,5 @@ Add an annotation to an existing deployment:
         args.labels,
         args.quota_validation,
         args.annotations,
+        args.provider_source,
     )

@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Describe securityGateways
     description: Describe a securityGateway

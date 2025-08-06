@@ -12,15 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Commands for reading and manipulating recoverable snapshots."""
 
-"""The command group for the gemini-cloud-assist CLI."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
+DETAILED_HELP = {  # Dict[str, str]
+    'brief': (
+        'Recover, list, describe and delete Compute Engine recoverable'
+        ' snapshots.'
+    ),
+}
 
-@base.UniverseCompatible
+
+@base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GeminicloudassistAlpha(base.Group):
-  """Create and manage Gemini Cloud Assist."""
+class RecoverableSnapshots(base.Group):
+  """Recover, list, describe and delete Compute Engine recoverable snapshots."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+
+RecoverableSnapshots.category = base.INSTANCES_CATEGORY
+
+RecoverableSnapshots.detailed_help = DETAILED_HELP

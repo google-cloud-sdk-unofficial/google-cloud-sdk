@@ -86,6 +86,10 @@ def _RunUpdateV2(cmd, args):
         management_v2 = (
             cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
                 'MANAGEMENT_AUTOMATIC'))
+      if args.management == 'not_installed':
+        management_v2 = (
+            cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
+                'MANAGEMENT_NOT_INSTALLED'))
       patch_v2.servicemesh.management = management_v2
 
     if args.control_plane is not None:
@@ -208,6 +212,10 @@ def _RunUpdate(cmd, args):
                 'MANAGEMENT_AUTOMATIC'
             )
         )
+      if args.management == 'not_installed':
+        management = (
+            cmd.messages_v2.ServiceMeshSpec.ManagementValueValuesEnum(
+                'MANAGEMENT_NOT_INSTALLED'))
       patch.mesh.management = management
 
     if args.control_plane is not None:
@@ -354,7 +362,7 @@ class UpdateAlpha(features_base.UpdateCommand, mf_base.UpdateCommand):
     )
     membership_controlplane_group.add_argument(
         '--management',
-        choices=['automatic', 'manual'],
+        choices=['automatic', 'manual', 'not_installed'],
         help='The management mode to update to.',
     )
     membership_controlplane_group.add_argument(

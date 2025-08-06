@@ -43,7 +43,7 @@
       required: true
     - group:
         api_field: application.source
-        required: true
+        required: false
         help_text: |-
           Source template information for the deployment.
         params:

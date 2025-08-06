@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.addresses import flags
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   r"""Release reserved IP addresses.
 

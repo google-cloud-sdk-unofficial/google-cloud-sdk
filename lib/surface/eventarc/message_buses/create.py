@@ -34,7 +34,7 @@ _DETAILED_HELP = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create an Eventarc message bus."""
@@ -63,7 +63,6 @@ class Create(base.CreateCommand):
             message_bus_ref.locationsId,
         )
     )
-    client.RaiseErrorIfMessageBusExists(message_bus_ref.projectsId)
     operation = client.Create(
         message_bus_ref,
         client.BuildMessageBus(
