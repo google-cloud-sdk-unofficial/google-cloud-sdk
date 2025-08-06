@@ -18,6 +18,8 @@
       - googlecloudsdk.command_lib.pam.util:SetRequestedPrivilegedAccessInCreateGrantRequest
     BETA:
       api_version: v1beta
+      modify_request_hooks:
+      - googlecloudsdk.command_lib.pam.util:SetRequestedPrivilegedAccessInCreateGrantRequest
     GA:
       api_version: v1
     collection:
@@ -51,7 +53,7 @@
         Additional email addresses that are notified for all actions performed on the grant.
     # Group for grant scope selection.
     - group:
-        release_tracks: [ALPHA]
+        release_tracks: [ALPHA, BETA]
         mutex: true
         hidden: true
         help_text: |

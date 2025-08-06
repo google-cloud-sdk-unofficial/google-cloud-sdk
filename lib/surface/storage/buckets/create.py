@@ -165,9 +165,7 @@ class Create(base.Command):
     )
 
     parser.add_argument('--lifecycle-file', help=_LIFECYCLE_HELP_TEXT)
-
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_ip_filter_file_flag(parser)
+    flags.add_ip_filter_file_flag(parser)
 
   def Run(self, args):
     for url_string in args.url:

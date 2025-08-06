@@ -18,6 +18,16 @@ def define_null_marker(
   )
 
 
+def define_null_markers(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[List[str]]]:
+  return flags.DEFINE_list(
+      'null_markers',
+      [],
+      'An optional list of custom strings that will represent a NULL value'
+      'in CSV External table data.',
+      flag_values=flag_values,
+  )
 
 
 def define_time_zone(
@@ -76,6 +86,23 @@ def define_timestamp_format(
       None,
       'Format elements that define how the TIMESTAMP values are formatted in'
       ' the input files. For example, "MM/DD/YYYY HH24:MI:SS.FF3".',
+      flag_values=flag_values,
+  )
+
+
+def define_source_column_match(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[str]]:
+  return flags.DEFINE_enum(
+      'source_column_match',
+      None,
+      ['POSITION', 'NAME'],
+      'Controls the strategy used to match loaded columns to the schema in CSV'
+      ' External table data. Options include:'
+      '\n POSITION: matches by position. This option assumes that the columns'
+      ' are ordered the same way as the schema.'
+      '\n NAME: matches by name. This option reads the header row as column'
+      ' names and reorders columns to match the field names in the schema.',
       flag_values=flag_values,
   )
 

@@ -16,7 +16,9 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as bq_frontend_utils
+from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
+from utils import bq_error
 from utils import bq_id_utils
 
 ApiClientHelper = bq_id_utils.ApiClientHelper
@@ -128,6 +130,12 @@ class Show(bigquery_command.BigqueryCmd):
         '--assignee_id.',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'reservation_group',
+        None,
+        'Shows details for the reservation group described by this identifier.',
+        flag_values=fv,
+    )
     flags.DEFINE_enum(
         'job_type',
         None,
@@ -208,6 +216,8 @@ class Show(bigquery_command.BigqueryCmd):
           --assignee_type=FOLDER --assignee_id=123 --job_type=QUERY
       bq show --reservation_assignment --project_id=project --location=US
           --assignee_type=ORGANIZATION --assignee_id=456 --job_type=QUERY
+      bq show --reservation_group --location=US --project_id=project
+          reservation_group_name
 
     Arguments:
       identifier: the identifier of the resource to show.
@@ -323,6 +333,24 @@ class Show(bigquery_command.BigqueryCmd):
           client=client.GetReservationApiClient(),
           reference=reference,
       )
+    elif self.reservation_group:
+      try:
+        utils_flags.fail_if_not_using_alpha_feature(
+            bq_flags.AlphaFeatures.RESERVATION_GROUPS
+        )
+        reference = bq_client_utils.GetReservationGroupReference(
+            id_fallbacks=client,
+            identifier=identifier,
+            default_location=bq_flags.LOCATION.value,
+        )
+        object_info = client_reservation.GetReservationGroup(
+            reservation_group_client=client.GetReservationApiClient(),
+            reference=reference,
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to get reservation group '%s': %s" % (identifier, e)
+        )
     elif self.encryption_service_account:
       object_info = (
           client.apiclient.projects()

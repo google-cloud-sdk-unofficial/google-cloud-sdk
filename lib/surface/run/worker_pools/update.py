@@ -188,6 +188,7 @@ class Update(base.Command):
         failure_message=failure_message,
         suppress_output=args.async_,
     ):
+      # TODO: b/432102851 - Add retry logic with zonal redundancy off.
       response = worker_pools_client.ReleaseWorkerPool(
           worker_pool_ref, config_changes, prefetch=worker_pool
       )
@@ -234,6 +235,7 @@ class AlphaUpdate(Update):
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
     flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

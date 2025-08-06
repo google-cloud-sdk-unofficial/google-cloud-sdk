@@ -69,6 +69,10 @@ def _Run(args, version):
           region_ref,
           ' OR '.join([_API_DEPLOY_FILTER, _ONE_CLICK_DEPLOY_FILTER]),
       )
+    elif version == constants.BETA_VERSION:
+      return client.EndpointsClient(version=version).List(
+          region_ref, gdc_zone=args.gdc_zone
+      )
     else:
       return client.EndpointsClient(version=version).List(region_ref)
 

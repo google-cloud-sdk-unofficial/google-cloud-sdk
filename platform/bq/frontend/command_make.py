@@ -657,6 +657,20 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_boolean(
+        'reservation_group',
+        None,
+        'Creates a reservation group described by this identifier. ',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'reservation_group_name',
+        None,
+        'Reservation group name used to create reservation for, it can be full'
+        ' path or just the reservation group name. Used in conjunction with'
+        ' --reservation.',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
         'connection', None, 'Create a connection.', flag_values=fv
     )
     flags.DEFINE_enum(
@@ -855,6 +869,7 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
+    self.null_markers_flag = frontend_flags.define_null_markers(flag_values=fv)
     self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
     self.date_format_flag = frontend_flags.define_date_format(flag_values=fv)
     self.datetime_format_flag = frontend_flags.define_datetime_format(
@@ -862,6 +877,9 @@ class Make(bigquery_command.BigqueryCmd):
     )
     self.time_format_flag = frontend_flags.define_time_format(flag_values=fv)
     self.timestamp_format_flag = frontend_flags.define_timestamp_format(
+        flag_values=fv
+    )
+    self.source_column_match_flag = frontend_flags.define_source_column_match(
         flag_values=fv
     )
     self.parquet_map_target_type_flag = (
@@ -916,6 +934,8 @@ class Make(bigquery_command.BigqueryCmd):
           --job_type=QUERY --assignee_type=FOLDER --assignee_id=123
       bq mk --reservation_assignment --reservation_id=project:us.dev
           --job_type=QUERY --assignee_type=ORGANIZATION --assignee_id=456
+      bq mk --reservation_group --project_id=project --location=us
+          reservation_group_name
       bq mk --connection --connection_type='CLOUD_SQL'
         --properties='{"instanceId" : "instance",
         "database" : "db", "type" : "MYSQL" }'
@@ -982,6 +1002,10 @@ class Make(bigquery_command.BigqueryCmd):
           utils_flags.fail_if_not_using_alpha_feature(
               bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
           )
+        if self.reservation_group_name is not None:
+          utils_flags.fail_if_not_using_alpha_feature(
+              bq_flags.AlphaFeatures.RESERVATION_GROUPS
+          )
         ignore_idle_arg = self.ignore_idle_slots
         if ignore_idle_arg is None:
           ignore_idle_arg = not self.use_idle_slots
@@ -1004,6 +1028,7 @@ class Make(bigquery_command.BigqueryCmd):
             autoscale_max_slots=self.autoscale_max_slots,
             max_slots=self.max_slots,
             scaling_mode=self.scaling_mode,
+            reservation_group_name=self.reservation_group_name,
         )
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -1062,6 +1087,27 @@ class Make(bigquery_command.BigqueryCmd):
       except BaseException as e:
         raise bq_error.BigqueryError(
             "Failed to create reservation assignment '%s': %s" % (identifier, e)
+        )
+    elif self.reservation_group:
+      try:
+        utils_flags.fail_if_not_using_alpha_feature(
+            bq_flags.AlphaFeatures.RESERVATION_GROUPS
+        )
+        reference = bq_client_utils.GetReservationGroupReference(
+            id_fallbacks=client,
+            identifier=identifier,
+            default_location=bq_flags.LOCATION.value,
+        )
+        object_info = client_reservation.CreateReservationGroup(
+            reservation_group_client=client.GetReservationApiClient(),
+            reference=reference,
+        )
+        frontend_utils.PrintObjectInfo(
+            object_info, reference, custom_format='show'
+        )
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to create reservation group '%s': %s" % (identifier, e)
         )
     elif self.transfer_config:
       transfer_client = client.GetTransferV1ApiClient()
@@ -1386,11 +1432,13 @@ class Make(bigquery_command.BigqueryCmd):
             self.reference_file_schema_uri,
             self.file_set_spec_type,
             self.null_marker_flag.value,
+            self.null_markers_flag.value,
             self.time_zone_flag.value,
             self.date_format_flag.value,
             self.datetime_format_flag.value,
             self.time_format_flag.value,
             self.timestamp_format_flag.value,
+            self.source_column_match_flag.value,
             parquet_map_target_type=self.parquet_map_target_type_flag.value,
         )
         if (self.require_partition_filter is not None) and (

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.securesourcemanager import repositories
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.source_manager import flags
 from googlecloudsdk.command_lib.source_manager import resource_args
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     "DESCRIPTION": """
@@ -54,8 +55,8 @@ class Delete(base.DeleteCommand):
     # this is a shortcut LRO, it completes immediately and is marked as done
     # there is no need to wait
     delete_operation = client.Delete(repository_ref, args.allow_missing)
-    if not args.IsSpecified("format"):
-      args.format = "default"
+
+    log.DeletedResource(repository_ref.RelativeName())
     return delete_operation
 
 

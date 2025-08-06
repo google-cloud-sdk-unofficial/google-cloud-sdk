@@ -45,7 +45,6 @@
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:license_type
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:boot_conversion
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:adaptation_modifiers
-            - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:suppress_package_installation_failure
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:rootfs_uuid
 
     - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.machine_image_import.flags:description

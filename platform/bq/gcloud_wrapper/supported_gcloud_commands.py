@@ -6,6 +6,7 @@ from typing import List
 
 from gcloud_wrapper import bq_to_gcloud_config_classes
 from gcloud_wrapper.supported_commands.supported_commands_dataset import SUPPORTED_COMMANDS_DATASET
+from gcloud_wrapper.supported_commands.supported_commands_migration_workflow import SUPPORTED_COMMANDS_MIGRATION_WORKFLOW
 from gcloud_wrapper.supported_commands.supported_commands_project import SUPPORTED_COMMANDS_PROJECT
 
 
@@ -58,5 +59,7 @@ SUPPORTED_GLOBAL_FLAGS: List[FlagMapping] = [
 
 
 SUPPORTED_COMMANDS: List[CommandMapping] = (
-    SUPPORTED_COMMANDS_DATASET + SUPPORTED_COMMANDS_PROJECT
+    SUPPORTED_COMMANDS_DATASET
+    + SUPPORTED_COMMANDS_PROJECT
+    + SUPPORTED_COMMANDS_MIGRATION_WORKFLOW
 )

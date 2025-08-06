@@ -25,6 +25,7 @@ def GetBodyForCreateReservation(
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
+    reservation_group_name: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Return the request body for CreateReservation.
 
@@ -40,6 +41,8 @@ def GetBodyForCreateReservation(
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
+    reservation_group_name: The reservation group name which the reservation
+      belongs to.
 
   Returns:
     Reservation object that was created.
@@ -79,6 +82,8 @@ def GetBodyForCreateReservation(
   if scaling_mode is not None:
     reservation['scaling_mode'] = scaling_mode
 
+  if reservation_group_name is not None:
+    reservation['reservation_group'] = reservation_group_name
 
   return reservation
 
@@ -95,6 +100,7 @@ def CreateReservation(
     autoscale_max_slots: Optional[int] = None,
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
+    reservation_group_name: Optional[str] = None,
 ) -> Dict[str, Any]:
   """Create a reservation with the given reservation reference.
 
@@ -112,6 +118,8 @@ def CreateReservation(
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
+    reservation_group_name: The reservation group name which the reservation
+      belongs to.
 
   Returns:
     Reservation object that was created.
@@ -130,6 +138,7 @@ def CreateReservation(
       autoscale_max_slots,
       max_slots,
       scaling_mode,
+      reservation_group_name,
   )
   parent = 'projects/%s/locations/%s' % (
       reference.projectId,
@@ -151,6 +160,7 @@ def ListReservations(
     reference: ...,
     page_size: int,
     page_token: Optional[str],
+    reservation_group: Optional[str] = None,
 ) -> Any:
   """List reservations in the project and location for the given reference.
 
@@ -159,6 +169,8 @@ def ListReservations(
     reference: Reservation reference containing project and location.
     page_size: Number of results to show.
     page_token: Token to retrieve the next page of results.
+    reservation_group: When specified, only list reservations in the given
+      reservation group.
 
   Returns:
     Reservation object that was created.
@@ -167,6 +179,19 @@ def ListReservations(
       reference.projectId,
       reference.location,
   )
+  if reservation_group is not None:
+    return (
+        client.projects()
+        .locations()
+        .reservations()
+        .list(
+            parent=parent,
+            pageSize=page_size,
+            pageToken=page_token,
+            filter='reservation_group=%s' % reservation_group,
+        )
+        .execute()
+    )
   return (
       client.projects()
       .locations()
@@ -291,6 +316,7 @@ def GetParamsForUpdateReservation(
     scaling_mode: Optional[str] = None,
     labels_to_set: Optional[Dict[str, str]] = None,
     label_keys_to_remove: Optional[Set[str]] = None,
+    reservation_group_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], str]:
   """Return the request body and update mask for UpdateReservation.
 
@@ -303,6 +329,8 @@ def GetParamsForUpdateReservation(
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
+    reservation_group_name: The reservation group name that the reservation
+      belongs to.
 
   Returns:
     Reservation object that was updated.
@@ -379,6 +407,9 @@ def GetParamsForUpdateReservation(
     reservation['scaling_mode'] = scaling_mode
     update_mask += 'scaling_mode,'
 
+  if reservation_group_name is not None:
+    reservation['reservation_group'] = reservation_group_name
+    update_mask += 'reservation_group,'
 
   return reservation, update_mask
 
@@ -395,6 +426,7 @@ def UpdateReservation(
     scaling_mode: Optional[str] = None,
     labels_to_set: Optional[Dict[str, str]] = None,
     label_keys_to_remove: Optional[Set[str]] = None,
+    reservation_group_name: Optional[str] = None,
 ):
   """Updates a reservation with the given reservation reference.
 
@@ -409,6 +441,8 @@ def UpdateReservation(
     autoscale_max_slots: Number of slots to be scaled when needed.
     max_slots: The overall max slots for the reservation.
     scaling_mode: The scaling mode for the reservation.
+    reservation_group_name: The reservation group name that the reservation
+      belongs to.
 
   Returns:
     Reservation object that was updated.
@@ -429,6 +463,7 @@ def UpdateReservation(
       scaling_mode,
       labels_to_set,
       label_keys_to_remove,
+      reservation_group_name,
   )
   return (
       client.projects()
@@ -853,6 +888,106 @@ def SearchAllReservationAssignments(
   raise bq_error.BigqueryError('Reservation assignment not found')
 
 
+def CreateReservationGroup(
+    reservation_group_client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+) -> Dict[str, Any]:
+  """Creates a reservation group with the given reservation group reference.
+
+  Arguments:
+    reservation_group_client: The client used to make the request.
+    reference: Reservation group to create.
+
+  Returns:
+    Reservation group object that was created.
+
+  Raises:
+    bq_error.BigqueryError: if reservation group cannot be created.
+  """
+
+  parent = 'projects/%s/locations/%s' % (
+      reference.projectId,
+      reference.location,
+  )
+  reservation_group = {}
+  return (
+      reservation_group_client.projects()
+      .locations()
+      .reservationGroups()
+      .create(
+          parent=parent,
+          body=reservation_group,
+          reservationGroupId=reference.reservationGroupId,
+      )
+      .execute()
+  )
+
+
+def ListReservationGroups(
+    reservation_group_client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+    page_size: int,
+    page_token: str,
+) -> ...:
+  """Lists reservation groups in the project and location for the given reference.
+
+  Arguments:
+    reservation_group_client: The client used to make the request.
+    reference: Reservation group reference containing project and location.
+    page_size: Number of results to show.
+    page_token: Token to retrieve the next page of results.
+
+  Returns:
+    Reservation group object that was created.
+  """
+  parent = 'projects/%s/locations/%s' % (
+      reference.projectId,
+      reference.location,
+  )
+  return (
+      reservation_group_client.projects()
+      .locations()
+      .reservationGroups()
+      .list(parent=parent, pageSize=page_size, pageToken=page_token)
+      .execute()
+  )
+
+
+def GetReservationGroup(
+    reservation_group_client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+) -> ...:
+  """Gets a reservation group with the given reservation group reference.
+
+  Arguments:
+    reservation_group_client: The client used to make the request.
+    reference: Reservation group to get.
+
+  Returns:
+    Reservation group object corresponding to the given id.
+  """
+  return (
+      reservation_group_client.projects()
+      .locations()
+      .reservationGroups()
+      .get(name=reference.path())
+      .execute()
+  )
+
+
+def DeleteReservationGroup(
+    reservation_group_client: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationGroupReference,
+) -> ...:
+  """Deletes a reservation group with the given reservation group reference.
+
+  Arguments:
+    reservation_group_client: The client used to make the request.
+    reference: Reservation group to delete.
+  """
+  reservation_group_client.projects().locations().reservationGroups().delete(
+      name=reference.path()
+  ).execute()
 
 
 

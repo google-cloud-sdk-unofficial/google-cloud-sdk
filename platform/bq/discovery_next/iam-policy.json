@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250618",
+  "revision": "20250709",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -4073,6 +4073,12 @@
           "description": "Required. The top level type of this field.",
           "type": "string"
         },
+        "timestampPrecision": {
+          "description": "Optional. Precision (maximum number of total digits in base 10) for seconds of TIMESTAMP type. Possible values include: * 6 (Default, for TIMESTAMP type with microsecond precision) * 12 (For TIMESTAMP type with picosecond precision)",
+          "default": "6",
+          "type": "string",
+          "format": "int64"
+        },
         "arrayType": {
           "description": "Optional. The type of the array's elements, if this is an array.",
           "$ref": "QueryParameterType"
@@ -4979,6 +4985,12 @@
           "type": "string",
           "format": "int64"
         },
+        "totalServicesSkuSlotMs": {
+          "description": "Output only. Total slot-milliseconds for the job that run on external services and billed on the service SKU. This field is only populated for jobs that have external service costs, and is the total of the usage for costs whose billing method is \"SERVICES_SKU\".",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
+        },
         "reservationUsage": {
           "description": "Output only. Job resource usage breakdown by reservation. This field reported misleading information and will no longer be populated.",
           "readOnly": true,
@@ -5604,6 +5616,10 @@
           "description": "Non-preemptable reserved slots used for external job. For example, reserved slots for Cloua AI Platform job are the VM usages converted to BigQuery slot with equivalent mount of price.",
           "type": "string",
           "format": "int64"
+        },
+        "billingMethod": {
+          "description": "The billing method used for the external job. This field is only used when billed on the services sku, set to \"SERVICES_SKU\". Otherwise, it is unspecified for backward compatibility.",
+          "type": "string"
         }
       }
     },
@@ -6853,6 +6869,22 @@
         "useInt64Timestamp": {
           "description": "Optional. Output timestamp as usec int64. Default is false.",
           "type": "boolean"
+        },
+        "timestampOutputFormat": {
+          "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+          "type": "string",
+          "enumDescriptions": [
+            "Corresponds to default API output behavior, which is FLOAT64.",
+            "Timestamp is output as float64 seconds since Unix epoch.",
+            "Timestamp is output as int64 microseconds since Unix epoch.",
+            "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+          ],
+          "enum": [
+            "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+            "FLOAT64",
+            "INT64",
+            "ISO8601_STRING"
+          ]
         }
       }
     },
@@ -9648,6 +9680,23 @@
               "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
               "type": "boolean"
+            },
+            "formatOptions.timestampOutputFormat": {
+              "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+              "location": "query",
+              "type": "string",
+              "enumDescriptions": [
+                "Corresponds to default API output behavior, which is FLOAT64.",
+                "Timestamp is output as float64 seconds since Unix epoch.",
+                "Timestamp is output as int64 microseconds since Unix epoch.",
+                "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+              ],
+              "enum": [
+                "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+                "FLOAT64",
+                "INT64",
+                "ISO8601_STRING"
+              ]
             }
           },
           "parameterOrder": [
@@ -10923,6 +10972,23 @@
               "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
               "type": "boolean"
+            },
+            "formatOptions.timestampOutputFormat": {
+              "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+              "location": "query",
+              "type": "string",
+              "enumDescriptions": [
+                "Corresponds to default API output behavior, which is FLOAT64.",
+                "Timestamp is output as float64 seconds since Unix epoch.",
+                "Timestamp is output as int64 microseconds since Unix epoch.",
+                "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+              ],
+              "enum": [
+                "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+                "FLOAT64",
+                "INT64",
+                "ISO8601_STRING"
+              ]
             }
           },
           "parameterOrder": [

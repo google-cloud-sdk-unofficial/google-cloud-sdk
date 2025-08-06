@@ -23,6 +23,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -33,6 +34,7 @@ from utils import bq_id_utils
 
 
 class Delete(bigquery_command.BigqueryCmd):
+  """The Delete CLI command."""
   usage = """rm [-f] [-r] [(-d|-t)] <identifier>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
@@ -97,6 +99,12 @@ class Delete(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_boolean(
+        'reservation_group',
+        False,
+        'Delete a reservation group described by this identifier.',
+        flag_values=fv,
+    )
+    flags.DEFINE_boolean(
         'model',
         False,
         'Remove model with this model ID.',
@@ -132,6 +140,8 @@ class Delete(bigquery_command.BigqueryCmd):
       bq rm --reservation --project_id=proj --location=us reservation_name
       bq rm --reservation_assignment --project_id=proj --location=us
           assignment_name
+      bq rm --reservation_group --project_id=proj --location=us
+          reservation_group_name
     """
 
     client = bq_cached_client.Client.Get()
@@ -146,6 +156,7 @@ class Delete(bigquery_command.BigqueryCmd):
         self.reservation,
         self.reservation_assignment,
         self.capacity_commitment,
+        self.reservation_group,
         self.connection,
     ):
       raise app.UsageError('Cannot specify more than one resource type.')
@@ -228,6 +239,27 @@ class Delete(bigquery_command.BigqueryCmd):
       except BaseException as e:
         raise bq_error.BigqueryError(
             "Failed to delete capacity commitment '%s': %s" % (identifier, e)
+        )
+    elif self.reservation_group:
+      try:
+        utils_flags.fail_if_not_using_alpha_feature(
+            bq_flags.AlphaFeatures.RESERVATION_GROUPS
+        )
+        reference = bq_client_utils.GetReservationGroupReference(
+            id_fallbacks=client,
+            identifier=identifier,
+            default_location=bq_flags.LOCATION.value,
+        )
+        client_reservation.DeleteReservationGroup(
+            reservation_group_client=client.GetReservationApiClient(),
+            reference=reference,
+        )
+        # TODO(b/392704450): Refactor the print and error handling for
+        # reservation resources.
+        print("Reservation group '%s' successfully deleted." % identifier)
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to delete reservation group '%s': %s" % (identifier, e)
         )
     elif self.connection:
       reference = bq_client_utils.GetConnectionReference(

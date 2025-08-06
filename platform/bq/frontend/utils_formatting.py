@@ -581,6 +581,12 @@ def configure_formatter(
         'edition',
     )
     final_columns = None
+    # TODO(b/426869105): Remove alpha flag after GA.
+    if bq_flags.AlphaFeatures.RESERVATION_GROUPS in bq_flags.ALPHA.value:
+      shared_columns = (
+          *shared_columns,
+          'reservationGroup',
+      )
     if not final_columns:
       final_columns = (
           *shared_columns,
@@ -608,6 +614,8 @@ def configure_formatter(
       == bq_id_utils.ApiClientHelper.ReservationAssignmentReference
   ):
     formatter.AddColumns(('name', 'jobType', 'assignee'))
+  elif reference_type == bq_id_utils.ApiClientHelper.ReservationGroupReference:
+    formatter.AddColumns(('name',))
   elif reference_type == bq_id_utils.ApiClientHelper.ConnectionReference:
     formatter.AddColumns((
         'name',
@@ -660,6 +668,10 @@ def format_info_by_type(
       object_type, bq_id_utils.ApiClientHelper.ReservationAssignmentReference
   ):
     return format_reservation_assignment_info(object_info)
+  elif issubclass(
+      object_type, bq_id_utils.ApiClientHelper.ReservationGroupReference
+  ):
+    return format_reservation_group_info(object_info)
   elif object_type == bq_id_utils.ApiClientHelper.ConnectionReference:
     return format_connection_info(object_info)
   else:
@@ -1241,6 +1253,32 @@ def format_reservation_info(
   return result
 
 
+def format_reservation_group_info(
+    reservation_group: Dict[str, Any],
+) -> Dict[str, Any]:
+  """Prepare a reservation group for printing.
+
+  Arguments:
+    reservation_group: reservation group to format.
+
+  Returns:
+    A dictionary of reservation group properties.
+  """
+  result = {}
+  for key, value in reservation_group.items():
+    if key == 'name':
+      project_id, location, reservation_group_id = (
+          bq_client_utils.ParseReservationGroupPath(value)
+      )
+      reference = bq_id_utils.ApiClientHelper.ReservationGroupReference.Create(
+          projectId=project_id,
+          location=location,
+          reservationGroupId=reservation_group_id,
+      )
+      result[key] = reference.__str__()
+    else:
+      result[key] = value
+  return result
 
 
 def format_capacity_commitment_info(capacity_commitment):

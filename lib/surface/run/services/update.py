@@ -61,7 +61,7 @@ Container Flags
   group.AddArgument(flags.ClearVolumeMountsFlag())
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
-  group.AddArgument(flags.GpuFlag(hidden=False))
+  group.AddArgument(flags.GpuFlag())
 
   return group
 
@@ -100,8 +100,8 @@ class Update(base.Command):
     flags.AddDefaultUrlFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=False)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     flags.AddRevisionSuffixArg(parser)
     flags.AddSandboxArg(parser)
     flags.AddSessionAffinityFlag(parser)

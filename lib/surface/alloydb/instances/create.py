@@ -179,6 +179,8 @@ class CreateAlpha(CreateBeta):
     flags.AddConnectionPoolingQueryWaitTimeout(parser)
     flags.AddConnectionPoolingStatsUsers(parser)
     flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+    flags.AddConnectionPoolingServerLifetime(parser)
+    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
 
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

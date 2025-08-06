@@ -32,7 +32,6 @@ from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import rollout_util
 from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -52,6 +51,7 @@ _ROLLOUT = 'rollout'
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Redeploy(base.CreateCommand):
   """Redeploy the last release to a target.
 
@@ -105,32 +105,12 @@ class Redeploy(base.CreateCommand):
         current_release_ref.RelativeName()
     )
 
+    release_util.CheckReleaseSupportState(release_obj, 'redeploy this release')
+
     # Check if the release is abandoned.
     if release_obj.abandoned:
       raise deploy_exceptions.AbandonedReleaseError(
           failed_redeploy_prefix, current_release_ref.RelativeName()
-      )
-    messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
-    skaffold_support_state = release_util.GetSkaffoldSupportState(release_obj)
-    skaffold_support_state_enum = (
-        messages.SkaffoldSupportedCondition.SkaffoldSupportStateValueValuesEnum
-    )
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_MAINTENANCE_MODE):
-      log.status.Print(
-          "WARNING: This release's Skaffold version is in maintenance mode and"
-          ' will be unsupported soon.\n'
-          ' https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
-          '#skaffold_version_deprecation_and_maintenance_policy'
-      )
-
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_UNSUPPORTED):
-      raise core_exceptions.Error(
-          "You can't redeploy this release because the Skaffold version that"
-          ' was used to create the release is no longer supported.\n'
-          'https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold'
-          '#skaffold_version_deprecation_and_maintenance_policy'
       )
 
     prompt = (

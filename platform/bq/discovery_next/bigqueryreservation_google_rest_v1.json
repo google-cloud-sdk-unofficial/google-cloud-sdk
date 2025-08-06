@@ -723,7 +723,10 @@
             "BigQuery ML jobs that use services external to BigQuery for model training. These jobs will not utilize idle slots from other reservations.",
             "Background jobs that BigQuery runs for the customers in the background.",
             "BigQuery CALL SPARK PROCEDURE jobs that use an external services for running PySpark code. These jobs will not utilize idle slots from other reservations.",
-            "Continuous SQL jobs will use this reservation. Reservations with continuous assignments cannot be mixed with non-continuous assignments."
+            "Continuous SQL jobs will use this reservation. Reservations with continuous assignments cannot be mixed with non-continuous assignments.",
+            "Finer granularity background jobs for capturing changes in a source database and streaming them into BigQuery. Will take priority over default BACKGROUND reservation assignment (if it exists).",
+            "Finer granularity background jobs for refreshing cached metadata for BigQuery tables. Will take priority over default BACKGROUND reservation assignment (if it exists).",
+            "Finer granularity background jobs for refreshing search indices upon BigQuery table columns. Will take priority over default BACKGROUND reservation assignment (if it exists)."
           ],
           "enum": [
             "JOB_TYPE_UNSPECIFIED",
@@ -732,7 +735,10 @@
             "ML_EXTERNAL",
             "BACKGROUND",
             "SPARK",
-            "CONTINUOUS"
+            "CONTINUOUS",
+            "BACKGROUND_CHANGE_DATA_CAPTURE",
+            "BACKGROUND_COLUMN_METADATA_INDEX",
+            "BACKGROUND_SEARCH_INDEX_REFRESH"
           ]
         },
         "state": {

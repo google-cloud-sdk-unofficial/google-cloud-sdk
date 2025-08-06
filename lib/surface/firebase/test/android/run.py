@@ -123,9 +123,11 @@ class _BaseRun(object):
 
           By default, Firebase Test Lab stores detailed test results for a
           limited time in a Google Cloud Storage bucket provided for you at
-          no charge. If you wish to use a storage bucket that you control, or
-          if you need to retain detailed test results for a longer period,
-          use the *--results-bucket* option. See
+          no charge. Note: This requires the principal executing the test to
+          have "roles/editor" role for the project. If either you do not have
+          that role, you wish to use a storage bucket that you control, or you
+          need to retain detailed test results for a longer period, use the
+          *--results-bucket* option. See
           https://firebase.google.com/docs/test-lab/analyzing-results#detailed
           for more information.
 

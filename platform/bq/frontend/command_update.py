@@ -42,6 +42,7 @@ from utils import bq_processor_utils
 
 
 class Update(bigquery_command.BigqueryCmd):
+  """The BigQuery CLI update command."""
   usage = """update [-d] [-t] <identifier> [<schema>]"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
@@ -277,6 +278,14 @@ class Update(bigquery_command.BigqueryCmd):
         '\n AUTOSCALE_ONLY'
         '\n IDLE_SLOTS_ONLY'
         '\n ALL_SLOTS',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'reservation_group_name',
+        None,
+        'Reservation group name used to create reservation for, it can be full'
+        ' path or just the reservation group name. Used in conjunction with'
+        ' --reservation.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -837,6 +846,10 @@ class Update(bigquery_command.BigqueryCmd):
             utils_flags.fail_if_not_using_alpha_feature(
                 bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
             )
+          if self.reservation_group_name is not None:
+            utils_flags.fail_if_not_using_alpha_feature(
+                bq_flags.AlphaFeatures.RESERVATION_GROUPS
+            )
           reference = bq_client_utils.GetReservationReference(
               id_fallbacks=client,
               identifier=identifier,
@@ -864,6 +877,7 @@ class Update(bigquery_command.BigqueryCmd):
               scaling_mode=self.scaling_mode,
               labels_to_set=labels_to_set,
               label_keys_to_remove=label_keys_to_remove,
+              reservation_group_name=self.reservation_group_name,
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'

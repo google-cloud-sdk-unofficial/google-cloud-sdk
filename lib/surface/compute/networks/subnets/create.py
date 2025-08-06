@@ -59,6 +59,7 @@ def _AddArgs(
     include_custom_hardware_link,
     api_version,
     include_peer_migration_purpose,
+    include_resolve_subnet_mask,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -336,6 +337,24 @@ def _AddArgs(
       """,
   )
 
+  if include_resolve_subnet_mask:
+    resolve_subnet_mask_choices = {
+        'ARP_ALL_RANGES': """
+        All IP ranges assigned to VM NICs in this subnet
+        will respond to ARP
+        """,
+        'ARP_PRIMARY_RANGE': """
+        Primary IP range of VM NICs in this subnet will respond to ARP.
+        """,
+    }
+
+    parser.add_argument(
+        '--resolve-subnet-mask',
+        choices=resolve_subnet_mask_choices,
+        type=arg_utils.ChoiceToEnumName,
+        help='Resolve subnet mask can only be set when subnet is created.',
+    )
+
   flags.IpCollectionArgument().AddArgument(parser)
 
 
@@ -367,6 +386,7 @@ def _CreateSubnetwork(
     include_custom_hardware_link,
     ip_collection_ref,
     include_peer_migration_purpose,
+    include_resolve_subnet_mask,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -493,6 +513,13 @@ def _CreateSubnetwork(
         messages, args.resource_manager_tags
     )
 
+  if include_resolve_subnet_mask:
+    if args.resolve_subnet_mask:
+      subnetwork.resolveSubnetMask = (
+          messages.Subnetwork.ResolveSubnetMaskValueValuesEnum(
+              args.resolve_subnet_mask
+          )
+      )
   return subnetwork
 
 
@@ -521,6 +548,7 @@ def _Run(
     include_internal_ipv6_prefix,
     include_custom_hardware_link,
     include_peer_migration_purpose,
+    include_resolve_subnet_mask,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -549,6 +577,7 @@ def _Run(
       include_custom_hardware_link,
       ip_collection_ref,
       include_peer_migration_purpose,
+      include_resolve_subnet_mask,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
@@ -578,6 +607,7 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_peer_migration_purpose = True
+  _include_resolve_subnet_mask = False
 
   detailed_help = _DetailedHelp()
 
@@ -592,6 +622,7 @@ class Create(base.CreateCommand):
         cls._include_custom_hardware_link,
         cls._api_version,
         cls._include_peer_migration_purpose,
+        cls._include_resolve_subnet_mask,
     )
 
   def Run(self, args):
@@ -606,6 +637,7 @@ class Create(base.CreateCommand):
         self._include_internal_ipv6_prefix,
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
+        self._include_resolve_subnet_mask,
     )
 
 
@@ -614,6 +646,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
+  _include_resolve_subnet_mask = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -627,3 +660,4 @@ class CreateAlpha(CreateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
   _include_peer_migration_purpose = True
+  _include_resolve_subnet_mask = True

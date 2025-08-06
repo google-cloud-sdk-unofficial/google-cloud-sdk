@@ -22,6 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterconnectApplicationAwarenessConfig(base.Group):
   """Read and manipulate configuration for application awareness on Compute Engine interconnect."""

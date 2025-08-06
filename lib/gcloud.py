@@ -91,7 +91,7 @@ def _import_gcloud_main():
   return googlecloudsdk.gcloud_main
 
 
-MIN_SUPPORTED_PY3_VERSION = (3, 8)
+MIN_SUPPORTED_PY3_VERSION = (3, 9)
 MAX_SUPPORTED_PY3_VERSION = (
     (3, 13) if os.environ.get(
         'ENABLE_MAX_GCLOUD_PYTHON_VERSION_OVERRIDE'

@@ -55,7 +55,7 @@ Container Flags
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
   if release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-    group.AddArgument(flags.GpuFlag(hidden=False))
+    group.AddArgument(flags.GpuFlag())
   group.AddArgument(flags.ArgsFlag())
   group.AddArgument(flags.SecretsFlags())
   group.AddArgument(flags.CommandFlag())
@@ -63,6 +63,7 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
+  group.AddArgument(flags.StartupProbeFlag())
 
   return group
 
@@ -212,8 +213,8 @@ class BetaUpdate(Update):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=False)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.BETA)
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
@@ -230,5 +231,5 @@ class AlphaUpdate(BetaUpdate):
     container_parser.AddContainerFlags(parser, container_args)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=False)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)

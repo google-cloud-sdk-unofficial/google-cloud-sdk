@@ -26,6 +26,7 @@ from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
 from frontend import utils as frontend_utils
+from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
@@ -212,6 +213,19 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         'List all reservation assignments for given project/location',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'reservation_group',
+        None,
+        'List all reservation groups for the given project and location.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'reservation_group_name',
+        None,
+        'Reservation group name used as a filter when listing reservation. Used'
+        ' in conjunction with --reservation.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'parent_job_id',
         None,
@@ -258,6 +272,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
       bq ls --reservation_assignment --project_id=proj --location='us'
       bq ls --reservation_assignment --project_id=proj --location='us'
           <reservation_id>
+      bq ls --reservation_group --project_id=proj --location='us'
       bq ls --connection --project_id=proj --location=us
     """
 
@@ -464,11 +479,16 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
 
       try:
         if True:
+          if self.reservation_group_name is not None:
+            utils_flags.fail_if_not_using_alpha_feature(
+                bq_flags.AlphaFeatures.RESERVATION_GROUPS
+            )
           response = client_reservation.ListReservations(
               client=client.GetReservationApiClient(),
               reference=reference,
               page_size=self.max_results,
               page_token=self.page_token,
+              reservation_group=self.reservation_group_name,
           )
           results = (
               response['reservations'] if 'reservations' in response else []
@@ -481,6 +501,34 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         print('No reservations found.')
       if response and 'nextPageToken' in response:
         frontend_utils.PrintPageToken(response)
+    elif self.reservation_group:
+      object_type = bq_id_utils.ApiClientHelper.ReservationGroupReference
+      reference = bq_client_utils.GetReservationGroupReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+          default_reservation_group_id=' ',
+      )
+      try:
+        utils_flags.fail_if_not_using_alpha_feature(
+            bq_flags.AlphaFeatures.RESERVATION_GROUPS
+        )
+        response = client_reservation.ListReservationGroups(
+            reservation_group_client=client.GetReservationApiClient(),
+            reference=reference,
+            page_size=self.max_results,
+            page_token=self.page_token,
+        )
+        if 'reservationGroups' in response:
+          results = response['reservationGroups']
+        else:
+          print('No reservation groups found.')
+        if 'nextPageToken' in response:
+          frontend_utils.PrintPageToken(response)
+      except BaseException as e:
+        raise bq_error.BigqueryError(
+            "Failed to list reservation groups '%s': %s" % (identifier, e)
+        )
     elif self.transfer_config:
       object_type = bq_id_utils.ApiClientHelper.TransferConfigReference
       reference = bq_client_utils.GetProjectReference(

@@ -31,13 +31,11 @@ _MISSING_COMMITMENTS_QUOTA_REGEX = r'Quota .COMMITMENTS. exceeded.+'
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update Compute Engine commitments."""
-  detailed_help = {
-      'EXAMPLES':
-          """
+
+  detailed_help = {'EXAMPLES': """
         To enable auto renewal on a commitment called ``commitment-1'' in the ``us-central1''
         region, run:
 
@@ -52,14 +50,18 @@ class Update(base.UpdateCommand):
         from  12-month to 36-month, in the ``us-central1'' region, run:
 
           $ {command} commitment-1 --plan=36-month --region=us-central1
-      """
-  }
+      """}
+
+  _support_60_month_plan = False
 
   @classmethod
   def Args(cls, parser):
     flags.MakeCommitmentArg(plural=False).AddArgument(
-        parser, operation_type='update')
-    flags.AddUpdateFlags(parser)
+        parser, operation_type='update'
+    )
+    flags.AddUpdateFlags(
+        parser, support_60_month_plan=cls._support_60_month_plan
+    )
     flags.AddCustomEndTime(parser)
 
   def Run(self, args):
@@ -93,13 +95,20 @@ class Update(base.UpdateCommand):
             requests=[(service, 'Update', commitment_update_request)],
             http=http,
             batch_url=batch_url,
-            errors=errors))
+            errors=errors,
+        )
+    )
     for i, error in enumerate(errors):
       if re.match(_MISSING_COMMITMENTS_QUOTA_REGEX, error[1]):
-        errors[i] = (error[0], error[1] +
-                     (' You can request commitments quota on '
-                      'https://cloud.google.com/compute/docs/instances/'
-                      'signing-up-committed-use-discounts#quota'))
+        errors[i] = (
+            error[0],
+            error[1]
+            + (
+                ' You can request commitments quota on '
+                'https://cloud.google.com/compute/docs/instances/'
+                'signing-up-committed-use-discounts#quota'
+            ),
+        )
     if errors:
       utils.RaiseToolException(errors)
     return result
@@ -108,7 +117,8 @@ class Update(base.UpdateCommand):
     return flags.MakeCommitmentArg(False).ResolveAsResource(
         args,
         resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+    )
 
   def _GetUpdateRequest(self, messages, commitment_ref, commitment_resource):
     return messages.ComputeRegionCommitmentsUpdateRequest(
@@ -116,7 +126,8 @@ class Update(base.UpdateCommand):
         commitmentResource=commitment_resource,
         paths=self._GetPaths(commitment_resource),
         project=commitment_ref.project,
-        region=commitment_ref.region)
+        region=commitment_ref.region,
+    )
 
   def _GetPaths(self, commitment_resource):
     paths = []
@@ -133,3 +144,19 @@ class Update(base.UpdateCommand):
       return None
     else:
       return flags.TranslatePlanArg(messages, plan)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update Compute Engine commitments."""
+
+  _support_60_month_plan = False
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update Compute Engine commitments."""
+
+  _support_60_month_plan = True

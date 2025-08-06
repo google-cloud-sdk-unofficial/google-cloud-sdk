@@ -306,16 +306,6 @@ def _add_common_args(parser):
   flags.add_recovery_point_objective_flag(parser)
   flags.add_read_paths_from_stdin_flag(parser)
 
-
-def _add_alpha_args(parser):
-  """Register flags for the alpha version of this command.
-
-  Args:
-    parser (argparse.ArgumentParser): The parser to add the arguments to.
-
-  Returns:
-    buckets update flag group
-  """
   ip_filter = parser.add_mutually_exclusive_group()
   ip_filter.add_argument(
       '--clear-ip-filter',
@@ -323,6 +313,17 @@ def _add_alpha_args(parser):
       help='Disables and clears IP filter configuration of the bucket.',
   )
   flags.add_ip_filter_file_flag(ip_filter)
+
+
+def _add_alpha_args(parser):
+  """Register flags for the alpha version of this command.
+
+  Args:
+    parser (argparse.ArgumentParser): The parser to add the arguments to.
+
+  """
+  # All alpha flags have been promoted. Hence a no-op.
+  del parser
 
 
 def _is_initial_bucket_metadata_needed(user_request_args):

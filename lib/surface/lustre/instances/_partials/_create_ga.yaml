@@ -94,6 +94,7 @@
       help_text: |-
         Indicates whether you want to enable support for GKE clients. By default,
         GKE clients are not supported.
+        Deprecated. No longer required for GKE instance creation.
       default: null
     - arg_name: request-id
       api_field: requestId

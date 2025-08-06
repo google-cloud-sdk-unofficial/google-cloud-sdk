@@ -91,7 +91,7 @@ they will apply to the primary ingress container.
   )
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())
-  group.AddArgument(flags.GpuFlag(hidden=False))
+  group.AddArgument(flags.GpuFlag())
 
   return group
 
@@ -136,8 +136,8 @@ class Deploy(base.Command):
     flags.AddDescriptionFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
-    flags.AddGpuTypeFlag(parser, hidden=False)
-    flags.GpuZonalRedundancyFlag(parser, hidden=False)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     flags.AddRevisionSuffixArg(parser)
     flags.AddSandboxArg(parser)
     flags.AddSessionAffinityFlag(parser)
@@ -466,7 +466,7 @@ class Deploy(base.Command):
         if service
         else None
     )
-    logging.debug('source_bucket: %s', source_bucket)
+    logging.debug('Existing source_bucket: %s', source_bucket)
     # We cannot use flag.isExplicitlySet(args, 'function') because it will
     # return False when user provide --function after --container.
     is_function = container_args.function
@@ -631,6 +631,7 @@ class Deploy(base.Command):
     x = re.search(r'gs://([^/]+)/.*', source_location)
     if x:
       return x.group(1)
+    logging.debug('source_location does not match pattern gs://([^/]+)/.*')
     return None
 
   def _GetBaseChanges(self, args):

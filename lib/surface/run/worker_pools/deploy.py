@@ -337,6 +337,7 @@ class Deploy(base.Command):
         failure_message='Deployment failed',
         suppress_output=args.async_,
     ) as tracker:
+      # TODO: b/432102851 - Add retry logic with zonal redundancy off.
       response = worker_pools_client.ReleaseWorkerPool(
           worker_pool_ref,
           config_changes,
@@ -358,22 +359,22 @@ class Deploy(base.Command):
             )
         )
 
-      if args.async_:
-        pretty_print.Success(
-            'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
-            'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
+    if args.async_:
+      pretty_print.Success(
+          'Worker pool [{{bold}}{worker_pool}{{reset}}] is being deployed '
+          'asynchronously.'.format(worker_pool=worker_pool_ref.workerPoolsId)
+      )
+    else:
+      response.result()  # Wait for the operation to complete.
+      msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
+          worker_pool=worker_pool_ref.workerPoolsId
+      )
+      if response.metadata and response.metadata.latest_created_revision:
+        rev = resource_name_conversion.GetNameFromFullChildName(
+            response.metadata.latest_created_revision
         )
-      else:
-        response.result()  # Wait for the operation to complete.
-        msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
-            worker_pool=worker_pool_ref.workerPoolsId
-        )
-        if response.metadata and response.metadata.latest_created_revision:
-          rev = resource_name_conversion.GetNameFromFullChildName(
-              response.metadata.latest_created_revision
-          )
-          msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-        pretty_print.Success(msg + ' has been deployed.')
+        msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
+      pretty_print.Success(msg + ' has been deployed.')
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):
@@ -401,6 +402,7 @@ class AlphaDeploy(Deploy):
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
     flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

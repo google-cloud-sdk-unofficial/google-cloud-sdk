@@ -30,6 +30,7 @@ from googlecloudsdk.core import properties
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA)
+@base.Hidden
 class Clone(base.Command):
   """Clone a Google Cloud Firestore database from another.
 
@@ -59,6 +60,7 @@ class Clone(base.Command):
         metavar='SOURCE_DATABASE',
         type=str,
         required=True,
+        hidden=True,
         help=textwrap.dedent("""\
             The source database to clone from.
 
@@ -73,6 +75,7 @@ class Clone(base.Command):
         metavar='SNAPSHOT_TIME',
         type=str,
         required=True,
+        hidden=True,
         help=textwrap.dedent("""\
             Snapshot time at which to clone. This must be a whole minute, in the past, and not earlier than the source database's earliest_version_time.
             Additionally, if older than one hour in the past, PITR must be enabled on the source database.
@@ -82,9 +85,9 @@ class Clone(base.Command):
             $ {command} --source-database=projects/PROJECT_ID/databases/source-db --snapshot-time=2025-05-26T10:20:00.00Z
         """),
     )
-    flags.AddDestinationDatabase(parser, 'clone', 'database')
-    flags.AddEncryptionConfigGroup(parser, 'database')
-    flags.AddTags(parser, 'database')
+    flags.AddDestinationDatabase(parser, 'clone', 'database', hidden=True)
+    flags.AddEncryptionConfigGroup(parser, 'database', hidden=True)
+    flags.AddTags(parser, 'database', hidden=True)
 
   def Run(self, args):
     project = properties.VALUES.core.project.Get(required=True)

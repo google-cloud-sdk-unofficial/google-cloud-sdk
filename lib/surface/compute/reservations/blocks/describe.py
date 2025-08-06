@@ -39,6 +39,7 @@ class Describe(base.DescribeCommand):
     )
     Describe.ReservationArg.AddArgument(parser, operation_type='describe')
     flags.AddDescribeFlags(parser)
+    flags.AddFullViewFlag(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -50,16 +51,31 @@ class Describe(base.DescribeCommand):
         default_scope=compute_scope.ScopeEnum.ZONE,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
-    request = (
-        client.messages.ComputeReservationBlocksGetRequest(
-            reservation=reservation_ref.reservation,
-            zone=reservation_ref.zone,
-            project=reservation_ref.project,
-            reservationBlock=args.block_name)
+    view_enum = self.GetViewEnum(client, args)
+
+    request = client.messages.ComputeReservationBlocksGetRequest(
+        reservation=reservation_ref.reservation,
+        zone=reservation_ref.zone,
+        project=reservation_ref.project,
+        reservationBlock=args.block_name,
+        view=view_enum,
     )
 
     return client.MakeRequests([(client.apitools_client.reservationBlocks,
                                  'Get', request)])[0]
+
+  def GetViewEnum(self, client, args):
+    view_enum = None
+    if args.IsSpecified('full_view'):
+      if args.full_view == 'BLOCK_VIEW_FULL':
+        view_enum = (
+            client.messages.ComputeReservationBlocksGetRequest.ViewValueValuesEnum.FULL
+        )
+      if args.full_view == 'BLOCK_VIEW_BASIC':
+        view_enum = (
+            client.messages.ComputeReservationBlocksGetRequest.ViewValueValuesEnum.BASIC
+        )
+    return view_enum
 
 
 Describe.detailed_help = {

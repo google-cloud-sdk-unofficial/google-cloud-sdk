@@ -90,7 +90,7 @@ def _CommonArgs(parser):
   flags.AddAnnotationsFlag(parser, _RELEASE)
   flags.AddLabelsFlag(parser, _RELEASE)
   flags.AddSkaffoldVersion(parser)
-  flags.AddSkaffoldSources(parser)
+  flags.AddConfigSourcesGroup(parser)
   flags.AddInitialRolloutGroup(parser)
   flags.AddDeployParametersFlag(parser)
   flags.AddOverrideDeployPolicies(parser)
@@ -168,7 +168,14 @@ class Create(base.CreateCommand):
       )
 
   def Run(self, args):
-    """This is what gets called when the user runs this command."""
+    """This is what gets called when the user runs this command.
+
+    Args:
+      args: All the arguments that were provided to this command invocation.
+
+    Returns:
+      The release and rollout created.
+    """
     if args.disable_initial_rollout and args.to_target:
       raise c_exceptions.ConflictingArgumentsException(
           '--disable-initial-rollout', '--to-target'
@@ -188,25 +195,46 @@ class Create(base.CreateCommand):
         pipeline_obj, failed_activity_msg
     )
 
-    if args.skaffold_file:
-      # Only when skaffold is absolute path need to be handled here
-      if os.path.isabs(args.skaffold_file):
-        if args.source == '.':
-          source = os.getcwd()
-          source_description = 'current working directory'
-        else:
-          source = args.source
-          source_description = 'source'
-        if not files.IsDirAncestorOf(source, args.skaffold_file):
-          raise core_exceptions.Error(
-              'The skaffold file {} could not be found in the {}. Please enter'
-              ' a valid Skaffold file path.'.format(
-                  args.skaffold_file, source_description
-              )
-          )
-        args.skaffold_file = os.path.relpath(
-            os.path.abspath(args.skaffold_file), os.path.abspath(source)
+    # Only when the skaffold file is an absolute path needs to be handled
+    # here.
+    if args.skaffold_file and os.path.isabs(args.skaffold_file):
+      if args.source == '.':
+        source = os.getcwd()
+        source_description = 'current working directory'
+      else:
+        source = args.source
+        source_description = 'source'
+      if not files.IsDirAncestorOf(source, args.skaffold_file):
+        raise core_exceptions.Error(
+            'The skaffold file {} could not be found in the {}. Please enter'
+            ' a valid Skaffold file path.'.format(
+                args.skaffold_file, source_description
+            )
         )
+      args.skaffold_file = os.path.relpath(
+          os.path.abspath(args.skaffold_file), os.path.abspath(source)
+      )
+
+    # Only when the deploy config is an absolute path needs to be handled
+    # here.
+    if args.deploy_config_file and os.path.isabs(args.deploy_config_file):
+      if args.source == '.':
+        source = os.getcwd()
+        source_description = 'current working directory'
+      else:
+        source = args.source
+        source_description = 'source'
+      if not files.IsDirAncestorOf(source, args.deploy_config_file):
+        raise core_exceptions.Error(
+            'The deploy config file {} could not be found in the {}. Please'
+            ' enter a valid deploy config file path.'.format(
+                args.deploy_config_file, source_description
+            )
+        )
+      args.deploy_config_file = os.path.relpath(
+          os.path.abspath(args.deploy_config_file), os.path.abspath(source)
+      )
+
     if args.skaffold_version:
       self._CheckSupportedVersion(release_ref, args.skaffold_version)
 
@@ -221,6 +249,7 @@ class Create(base.CreateCommand):
         args.description,
         args.skaffold_version,
         args.skaffold_file,
+        args.deploy_config_file,
         release_ref.AsDict()['locationsId'],
         pipeline_obj.uid,
         args.from_k8s_manifest,

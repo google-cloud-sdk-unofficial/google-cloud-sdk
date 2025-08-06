@@ -15,8 +15,8 @@ class AlphaFeatures(enum.Enum):
 
   # A value is always needed in this enum so this is included as a noop.
   NONE = 'none'
-  # TODO(b/359641434): Remove once the launch is complete - around 2025-Q1.
   RESERVATION_MAX_SLOTS = 'reservation_max_slots'
+  RESERVATION_GROUPS = 'reservation_groups'
 
 
 ALPHA = flags.DEFINE_multi_enum_class(

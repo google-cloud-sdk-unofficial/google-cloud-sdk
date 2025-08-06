@@ -695,6 +695,23 @@
             "jobId"
           ],
           "parameters": {
+            "formatOptions.timestampOutputFormat": {
+              "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+              "enum": [
+                "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+                "FLOAT64",
+                "INT64",
+                "ISO8601_STRING"
+              ],
+              "enumDescriptions": [
+                "Corresponds to default API output behavior, which is FLOAT64.",
+                "Timestamp is output as float64 seconds since Unix epoch.",
+                "Timestamp is output as int64 microseconds since Unix epoch.",
+                "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+              ],
+              "location": "query",
+              "type": "string"
+            },
             "formatOptions.useInt64Timestamp": {
               "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
@@ -1910,6 +1927,23 @@
               "required": true,
               "type": "string"
             },
+            "formatOptions.timestampOutputFormat": {
+              "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+              "enum": [
+                "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+                "FLOAT64",
+                "INT64",
+                "ISO8601_STRING"
+              ],
+              "enumDescriptions": [
+                "Corresponds to default API output behavior, which is FLOAT64.",
+                "Timestamp is output as float64 seconds since Unix epoch.",
+                "Timestamp is output as int64 microseconds since Unix epoch.",
+                "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+              ],
+              "location": "query",
+              "type": "string"
+            },
             "formatOptions.useInt64Timestamp": {
               "description": "Optional. Output timestamp as usec int64. Default is false.",
               "location": "query",
@@ -2345,7 +2379,7 @@
       }
     }
   },
-  "revision": "20250618",
+  "revision": "20250709",
   "rootUrl": "https://bigquery.googleapis.com/",
   "schemas": {
     "AggregateClassificationMetrics": {
@@ -3497,6 +3531,22 @@
       "description": "Options for data format adjustments.",
       "id": "DataFormatOptions",
       "properties": {
+        "timestampOutputFormat": {
+          "description": "Optional. The API output format for a timestamp. This offers more explicit control over the timestamp output format as compared to the existing `use_int64_timestamp` option.",
+          "enum": [
+            "TIMESTAMP_OUTPUT_FORMAT_UNSPECIFIED",
+            "FLOAT64",
+            "INT64",
+            "ISO8601_STRING"
+          ],
+          "enumDescriptions": [
+            "Corresponds to default API output behavior, which is FLOAT64.",
+            "Timestamp is output as float64 seconds since Unix epoch.",
+            "Timestamp is output as int64 microseconds since Unix epoch.",
+            "Timestamp is output as ISO 8601 String (\"YYYY-MM-DDTHH:MM:SS.FFFFFFFFFFFFZ\")."
+          ],
+          "type": "string"
+        },
         "useInt64Timestamp": {
           "description": "Optional. Output timestamp as usec int64. Default is false.",
           "type": "boolean"
@@ -4637,6 +4687,10 @@
       "description": "The external service cost is a portion of the total cost, these costs are not additive with total_bytes_billed. Moreover, this field only track external service costs that will show up as BigQuery costs (e.g. training BigQuery ML job with google cloud CAIP or Automl Tables services), not other costs which may be accrued by running the query (e.g. reading from Bigtable or Cloud Storage). The external service costs with different billing sku (e.g. CAIP job is charged based on VM usage) are converted to BigQuery billed_bytes and slot_ms with equivalent amount of US dollars. Services may not directly correlate to these metrics, but these are the equivalents for billing purposes. Output only.",
       "id": "ExternalServiceCost",
       "properties": {
+        "billingMethod": {
+          "description": "The billing method used for the external job. This field is only used when billed on the services sku, set to \"SERVICES_SKU\". Otherwise, it is unspecified for backward compatibility.",
+          "type": "string"
+        },
         "bytesBilled": {
           "description": "External service cost in terms of bigquery bytes billed.",
           "format": "int64",
@@ -6439,6 +6493,12 @@
           "readOnly": true,
           "type": "string"
         },
+        "totalServicesSkuSlotMs": {
+          "description": "Output only. Total slot-milliseconds for the job that run on external services and billed on the service SKU. This field is only populated for jobs that have external service costs, and is the total of the usage for costs whose billing method is \"SERVICES_SKU\".",
+          "format": "int64",
+          "readOnly": true,
+          "type": "string"
+        },
         "totalSlotMs": {
           "description": "Output only. Slot-milliseconds for the job.",
           "format": "int64",
@@ -7612,6 +7672,12 @@
             "type": "object"
           },
           "type": "array"
+        },
+        "timestampPrecision": {
+          "default": "6",
+          "description": "Optional. Precision (maximum number of total digits in base 10) for seconds of TIMESTAMP type. Possible values include: * 6 (Default, for TIMESTAMP type with microsecond precision) * 12 (For TIMESTAMP type with picosecond precision)",
+          "format": "int64",
+          "type": "string"
         },
         "type": {
           "description": "Required. The top level type of this field.",

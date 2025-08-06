@@ -314,3 +314,12 @@ class BigqueryCmd(NewCmd):
       command_flags_for_this_resource: Optional[Dict[str, str]] = None,
   ):
     pass  # pylint: disable=unreachable
+
+  def DelegateToGcloudAndExit(
+      self,
+      resource: str,
+      bq_command: str,
+      identifier: Optional[str] = None,
+      command_flags_for_this_resource: Optional[Dict[str, str]] = None,
+  ):
+    pass  # pylint: disable=unreachable

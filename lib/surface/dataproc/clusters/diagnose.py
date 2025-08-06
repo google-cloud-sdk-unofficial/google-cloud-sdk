@@ -33,6 +33,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import retry
 
 
+@base.UniverseCompatible
 class Diagnose(base.Command):
   """Run a detailed diagnostic on a cluster."""
 
@@ -54,7 +55,9 @@ class Diagnose(base.Command):
 
   @staticmethod
   def _GetValidTarballAccessChoices(dataproc):
-    tarball_access_enums = dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum
+    tarball_access_enums = (
+        dataproc.messages.DiagnoseClusterRequest.TarballAccessValueValuesEnum
+    )
     return [
         arg_utils.ChoiceToEnumName(n)
         for n in tarball_access_enums.names()
@@ -67,7 +70,7 @@ class Diagnose(base.Command):
         '--tarball-access',
         type=arg_utils.ChoiceToEnumName,
         choices=Diagnose._GetValidTarballAccessChoices(dataproc),
-        help='Target access privileges for diagnose tarball.')
+        help='Target access privileges for diagnostic tarball.')
     parser.add_argument(
         '--start-time',
         help='Time instant to start the diagnosis from (in ' +
@@ -117,8 +120,9 @@ class Diagnose(base.Command):
     )
     parser.add_argument(
         '--tarball-gcs-dir',
-        hidden=True,
-        help='GCS Bucket location to store the results.',
+        help='The output Cloud Storage directory for the diagnostic tarball. ' +
+        'If not specified, a task-specific directory in the cluster\'s ' +
+        'staging bucket will be used.'
     )
 
   def Run(self, args):

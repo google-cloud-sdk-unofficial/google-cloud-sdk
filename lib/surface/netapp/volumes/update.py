@@ -107,13 +107,16 @@ class Update(base.UpdateCommand):
       )
     else:
       security_style = None
-    if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
-        self._RELEASE_TRACK == base.ReleaseTrack.GA):
+    if self._RELEASE_TRACK in [base.ReleaseTrack.BETA, base.ReleaseTrack.GA]:
       backup_config = args.backup_config
       source_backup = args.source_backup
     else:
       backup_config = None
       source_backup = None
+    if self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      cache_parameters = args.cache_parameters
+    else:
+      cache_parameters = None
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -134,7 +137,8 @@ class Update(base.UpdateCommand):
         backup=source_backup,
         restricted_actions=restricted_actions,
         backup_config=backup_config,
-        tiering_policy=args.tiering_policy)
+        tiering_policy=args.tiering_policy,
+        cache_parameters=cache_parameters)
 
     updated_fields = []
     # add possible updated volume fields
@@ -199,6 +203,21 @@ class Update(base.UpdateCommand):
         or args.IsSpecified('clear_labels')
     ):
       updated_fields.append('labels')
+    if (
+        self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
+        and args.IsSpecified('cache_parameters')
+        and args.cache_parameters.get('cache-config') is not None
+    ):
+      for config in args.cache_parameters.get('cache-config'):
+        if 'atime-scrub-enabled' in config:
+          updated_fields.append('cacheParameters.cacheConfig.atimeScrubEnabled')
+        if 'atime-scrub-minutes' in config:
+          updated_fields.append('cacheParameters.cacheConfig.atimeScrubMinutes')
+        if 'cifs-change-notify-enabled' in config:
+          updated_fields.append(
+              'cacheParameters.cacheConfig.cifsChangeNotifyEnabled'
+          )
+
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateVolume(volume_ref, volume, update_mask, args.async_)

@@ -331,6 +331,26 @@ class ApiClientHelper:
     def create_path(self) -> str:  # pylint: disable=invalid-name Legacy
       return self._create_path_str % dict(self)
 
+  class ReservationGroupReference(Reference):
+    """Helper class to provide a reference to reservation group."""
+
+    _required_fields = frozenset(
+        ('projectId', 'location', 'reservationGroupId')
+    )
+    _format_str = '%(projectId)s:%(location)s.%(reservationGroupId)s'
+    _path_str = 'projects/%(projectId)s/locations/%(location)s/reservationGroups/%(reservationGroupId)s'
+    typename = 'reservation group'
+
+    def __init__(self, **kwds):
+      # pylint: disable=invalid-name Aligns with API
+      self.projectId: str = kwds['projectId']
+      self.location: str = kwds['location']
+      self.reservationGroupId: str = kwds['reservationGroupId']
+      # pylint: enable=invalid-name
+      super().__init__(**kwds)
+
+    def path(self) -> str:  # pylint: disable=invalid-name Legacy
+      return self._path_str % dict(self)
 
   class ConnectionReference(Reference):
     _required_fields = frozenset(('projectId', 'location', 'connectionId'))

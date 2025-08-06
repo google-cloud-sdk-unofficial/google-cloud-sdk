@@ -23,7 +23,6 @@ import copy
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import release
-from googlecloudsdk.api_lib.util import apis as core_apis
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -38,7 +37,6 @@ from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import rollout_util
 from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -57,6 +55,7 @@ _ROLLBACK = 'rollback'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Rollback(base.CreateCommand):
   """Rollbacks a target to a prior rollout.
 
@@ -112,31 +111,12 @@ class Rollback(base.CreateCommand):
         rollback_release_ref.RelativeName()
     )
 
+    release_util.CheckReleaseSupportState(release_obj, 'roll back this target')
+
     if release_obj.abandoned:
       error_msg_annotation_prefix = 'Cannot perform rollback.'
       raise deploy_exceptions.AbandonedReleaseError(
           error_msg_annotation_prefix, rollback_release_ref.RelativeName()
-      )
-    messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
-    skaffold_support_state = release_util.GetSkaffoldSupportState(release_obj)
-    skaffold_support_state_enum = (
-        messages.SkaffoldSupportedCondition.SkaffoldSupportStateValueValuesEnum
-    )
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_MAINTENANCE_MODE):
-      log.status.Print(
-          "WARNING: This release's Skaffold version is in maintenance mode and"
-          " will be unsupported soon.\n"
-          " https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
-          "#skaffold_version_deprecation_and_maintenance_policy")
-
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_UNSUPPORTED):
-      raise core_exceptions.Error(
-          "You can't roll back this target because the Skaffold version that"
-          " was used to create the release is no longer supported.\n"
-          "https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
-          "#skaffold_version_deprecation_and_maintenance_policy"
       )
 
     prompt = 'Rolling back target {} to release {}.\n\n'.format(
@@ -172,6 +152,7 @@ class Rollback(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class RollbackAlpha(Rollback):
   """Rollbacks a target to a prior rollout.
 
@@ -292,27 +273,8 @@ class RollbackAlpha(Rollback):
     except apitools_exceptions.HttpError as error:
       raise exceptions.HttpException(error)
 
-    messages = core_apis.GetMessagesModule('clouddeploy', 'v1')
-    skaffold_support_state_enum = (
-        messages.SkaffoldSupportedCondition.SkaffoldSupportStateValueValuesEnum
-    )
-    skaffold_support_state = release_util.GetSkaffoldSupportState(release_obj)
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_MAINTENANCE_MODE):
-      log.status.Print(
-          "WARNING: This release's Skaffold version is in maintenance mode and"
-          " will be unsupported soon.\n"
-          " https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
-          "#skaffold_version_deprecation_and_maintenance_policy")
+    release_util.CheckReleaseSupportState(release_obj, 'roll back this target')
 
-    if (skaffold_support_state ==
-        skaffold_support_state_enum.SKAFFOLD_SUPPORT_STATE_UNSUPPORTED):
-      raise core_exceptions.Error(
-          "You can't roll back this target because the Skaffold version that"
-          " was used to create the release is no longer supported.\n"
-          "https://cloud.google.com/deploy/docs/using-skaffold/select-skaffold"
-          "#skaffold_version_deprecation_and_maintenance_policy"
-      )
     # prompt to see whether user wants to continue.
     prompt = 'Rolling back target {} to release {}.\n\n'.format(
         target_ref.Name(), rollback_release_ref.Name()

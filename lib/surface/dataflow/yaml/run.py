@@ -50,9 +50,8 @@ class Run(base.Command):
       parser: argparse.ArgumentParser to register arguments with.
     """
     parser.add_argument(
-        'job_name',
-        metavar='JOB_NAME',
-        help='Unique name to assign to the job.')
+        'job_name', metavar='JOB_NAME', help='Unique name to assign to the job.'
+    )
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -70,8 +69,11 @@ class Run(base.Command):
     parser.add_argument(
         '--region',
         metavar='REGION_ID',
-        help=('Region ID of the job\'s regional endpoint. ' +
-              dataflow_util.DEFAULT_REGION_MESSAGE))
+        help=(
+            "Region ID of the job's regional endpoint. "
+            + dataflow_util.DEFAULT_REGION_MESSAGE
+        ),
+    )
 
     parser.add_argument(
         '--pipeline-options',
@@ -85,6 +87,30 @@ class Run(base.Command):
         '--jinja-variables',
         metavar='JSON_OBJECT',
         help='Jinja2 variables to be used in reifying the yaml.',
+    )
+
+    parser.add_argument(
+        '--template-file-gcs-location',
+        help=('Google Cloud Storage location of the YAML template to run. '
+              "(Must be a URL beginning with 'gs://'.)"),
+        type=arg_parsers.RegexpValidator(r'^gs://.*',
+                                         'Must begin with \'gs://\''),
+    )
+
+    parser.add_argument(
+        '--network',
+        help=(
+            'Compute Engine network for launching worker instances to run '
+            'the pipeline.  If not set, the default network is used.'
+        ),
+    )
+
+    parser.add_argument(
+        '--subnetwork',
+        help=(
+            'Compute Engine subnetwork for launching worker instances to '
+            'run the pipeline.  If not set, the default subnetwork is used.'
+        ),
     )
 
   def Run(self, args):
@@ -119,14 +145,19 @@ class Run(base.Command):
         parameters.get('yaml_pipeline'), args
     )
 
+    gcs_location = (
+        args.template_file_gcs_location
+        or apis.Templates.YAML_TEMPLATE_GCS_LOCATION.format(region_id)
+    )
+
     arguments = apis.TemplateArguments(
         project_id=properties.VALUES.core.project.Get(required=True),
         region_id=region_id,
         job_name=args.job_name,
-        gcs_location=apis.Templates.YAML_TEMPLATE_GCS_LOCATION.format(
-            region_id
-        ),
+        gcs_location=gcs_location,
         parameters=parameters,
+        network=args.network,
+        subnetwork=args.subnetwork,
     )
     return apis.Templates.CreateJobFromFlexTemplate(arguments)
 
@@ -157,9 +188,11 @@ def _get_region_from_yaml_or_default(yaml_pipeline, args):
         )
   except yaml.YAMLParseError as exn:
     if not region:
-      print('Failed to get region from yaml pipeline: {0}. If using jinja '
-            'variables, parsing may fail. Falling back to default '
-            'region.'.format(exn))
+      print(
+          'Failed to get region from yaml pipeline: {0}. If using jinja '
+          'variables, parsing may fail. Falling back to default '
+          'region.'.format(exn)
+      )
 
   if options_region:
     if region and region != options_region:

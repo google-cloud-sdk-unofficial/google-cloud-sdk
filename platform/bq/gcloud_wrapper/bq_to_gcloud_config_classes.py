@@ -210,7 +210,7 @@ class CommandMapping:
     self._flag_mappings: Dict[str, FlagMapping] = None
     self.table_projection = table_projection
     self.csv_projection = csv_projection
-    self.json_mapping = json_mapping if json_mapping else lambda x: x
+    self.json_mapping = json_mapping if json_mapping else lambda x, _: x
     if status_mapping:
       self.status_mapping = status_mapping
     else:

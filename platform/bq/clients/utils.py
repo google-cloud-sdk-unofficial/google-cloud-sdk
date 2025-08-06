@@ -339,6 +339,82 @@ def ParseReservationAssignmentPath(
   return (project_id, location, reservation_id, reservation_assignment_id)
 
 
+def _ParseReservationGroupIdentifier(
+    identifier: str,
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+  """Parses the reservation group identifier string into its components.
+
+  Args:
+    identifier: String specifying the reservation group identifier in the format
+      "project_id:reservation_group_id",
+      "project_id:location.reservation_group_id", or "reservation_group_id".
+
+  Returns:
+    A tuple of three elements: containing project_id, location, and
+    reservation_group_id. If an element is not found, it is represented by None.
+
+  Raises:
+    bq_error.BigqueryError: if the identifier could not be parsed.
+  """
+
+  pattern = re.compile(
+      r"""
+  ^((?P<project_id>[\w:\-.]*[\w:\-]+):)?
+  ((?P<location>[\w\-]+)\.)?
+  (?P<reservation_group_id>[\w\-]*)$
+  """,
+      re.X,
+  )
+
+  match = re.search(pattern, identifier)
+  if not match:
+    raise bq_error.BigqueryError(
+        'Could not parse reservation group identifier: %s' % identifier
+    )
+
+  project_id = match.groupdict().get('project_id', None)
+  location = match.groupdict().get('location', None)
+  reservation_group_id = match.groupdict().get('reservation_group_id', None)
+  return (project_id, location, reservation_group_id)
+
+
+def ParseReservationGroupPath(
+    path: str,
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+  """Parses the reservation group path string into its components.
+
+  Args:
+    path: String specifying the reservation group path in the format
+      projects/<project_id>/locations/<location>/reservationGroups/<reservation_group_id>
+
+  Returns:
+    A tuple of three elements: containing project_id, location and
+    reservation_group_id. If an element is not found, it is represented by None.
+
+  Raises:
+    bq_error.BigqueryError: if the path could not be parsed.
+  """
+
+  pattern = re.compile(
+      r"""
+  ^projects\/(?P<project_id>[\w:\-.]*[\w:\-]+)?
+  \/locations\/(?P<location>[\w\-]+)?
+  \/reservationGroups\/(?P<reservation_group_id>[\w|-]+)$
+  """,
+      re.X,
+  )
+
+  match = re.search(pattern, path)
+  if not match:
+    raise bq_error.BigqueryError(
+        'Could not parse reservation group path: %s' % path
+    )
+
+  group = lambda key: match.groupdict().get(key, None)
+  project_id = group('project_id')
+  location = group('location')
+  reservation_group_id = group('reservation_group_id')
+  return (project_id, location, reservation_group_id)
 
 
 def _ParseConnectionIdentifier(
@@ -1045,6 +1121,63 @@ def GetReservationAssignmentReference(
   )
 
 
+def GetReservationGroupReference(
+    id_fallbacks: NamedTuple(
+        'IDS',
+        [
+            ('project_id', Optional[str]),
+        ],
+    ),
+    identifier: Optional[str] = None,
+    path: Optional[str] = None,
+    default_location: Optional[str] = None,
+    default_reservation_group_id: Optional[str] = None,
+    check_reservation_group_project: bool = True,
+) -> bq_id_utils.ApiClientHelper.ReservationGroupReference:
+  """Determines a ReservationGroupReference from inputs."""
+  if identifier is not None:
+    (project_id, location, reservation_group_id) = (
+        _ParseReservationGroupIdentifier(identifier)
+    )
+  elif path is not None:
+    (project_id, location, reservation_group_id) = ParseReservationGroupPath(
+        path
+    )
+  else:
+    raise bq_error.BigqueryError('Either identifier or path must be specified.')
+
+  if (
+      check_reservation_group_project
+      and project_id
+      and id_fallbacks.project_id
+      and project_id != id_fallbacks.project_id
+  ):
+    raise bq_error.BigqueryError(
+        "Specified project '%s' should be the same as the project of the "
+        "reservation group '%s'." % (id_fallbacks.project_id, project_id)
+    )
+  project_id = project_id or id_fallbacks.project_id
+  if not project_id:
+    raise bq_error.BigqueryError('Project id not specified.')
+
+  location = location or default_location
+  if not location:
+    raise bq_error.BigqueryError('Location not specified.')
+  if default_location and location.lower() != default_location.lower():
+    raise bq_error.BigqueryError(
+        "Specified location '%s' should be the same as the location of the "
+        "reservation group '%s'." % (default_location, location)
+    )
+
+  reservation_group_id = reservation_group_id or default_reservation_group_id
+  if not reservation_group_id:
+    raise bq_error.BigqueryError('Reservation group id not specified.')
+  else:
+    return bq_id_utils.ApiClientHelper.ReservationGroupReference(
+        projectId=project_id,
+        location=location,
+        reservationGroupId=reservation_group_id,
+    )
 
 
 def GetConnectionReference(

@@ -395,6 +395,8 @@ class ResetWindowsPassword(base.UpdateCommand):
     enc_password = self._GetEncryptedPasswordFromSerialPort(
         client, instance_ref, modulus)
     password = crypt.DecryptMessage(key, enc_password)
+    if not isinstance(password, str):
+      password = core_encoding.Decode(password)
 
     # Get External IP address.
     try:

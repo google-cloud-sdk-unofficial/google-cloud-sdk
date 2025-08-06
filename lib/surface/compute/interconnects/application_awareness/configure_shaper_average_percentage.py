@@ -38,7 +38,7 @@ DETAILED_HELP = {
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConfigureShaperAveragePercentage(base.UpdateCommand):
   """Configure shaper average percentage for application awareness configuration of a Compute Engine interconnect.
 

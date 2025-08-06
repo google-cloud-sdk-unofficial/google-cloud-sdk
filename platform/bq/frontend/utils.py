@@ -465,11 +465,13 @@ def CreateExternalTableDefinition(
     encoding=None,
     file_set_spec_type=None,
     null_marker=None,
+    null_markers=None,
     time_zone=None,
     date_format=None,
     datetime_format=None,
     time_format=None,
     timestamp_format=None,
+    source_column_match=None,
     parquet_map_target_type=None,
 ):
   """Creates an external table definition with the given URIs and the schema.
@@ -530,11 +532,15 @@ def CreateExternalTableDefinition(
       manifest files, where each line contains a URI (No wild-card URIs are
       supported).
     null_marker: Specifies a string that represents a null value in a CSV file.
+    null_markers: Specifies a list of strings that represent null values in a
+      CSV file.
     time_zone: Specifies the time zone for a CSV or JSON file.
     date_format: Specifies the date format for a CSV or JSON file.
     datetime_format: Specifies the datetime format for a CSV or JSON file.
     time_format: Specifies the time format for a CSV or JSON file.
     timestamp_format: Specifies the timestamp format for a CSV or JSON file.
+    source_column_match: Controls the strategy used to match loaded columns to
+      the schema.
     parquet_map_target_type: Indicate the target type for parquet maps. If
       unspecified, we represent parquet maps as map {repeated key_value {key,
       value}}. This option can simplify this by omiting the key_value record if
@@ -612,6 +618,12 @@ def CreateExternalTableDefinition(
       external_table_def['csvOptions']['encoding'] = encoding or 'UTF-8'
       if null_marker is not None:
         external_table_def['csvOptions']['nullMarker'] = null_marker
+      if null_markers is not None:
+        external_table_def['csvOptions']['nullMarkers'] = null_markers
+      if source_column_match is not None:
+        external_table_def['csvOptions'][
+            'sourceColumnMatch'
+        ] = source_column_match
     elif external_table_def['sourceFormat'] == 'NEWLINE_DELIMITED_JSON':
       if autodetect is None or autodetect:
         external_table_def['autodetect'] = True
@@ -708,11 +720,13 @@ def GetExternalDataConfig(
     reference_file_schema_uri=None,
     file_set_spec_type=None,
     null_marker=None,
+    null_markers=None,
     time_zone=None,
     date_format=None,
     datetime_format=None,
     time_format=None,
     timestamp_format=None,
+    source_column_match=None,
     parquet_map_target_type=None,
 ):
   """Returns a ExternalDataConfiguration from the file or specification string.
@@ -803,11 +817,13 @@ def GetExternalDataConfig(
         reference_file_schema_uri=reference_file_schema_uri,
         file_set_spec_type=file_set_spec_type,
         null_marker=null_marker,
+        null_markers=null_markers,
         time_zone=time_zone,
         date_format=date_format,
         datetime_format=datetime_format,
         time_format=time_format,
         timestamp_format=timestamp_format,
+        source_column_match=source_column_match,
         parquet_map_target_type=parquet_map_target_type,
     )
 

@@ -54,19 +54,6 @@ class Describe(base.DescribeCommand):
         location=flags.GetLocation(args),
         resource_bundle=args.resource_bundle,
     )
-    # Don't show variants if they are nested resources.
-    if (
-        release.variants
-        and release.labels
-        and release.labels.additionalProperties
-    ):
-      for label in release.labels.additionalProperties:
-        if (
-            label.key == _VARIANT_STORAGE_STRATEGY_LABEL_KEY
-            and label.value == _VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED
-        ):
-          release.variants = None
-          break
     return release
 
 

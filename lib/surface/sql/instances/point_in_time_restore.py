@@ -87,8 +87,7 @@ def _UpdateRequestFromArgs(
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class PointInTimeRestore(base.Command):
   """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery."""
 

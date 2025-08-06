@@ -242,10 +242,11 @@ def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
 class RestoreBackup(base.RestoreCommand):
   """Restores a backup of a Cloud SQL instance.
 
-  The command lets you restore to an existing instance using ID. When backup
-  Name is used for restore it lets you restore to an existing instance or a new
-  instance. When restoring to new instance, optional flags can be used to
-  customize the new instance.
+  The command lets you restore to an existing instance using ID. To restore
+  using a backupDR backup, use the backupDR ID. When backup Name is used to
+  restore it lets you restore to an existing instance or a new instance. When
+  restoring to new instance, optional flags can be used to customize the new
+  instance.
   """
 
   @staticmethod

@@ -42,7 +42,7 @@ DETAILED_HELP = {
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class GetConfig(base.DescribeCommand):
   """Get application awareness configuration of a Compute Engine interconnect.
 

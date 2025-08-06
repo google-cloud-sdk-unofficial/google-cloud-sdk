@@ -177,6 +177,7 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
+    self.null_markers_flag = frontend_flags.define_null_markers(flag_values=fv)
     self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
     self.date_format_flag = frontend_flags.define_date_format(flag_values=fv)
     self.datetime_format_flag = frontend_flags.define_datetime_format(
@@ -184,6 +185,9 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
     )
     self.time_format_flag = frontend_flags.define_time_format(flag_values=fv)
     self.timestamp_format_flag = frontend_flags.define_timestamp_format(
+        flag_values=fv
+    )
+    self.source_column_match_flag = frontend_flags.define_source_column_match(
         flag_values=fv
     )
     self.parquet_map_target_type_flag = (
@@ -252,11 +256,13 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
             encoding=self.encoding,
             file_set_spec_type=self.file_set_spec_type,
             null_marker=self.null_marker_flag.value,
+            null_markers=self.null_markers_flag.value,
             time_zone=self.time_zone_flag.value,
             date_format=self.date_format_flag.value,
             datetime_format=self.datetime_format_flag.value,
             time_format=self.time_format_flag.value,
             timestamp_format=self.timestamp_format_flag.value,
+            source_column_match=self.source_column_match_flag.value,
             parquet_map_target_type=self.parquet_map_target_type_flag.value,
         ),
         sys.stdout,
