@@ -277,6 +277,7 @@ class Deploy(base.Command):
 
     with serverless_operations.Connect(conn_context) as operations:
       job_obj = operations.GetJob(job_ref)
+      messages_util.MaybeLogDefaultGpuTypeMessage(args, job_obj)
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
               conn_context, job_ref, operation_message, 'job'

@@ -20,6 +20,7 @@ from googlecloudsdk.command_lib.run import config_changes as config_changes_mod
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import resource_name_conversion
@@ -172,6 +173,7 @@ class Update(base.Command):
         run_client
     )
     worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+    messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(args, worker_pool)
     config_changes = self._GetBaseChanges(args)
     if worker_pool:
       header = 'Updating...'

@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     flags.AddWorkerPoolFlag(parser)
     flags.AddArtifactsGCSBucketFlag(parser)
     flags.AddProviderSourceFlag(parser)
+    flags.AddTFVersionConstraintFlag(parser)
 
     concept_parsers.ConceptParser(
         [
@@ -124,4 +125,5 @@ class Create(base.CreateCommand):
         args.labels,
         args.annotations,
         args.provider_source,
+        args.tf_version_constraint,
     )

@@ -172,6 +172,7 @@ class Create(base.Command):
     execute_now = args.execute_now or args.wait
     execution = None
 
+    messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
           messages_util.GetStartDeployMessage(

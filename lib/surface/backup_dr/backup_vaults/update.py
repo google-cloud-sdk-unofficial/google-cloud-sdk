@@ -43,9 +43,20 @@ def _add_common_args(parser: argparse.ArgumentParser):
   flags.AddEffectiveTime(parser)
   flags.AddUnlockBackupMinEnforcedRetention(parser)
   flags.AddForceUpdateFlag(parser)
+  flags.AddForceUpdateAccessRestriction(parser)
+  flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'update')
 
 
 def _add_common_update_mask(args: argparse.Namespace) -> str:
+  """Creates the update mask for the update command.
+
+  Args:
+    args: argparse.Namespace, An object that contains the values for the
+      arguments specified in the .Args() method.
+
+  Returns:
+    A string containing the update mask.
+  """
   updated_fields = []
   if args.IsSpecified('description'):
     updated_fields.append('description')
@@ -55,6 +66,8 @@ def _add_common_update_mask(args: argparse.Namespace) -> str:
       'unlock_backup_min_enforced_retention'
   ) or args.IsSpecified('effective_time'):
     updated_fields.append('effectiveTime')
+  if args.IsSpecified('access_restriction'):
+    updated_fields.append('accessRestriction')
   return ','.join(updated_fields)
 
 
@@ -90,13 +103,22 @@ def _parse_update_bv(args: argparse.Namespace):
     effective_time = command_util.VerifyDateInFuture(
         args.effective_time, 'effective-time'
     )
-  return backup_min_enforced_retention, description, effective_time
+  if args.access_restriction:
+    access_restriction = args.access_restriction
+  else:
+    access_restriction = None
+
+  return (
+      backup_min_enforced_retention,
+      description,
+      effective_time,
+      access_restriction,
+  )
 
 
 def _run(
     self,
     args: argparse.Namespace,
-    support_force_update_access_restriction: bool,
 ):
   """Constructs and sends request.
 
@@ -104,8 +126,6 @@ def _run(
     self: The object that is calling this method.
     args: argparse.Namespace, An object that contains the values for the
       arguments specified in the .Args() method.
-    support_force_update_access_restriction: bool, A boolean that indicates if
-      the force_update_access_restriction flag is supported.
 
   Returns:
     ProcessHttpResponse of the request made.
@@ -116,11 +136,7 @@ def _run(
   client = BackupVaultsClient()
   backup_vault = args.CONCEPTS.backup_vault.Parse()
   no_async = args.no_async
-  force_update_access_restriction = (
-      args.force_update_access_restriction
-      if support_force_update_access_restriction
-      else False
-  )
+  force_update_access_restriction = args.force_update_access_restriction
 
   try:
     parsed_bv = self.ParseUpdateBv(args, client)
@@ -218,19 +234,22 @@ class Update(base.UpdateCommand):
     Returns:
       A parsed backup vault object.
     """
-    backup_min_enforced_retention, description, effective_time = (
-        _parse_update_bv(args)
-    )
+    (
+        backup_min_enforced_retention,
+        description,
+        effective_time,
+        access_restriction,
+    ) = _parse_update_bv(args)
 
     return client.ParseUpdate(
         description=description,
         backup_min_enforced_retention=backup_min_enforced_retention,
         effective_time=effective_time,
-        access_restriction=None,
+        access_restriction=access_restriction,
     )
 
   def Run(self, args):
-    return _run(self, args, support_force_update_access_restriction=False)
+    return _run(self, args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -245,8 +264,6 @@ class UpdateAlpha(Update):
       parser: argparse.Parser: Parser object for command line inputs.
     """
     _add_common_args(parser)
-    flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'update')
-    flags.AddForceUpdateAccessRestriction(parser)
 
   def ParseUpdateBv(self, args: argparse.Namespace, client: BackupVaultsClient):
     """Parses the update backup vault arguments.
@@ -259,10 +276,12 @@ class UpdateAlpha(Update):
     Returns:
       A parsed backup vault object.
     """
-    backup_min_enforced_retention, description, effective_time = (
-        _parse_update_bv(args)
-    )
-    access_restriction = args.access_restriction
+    (
+        backup_min_enforced_retention,
+        description,
+        effective_time,
+        access_restriction,
+    ) = _parse_update_bv(args)
 
     return client.ParseUpdate(
         description=description,
@@ -282,9 +301,7 @@ class UpdateAlpha(Update):
       A string containing the update mask.
     """
     mask = _add_common_update_mask(args)
-    if args.IsSpecified('access_restriction'):
-      mask += ',accessRestriction'
     return mask
 
   def Run(self, args):
-    return _run(self, args, support_force_update_access_restriction=True)
+    return _run(self, args)

@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Updates a Backup and DR Backup."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import argparse
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.backupdr.backups import BackupsClient
@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.backupdr import util as command_util
 from googlecloudsdk.core import log
 
 
-def _add_common_args(parser):
+def _add_common_args(parser: argparse.ArgumentParser):
   """Specifies additional command flags.
 
   Args:
@@ -40,7 +40,16 @@ def _add_common_args(parser):
       parser,
       'Name of the backup to update.',
   )
-  flags.AddBackupEnforcedRetentionEndTime(parser)
+  flags.AddUpdateBackupFlags(parser)
+
+
+def _add_common_update_mask(args) -> str:
+  updated_fields = []
+  if args.IsSpecified('enforced_retention_end_time'):
+    updated_fields.append('enforcedRetentionEndTime')
+  if args.IsSpecified('expire_time'):
+    updated_fields.append('expireTime')
+  return ','.join(updated_fields)
 
 
 @base.DefaultUniverseOnly
@@ -60,7 +69,7 @@ class Update(base.UpdateCommand):
   }
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser):
     _add_common_args(parser)
 
   def ParseUpdate(self, args, client):
@@ -68,15 +77,16 @@ class Update(base.UpdateCommand):
         args.enforced_retention_end_time, 'enforced-retention-end-time'
     )
 
-    parsed_backup = client.ParseUpdate(updated_enforced_retention, None)
+    expire_time = command_util.VerifyDateInFuture(
+        args.expire_time, 'expire-time'
+    )
+
+    parsed_backup = client.ParseUpdate(updated_enforced_retention, expire_time)
 
     return parsed_backup
 
   def GetUpdateMask(self, args):
-    updated_fields = []
-    if args.IsSpecified('enforced_retention_end_time'):
-      updated_fields.append('enforcedRetentionEndTime')
-    return ','.join(updated_fields)
+    return _add_common_update_mask(args)
 
   def Run(self, args):
     """Constructs and sends request.
@@ -131,9 +141,8 @@ class UpdateAlpha(Update):
   """Update the specified Backup."""
 
   @staticmethod
-  def Args(parser):
+  def Args(parser: argparse.ArgumentParser):
     _add_common_args(parser)
-    flags.AddBackupExpireTime(parser)
 
   def ParseUpdate(self, args, client):
     updated_enforced_retention = command_util.VerifyDateInFuture(
@@ -149,9 +158,4 @@ class UpdateAlpha(Update):
     return parsed_backup
 
   def GetUpdateMask(self, args):
-    updated_fields = []
-    if args.IsSpecified('enforced_retention_end_time'):
-      updated_fields.append('enforcedRetentionEndTime')
-    if args.IsSpecified('expire_time'):
-      updated_fields.append('expireTime')
-    return ','.join(updated_fields)
+    return _add_common_update_mask(args)

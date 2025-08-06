@@ -53,7 +53,7 @@ class Create(base.Command):
     gca_args.AddInvestigationResourceArg(
         parser, verb="to update", required=True, allow_no_id=False
     )
-    parser.display_info.AddFormat("value(investigation_detailed())")
+    parser.display_info.AddFormat("value(investigation_markdown_detailed())")
     parser.add_argument(
         "--issue",
         required=False,

@@ -297,6 +297,8 @@ class Deploy(base.Command):
     )
     # pre-fetch the worker pool in case it already exists.
     worker_pool = worker_pools_client.GetWorkerPool(worker_pool_ref)
+    messages_util.MaybeLogDefaultGpuTypeMessageForV2Resource(args, worker_pool)
+
     build_image = None
     build_pack = None
     build_source = None

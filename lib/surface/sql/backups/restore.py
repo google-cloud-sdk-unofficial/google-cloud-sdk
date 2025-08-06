@@ -72,6 +72,7 @@ OVERRIDE_FLAGS_SET = (
     'edition',
     'enable_point_in_time_recovery',
     'network',
+    'clear_network',
     'audit_bucket_path',
     'deletion_protection',
     'time_zone',
@@ -144,6 +145,7 @@ def AddInstanceSettingsArgs(parser):
   )
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
+  flags.AddClearNetwork(parser, hidden=True)
   flags.AddSqlServerAudit(parser)
   flags.AddDeletionProtection(parser)
   flags.AddSqlServerTimeZone(parser)
@@ -233,6 +235,22 @@ def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
             backup=args.id
         ),
     )
+
+
+def _GetRestoreInstanceClearOverrides(args):
+  """Get the database instance clear overrides.
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+
+  Returns:
+    An array with the database instance fields that should be cleared.
+  """
+  return (
+      ['settings.ip_configuration.private_network']
+      if args.IsKnownAndSpecified('clear_network')
+      else []
+  )
 
 
 @base.DefaultUniverseOnly
@@ -351,6 +369,9 @@ class RestoreBackup(base.RestoreCommand):
         )
         restore_backup_request.instancesRestoreBackupRequest.restoreInstanceSettings = (
             instance_resource
+        )
+        restore_backup_request.instancesRestoreBackupRequest.restoreInstanceClearOverridesFieldNames = (
+            _GetRestoreInstanceClearOverrides(args)
         )
       result_operation = sql_client.instances.RestoreBackup(
           restore_backup_request

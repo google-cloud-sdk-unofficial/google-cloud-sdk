@@ -112,6 +112,7 @@ class Update(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddServiceMinInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddScalingFlag(parser)
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
     flags.CONFIG_MAP_FLAGS.AddToParser(parser)
@@ -204,6 +205,7 @@ class Update(base.Command):
     iap = self._GetIap(args)
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
+      messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
       changes = self._GetBaseChanges(args, service)
       resource_change_validators.ValidateClearVpcConnector(service, args)
       has_latest = (
@@ -298,7 +300,6 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
@@ -325,7 +326,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

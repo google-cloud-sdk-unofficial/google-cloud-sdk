@@ -148,6 +148,7 @@ class Deploy(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddServiceMinInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddScalingFlag(parser)
 
     # Flags specific to connecting to a cluster
     flags.AddEndpointVisibilityEnum(parser)
@@ -857,6 +858,7 @@ class Deploy(base.Command):
                 '--function',
             )
 
+      messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
       pretty_print.Info(
           messages_util.GetStartDeployMessage(
               conn_context, service_ref, operation_message
@@ -1124,7 +1126,6 @@ class BetaDeploy(Deploy):
     # Flags specific to managed CR
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddRegionsArg(parser)
-    flags.AddScalingFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
@@ -1255,7 +1256,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddScalingFlag(parser)
     flags.AddMaxSurgeFlag(parser)
     flags.AddMaxUnavailableFlag(parser)
     flags.AddRegionsArg(parser)

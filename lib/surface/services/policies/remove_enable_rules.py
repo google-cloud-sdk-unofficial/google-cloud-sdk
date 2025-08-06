@@ -15,10 +15,6 @@
 
 """services policies remove-enable-rule command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -123,6 +119,7 @@ class RemovedEnableRules(base.SilentCommand):
     organization = (
         args.organization if args.IsSpecified('organization') else None
     )
+
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
@@ -144,6 +141,8 @@ class RemovedEnableRules(base.SilentCommand):
           folder,
           organization,
           args.validate_only,
+          skip_dependency_check=False,
+          disable_dependency_services=args.force,
       )
 
       if args.async_:

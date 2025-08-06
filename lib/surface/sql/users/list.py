@@ -55,12 +55,21 @@ def RunBaseListCommand(args, release_track):
   # We will not display dual passwords if no user in the instance
   # has information about this field. This an implicit way of saying that we
   # will only show dual password type on MySQL 8.0, as no other instance type
-  # will have dual password information.
+  # will have dual password information. Likewise, we will not display
+  # IAM status if no user in the instance has information about this field.
   dual_password_type = ""
+  iam_status = ""
   for user in users:
     if user.dualPasswordType:
       dual_password_type = "dualPasswordType,"
     policy = user.passwordPolicy
+    if (
+        user.iamStatus
+        == sql_messages.User.IamStatusValueValuesEnum.IAM_STATUS_UNSPECIFIED
+    ):
+      user.iamStatus = None
+    if user.iamStatus:
+      iam_status = "iamStatus,"
     if not policy:
       continue
     # Don't display
@@ -77,9 +86,10 @@ def RunBaseListCommand(args, release_track):
         host,
         type.yesno(no='BUILT_IN'),
         {dualPasswordType}
+        {iamStatus}
         passwordPolicy
       )
-    """.format(dualPasswordType=dual_password_type))
+    """.format(dualPasswordType=dual_password_type, iamStatus=iam_status))
   else:
     args.GetDisplayInfo().AddFormat("""
       table(
@@ -87,15 +97,17 @@ def RunBaseListCommand(args, release_track):
         host,
         type.yesno(no='BUILT_IN'),
         {dualPasswordType}
+        {iamStatus}
         iamEmail,
         passwordPolicy
       )
-    """.format(dualPasswordType=dual_password_type))
+    """.format(dualPasswordType=dual_password_type, iamStatus=iam_status))
 
   return users
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   """Lists Cloud SQL users in a given instance.
 
@@ -112,6 +124,7 @@ class List(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class ListBeta(List):
   """Lists Cloud SQL users in a given instance.
 
@@ -125,6 +138,7 @@ class ListBeta(List):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class ListAlpha(ListBeta):
   """Lists Cloud SQL users in a given instance.
 

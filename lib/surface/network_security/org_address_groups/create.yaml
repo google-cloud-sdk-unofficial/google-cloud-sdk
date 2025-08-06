@@ -48,7 +48,6 @@ arguments:
         - api_field: value
   - arg_name: purpose
     api_field: addressGroup.purpose
-    release_tracks: [ALPHA, BETA]
     help_text: |
       List of Address Group purposes.
     choices:

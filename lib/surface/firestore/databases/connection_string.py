@@ -20,14 +20,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import databases
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.firestore import connection_util
 from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
-)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ConnectionString(base.Command):
   """Prints the mongo connection string for the given Firestore database.
 
@@ -51,7 +50,21 @@ class ConnectionString(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddDatabaseIdFlag(parser, required=True)
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--validate',
+        metavar='VALIDATE',
+        required=False,
+        hidden=False,
+        type=str,
+        help="""
+        Validate the specified connection string for the current database. This
+        command checks that the connection string is well formed, contains the
+        required parameters, and specifies correct configuration values for the
+        current database.
+        """,
+    )
+    group.add_argument(
         '--auth',
         metavar='AUTH',
         required=False,
@@ -73,7 +86,14 @@ class ConnectionString(base.Command):
     project = properties.VALUES.core.project.Get(required=True)
     db = databases.GetDatabase(project, args.database)
     database_id = '_' if args.database == '(default)' else args.database
-    if args.auth == 'gce-vm':
+    if args.validate:
+      connection_util.PrettyPrintValidationResults(
+          connection_util.ValidateConnectionString(
+              args.validate, db.uid, db.locationId, args.database
+          )
+      )
+      return None
+    elif args.auth == 'gce-vm':
       return (
           self._BASE_OUTPUT.format('', db.uid, db.locationId, database_id)
           + self._GCE_VM_AUTH

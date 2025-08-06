@@ -74,6 +74,7 @@ class UpdateHelper(object):
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
+      support_allow_multinetwork,
   ):
     """Add all arguments for updating a backend service."""
 
@@ -154,12 +155,15 @@ class UpdateHelper(object):
       flags.AddIpPortDynamicForwarding(parser)
     if support_zonal_affinity:
       flags.AddZonalAffinity(parser)
+    if support_allow_multinetwork:
+      flags.AddAllowMultinetwork(parser)
 
   def __init__(
       self,
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding=False,
       support_zonal_affinity=False,
+      support_allow_multinetwork=False,
       release_track=None,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
@@ -167,6 +171,7 @@ class UpdateHelper(object):
         support_ip_port_dynamic_forwarding
     )
     self._support_zonal_affinity = support_zonal_affinity
+    self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
 
   def Modify(self, client, resources, args, existing, backend_service_ref):
@@ -345,6 +350,10 @@ class UpdateHelper(object):
       backend_services_utils.IpPortDynamicForwarding(client, args, replacement)
     if self._support_zonal_affinity:
       backend_services_utils.ZonalAffinity(client, args, replacement)
+    if self._support_allow_multinetwork and args.IsSpecified(
+        'allow_multinetwork'
+    ):
+      replacement.allowMultinetwork = args.allow_multinetwork
     return replacement, cleared_fields
 
   def ValidateArgs(self, args):
@@ -431,6 +440,9 @@ class UpdateHelper(object):
         else False,
         args.IsSpecified('zonal_affinity_spillover_ratio')
         if self._support_zonal_affinity
+        else False,
+        args.IsSpecified('allow_multinetwork')
+        if self._support_allow_multinetwork
         else False,
     ]):
       raise compute_exceptions.UpdatePropertyError(
@@ -596,6 +608,7 @@ class UpdateGA(base.UpdateCommand):
   _support_subsetting_subset_size = False
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
+  _support_allow_multinetwork = False
 
   @classmethod
   def Args(cls, parser):
@@ -604,6 +617,7 @@ class UpdateGA(base.UpdateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
+        support_allow_multinetwork=cls._support_allow_multinetwork,
     )
 
   def Run(self, args):
@@ -613,6 +627,7 @@ class UpdateGA(base.UpdateCommand):
         self._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=self._support_zonal_affinity,
+        support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -627,6 +642,7 @@ class UpdateBeta(UpdateGA):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
+  _support_allow_multinetwork = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -639,3 +655,4 @@ class UpdateAlpha(UpdateBeta):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
+  _support_allow_multinetwork = True

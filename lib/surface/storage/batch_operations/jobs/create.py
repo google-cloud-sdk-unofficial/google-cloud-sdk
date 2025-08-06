@@ -26,6 +26,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a new batch operation job."""
@@ -67,7 +68,8 @@ class Create(base.Command):
 
   def Run(self, args):
     # Prompts to confirm deletion if --delete-object is specified.
-    if args.delete_object:
+    dry_run = getattr(args, "dry_run", False)
+    if args.delete_object and not dry_run:
       delete_prompt = (
           "This command will delete objects specified in the batch operation"
           " job. Please ensure that you have soft delete enabled on the bucket"
@@ -82,3 +84,14 @@ class Create(base.Command):
         args, job_ref.RelativeName()
     )
     log.status.Print("Created batch job: {}".format(job_ref.RelativeName()))
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new batch operation job."""
+
+  @staticmethod
+  def Args(parser):
+    resource_args.add_batch_job_resource_arg(parser, "to create")
+    flags.add_batch_jobs_flags(parser)
+    flags.add_batch_jobs_dry_run_flag(parser)

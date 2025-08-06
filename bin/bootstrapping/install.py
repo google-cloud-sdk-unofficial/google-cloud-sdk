@@ -25,6 +25,7 @@ from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.updater import python_manager
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import encoding
+from googlecloudsdk.core.util import platforms
 from googlecloudsdk import gcloud_main
 
 # pylint:disable=superfluous-parens
@@ -115,6 +116,16 @@ def ParseArgs():
           'list, or to the override-components (if provided).'
       ),
   )
+  parser.add_argument(
+      '--update-installed-components',
+      action='store_true',
+      help=(
+          'Update previously installed components. Checks the install folder '
+          'to make sure that there are no installed components that need '
+          'to be updated. This is currently just used for updating gcloud '
+          'via homebrew.'
+      )
+  )
   # Must have a None default so properties are not always overridden when the
   # arg is not provided.
   parser.add_argument(
@@ -201,7 +212,17 @@ future by running the following command:
       scope=properties.Scope.INSTALLATION)
 
 
-def Install(override_components, additional_components, compile_python):
+def GetInstalledComponents():
+  # Check if .install folder already has components installed
+  platform = platforms.Platform.Current()
+  manager = update_manager.UpdateManager(platform_filter=platform, warn=False)
+  installed_components = manager.GetCurrentVersionsInformation()
+  return list(installed_components.keys())
+
+
+def Install(
+    override_components, update_installed_components,
+    additional_components, compile_python):
   """Do the normal installation of the Cloud CLI."""
   # Install the OS specific wrapper scripts for gcloud and any pre-configured
   # components for the CLI.
@@ -215,6 +236,14 @@ def Install(override_components, additional_components, compile_python):
   # default components, this is a fully packaged CLI.  If there are additional
   # components requested, just install them without updating the version.
   update = bool(to_install)
+
+  # If gcloud was previously installed, there may still be some old installed
+  # components. Ensure those components are up to date. This ensures
+  # upgrades outside of `gcloud components update` still update installed
+  # components.
+  if (update_installed_components and
+      (installed_components := GetInstalledComponents())):
+    to_install.extend(installed_components)
 
   if additional_components:
     to_install.extend(additional_components)
@@ -300,6 +329,7 @@ def main():
       if not config.INSTALLATION_CONFIG.disable_updater:
         Install(
             pargs.override_components,
+            pargs.update_installed_components,
             pargs.additional_components,
             pargs.no_compile_python,
         )

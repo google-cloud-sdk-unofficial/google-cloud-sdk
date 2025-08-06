@@ -211,8 +211,8 @@ class Update(base.UpdateCommand):
       for config in args.cache_parameters.get('cache-config'):
         if 'atime-scrub-enabled' in config:
           updated_fields.append('cacheParameters.cacheConfig.atimeScrubEnabled')
-        if 'atime-scrub-minutes' in config:
-          updated_fields.append('cacheParameters.cacheConfig.atimeScrubMinutes')
+        # if 'atime-scrub-minutes' in config:
+        #   updated_fields.append('cacheParameters.cacheConfig.atimeScrubMinutes')
         if 'cifs-change-notify-enabled' in config:
           updated_fields.append(
               'cacheParameters.cacheConfig.cifsChangeNotifyEnabled'

@@ -21,7 +21,6 @@ from googlecloudsdk.command_lib.gemini import cloud_assist
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class InvestigationsAlpha(base.Group):
   """Create and manage Gemini Cloud Assist investigations."""
@@ -31,14 +30,9 @@ class InvestigationsAlpha(base.Group):
   @staticmethod
   def Args(parser):
     parser.display_info.AddTransforms({
-        "input_observation_short": cloud_assist.InputObservationShort,
-        "input_observation_detailed": cloud_assist.InputObservationDetailed,
-        "observation_short": cloud_assist.ObservationShort,
-        "observation_detailed": cloud_assist.ObservationDetailed,
-        "hypothesis_observation_short": cloud_assist.HypothesisObservationShort,
-        "hypothesis_observation_detailed": (
-            cloud_assist.HypothesisObservationDetailed
+        "investigation_markdown_short": cloud_assist.InvestigationMarkdownShort,
+        "investigation_markdown_detailed": (
+            cloud_assist.InvestigationMarkdownDetailed
         ),
-        "investigation_short": cloud_assist.InvestigationShort,
-        "investigation_detailed": cloud_assist.InvestigationDetailed,
+        "reformat_investigation": cloud_assist.ReformatInvestigation,
     })

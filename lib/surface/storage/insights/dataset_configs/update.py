@@ -110,18 +110,10 @@ class Update(base.Command):
       else:
         raise ValueError('retention-period-days value must be greater than 0')
 
-    # TODO: b/418690611 - Update this once the API supports organizationScope
-    # without organizationNumber.
-    organization_number = None
-    if args.enable_organization_scope:
-      organization_number = client.get_dataset_config(
-          dataset_config_relative_name
-      ).organizationNumber
-
     source_projects_list = self._get_source_projects_list(args)
     source_folders_list = self._get_source_folders_list(args)
     new_scope = create_update_util.get_new_source_config(
-        organization_number,
+        args.enable_organization_scope,
         source_projects_list,
         source_folders_list,
     )
@@ -148,7 +140,6 @@ class Update(base.Command):
         organization_scope=args.enable_organization_scope,
         source_projects_list=source_projects_list,
         source_folders_list=source_folders_list,
-        organization_number=organization_number,
         include_buckets_name_list=args.include_bucket_names,
         include_buckets_prefix_regex_list=args.include_bucket_prefix_regexes,
         exclude_buckets_name_list=args.exclude_bucket_names,

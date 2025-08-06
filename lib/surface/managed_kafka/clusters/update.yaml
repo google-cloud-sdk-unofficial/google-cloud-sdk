@@ -17,16 +17,9 @@ help_text:
 
 request:
   collection: managedkafka.projects.locations.clusters
-  ALPHA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
-    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithCaPools
-  BETA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
-  GA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithSubnets
+  - googlecloudsdk.command_lib.managed_kafka.util:PrepareUpdateWithCaPools
 
 arguments:
   resource:
@@ -43,15 +36,11 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
         default: null
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
-        release_tracks: [ALPHA]
       - group:
           mutex: true
           params:
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
-            release_tracks: [ALPHA]
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:clear-mtls-ca-pools
-            release_tracks: [ALPHA]
-        release_tracks: [ALPHA]
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allow-broker-downscale-on-cluster-upscale
     release_tracks: [ALPHA]
     hidden: true

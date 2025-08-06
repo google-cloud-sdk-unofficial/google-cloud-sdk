@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.gemini_cloud_assist import args as gca_args
 from googlecloudsdk.api_lib.gemini_cloud_assist import util as gca_util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.gemini import cloud_assist
 
 
 @base.DefaultUniverseOnly
@@ -46,17 +47,32 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     gca_args.AddInvestigationResourceArg(parser, verb="to describe")
-    parser.display_info.AddFormat("value(investigation_short())")
+    parser.display_info.AddFormat("value(investigation_markdown_short())")
     parser.add_argument(
         "--detail",
         required=False,
         action="store_true",
         help="Include extra information in the default output.",
     )
+    parser.add_argument(
+        "--raw",
+        required=False,
+        action="store_true",
+        help=(
+            "Return the full, unaltered API response instead of the version"
+            " formatted for human consumption."
+        ),
+    )
 
   def Run(self, args):
-    if args.detail and not args.IsSpecified("format"):
-      args.format = "value(investigation_detailed())"
+    # Only handle --detail flag if no format or --raw were specified.
+    if not args.IsSpecified("format") and not args.raw and args.detail:
+      args.format = "value(investigation_markdown_detailed())"
 
     investigation_ref = args.CONCEPTS.investigation.Parse()
-    return gca_util.GetInvestigation(investigation_ref.RelativeName())
+
+    if args.raw:
+      return gca_util.GetInvestigation(investigation_ref.RelativeName())
+    return cloud_assist.ReformatInvestigation(
+        gca_util.GetInvestigation(investigation_ref.RelativeName())
+    )

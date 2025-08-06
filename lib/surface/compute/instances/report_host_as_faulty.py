@@ -37,7 +37,8 @@ FAULT_REASONS_CHOICES = [
     'UNRECOVERABLE_GPU_ERROR',
 ]
 
-DISRUPTION_SCHEDULE_CHOICES = ['IMMEDIATE']
+DISRUPTION_SCHEDULE_DEFAULT_CHOICE = 'IMMEDIATE'
+DISRUPTION_SCHEDULE_CHOICES = ['IMMEDIATE', 'FUTURE']
 
 DETAILED_HELP = {
     'brief': 'Report a host as faulty to start the repair process.',
@@ -87,8 +88,8 @@ class ReportHostAsFaulty(base.SilentCommand):
         type=arg_utils.ChoiceToEnumName,
         help="""\
         Specifies the timing for initiating the fault reporting process.
-        The default value is {choices} which initiates the process right away.
-        """.format(choices=DISRUPTION_SCHEDULE_CHOICES),
+        The default value is {default_choice} which initiates the process right away.
+        """.format(default_choice=DISRUPTION_SCHEDULE_DEFAULT_CHOICE),
     )
 
   @staticmethod

@@ -94,6 +94,7 @@ class CreateHelper(object):
       support_subsetting_subset_size,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
+      support_allow_multinetwork,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -154,6 +155,8 @@ class CreateHelper(object):
       flags.AddIpPortDynamicForwarding(parser)
     if support_zonal_affinity:
       flags.AddZonalAffinity(parser)
+    if support_allow_multinetwork:
+      flags.AddAllowMultinetwork(parser)
 
   def __init__(
       self,
@@ -161,12 +164,14 @@ class CreateHelper(object):
       release_track,
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
+      support_allow_multinetwork,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_port_dynamic_forwarding = (
         support_ip_port_dynamic_forwarding
     )
     self._support_zonal_affinity = support_zonal_affinity
+    self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
@@ -272,6 +277,9 @@ class CreateHelper(object):
       backend_services_utils.IpPortDynamicForwarding(
           client, args, backend_service
       )
+
+    if self._support_allow_multinetwork:
+      backend_service.allowMultinetwork = args.allow_multinetwork
 
     request = client.messages.ComputeBackendServicesInsertRequest(
         backendService=backend_service, project=backend_services_ref.project
@@ -384,6 +392,9 @@ class CreateHelper(object):
     if self._support_zonal_affinity:
       backend_services_utils.ZonalAffinity(client, args, backend_service)
 
+    if self._support_allow_multinetwork:
+      backend_service.allowMultinetwork = args.allow_multinetwork
+
     request = client.messages.ComputeRegionBackendServicesInsertRequest(
         backendService=backend_service,
         region=backend_services_ref.region,
@@ -467,6 +478,7 @@ class CreateGA(base.CreateCommand):
   _support_subsetting_subset_size = False
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
+  _support_allow_multinetwork = False
 
   @classmethod
   def Args(cls, parser):
@@ -475,6 +487,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=cls._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
+        support_allow_multinetwork=cls._support_allow_multinetwork,
     )
 
   def Run(self, args):
@@ -485,6 +498,7 @@ class CreateGA(base.CreateCommand):
         support_subsetting_subset_size=self._support_subsetting_subset_size,
         support_ip_port_dynamic_forwarding=self._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=self._support_zonal_affinity,
+        support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
     ).Run(args, holder)
 
@@ -510,6 +524,7 @@ class CreateBeta(CreateGA):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
+  _support_allow_multinetwork = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -533,3 +548,4 @@ class CreateAlpha(CreateBeta):
   _support_subsetting_subset_size = True
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
+  _support_allow_multinetwork = True

@@ -86,6 +86,8 @@ class DisableAlpha(base.SilentCommand):
     common_flags.add_resource_args(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     common_flags.validate_only_args(parser, suffix='disable')
+    common_flags.bypass_api_usage_check_flag(parser)
+    common_flags.add_dependency_check_args(parser)
     parser.add_argument(
         '--force',
         action='store_true',
@@ -95,7 +97,10 @@ class DisableAlpha(base.SilentCommand):
             ' the service to be disabled was used in the last 30 days, or the'
             ' service to be disabled was enabled in the last 3 days. Forcing'
             ' the call means that the services which depend on the service to'
-            ' be disabled will also be disabled.'
+            ' be disabled will also be disabled. (Note): If '
+            ' --bypass-api-usage-check, --bypass-dependency-service-check, or'
+            ' --disable-dependency-services flags are used, they will take'
+            ' precedence over --force.'
         ),
     )
 
@@ -130,13 +135,38 @@ class DisableAlpha(base.SilentCommand):
         )
         if not do_disable:
           continue
+
+      bypass_api_usage_check = args.force
+
+      # Default behaviour without any flags.
+      # The operation will be blocked if there are
+      # any enabled dependent services.
+      skip_dependency_check = False
+      disable_dependency_services = False
+
+      # All dependent services will be disabled.
+      if args.IsSpecified('force') or args.IsSpecified(
+          'disable_dependency_services'
+      ):
+        disable_dependency_services = True
+
+      # API usage check of the service to be disabled will be bypassed.
+      if args.IsSpecified('bypass_api_usage_check'):
+        bypass_api_usage_check = True
+
+      # All dependent services will remain enabled.
+      if args.IsSpecified('bypass_dependency_service_check'):
+        skip_dependency_check = True
+
       op = serviceusage.RemoveEnableRule(
           project,
           service_name,
-          force=args.force,
+          force=bypass_api_usage_check,
           folder=folder,
           organization=organization,
           validate_only=args.validate_only,
+          skip_dependency_check=skip_dependency_check,
+          disable_dependency_services=disable_dependency_services,
       )
 
       if args.async_:

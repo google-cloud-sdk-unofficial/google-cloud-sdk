@@ -19,10 +19,11 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import copy
+import datetime
+from typing import Optional
 
 from apitools.base.protorpclite import messages
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.sql import api_util as common_api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as api_util
@@ -36,6 +37,10 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
+
+
+_NINE_MONTHS_IN_DAYS = 270
+_TWELVE_MONTHS_IN_DAYS = 365
 
 
 class _Result(object):
@@ -429,6 +434,32 @@ def RunBasePatchCommand(args, release_track):
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
 
+  if (
+      args.IsSpecified('deny_maintenance_period_start_date')
+      or args.IsSpecified('deny_maintenance_period_end_date')
+      or args.IsSpecified('deny_maintenance_period_time')
+  ):
+    maintenance_version = original_instance_resource.maintenanceVersion
+    if maintenance_version:
+      maintenance_date = _ParseDateFromMaintenanceVersion(maintenance_version)
+      if maintenance_date:
+        today = datetime.date.today()
+        delta = today - maintenance_date
+        # 9 months ~ 270 days, 12 months ~ 365 days.
+        if _NINE_MONTHS_IN_DAYS <= delta.days < _TWELVE_MONTHS_IN_DAYS:
+          log.warning(
+              'Your instance has NOT undergone maintenance for at least 9'
+              ' months. It is highly recommended to perform it soon. While you'
+              ' can still set a deny maintenance period now, please be aware'
+              ' that once your instance is on a maintenance version that is at'
+              ' least 12 months old, you will no longer be able to set a deny'
+              ' period. Maintenance is crucial for important updates, security'
+              ' patches, and bug fixes, and skipping them can leave your'
+              ' instance vulnerable. You can learn more about how to perform'
+              ' maintenance here:'
+              ' https://cloud.google.com/sql/docs/mysql/maintenance'
+          )
+
   if IsBetaOrNewer(release_track) and args.IsSpecified(
       'reconcile_psa_networking'
   ):
@@ -571,3 +602,27 @@ class PatchAlpha(base.UpdateCommand):
         parser,
         restrict_choices=False,
         support_default_version=False)
+
+
+def _ParseDateFromMaintenanceVersion(
+    maintenance_version: str,
+) -> Optional[datetime.date]:
+  """Parses the date from a maintenance version string.
+
+  Args:
+    maintenance_version: The maintenance version string in a format like
+      'MYSQL_5_7_44.R20240915.01_02'.
+
+  Returns:
+    A datetime.date object if a valid date is found, otherwise None.
+  """
+  for part in maintenance_version.replace('_', '.').split('.'):
+    if part.startswith('R'):
+      maybe_date_str = part[1:]
+      if len(maybe_date_str) == 8 and maybe_date_str.isdigit():
+        try:
+          return datetime.datetime.strptime(maybe_date_str, '%Y%m%d').date()
+        except ValueError:
+          # Continue searching for a valid date part.
+          pass
+  return None

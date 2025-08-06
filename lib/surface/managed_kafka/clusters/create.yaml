@@ -17,16 +17,9 @@ help_text:
 
 request:
   collection: managedkafka.projects.locations.clusters
-  ALPHA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:MapSubnetsToNetworkConfig
-    - googlecloudsdk.command_lib.managed_kafka.util:MapCaPoolsToCASConfig
-  BETA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:MapSubnetsToNetworkConfig
-  GA:
-    modify_request_hooks:
-    - googlecloudsdk.command_lib.managed_kafka.util:MapSubnetsToNetworkConfig
+  modify_request_hooks:
+  - googlecloudsdk.command_lib.managed_kafka.util:MapSubnetsToNetworkConfig
+  - googlecloudsdk.command_lib.managed_kafka.util:MapCaPoolsToCASConfig
 
 async:
   collection: managedkafka.projects.locations.operations
@@ -47,6 +40,4 @@ arguments:
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
     default: true
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
-    release_tracks: [ALPHA]
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
-    release_tracks: [ALPHA]

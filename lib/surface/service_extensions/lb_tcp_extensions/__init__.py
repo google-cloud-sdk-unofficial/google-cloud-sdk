@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2025 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The command group for the manifests CLI."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+"""The command group for Service Extensions LbTcpExtension resources."""
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util
 
 
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Manifests(base.Group):
-  """Generate optimized Kubernetes manifests."""
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+@base.Hidden
+class LbTcpExtensions(base.Group):
+  """Manage Service Extensions `LbTcpExtension` resources."""

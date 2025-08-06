@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 @base.DefaultUniverseOnly
 class GeminicloudassistAlpha(base.Group):
   """Manage Gemini Cloud Assist."""

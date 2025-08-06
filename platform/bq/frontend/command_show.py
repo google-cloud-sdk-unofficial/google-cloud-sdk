@@ -149,8 +149,14 @@ class Show(bigquery_command.BigqueryCmd):
         ],
         (
             'Type of jobs to search reservation assignment for. Options'
-            ' include:\n QUERY\n PIPELINE\n ML_EXTERNAL\n BACKGROUND\n SPARK\n'
-            ' Used in conjunction with --reservation_assignment.'
+            ' include:'
+            '\n QUERY'
+            '\n PIPELINE'
+            '\n ML_EXTERNAL'
+            '\n BACKGROUND'
+            '\n SPARK'
+            '\n CONTINUOUS'
+            '\n Used in conjunction with --reservation_assignment.'
         ),
         flag_values=fv,
     )

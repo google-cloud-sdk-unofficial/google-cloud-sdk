@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
   _support_igmp_query = True
   _support_graceful_shutdown = True
   _support_flex_start = True
+  _support_source_snapshot_region = True
 
   @classmethod
   def Args(cls, parser):
@@ -77,6 +78,7 @@ class Create(base.CreateCommand):
         support_igmp_query=cls._support_igmp_query,
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
+        support_source_snapshot_region=cls._support_source_snapshot_region,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -142,6 +144,7 @@ class Create(base.CreateCommand):
         self._support_specific_then_x,
         self._support_watchdog_timer,
         self._support_graceful_shutdown,
+        self._support_source_snapshot_region,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,

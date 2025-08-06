@@ -232,7 +232,9 @@ class CreateWithContainer(base.CreateCommand):
         messages=client.messages,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
-        restart_on_failure=args.restart_on_failure)
+        provisioning_model=args.provisioning_model,
+        restart_on_failure=args.restart_on_failure,
+    )
 
   def _GetServiceAccounts(self, args, client):
     if args.no_service_account:

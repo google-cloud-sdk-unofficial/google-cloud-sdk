@@ -1537,8 +1537,7 @@
           },
           "scopes": [
             "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/cloud-platform.read-only"
+            "https://www.googleapis.com/auth/cloud-platform"
           ]
         },
         "delete": {
@@ -1590,8 +1589,7 @@
           "path": "projects/{+projectId}/datasets/{+datasetId}/tables/{+tableId}/rowAccessPolicies/{+policyId}",
           "scopes": [
             "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/cloud-platform.read-only"
+            "https://www.googleapis.com/auth/cloud-platform"
           ]
         },
         "get": {
@@ -1717,8 +1715,7 @@
           },
           "scopes": [
             "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/cloud-platform.read-only"
+            "https://www.googleapis.com/auth/cloud-platform"
           ]
         },
         "list": {
@@ -1855,8 +1852,7 @@
           },
           "scopes": [
             "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/cloud-platform",
-            "https://www.googleapis.com/auth/cloud-platform.read-only"
+            "https://www.googleapis.com/auth/cloud-platform"
           ]
         }
       }
@@ -2379,7 +2375,7 @@
       }
     }
   },
-  "revision": "20250722",
+  "revision": "20250730",
   "rootUrl": "https://bigquery.googleapis.com/",
   "schemas": {
     "AggregateClassificationMetrics": {

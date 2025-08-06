@@ -12,18 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The command group for the models CLI."""
+"""Command group for Cloud Monitoring alerts."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util
 
 
-@base.UniverseCompatible
+@base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Models(base.Group):
-  """Manage supported models for GKE recommender."""
+class Alerts(base.Group):
+  """Manage Cloud Monitoring alerts."""
+
+  detailed_help = {
+      'DESCRIPTION': """\
+          Manage Monitoring alerts.
+
+          More information can be found here:
+          https://cloud.google.com/monitoring/api/v3/
+      """
+  }

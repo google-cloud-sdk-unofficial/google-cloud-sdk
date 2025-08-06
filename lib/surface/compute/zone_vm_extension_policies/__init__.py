@@ -12,18 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The command group for the model and model server combinations CLI."""
+"""Commands for reading ZoneVmExtensionPolicies."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.projects import util
 
-
-@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ModelServers(base.Group):
-  """Manage supported model and model servers for GKE recommender."""
+@base.UniverseCompatible
+class ZoneVmExtensionPolicies(base.Group):
+  """Compute Engine zone VM extension policies."""
+
+
+ZoneVmExtensionPolicies.category = base.INFO_CATEGORY
+
+ZoneVmExtensionPolicies.detailed_help = {
+    'DESCRIPTION': """
+        Compute Engine zone VM extension policies.
+    """,
+}
