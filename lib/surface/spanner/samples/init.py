@@ -81,7 +81,7 @@ def download_sample_files(appname):
     local_path = os.path.join(bin_path, gcs_ref.name.split('/')[-1])
     gcs_to_local.append((gcs_ref, local_path))
 
-  if appname == samples.FINANCE_GRAPH_APP_NAME:
+  if samples.has_sample_data_statements(appname):
     insert_path = samples.get_gcs_data_insert_statements_prefix(appname)
     gcs_insert_files = storage_client.ListBucket(bucket_ref, prefix=insert_path)
     for insert_file in gcs_insert_files:
@@ -129,10 +129,10 @@ def _create_db_op(instance_ref, database_id, statements, database_dialect):
     raise ValueError("Failed to create database '{}'.".format(database_id))
 
 
-def insert_graph_data_in_one_file(appname, file_name, session_ref):
+def insert_sample_data_in_one_file(appname, file_name, session_ref):
   """Read and execute all insert statements in one file."""
-  if appname != samples.FINANCE_GRAPH_APP_NAME:
-    raise ValueError('Only graph app is supposed to pre-populate data.')
+  if not samples.has_sample_data_statements(appname):
+    raise ValueError('{} cannot pre-populate data.'.format(appname))
 
   insert_statements = files.ReadFileContents(file_name)
   for insert_statement in insert_statements.split('\n'):
@@ -151,20 +151,20 @@ def insert_graph_data_in_one_file(appname, file_name, session_ref):
     )
 
 
-def insert_graph_data(appname, database_id, session_ref):
-  """Insert graph data."""
-  if appname != samples.FINANCE_GRAPH_APP_NAME:
-    raise ValueError('Only graph app is supposed to pre-populate data.')
+def insert_sample_data(appname, database_id, session_ref):
+  """Insert sample data."""
+  if not samples.has_sample_data_statements(appname):
+    raise ValueError('{} cannot pre-populate data.'.format(appname))
 
   with progress_tracker.ProgressTracker(
-      'Populating graph data into `{}`'.format(database_id),
+      'Populating data into `{}`'.format(database_id),
       aborted_message='Aborting wait for data population.\n',
   ):
     data_files = files.GetDirectoryTreeListing(
         samples.get_local_data_insert_statements_path(appname)
     )
     for data_file in data_files:
-      insert_graph_data_in_one_file(
+      insert_sample_data_in_one_file(
           appname,
           data_file,
           session_ref,
@@ -304,7 +304,7 @@ class Init(base.Command):
     except ValueError as ex:
       raise calliope_exceptions.BadArgumentException('--database-id', ex)
 
-    if appname == samples.FINANCE_GRAPH_APP_NAME:
+    if samples.has_sample_data_statements(appname):
       database_ref = resources.REGISTRY.Parse(
           database_id,
           params={
@@ -319,15 +319,15 @@ class Init(base.Command):
           collection='spanner.projects.instances.databases.sessions',
       )
       try:
-        insert_graph_data(appname, database_id, session_ref)
+        insert_sample_data(appname, database_id, session_ref)
       except Exception:
         raise SystemError(
-            'Failed to insert data for the graph database. Please fallback to '
+            'Failed to insert data for the database. Please fallback to '
             'manually insert.'
         )
       else:
         return textwrap.dedent("""\
-            Initialization done for your Spanner Graph database.
+            Initialization done for your Spanner database.
             """)
       finally:
         database_sessions.Delete(session_ref)

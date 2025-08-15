@@ -196,7 +196,6 @@ def _Run(args, holder, include_log_config):
   return client.MakeRequests([set_request])
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(base.UpdateCommand):

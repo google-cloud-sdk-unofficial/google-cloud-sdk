@@ -378,6 +378,13 @@ class CreateGA(base.CreateCommand):
     if args.stopped_size:
       instance_group_manager.targetStoppedSize = args.stopped_size
 
+    if args.IsKnownAndSpecified('target_size_policy_mode'):
+      instance_group_manager.targetSizePolicy = (
+          managed_instance_groups_utils.CreateTargetSizePolicy(
+              client.messages, args.target_size_policy_mode
+          )
+      )
+
     return instance_group_manager
 
   def _PostProcessOutput(self, holder, migs):
@@ -464,6 +471,7 @@ class CreateBeta(CreateGA):
   @classmethod
   def Args(cls, parser):
     managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
+    managed_flags.AddTargetSizePolicyModeFlag(parser)
     super(CreateBeta, cls).Args(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,
@@ -487,7 +495,6 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    managed_flags.AddTargetSizePolicyModeFlag(parser)
 
   def _CreateInstanceGroupManager(
       self, args, group_ref, template_ref, client, holder
@@ -495,13 +502,6 @@ class CreateAlpha(CreateBeta):
     instance_group_manager = super(
         CreateAlpha, self
     )._CreateInstanceGroupManager(args, group_ref, template_ref, client, holder)
-
-    if args.IsKnownAndSpecified('target_size_policy_mode'):
-      instance_group_manager.targetSizePolicy = (
-          managed_instance_groups_utils.CreateTargetSizePolicy(
-              client.messages, args.target_size_policy_mode
-          )
-      )
 
     return instance_group_manager
 

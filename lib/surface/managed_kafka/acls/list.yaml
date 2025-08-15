@@ -23,6 +23,3 @@ arguments:
     is_positional: true
     help_text: Identifies the cluster which contains all the acls to be listed.
     spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:cluster
-
-  # ACL API does not support pagination
-  exclude: ['page-size']

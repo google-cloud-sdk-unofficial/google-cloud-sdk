@@ -123,7 +123,6 @@ def _Run(args, holder, include_log_config):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):

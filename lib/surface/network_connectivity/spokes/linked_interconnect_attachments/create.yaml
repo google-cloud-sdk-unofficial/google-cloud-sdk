@@ -37,6 +37,25 @@
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
         added to the list. If it's empty, the spoke does not import any subnets from the hub.
+    - arg_name: exclude-import-ranges
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.linkedInterconnectAttachments.excludeImportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Hub routes overlapped/encompassed by exclude import ranges are excluded during import from hub.
+    - arg_name: include-export-ranges
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.linkedInterconnectAttachments.includeExportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Dynamic routes fully encompassed by include export ranges are included during export to hub.
+        If it's empty, the spoke exports all dynamic routes to the hub.
+    - arg_name: exclude-export-ranges
+      api_field: googleCloudNetworkconnectivityV1betaSpoke.linkedInterconnectAttachments.excludeExportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Dynamic routes overlapped/encompassed by exclude export ranges are excluded during export to hub.
     - arg_name: group
       api_field: googleCloudNetworkconnectivityV1betaSpoke.group
       help_text: |
@@ -92,6 +111,25 @@
       help_text: |
         IP address range(s) allowed to be imported from hub subnets. Only ``ALL_IPV4_RANGES`` can be
         added to the list. If it's empty, the spoke does not import any subnets from the hub.
+    - arg_name: exclude-import-ranges
+      api_field: spoke.linkedInterconnectAttachments.excludeImportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Hub routes overlapped/encompassed by exclude import ranges are excluded during import from hub.
+    - arg_name: include-export-ranges
+      api_field: spoke.linkedInterconnectAttachments.includeExportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Dynamic routes fully encompassed by include export ranges are included during export to hub.
+        If it's empty, the spoke exports all dynamic routes to the hub.
+    - arg_name: exclude-export-ranges
+      api_field: spoke.linkedInterconnectAttachments.excludeExportRanges
+      type: arg_list
+      hidden: true
+      help_text: |
+        Dynamic routes overlapped/encompassed by exclude export ranges are excluded during export to hub.
     - arg_name: group
       api_field: spoke.group
       help_text: |

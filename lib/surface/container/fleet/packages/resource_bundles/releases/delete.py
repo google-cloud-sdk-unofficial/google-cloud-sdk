@@ -29,12 +29,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   """Delete Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -55,6 +55,15 @@ class Delete(base.DeleteCommand):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  """Delete Package Rollouts Release."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DeleteAlpha(Delete):
   """Delete Package Rollouts Release."""

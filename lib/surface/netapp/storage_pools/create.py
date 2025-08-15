@@ -76,6 +76,7 @@ class Create(base.CreateCommand):
     else:
       total_throughput_mibps = None
     hot_tier_size_gib = None
+    qos_type = None
     enable_hot_tier_auto_resize = None
     unified_pool = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
@@ -83,6 +84,10 @@ class Create(base.CreateCommand):
       if args.hot_tier_size is not None:
         hot_tier_size_gib = args.hot_tier_size >> 30
       enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
+      if args.qos_type is not None:
+        qos_type = storagepools_flags.GetStoragePoolQosTypeArg(
+            client.messages, hidden=True
+        ).GetEnumForChoice(args.qos_type)
       if args.unified_pool is not None:
         unified_pool = args.unified_pool
 
@@ -105,6 +110,7 @@ class Create(base.CreateCommand):
         enable_hot_tier_auto_resize=enable_hot_tier_auto_resize,
         labels=labels,
         unified_pool=unified_pool,
+        qos_type=qos_type,
     )
     result = client.CreateStoragePool(
         storagepool_ref, args.async_, storage_pool

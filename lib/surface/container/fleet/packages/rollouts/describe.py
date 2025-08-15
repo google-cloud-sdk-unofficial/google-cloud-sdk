@@ -31,13 +31,13 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe Rollout resource."""
 
   detailed_help = _DETAILED_HELP
   show_less = False
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   def Epilog(self, resources_were_displayed):
     if resources_were_displayed and self.show_less:
@@ -74,6 +74,15 @@ class Describe(base.DescribeCommand):
     return output
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe Rollout resource."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeAlpha(Describe):
   """Describe Rollout resource."""

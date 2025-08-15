@@ -48,6 +48,7 @@ def _Args(
     support_disk_labels=False,
     support_ipv6_only=False,
     support_flex_start=False,
+    support_skip_guest_os_shutdown=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -128,6 +129,8 @@ def _Args(
       parser, operation_type='create')
 
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
+  if support_skip_guest_os_shutdown:
+    instances_flags.AddSkipGuestOsShutdownArgs(parser)
 
 
 # TODO(b/305707695):Change @base.DefaultUniverseOnly to
@@ -140,6 +143,7 @@ class CreateWithContainer(base.CreateCommand):
 
   _support_specific_then_x_affinity = False
   _support_disk_labels = False
+  _support_skip_guest_os_shutdown = False
 
   @staticmethod
   def Args(parser):
@@ -152,6 +156,7 @@ class CreateWithContainer(base.CreateCommand):
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
+        support_skip_guest_os_shutdown=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION)
@@ -228,12 +233,19 @@ class CreateWithContainer(base.CreateCommand):
     ]
 
   def _GetScheduling(self, args, client):
+    skip_guest_os_shutdown = None
+    if (
+        self._support_skip_guest_os_shutdown
+        and args.IsKnownAndSpecified('skip_guest_os_shutdown')
+    ):
+      skip_guest_os_shutdown = args.skip_guest_os_shutdown
     return instance_utils.CreateSchedulingMessage(
         messages=client.messages,
         maintenance_policy=args.maintenance_policy,
         preemptible=args.preemptible,
         provisioning_model=args.provisioning_model,
         restart_on_failure=args.restart_on_failure,
+        skip_guest_os_shutdown=skip_guest_os_shutdown,
     )
 
   def _GetServiceAccounts(self, args, client):
@@ -397,6 +409,7 @@ class CreateWithContainerBeta(CreateWithContainer):
 
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
+  _support_skip_guest_os_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -410,6 +423,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_disk_labels=True,
         support_ipv6_only=True,
         support_flex_start=True,
+        support_skip_guest_os_shutdown=True,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION)
@@ -523,6 +537,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
   _support_ipv6_only = True
+  _support_skip_guest_os_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -536,6 +551,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_disk_labels=True,
         support_ipv6_only=True,
         support_flex_start=True,
+        support_skip_guest_os_shutdown=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(

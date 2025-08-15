@@ -30,8 +30,9 @@ DETAILED_HELP = {
         To configure bandwidth percentage policy for an interconnect
         example-interconnect, run:
 
-        $ {command} example-interconnect --bandwidth-percentages="TC1=11,TC2=10"
-        --enabled --profile_description="some string "
+        $ {command} example-interconnect\
+         --bandwidth-percentages="TC1=5,TC2=5,TC3=75,TC4=5,TC5=5,TC6=5"\
+         --enabled --profile_description="some string"
         """,
 }
 

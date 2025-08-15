@@ -28,6 +28,27 @@ from googlecloudsdk.command_lib.accesscontextmanager import policies
 from googlecloudsdk.command_lib.util.args import repeated
 
 
+def _AddLegacyVpcAccessibleServicesArgsForCreate(parser, prefix=''):
+  vpc_group = parser.add_argument_group()
+  vpc_group.add_argument(
+      '--{}enable-vpc-accessible-services'.format(prefix),
+      action='store_true',
+      default=None,
+      help="""Whether to restrict API calls within the perimeter to those in the
+              `vpc-allowed-services` list.""",
+  )
+  vpc_group.add_argument(
+      '--{}vpc-allowed-services'.format(prefix),
+      metavar='vpc_allowed_services',
+      type=arg_parsers.ArgList(),
+      default=None,
+      help="""Comma-separated list of APIs accessible from within the Service
+              Perimeter. In order to include all restricted services, use
+              reference "RESTRICTED-SERVICES". Requires vpc-accessible-services
+              be enabled.""",
+  )
+
+
 def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
   """Adds arguments common to the two dry-run create modes.
 
@@ -57,22 +78,25 @@ def _AddCommonArgsForDryRunCreate(parser, prefix='', version='v1'):
       default=None,
       help="""Comma-separated list of IDs for access levels (in the same policy)
               that an intra-perimeter request must satisfy to be allowed.""")
-  vpc_group = parser.add_argument_group()
-  vpc_group.add_argument(
-      '--{}enable-vpc-accessible-services'.format(prefix),
-      action='store_true',
-      default=None,
-      help="""Whether to restrict API calls within the perimeter to those in the
-              `vpc-allowed-services` list.""")
-  vpc_group.add_argument(
-      '--{}vpc-allowed-services'.format(prefix),
-      metavar='vpc_allowed_services',
-      type=arg_parsers.ArgList(),
-      default=None,
-      help="""Comma-separated list of APIs accessible from within the Service
-              Perimeter. In order to include all restricted services, use
-              reference "RESTRICTED-SERVICES". Requires vpc-accessible-services
-              be enabled.""")
+  if version != 'v1alpha':
+    _AddLegacyVpcAccessibleServicesArgsForCreate(parser, prefix=prefix)
+  else:
+    # Mutually exclusive group for VPC configuration
+    vpc_config_group = parser.add_mutually_exclusive_group()
+
+    # New file-based argument
+    vpc_config_group.add_argument(
+        '--{}vpc-accessible-services'.format(prefix),
+        metavar='VPC_ACCESSIBLE_SERVICES_YAML_FILE',
+        type=perimeters.ParseVpcAccessibleServices(version),
+        help='Path to a YAML file containing a VpcAccessibleServices object.',
+    )
+
+    # Group for the old incremental flags
+    _AddLegacyVpcAccessibleServicesArgsForCreate(
+        vpc_config_group, prefix=prefix
+    )
+
   parser.add_argument(
       '--{}ingress-policies'.format(prefix),
       metavar='YAML_FILE',
@@ -124,6 +148,7 @@ def _ParseDirectionalPolicies(args):
   return ingress_policies, egress_policies
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreatePerimeterDryRun(base.UpdateCommand):
   """Creates a dry-run spec for a new or existing Service Perimeter."""
@@ -189,6 +214,14 @@ class CreatePerimeterDryRun(base.UpdateCommand):
     levels = perimeters.ExpandLevelNamesIfNecessary(
         levels, perimeter_ref.accessPoliciesId)
     restricted_services = _ParseArgWithShortName(args, 'restricted_services')
+
+    vpc_accessible_services_config = None
+    if self._API_VERSION == 'v1alpha':
+      # Parse the new file-based config if present (will only be there for
+      # alpha)
+      vpc_accessible_services_config = _ParseArgWithShortName(
+          args, 'vpc_accessible_services'
+      )
     vpc_allowed_services = _ParseArgWithShortName(args, 'vpc_allowed_services')
     ingress_policies, egress_policies = _ParseDirectionalPolicies(args)
     if (args.enable_vpc_accessible_services is None and
@@ -225,8 +258,11 @@ class CreatePerimeterDryRun(base.UpdateCommand):
         restricted_services=restricted_services,
         vpc_allowed_services=vpc_allowed_services,
         enable_vpc_accessible_services=enable_vpc_accessible_services,
+        vpc_yaml_flag_used=vpc_accessible_services_config is not None,
+        vpc_accessible_services_config=vpc_accessible_services_config,
         ingress_policies=ingress_policies,
-        egress_policies=egress_policies)
+        egress_policies=egress_policies,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

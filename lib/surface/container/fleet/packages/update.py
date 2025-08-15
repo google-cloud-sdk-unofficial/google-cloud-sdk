@@ -33,12 +33,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update Package Rollouts Fleet Package."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -90,6 +90,15 @@ class Update(base.UpdateCommand):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update Package Rollouts Fleet Package."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Update Package Rollouts Fleet Package."""

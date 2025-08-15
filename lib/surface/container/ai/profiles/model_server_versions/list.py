@@ -28,8 +28,61 @@ $ {command} --model=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --model-server=vllm
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
+  """List supported model server versions.
+
+  To get supported model and model servers, run `gcloud container ai
+  profiles models list` and `gcloud container ai profiles
+  model-servers list`.
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        "--model",
+        required=True,
+        help="The model.",
+    )
+    parser.add_argument(
+        "--model-server",
+        required=True,
+        help=(
+            "The model server. If not specified, this defaults to any model"
+            " server."
+        ),
+    )
+
+  def Run(self, args):
+    client = util.GetClientInstance(base.ReleaseTrack.GA)
+    messages = util.GetMessagesModule(base.ReleaseTrack.GA)
+
+    try:
+      request = messages.GkerecommenderModelServersVersionsListRequest(
+          modelName=args.model, modelServerName=args.model_server
+      )
+      response = client.modelServers_versions.List(request)
+      if response.modelServerVersions:
+        return response.modelServerVersions
+      else:
+        return []
+    except exceptions.Error as e:
+      log.error(f"An error has occurred: {e}")
+      log.status.Print(f"An error has occurred: {e}")
+      return []
+
+  def Display(self, _, resources):
+    if resources:
+      log.out.Print("Supported model server versions:")
+      for model_server_version in resources:
+        log.out.Print("- ", model_server_version)
+    else:
+      log.out.Print("No supported model server versions found.")
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(commands.List):
   """List supported model server versions.
 
   To get supported model and model servers, run `gcloud alpha container ai

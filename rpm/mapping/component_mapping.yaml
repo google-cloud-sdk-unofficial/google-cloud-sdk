@@ -7,7 +7,6 @@ app-engine-python-extras: google-cloud-sdk-app-engine-python-extras
 alpha: google-cloud-sdk
 anthoscli: google-cloud-sdk
 anthos-auth: google-cloud-sdk-anthos-auth
-appctl: unavailable
 beta: google-cloud-sdk
 bigtable: google-cloud-sdk-bigtable-emulator
 bq: google-cloud-sdk

@@ -46,12 +46,12 @@ _FORMAT_TRUNCATED_MESSAGES = """table(name.basename():label=ROLLOUT,
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Rollouts of a Fleet Package."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @classmethod
   def Args(cls, parser):
@@ -79,6 +79,15 @@ class List(base.ListCommand):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Rollouts of a Fleet Package."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
   """List Rollouts of a Fleet Package."""

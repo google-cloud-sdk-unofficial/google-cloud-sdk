@@ -38,12 +38,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -84,6 +84,15 @@ class Create(base.CreateCommand):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create Package Rollouts Release."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create Package Rollouts Release."""

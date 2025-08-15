@@ -50,7 +50,7 @@ class Create(base.CreateCommand):
     flags.AddRulePriority(parser, operation='inserted')
     flags.AddSrcIpRanges(parser)
     flags.AddDestIpRanges(parser)
-    flags.AddLayer4Configs(parser)
+    flags.AddLayer4Configs(parser, required=True)
     flags.AddDirection(parser)
     flags.AddEnableLogging(parser)
     flags.AddDisabled(parser)

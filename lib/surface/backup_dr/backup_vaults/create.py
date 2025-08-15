@@ -45,15 +45,16 @@ def _add_common_args(parser: argparse.ArgumentParser):
   flags.AddEffectiveTime(parser)
   flags.AddLabels(parser)
   flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
-  flags.AddBackupRetentionInheritance(parser)
 
 
-def _run(args: argparse.Namespace):
+def _run(args: argparse.Namespace, support_backup_retention_inheritance: bool):
   """Constructs and sends request.
 
   Args:
     args: argparse.Namespace, An object that contains the values for the
       arguments specified in the .Args() method.
+    support_backup_retention_inheritance: bool, A boolean that indicates if the
+      backup vault supports setting the backup_retention_inheritance field.
 
   Returns:
     ProcessHttpResponse of the request made.
@@ -72,11 +73,14 @@ def _run(args: argparse.Namespace):
   )
   no_async = args.no_async
   access_restriction = args.access_restriction
-  backup_retention_inheritance = args.backup_retention_inheritance
+  backup_retention_inheritance = None
+  if support_backup_retention_inheritance:
+    backup_retention_inheritance = args.backup_retention_inheritance
 
   try:
     operation = client.Create(
         backup_vault,
+        support_backup_retention_inheritance,
         backup_min_enforced_retention,
         description,
         labels,
@@ -170,7 +174,7 @@ class Create(base.CreateCommand):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    return _run(args)
+    return _run(args, support_backup_retention_inheritance=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -185,6 +189,7 @@ class CreateAlpha(Create):
       parser: argparse.Parser: Parser object for command line inputs.
     """
     _add_common_args(parser)
+    flags.AddBackupRetentionInheritance(parser)
 
   def Run(self, args: argparse.Namespace):
     """Constructs and sends request.
@@ -196,4 +201,4 @@ class CreateAlpha(Create):
     Returns:
       ProcessHttpResponse of the request made.
     """
-    return _run(args)
+    return _run(args, support_backup_retention_inheritance=True)

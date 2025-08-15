@@ -232,8 +232,6 @@ class AlphaUpdate(Update):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    flags.AddMaxSurgeFlag(parser, resource_kind='worker')
-    flags.AddMaxUnavailableFlag(parser, resource_kind='worker')
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
     flags.AddGpuTypeFlag(parser)

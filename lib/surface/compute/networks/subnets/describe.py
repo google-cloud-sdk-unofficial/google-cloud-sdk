@@ -111,7 +111,7 @@ class Describe(base.DescribeCommand):
 class DescribeBeta(Describe):
   """Create a subnet in the Beta release track."""
 
-  _include_view = False
+  _include_view = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

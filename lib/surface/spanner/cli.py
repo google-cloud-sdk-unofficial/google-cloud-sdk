@@ -72,6 +72,7 @@ class Cli(base.BinaryBackedCommand):
 
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, "--project", use_defaults=True)
+    instance = args.CONCEPTS.database.Parse().Parent().Name()
 
     # Create the command executor.
     command_executor = cli_backend.SpannerCliWrapper()
@@ -79,7 +80,7 @@ class Cli(base.BinaryBackedCommand):
     command_executor(
         project=project,
         database=args.database,
-        instance=args.instance,
+        instance=instance,
         databse_role=args.database_role,
         host=args.host,
         port=args.port,

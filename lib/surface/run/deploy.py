@@ -26,6 +26,7 @@ from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import build_util
@@ -228,6 +229,17 @@ class Deploy(base.Command):
   def _ValidateAndGetContainers(self, args):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
+    # TODO(b/436350694): Change this to use preset metadata once it is
+    # implemented.
+    elif (
+        flags.FlagIsExplicitlySet(args, 'preset')
+        and args.preset in flags.INGRESS_CONTAINER_PRESETS
+    ):
+      preset_container = parser_extensions.Namespace()
+      setattr(preset_container, 'image', 'imageplaceholder')
+      setattr(preset_container, '_specified_args', {'image'})
+      setattr(preset_container, 'automatic_updates', None)
+      containers = {args.preset: preset_container}
     else:
       containers = {'': args}
 
@@ -1216,6 +1228,7 @@ class BetaDeploy(Deploy):
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
         include_validate_service=include_validate_service,
+        include_upload_source=bool(build_from_source),
         include_build=requires_build,
         include_create_repo=repo_to_create is not None,
         include_create_revision=True,
@@ -1256,8 +1269,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddMaxSurgeFlag(parser)
-    flags.AddMaxUnavailableFlag(parser)
     flags.AddRegionsArg(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)

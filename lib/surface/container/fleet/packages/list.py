@@ -39,12 +39,12 @@ _FORMAT = """table(name.basename():label=NAME,
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Package Rollouts Fleet Packages."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @classmethod
   def Args(cls, parser):
@@ -67,6 +67,15 @@ class List(base.ListCommand):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
+  """List Package Rollouts Fleet Packages."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(List):
   """List Package Rollouts Fleet Packages."""

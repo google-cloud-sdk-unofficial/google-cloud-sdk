@@ -326,8 +326,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddMaxSurgeFlag(parser)
-    flags.AddMaxUnavailableFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

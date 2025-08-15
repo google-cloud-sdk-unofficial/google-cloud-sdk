@@ -19,5 +19,6 @@
       table(
       name.basename(),
       state,
+      tfVersion,
       createTime:sort=1
       )

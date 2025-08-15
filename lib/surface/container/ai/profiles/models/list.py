@@ -28,8 +28,37 @@ $ {command}
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
+  """List supported models."""
+
+  def Run(self, _):
+    client = util.GetClientInstance(base.ReleaseTrack.GA)
+    messages = util.GetMessagesModule(base.ReleaseTrack.GA)
+
+    try:
+      response = client.models.List(messages.GkerecommenderModelsListRequest())
+      if response.modelNames:
+        return response.modelNames
+      else:
+        return []
+    except exceptions.Error as e:
+      log.error(f"An error has occurred: {e}")
+      log.status.Print(f"An error has occurred: {e}")
+      return []
+
+  def Display(self, _, resources):
+    if resources:
+      log.out.Print("Supported models:")
+      for model_name in resources:
+        log.out.Print("- ", model_name)
+    else:
+      log.out.Print("No supported models found.")
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(commands.List):
   """List supported models."""
 
   def Run(self, _):

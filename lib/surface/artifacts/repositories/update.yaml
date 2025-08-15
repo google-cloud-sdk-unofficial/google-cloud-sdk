@@ -69,6 +69,14 @@
       default: null
       help_text: |
         Do not make an HTTP request to validate the remote upstream. Not recommended when setting a custom remote upstream unless you are absolutely sure your upstream URI and any auth is valid.
+    - arg_name: enable-ingestion-attestation
+      api_field: repository.remoteRepositoryConfig.enableIngestionAttestation
+      action: store_true
+      hidden: true
+      default: false
+      type: bool
+      help_text: |
+        Enable generating attestation with verifiable signature on imported files in remote repositories.
     - arg_name: alternative-hostname
       api_field: repository.networkConfig.alternativeHostname
       hidden: true
@@ -122,6 +130,7 @@
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
+
 
   update:
     read_modify_update: true

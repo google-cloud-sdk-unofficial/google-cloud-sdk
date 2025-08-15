@@ -29,8 +29,52 @@ $ {command} --model=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
+  """List supported model servers for a given model.
+
+  To get supported models, run `gcloud container ai profiles models
+  list`.
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        "--model",
+        required=True,
+        help="The model.",
+    )
+
+  def Run(self, args):
+    client = util.GetClientInstance(base.ReleaseTrack.GA)
+    messages = util.GetMessagesModule(base.ReleaseTrack.GA)
+
+    try:
+      request = messages.GkerecommenderModelServersListRequest(
+          modelName=args.model
+      )
+      response = client.modelServers.List(request)
+      if response.modelServerNames:
+        return response.modelServerNames
+      else:
+        return []
+    except exceptions.Error as e:
+      log.error(f"An error has occurred: {e}")
+      log.status.Print(f"An error has occurred: {e}")
+      return []
+
+  def Display(self, _, resources):
+    if resources:
+      log.out.Print("Supported model servers:")
+      for model_server_name in resources:
+        log.out.Print("- ", model_server_name)
+    else:
+      log.out.Print("No supported model servers found.")
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(commands.List):
   """List supported model servers for a given model.
 
   To get supported models, run `gcloud alpha container ai profiles models

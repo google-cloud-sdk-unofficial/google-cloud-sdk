@@ -117,6 +117,12 @@ class Update(base.UpdateCommand):
       cache_parameters = args.cache_parameters
     else:
       cache_parameters = None
+    throughput_mibps = None
+    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
+        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
+      if hasattr(args, 'throughput_mibps'):
+        throughput_mibps = args.throughput_mibps
+
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
         description=args.description,
@@ -138,7 +144,9 @@ class Update(base.UpdateCommand):
         restricted_actions=restricted_actions,
         backup_config=backup_config,
         tiering_policy=args.tiering_policy,
-        cache_parameters=cache_parameters)
+        cache_parameters=cache_parameters,
+        throughput_mibps=throughput_mibps,
+    )
 
     updated_fields = []
     # add possible updated volume fields
@@ -209,8 +217,10 @@ class Update(base.UpdateCommand):
         and args.cache_parameters.get('cache-config') is not None
     ):
       for config in args.cache_parameters.get('cache-config'):
-        if 'atime-scrub-enabled' in config:
-          updated_fields.append('cacheParameters.cacheConfig.atimeScrubEnabled')
+        # TODO(b/433897931): Add atime-scrub-enabled and atime-scrub-days
+        # back for AGA
+        # if 'atime-scrub-enabled' in config:
+        #   updated_fields.append('cacheParameters.cacheConfig.atimeScrubEnabled')
         # if 'atime-scrub-minutes' in config:
         #   updated_fields.append('cacheParameters.cacheConfig.atimeScrubMinutes')
         if 'cifs-change-notify-enabled' in config:
@@ -218,6 +228,12 @@ class Update(base.UpdateCommand):
               'cacheParameters.cacheConfig.cifsChangeNotifyEnabled'
           )
 
+    if (
+        self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
+        or self._RELEASE_TRACK == base.ReleaseTrack.BETA
+    ):
+      if args.IsSpecified('throughput_mibps'):
+        updated_fields.append('throughputMibps')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateVolume(volume_ref, volume, update_mask, args.async_)

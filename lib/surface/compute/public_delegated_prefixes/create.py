@@ -51,7 +51,7 @@ class Create(base.CreateCommand):
         parser, cls._include_internal_subnetwork_creation_mode
     )
 
-  def Run(self, args):
+  def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     pdp_client = public_delegated_prefixes.PublicDelegatedPrefixesClient(
         holder.client, holder.client.messages, holder.resources
@@ -70,6 +70,14 @@ class Create(base.CreateCommand):
     else:
       input_mode = None
 
+    if hasattr(args, 'purpose') and args.purpose:
+      purpose = arg_utils.ChoiceToEnum(
+          args.purpose,
+          holder.client.messages.PublicDelegatedPrefix.PurposeValueValuesEnum,
+      )
+    else:
+      purpose = None
+
     result = pdp_client.Create(
         pdp_ref,
         parent_pap_prefix=args.public_advertised_prefix
@@ -85,9 +93,13 @@ class Create(base.CreateCommand):
         allocatable_prefix_length=int(args.allocatable_prefix_length)
         if args.allocatable_prefix_length
         else None,
+        purpose=purpose,
     )
     log.CreatedResource(pdp_ref.Name(), 'public delegated prefix')
     return result
+
+  def Run(self, args):
+    return self._Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -120,3 +132,11 @@ class CreateAlpha(CreateBeta):
 
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_internal_subnetwork_creation_mode = True
+
+  @classmethod
+  def Args(cls, parser):
+    flags.AddPdpPurpose(parser)
+    super(CreateAlpha, cls).Args(parser)
+
+  def Run(self, args):
+    return self._Run(args)

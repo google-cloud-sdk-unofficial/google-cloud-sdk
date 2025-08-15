@@ -6,7 +6,7 @@
       To retrieve a single health aggregation policy and print its properties, run the following
       command:
 
-      $ {command} <HEALTH_AGGREGATION_POLICY_NAME>
+      $ {command} <HEALTH_AGGREGATION_POLICY_NAME> --region=<REGION>
 
   request:
     ALPHA:

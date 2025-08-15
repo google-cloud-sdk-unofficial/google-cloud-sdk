@@ -30,12 +30,12 @@ _DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Resume(base.Command):
   """Resume suspended Rollout."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -62,6 +62,15 @@ class Resume(base.Command):
     )
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ResumeBeta(Resume):
+  """Resume suspended Rollout."""
+
+  _api_version = 'v1beta'
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ResumeAlpha(Resume):
   """Resume suspended Rollout."""

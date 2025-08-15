@@ -160,6 +160,7 @@ class Create(base.Command):
   _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = False
+  _support_skip_guest_os_shutdown = False
 
   _log_async = False
 
@@ -177,6 +178,7 @@ class Create(base.Command):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -218,6 +220,7 @@ class Create(base.Command):
         self._support_watchdog_timer,
         self._support_graceful_shutdown,
         self._support_source_snapshot_region,
+        self._support_skip_guest_os_shutdown,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -361,6 +364,7 @@ class CreateBeta(Create):
   _support_flex_start = False
   _support_igmp_query = False
   _support_source_snapshot_region = False
+  _support_skip_guest_os_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -378,6 +382,7 @@ class CreateBeta(Create):
         support_flex_start=cls._support_flex_start,
         support_igmp_query=cls._support_igmp_query,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -403,6 +408,7 @@ class CreateAlpha(Create):
   _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = True
+  _support_skip_guest_os_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -420,6 +426,7 @@ class CreateAlpha(Create):
         support_graceful_shutdown=cls._support_graceful_shutdown,
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
 
     cls.AddSourceInstanceTemplate(parser)

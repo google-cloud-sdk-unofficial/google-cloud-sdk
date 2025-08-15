@@ -350,6 +350,7 @@ def AddBetaArgs(parser):
   flags.AddFinalbackupRetentionDays(parser, hidden=True)
   flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
+  flags.AddEnableAutoUpgrade(parser)
 
 
 def AddAlphaArgs(unused_parser):

@@ -32,12 +32,12 @@ _VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED = 'nested'
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe Package Rollouts Release."""
 
   detailed_help = _DETAILED_HELP
-  _api_version = 'v1beta'
+  _api_version = 'v1'
 
   @staticmethod
   def Args(parser):
@@ -55,6 +55,14 @@ class Describe(base.DescribeCommand):
         resource_bundle=args.resource_bundle,
     )
     return release
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DescribeBeta(Describe):
+  """Describe Package Rollouts Release."""
+
+  _api_version = 'v1beta'
 
 
 @base.DefaultUniverseOnly

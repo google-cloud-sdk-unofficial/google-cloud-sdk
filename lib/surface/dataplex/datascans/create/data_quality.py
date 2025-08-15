@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DataQuality(base.Command):
   """Create a Dataplex data quality scan job.
 
@@ -86,9 +87,11 @@ class DataQuality(base.Command):
         '--data-quality-spec-file',
         required=True,
         help=(
-            'path to the JSON/YAML file containing the spec for'
-            ' the data quality scan. The json representation reference:'
+            'Path to the JSON/YAML file containing the spec for'
+            ' the data quality scan. The JSON representation reference:'
             ' https://cloud.google.com/dataplex/docs/reference/rest/v1/DataQualitySpec'
+            ' The YAML representation reference:'
+            ' https://cloud.google.com/dataplex/docs/use-auto-data-quality#create-scan-using-gcloud'
         ),
     )
     execution_spec = parser.add_group(

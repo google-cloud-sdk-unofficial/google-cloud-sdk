@@ -106,20 +106,25 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         'access-levels',
         'Access Level',
         include_set=False)
-    vpc_group = parser.add_argument_group(
-        'Arguments for configuring VPC accessible service restrictions.')
-    vpc_group.add_argument(
-        '--enable-vpc-accessible-services',
-        action='store_true',
-        help="""When specified restrict API calls within the Service Perimeter to the
-        set of vpc allowed services. To disable use
-        '--no-enable-vpc-accessible-services'.""")
-    repeated.AddPrimitiveArgs(
-        vpc_group,
-        'Service Perimeter',
-        'vpc-allowed-services',
-        'VPC Allowed Services',
-        include_set=False)
+    if version != 'v1alpha':
+      vpc_group = parser.add_argument_group(
+          'Arguments for configuring VPC accessible service restrictions.')
+      vpc_group.add_argument(
+          '--enable-vpc-accessible-services',
+          action='store_true',
+          help="""When specified restrict API calls within the Service Perimeter to the
+          set of vpc allowed services. To disable use
+          '--no-enable-vpc-accessible-services'.""")
+      repeated.AddPrimitiveArgs(
+          vpc_group,
+          'Service Perimeter',
+          'vpc-allowed-services',
+          'VPC Allowed Services',
+          include_set=False)
+    else:
+      perimeters.AddUpdateVpcAccessibleServicesGroupArgs(
+          parser, version
+      )
     parser.add_argument(
         '--async',
         action='store_true',
@@ -168,6 +173,15 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
       updated_vpc_enabled = base_vpc_config.enableRestriction
     else:
       updated_vpc_enabled = None
+    # Alpha track: check for the new set/clear flags with YAML.
+    vpc_accessible_services_config = None
+    vpc_yaml_flag_used = False
+    if self._API_VERSION == 'v1alpha':
+      vpc_accessible_services_config, vpc_yaml_flag_used = (
+          perimeters.ParseUpdateVpcAccessibleServicesArgs(
+              args, 'vpc-accessible-services'
+          )
+      )
     # Vpc allowed services list should only be populated if enable restrictions
     # is set to true.
     if updated_vpc_enabled is None:
@@ -195,6 +209,8 @@ class UpdatePerimeterDryRun(base.UpdateCommand):
         restricted_services=updated_restricted_services,
         vpc_allowed_services=updated_vpc_services,
         enable_vpc_accessible_services=updated_vpc_enabled,
+        vpc_yaml_flag_used=vpc_yaml_flag_used,
+        vpc_accessible_services_config=vpc_accessible_services_config,
         ingress_policies=updated_ingress,
         egress_policies=updated_egress,
         etag=args.etag

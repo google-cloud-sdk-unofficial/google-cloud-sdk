@@ -84,6 +84,7 @@ class Up(base.BinaryBackedCommand):
     else:
       compose_file = self._GetComposeFile()
     response = command_executor(
+        command='up',
         repo=repo,
         compose_file=compose_file,
         debug=args.debug,

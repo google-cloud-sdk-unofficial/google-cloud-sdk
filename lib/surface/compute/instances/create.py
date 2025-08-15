@@ -122,6 +122,7 @@ def _CommonArgs(
     support_watchdog_timer=False,
     support_disk_labels=False,
     support_source_snapshot_region=False,
+    support_skip_guest_os_shutdown=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -267,6 +268,8 @@ def _CommonArgs(
     instances_flags.AddWatchdogTimerArg(parser)
 
   instances_flags.AddTurboModeArgs(parser)
+  if support_skip_guest_os_shutdown:
+    instances_flags.AddSkipGuestOsShutdownArgs(parser)
 
 
 @base.UniverseCompatible
@@ -318,6 +321,7 @@ class Create(base.CreateCommand):
   _support_disk_labels = False
   _support_ipv6_only = True
   _support_source_snapshot_region = False
+  _support_skip_guest_os_shutdown = False
 
   @classmethod
   def Args(cls, parser):
@@ -345,6 +349,7 @@ class Create(base.CreateCommand):
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -418,6 +423,7 @@ class Create(base.CreateCommand):
         support_max_run_duration=self._support_max_run_duration,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_graceful_shutdown=self._support_graceful_shutdown,
+        support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -841,6 +847,7 @@ class CreateBeta(Create):
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_source_snapshot_region = True
+  _support_skip_guest_os_shutdown = True
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -884,6 +891,7 @@ class CreateBeta(Create):
         support_disk_labels=cls._support_disk_labels,
         support_ipv6_only=cls._support_ipv6_only,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -961,6 +969,7 @@ class CreateAlpha(CreateBeta):
   _support_watchdog_timer = True
   _support_disk_labels = True
   _support_source_snapshot_region = True
+  _support_skip_guest_os_shutdown = True
 
   @classmethod
   def Args(cls, parser):
@@ -992,6 +1001,7 @@ class CreateAlpha(CreateBeta):
         support_watchdog_timer=cls._support_watchdog_timer,
         support_disk_labels=cls._support_disk_labels,
         support_source_snapshot_region=cls._support_source_snapshot_region,
+        support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

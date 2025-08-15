@@ -22,8 +22,11 @@ from googlecloudsdk.command_lib.compute.interconnects import flags
 
 DETAILED_HELP = {
     'DESCRIPTION': """\
+
         *{command}* is used to configure shaper average percentage for using
-        application awareness on interconnect.
+        application awareness on interconnect. Note that an application awareness
+        policy (strict priority or bandwidth percentage) should be configure before
+        configuring traffic shaping.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
@@ -31,8 +34,8 @@ DETAILED_HELP = {
         To configure shaper average percentage for an interconnect
         example-interconnect, run:
 
-        $ {command} example-interconnect --bandwidth-percentages="TC1=11,TC2=10"
-        --enabled --profile_description="some string "
+        $ {command} example-interconnect --bandwidth-percentages="TC1=30,TC2=90"
+        --enabled --profile_description="some string"
         """,
 }
 

@@ -75,11 +75,16 @@ class Update(base.UpdateCommand):
       total_throughput_mibps = None
     hot_tier_size_gib = None
     enable_hot_tier_auto_resize = None
+    qos_type = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       if args.hot_tier_size is not None:
         hot_tier_size_gib = args.hot_tier_size >> 30
       enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
+      if args.qos_type is not None:
+        qos_type = storagepools_flags.GetStoragePoolQosTypeArg(
+            client.messages, hidden=True
+        ).GetEnumForChoice(args.qos_type)
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
@@ -93,6 +98,7 @@ class Update(base.UpdateCommand):
         total_iops=args.total_iops,
         hot_tier_size=hot_tier_size_gib,
         enable_hot_tier_auto_resize=enable_hot_tier_auto_resize,
+        qos_type=qos_type,
     )
 
     updated_fields = []
@@ -124,6 +130,8 @@ class Update(base.UpdateCommand):
         updated_fields.append('hotTierSizeGib')
       if args.IsSpecified('enable_hot_tier_auto_resize'):
         updated_fields.append('enableHotTierAutoResize')
+      if args.IsSpecified('qos_type'):
+        updated_fields.append('qosType')
 
     update_mask = ','.join(updated_fields)
 

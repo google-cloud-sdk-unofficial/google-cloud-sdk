@@ -197,6 +197,11 @@ class SetSchedulingInstances(base.SilentCommand):
       scheduling_options.nodeAffinities = []
       cleared_fields.append('nodeAffinities')
 
+    if hasattr(args, 'skip_guest_os_shutdown') and args.IsSpecified(
+        'skip_guest_os_shutdown'
+    ):
+      scheduling_options.skipGuestOsShutdown = args.skip_guest_os_shutdown
+
     with holder.client.apitools_client.IncludeFields(cleared_fields):
       request = client.messages.ComputeInstancesSetSchedulingRequest(
           instance=instance_ref.Name(),
@@ -247,6 +252,7 @@ class SetSchedulingInstancesBeta(SetSchedulingInstances):
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     flags.AddGracefulShutdownArgs(parser)
+    flags.AddSkipGuestOsShutdownArgs(parser)
 
   def Run(self, args):
     return self._Run(args)
@@ -289,3 +295,4 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddGracefulShutdownArgs(parser)
+    flags.AddSkipGuestOsShutdownArgs(parser)

@@ -49,6 +49,7 @@ def _Args(
     support_ipv6_only=False,
     support_graceful_shutdown=False,
     support_flex_start=False,
+    support_skip_guest_os_shutdown=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -129,6 +130,8 @@ def _Args(
       instances_flags.MakeSourceInstanceTemplateArg())
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
+  if support_skip_guest_os_shutdown:
+    instances_flags.AddSkipGuestOsShutdownArgs(parser)
 
 
 # TODO(b/305707759):Change @base.DefaultUniverseOnly to
@@ -154,6 +157,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_disk_labels = False
   _support_max_run_duration = True
   _support_graceful_shutdown = True
+  _support_skip_guest_os_shutdown = False
 
   @staticmethod
   def Args(parser):
@@ -168,6 +172,7 @@ class CreateWithContainer(base.CreateCommand):
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
+        support_skip_guest_os_shutdown=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -274,6 +279,7 @@ class CreateWithContainer(base.CreateCommand):
         support_max_run_duration=self._support_max_run_duration,
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_graceful_shutdown=self._support_graceful_shutdown,
+        support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
     )
     service_accounts = instance_utils.GetServiceAccounts(
         args, compute_client, skip_defaults)
@@ -444,6 +450,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
+  _support_skip_guest_os_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -459,6 +466,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_graceful_shutdown=True,
         support_ipv6_only=True,
         support_flex_start=False,
+        support_skip_guest_os_shutdown=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -491,6 +499,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
   _support_ipv6_only = True
+  _support_skip_guest_os_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -506,6 +515,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_ipv6_only=True,
         support_graceful_shutdown=True,
         support_flex_start=True,
+        support_skip_guest_os_shutdown=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

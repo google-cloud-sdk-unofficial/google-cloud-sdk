@@ -112,17 +112,47 @@ class CreateSecondary(base.CreateCommand):
     return op
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateSecondaryAlphaBeta(CreateSecondary):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateSecondaryBeta(CreateSecondary):
   """Creates a new AlloyDB SECONDARY instance within a given cluster."""
 
-  @staticmethod
-  def Args(parser):
-    super(CreateSecondaryAlphaBeta, CreateSecondaryAlphaBeta).Args(parser)
+  @classmethod
+  def Args(cls, parser):
+    super(CreateSecondaryBeta, CreateSecondaryBeta).Args(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
   ):
-    return instance_helper.ConstructSecondaryCreateRequestFromArgsAlphaBeta(
+    return instance_helper.ConstructSecondaryCreateRequestFromArgsBeta(
+        client, alloydb_messages, cluster_ref, args
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateSecondaryAlpha(CreateSecondaryBeta):
+  """Creates a new AlloyDB SECONDARY instance within a given cluster."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateSecondaryAlpha, CreateSecondaryAlpha).Args(parser)
+
+    # Connection pooling flags.
+    flags.AddEnableConnectionPooling(parser)
+    flags.AddConnectionPoolingPoolMode(parser)
+    flags.AddConnectionPoolingMinPoolSize(parser)
+    flags.AddConnectionPoolingMaxPoolSize(parser)
+    flags.AddConnectionPoolingMaxClientConnections(parser)
+    flags.AddConnectionPoolingServerIdleTimeout(parser)
+    flags.AddConnectionPoolingQueryWaitTimeout(parser)
+    flags.AddConnectionPoolingStatsUsers(parser)
+    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+    flags.AddConnectionPoolingServerLifetime(parser)
+    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
+    flags.AddConnectionPoolingMaxPreparedStatements(parser)
+
+  def ConstructSecondaryCreateRequestFromArgs(
+      self, client, alloydb_messages, cluster_ref, args
+  ):
+    return instance_helper.ConstructSecondaryCreateRequestFromArgsAlpha(
         client, alloydb_messages, cluster_ref, args
     )

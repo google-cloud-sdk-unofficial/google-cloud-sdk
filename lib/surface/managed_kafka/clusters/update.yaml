@@ -42,8 +42,6 @@ arguments:
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:mtls-ca-pools
           - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:clear-mtls-ca-pools
   - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:allow-broker-downscale-on-cluster-upscale
-    release_tracks: [ALPHA]
-    hidden: true
 
 async:
   collection: managedkafka.projects.locations.operations

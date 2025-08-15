@@ -39,12 +39,13 @@ _DETAILED_HELP = {
         * returning no more than 30 results
         * requesting 10 results at a time from the backend
 
-          $ {command} organizations/123/locations/us-central1 --limit=30 --page-size=10
+          $ {command} --organization=123 --location=us-central1 --limit=30 --page-size=10
         """,
 }
 
 
 @base.ReleaseTracks(ReleaseTrack.GA, ReleaseTrack.BETA, ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List all Assured Workloads environments that belong to a given parent organization."""
 

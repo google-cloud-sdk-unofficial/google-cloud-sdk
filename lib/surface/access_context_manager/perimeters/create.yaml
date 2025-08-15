@@ -134,6 +134,45 @@
       GA:
         processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseEgressPolicies:api_version=v1
     - group:
+        release_tracks: [ALPHA]
+        mutex: true
+        required: false
+        params:
+        - api_field: servicePerimeter.status.vpcAccessibleServices
+          metavar: VPC_ACCESSIBLE_SERVICES_YAML_FILE
+          arg_name: vpc-accessible-services
+          help_text: |
+            Path to a YAML file containing the full VPC Accessible Services configuration.
+            This file should contain a single YAML object representing a VpcAccessibleServices
+            message as described in the API reference. This cannot be used with
+            `--vpc-allowed-services` or `--enable-vpc-accessible-services`.
+
+            For more information about the alpha version, see:
+            https://cloud.google.com/access-context-manager/docs/reference/rest/v1alpha/accessPolicies.servicePerimeters
+            For more information about non-alpha versions, see:
+            https://cloud.google.com/access-context-manager/docs/reference/rest/v1/accessPolicies.servicePerimeters
+          ALPHA:
+            processor: googlecloudsdk.command_lib.accesscontextmanager.perimeters:ParseVpcAccessibleServices:api_version=v1alpha
+        - group:
+            mutex: false
+            params:
+            - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices
+              arg_name: vpc-allowed-services
+              metavar: VPC_SERVICE
+              help_text: |
+                Comma-separated list of APIs accessible from within the Service
+                Perimeter. In order to include all restricted services, use
+                reference "RESTRICTED-SERVICES".
+                Requires vpc-accessible-services be enabled.
+            - arg_name: enable-vpc-accessible-services
+              # api_field is not used here to allow the modify_request_hooks to handle
+              # the logic, preventing interference with the vpc-accessible-services YAML file.
+              type: bool
+              help_text: |
+                Whether to restrict API calls within the perimeter to those in the
+                vpc-allowed-services list.
+    - group:
+        release_tracks: [BETA, GA]
         params:
         - api_field: servicePerimeter.status.vpcAccessibleServices.allowedServices
           arg_name: vpc-allowed-services

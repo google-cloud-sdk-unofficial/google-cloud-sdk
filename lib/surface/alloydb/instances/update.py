@@ -182,6 +182,7 @@ class UpdateAlpha(UpdateBeta):
     flags.AddConnectionPoolingIgnoreStartupParameters(parser)
     flags.AddConnectionPoolingServerLifetime(parser)
     flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
+    flags.AddConnectionPoolingMaxPreparedStatements(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

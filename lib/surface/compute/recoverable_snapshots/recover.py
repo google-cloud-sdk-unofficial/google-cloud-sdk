@@ -69,7 +69,8 @@ class Recover(base.Command):
     )
 
     return client.MakeRequests(
-        [(client.apitools_client.recoverableSnapshots, 'Recover', request)]
+        [(client.apitools_client.recoverableSnapshots, 'Recover', request)],
+        no_followup=True,
     )[0]
 
 
