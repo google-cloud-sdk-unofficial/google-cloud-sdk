@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import reference_utils
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import backend_services_utils
 from googlecloudsdk.command_lib.compute.backend_services import flags
@@ -157,6 +158,7 @@ class CreateHelper(object):
       flags.AddZonalAffinity(parser)
     if support_allow_multinetwork:
       flags.AddAllowMultinetwork(parser)
+    flags.AddResourceManagerTags(parser)
 
   def __init__(
       self,
@@ -253,6 +255,10 @@ class CreateHelper(object):
       backend_service.localityLbPolicy = (
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
+
+    if args.resource_manager_tags is not None:
+      backend_service.params = self._CreateBackendServiceParams(
+          client.messages, args.resource_manager_tags)
 
     self._ApplyIapArgs(client.messages, args.iap, backend_service)
 
@@ -373,6 +379,10 @@ class CreateHelper(object):
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
 
+    if args.resource_manager_tags is not None:
+      backend_service.params = self._CreateBackendServiceParams(
+          client.messages, args.resource_manager_tag)
+
     backend_services_utils.ApplyAffinityCookieArgs(
         client, args, backend_service
     )
@@ -454,6 +464,23 @@ class CreateHelper(object):
       requests = self._CreateRegionalRequests(holder, args, ref)
 
     return client.MakeRequests(requests)
+
+  def _CreateBackendServiceParams(self, messages, resource_manager_tags):
+    resource_manager_tags_map = (
+        resource_manager_tags_utils.GetResourceManagerTags(
+            resource_manager_tags
+        )
+    )
+    params = messages.BackendServiceParams
+    additional_properties = [
+        params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+        for key, value in sorted(resource_manager_tags_map.items())
+    ]
+    return params(
+        resourceManagerTags=params.ResourceManagerTagsValue(
+            additionalProperties=additional_properties
+        )
+    )
 
 
 @base.UniverseCompatible

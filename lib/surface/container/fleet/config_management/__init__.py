@@ -21,11 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base as calliope_base
 
 
-@calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
-)
 class Configmanagement(calliope_base.Group):
-  """Manage Config Management feature.
+  """Use the Config Management feature.
 
   Manage Config Sync using the Config Management feature. Policy Controller
   users should use the separate command group: `gcloud container fleet

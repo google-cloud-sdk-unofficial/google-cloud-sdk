@@ -26,18 +26,32 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Compute Engine interconnect locations."""
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""
-        table(
-          name,
-          description,
-          facilityProvider
-        )
-    """)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            description,
+            facilityProvider,
+            singleRegionProductionCriticalPeerLocations.basename().join(sep="\n"):label=99.99%_PEER_LOCATIONS
+          )
+      """)
+    else:
+      parser.display_info.AddFormat("""
+          table(
+            name,
+            description,
+            facilityProvider
+          )
+      """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

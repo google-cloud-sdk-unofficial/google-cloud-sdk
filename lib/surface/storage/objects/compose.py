@@ -73,6 +73,10 @@ class Compose(base.Command):
     flags.add_per_object_retention_flags(parser)
     flags.add_precondition_flags(parser)
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      context_group = flags.get_object_context_group(parser)
+      flags.add_object_context_setter_flags(context_group)
+
   def Run(self, args):
     encryption_util.initialize_key_store(args)
     if args.source:

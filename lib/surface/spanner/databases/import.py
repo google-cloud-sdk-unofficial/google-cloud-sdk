@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core.credentials import store
 
 
 @base.DefaultUniverseOnly
@@ -62,9 +63,15 @@ class Import(base.BinaryBackedCommand):
 
   def Run(self, args):
     """Run the import command."""
+    auth_token = store.GetFreshAccessTokenIfEnabled(min_expiry_duration='1h')
     command_executor = migration_backend.SpannerMigrationWrapper()
     env_vars = migration_backend.GetEnvArgsForCommand(
-        extra_vars={'GCLOUD_HB_PLUGIN': 'true'})
+        extra_vars={
+            'GCLOUD_HB_PLUGIN': 'true',
+            'GCLOUD_AUTH_PLUGIN': 'true',
+            'GCLOUD_AUTH_ACCESS_TOKEN': auth_token,
+        }
+    )
     project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     response = command_executor(
         command='import',

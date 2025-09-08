@@ -115,17 +115,38 @@ class Create(base.CreateCommand):
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
     try:
-      request = messages.GkerecommenderOptimizedManifestRequest(
-          modelAndModelServerInfo_modelName=args.model,
-          modelAndModelServerInfo_modelServerName=args.model_server,
-          modelAndModelServerInfo_modelServerVersion=args.model_server_version,
-          performanceRequirements_targetNtpotMilliseconds=args.target_ntpot_milliseconds,
-          performanceRequirements_targetTtftMilliseconds=args.target_ttft_milliseconds,
+      model_server_info = messages.ModelServerInfo(
+          model=args.model,
+          modelServer=args.model_server,
+          modelServerVersion=args.model_server_version,
+      )
+      performance_requirements = messages.PerformanceRequirements()
+      if args.target_ntpot_milliseconds:
+        performance_requirements.targetNtpotMilliseconds = (
+            args.target_ntpot_milliseconds
+        )
+      if args.target_ttft_milliseconds:
+        performance_requirements.targetTtftMilliseconds = (
+            args.target_ttft_milliseconds
+        )
+      storage_config = messages.StorageConfig()
+      if args.model_bucket_uri:
+        storage_config.modelBucketUri = args.model_bucket_uri
+
+      request = messages.GenerateOptimizedManifestRequest(
+          modelServerInfo=model_server_info,
           acceleratorType=args.accelerator_type,
           kubernetesNamespace=args.namespace,
-          storageConfig_modelBucketUri=args.model_bucket_uri,
       )
-      response = client.v1.OptimizedManifest(request)
+      if (
+          performance_requirements.targetNtpotMilliseconds is not None
+          or performance_requirements.targetTtftMilliseconds is not None
+      ):
+        request.performanceRequirements = performance_requirements
+      if storage_config.modelBucketUri is not None:
+        request.storageConfig = storage_config
+
+      response = client.manifests.Generate(request)
       return response
     except exceptions.Error as e:
       log.error(f"An error has occurred: {e}")
@@ -139,7 +160,7 @@ class Create(base.CreateCommand):
 
     output_content = ""
     if args.output != "comments":
-      for manifest in resources.k8sManifests:
+      for manifest in resources.kubernetesManifests:
         output_content += manifest.content + "\n---\n"
 
     if resources.comments:

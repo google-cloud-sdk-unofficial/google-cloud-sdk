@@ -21,12 +21,16 @@ from __future__ import unicode_literals
 import apitools
 from googlecloudsdk import api_lib
 from googlecloudsdk import core
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.config_management import command
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base as features_base
 import six
 
 
-class Enable(base.EnableCommand, base.UpdateCommand, command.Common):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Enable(features_base.EnableCommand,
+             features_base.UpdateCommand,
+             command.Common):
   """Enable Config Management feature.
 
   Enables the Config Management feature in a fleet.

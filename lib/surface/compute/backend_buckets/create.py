@@ -14,14 +14,12 @@
 # limitations under the License.
 """Command for creating backend buckets."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import cdn_flags_utils as cdn_flags
+from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_utils
@@ -39,14 +37,14 @@ class Create(base.CreateCommand):
   """
 
   BACKEND_BUCKET_ARG = None
-  _support_regional_global_flags = False
+  _support_regional_statera_load_balancers = False
 
   @classmethod
   def Args(cls, parser):
     """Set up arguments for this command."""
     parser.display_info.AddFormat(backend_buckets_flags.DEFAULT_LIST_FORMAT)
     backend_buckets_flags.AddUpdatableArgs(
-        cls, parser, 'create', cls._support_regional_global_flags
+        cls, parser, 'create', cls._support_regional_statera_load_balancers
     )
     backend_buckets_flags.REQUIRED_GCS_BUCKET_ARG.AddArgument(parser)
     parser.display_info.AddCacheUpdater(
@@ -57,7 +55,10 @@ class Create(base.CreateCommand):
 
     backend_buckets_flags.AddCacheKeyExtendedCachingArgs(parser)
     backend_buckets_flags.AddCompressionMode(parser)
-    backend_buckets_flags.AddLoadBalancingScheme(parser)
+    backend_buckets_flags.AddLoadBalancingScheme(
+        parser, cls._support_regional_statera_load_balancers
+    )
+    backend_buckets_flags.AddResourceManagerTags(parser)
 
   def CreateBackendBucket(self, args):
     """Creates and returns the backend bucket."""
@@ -110,7 +111,7 @@ class Create(base.CreateCommand):
 
     backend_bucket = self.CreateBackendBucket(args)
 
-    if self._support_regional_global_flags:
+    if self._support_regional_statera_load_balancers:
       ref = backend_buckets_flags.GLOBAL_REGIONAL_BACKEND_BUCKET_ARG.ResolveAsResource(
           args,
           holder.resources,
@@ -122,12 +123,50 @@ class Create(base.CreateCommand):
       elif ref.Collection() == 'compute.regionBackendBuckets':
         requests = self._CreateRegionalRequests(args, backend_bucket, ref)
 
+      self._ApplyResourceManagerTags(args, backend_bucket, ref, client)
+
       return client.MakeRequests(requests)
+
+    if args.resource_manager_tags is not None:
+      backend_bucket.params = self._CreateBackendBucketParams(
+          client.messages, args.resource_manager_tags
+      )
 
     backend_buckets_ref = self.BACKEND_BUCKET_ARG.ResolveAsResource(
         args, holder.resources)
     return client.MakeRequests(
         self._CreateGlobalRequests(backend_bucket, backend_buckets_ref)
+    )
+
+  def _ApplyResourceManagerTags(self, args, backend_bucket, ref, client):
+    if args.resource_manager_tags is None:
+      return
+    if ref.Collection() == 'compute.backendBuckets':
+      backend_bucket.params = self._CreateBackendBucketParams(
+          client.messages, args.resource_manager_tags
+      )
+    elif ref.Collection() == 'compute.regionBackendBuckets':
+      raise compute_exceptions.ArgumentError(
+          '--resource-manager-tags',
+          'Resource Manager tags are not supported for regional backend'
+          ' buckets.',
+      )
+
+  def _CreateBackendBucketParams(self, messages, resource_manager_tags):
+    resource_manager_tags_map = (
+        resource_manager_tags_utils.GetResourceManagerTags(
+            resource_manager_tags
+        )
+    )
+    params = messages.BackendBucketParams
+    additional_properties = [
+        params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+        for key, value in sorted(resource_manager_tags_map.items())
+    ]
+    return params(
+        resourceManagerTags=params.ResourceManagerTagsValue(
+            additionalProperties=additional_properties
+        )
     )
 
   def _CreateGlobalRequests(self, backend_bucket, backend_buckets_ref):
@@ -159,7 +198,7 @@ class CreateBeta(Create):
   maps define which requests are sent to which backend buckets.
   """
 
-  _support_regional_global_flags = False
+  _support_regional_statera_load_balancers = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -171,4 +210,4 @@ class CreateAlpha(CreateBeta):
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
   """
-  _support_regional_global_flags = True
+  _support_regional_statera_load_balancers = True

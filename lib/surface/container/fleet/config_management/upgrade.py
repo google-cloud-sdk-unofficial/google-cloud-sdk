@@ -19,16 +19,18 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
-from googlecloudsdk.command_lib.container.fleet.features import base
+from googlecloudsdk.command_lib.container.fleet.features import base as features_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as mf_base
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import convert
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Upgrade(features_base.UpdateCommand, mf_base.UpdateCommand):
   """Upgrade the version of the Config Management feature.
 
   Upgrade a specified membership to any supported version of the Config
@@ -57,7 +59,7 @@ class Upgrade(base.UpdateCommand, mf_base.UpdateCommand):
   def Run(self, args):
     f = self.GetFeature()
     new_version = args.version
-    membership = base.ParseMembership(
+    membership = features_base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
     _, cluster_v = utils.versions_for_member(f, membership)

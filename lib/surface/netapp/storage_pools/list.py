@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Cloud NetApp Storage Pools."""
@@ -49,7 +50,9 @@ class List(base.ListCommand):
         flags.GetResourceListingLocationPresentationSpec(
             'The location in which to list Storage Pools.')
     ]).AddToParser(parser)
-    parser.display_info.AddFormat(storagepools_flags.STORAGE_POOLS_LIST_FORMAT)
+    parser.display_info.AddFormat(
+        storagepools_flags.STORAGE_POOLS_LIST_FORMAT_GA
+    )
 
   def Run(self, args):
     """Run the list command."""
@@ -71,6 +74,13 @@ class ListBeta(List):
   """List Cloud NetApp Storage Pools."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+  @staticmethod
+  def Args(parser):
+    List.Args(parser)
+    parser.display_info.AddFormat(
+        storagepools_flags.STORAGE_POOLS_LIST_FORMAT
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

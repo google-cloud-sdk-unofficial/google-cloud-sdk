@@ -1198,6 +1198,7 @@ class UpdateBeta(Update):
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
     flags.AddSecretManagerEnableFlagGroup(group)
+    flags.AddSecretSyncFlagGroup(group, hidden=True, is_update=True)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1394,6 +1395,9 @@ class UpdateBeta(Update):
     opts.secret_manager_rotation_interval = (
         args.secret_manager_rotation_interval
     )
+    opts.enable_secret_sync = args.enable_secret_sync
+    opts.enable_secret_sync_rotation = args.enable_secret_sync_rotation
+    opts.secret_sync_rotation_interval = args.secret_sync_rotation_interval
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
     )
@@ -1554,6 +1558,7 @@ class UpdateAlpha(Update):
     flags.AddCompleteConvertToAutopilotFlag(group)
     flags.AddConvertToStandardFlag(group)
     flags.AddSecretManagerEnableFlagGroup(group)
+    flags.AddSecretSyncFlagGroup(group, hidden=True, is_update=True)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableKubeletReadonlyPortFlag(group)
     flags.AddAutoprovisioningEnableKubeletReadonlyPortFlag(group)
@@ -1746,6 +1751,9 @@ class UpdateAlpha(Update):
     opts.secret_manager_rotation_interval = (
         args.secret_manager_rotation_interval
     )
+    opts.enable_secret_sync = args.enable_secret_sync
+    opts.enable_secret_sync_rotation = args.enable_secret_sync_rotation
+    opts.secret_sync_rotation_interval = args.secret_sync_rotation_interval
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
     )

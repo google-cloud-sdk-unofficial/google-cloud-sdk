@@ -42,6 +42,8 @@ from googlecloudsdk.core import log
 
 _BULK_RESTORE_FLAGS = [
     'allow_overwrite',
+    'created_after_time',
+    'created_before_time',
     'deleted_after_time',
     'deleted_before_time',
 ]
@@ -49,6 +51,8 @@ _BULK_RESTORE_FLAGS = [
 _INVALID_BUCKET_RESTORE_FLAGS = [
     'all_versions',
     'allow_overwrite',
+    'created_after_time',
+    'created_before_time',
     'deleted_after_time',
     'deleted_before_time',
     'asyncronous',
@@ -147,6 +151,8 @@ def _async_restore_task_iterator(args, user_request_args):
         bucket_url,
         object_globs,
         allow_overwrite=args.allow_overwrite,
+        created_after_time=args.created_after_time,
+        created_before_time=args.created_before_time,
         deleted_after_time=args.deleted_after_time,
         deleted_before_time=args.deleted_before_time,
         user_request_args=user_request_args,
@@ -265,6 +271,31 @@ class Restore(base.Command):
 
         $ {command} gs://bucket/**.txt --async
 
+      Restore objects created within a specific time range:
+
+        $ {command} gs://bucket/** --async \
+            --created-after-time="2023-01-01T00:00:00Z" \
+            --created-before-time="2023-01-31T23:59:59Z"
+
+      Restore objects soft-deleted within a specific time range:
+
+        $ {command} gs://bucket/** --async \
+            --deleted-after-time="2023-01-01T00:00:00Z" \
+            --deleted-before-time="2023-01-31T23:59:59Z"
+
+      Restore objects using a combination of creation and deletion time filters:
+
+          $ {command} gs://bucket/** --async --allow-overwrite \
+              --created-after-time="2023-01-01T00:00:00Z" \
+              --deleted-after-time="2023-01-01T00:00:00Z"
+
+      This command filters the objects that were live at 2023-01-01T00:00:00Z
+      and then soft-deleted afterwards.
+
+     This combination of filters is especially helpful if there is a period of
+     erroneous overwrites. They allow you to go back to the point just before
+     the overwrites began. You will also need to set the `--allow-overwrite`
+     option to true.
       """,
   }
 
@@ -306,6 +337,16 @@ class Restore(base.Command):
         ),
     )
     bulk_restore_flag_group = parser.add_group(help='BULK RESTORE OPTIONS')
+    bulk_restore_flag_group.add_argument(
+        '--created-after-time',
+        type=arg_parsers.Datetime.Parse,
+        help='Restores only the objects that were created after this time.',
+    )
+    bulk_restore_flag_group.add_argument(
+        '--created-before-time',
+        type=arg_parsers.Datetime.Parse,
+        help='Restores only the objects that were created before this time.',
+    )
     bulk_restore_flag_group.add_argument(
         '--allow-overwrite',
         action='store_true',

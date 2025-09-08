@@ -204,6 +204,7 @@ class ConfigmanagementFeatureState(object):
       self.hierarchy_controller_state = utils.STATUS_PENDING
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Status(feature_base.FeatureCommand, base.ListCommand):
   """Print the status of all clusters with Config Management enabled.
 

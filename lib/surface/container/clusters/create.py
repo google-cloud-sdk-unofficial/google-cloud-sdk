@@ -507,6 +507,11 @@ def ParseCreateOptionsBase(
       secret_manager_rotation_interval=get_default(
           'secret_manager_rotation_interval'
       ),
+      enable_secret_sync=get_default('enable_secret_sync'),
+      enable_secret_sync_rotation=get_default('enable_secret_sync_rotation'),
+      secret_sync_rotation_interval=get_default(
+          'secret_sync_rotation_interval'
+      ),
       enable_cilium_clusterwide_network_policy=get_default(
           'enable_cilium_clusterwide_network_policy'
       ),
@@ -558,7 +563,6 @@ def ParseCreateOptionsBase(
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
       enable_default_compute_class=get_default('enable_default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
-
       boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
       boot_disk_provisioned_throughput=get_default(
           'boot_disk_provisioned_throughput'
@@ -985,6 +989,7 @@ flags_to_add = {
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretSyncConfig': flags.AddSecretSyncFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),
@@ -1191,6 +1196,7 @@ flags_to_add = {
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretSyncConfig': flags.AddSecretSyncFlagGroup,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
         ),

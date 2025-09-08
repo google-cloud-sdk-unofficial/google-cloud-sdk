@@ -48,7 +48,7 @@ class Update(base.UpdateCommand):
     )
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddType(parser, required=False)
+    flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser, required=False)
     flags.AddFaultResponse(parser)
     flags.AddAdminEnabled(parser, update=True)
@@ -103,5 +103,3 @@ class UpdateAlpha(Update):
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
     flags.AddBandwidthAllocation(parser)
-
-

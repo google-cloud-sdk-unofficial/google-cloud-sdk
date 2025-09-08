@@ -72,6 +72,7 @@ auto_flags = [
     'enableDefaultComputeClass',
     'enableK8sCertsViaDns',
     'membershipType',
+    'secretSyncConfig',
 ]
 # LINT.ThenChange()
 

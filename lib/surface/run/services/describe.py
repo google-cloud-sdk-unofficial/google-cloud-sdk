@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
+from googlecloudsdk.command_lib.run import threat_detection_util as crtd_util
 from googlecloudsdk.command_lib.run.printers import export_printer
 from googlecloudsdk.command_lib.run.printers import service_printer
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -103,6 +104,7 @@ class Describe(base.Command):
     flags.ValidateResource(service_ref)
     with serverless_operations.Connect(conn_context) as client:
       serv = client.GetService(service_ref)
+      crtd_util.UpdateThreatDetectionState(serv, client)
     if not serv:
       raise exceptions.ArgumentError(
           'Cannot find service [{}]'.format(service_ref.servicesId)

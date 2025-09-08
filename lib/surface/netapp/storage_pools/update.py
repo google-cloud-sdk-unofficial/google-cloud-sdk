@@ -76,19 +76,20 @@ class Update(base.UpdateCommand):
     hot_tier_size_gib = None
     enable_hot_tier_auto_resize = None
     qos_type = None
+    if args.qos_type is not None:
+      qos_type = storagepools_flags.GetStoragePoolQosTypeArg(
+          client.messages
+      ).GetEnumForChoice(args.qos_type)
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       if args.hot_tier_size is not None:
         hot_tier_size_gib = args.hot_tier_size >> 30
       enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
-      if args.qos_type is not None:
-        qos_type = storagepools_flags.GetStoragePoolQosTypeArg(
-            client.messages
-        ).GetEnumForChoice(args.qos_type)
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(
         orig_storagepool,
         capacity=capacity_in_gib,
+        active_directory=args.active_directory,
         description=args.description,
         labels=labels,
         allow_auto_tiering=args.allow_auto_tiering,
@@ -124,14 +125,14 @@ class Update(base.UpdateCommand):
       updated_fields.append('totalThroughputMibps')
     if args.IsSpecified('total_iops'):
       updated_fields.append('totalIops')
+    if args.IsSpecified('qos_type'):
+      updated_fields.append('qosType')
     if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
         self._RELEASE_TRACK == base.ReleaseTrack.BETA):
       if args.IsSpecified('hot_tier_size'):
         updated_fields.append('hotTierSizeGib')
       if args.IsSpecified('enable_hot_tier_auto_resize'):
         updated_fields.append('enableHotTierAutoResize')
-      if args.IsSpecified('qos_type'):
-        updated_fields.append('qosType')
 
     update_mask = ','.join(updated_fields)
 

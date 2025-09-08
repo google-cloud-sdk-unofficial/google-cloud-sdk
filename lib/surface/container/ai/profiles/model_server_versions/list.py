@@ -58,10 +58,10 @@ class List(commands.List):
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
     try:
-      request = messages.GkerecommenderModelServersVersionsListRequest(
-          modelName=args.model, modelServerName=args.model_server
+      request = messages.GkerecommenderModelServerVersionsFetchRequest(
+          model=args.model, modelServer=args.model_server
       )
-      response = client.modelServers_versions.List(request)
+      response = client.modelServers_versions.Fetch(request)
       if response.modelServerVersions:
         return response.modelServerVersions
       else:

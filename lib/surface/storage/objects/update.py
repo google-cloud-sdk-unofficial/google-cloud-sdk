@@ -53,9 +53,16 @@ def _get_task_iterator(urls, args):
   updates_retention = getattr(args, 'retain_until', None) or getattr(
       args, 'retention_mode', None
   )
+  updates_custom_contexts = (
+      getattr(args, 'custom_contexts', None)
+      or getattr(args, 'custom_contexts_file', None)
+      or getattr(args, 'remove_custom_contexts', None)
+      or getattr(args, 'update_custom_contexts', None)
+      or getattr(args, 'clear_custom_contexts', None)
+  )
   if requires_rewrite or adds_or_removes_acls:
     fields_scope = cloud_api.FieldsScope.FULL
-  elif updates_retention:
+  elif updates_retention or updates_custom_contexts:
     fields_scope = cloud_api.FieldsScope.NO_ACL
   else:
     fields_scope = cloud_api.FieldsScope.SHORT
@@ -84,11 +91,12 @@ def _get_task_iterator(urls, args):
     )
 
 
-def _add_common_args(parser):
+def _add_common_args(parser, release_track=base.ReleaseTrack.GA):
   """Register flags for this command.
 
   Args:
     parser (argparse.ArgumentParser): The parser to add the arguments to.
+    release_track (ReleaseTrack): The release track to add flags for.
 
   Returns:
     objects update flag group
@@ -131,7 +139,9 @@ def _add_common_args(parser):
   flags.add_continue_on_error_flag(parser)
   flags.add_encryption_flags(parser, allow_patch=True)
   flags.add_precondition_flags(parser)
-  flags.add_object_metadata_flags(parser, allow_patch=True)
+  flags.add_object_metadata_flags(
+      parser, allow_patch=True, release_track=release_track
+  )
   flags.add_per_object_retention_flags(parser, is_update=True)
   flags.add_read_paths_from_stdin_flag(
       parser,
@@ -222,5 +232,5 @@ class UpdateAlpha(Update):
 
   @staticmethod
   def Args(parser):
-    _add_common_args(parser)
+    _add_common_args(parser, base.ReleaseTrack.ALPHA)
     _add_alpha_args(parser)

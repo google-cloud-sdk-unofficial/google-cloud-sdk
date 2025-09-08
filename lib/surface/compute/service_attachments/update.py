@@ -59,15 +59,22 @@ class UpdateHelper(object):
   SERVICE_ATTACHMENT_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder):
+  def __init__(self, holder, support_target_service_arg):
     self._holder = holder
+    self._support_target_service_arg = support_target_service_arg
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_target_service_arg):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
+      support_target_service_arg: Whether to add arguments for producer
+        forwarding rule.
+
+    cls: Hold onto the definition of a complex argument so it can be used later
+      to process the user's input.
+    flags: Define and register command-line arguments with the argument parser.
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='update')
@@ -76,6 +83,8 @@ class UpdateHelper(object):
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
     flags.AddDescription(parser)
+    if support_target_service_arg:
+      flags.AddTargetServiceArgsForUpdate(parser)
     flags.AddConnectionPreference(parser, is_update=True)
     flags.AddEnableProxyProtocolForUpdate(parser)
     flags.AddReconcileConnectionsForUpdate(parser)
@@ -122,14 +131,21 @@ class UpdateHelper(object):
     replacement = encoding.CopyProtoMessage(old_resource)
     is_updated = False
 
+    if self._support_target_service_arg and args.IsSpecified('target_service'):
+      is_updated = True
+      replacement.targetService = args.target_service
+
     if args.IsSpecified('description'):
       if args.description != old_resource.description:
         replacement.description = args.description
         is_updated = True
 
     if args.IsSpecified('connection_preference'):
-      new_connection_preference = service_attachments_utils.GetConnectionPreference(
-          args, holder.client.messages)
+      new_connection_preference = (
+          service_attachments_utils.GetConnectionPreference(
+              args, holder.client.messages
+          )
+      )
       if new_connection_preference != old_resource.connectionPreference:
         replacement.connectionPreference = new_connection_preference
         is_updated = True
@@ -208,31 +224,30 @@ class UpdateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
-
+  _support_target_service_arg = False
   detailed_help = _DetailedHelp()
 
   @classmethod
   def Args(cls, parser):
-    UpdateHelper.Args(parser)
+    UpdateHelper.Args(
+        parser,
+        cls._support_target_service_arg,
+    )
 
   def Run(self, args):
     """Issue a service attachment PATCH request."""
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return UpdateHelper(holder).Run(args)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class UpdateBeta(Update):
-  """Update a Google Compute Engine service attachment."""
-
-  detailed_help = _DetailedHelp()
+    return UpdateHelper(
+        holder,
+        self._support_target_service_arg,
+    ).Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Update a Google Compute Engine service attachment."""
-
+  _support_target_service_arg = True
   detailed_help = _DetailedHelp()

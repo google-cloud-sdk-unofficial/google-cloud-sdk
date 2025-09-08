@@ -166,6 +166,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append(
         'settings.ipConfiguration.pscConfig.networkAttachmentUri'
     )
+  if args.IsKnownAndSpecified('clear_unc_mappings'):
+    cleared_fields.append('settings.uncMappings')
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -351,6 +353,11 @@ def AddBetaArgs(parser):
   flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddEnableAutoUpgrade(parser)
+  flags.AddServerCaMode(parser, hidden=True)
+  flags.AddServerCaPool(parser, hidden=True)
+  unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
+  flags.AddUncMappings(unc_mappings_group)
+  flags.AddClearUncMappings(unc_mappings_group)
 
 
 def AddAlphaArgs(unused_parser):

@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import util
-from googlecloudsdk.calliope import base as calliope_base
+from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import api_util
 from googlecloudsdk.command_lib.container.fleet.features import base as feature_base
 from googlecloudsdk.core import log
@@ -36,7 +36,8 @@ class ConfigmanagementFeatureState(object):
     self.version = NA
 
 
-class Version(feature_base.FeatureCommand, calliope_base.ListCommand):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class Version(feature_base.FeatureCommand, base.ListCommand):
   """Print the version of all clusters with Config Management enabled.
 
   ## EXAMPLES

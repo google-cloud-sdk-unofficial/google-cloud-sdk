@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of gcloud managed kafka schema registries subject describe command."""
+"""Implementation of gcloud managed kafka schema registries subjects describe command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -57,7 +57,7 @@ class Describe(base.DescribeCommand):
    Describe the subject in a schema registry with all of its fields:
 
     $ {command} --project=PROJECT_ID --location=LOCATION_ID
-    --schema_registry=SCHEMA_REGISTRY_ID
+    --registry=SCHEMA_REGISTRY_ID
   """
 
   @staticmethod
@@ -75,7 +75,7 @@ class Describe(base.DescribeCommand):
     arguments.AddSubjectArgToParser(parser)
 
   def Run(self, args):
-    """Called when the user runs gcloud managed-kafka schema-registries subject describe ...
+    """Called when the user runs gcloud managed-kafka schema-registries subjects describe ...
 
     Args:
       args: all the arguments that were provided to this command invocation.
@@ -88,7 +88,7 @@ class Describe(base.DescribeCommand):
 
     project_id = util.ParseProject(args.project)
     location = args.location
-    schema_registry_id = args.schema_registry
+    schema_registry_id = args.registry
     subject = args.CONCEPTS.subject.Parse().subjectsId
     subject_run_resource = resources.REGISTRY.Parse(
         args.subject,

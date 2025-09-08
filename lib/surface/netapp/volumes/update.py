@@ -119,11 +119,7 @@ class Update(base.UpdateCommand):
       block_devices = args.block_devices
     else:
       cache_parameters = None
-    throughput_mibps = None
-    if (self._RELEASE_TRACK == base.ReleaseTrack.ALPHA or
-        self._RELEASE_TRACK == base.ReleaseTrack.BETA):
-      if hasattr(args, 'throughput_mibps'):
-        throughput_mibps = args.throughput_mibps
+    throughput_mibps = args.throughput_mibps
 
     volume = client.ParseUpdatedVolumeConfig(
         original_volume,
@@ -185,6 +181,8 @@ class Update(base.UpdateCommand):
       updated_fields.append('restoreParameters')
     if args.IsSpecified('restricted_actions'):
       updated_fields.append('restrictedActions')
+    if args.IsSpecified('throughput_mibps'):
+      updated_fields.append('throughputMibps')
     if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
         self._RELEASE_TRACK == base.ReleaseTrack.GA):
       if args.IsSpecified('source_backup'):
@@ -235,8 +233,6 @@ class Update(base.UpdateCommand):
         self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
         or self._RELEASE_TRACK == base.ReleaseTrack.BETA
     ):
-      if args.IsSpecified('throughput_mibps'):
-        updated_fields.append('throughputMibps')
       if args.IsSpecified('block_devices'):
         updated_fields.append('blockDevices')
     update_mask = ','.join(updated_fields)
@@ -273,4 +269,3 @@ class UpdateAlpha(UpdateBeta):
   @staticmethod
   def Args(parser):
     _CommonArgs(parser, UpdateAlpha._RELEASE_TRACK)
-

@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.compute.networks.peerings import flags
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 @base.DefaultUniverseOnly
 class Update(base.Command):
   r"""Update a Compute Engine network peering.
@@ -49,7 +51,6 @@ class Update(base.Command):
   """
 
   _support_stack_type = False
-  _support_update_strategy = False
 
   @classmethod
   def Args(cls, parser):
@@ -70,8 +71,7 @@ class Update(base.Command):
 
     flags.AddStackType(parser)
 
-    if cls._support_update_strategy:
-      flags.AddUpdateStrategy(parser)
+    flags.AddUpdateStrategy(parser)
 
   def Run(self, args):
     """Issues the request necessary for updating the peering."""
@@ -108,7 +108,7 @@ class Update(base.Command):
           )
       )
 
-    if self._support_update_strategy and getattr(args, 'update_strategy'):
+    if getattr(args, 'update_strategy'):
       network_peering.updateStrategy = (
           client.messages.NetworkPeering.UpdateStrategyValueValuesEnum(
               args.update_strategy
@@ -131,35 +131,9 @@ class Update(base.Command):
 
     check_args.append(args.stack_type is None)
 
-    if self._support_update_strategy:
-      check_args.append(args.update_strategy is None)
+    check_args.append(args.update_strategy is None)
 
     if all(check_args):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.'
       )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class UpdateAlpha(Update):
-  r"""Update a Compute Engine network peering.
-
-  ## EXAMPLES
-
-  To update the peering named peering-name to both export and import custom
-  routes, run:
-
-    $ {command} peering-name \
-      --export-custom-routes \
-      --import-custom-routes
-
-
-  To update the peering named peering-name to both export and import subnet
-  routes with public ip, run:
-
-    $ {command} peering-name \
-      --export-subnet-routes-with-public-ip \
-      --import-subnet-routes-with-public-ip
-  """
-
-  _support_update_strategy = True

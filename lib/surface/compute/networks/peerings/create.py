@@ -53,7 +53,9 @@ def _MakeRequests(client, requests, is_async):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 class Create(base.Command):
   r"""Create a Compute Engine network peering.
 
@@ -77,8 +79,6 @@ class Create(base.Command):
   """
 
   _support_stack_type = False
-
-  _support_update_strategy = False
 
   @classmethod
   def ArgsCommon(cls, parser):
@@ -112,8 +112,7 @@ class Create(base.Command):
 
     flags.AddStackType(parser)
 
-    if cls._support_update_strategy:
-      flags.AddUpdateStrategy(parser)
+    flags.AddUpdateStrategy(parser)
 
   @classmethod
   def Args(cls, parser):
@@ -169,7 +168,7 @@ class Create(base.Command):
           )
       )
 
-    if self._support_update_strategy and getattr(args, 'update_strategy'):
+    if getattr(args, 'update_strategy'):
       network_peering.updateStrategy = (
           client.messages.NetworkPeering.UpdateStrategyValueValuesEnum(
               args.update_strategy
@@ -192,28 +191,3 @@ class Create(base.Command):
     requests = [(client.apitools_client.networks, 'AddPeering', request)]
     return _MakeRequests(client, requests, args.async_)
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class CreateAlpha(Create):
-  r"""Create a Compute Engine network peering.
-
-  *{command}* is used to create peerings between virtual networks. Each side of
-  a peering association is set up independently. Peering will be active only
-  when the configuration from both sides matches.
-
-  ## EXAMPLES
-
-  To create a network peering with the name 'peering-name' between the network
-  'local-network' and the network 'peer-network' which exports and imports
-  custom routes and subnet routes with public IPs, run:
-
-    $ {command} peering-name \
-      --network=local-network \
-      --peer-network=peer-network \
-      --export-custom-routes \
-      --import-custom-routes \
-      --export-subnet-routes-with-public-ip \
-      --import-subnet-routes-with-public-ip
-  """
-
-  _support_update_strategy = True

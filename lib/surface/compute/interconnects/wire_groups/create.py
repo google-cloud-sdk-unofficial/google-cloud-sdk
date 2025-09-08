@@ -41,8 +41,7 @@ DETAILED_HELP = {
           $ {command} example-wire-group \
               --project my-project \
               --cross-site-network example-cross-site-network \
-              --type REDUNDANT \
-              --bandwidth-unmetered 1 \
+              --bandwidth-unmetered 1
         """,
 }
 

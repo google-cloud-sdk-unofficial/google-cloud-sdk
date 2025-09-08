@@ -103,15 +103,13 @@ class Create(base.CreateCommand):
         args, client.messages.Volume.LabelsValue
     )
     large_capacity = args.large_capacity
+    throughput_mibps = args.throughput_mibps
     multiple_endpoints = args.multiple_endpoints
-    throughput_mibps = None
     block_devices = []
     if (
         self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
         or self._RELEASE_TRACK == base.ReleaseTrack.BETA
     ):
-      if hasattr(args, 'throughput_mibps'):
-        throughput_mibps = args.throughput_mibps
       cache_parameters = args.cache_parameters
       block_devices = args.block_devices
     else:

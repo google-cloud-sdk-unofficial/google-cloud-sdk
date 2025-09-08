@@ -37,9 +37,11 @@ class List(commands.List):
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
     try:
-      response = client.models.List(messages.GkerecommenderModelsListRequest())
-      if response.modelNames:
-        return response.modelNames
+      response = client.models.Fetch(
+          messages.GkerecommenderModelsFetchRequest()
+      )
+      if response.models:
+        return response.models
       else:
         return []
     except exceptions.Error as e:

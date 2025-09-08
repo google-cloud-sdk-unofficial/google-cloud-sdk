@@ -39,13 +39,6 @@ SUPPORTED_EVENT_TYPES = (
     'providers/cloud.pubsub/eventTypes/topic.publish',
 )
 
-UNSUPPORTED_RUNTIMES = (
-    'python37',
-    'nodejs8',
-    'nodejs10',
-    'go111',
-)
-
 UpgradeAction = collections.namedtuple(
     'UpgradeAction',
     [
@@ -177,7 +170,7 @@ _VALID_TRANSITION_ACTIONS = {
     ],
     'COMMIT_FUNCTION_UPGRADE_SUCCESSFUL': [],
     'COMMIT_FUNCTION_UPGRADE_ERROR': [_COMMIT_ACTION],
-}  # type: dict[str, UpgradeAction]
+}  # type: dict[str, list[UpgradeAction]]
 
 
 def _ValidateStateTransition(upgrade_state, action):
@@ -232,14 +225,6 @@ def _RaiseNotEligibleForUpgradeError(function):
         f'Function [{function.name}] is not eligible for Cloud Run function'
         ' upgrade. Only HTTP functions and Pub/Sub triggered functions are'
         ' supported.'
-    )
-  if function.buildConfig.runtime in UNSUPPORTED_RUNTIMES:
-    raise exceptions.FunctionsError(
-        f'Function [{function.name}] is not eligible for Cloud Run function'
-        f' upgrade. The runtime [{function.buildConfig.runtime}] is not'
-        ' supported. Please update to a supported runtime instead and try'
-        ' again. Use `gcloud functions runtimes list` to get a list of'
-        ' available runtimes.'
     )
   raise exceptions.FunctionsError(
       f'Function [{function.name}] is not eligible for Cloud Run function'
@@ -298,6 +283,18 @@ class UpgradeBeta(base.Command):
       _RaiseNotEligibleForUpgradeError(function)
 
     upgrade_state = function.upgradeInfo.upgradeState
+
+    if (
+        six.text_type(upgrade_state)
+        == 'INELIGIBLE_FOR_UPGRADE_UNTIL_REDEPLOYMENT'
+    ):
+      raise exceptions.FunctionsError(
+          f'Function [{function.name}] is not eligible for Cloud Run function'
+          f' upgrade. The runtime [{function.buildConfig.runtime}] is not'
+          ' supported. Please update to a supported runtime instead and try'
+          ' again. Use `gcloud functions runtimes list` to get a list of'
+          ' available runtimes.'
+      )
 
     action = None
     action_fn = None

@@ -232,7 +232,9 @@ class Rsync(base.Command):
     flags.add_predefined_acl_flag(acl_flags_group)
 
     flags.add_encryption_flags(parser)
-    cp_command_util.add_cp_mv_rsync_flags(parser)
+    cp_command_util.add_cp_mv_rsync_flags(
+        parser, release_track=cls.ReleaseTrack()
+    )
     cp_command_util.add_gzip_in_flight_flags(parser)
     cp_command_util.add_ignore_symlinks_flag(parser, default=True)
     cp_command_util.add_recursion_flag(parser)

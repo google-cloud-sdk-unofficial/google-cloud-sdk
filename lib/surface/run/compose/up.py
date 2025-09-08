@@ -53,6 +53,7 @@ class Up(base.BinaryBackedCommand):
     flags.AddRegionArg(parser)
     flags.AddDebugFlag(parser)
     flags.AddDryRunFlag(parser)
+    flags.AddDevFlag(parser)
 
   @staticmethod
   def Args(parser):

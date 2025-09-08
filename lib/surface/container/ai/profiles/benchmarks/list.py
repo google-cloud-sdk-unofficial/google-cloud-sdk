@@ -74,15 +74,14 @@ class List(commands.List):
     parser.add_argument(
         "--model-server",
         required=True,
-        help=(
-            "The model server."
-        ),
+        help="The model server.",
     )
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. If not specified, this defaults to"
-            " latest model server version."
+            "The model server version. Default is latest. Other options include"
+            " the model server version of a profile, all which returns all"
+            " versions."
         ),
     )
     parser.add_argument(
@@ -114,13 +113,16 @@ class List(commands.List):
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
     try:
-      request = messages.GkerecommenderGetBenchmarkingDataRequest(
-          modelAndModelServerInfo_modelName=args.model,
-          modelAndModelServerInfo_modelServerName=args.model_server,
-          modelAndModelServerInfo_modelServerVersion=args.model_server_version,
+      model_server_info = messages.ModelServerInfo(
+          model=args.model,
+          modelServer=args.model_server,
+          modelServerVersion=args.model_server_version,
+      )
+      request = messages.FetchBenchmarkingDataRequest(
+          modelServerInfo=model_server_info,
           instanceType=args.instance_type,
       )
-      response = client.v1.GetBenchmarkingData(request)
+      response = client.v1.benchmarkingData.Fetch(request)
       if not response.profile:
         return []
       else:

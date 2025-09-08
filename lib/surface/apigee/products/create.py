@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.apigee import resource_args
 from googlecloudsdk.core.console import console_io
 
 
+@base.DefaultUniverseOnly
 class Deploy(base.DescribeCommand):
   """Create an Apigee API product."""
 
@@ -306,7 +307,7 @@ If specified, `--quota-interval` and `--quota-unit` must be specified too.""")
   def Run(self, args):
     """Run the deploy command."""
     if args.organization is None:
-      args.organization = defaults.OrganizationFromGCPProduct()
+      args.organization = defaults.OrganizationFromGCPProject()
 
     if console_io.CanPrompt():
       if args.organization is None:

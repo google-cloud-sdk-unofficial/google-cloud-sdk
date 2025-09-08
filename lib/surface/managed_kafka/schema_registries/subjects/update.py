@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Implementation of gcloud managed kafka schema registries subject update command."""
+"""Implementation of gcloud managed kafka schema registries subjects update command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,11 +42,13 @@ class Update(base.UpdateCommand):
 
   Modify the mode of the subject to READONLY:
 
-    $ {command} --mode=READONLY
+    $ {command} --registry=SCHEMA_REGISTRY --context=CONTEXT
+    --project=PROJECT_ID --location=LOCATION_ID --mode=READONLY
 
   Modify the compatibility of the subject to BACKWARDS:
 
-    $ {command} --compatibility=BACKWARDS
+    $ {command} --registry=SCHEMA_REGISTRY --context=CONTEXT
+    --project=PROJECT_ID --location=LOCATION_ID --compatibility=BACKWARDS
   """
 
   @staticmethod
@@ -85,7 +87,7 @@ class Update(base.UpdateCommand):
     )
 
   def Run(self, args):
-    """Called when the user runs gcloud managed-kafka schema-registries subject update ...
+    """Called when the user runs gcloud managed-kafka schema-registries subjects update ...
 
     Args:
       args: all the arguments that were provided to this command invocation.
@@ -99,7 +101,7 @@ class Update(base.UpdateCommand):
 
     project_id = util.ParseProject(args.project)
     location = args.location
-    schema_registry_id = args.schema_registry
+    schema_registry_id = args.registry
     subject = args.CONCEPTS.subject.Parse().subjectsId
     subject_run_resource = resources.REGISTRY.Parse(
         args.subject,

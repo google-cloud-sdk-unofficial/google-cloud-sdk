@@ -44,6 +44,7 @@ EXAMPLES = r"""
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
   """Update a Config Management feature spec.

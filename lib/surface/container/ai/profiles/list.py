@@ -89,8 +89,9 @@ class List(commands.List):
     parser.add_argument(
         "--model-server",
         help=(
-            "The model server. If not specified, this defaults to any model"
-            " server."
+            "The model server version. Default is latest. Other options include"
+            " the model server version of a profile, all which returns all"
+            " versions."
         ),
     )
     parser.add_argument(
@@ -179,34 +180,53 @@ class List(commands.List):
     client = util.GetClientInstance(base.ReleaseTrack.GA)
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
-    request = messages.GkerecommenderProfilesListRequest(
-        modelName=args.model,
-        modelServerName=args.model_server,
+    performance_requirements = messages.PerformanceRequirements()
+    if args.target_ntpot_milliseconds:
+      performance_requirements.targetNtpotMilliseconds = (
+          args.target_ntpot_milliseconds
+      )
+    if args.target_ttft_milliseconds:
+      performance_requirements.targetTtftMilliseconds = (
+          args.target_ttft_milliseconds
+      )
+
+    if (
+        args.target_cost_per_million_output_tokens
+        or args.target_cost_per_million_input_tokens
+        or args.pricing_model
+    ):
+      cost = messages.Cost()
+      if args.target_cost_per_million_output_tokens:
+        units, nanos = decimal_to_amount(
+            args.target_cost_per_million_output_tokens
+        )
+        cost.costPerMillionOutputTokens = messages.Amount(
+            units=units, nanos=nanos
+        )
+      if args.target_cost_per_million_input_tokens:
+        units, nanos = decimal_to_amount(
+            args.target_cost_per_million_input_tokens
+        )
+        cost.costPerMillionInputTokens = messages.Amount(
+            units=units, nanos=nanos
+        )
+      if args.pricing_model:
+        cost.pricingModel = args.pricing_model
+      performance_requirements.targetCost = cost
+
+    request = messages.FetchProfilesRequest(
+        model=args.model,
+        modelServer=args.model_server,
         modelServerVersion=args.model_server_version,
-        performanceRequirements_targetNtpotMilliseconds=args.target_ntpot_milliseconds,
-        performanceRequirements_targetTtftMilliseconds=args.target_ttft_milliseconds,
     )
-    if args.target_cost_per_million_output_tokens:
-      units, nanos = decimal_to_amount(
-          args.target_cost_per_million_output_tokens
-      )
-      request.performanceRequirements_cost_costPerMillionNormalizedOutputTokens_units = (
-          units
-      )
-      request.performanceRequirements_cost_costPerMillionNormalizedOutputTokens_nanos = (
-          nanos
-      )
-    if args.target_cost_per_million_input_tokens:
-      units, nanos = decimal_to_amount(
-          args.target_cost_per_million_input_tokens
-      )
-      request.performanceRequirements_cost_costPerMillionInputTokens_units = (
-          units
-      )
-      request.performanceRequirements_cost_costPerMillionInputTokens_nanos = (
-          nanos
-      )
-    response = client.profiles.List(request)
+    if (
+        performance_requirements.targetNtpotMilliseconds is not None
+        or performance_requirements.targetTtftMilliseconds is not None
+        or performance_requirements.targetCost is not None
+    ):
+      request.performanceRequirements = performance_requirements
+
+    response = client.profiles.Fetch(request)
     if response.profile:
       return response.profile
     else:

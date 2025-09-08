@@ -31,8 +31,8 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DiskAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+class Disk(base.Command):
   """Restores a Compute Disk Backup."""
 
   detailed_help = {
@@ -169,10 +169,3 @@ class DiskAlpha(base.Command):
         ),
         has_result=False,
     )
-
-
-@base.Hidden
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-class Disk(DiskAlpha):
-  """Restores a Disk Backup."""
