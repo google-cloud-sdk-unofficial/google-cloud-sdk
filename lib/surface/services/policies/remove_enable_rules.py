@@ -120,6 +120,8 @@ class RemovedEnableRules(base.SilentCommand):
         args.organization if args.IsSpecified('organization') else None
     )
 
+    service_names = []
+
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
@@ -132,29 +134,30 @@ class RemovedEnableRules(base.SilentCommand):
         )
         if not do_disable:
           continue
+      service_names.append(service_name)
 
-      op = serviceusage.RemoveEnableRule(
-          project,
-          service_name,
-          args.policy_name,
-          args.force,
-          folder,
-          organization,
-          args.validate_only,
-          skip_dependency_check=False,
-          disable_dependency_services=args.force,
+    op = serviceusage.RemoveEnableRule(
+        project,
+        service_names,
+        args.policy_name,
+        args.force,
+        folder,
+        organization,
+        args.validate_only,
+        skip_dependency_check=False,
+        disable_dependency_services=args.force,
+    )
+
+    if args.async_:
+      cmd = _OP_WAIT_CMD.format(op.name)
+      log.status.Print(
+          'Asynchronous operation is in progress... '
+          'Use the following command to wait for its '
+          f'completion:\n {cmd}'
       )
-
-      if args.async_:
-        cmd = _OP_WAIT_CMD.format(op.name)
-        log.status.Print(
-            'Asynchronous operation is in progress... '
-            'Use the following command to wait for its '
-            f'completion:\n {cmd}'
-        )
-        return
-      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-      if args.validate_only:
-        services_util.PrintOperation(op)
-      else:
-        services_util.PrintOperationWithResponse(op)
+      return
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+    if args.validate_only:
+      services_util.PrintOperation(op)
+    else:
+      services_util.PrintOperationWithResponse(op)

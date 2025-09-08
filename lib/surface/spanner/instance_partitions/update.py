@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA
 )
 class Update(base.Command):
   """Update a Spanner instance partition. You can't update the default instance partition using this command."""  # pylint: disable=line-too-long
@@ -61,7 +61,9 @@ class Update(base.Command):
         required=False, text='Description of the instance partition.'
     ).AddToParser(parser)
     base.ASYNC_FLAG.AddToParser(parser)
-    flags.AddCapacityArgsForInstancePartition(parser=parser)
+    flags.AddCapacityArgsForInstancePartition(
+        parser=parser, add_autoscaling_args=False
+    )
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -78,6 +80,50 @@ class Update(base.Command):
         description=args.description,
         nodes=args.nodes,
         processing_units=args.processing_units,
+    )
+    if args.async_:
+      return op
+    return instance_partition_operations.Await(
+        op, 'Updating instance partition'
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaUpdate(Update):
+  """Update a Spanner instance partition with ALPHA features."""
+
+  __doc__ = Update.__doc__
+
+  @staticmethod
+  def Args(parser):
+    """See base class."""
+    resource_args.AddInstancePartitionResourceArg(parser, 'to update')
+    flags.Description(
+        required=False, text='Description of the instance partition.'
+    ).AddToParser(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddCapacityArgsForInstancePartition(
+        parser=parser,
+        add_autoscaling_args=True,
+        autoscaling_args_hidden=True,
+        require_all_autoscaling_args=False,
+    )
+
+  def Run(self, args):
+    """See base class."""
+    op = instance_partitions.Patch(
+        args.CONCEPTS.instance_partition.Parse(),
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
     )
     if args.async_:
       return op

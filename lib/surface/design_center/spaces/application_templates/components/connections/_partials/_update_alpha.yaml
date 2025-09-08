@@ -59,11 +59,16 @@
       resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_application_templates_components_connections
       required: true
     - arg_name: destination-component-uri
-      api_field: connection.destinationComponentUri
-      required: false
-      repeated: false
       help_text: |-
         The destination component URI used to generate the connection.
+        Format is
+        `projects/$project/locations/$location/spaces/$space/applicationTemplates/$application_template/components/$component`
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_application_templates_components
+      resource_method_params:
+        connection.destinationComponentUri: '{__relative_name__}'
+      required: false
     - arg_name: source-component-parameters
       api_field: connection.sourceComponentParameters
       required: false

@@ -26,7 +26,6 @@ from googlecloudsdk.api_lib.run import service as service_lib
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
-from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import build_util
@@ -229,17 +228,17 @@ class Deploy(base.Command):
   def _ValidateAndGetContainers(self, args):
     if flags.FlagIsExplicitlySet(args, 'containers'):
       containers = args.containers
-    # TODO(b/436350694): Change this to use preset metadata once it is
-    # implemented.
-    elif (
-        flags.FlagIsExplicitlySet(args, 'preset')
-        and args.preset in flags.INGRESS_CONTAINER_PRESETS
-    ):
-      preset_container = parser_extensions.Namespace()
-      setattr(preset_container, 'image', 'imageplaceholder')
-      setattr(preset_container, '_specified_args', {'image'})
-      setattr(preset_container, 'automatic_updates', None)
-      containers = {args.preset: preset_container}
+      # TODO(b/436350694): Change this to use preset metadata once it is
+      # implemented.
+      if (
+          flags.FlagIsExplicitlySet(args, 'preset')
+          and args.preset in flags.INGRESS_CONTAINER_PRESETS
+      ):
+        specified_args = getattr(containers[args.preset], '_specified_args')
+        specified_args['image'] = '--image'
+        setattr(containers[args.preset], '_specified_args', specified_args)
+        setattr(containers[args.preset], 'image', 'imageplaceholder')
+        setattr(containers[args.preset], 'automatic_updates', None)
     else:
       containers = {'': args}
 
@@ -507,7 +506,7 @@ class Deploy(base.Command):
     automatic_updates = self._GetAutomaticUpdates(container_args, service)
 
     build_machine_type = None
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() != base.ReleaseTrack.GA:
       build_machine_type = self._GetMachineType(container_args, service)
 
     if os.path.exists(docker_file):
@@ -750,33 +749,6 @@ class Deploy(base.Command):
 
     required_apis = self._GetRequiredApis(args)
     if build_from_source:
-      is_cmek_consent_required = (
-          self.ReleaseTrack() == base.ReleaseTrack.GA
-          and flags.FlagIsExplicitlySet(args, 'key')
-          and not flags.FlagIsExplicitlySet(args, 'allow_unencrypted_build')
-      )
-      if is_cmek_consent_required:
-        if not console_io.CanPrompt():
-          raise c_exceptions.ConflictingArgumentsException(
-              '--key',
-              'This source deployment involves a build process which does not'
-              ' support customer-managed encryption keys (CMEK). The current'
-              ' command is executed in a non-interactive session, it cannot'
-              ' prompt the user to acknowledge these limitations. Re-run the'
-              ' command in an interactive session where prompting is'
-              ' available.',
-          )
-        if not console_io.PromptContinue(
-            message=(
-                'This source deployment involves a build process which does'
-                ' not support customer-managed encryption keys (CMEK). If'
-                ' you choose to continue, compliance will be limited to'
-                ' only the deployed container, and will not apply to the'
-                ' build sources and artifacts. Would you like to continue?'
-            )
-        ):
-          return None
-
       required_apis.append('artifactregistry.googleapis.com')
       required_apis.append('cloudbuild.googleapis.com')
 

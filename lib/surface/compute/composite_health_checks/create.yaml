@@ -1,0 +1,54 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Create a composite health check."
+    description: "Create a composite health check."
+    examples: |
+      The following command creates a new composite health check:
+
+        $ {command} <COMPOSITE_HEALTH_CHECK_NAME> \
+          --region=<REGION> \
+          --health-sources=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/healthSources/my-hs \
+          --health-destination=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/forwardingRules/my-fr
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.regionCompositeHealthChecks
+    method: insert
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.compute.composite_health_checks.modify_request_hooks:add_name_to_payload
+
+  async:
+    collection: compute.regionOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: The name of the composite health check you want to create.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:composite_health_check
+
+    params:
+    - arg_name: description
+      api_field: compositeHealthCheck.description
+      help_text: |
+        A textual description of this resource.
+
+    - arg_name: health-sources
+      api_field: compositeHealthCheck.healthSources
+      help_text: |
+        URLs to the HealthSource resources whose results are AND'ed. I.e. the aggregated result is
+        HEALTHY only if all sources are HEALTHY. Must have at least 1. Must not have more than 10.
+        Must be regional and in the same region as the CompositeHealthCheck. Can be mutated.
+      required: true
+
+    - arg_name: health-destination
+      api_field: compositeHealthCheck.healthDestination
+      help_text: |
+        URL to the destination resource. Must be set. Must be a ForwardingRule. The ForwardingRule
+        must have load balancing scheme INTERNAL or INTERNAL_MANAGED and must be regional and in the
+        same region as the CompositeHealthCheck (cross-region deployment for INTERNAL_MANAGED is not
+        supported). Can be mutated.
+      required: true

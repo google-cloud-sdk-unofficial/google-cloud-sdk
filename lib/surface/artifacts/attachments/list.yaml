@@ -25,9 +25,14 @@
     - arg_name: target
       help_text: |
         Target for the list of attachments.
+    - arg_name: attachment-type
+      hidden: true
+      help_text: |
+        Type for the list of attachments.
 
   request: &request
     api_version: v1
     collection: artifactregistry.projects.locations.repositories.attachments
     modify_request_hooks:
     - googlecloudsdk.command_lib.artifacts.util:AddTargetForAttachments
+    - googlecloudsdk.command_lib.artifacts.util:AddTypeForAttachments

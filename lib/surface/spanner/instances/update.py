@@ -250,6 +250,9 @@ class AlphaUpdate(base.Command):
         parser=parser,
         add_asymmetric_option_flag=True,
         asymmetric_options_group=True,
+        autoscaling_cpu_target_group=True,
+        add_asymmetric_total_cpu_target_flag=True,
+        add_asymmetric_disable_autoscaling_flags=True,
     )
 
     flags.SsdCache().AddToParser(parser)
@@ -294,6 +297,7 @@ class AlphaUpdate(base.Command):
         autoscaling_min_processing_units=args.autoscaling_min_processing_units,
         autoscaling_max_processing_units=args.autoscaling_max_processing_units,
         autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
         asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
         clear_asymmetric_autoscaling_options=args.clear_asymmetric_autoscaling_option,

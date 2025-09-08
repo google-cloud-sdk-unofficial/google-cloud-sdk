@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
+from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.DefaultUniverseOnly
@@ -37,7 +38,7 @@ class Import(base.BinaryBackedCommand):
 
           $ {command} --instance=instanceA --database=databaseA
           --table-name=tableA --source-uri=gs://bucket/data.csv --source-format=csv
-          --schema_uri=gs://bucket/schema.csv
+          --schema-uri=gs://bucket/schema.json
 
           $ {command} --instance=instanceA --database=databaseA
           --source-uri=gs://bucket/dump.sql --source-format=mysqldump
@@ -64,6 +65,7 @@ class Import(base.BinaryBackedCommand):
     command_executor = migration_backend.SpannerMigrationWrapper()
     env_vars = migration_backend.GetEnvArgsForCommand(
         extra_vars={'GCLOUD_HB_PLUGIN': 'true'})
+    project = arg_utils.GetFromNamespace(args, '--project', use_defaults=True)
     response = command_executor(
         command='import',
         instance=args.instance,
@@ -74,7 +76,7 @@ class Import(base.BinaryBackedCommand):
         schema_uri=args.schema_uri,
         csv_line_delimiter=args.csv_line_delimiter,
         csv_field_delimiter=args.csv_field_delimiter,
-        project=args.project,
+        project=project,
         database_dialect=args.database_dialect,
         env=env_vars,
     )

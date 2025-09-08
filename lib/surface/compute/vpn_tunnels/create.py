@@ -27,14 +27,13 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
-from googlecloudsdk.command_lib.compute.external_vpn_gateways import (
-    flags as external_vpn_gateway_flags)
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
+from googlecloudsdk.command_lib.compute.external_vpn_gateways import flags as external_vpn_gateway_flags
 from googlecloudsdk.command_lib.compute.routers import flags as router_flags
-from googlecloudsdk.command_lib.compute.target_vpn_gateways import (
-    flags as target_vpn_gateway_flags)
-from googlecloudsdk.command_lib.compute.vpn_gateways import (flags as
-                                                             vpn_gateway_flags)
+from googlecloudsdk.command_lib.compute.target_vpn_gateways import flags as target_vpn_gateway_flags
+from googlecloudsdk.command_lib.compute.vpn_gateways import flags as vpn_gateway_flags
 from googlecloudsdk.command_lib.compute.vpn_tunnels import flags
+import six
 
 
 _PRINTABLE_CHARS_PATTERN = r'[ -~]+'
@@ -104,6 +103,7 @@ class CreateGA(base.CreateCommand):
           required=False))
 
   _support_cipher_suite = False
+  _support_tagging_at_creation = False
 
   @classmethod
   def _AddCommonFlags(cls, parser):
@@ -251,6 +251,16 @@ class CreateGA(base.CreateCommand):
     if(cls._support_cipher_suite):
       cls._AddCipherSuiteFlags(parser)
 
+    if cls._support_tagging_at_creation:
+      parser.add_argument(
+          '--resource-manager-tags',
+          type=arg_parsers.ArgDict(),
+          metavar='KEY=VALUE',
+          help="""\
+            A comma-separated list of Resource Manager tags to apply to the VPN tunnel.
+        """,
+      )
+
     parser.display_info.AddCacheUpdater(flags.VpnTunnelsCompleter)
 
   def _ValidateHighAvailabilityVpnArgs(self, args):
@@ -300,6 +310,11 @@ class CreateGA(base.CreateCommand):
             '--peer-address',
             'When creating Classic VPN tunnels, the peer address '
             'must be specified.')
+      if args.IsSpecified('router'):
+        raise exceptions.InvalidArgumentException(
+            '--router',
+            'Cannot specify router with Classic VPN tunnels.',
+        )
 
   def _GetPeerGcpGateway(self, api_resource_registry, args):
     if args.IsSpecified('peer_gcp_gateway'):
@@ -343,6 +358,7 @@ class CreateGA(base.CreateCommand):
     peer_external_gateway = None
     peer_external_gateway_interface = None
     peer_gcp_gateway = None
+    resource_manager_tags = None
 
     if is_vpn_gateway_supported and args.IsSpecified('vpn_gateway'):
       self._ValidateHighAvailabilityVpnArgs(args)
@@ -362,6 +378,12 @@ class CreateGA(base.CreateCommand):
       target_vpn_gateway = self._TARGET_VPN_GATEWAY_ARG.ResolveAsResource(
           args, holder.resources
       ).SelfLink()
+
+    if self._support_tagging_at_creation:
+      if args.resource_manager_tags is not None:
+        resource_manager_tags = self._CreateVpnTunnelParams(
+            client.messages, args.resource_manager_tags
+        )
 
     if target_vpn_gateway:
       if self._support_cipher_suite:
@@ -394,6 +416,8 @@ class CreateGA(base.CreateCommand):
                 local_traffic_selector=args.local_traffic_selector,
                 remote_traffic_selector=args.remote_traffic_selector,
                 cipher_suite=cipher_suite,
+                params=resource_manager_tags,
+                support_tagging_at_creation=self._support_tagging_at_creation,
             )
         )
       else:
@@ -405,7 +429,10 @@ class CreateGA(base.CreateCommand):
             shared_secret=args.shared_secret,
             target_vpn_gateway=target_vpn_gateway,
             local_traffic_selector=args.local_traffic_selector,
-            remote_traffic_selector=args.remote_traffic_selector)
+            remote_traffic_selector=args.remote_traffic_selector,
+            params=resource_manager_tags,
+            support_tagging_at_creation=self._support_tagging_at_creation,
+        )
     else:
       if(self._support_cipher_suite):
         phase1_algo = helper.GetVpnTunnelPhase1Algorithms(
@@ -440,6 +467,8 @@ class CreateGA(base.CreateCommand):
                 peer_external_gateway_interface=peer_external_gateway_interface,
                 peer_gcp_gateway=peer_gcp_gateway,
                 cipher_suite=cipher_suite,
+                params=resource_manager_tags,
+                support_tagging_at_creation=self._support_tagging_at_creation,
             )
         )
       else:
@@ -457,7 +486,10 @@ class CreateGA(base.CreateCommand):
             router=router_link,
             peer_external_gateway=peer_external_gateway,
             peer_external_gateway_interface=peer_external_gateway_interface,
-            peer_gcp_gateway=peer_gcp_gateway)
+            peer_gcp_gateway=peer_gcp_gateway,
+            params=resource_manager_tags,
+            support_tagging_at_creation=self._support_tagging_at_creation,
+        )
 
     operation_ref = helper.Create(vpn_tunnel_ref, vpn_tunnel_to_insert)
     return helper.WaitForOperation(vpn_tunnel_ref, operation_ref,
@@ -466,6 +498,23 @@ class CreateGA(base.CreateCommand):
   def Run(self, args):
     """Issues API requests to construct VPN Tunnels."""
     return self._Run(args, is_vpn_gateway_supported=True)
+
+  def _CreateVpnTunnelParams(self, messages, resource_manager_tags):
+    resource_manager_tags_map = (
+        resource_manager_tags_utils.GetResourceManagerTags(
+            resource_manager_tags
+        )
+    )
+    params = messages.VpnTunnelParams
+    additional_properties = [
+        params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+        for key, value in sorted(six.iteritems(resource_manager_tags_map))
+    ]
+    return params(
+        resourceManagerTags=params.ResourceManagerTagsValue(
+            additionalProperties=additional_properties
+        )
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -480,6 +529,7 @@ class CreateBeta(CreateGA):
   """
 
   _support_cipher_suite = True
+  _support_tagging_at_creation = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -493,3 +543,4 @@ class CreateAlpha(CreateBeta):
   gateway.
   """
   _support_cipher_suite = True
+  _support_tagging_at_creation = True

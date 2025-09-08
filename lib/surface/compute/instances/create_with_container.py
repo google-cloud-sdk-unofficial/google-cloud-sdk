@@ -367,6 +367,9 @@ class CreateWithContainer(base.CreateCommand):
                 compute_client.messages).GetEnumForChoice(
                     args.private_ipv6_google_access_type))
 
+      if args.IsKnownAndSpecified('request_valid_for_duration'):
+        instance.params = instance_utils.CreateParams(args, compute_client)
+
       confidential_instance_config = (
           create_utils.BuildConfidentialInstanceConfigMessage(
               messages=compute_client.messages,
@@ -531,6 +534,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
+    instances_flags.AddRequestValidForDurationArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

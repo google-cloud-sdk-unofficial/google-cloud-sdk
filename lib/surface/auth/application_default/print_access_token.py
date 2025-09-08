@@ -198,7 +198,7 @@ class PrintAccessToken(base.Command):
     # The token URI needs to be overridden in case
     # context aware access is enabled.
     # pylint: disable=protected-access
-    creds._token_uri = auth_util.GetTokenUri()
+    creds._token_uri = c_creds.GetDefaultTokenUri()
     # pylint: enable=protected-access
 
     # Refresh the ADC cred.

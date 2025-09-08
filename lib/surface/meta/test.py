@@ -31,13 +31,12 @@ from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import execution_utils
-from googlecloudsdk.core import log
 from googlecloudsdk.core import module_util
-from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
 
 
+@base.UniverseCompatible
 class Test(base.Command):
   """Run miscellaneous gcloud command and CLI test scenarios.
 
@@ -189,10 +188,6 @@ class Test(base.Command):
       time.sleep(1)
       tracker.CompleteStage('make')
 
-  def _RunTestFeatureFlag(self, args):
-    log.status.Print('Value of feature flag [test/feature_flag]: {}'.format(
-        properties.VALUES.test.feature_flag.Get()))
-
   def Run(self, args):
     if args.arg_dict:
       r = self._RunArgDict(args)
@@ -225,8 +220,5 @@ class Test(base.Command):
       r = self._RunUncaughtException(args)
     elif args.staged_progress_tracker:
       self._RunStagedProgressTracker(args)
-      r = None
-    elif args.feature_flag:
-      self._RunTestFeatureFlag(args)
       r = None
     return r

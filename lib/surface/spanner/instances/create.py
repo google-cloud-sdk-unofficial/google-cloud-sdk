@@ -278,6 +278,10 @@ class AlphaCreate(Create):
         require_all_autoscaling_args=True,
         parser=parser,
         add_asymmetric_option_flag=True,
+        asymmetric_options_group=False,
+        autoscaling_cpu_target_group=True,
+        add_asymmetric_total_cpu_target_flag=True,
+        add_asymmetric_disable_autoscaling_flags=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
@@ -298,25 +302,26 @@ class AlphaCreate(Create):
     default_storage_type = resource_args.GetDefaultStorageTypeArg(args)
 
     op = instances.Create(
-        args.instance,
-        args.config,
-        args.description,
-        args.nodes,
-        args.processing_units,
-        args.autoscaling_min_nodes,
-        args.autoscaling_max_nodes,
-        args.autoscaling_min_processing_units,
-        args.autoscaling_max_processing_units,
-        args.autoscaling_high_priority_cpu_target,
-        args.autoscaling_storage_target,
-        args.asymmetric_autoscaling_option,
-        instance_type,
-        expire_behavior,
-        default_storage_type,
-        args.ssd_cache,
-        args.edition,
-        args.default_backup_schedule_type,
-        args.tags,
+        instance=args.instance,
+        config=args.config,
+        description=args.description,
+        nodes=args.nodes,
+        processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
+        asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        instance_type=instance_type,
+        expire_behavior=expire_behavior,
+        default_storage_type=default_storage_type,
+        ssd_cache=args.ssd_cache,
+        edition=args.edition,
+        default_backup_schedule_type=args.default_backup_schedule_type,
+        tags=args.tags,
     )
     if args.async_:
       return op

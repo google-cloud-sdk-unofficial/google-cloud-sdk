@@ -44,6 +44,12 @@ class Download(base.Command):
             --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
             --name=myfile.txt
 
+    To download version v0.1.0 of myfile.txt located in a repository in "us-central1" to /path/to/destination/ using parallel multipart download with 4 threads:
+
+        $ {command} --location=us-central1 --project=myproject --repository=myrepo \
+            --package=mypackage --version=v0.1.0 --destination=/path/to/destination/ \
+            --name=myfile.txt --parallelism=4
+
     To download version v0.1.0 of myfile.txt in 8000 byte chunks located in a repository in "us-central1" to /path/to/destination/:
 
         $ {command} --location=us-central1 --project=myproject --repository=myrepo \
@@ -91,6 +97,14 @@ class Download(base.Command):
         metavar='NAME',
         help='If specified, the file name within the artifact to download.'
     )
+    parser.add_argument(
+        '--parallelism',
+        metavar='PARALLELISM',
+        help=(
+            'Specifies the number of threads to use for downloading the file in'
+            ' parallel.'
+        ),
+    )
 
   def Run(self, args):
     """Run the generic artifact download command."""
@@ -131,6 +145,7 @@ class Download(base.Command):
     )
     default_chunk_size = 3 * 1024 * 1024
     chunk_size = args.chunk_size or default_chunk_size
+    parallelism = args.parallelism or 1
 
     download_util.Download(
         final_path,
@@ -138,6 +153,7 @@ class Download(base.Command):
         file_name,
         False,
         int(chunk_size),
+        int(parallelism),
     )
     log.status.Print(
         'Successfully downloaded the file to {}'.format(args.destination)

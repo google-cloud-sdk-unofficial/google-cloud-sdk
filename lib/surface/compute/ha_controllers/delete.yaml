@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Delete an HA controller.
+    description: Delete an HA controller.
+    examples: |
+      The following command deletes an HA controller with ID `my-hac` in region `us-central1`:
+
+        $ {command} my-hac \
+            --region=us-central1
+
+  request:
+    api_version: alpha
+    collection: compute.haControllers
+    method: delete
+
+  async:
+    collection: compute.regionOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: Name of the HA controller you want to delete.
+      spec: !REF googlecloudsdk.command_lib.compute.ha_controllers.resources:ha_controller
+      is_positional: true

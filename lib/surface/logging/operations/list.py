@@ -47,6 +47,14 @@ class List(base.ListCommand):
             universe_help='Not all operation types are supported.\n',
         ),
     )
+    parser.add_argument(
+        '--page-token',
+        type=str,
+        help=(
+            'The next_page_token value returned from a previous List request,'
+            ' if any.'
+        ),
+    )
     base.URI_FLAG.RemoveFromParser(parser)
     base.FILTER_FLAG.RemoveFromParser(parser)
 
@@ -66,7 +74,11 @@ class List(base.ListCommand):
         util.GetParentFromArgs(args), 'locations', args.location)
 
     request = util.GetMessages().LoggingProjectsLocationsOperationsListRequest(
-        name=operation_name, filter=args.operation_filter)
+        name=operation_name,
+        filter=args.operation_filter,
+        pageSize=args.page_size,
+        pageToken=args.page_token,
+    )
 
     result = util.GetClient().projects_locations_operations.List(request)
     self._cancellation_requested = False

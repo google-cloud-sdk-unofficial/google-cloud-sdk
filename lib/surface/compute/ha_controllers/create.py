@@ -21,11 +21,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ha_controllers import utils as api_utils
+from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ha_controllers import utils
+from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.compute.alpha import compute_alpha_messages
-
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -34,6 +36,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    base.ASYNC_FLAG.AddToParser(parser)
     utils.AddHaControllerNameArgToParser(
         parser, base.ReleaseTrack.ALPHA.name.lower()
     )
@@ -89,4 +92,29 @@ class Create(base.CreateCommand):
         secondaryZoneCapacity=args.secondary_zone_capacity,
         zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
     )
-    return api_utils.Insert(client, ha_controller, ha_controller_ref)
+    if not args.async_:
+      return api_utils.Insert(client, ha_controller, ha_controller_ref)
+
+    errors_to_collect = []
+    response = api_utils.InsertAsync(
+        client, ha_controller, ha_controller_ref, errors_to_collect
+    )
+    err = getattr(response, 'error', None)
+    if err:
+      errors_to_collect.append(poller.OperationErrors(err.errors))
+    if errors_to_collect:
+      raise core_exceptions.MultiError(errors_to_collect)
+
+    operation_ref = holder.resources.Parse(response.selfLink)
+
+    log.status.Print(
+        'HA controller creation in progress for [{}]: {}'.format(
+            ha_controller.name, operation_ref.SelfLink()
+        )
+    )
+    log.status.Print(
+        'Use [gcloud compute operations describe URI] command '
+        'to check the status of the operation.'
+    )
+
+    return response

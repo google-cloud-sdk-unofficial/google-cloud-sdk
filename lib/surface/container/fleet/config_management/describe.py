@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,25 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""The command to view the Config Management Feature."""
+
+from googlecloudsdk.command_lib.container.fleet.config_management import utils
+from googlecloudsdk.command_lib.container.fleet.features import base as features_base
 
 
-$schema: "http://json-schema.org/draft-06/schema#"
-
-title: feature_flag_config_file_schema
-# Specifies the config file
-type: object
-patternProperties:
-  '[a-z_]{1,50}\/[a-z_]{1,50}':
-    type: array
-    items:
-      type: object
-      properties:
-        value:
-          type: [string, number, boolean]
-        weight:
-          type: integer
-          minimum: 0
-          maximum: 999
-      required: [value, weight]
-      additionalProperties: false
-additionalProperties: false
+class Describe(features_base.DescribeCommand):
+  """Describe the Config Management feature."""
+  feature_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME

@@ -247,10 +247,9 @@ def _RaiseNotEligibleForUpgradeError(function):
   )
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpgradeAlpha(base.Command):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpgradeBeta(base.Command):
   """Upgrade a 1st gen Cloud Function to the Cloud Run function."""
 
   detailed_help = {
@@ -384,3 +383,9 @@ class UpgradeAlpha(base.Command):
       log.status.Print(action.success_msg.format(urls_strings))
     else:
       log.status.Print(action.success_msg)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpgradeAlpha(UpgradeBeta):
+  """Upgrade a 1st gen Cloud Function to the Cloud Run function."""

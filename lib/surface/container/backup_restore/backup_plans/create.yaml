@@ -63,6 +63,7 @@
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:all_namespaces
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:selected_namespaces
         - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:selected_applications
+        - _REF_: googlecloudsdk.command_lib.container.backup_restore.flags:selected_namespace_labels
     # Backup config
     - group:
         params:

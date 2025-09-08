@@ -104,12 +104,10 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
         *{command}* is used to update a NAT in a Compute Engine router.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         Change subnetworks and IP address resources associated with NAT:
 
           $ {command} nat1 --router=my-router
@@ -123,20 +121,19 @@ Update.detailed_help = {
         Change connection timeouts associated with NAT:
 
           $ {command} nat1 --router=my-router
-            --udp-mapping-idle-timeout=60s
-            --icmp-mapping-idle-timeout=60s
-            --tcp-established-connection-idle-timeout=60s
-            --tcp-transitory-connection-idle-timeout=60s
+            --udp-idle-timeout=60s
+            --icmp-idle-timeout=60s
+            --tcp-established-idle-timeout=60s
+            --tcp-transitory-idle-timeout=60s
 
         Reset connection timeouts associated NAT to default values:
 
           $ {command} nat1 --router=my-router
-            --clear-udp-mapping-idle-timeout --clear-icmp-mapping-idle-timeout
-            --clear-tcp-established-connection-idle-timeout
-            --clear-tcp-transitory-connection-idle-timeout
+            --clear-udp-idle-timeout --clear-icmp-idle-timeout
+            --clear-tcp-established-idle-timeout
+            --clear-tcp-transitory-idle-timeout
         """,
-    'API REFERENCE':
-        """\
+    'API REFERENCE': """\
     This command, when specified without alpha or beta, uses the compute/v1/routers API. The full documentation
     for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/v1/routers/
 
@@ -144,5 +141,5 @@ Update.detailed_help = {
     for this API can be found at: https://cloud.google.com/compute/docs/reference/rest/beta/routers/
 
     The alpha command uses the compute/alpha/routers API. Full documentation is not available for the alpha API.
-    """
+    """,
 }

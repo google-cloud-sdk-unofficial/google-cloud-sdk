@@ -34,7 +34,6 @@ from googlecloudsdk.core import log
 
 def _AddArgs(parser, version):
   """Prepares for the arguments of the command."""
-  flags.GetModelIdArg().AddToParser(parser)
   flags.GetDisplayNameArg('deployed model').AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
   flags.AddPredictionResourcesArgs(parser, version)
@@ -42,6 +41,7 @@ def _AddArgs(parser, version):
   flags.GetServiceAccountArg().AddToParser(parser)
   flags.GetUserSpecifiedIdArg('deployed-model').AddToParser(parser)
   flags.GetAutoscalingMetricSpecsArg().AddToParser(parser)
+  flags.AddModelIdArg(version, parser)
   flags.AddEndpointResourceArg(
       parser,
       'to deploy a model to',

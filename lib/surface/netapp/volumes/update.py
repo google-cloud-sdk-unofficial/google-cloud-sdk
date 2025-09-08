@@ -113,8 +113,10 @@ class Update(base.UpdateCommand):
     else:
       backup_config = None
       source_backup = None
+    block_devices = []
     if self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
       cache_parameters = args.cache_parameters
+      block_devices = args.block_devices
     else:
       cache_parameters = None
     throughput_mibps = None
@@ -146,6 +148,7 @@ class Update(base.UpdateCommand):
         tiering_policy=args.tiering_policy,
         cache_parameters=cache_parameters,
         throughput_mibps=throughput_mibps,
+        block_devices=block_devices,
     )
 
     updated_fields = []
@@ -234,6 +237,8 @@ class Update(base.UpdateCommand):
     ):
       if args.IsSpecified('throughput_mibps'):
         updated_fields.append('throughputMibps')
+      if args.IsSpecified('block_devices'):
+        updated_fields.append('blockDevices')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateVolume(volume_ref, volume, update_mask, args.async_)

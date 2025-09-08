@@ -83,7 +83,7 @@ class Update(base.UpdateCommand):
       enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
       if args.qos_type is not None:
         qos_type = storagepools_flags.GetStoragePoolQosTypeArg(
-            client.messages, hidden=True
+            client.messages
         ).GetEnumForChoice(args.qos_type)
 
     storage_pool = client.ParseUpdatedStoragePoolConfig(

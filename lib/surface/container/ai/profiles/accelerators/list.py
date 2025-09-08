@@ -180,8 +180,9 @@ class List(commands.List):
             nanos
         )
       response = client.accelerators.List(request)
-      if response.acceleratorOptions:
-        return response.acceleratorOptions
+      self.comments = response.comments
+      if response:
+        return response
       else:
         return []
     except exceptions.Error as e:

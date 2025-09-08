@@ -105,6 +105,7 @@ class Create(base.CreateCommand):
     large_capacity = args.large_capacity
     multiple_endpoints = args.multiple_endpoints
     throughput_mibps = None
+    block_devices = []
     if (
         self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
         or self._RELEASE_TRACK == base.ReleaseTrack.BETA
@@ -112,6 +113,7 @@ class Create(base.CreateCommand):
       if hasattr(args, 'throughput_mibps'):
         throughput_mibps = args.throughput_mibps
       cache_parameters = args.cache_parameters
+      block_devices = args.block_devices
     else:
       cache_parameters = None
     if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
@@ -148,6 +150,7 @@ class Create(base.CreateCommand):
         hybrid_replication_parameters=args.hybrid_replication_parameters,
         throughput_mibps=throughput_mibps,
         cache_parameters=cache_parameters,
+        block_devices=block_devices,
     )
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:

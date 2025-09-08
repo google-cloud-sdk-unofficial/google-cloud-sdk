@@ -308,7 +308,7 @@ class Diagnose(base.Command):
     parser.display_info.AddFormat("""
                                   table(
                                     name,
-                                    operation_results[]:format='table[box](name,payload_description,result)'
+                                    operation_results[]:format='table[box](name,payload_description:wrap,result:wrap)'
                                   )
                                   """)
 

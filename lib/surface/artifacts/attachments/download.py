@@ -49,6 +49,11 @@ class Download(base.Command):
         $ {command} my-attachment --destination=/path/to/destination/ \
             --chunk-size=8000
 
+    To download the attachment `my-attachment` using parallel multipart download with 4 threads:
+
+        $ {command} my-attachment --destination=/path/to/destination/ \
+            --parallelism=4
+
     For Docker-format repositories only: to download the attachment stored in the OCI version `projects/my-project/locations/us/repositories/my-repo/packages/my-package/versions/sha256:123` to `/path/to/destination/`:
 
         $ {command} --oci-version-name=projects/my-project/locations/us/repositories/my-repo/packages/my-package/versions/sha256:123 --destination=/path/to/destination/
@@ -83,6 +88,14 @@ class Download(base.Command):
         required=True,
         help='Path where you want to save the downloaded attachment files.',
     )
+    parser.add_argument(
+        '--parallelism',
+        metavar='PARALLELISM',
+        help=(
+            'Specifies the number of threads to use for downloading the'
+            ' attachment files in parallel.'
+        ),
+    )
 
   def Run(self, args):
     """Runs the attachment download command."""
@@ -103,6 +116,7 @@ class Download(base.Command):
   def download_files(self, args, files):
     default_chunk_size = 3 * 1024 * 1024
     chunk_size = args.chunk_size or default_chunk_size
+    parallelism = args.parallelism or 1
     for file in files:
       # Extract just the file id.
       # ...files/sha256:123 -> 123
@@ -117,6 +131,7 @@ class Download(base.Command):
           file_name,
           False,
           int(chunk_size),
+          parallelism=int(parallelism),
       )
       log.status.Print(
           'Successfully downloaded the file to {}'.format(args.destination)

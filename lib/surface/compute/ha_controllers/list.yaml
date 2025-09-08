@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: List Compute Engine HA controllers.
+    description: |
+      List Compute Engine HA controllers in a given region.
+    examples: |
+      The following command lists all HA controllers in region `us-central1`:
+
+        $ {command} --region=us-central1
+
+  request:
+    api_version: alpha
+    collection: compute.haControllers
+    method: list
+
+  arguments:
+    resource:
+      help_text: The region of the HA controllers to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:region
+
+  output:
+    format: |
+      table(
+        name,
+        region.basename(),
+        instanceName,
+        failoverInitiation,
+        secondaryZoneCapacity,
+        creationTimestamp
+      )

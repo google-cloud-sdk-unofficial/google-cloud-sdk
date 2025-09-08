@@ -636,6 +636,10 @@ def AttrValue(args, flagname, flag_defaults):
   return getattr(args, flagname, DefaultAttribute(flagname, flag_defaults))
 
 
+# Flags for "clusters create" should also be added to "clusters create-auto"
+# Unless there is a good reason to exclude them because features should support
+# both GKE Standard and Autopilot.
+# LINT.IfChange(flags_to_add)
 flags_to_add = {
     GA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, False, True),
@@ -1219,6 +1223,7 @@ flags_to_add = {
         'networkTier': flags.AddNetworkTierFlag,
     },
 }
+# LINT.ThenChange(create_auto.py:auto_flags)
 
 
 def AddFlags(channel, parser, flag_defaults, allowlist=None):

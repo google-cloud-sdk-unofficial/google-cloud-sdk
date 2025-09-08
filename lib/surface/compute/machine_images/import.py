@@ -124,6 +124,18 @@ class Import(base.CreateCommand):
         operation='Import',
         resource='machine image')
 
+    parser.add_argument(
+        '--cmd-deprecated',
+        action='store_true',
+        required=True,
+        help="""
+        The command you're using is deprecated and will be removed by December 31,
+        2025. We recommend using `gcloud compute migration image-imports` instead.
+        See our official documentation for more information.
+        https://cloud.google.com/migrate/virtual-machines/docs/5.0/migrate/image_import.
+        """,
+    )
+
   @classmethod
   def _GetComputeApiHolder(cls, no_http=False):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)

@@ -23,6 +23,10 @@ from googlecloudsdk.command_lib.container import flags
 from surface.container.clusters import create
 
 # Select which flags are auto flags
+# Arguments for "clusters create-auto" should also be added to "clusters create"
+# Unless there is a good reason to exclude them because features should support
+# both GKE Standard and Autopilot.
+# LINT.IfChange(auto_flags)
 auto_flags = [
     'args',
     'clusterversion',
@@ -69,6 +73,7 @@ auto_flags = [
     'enableK8sCertsViaDns',
     'membershipType',
 ]
+# LINT.ThenChange()
 
 # Change default flag values in create-auto
 flag_overrides = {

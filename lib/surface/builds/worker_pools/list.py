@@ -95,6 +95,7 @@ class List(base.ListCommand):
     """
 
     wp_region = args.region
+    wp_page_size = args.page_size
     if not wp_region:
       wp_region = properties.VALUES.builds.region.GetOrFail()
     parent = properties.VALUES.core.project.Get(required=True)
@@ -105,7 +106,9 @@ class List(base.ListCommand):
         projectsId=parent,
         locationsId=wp_region)
 
-    return _ListWorkerPoolFirstGen(parent_resource, self.ReleaseTrack())
+    return _ListWorkerPoolFirstGen(
+        parent_resource, wp_page_size, self.ReleaseTrack()
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -149,6 +152,7 @@ class ListBeta(List):
     """
 
     wp_region = args.region
+    wp_page_size = args.page_size
     if not wp_region:
       wp_region = properties.VALUES.builds.region.GetOrFail()
     parent = properties.VALUES.core.project.Get(required=True)
@@ -161,7 +165,9 @@ class ListBeta(List):
 
     if args.generation == 1:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolURI)
-      return _ListWorkerPoolFirstGen(parent_resource, self.ReleaseTrack())
+      return _ListWorkerPoolFirstGen(
+          parent_resource, wp_page_size, self.ReleaseTrack()
+      )
     if args.generation == 2:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolSecondGenURI)
       return _ListWorkerPoolSecondGen(parent_resource)
@@ -213,6 +219,7 @@ class ListAlpha(List):
     """
 
     wp_region = args.region
+    wp_page_size = args.page_size
     if not wp_region:
       wp_region = properties.VALUES.builds.region.GetOrFail()
 
@@ -222,11 +229,14 @@ class ListAlpha(List):
     parent_resource = resources.REGISTRY.Create(
         collection='cloudbuild.projects.locations',
         projectsId=parent,
-        locationsId=wp_region)
+        locationsId=wp_region,
+    )
 
     if args.generation == 1:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolURI)
-      return _ListWorkerPoolFirstGen(parent_resource, self.ReleaseTrack())
+      return _ListWorkerPoolFirstGen(
+          parent_resource, wp_page_size, self.ReleaseTrack()
+      )
     if args.generation == 2:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolSecondGenURI)
       return _ListWorkerPoolSecondGen(parent_resource)
@@ -257,11 +267,12 @@ def _ListWorkerPoolSecondGen(parent_resource):
   return wp_list
 
 
-def _ListWorkerPoolFirstGen(parent_resource, release_track):
+def _ListWorkerPoolFirstGen(parent_resource, page_size, release_track):
   """List Worker Pool First Generation.
 
   Args:
     parent_resource: The parent resource for Worker Pool First Generation.
+    page_size: The number of elements to return in each page.
     release_track: The desired value of the enum
       googlecloudsdk.calliope.base.ReleaseTrack.
 
@@ -274,6 +285,8 @@ def _ListWorkerPoolFirstGen(parent_resource, release_track):
   # Send the List request
   wp_list = client.projects_locations_workerPools.List(
       messages.CloudbuildProjectsLocationsWorkerPoolsListRequest(
-          parent=parent_resource.RelativeName())).workerPools
+          parent=parent_resource.RelativeName(), pageSize=page_size
+      )
+  ).workerPools
 
   return wp_list

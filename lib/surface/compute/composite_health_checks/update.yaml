@@ -1,0 +1,53 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Update a composite health check."
+    description: "Update a composite health check."
+    examples: |
+      The following command updates an existing composite health check:
+
+        $ {command} <COMPOSITE_HEALTH_CHECK_NAME> \
+          --region=<REGION> \
+          --health-destination=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/forwardingRules/my-new-fr
+
+  request:
+    ALPHA:
+      api_version: alpha
+    collection: compute.regionCompositeHealthChecks
+    method: patch
+
+  async:
+    collection: compute.regionOperations
+    response_name_field: selfLink
+    state:
+      field: status
+      success_values: ['DONE']
+
+  arguments:
+    resource:
+      help_text: The name of the composite health check you want to update.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:composite_health_check
+
+    params:
+    - group:
+        mutex: false
+        required: true
+        params:
+        - arg_name: description
+          api_field: compositeHealthCheckResource.description
+          help_text: |
+            A textual description of this resource.
+
+        - arg_name: health-sources
+          api_field: compositeHealthCheckResource.healthSources
+          help_text: |
+            URLs to the HealthSource resources whose results are AND'ed. I.e. the aggregated result is
+            HEALTHY only if all sources are HEALTHY. Must have at least 1. Must not have more than 10.
+            Must be regional and in the same region as the CompositeHealthCheck. Can be mutated.
+
+        - arg_name: health-destination
+          api_field: compositeHealthCheckResource.healthDestination
+          help_text: |
+            URL to the destination resource. Must be set. Must be a ForwardingRule. The ForwardingRule
+            must have load balancing scheme INTERNAL or INTERNAL_MANAGED and must be regional and in the
+            same region as the CompositeHealthCheck (cross-region deployment for INTERNAL_MANAGED is not
+            supported). Can be mutated.

@@ -145,7 +145,7 @@ def AddInstanceSettingsArgs(parser):
   )
   flags.AddEnablePointInTimeRecovery(parser)
   flags.AddNetwork(parser)
-  flags.AddClearNetwork(parser, hidden=True)
+  flags.AddClearNetwork(parser)
   flags.AddSqlServerAudit(parser)
   flags.AddDeletionProtection(parser)
   flags.AddSqlServerTimeZone(parser)

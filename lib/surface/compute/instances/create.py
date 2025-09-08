@@ -34,7 +34,6 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import exceptions as compute_exceptions
 from googlecloudsdk.command_lib.compute import flags
-from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scopes
 from googlecloudsdk.command_lib.compute import secure_tags_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
@@ -583,21 +582,10 @@ class Create(base.CreateCommand):
       if self._support_secure_tag and args.secure_tags:
         instance.secureTags = secure_tags_utils.GetSecureTags(args.secure_tags)
 
-      if args.resource_manager_tags:
-        ret_resource_manager_tags = (
-            resource_manager_tags_utils.GetResourceManagerTags(
-                args.resource_manager_tags
-            )
-        )
-        if ret_resource_manager_tags is not None:
-          params = compute_client.messages.InstanceParams
-          instance.params = params(
-              resourceManagerTags=params.ResourceManagerTagsValue(
-                  additionalProperties=[
-                      params.ResourceManagerTagsValue.AdditionalProperty(
-                          key=key, value=value) for key, value in sorted(
-                              six.iteritems(ret_resource_manager_tags))
-                  ]))
+      if args.resource_manager_tags or (
+          args.IsKnownAndSpecified('request_valid_for_duration')
+      ):
+        instance.params = instance_utils.CreateParams(args, compute_client)
 
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
@@ -1037,6 +1025,7 @@ class CreateAlpha(CreateBeta):
         support_flex_start=True,
     )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
+    instances_flags.AddRequestValidForDurationArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

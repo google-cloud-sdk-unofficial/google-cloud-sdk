@@ -123,6 +123,30 @@ class DisableAlpha(base.SilentCommand):
     organization = (
         args.organization if args.IsSpecified('organization') else None
     )
+
+    bypass_api_usage_check = args.force
+
+    # Default behaviour without any flags.
+    # The operation will be blocked if there are
+    # any enabled dependent services.
+    skip_dependency_check = False
+    disable_dependency_services = False
+
+    # All dependent services will be disabled.
+    if args.IsSpecified('force') or args.IsSpecified(
+        'disable_dependency_services'
+    ):
+      disable_dependency_services = True
+
+    # API usage check of the service to be disabled will be bypassed.
+    if args.IsSpecified('bypass_api_usage_check'):
+      bypass_api_usage_check = True
+
+    # All dependent services will remain enabled.
+    if args.IsSpecified('bypass_dependency_service_check'):
+      skip_dependency_check = True
+
+    service_names = []
     for service_name in args.service:
       service_name = arg_parsers.GetServiceNameFromArg(service_name)
 
@@ -135,53 +159,34 @@ class DisableAlpha(base.SilentCommand):
         )
         if not do_disable:
           continue
+      service_names.append(service_name)
 
-      bypass_api_usage_check = args.force
+    if not service_names:
+      return
 
-      # Default behaviour without any flags.
-      # The operation will be blocked if there are
-      # any enabled dependent services.
-      skip_dependency_check = False
-      disable_dependency_services = False
+    op = serviceusage.RemoveEnableRule(
+        project,
+        service_names,
+        force=bypass_api_usage_check,
+        folder=folder,
+        organization=organization,
+        validate_only=args.validate_only,
+        skip_dependency_check=skip_dependency_check,
+        disable_dependency_services=disable_dependency_services,
+    )
 
-      # All dependent services will be disabled.
-      if args.IsSpecified('force') or args.IsSpecified(
-          'disable_dependency_services'
-      ):
-        disable_dependency_services = True
-
-      # API usage check of the service to be disabled will be bypassed.
-      if args.IsSpecified('bypass_api_usage_check'):
-        bypass_api_usage_check = True
-
-      # All dependent services will remain enabled.
-      if args.IsSpecified('bypass_dependency_service_check'):
-        skip_dependency_check = True
-
-      op = serviceusage.RemoveEnableRule(
-          project,
-          service_name,
-          force=bypass_api_usage_check,
-          folder=folder,
-          organization=organization,
-          validate_only=args.validate_only,
-          skip_dependency_check=skip_dependency_check,
-          disable_dependency_services=disable_dependency_services,
+    if args.async_:
+      cmd = OP_WAIT_CMD.format(op.name)
+      log.status.Print(
+          'Asynchronous operation is in progress... Use the following'
+          f' command to wait for its completion:\n {cmd}'
       )
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
 
-      if args.async_:
-        cmd = OP_WAIT_CMD.format(op.name)
-        log.status.Print(
-            'Asynchronous operation is in progress... Use the following'
-            f' command to wait for its completion:\n {cmd}'
-        )
-        continue
-      op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-
-      if args.validate_only:
-        services_util.PrintOperation(op)
-      else:
-        services_util.PrintOperationWithResponse(op)
+    if args.validate_only:
+      services_util.PrintOperation(op)
+    else:
+      services_util.PrintOperationWithResponse(op)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
