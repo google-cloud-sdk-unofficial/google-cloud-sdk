@@ -146,7 +146,7 @@ class Create(base.CreateCommand):
       if storage_config.modelBucketUri is not None:
         request.storageConfig = storage_config
 
-      response = client.manifests.Generate(request)
+      response = client.optimizedManifest.Generate(request)
       return response
     except exceptions.Error as e:
       log.error(f"An error has occurred: {e}")

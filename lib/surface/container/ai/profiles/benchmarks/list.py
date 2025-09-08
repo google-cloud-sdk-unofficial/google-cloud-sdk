@@ -122,7 +122,7 @@ class List(commands.List):
           modelServerInfo=model_server_info,
           instanceType=args.instance_type,
       )
-      response = client.v1.benchmarkingData.Fetch(request)
+      response = client.benchmarkingData.Fetch(request)
       if not response.profile:
         return []
       else:

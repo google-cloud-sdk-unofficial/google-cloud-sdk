@@ -61,7 +61,7 @@ class List(commands.List):
       request = messages.GkerecommenderModelServerVersionsFetchRequest(
           model=args.model, modelServer=args.model_server
       )
-      response = client.modelServers_versions.Fetch(request)
+      response = client.modelServerVersions.Fetch(request)
       if response.modelServerVersions:
         return response.modelServerVersions
       else:
