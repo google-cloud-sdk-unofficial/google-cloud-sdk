@@ -88,6 +88,8 @@ class List(base.ListCommand):
         serialize_op = resource_projector.MakeSerializable(operation)
         self._cancellation_requested = serialize_op.get('metadata', {}).get(
             'cancellationRequested', '')
+    if result.nextPageToken:
+      yield result.nextPageToken
 
   def Epilog(self, resources_were_displayed):
     if self._cancellation_requested:

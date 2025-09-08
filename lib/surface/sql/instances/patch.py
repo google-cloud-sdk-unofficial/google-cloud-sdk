@@ -333,6 +333,12 @@ def AddBaseArgs(parser):
   flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
+  flags.AddFinalBackup(parser)
+  flags.AddFinalbackupRetentionDays(parser)
+  flags.AddEnableConnectionPooling(parser)
+  connection_pool_flags_group = parser.add_mutually_exclusive_group()
+  flags.AddConnectionPoolFlags(connection_pool_flags_group)
+  flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
 
 
 def AddBetaArgs(parser):
@@ -344,12 +350,6 @@ def AddBetaArgs(parser):
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
-  flags.AddEnableConnectionPooling(parser)
-  connection_pool_flags_group = parser.add_mutually_exclusive_group()
-  flags.AddConnectionPoolFlags(connection_pool_flags_group)
-  flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
-  flags.AddFinalBackup(parser)
-  flags.AddFinalbackupRetentionDays(parser, hidden=True)
   flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddEnableAutoUpgrade(parser)

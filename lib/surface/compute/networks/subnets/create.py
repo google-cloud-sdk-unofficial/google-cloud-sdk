@@ -340,11 +340,15 @@ def _AddArgs(
   if include_resolve_subnet_mask:
     resolve_subnet_mask_choices = {
         'ARP_ALL_RANGES': """
-        All IP ranges assigned to VM NICs in this subnet
-        will respond to ARP
+        VMs connected to this subnet receive ARP responses for IPv4
+        addresses from any ranges of the subnet that are assigned to the VM's
+        NIC. The DHCP responses contain the netmask of the subnet, instead of
+        /32.
         """,
         'ARP_PRIMARY_RANGE': """
-        Primary IP range of VM NICs in this subnet will respond to ARP.
+        VMs connected to this subnet receive ARP responses only for IP
+        addresses in the primary IPv4 range of the subnet. DHCP responses
+        contain the netmask of the subnet, instead of /32.
         """,
     }
 
@@ -646,7 +650,7 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
-  _include_resolve_subnet_mask = False
+  _include_resolve_subnet_mask = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

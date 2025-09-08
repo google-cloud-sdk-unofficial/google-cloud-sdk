@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create destinations
     description: Create a destination
     examples: |-
       To create the destination, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The name of the Destination resource.
+        Identifier. The name of the `Destination` resource.
         Format:
         `projects/{project}/locations/{location}/multicloudDataTransferConfigs/{multicloud_data_transfer_config}/destinations/{destination}`.
       is_positional: true
@@ -51,53 +50,53 @@
       required: false
       repeated: false
       help_text: |-
-        The etag is computed by the server, and may be sent on update and
-        delete requests to ensure the client has an up-to-date value before
+        The etag is computed by the server, and might be sent with update and
+        delete requests so that the client has an up-to-date value before
         proceeding.
     - arg_name: description
       api_field: googleCloudNetworkconnectivityV1betaDestination.description
       required: false
       repeated: false
       help_text: |-
-        An optional field to provide a description of this resource.
+        A description of this resource.
     - arg_name: ip-prefix
       api_field: googleCloudNetworkconnectivityV1betaDestination.ipPrefix
       required: true
       repeated: false
       help_text: |-
-        Remote IP Prefix in the remote CSP, where the customer's workload is
-        located
+        The IP prefix that represents your workload on another CSP.
     - arg_name: endpoints
       api_field: googleCloudNetworkconnectivityV1betaDestination.endpoints
       required: true
       repeated: true
       help_text: |-
-        The list of Endpoints configured for the IP Prefix.
+        The list of `DestinationEndpoint` resources configured for the IP prefix.
       spec:
       - api_field: asn
         help_text: |-
-          The ASN of the remote IP Prefix.
+          The ASN of the remote IP prefix.
       - api_field: csp
         help_text: |-
-          The name of the CSP of the remote IP Prefix.
+          The CSP of the remote IP prefix.
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
+        A request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server can ignore
+        the request if it has already been completed. The server waits
+        for at least 60 minutes since the first request.
 
         For example, consider a situation where you make an initial request and
         the request times out. If you make the request again with the same request
         ID, the server can check if original operation with the same request ID
-        was received, and if so, will ignore the second request. This prevents
-        clients from accidentally creating duplicate Destinations.
+        was received, and if so, can ignore the second request. This prevents
+        clients from accidentally creating duplicate `Destination`
+        resources.
 
-        The request ID must be a valid UUID with the exception that zero UUID is
-        not supported (00000000-0000-0000-0000-000000000000).
+        The request ID must be a valid UUID with the exception that zero UUID
+        (00000000-0000-0000-0000-000000000000) isn't supported.
   request:
     api_version: v1beta
     collection:

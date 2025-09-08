@@ -99,6 +99,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
+    flags.AddAutoscaledRolloutPolicyFlag(upgrade_settings_group)
     flags.AddNodePoolSoakDurationFlag(
         upgrade_settings_group, for_node_pool=True)
 
@@ -165,6 +166,7 @@ class Update(base.UpdateCommand):
         enable_surge_upgrade=args.enable_surge_upgrade,
         node_pool_soak_duration=args.node_pool_soak_duration,
         standard_rollout_policy=args.standard_rollout_policy,
+        autoscaled_rollout_policy=args.autoscaled_rollout_policy,
         enable_private_nodes=args.enable_private_nodes,
         enable_fast_socket=args.enable_fast_socket,
         logging_variant=args.logging_variant,
@@ -288,8 +290,7 @@ class UpdateBeta(Update):
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
-    flags.AddAutoscaleRolloutPolicyFlag(
-        upgrade_settings_group, for_node_pool=True)
+    flags.AddAutoscaledRolloutPolicyFlag(upgrade_settings_group)
     flags.AddNodePoolSoakDurationFlag(
         upgrade_settings_group, for_node_pool=True)
 
@@ -419,8 +420,7 @@ class UpdateAlpha(Update):
     flags.AddEnableBlueGreenUpgradeFlag(upgrade_settings_group)
     flags.AddStandardRolloutPolicyFlag(
         upgrade_settings_group, for_node_pool=True)
-    flags.AddAutoscaleRolloutPolicyFlag(
-        upgrade_settings_group, for_node_pool=True)
+    flags.AddAutoscaledRolloutPolicyFlag(upgrade_settings_group)
     flags.AddNodePoolSoakDurationFlag(
         upgrade_settings_group, for_node_pool=True)
 

@@ -126,6 +126,7 @@ class UpdateBeta(Update):
   @classmethod
   def Args(cls, parser):
     super(UpdateBeta, UpdateBeta).Args(parser)
+    flags.AddMaintenanceVersion(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, cluster_ref, args):
     return cluster_helper.ConstructPatchRequestFromArgsBeta(

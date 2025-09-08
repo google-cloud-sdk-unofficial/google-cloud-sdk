@@ -92,8 +92,9 @@ class List(base.ListCommand):
 
     # Aggregated global NFPs and RNFPs for all regions defined in project
     request = messages.ComputeNetworkFirewallPoliciesAggregatedListRequest(
-        project=project,
-        returnPartialSuccess=True)
+        project=project)
+    if hasattr(request, 'returnPartialSuccess'):
+      request.returnPartialSuccess = True
 
     firewall_policies, next_page_token = _GetListPage(
         client, request)

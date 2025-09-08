@@ -27,6 +27,7 @@
     - googlecloudsdk.command_lib.edge_cloud.container.kms:UpdateKmsKey
     - googlecloudsdk.command_lib.edge_cloud.container.kms:UseGoogleManagedZoneKey
     - googlecloudsdk.command_lib.edge_cloud.container.kms:UpdateZoneKmsKey
+    - googlecloudsdk.command_lib.edge_cloud.container.robin:HandleEnableRobinCNSUpdate
 
   arguments:
     resource:
@@ -147,6 +148,17 @@
       repeated: false
       help_text: |
         If set, use the specified default container runtime class for the cluster.
+    - arg_name: enable-robin-cns
+      release_tracks: [ALPHA]
+      hidden: true
+      action: store_true
+      help_text: |
+        If set, Robin CNS will be enabled on the cluster.
+
+        WARNING:
+        Enabling Robin CNS is irreversible. Once enabled, it cannot be disabled.
+        Enabling Robin CNS will take over all unused local Persistent Volumes (PVs)
+        in the cluster. Any data on these PVs will be permanently lost.
     - arg_name: enable-cluster-isolation
       release_tracks: [ALPHA]
       repeated: false

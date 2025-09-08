@@ -69,8 +69,9 @@ class List(base.ListCommand):
     args.filter, filter_expr = filter_rewrite.Rewriter().Rewrite(
         args.filter, defaults=defaults)
     request = messages.ComputeInterconnectAttachmentsAggregatedListRequest(
-        project=project, filter=filter_expr,
-        returnPartialSuccess=True)
+        project=project, filter=filter_expr)
+    if hasattr(request, 'returnPartialSuccess'):
+      request.returnPartialSuccess = True
 
     # TODO(b/34871930): Write and use helper for handling listing.
     interconnect_attachments_lists, next_page_token = self._GetListPage(

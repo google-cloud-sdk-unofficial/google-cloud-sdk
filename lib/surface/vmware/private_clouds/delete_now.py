@@ -24,13 +24,11 @@ from googlecloudsdk.command_lib.vmware import flags
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
-    'DESCRIPTION':
-        """
+    'DESCRIPTION': """
           Permanently delete a private cloud that is currently in soft deletion.
 
         """,
-    'EXAMPLES':
-        """
+    'EXAMPLES': """
           To permanently delete a private cloud called `my-private-cloud` currently in soft-deleted state, run:
 
 
@@ -46,7 +44,6 @@ DETAILED_HELP = {
 }
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DeleteNow(base.DeleteCommand):
@@ -73,5 +70,6 @@ class DeleteNow(base.DeleteCommand):
     message_string = 'waiting for private cloud [{}] to be permanently deleted'
     return client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),
-        message=message_string.format(
-            privatecloud.RelativeName()), has_result=False)
+        message=message_string.format(privatecloud.RelativeName()),
+        has_result=False,
+    )

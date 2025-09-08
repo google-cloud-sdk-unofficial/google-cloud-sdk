@@ -141,7 +141,6 @@ class Daemon(base.Command):
       os.environ['CLOUDSDK_CORE_VERBOSITY'] = 'error'
       os.environ['CLOUDSDK_METRICS_ENVIRONMENT'] = 'gaas'
       os.environ['CLOUDSDK_CORE_USER_OUTPUT_ENABLED'] = '0'
-      os.environ['CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS'] = '1'
 
       precomputed_cli = gcloud_main.CreateCLI([])
 

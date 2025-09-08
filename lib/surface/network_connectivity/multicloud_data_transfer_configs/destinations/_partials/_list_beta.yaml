@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List destinations
     description: List destinations
     examples: |-
       To list all destinations, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        The parent resource's name
+        The name of the parent resource.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:projects_locations_multicloud_data_transfer_configs
@@ -40,7 +39,7 @@
       required: false
       type: bool
       help_text: |-
-        If true, allow partial responses for multi-regional Aggregated List
+        If `true`, allow partial responses for multi-regional aggregated list
         requests.
       default: null
   request:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@
   arguments:
     params:
     - help_text: |-
-        The name of the schema to delete, in the format projects/{project}/locations/{location}/services/{service}/schemas/{schema}.
+        The name of the schema to delete, in the format: `projects/{project}/locations/{location}/services/{service}/schemas/{schema}`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service_schema
+      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:projects_locations_services_schemas
       required: true
     - arg_name: force
       api_field: force
@@ -55,7 +55,7 @@
       api_field: requestId
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         An optional request ID to identify requests. Specify a unique request ID
         so that if you must retry your request, the server will know to ignore
         the request if it has already been completed. The server will guarantee

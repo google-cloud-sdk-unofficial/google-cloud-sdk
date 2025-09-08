@@ -19,7 +19,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+)
 @base.DefaultUniverseOnly
 class MulticastGroupConsumerActivations(base.Group):
   """Manage Network Services MulticastGroupConsumerActivations."""

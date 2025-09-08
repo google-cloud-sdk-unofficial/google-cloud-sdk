@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List multicloudDataTransferSupportedServices
     description: List multicloudDataTransferSupportedServices
     examples: |-
       To list all multicloudDataTransferSupportedServices, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        The parent resource's name
+        The name of the parent resource.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:projects_locations

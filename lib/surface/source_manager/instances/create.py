@@ -72,6 +72,9 @@ class Create(base.CreateCommand):
     enable_workforce_identity_federation = (
         args.enable_workforce_identity_federation
     )
+    psc_allowed_projects = []
+    if args.IsSpecified('psc_allowed_projects'):
+      psc_allowed_projects = args.psc_allowed_projects
 
     # Get a long-running operation for this creation
     client = instances.InstancesClient()
@@ -84,6 +87,7 @@ class Create(base.CreateCommand):
           is_private=is_private,
           ca_pool=ca_pool,
           enable_workforce_identity_federation=enable_workforce_identity_federation,
+          psc_allowed_projects=psc_allowed_projects,
       )
     except exceptions.EnableServiceException:
       # Display a message indicating the special invitation only status of SSM

@@ -47,7 +47,6 @@ class Describe(base.DescribeCommand):
   @staticmethod
   def Args(parser):
     gca_args.AddInvestigationResourceArg(parser, verb="to describe")
-    parser.display_info.AddFormat("value(investigation_markdown_short())")
     parser.add_argument(
         "--detail",
         required=False,
@@ -66,8 +65,11 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     # Only handle --detail flag if no format or --raw were specified.
-    if not args.IsSpecified("format") and not args.raw and args.detail:
-      args.format = "value(investigation_markdown_detailed())"
+    if not args.IsSpecified("format") and not args.raw:
+      if args.detail:
+        args.format = "value(investigation_markdown_detailed())"
+      else:
+        args.format = "value(investigation_markdown_short())"
 
     investigation_ref = args.CONCEPTS.investigation.Parse()
 

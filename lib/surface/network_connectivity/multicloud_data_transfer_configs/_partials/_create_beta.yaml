@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create multicloudDataTransferConfigs
     description: Create a multicloudDataTransferConfig
     examples: |-
       To create the multicloudDataTransferConfig, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        Identifier. The name of the MulticloudDataTransferConfig resource.
+        Identifier. The name of the `MulticloudDataTransferConfig` resource.
         Format:
         `projects/{project}/locations/{location}/multicloudDataTransferConfigs/{multicloud_data_transfer_config}`.
       is_positional: true
@@ -51,32 +50,32 @@
       required: false
       repeated: false
       help_text: |-
-        The etag is computed by the server, and may be sent on update and
-        delete requests to ensure the client has an up-to-date value before
+        The etag is computed by the server, and might be sent with update and
+        delete requests so that the client has an up-to-date value before
         proceeding.
     - arg_name: description
       api_field: googleCloudNetworkconnectivityV1betaMulticloudDataTransferConfig.description
       required: false
       repeated: false
       help_text: |-
-        An optional field to provide a description of this resource.
+        A description of this resource.
     - arg_name: services
       api_field: googleCloudNetworkconnectivityV1betaMulticloudDataTransferConfig.services
       required: false
       repeated: true
       help_text: |-
-        This map services to either their current or planned states. Service names
-        are keys, and the associated values describe the service's state. If a
-        state change is expected, the value will be the list of ADDING or DELETING
-        states depending on the actions taken.
+        Maps services to their current or planned states. Service names are keys,
+        and the associated values describe the state of the service. If a state
+        change is expected, the value is either `ADDING` or `DELETING`,
+        depending on the actions taken.
 
-        Example:
+        Sample output:
         "services": {
           "big-query": {
             "states": [
               {
+                "effectiveTime": "2024-12-12T08:00:00Z"
                 "state": "ADDING",
-                "effective_time": "2024-12-12T08:00:00Z"
               },
             ]
           },
@@ -97,19 +96,20 @@
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
+        A request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server can ignore
+        the request if it has already been completed. The server waits
+        for at least 60 minutes since the first request.
 
         For example, consider a situation where you make an initial request and
         the request times out. If you make the request again with the same request
         ID, the server can check if original operation with the same request ID
-        was received, and if so, will ignore the second request. This prevents
-        clients from accidentally creating duplicate MulticloudDataTransferConfigs.
+        was received, and if so, can ignore the second request. This prevents
+        clients from accidentally creating duplicate `MulticloudDataTransferConfig`
+        resources.
 
-        The request ID must be a valid UUID with the exception that zero UUID is
-        not supported (00000000-0000-0000-0000-000000000000).
+        The request ID must be a valid UUID with the exception that zero UUID
+        (00000000-0000-0000-0000-000000000000) isn't supported.
   request:
     api_version: v1beta
     collection:

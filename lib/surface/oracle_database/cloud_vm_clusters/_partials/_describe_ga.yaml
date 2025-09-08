@@ -24,7 +24,7 @@
     examples: |-
       To describe the cloudVmCluster, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

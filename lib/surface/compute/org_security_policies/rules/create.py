@@ -54,7 +54,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
     rule_flags.AddMatcher(parser, required=False)
-    rule_flags.AddPreview(parser, default=None)
+    rule_flags.AddPreview(parser)
     parser.add_argument(
         '--cloud-armor',
         action='store_true',
@@ -195,7 +195,7 @@ class CreateAlpha(Create):
     flags.AddDescription(parser)
     flags.AddOrganization(parser, required=False)
     rule_flags.AddMatcher(parser, required=False)
-    rule_flags.AddPreview(parser, default=None)
+    rule_flags.AddPreview(parser)
     parser.add_argument(
         '--cloud-armor',
         action='store_true',

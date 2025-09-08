@@ -783,9 +783,7 @@ flags_to_add = {
             flags.AddRuntimeVulnerabilityInsightFlag
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
-        'secretManagerConfig': lambda p: flags.AddSecretManagerEnableFlagGroup(
-            p, hidden=True
-        ),
+        'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag

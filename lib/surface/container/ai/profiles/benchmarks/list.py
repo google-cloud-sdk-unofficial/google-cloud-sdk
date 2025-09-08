@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Lists supported model servers for GKE Inference Quickstart."""
+"""Outputs benchmarking data for GKE Inference Quickstart."""
 
 from googlecloudsdk.api_lib.ai.recommender import util
 from googlecloudsdk.calliope import base
@@ -23,9 +23,9 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_printer
 
 _EXAMPLE = """
-To list all supported model servers for a model, run:
+To get benchmarking data for a given model and model server, run:
 
-$ {command} --model=deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+$ {command} --model=google/gemma-2-27b-it--model-server=vllm
 """
 
 
@@ -46,9 +46,7 @@ def get_decimal_cost(costs):
   """
   output_token_cost = "N/A"
   if costs and costs[0].costPerMillionOutputTokens:
-    output_token_cost = amount_to_decimal(
-        costs[0].costPerMillionOutputTokens
-    )
+    output_token_cost = amount_to_decimal(costs[0].costPerMillionOutputTokens)
   input_token_cost = "N/A"
   if costs and costs[0].costPerMillionInputTokens:
     input_token_cost = amount_to_decimal(costs[0].costPerMillionInputTokens)
@@ -58,10 +56,14 @@ def get_decimal_cost(costs):
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(commands.List):
-  """List supported model servers for a given model.
+  """List benchmarks for a given model and model server.
 
-  To get supported models, run `gcloud container ai profiles models
-  list`.
+  This command lists all benchmarking data for a given model and model server.
+  By default, the benchmarks are displayed in a CSV format.
+
+  For examples of visualizing the benchmarking data, see the accompanying Colab
+  notebook:
+  https://colab.research.google.com/github/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/ai-ml/notebooks/giq_visualizations.ipynb
   """
 
   @staticmethod
@@ -104,9 +106,7 @@ class List(commands.List):
         profiles_csv_printer.PROFILES_PRINTER_FORMAT,
         profiles_csv_printer.ProfileCSVPrinter,
     )
-    parser.display_info.AddFormat(
-        profiles_csv_printer.PROFILES_PRINTER_FORMAT
-    )
+    parser.display_info.AddFormat(profiles_csv_printer.PROFILES_PRINTER_FORMAT)
 
   def Run(self, args):
     client = util.GetClientInstance(base.ReleaseTrack.GA)

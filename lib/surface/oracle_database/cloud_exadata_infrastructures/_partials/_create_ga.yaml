@@ -50,7 +50,9 @@
       required: false
       repeated: false
       help_text: |-
-        Google Cloud Platform location where Oracle Exadata is hosted.
+        The GCP Oracle zone where Oracle Exadata Infrastructure is hosted.
+        Example: us-east4-b-r2.
+        If not specified, the system will pick a zone based on availability.
     - group:
         api_field: cloudExadataInfrastructure.properties
         required: false

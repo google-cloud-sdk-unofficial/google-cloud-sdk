@@ -19,6 +19,7 @@ import os
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.run import artifact_registry
+from googlecloudsdk.command_lib.run import compose_resource
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
@@ -59,6 +60,45 @@ class Up(base.BinaryBackedCommand):
   def Args(parser):
     Up.CommonArgs(parser)
 
+  def _ResourceAndTranslateRun(
+      self, command_executor, compose_file, repo, args
+  ):
+    """Handles the resource and translate run logic."""
+    resource_response = command_executor(
+        command='resource',
+        compose_file=compose_file,
+        debug=args.debug,
+        dry_run=args.dry_run,
+    )
+    if not resource_response.stdout:
+      raise exceptions.ConfigurationError(
+          'No resource config found in compose file.'
+      )
+    try:
+      config = compose_resource.ResourcesConfig.from_json(
+          resource_response.stdout[0]
+      )
+      log.debug('Successfully parsed resources config proto.')
+      log.debug(f'ResourcesConfig:\n{config}')
+      resources_config = config.handle_resources()
+      log.debug(f'Handled ResourcesConfig:\n{resources_config}')
+
+      # Serialize the handled config to JSON
+      resources_config_json = resources_config.to_json()
+      response = command_executor(
+          command='translate',
+          repo=repo,
+          compose_file=compose_file,
+          resources_config=resources_config_json,  # Pass the JSON string
+          debug=args.debug,
+          dry_run=args.dry_run,
+      )
+      return response
+    except Exception as e:
+      log.error(f'Failed to parse resources config: {e}')
+      log.error(f'Raw output: {resource_response.stdout}')
+      raise
+
   def Run(self, args):
     """Deploy a container from the source Compose file to Cloud Run."""
     region = flags.GetRegion(args, prompt=True)
@@ -84,13 +124,19 @@ class Up(base.BinaryBackedCommand):
       compose_file = args.compose_file
     else:
       compose_file = self._GetComposeFile()
-    response = command_executor(
-        command='up',
-        repo=repo,
-        compose_file=compose_file,
-        debug=args.debug,
-        dry_run=args.dry_run,
-    )
+
+    if args.dev:
+      response = self._ResourceAndTranslateRun(
+          command_executor, compose_file, repo, args
+      )
+    else:
+      response = command_executor(
+          command='up',
+          repo=repo,
+          compose_file=compose_file,
+          debug=args.debug,
+          dry_run=args.dry_run,
+      )
     return self._DefaultOperationResponseHandler(response)
 
   def _GenerateRepositoryName(self, project, region):
@@ -104,7 +150,7 @@ class Up(base.BinaryBackedCommand):
     """Set the region config."""
     if not properties.VALUES.run.region.Get():
       log.status.Print(
-          'Default region set to {region}.You can change the region with gcloud'
+          'Region set to {region}.You can change the region with gcloud'
           ' config set run/region {region}.\n'.format(region=region)
       )
       properties.VALUES.run.region.Set(region)

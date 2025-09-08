@@ -36,6 +36,10 @@ class Profiles(base.Group):
   with performance metrics, and detailed, ready-to-deploy profiles for
   compute, load balancing, and autoscaling. These profiles are provided
   as standard Kubernetes YAML manifests, which you can deploy or modify.
+
+  To visualize the benchmarking data that support these estimates, see the
+  accompanying Colab notebook:
+  https://colab.research.google.com/github/GoogleCloudPlatform/kubernetes-engine-samples/blob/main/ai-ml/notebooks/giq_visualizations.ipynb
   """
 
   category = base.SDK_TOOLS_CATEGORY

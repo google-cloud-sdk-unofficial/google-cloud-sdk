@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.functions.v1.list import command as command_v1
 from googlecloudsdk.command_lib.functions.v2.list import command as command_v2
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List Google Cloud Functions."""
@@ -86,11 +87,6 @@ class List(base.ListCommand):
 class ListBeta(List):
   """List Google Cloud Functions."""
 
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(ListBeta):
-  """List Google Cloud Functions."""
-
   @staticmethod
   def Args(parser):
     parser.add_argument(
@@ -106,7 +102,7 @@ class ListAlpha(ListBeta):
     )
     flags.AddV2Flag(parser)
 
-    parser.display_info.AddTransforms(transforms.GetTransformsAlpha())
+    parser.display_info.AddTransforms(transforms.GetTransformsBeta())
     parser.display_info.AddFormat("""
         table(
           name.basename():sort=1,
@@ -150,3 +146,8 @@ class ListAlpha(ListBeta):
             list_gen1_generator_v1, list_gen1_generator_v2
         ),
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List Google Cloud Functions."""

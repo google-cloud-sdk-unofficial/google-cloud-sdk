@@ -1,4 +1,4 @@
-release_tracks: [ALPHA, BETA]
+release_tracks: [GA, ALPHA, BETA]
 help_text:
   brief: |
     Update a multicast group consumer activation.
@@ -29,6 +29,8 @@ update:
 async:
   collection: networkservices.projects.locations.operations
 request: &request
+  GA:
+    api_version: v1
   ALPHA:
     api_version: v1alpha1
   BETA:

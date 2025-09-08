@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,22 +33,18 @@
         --datasources='postgresql={"cloudSql":{"instance":"projects/my-project/locations/my-location/instances/my-instance"},"database":"my-db","schemaValidation":"STRICT"}'
   arguments:
     params:
-    - help_text: |
-        Identifier. The relative resource name of the schema, in the format:
-        ```
-        projects/{project}/locations/{location}/services/{service}/schemas/{schema}
-        ```
-        Right now, the only supported schema is "main".
+    - help_text: |-
+        Identifier. The relative resource name of the schema, in the format: `projects/{project}/locations/{location}/services/{service}/schemas/{schema}`. Right now, the only supported schema is "main".
       is_positional: true
       is_primary_resource: true
       request_id_field: schemaId
-      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service_schema
+      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:projects_locations_services_schemas
       required: true
     - arg_name: labels
       api_field: schema.labels
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Labels as key value pairs.
       spec:
       - api_field: key
@@ -57,12 +53,13 @@
       api_field: schema.annotations
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Stores small amounts of arbitrary data.
       spec:
       - api_field: key
       - api_field: value
     - group:
+        api_field: schema.primaryDatasource
         required: true
         help_text: |-
           A data source that backs Firebase Data Connect services.
@@ -73,10 +70,60 @@
               Arguments for the configuration.
             params:
             - group:
+                api_field: schema.primaryDatasource.postgresql
                 required: false
                 help_text: |-
                   Settings for PostgreSQL data source.
                 params:
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the before deploy.
+                    params:
+                    - arg_name: postgresql-schema-validation
+                      api_field: schema.primaryDatasource.postgresql.schemaValidation
+                      required: false
+                      help_text: |-
+                        Configure how much Postgresql schema validation to perform.
+                      choices:
+                      - arg_value: none
+                        enum_value: NONE
+                        help_text: |-
+                          Skip no SQL schema validation. Use it with extreme caution.
+                          CreateSchema or UpdateSchema will succeed even if SQL database is
+                          unavailable or SQL schema is incompatible.
+                          Generated SQL may fail at execution time.
+                      - arg_value: strict
+                        enum_value: STRICT
+                        help_text: |-
+                          Connect to the SQL database and validate that the SQL DDL matches the
+                          schema exactly. Surface any discrepancies as `FAILED_PRECONDITION` with an
+                          `IncompatibleSqlSchemaError` error detail.
+                      - arg_value: compatible
+                        enum_value: COMPATIBLE
+                        help_text: |-
+                          Connect to the SQL database and validate that the SQL DDL has all the SQL
+                          resources used in the given Firebase Data Connect Schema. Surface any
+                          missing resources as `FAILED_PRECONDITION` with an
+                          `IncompatibleSqlSchemaError` error detail. Succeed even if there are
+                          unknown tables and columns.
+                    - arg_name: postgresql-schema-migration
+                      api_field: schema.primaryDatasource.postgresql.schemaMigration
+                      required: false
+                      help_text: |-
+                        Configure how to perform Postgresql schema migration.
+                      choices:
+                      - arg_value: migrate-compatible
+                        enum_value: MIGRATE_COMPATIBLE
+                        help_text: |-
+                          Connect to the SQL database and identify any missing SQL resources used
+                          in the given Firebase Data Connect Schema.
+                          Automatically create necessary SQL resources (SQL table, column, etc)
+                          before deploying the schema.
+                          During migration steps, the SQL Schema must comply with the previous
+                          before_deploy setting in case the migration is interrupted.
+                          Therefore, the previous before_deploy setting must not be
+                          `schema_validation=STRICT`.
                 - group:
                     mutex: true
                     help_text: |-
@@ -92,6 +139,7 @@
                         If set, don't allow `database` and `schema_validation` to be configured.
                       default: null
                     - group:
+                        api_field: schema.primaryDatasource.postgresql.cloudSql
                         required: false
                         help_text: |-
                           Settings for CloudSQL instance configuration.
@@ -101,41 +149,13 @@
                           required: true
                           repeated: false
                           help_text: |-
-                            The name of the Cloud SQL instance, in the format projects/{project}/locations/{location}/instances/{instance}.
+                            Name of the CloudSQL instance, in the format: `projects/{project}/locations/{location}/instances/{instance}`.
                 - arg_name: postgresql-database
                   api_field: schema.primaryDatasource.postgresql.database
                   required: true
                   repeated: false
                   help_text: |-
                     Name of the PostgreSQL database.
-                - arg_name: postgresql-schema-validation
-                  api_field: schema.primaryDatasource.postgresql.schemaValidation
-                  required: false
-                  help_text: |-
-                    Configure how much Postgresql schema validation to perform.
-                    Default to `STRICT` if not specified.
-                  choices:
-                  - arg_value: none
-                    enum_value: NONE
-                    help_text: |-
-                      Skip no SQL schema validation. Use it with extreme caution.
-                      CreateSchema or UpdateSchema will succeed even if SQL database is
-                      unavailable or SQL schema is incompatible.
-                      Generated SQL may fail at execution time.
-                  - arg_value: strict
-                    enum_value: STRICT
-                    help_text: |-
-                      Connect to the SQL database and validate that the SQL DDL matches the
-                      schema exactly. Surface any discrepancies as `FAILED_PRECONDITION` with an
-                      `IncompatibleSqlSchemaError` error detail.
-                  - arg_value: compatible
-                    enum_value: COMPATIBLE
-                    help_text: |-
-                      Connect to the SQL database and validate that the SQL DDL has all the SQL
-                      resources used in the given Firebase Data Connect Schema. Surface any
-                      missing resources as `FAILED_PRECONDITION` with an
-                      `IncompatibleSqlSchemaError` error detail. Succeed even if there are
-                      unknown tables and columns.
     - arg_name: datasources
       api_field: schema.datasources
       required: true
@@ -148,27 +168,32 @@
         help_text: |-
           PostgreSQL configurations.
         spec:
-        - api_field: unlinked
+        - api_field: schemaValidation
           one_of_index: 0
+          help_text: |-
+            Configure how much Postgresql schema validation to perform.
+        - api_field: schemaMigration
+          one_of_index: 0
+          help_text: |-
+            Configure how to perform Postgresql schema migration.
+        - api_field: unlinked
+          one_of_index: 1
           help_text: |-
             No Postgres data source is linked.
             If set, don't allow `database` and `schema_validation` to be configured.
         - api_field: cloudSql
-          one_of_index: 0
+          one_of_index: 1
           help_text: |-
             Cloud SQL configurations.
           spec:
           - api_field: instance
             help_text: |-
-              The name of the Cloud SQL instance, in the format projects/{project}/locations/{location}/instances/{instance}.
+              Name of the CloudSQL instance, in the format: `projects/{project}/locations/{location}/instances/{instance}`.
         - api_field: database
           help_text: |-
             Name of the PostgreSQL database.
-        - api_field: schemaValidation
-          help_text: |-
-            Configure how much Postgresql schema validation to perform.
-            Default to `STRICT` if not specified.
     - group:
+        api_field: schema.source
         required: true
         help_text: |-
           Used to represent a set of source files.
@@ -194,13 +219,13 @@
       api_field: schema.displayName
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         Mutable human-readable name. 63 character limit.
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         An optional request ID to identify requests. Specify a unique request ID
         so that if you must retry your request, the server will know to ignore
         the request if it has already been completed. The server will guarantee

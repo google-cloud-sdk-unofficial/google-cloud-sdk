@@ -18,7 +18,7 @@ request:
 
 arguments:
   resource:
-    help_text: Identifies the cluster for deletion.
+    help_text: Identifies the connect cluster for deletion.
     spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:connect_cluster
 
 async:

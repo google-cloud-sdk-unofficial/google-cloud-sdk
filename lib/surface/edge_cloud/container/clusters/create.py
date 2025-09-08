@@ -155,3 +155,4 @@ class CreateAlpha(Create):
     container_flags.AddExternalLoadBalancerAddressPools(parser)
     container_flags.AddEnableClusterIsolation(parser)
     container_flags.AddEnableRemoteBackup(parser)
+    container_flags.AddEnableRobinCNS(parser)

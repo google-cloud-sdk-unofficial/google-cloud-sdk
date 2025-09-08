@@ -1,4 +1,4 @@
-release_tracks: [BETA, ALPHA]
+release_tracks: [GA, BETA, ALPHA]
 help_text:
   brief: |
     List multicast group consumer activations.
@@ -9,6 +9,8 @@ help_text:
 
       $ {command} --location=zone
 request: &request
+  GA:
+    api_version: v1
   ALPHA:
     api_version: v1alpha1
   BETA:
@@ -21,6 +23,11 @@ arguments:
 response:
   id_field: name
 output:
+  GA:
+    format: |
+     table(
+        name.basename():label=NAME, create_time, multicast_consumer_association, multicast_group_range_activation
+      )
   ALPHA:
     format: |
      table(

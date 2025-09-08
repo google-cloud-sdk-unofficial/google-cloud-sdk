@@ -31,7 +31,7 @@ async:
 
 arguments:
   resource:
-    help_text: Identifies the connector cluster for which the command runs.
+    help_text: Identifies the connect cluster for which the command runs.
     spec: !REF googlecloudsdk.command_lib.managed_kafka.resources:connect_cluster
   params:
   - group:

@@ -381,6 +381,92 @@ def RunProxyConnectCommand(args,
   proxy_process.kill()
 
 
+def RunProxyV2ConnectCommand(args, supports_database=False):
+  """Connects to a Cloud SQL instance through the Cloud SQL Proxy (v2).
+
+  Args:
+    args: argparse.Namespace, The arguments that this command was invoked with.
+    supports_database: Whether or not the `--database` flag needs to be
+      accounted for.
+
+  Returns:
+    If no exception is raised this method does not return. A new process is
+    started and the original one is killed.
+  Raises:
+    HttpException: An http error response was received while executing api
+        request.
+    CloudSqlProxyError: Cloud SQL Proxy (v2) could not be found.
+    SqlClientNotFoundError: A local SQL client could not be found.
+    ConnectionError: An error occurred while trying to connect to the instance.
+  """
+  client = api_util.SqlClient(api_util.API_VERSION_DEFAULT)
+  sql_client = client.sql_client
+  sql_messages = client.sql_messages
+
+  instance_ref = instances_command_util.GetInstanceRef(args, client)
+
+  instance_info = sql_client.instances.Get(
+      sql_messages.SqlInstancesGetRequest(
+          project=instance_ref.project, instance=instance_ref.instance
+      )
+  )
+
+  if not instances_api_util.IsInstanceV2(sql_messages, instance_info):
+    # The Cloud SQL Proxy does not support V1 instances.
+    return RunConnectCommand(args, supports_database)
+
+  # If the instance is V2, keep going with the proxy.
+  exe = files.FindExecutableOnPath('cloud-sql-proxy')
+  if not exe:
+    raise exceptions.CloudSqlProxyError(
+        "Cloud SQL Proxy (v2) couldn't be found in PATH. Either install "
+        'the component with `gcloud components install cloud-sql-proxy` or see '
+        'https://github.com/GoogleCloudPlatform/cloud-sql-proxy/'
+    )
+
+  # Check for the executable based on the db version.
+  db_type = instance_info.databaseVersion.name.split('_')[0]
+  exe_name = constants.DB_EXE.get(db_type, 'mysql')
+  exe = files.FindExecutableOnPath(exe_name)
+  if not exe:
+    raise exceptions.SqlClientNotFoundError(
+        '{0} client not found.  Please install a {1} client and make sure '
+        'it is in PATH to be able to connect to the database instance.'.format(
+            exe_name.title(), exe_name
+        )
+    )
+
+  # Start the Cloud SQL Proxy and wait for it to be ready to accept connections.
+  port = str(args.port)
+  proxy_process = instances_api_util.StartCloudSqlProxyV2(instance_info, port)
+  atexit.register(proxy_process.kill)
+
+  # Determine what database user to connect with.
+  database_user = constants.DEFAULT_SQL_USER[exe_name]
+  if args.user:
+    database_user = args.user
+
+  # We have everything we need, time to party!
+  flags = constants.EXE_FLAGS[exe_name]
+  sql_args = [exe_name]
+  if exe_name == 'mssql-cli':
+    # mssql-cli merges hostname and port into a single argument
+    hostname = 'tcp:127.0.0.1,{0}'.format(port)
+    sql_args.extend([flags['hostname'], hostname])
+  else:
+    sql_args.extend([flags['hostname'], '127.0.0.1', flags['port'], port])
+  sql_args.extend([flags['user'], database_user])
+  if 'password' in flags:
+    sql_args.append(flags['password'])
+
+  if supports_database:
+    sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
+
+  instances_command_util.ConnectToInstance(sql_args, database_user)
+  proxy_process.kill()
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Connect(base.Command):
   """Connects to a Cloud SQL instance."""
@@ -399,7 +485,8 @@ class Connect(base.Command):
     return RunConnectCommand(args, supports_database=True)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ConnectBeta(base.Command):
   """Connects to a Cloud SQL instance."""
 
@@ -416,3 +503,24 @@ class ConnectBeta(base.Command):
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
     return RunProxyConnectCommand(args, supports_database=True)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ConnectAlpha(base.Command):
+  """Connects to a Cloud SQL instance."""
+
+  detailed_help = DETAILED_ALPHA_BETA_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command."""
+    AddBaseArgs(parser)
+    AddBetaArgs(parser)
+    sql_flags.AddDatabase(
+        parser, 'The PostgreSQL or SQL Server database to connect to.'
+    )
+
+  def Run(self, args):
+    """Connects to a Cloud SQL instance."""
+    return RunProxyV2ConnectCommand(args, supports_database=True)

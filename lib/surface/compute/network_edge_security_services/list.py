@@ -71,7 +71,9 @@ class List(base.ListCommand):
         args.filter, defaults=defaults)
 
     request = messages.ComputeNetworkEdgeSecurityServicesAggregatedListRequest(
-        project=project, filter=filter_expr, returnPartialSuccess=True)
+        project=project, filter=filter_expr)
+    if hasattr(request, 'returnPartialSuccess'):
+      request.returnPartialSuccess = True
 
     # TODO(b/34871930): Write and use helper for handling listing.
     resource_lists, next_page_token = (

@@ -24,6 +24,7 @@ import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.compute import base_classes as compute_base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions as command_exceptions
 from googlecloudsdk.command_lib.app import flags
@@ -50,6 +51,7 @@ def _ArgsCommon(parser):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class SshGa(base.Command):
   """SSH into the VM of an App Engine Flexible instance."""
 
@@ -123,12 +125,6 @@ class SshGa(base.Command):
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
     keys.EnsureKeysExist(overwrite=False)
-    connection_details = ssh_common.PopulatePublicKey(api_client, service,
-                                                      version, instance,
-                                                      keys.GetPublicKey(),
-                                                      self.ReleaseTrack())
-    remote_command = containers.GetRemoteCommand(args.container, args.command)
-    tty = containers.GetTty(args.container, args.command)
 
     try:
       version_resource = api_client.GetVersionResource(service, version)
@@ -159,6 +155,51 @@ class SshGa(base.Command):
         version_resource,
         instance_resource,
     )
+    region = '-'.join(instance_resource.vmZoneName.split('-')[:-1])
+    user = ssh.GetDefaultSshUsername()
+    project = ssh_common.GetComputeProject(self.ReleaseTrack())
+    oslogin_state = ssh.GetOsloginState(
+        None,
+        project,
+        user,
+        keys.GetPublicKey().ToEntry(),
+        None,
+        self.ReleaseTrack(),
+        app_engine_params={
+            'appsId': project.name,
+            'servicesId': service,
+            'versionsId': version,
+            'instancesId': instance,
+            'serviceAccount': (
+                version_resource.serviceAccount
+                if version_resource.serviceAccount
+                else ''
+            ),
+            'region': region
+        },
+        messages=compute_base_classes.ComputeApiHolder(
+            self.ReleaseTrack()
+        ).client.messages,
+    )
+
+    cert_file = None
+    if oslogin_state.third_party_user or oslogin_state.require_certificates:
+      cert_file = ssh.CertFileFromAppEngineInstance(
+          project.name, service, version, instance
+      )
+
+    connection_details = ssh_common.PopulatePublicKey(
+        api_client,
+        service,
+        version,
+        instance,
+        keys.GetPublicKey(),
+        oslogin_state.user,
+        oslogin_state.oslogin_enabled,
+    )
+    remote_command = containers.GetRemoteCommand(args.container, args.command)
+    tty = containers.GetTty(args.container, args.command)
+
     try:
       filtered_firewall_rules = ssh_common.FilterFirewallRules(
           ssh_common.FetchFirewallRules()
@@ -173,6 +214,7 @@ class SshGa(base.Command):
     return ssh.SSHCommand(
         connection_details.remote,
         identity_file=keys.key_file,
+        cert_file=cert_file,
         tty=tty,
         remote_command=remote_command,
         options=connection_details.options,
@@ -180,6 +222,7 @@ class SshGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class SshBeta(SshGa):
   """SSH into the VM of an App Engine Flexible instance."""
 
@@ -230,12 +273,6 @@ class SshBeta(SshGa):
     env.RequireSSH()
     keys = ssh.Keys.FromFilename()
     keys.EnsureKeysExist(overwrite=False)
-    connection_details = ssh_common.PopulatePublicKey(api_client, service,
-                                                      version, instance,
-                                                      keys.GetPublicKey(),
-                                                      self.ReleaseTrack())
-    remote_command = containers.GetRemoteCommand(args.container, args.command)
-    tty = containers.GetTty(args.container, args.command)
 
     try:
       version_resource = api_client.GetVersionResource(service, version)
@@ -261,9 +298,55 @@ class SshBeta(SshGa):
                                                      self.ReleaseTrack(),
                                                      project, version_resource,
                                                      instance_resource)
+
+    region = '-'.join(instance_resource.vmZoneName.split('-')[:-1])
+    user = ssh.GetDefaultSshUsername()
+    project = ssh_common.GetComputeProject(self.ReleaseTrack())
+
+    oslogin_state = ssh.GetOsloginState(
+        None,
+        project,
+        user,
+        keys.GetPublicKey().ToEntry(),
+        None,
+        self.ReleaseTrack(),
+        app_engine_params={
+            'appsId': project.name,
+            'servicesId': service,
+            'versionsId': version,
+            'instancesId': instance,
+            'serviceAccount': (
+                version_resource.serviceAccount
+                if version_resource.serviceAccount
+                else ''
+            ),
+            'region': region
+        },
+        messages=compute_base_classes.ComputeApiHolder(
+            self.ReleaseTrack()
+        ).client.messages,
+    )
+    cert_file = None
+    if oslogin_state.third_party_user or oslogin_state.require_certificates:
+      cert_file = ssh.CertFileFromAppEngineInstance(
+          project.name, service, version, instance
+      )
+    connection_details = ssh_common.PopulatePublicKey(
+        api_client,
+        service,
+        version,
+        instance,
+        keys.GetPublicKey(),
+        oslogin_state.user,
+        oslogin_state.oslogin_enabled,
+    )
+    remote_command = containers.GetRemoteCommand(args.container, args.command)
+    tty = containers.GetTty(args.container, args.command)
+
     return ssh.SSHCommand(
         connection_details.remote,
         identity_file=keys.key_file,
+        cert_file=cert_file,
         tty=tty,
         remote_command=remote_command,
         options=connection_details.options,

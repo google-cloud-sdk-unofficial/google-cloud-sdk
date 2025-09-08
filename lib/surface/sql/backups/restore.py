@@ -175,7 +175,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddTags(parser, hidden=True)
   flags.AddRetainBackupsOnDelete(parser, hidden=True)
   flags.AddFinalBackup(parser)
-  flags.AddFinalbackupRetentionDays(parser, hidden=True)
+  flags.AddFinalbackupRetentionDays(parser)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):

@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete multicloudDataTransferConfigs
     description: Delete a multicloudDataTransferConfig
     examples: |-
       To delete the multicloudDataTransferConfig, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        The name of the MulticloudDataTransferConfig resource to delete.
+        The name of the `MulticloudDataTransferConfig` resource to delete.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:projects_locations_multicloud_data_transfer_configs
@@ -39,26 +38,27 @@
       required: false
       repeated: false
       help_text: |-
-        An optional request ID to identify requests. Specify a unique request ID
-        so that if you must retry your request, the server will know to ignore
-        the request if it has already been completed. The server will guarantee
-        that for at least 60 minutes since the first request.
+        A request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server can ignore
+        the request if it has already been completed. The server waits
+        for at least 60 minutes since the first request.
 
         For example, consider a situation where you make an initial request and
         the request times out. If you make the request again with the same request
         ID, the server can check if original operation with the same request ID
-        was received, and if so, will ignore the second request. This prevents
-        clients from accidentally creating duplicate MulticloudDataTransferConfigs.
+        was received, and if so, can ignore the second request. This prevents
+        clients from accidentally creating duplicate `MulticloudDataTransferConfig`
+        resources.
 
-        The request ID must be a valid UUID with the exception that zero UUID is
-        not supported (00000000-0000-0000-0000-000000000000).
+        The request ID must be a valid UUID with the exception that zero UUID
+        (00000000-0000-0000-0000-000000000000) isn't supported.
     - arg_name: etag
       api_field: etag
       required: false
       repeated: false
       help_text: |-
-        The etag is computed by the server, and may be sent on update and
-        delete requests to ensure the client has an up-to-date value before
+        The etag is computed by the server, and might be sent with update and
+        delete requests so that the client has an up-to-date value before
         proceeding.
   request:
     api_version: v1beta

@@ -27,9 +27,9 @@ def _MaybeAddOption(args, name, value):
 
 def _GetGoogleAuthFlagValue(argv):
   for arg in argv[1:]:
-    if re.fullmatch(r'--use_google_auth(=True)*', arg):
+    if re.fullmatch(r'--use_google_auth(=(T|t)rue)*', arg):
       return True
-    if re.fullmatch(r'(--nouse_google_auth|--use_google_auth=False)', arg):
+    if re.fullmatch(r'(--nouse_google_auth|--use_google_auth=(F|f)alse)', arg):
       return False
   return None
 

@@ -214,6 +214,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_surge_upgrade=args.enable_surge_upgrade,
       node_pool_soak_duration=args.node_pool_soak_duration,
       standard_rollout_policy=args.standard_rollout_policy,
+      autoscaled_rollout_policy=args.autoscaled_rollout_policy,
       enable_private_nodes=args.enable_private_nodes,
       enable_fast_socket=args.enable_fast_socket,
       logging_variant=args.logging_variant,
@@ -228,6 +229,7 @@ def ParseCreateNodePoolOptionsBase(args):
       enable_nested_virtualization=args.enable_nested_virtualization,
       boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
       boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
+      accelerator_network_profile=args.accelerator_network_profile,
   )
 
 
@@ -276,6 +278,7 @@ class Create(base.CreateCommand):
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
+    flags.AddAutoscaledRolloutPolicyFlag(parser)
     flags.AddStoragePoolsFlag(
         parser, for_node_pool=True, for_create=True)
     flags.AddNodePoolSoakDurationFlag(parser)
@@ -296,6 +299,7 @@ class Create(base.CreateCommand):
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddDataCacheCountFlag(parser, for_node_pool=True)
+    flags.AddAcceleratorNetworkProfileFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -423,7 +427,7 @@ class CreateBeta(Create):
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser)
-    flags.AddAutoscaleRolloutPolicyFlag(parser)
+    flags.AddAutoscaledRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
@@ -451,6 +455,7 @@ class CreateBeta(Create):
     flags.AddOpportunisticMaintenanceFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
+    flags.AddAcceleratorNetworkProfileFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -533,6 +538,7 @@ class CreateAlpha(Create):
     ops.enable_surge_upgrade = args.enable_surge_upgrade
     ops.node_pool_soak_duration = args.node_pool_soak_duration
     ops.standard_rollout_policy = args.standard_rollout_policy
+    ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.maintenance_interval = args.maintenance_interval
     ops.network_performance_config = args.network_performance_configs
     ops.enable_confidential_nodes = args.enable_confidential_nodes
@@ -549,7 +555,6 @@ class CreateAlpha(Create):
     ops.host_maintenance_interval = args.host_maintenance_interval
     ops.opportunistic_maintenance = args.opportunistic_maintenance
     ops.performance_monitoring_unit = args.performance_monitoring_unit
-    ops.autoscaled_rollout_policy = args.autoscaled_rollout_policy
     ops.ephemeral_storage = ephemeral_storage
     ops.secondary_boot_disks = args.secondary_boot_disk
     ops.storage_pools = args.storage_pools
@@ -597,6 +602,7 @@ class CreateAlpha(Create):
     flags.AddEnableSurgeUpgradeFlag(parser)
     flags.AddEnableBlueGreenUpgradeFlag(parser)
     flags.AddStandardRolloutPolicyFlag(parser, for_node_pool=True)
+    flags.AddAutoscaledRolloutPolicyFlag(parser)
     flags.AddNodePoolSoakDurationFlag(parser, for_node_pool=True)
     flags.AddMaintenanceIntervalFlag(parser, for_node_pool=True, hidden=True)
     flags.AddNetworkPerformanceConfigFlags(parser, hidden=False)
@@ -622,8 +628,8 @@ class CreateAlpha(Create):
     flags.AddHostMaintenanceIntervalFlag(
         parser, for_node_pool=True, hidden=True)
     flags.AddOpportunisticMaintenanceFlag(parser)
-    flags.AddAutoscaleRolloutPolicyFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
+    flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
 
 Create.detailed_help = DETAILED_HELP

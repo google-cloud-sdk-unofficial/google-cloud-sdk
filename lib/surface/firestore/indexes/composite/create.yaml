@@ -48,3 +48,4 @@
     - _REF_: googlecloudsdk.command_lib.firestore.flags:api_scope
     - _REF_: googlecloudsdk.command_lib.firestore.flags:multikey
     - _REF_: googlecloudsdk.command_lib.firestore.flags:density
+    - _REF_: googlecloudsdk.command_lib.firestore.flags:unique

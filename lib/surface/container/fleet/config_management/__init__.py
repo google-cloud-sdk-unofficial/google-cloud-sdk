@@ -22,12 +22,24 @@ from googlecloudsdk.calliope import base as calliope_base
 
 
 class Configmanagement(calliope_base.Group):
-  """Use the Config Management feature.
-
-  Manage Config Sync using the Config Management feature. Policy Controller
-  users should use the separate command group: `gcloud container fleet
-  policycontroller`. Hierarchy Controller users should use
-  https://github.com/kubernetes-sigs/hierarchical-namespaces instead.
-  """
+  """Use the Config Management feature."""
 
   category = calliope_base.COMPUTE_CATEGORY
+  # Config Sync link breaks in docstring because it does not fit on 1 line.
+  # Pylint disallows long lines, even for a raw docstring, and the use of
+  # backslashes.
+  detailed_help = {
+      'DESCRIPTION': """
+Manage
+[Config Sync](https://cloud.google.com/kubernetes-engine/config-sync/gcloud-help/manage)
+using the Config Management feature.
+
+To manage Policy Controller, use `gcloud container fleet policycontroller`
+instead.
+
+Hierarchy Controller is no longer available to install. If Hierarchy Controller
+is still configured, Config Sync upgrades are blocked. To upgrade Config Sync,
+disable Hierarchy Controller following
+https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/how-to/migrate-hierarchy-controller.
+"""
+  }

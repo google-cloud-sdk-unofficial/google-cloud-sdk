@@ -157,6 +157,10 @@ def AddBaseArgs(parser):
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
   flags.AddForceSqlNetworkArchitecture(parser)
+  flags.AddFinalBackup(parser)
+  flags.AddFinalbackupRetentionDays(parser)
+  flags.AddEnableConnectionPooling(parser)
+  flags.AddConnectionPoolFlags(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -172,11 +176,7 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddCreateLabelsFlags(parser)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  flags.AddEnableConnectionPooling(parser)
-  flags.AddConnectionPoolFlags(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
-  flags.AddFinalBackup(parser)
-  flags.AddFinalbackupRetentionDays(parser, hidden=True)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddEnableAutoUpgrade(parser)
 

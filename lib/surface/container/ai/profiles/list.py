@@ -72,7 +72,7 @@ class List(commands.List):
   This command lists all supported accelerators with their performance details.
   By default, the supported accelerators are displayed in a table format with
   select information for each accelerator. To see all details, use
-  --format=yaml.
+  --format=yaml or --format=csvprofile.
 
   To get supported model, model servers, and model server versions, run `gcloud
   container ai profiles models list`, `gcloud container ai

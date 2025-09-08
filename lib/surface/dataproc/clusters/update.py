@@ -15,6 +15,7 @@
 
 """Update cluster command."""
 
+from googlecloudsdk.api_lib.dataproc import constants as dataproc_constants
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import util
@@ -426,23 +427,12 @@ class Update(base.UpdateCommand):
       cluster_config.lifecycleConfig = lifecycle_config
       has_changes = True
 
-    def _GetCurrentCluster():
-      # This is used for labels and auxiliary_node_pool_configs
-      get_cluster_request = (
-          dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
-              projectId=cluster_ref.projectId,
-              region=cluster_ref.region,
-              clusterName=cluster_ref.clusterName))
-      current_cluster = dataproc.client.projects_regions_clusters.Get(
-          get_cluster_request)
-      return current_cluster
-
     # Put in a thunk so we only make this call if needed
     def _GetCurrentLabels():
       # We need to fetch cluster first so we know what the labels look like. The
       # labels_util will fill out the proto for us with all the updates and
       # removals, but first we need to provide the current state of the labels
-      current_cluster = _GetCurrentCluster()
+      current_cluster = _GetCurrentCluster(dataproc, cluster_ref)
       return current_cluster.labels
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args, dataproc.messages.Cluster.LabelsValue,
@@ -453,7 +443,7 @@ class Update(base.UpdateCommand):
     labels = labels_update.GetOrNone()
 
     def _GetCurrentUserServiceAccountMapping():
-      current_cluster = _GetCurrentCluster()
+      current_cluster = _GetCurrentCluster(dataproc, cluster_ref)
       if (
           current_cluster.config.securityConfig
           and current_cluster.config.securityConfig.identityConfig
@@ -476,6 +466,11 @@ class Update(base.UpdateCommand):
       )
 
     if args.add_user_mappings or args.remove_user_mappings:
+      if not _IsMultitenancyCluster(_GetCurrentCluster(dataproc, cluster_ref)):
+        raise exceptions.ArgumentError(
+            'User service account mapping can only be updated for multi-tenant'
+            ' clusters.'
+        )
       user_sa_mapping_update = user_sa_mapping_util.ProcessUpdateArgsLazy(
           args,
           dataproc.messages.IdentityConfig.UserServiceAccountMappingValue,
@@ -490,6 +485,11 @@ class Update(base.UpdateCommand):
       if user_sa_mapping:
         _UpdateSecurityConfig(cluster_config, user_sa_mapping)
     elif args.identity_config_file:
+      if not _IsMultitenancyCluster(_GetCurrentCluster(dataproc, cluster_ref)):
+        raise exceptions.ArgumentError(
+            'User service account mapping can only be updated for multi-tenant'
+            ' clusters.'
+        )
       if cluster_config.securityConfig is None:
         cluster_config.securityConfig = dataproc.messages.SecurityConfig()
       cluster_config.securityConfig.identityConfig = (
@@ -561,3 +561,48 @@ def _AddAlphaArguments(parser, release_track):
         feature.
               """,
     )
+
+
+def _IsMultitenancyCluster(cluster) -> bool:
+  """Checks if the cluster is a multi-tenant cluster.
+
+  Args:
+    cluster: The cluster configuration.
+
+  Returns:
+    True if the cluster is a multi-tenant cluster, False otherwise.
+  """
+  config = cluster.config
+  if config and config.softwareConfig and config.softwareConfig.properties:
+    props = config.softwareConfig.properties
+    for prop in props.additionalProperties:
+      if (
+          prop.key == dataproc_constants.ENABLE_DYNAMIC_MULTI_TENANCY_PROPERTY
+          and prop.value.lower() == 'true'
+      ):
+        return True
+  return False
+
+
+def _GetCurrentCluster(dataproc, cluster_ref):
+  """Retrieves the current cluster configuration.
+
+  Args:
+    dataproc: The Dataproc API client.
+    cluster_ref: The reference to the cluster.
+
+  Returns:
+    The current cluster configuration.
+  """
+  # This is used for labels and auxiliary_node_pool_configs
+  get_cluster_request = (
+      dataproc.messages.DataprocProjectsRegionsClustersGetRequest(
+          projectId=cluster_ref.projectId,
+          region=cluster_ref.region,
+          clusterName=cluster_ref.clusterName,
+      )
+  )
+  current_cluster = dataproc.client.projects_regions_clusters.Get(
+      get_cluster_request
+  )
+  return current_cluster

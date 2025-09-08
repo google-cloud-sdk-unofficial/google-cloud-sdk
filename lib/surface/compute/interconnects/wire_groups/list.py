@@ -48,10 +48,10 @@ class List(base.ListCommand):
           name,
           description,
           crossSiteNetwork,
-          wireGroupProperties.type:label=TYPE,
-          wireProperties.bandwidthUnmetered:label=BANDWIDTH_UNMETERED,
-          wireProperties.faultResponse:label=FAULT_RESPONSE,
-          adminEnabled:label=ADMIN_ENABLED
+          wireGroupProperties.type,
+          wireProperties.bandwidthUnmetered,
+          wireProperties.faultResponse,
+          adminEnabled
         )
     """)
 
@@ -111,13 +111,13 @@ class ListAlpha(List):
           name,
           description,
           crossSiteNetwork,
-          wireGroupProperties.type:label=TYPE,
-          wireProperties.bandwidthUnmetered:label=BANDWIDTH_UNMETERED,
-          wireProperties.bandwidthMetered:label=BANDWIDTH_METERED,
-          wireProperties.networkServiceClass:label=NETWORK_SERVICE_CLASS,
-          wireProperties.bandwidthAllocation:label=BANDWIDTH_ALLOCATION,
-          wireProperties.faultResponse:label=FAULT_RESPONSE,
-          adminEnabled:label=ADMIN_ENABLED
+          wireGroupProperties.type,
+          wireProperties.bandwidthUnmetered,
+          wireProperties.bandwidthMetered,
+          wireProperties.networkServiceClass,
+          wireProperties.bandwidthAllocation,
+          wireProperties.faultResponse,
+          adminEnabled
         )
     """)
 

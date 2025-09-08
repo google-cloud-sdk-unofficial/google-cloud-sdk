@@ -117,6 +117,7 @@ class Create(base.CreateCommand):
           E.g., `compute.<UNIVERSE_DOMAIN>.com/Instance` """,
     )
     flags.AddBackupRule(parser)
+    flags.AddMaxCustomOnDemandRetentionDays(parser)
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -158,6 +159,9 @@ class Create(base.CreateCommand):
     log_retention_days = args.log_retention_days
     description = args.description
     labels = args.labels
+    max_custom_on_demand_retention_days = (
+        args.max_custom_on_demand_retention_days
+    )
 
     try:
       operation = client.Create(
@@ -168,6 +172,7 @@ class Create(base.CreateCommand):
           log_retention_days,
           description,
           labels,
+          max_custom_on_demand_retention_days
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

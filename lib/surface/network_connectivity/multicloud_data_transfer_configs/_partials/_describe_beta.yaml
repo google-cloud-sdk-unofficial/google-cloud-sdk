@@ -18,18 +18,17 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Describe multicloudDataTransferConfigs
     description: Describe a multicloudDataTransferConfig
     examples: |-
       To describe the multicloudDataTransferConfig, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
-        Name of the MulticloudDataTransferConfig to get.
+        The name of the `MulticloudDataTransferConfig` resource to get.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:projects_locations_multicloud_data_transfer_configs

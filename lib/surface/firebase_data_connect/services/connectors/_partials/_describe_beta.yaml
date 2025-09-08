@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@
   arguments:
     params:
     - help_text: |-
-        The name of the connector to retrieve, in the format projects/{project}/locations/{location}/services/{service}/connectors/{connector}.
+        The name of the connector to retrieve, in the format: `projects/{project}/locations/{location}/services/{service}/connectors/{connector}`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1beta_resources:project_location_service_connector
+      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1beta_resources:projects_locations_services_connectors
       required: true
   request:
     api_version: v1beta

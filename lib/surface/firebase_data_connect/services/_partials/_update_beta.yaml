@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,22 +31,18 @@
     params:
     - help_text: |-
         Identifier. The relative resource name of the Firebase Data Connect service, in the
-        format:
-        ```
-        projects/{project}/locations/{location}/services/{service}
-        ```
-        Note that the service ID is specific to Firebase Data Connect and does not
+        format: `projects/{project}/locations/{location}/services/{service}`. Note that the service ID is specific to Firebase Data Connect and does not
         correspond to any of the instance IDs of the underlying data source
         connections.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1beta_resources:project_location_service
+      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1beta_resources:projects_locations_services
       required: true
     - arg_name: labels
       api_field: service.labels
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Labels as key value pairs.
       clearable: true
       spec:
@@ -56,7 +52,7 @@
       api_field: service.annotations
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Stores small amounts of arbitrary data.
       clearable: true
       spec:
@@ -66,13 +62,13 @@
       api_field: service.displayName
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         Mutable human-readable name. 63 character limit.
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         An optional request ID to identify requests. Specify a unique request ID
         so that if you must retry your request, the server will know to ignore
         the request if it has already been completed. The server will guarantee

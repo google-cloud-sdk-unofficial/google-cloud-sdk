@@ -68,7 +68,7 @@ class UpdateHelper(object):
         required=False,
         support_fairshare=support_fairshare)
     flags.AddDescription(parser)
-    flags.AddPreview(parser, default=None)
+    flags.AddPreview(parser, for_update=True)
     flags.AddRedirectOptions(parser)
     flags.AddRateLimitOptions(
         parser,

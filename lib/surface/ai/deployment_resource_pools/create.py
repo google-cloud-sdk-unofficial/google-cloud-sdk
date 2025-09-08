@@ -47,7 +47,7 @@ def _AddArgsBeta(parser):
       'the final component of the DeploymentResourcePool\'s resource name. ' +
       'The maximum length is 63 characters, and valid characters are ' +
       '/^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$/.')
-  flags.AddPredictionResourcesArgs(parser, version)
+  flags.AddPredictionResourcesArgs(parser, version, drp=True)
   flags.GetAutoscalingMetricSpecsArg().AddToParser(parser)
   flags.AddRegionResourceArg(
       parser,

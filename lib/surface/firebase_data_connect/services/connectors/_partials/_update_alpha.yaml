@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,16 +31,16 @@
   arguments:
     params:
     - help_text: |-
-        The name of the connector, in the format projects/{project}/locations/{location}/services/{service}/connectors/{connector}.
+        Identifier. The relative resource name of the connector, in the format: `projects/{project}/locations/{location}/services/{service}/connectors/{connector}`.
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:project_location_service_connector
+      resource_spec: !REF googlecloudsdk.command_lib.firebase_data_connect.v1alpha_resources:projects_locations_services_connectors
       required: true
     - arg_name: labels
       api_field: connector.labels
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Labels as key value pairs.
       clearable: true
       spec:
@@ -50,13 +50,16 @@
       api_field: connector.annotations
       required: false
       repeated: true
-      help_text: |
+      help_text: |-
         Stores small amounts of arbitrary data.
       clearable: true
       spec:
       - api_field: key
       - api_field: value
     - group:
+        api_field: connector.source
+        arg_name: source
+        clearable: true
         required: false
         help_text: |-
           Used to represent a set of source files.
@@ -83,13 +86,13 @@
       api_field: connector.displayName
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         Mutable human-readable name. 63 character limit.
     - arg_name: request-id
       api_field: requestId
       required: false
       repeated: false
-      help_text: |
+      help_text: |-
         An optional request ID to identify requests. Specify a unique request ID
         so that if you must retry your request, the server will know to ignore
         the request if it has already been completed. The server will guarantee

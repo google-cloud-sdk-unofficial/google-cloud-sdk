@@ -18,14 +18,13 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Describe multicloudDataTransferSupportedServices
     description: Describe a multicloudDataTransferSupportedService
     examples: |-
       To describe the multicloudDataTransferSupportedService, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

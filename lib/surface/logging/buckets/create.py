@@ -133,6 +133,7 @@ class Create(base.CreateCommand):
         parser, True,
         'Location in which to create the bucket. Once the bucket is created, '
         'the location cannot be changed.')
+    util.GetTagsArg().AddToParser(parser)
 
   def _Run(self, args):
     bucket_data = {}
@@ -147,6 +148,10 @@ class Create(base.CreateCommand):
 
     if args.IsSpecified('enable_analytics'):
       bucket_data['analyticsEnabled'] = args.enable_analytics
+
+    if args.IsSpecified('tags'):
+      tags = util.GetTagsFromArgs(args, util.GetMessages().LogBucket.TagsValue)
+      bucket_data['tags'] = tags
 
     if args.IsSpecified('cmek_kms_key_name'):
       console_io.PromptContinue(

@@ -32,7 +32,7 @@ BackupPlanAssociationsClient = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class FetchForResourceType(base.ListCommand):
   """Fetch Backup Plan Associations for a given resource type and location."""
 

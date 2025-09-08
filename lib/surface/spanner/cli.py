@@ -19,6 +19,7 @@ from googlecloudsdk.command_lib.spanner import cli_backend
 from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core import properties
 
 
 DETAILED_HELP = {
@@ -73,6 +74,9 @@ class Cli(base.BinaryBackedCommand):
   def Run(self, args):
     project = arg_utils.GetFromNamespace(args, "--project", use_defaults=True)
     instance = args.CONCEPTS.database.Parse().Parent().Name()
+    api_endpoint_override = properties.VALUES.api_endpoint_overrides.Property(
+        "spanner"
+    ).Get()
 
     # Create the command executor.
     command_executor = cli_backend.SpannerCliWrapper()
@@ -81,9 +85,10 @@ class Cli(base.BinaryBackedCommand):
         project=project,
         database=args.database,
         instance=instance,
-        databse_role=args.database_role,
+        database_role=args.database_role,
         host=args.host,
         port=args.port,
+        api_endpoint=api_endpoint_override,
         idle_transaction_timeout=args.idle_transaction_timeout,
         skip_column_names=args.skip_column_names,
         skip_system_command=args.skip_system_command,

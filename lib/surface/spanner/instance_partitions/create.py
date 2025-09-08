@@ -65,7 +65,10 @@ class Create(base.CreateCommand):
         text='Description of the instance partition.'
     ).AddToParser(parser)
     flags.AddCapacityArgsForInstancePartition(
-        parser=parser, add_autoscaling_args=False
+        parser=parser,
+        add_autoscaling_args=True,
+        autoscaling_args_hidden=True,
+        require_all_autoscaling_args=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstancePartitionCompleter)
@@ -89,6 +92,13 @@ class Create(base.CreateCommand):
         args.description,
         nodes=args.nodes,
         processing_units=args.processing_units,
+        autoscaling_min_nodes=args.autoscaling_min_nodes,
+        autoscaling_max_nodes=args.autoscaling_max_nodes,
+        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
+        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
+        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
+        autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
+        autoscaling_storage_target=args.autoscaling_storage_target,
     )
     if args.async_:
       return op

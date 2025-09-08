@@ -23,6 +23,7 @@ import textwrap
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.app import appengine_api_client
+from googlecloudsdk.api_lib.compute import base_classes as compute_base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import exceptions as command_exceptions
 from googlecloudsdk.command_lib.app import flags
@@ -34,6 +35,7 @@ from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class ScpGa(base.Command):
   """SCP from or to the VM of an App Engine Flexible instance."""
 
@@ -117,14 +119,6 @@ class ScpGa(base.Command):
       for src in srcs:
         src.remote = remote
 
-    connection_details = ssh_common.PopulatePublicKey(
-        api_client, args.service, args.version, remote.host,
-        keys.GetPublicKey(), self.ReleaseTrack())
-
-    # Update all remote references
-    remote.host = connection_details.remote.host
-    remote.user = connection_details.remote.user
-
     try:
       version_resource = api_client.GetVersionResource(args.service,
                                                        args.version)
@@ -155,10 +149,53 @@ class ScpGa(base.Command):
         version=version_resource,
         instance=instance_resource)
 
+    region = '-'.join(instance_resource.vmZoneName.split('-')[:-1])
+    user = ssh.GetDefaultSshUsername()
+    project = ssh_common.GetComputeProject(self.ReleaseTrack())
+
+    oslogin_state = ssh.GetOsloginState(
+        None,
+        project,
+        user,
+        keys.GetPublicKey().ToEntry(),
+        None,
+        self.ReleaseTrack(),
+        app_engine_params={
+            'appsId': project.name,
+            'servicesId': res.servicesId,
+            'versionsId': res.versionsId,
+            'instancesId': instance,
+            'serviceAccount': (
+                version_resource.serviceAccount
+                if version_resource.serviceAccount
+                else ''
+            ),
+            'region': region
+        },
+        messages=compute_base_classes.ComputeApiHolder(
+            self.ReleaseTrack()
+        ).client.messages,
+    )
+
+    cert_file = None
+    if oslogin_state.third_party_user or oslogin_state.require_certificates:
+      cert_file = ssh.CertFileFromAppEngineInstance(
+          project.name, res.servicesId, res.versionsId, instance
+      )
+
+    connection_details = ssh_common.PopulatePublicKey(
+        api_client, args.service, args.version, remote.host,
+        keys.GetPublicKey(), oslogin_state.user, oslogin_state.oslogin_enabled)
+
+    # Update all remote references
+    remote.host = connection_details.remote.host
+    remote.user = connection_details.remote.user
+
     return ssh.SCPCommand(
         srcs,
         dst,
         identity_file=keys.key_file,
+        cert_file=cert_file,
         compress=args.compress,
         recursive=args.recurse,
         options=connection_details.options,
@@ -166,6 +203,7 @@ class ScpGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class ScpBeta(base.Command):
   """SCP from or to the VM of an App Engine Flexible environment instance."""
 
@@ -249,14 +287,6 @@ class ScpBeta(base.Command):
       for src in srcs:
         src.remote = remote
 
-    connection_details = ssh_common.PopulatePublicKey(
-        api_client, args.service, args.version, remote.host,
-        keys.GetPublicKey(), self.ReleaseTrack())
-
-    # Update all remote references
-    remote.host = connection_details.remote.host
-    remote.user = connection_details.remote.user
-
     try:
       version_resource = api_client.GetVersionResource(args.service,
                                                        args.version)
@@ -284,10 +314,52 @@ class ScpBeta(base.Command):
                                                      project, version_resource,
                                                      instance_resource)
 
+    region = '-'.join(instance_resource.vmZoneName.split('-')[:-1])
+    user = ssh.GetDefaultSshUsername()
+    project = ssh_common.GetComputeProject(self.ReleaseTrack())
+
+    oslogin_state = ssh.GetOsloginState(
+        None,
+        project,
+        user,
+        keys.GetPublicKey().ToEntry(),
+        None,
+        self.ReleaseTrack(),
+        app_engine_params={
+            'appsId': project.name,
+            'servicesId': res.servicesId,
+            'versionsId': res.versionsId,
+            'instancesId': instance,
+            'serviceAccount': (
+                version_resource.serviceAccount
+                if version_resource.serviceAccount
+                else ''
+            ),
+            'region': region
+        },
+        messages=compute_base_classes.ComputeApiHolder(
+            self.ReleaseTrack()
+        ).client.messages,
+    )
+
+    cert_file = None
+    if oslogin_state.third_party_user or oslogin_state.require_certificates:
+      cert_file = ssh.CertFileFromAppEngineInstance(
+          project.name, res.servicesId, res.versionsId, instance
+      )
+    connection_details = ssh_common.PopulatePublicKey(
+        api_client, args.service, args.version, remote.host,
+        keys.GetPublicKey(), oslogin_state.user, oslogin_state.oslogin_enabled)
+
+    # Update all remote references
+    remote.host = connection_details.remote.host
+    remote.user = connection_details.remote.user
+
     cmd = ssh.SCPCommand(
         srcs,
         dst,
         identity_file=keys.key_file,
+        cert_file=cert_file,
         compress=args.compress,
         recursive=args.recurse,
         options=connection_details.options,

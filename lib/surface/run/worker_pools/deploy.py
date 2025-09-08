@@ -67,8 +67,11 @@ Container Flags
   group.AddArgument(flags.AddVolumeMountFlag())
   group.AddArgument(flags.RemoveVolumeMountFlag())
   group.AddArgument(flags.ClearVolumeMountsFlag())
-  # ALPHA features
-  if release_track == base.ReleaseTrack.ALPHA:
+  # ALPHA and BETA features
+  if (
+      release_track == base.ReleaseTrack.ALPHA
+      or release_track == base.ReleaseTrack.BETA
+  ):
     group.AddArgument(flags.GpuFlag())
 
   return group
@@ -120,6 +123,8 @@ class Deploy(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddNoPromoteFlag(parser)
+    flags.AddGpuTypeFlag(parser)
+    flags.GpuZonalRedundancyFlag(parser)
     worker_pool_presentation = presentation_specs.ResourcePresentationSpec(
         'WORKER_POOL',
         resource_args.GetV2WorkerPoolResourceSpec(prompt=True),
@@ -401,8 +406,6 @@ class AlphaDeploy(Deploy):
     cls.CommonArgs(parser)
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
-    flags.AddGpuTypeFlag(parser)
-    flags.GpuZonalRedundancyFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 

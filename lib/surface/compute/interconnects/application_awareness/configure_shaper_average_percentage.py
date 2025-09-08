@@ -34,14 +34,17 @@ DETAILED_HELP = {
         To configure shaper average percentage for an interconnect
         example-interconnect, run:
 
-        $ {command} example-interconnect --bandwidth-percentages="TC1=30,TC2=90"
-        --enabled --profile_description="some string"
+          $ {command} example-interconnect
+          --bandwidth-percentages="TC1=30,TC2=90
+          --enabled --profile-description="some string"
         """,
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ConfigureShaperAveragePercentage(base.UpdateCommand):
   """Configure shaper average percentage for application awareness configuration of a Compute Engine interconnect.
 

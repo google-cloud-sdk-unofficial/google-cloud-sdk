@@ -55,7 +55,7 @@ class Update(base.UpdateCommand):
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
     rule_flags.AddMatcher(parser, required=False)
-    rule_flags.AddPreview(parser, default=None)
+    rule_flags.AddPreview(parser, for_update=True)
     parser.add_argument(
         '--cloud-armor',
         action='store_true',
@@ -232,7 +232,7 @@ class UpdateAlpha(Update):
     flags.AddNewPriority(parser, operation='update')
     flags.AddOrganization(parser, required=False)
     rule_flags.AddMatcher(parser, required=False)
-    rule_flags.AddPreview(parser, default=None)
+    rule_flags.AddPreview(parser, for_update=True)
     parser.add_argument(
         '--cloud-armor',
         action='store_true',

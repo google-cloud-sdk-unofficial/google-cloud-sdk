@@ -37,6 +37,7 @@ def _AddArgs(parser, version):
   flags.GetDisplayNameArg('deployed model').AddToParser(parser)
   flags.GetTrafficSplitArg().AddToParser(parser)
   flags.AddPredictionResourcesArgs(parser, version)
+  flags.AddScaleToZeroArgs(parser, version)
   flags.GetEnableAccessLoggingArg().AddToParser(parser)
   flags.GetServiceAccountArg().AddToParser(parser)
   flags.GetUserSpecifiedIdArg('deployed-model').AddToParser(parser)
@@ -88,6 +89,11 @@ def _Run(args, version):
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
           autoscaling_metric_specs=args.autoscaling_metric_specs)
+      validation.ValidateScaleToZeroArgs(
+          args.min_replica_count,
+          args.initial_replica_count, args.max_replica_count,
+          args.min_scaleup_period, args.idle_scaledown_period
+      )
       op = endpoints_client.DeployModelBeta(
           endpoint_ref,
           args.model,
@@ -107,7 +113,10 @@ def _Run(args, version):
           service_account=args.service_account,
           traffic_split=args.traffic_split,
           deployed_model_id=args.deployed_model_id,
-          shared_resources_ref=shared_resources_ref)
+          shared_resources_ref=shared_resources_ref,
+          min_scaleup_period=args.min_scaleup_period,
+          idle_scaledown_period=args.idle_scaledown_period,
+          initial_replica_count=args.initial_replica_count)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:
