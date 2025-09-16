@@ -71,6 +71,9 @@ auto_flags = [
     'enableK8sCertsViaDns',
     'membershipType',
     'secretSyncConfig',
+    'controlPlaneEgress',
+    'tag_bindings',
+    'gpudirectstrategy',
 ]
 # LINT.ThenChange()
 

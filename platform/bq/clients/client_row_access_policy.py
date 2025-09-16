@@ -104,6 +104,36 @@ def update_row_access_policy(
   )
 
 
+def get_row_access_policy(
+    bqclient: bigquery_client.BigqueryClient,
+    policy_reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference',
+):
+  """Get a row access policy on the given table reference."""
+  response = _get_row_access_policy_reference(bqclient, policy_reference)
+
+  if 'rowAccessPolicyReference' in response:
+    _set_row_access_policy_grantees(bqclient, response)
+  return response
+
+
+def _get_row_access_policy_reference(
+    bqclient: bigquery_client.BigqueryClient,
+    policy_reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference',
+) -> Dict[str, Any]:
+  """Returns the RowAccessPolicyReference for the given row access policy."""
+  return (
+      bqclient.GetRowAccessPoliciesApiClient()
+      .rowAccessPolicies()
+      .get(
+          projectId=policy_reference.projectId,
+          datasetId=policy_reference.datasetId,
+          tableId=policy_reference.tableId,
+          policyId=policy_reference.policyId,
+      )
+      .execute()
+  )
+
+
 def _list_row_access_policies(
     bqclient: bigquery_client.BigqueryClient,
     table_reference: 'bq_id_utils.ApiClientHelper.TableReference',

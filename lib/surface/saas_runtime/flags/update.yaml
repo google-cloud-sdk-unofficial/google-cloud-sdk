@@ -15,7 +15,7 @@
 
           "projects/{project}/locations/{location}/flags/{flag_id}"
 
-        This follows the standard GCP naming scheme (URI).
+        This follows the standard Google Cloud naming scheme (URI).
       is_positional: true
       request_id_field: flagId
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag

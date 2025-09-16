@@ -140,7 +140,8 @@
           required: true
           type: bool
           help_text: |
-            This specifies whether private IP is enabled on the Looker instance.
+            This specifies whether private IP (PSA) is enabled on the Looker instance.
+            This flag is for creating a PSA (Private Service Access) instance.
         - api_field: instance.consumerNetwork
           arg_name: consumer-network
           required: true

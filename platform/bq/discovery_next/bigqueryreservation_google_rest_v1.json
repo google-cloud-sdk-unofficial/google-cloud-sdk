@@ -415,11 +415,11 @@
       "type": "object",
       "properties": {
         "failoverMode": {
-          "description": "Optional. failover mode for the failover operation.",
+          "description": "Optional. A parameter that determines how writes that are pending replication are handled after a failover is initiated. If not specified, HARD failover mode is used by default.",
           "type": "string",
           "enumDescriptions": [
             "Invalid value.",
-            "When customers initiate a soft failover, BigQuery will wait until all committed writes are replicated to the secondary.",
+            "When customers initiate a soft failover, BigQuery will wait until all committed writes are replicated to the secondary. This mode requires both regions to be available for the failover to succeed and prevents data loss.",
             "When customers initiate a hard failover, BigQuery will not wait until all committed writes are replicated to the secondary. There can be data loss for hard failover."
           ],
           "enum": [

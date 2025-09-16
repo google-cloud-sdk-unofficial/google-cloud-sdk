@@ -67,7 +67,7 @@ class Describe(base.DescribeCommand):
 Describe.detailed_help = {
     'EXAMPLES':
         """\
-    To describe an organization security policy with ID "123456789", run:
+    To describe an organization security policy with ID ``123456789'', run:
 
       $ {command} 123456789
     """,

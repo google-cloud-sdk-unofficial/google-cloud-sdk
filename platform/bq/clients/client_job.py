@@ -69,7 +69,9 @@ def ReadSchemaAndJobRows(
     reader = bq_table_reader.JobTableReader(
         bqclient.apiclient, bqclient.max_rows_per_request, job_ref
     )
-  return reader.ReadSchemaAndRows(start_row, max_rows)
+  return reader.ReadSchemaAndRows(
+      start_row, max_rows,
+  )
 
 
 def ListJobRefs(bqclient: bigquery_client.BigqueryClient, **kwds):
@@ -865,7 +867,10 @@ def RunQuery(
   job = Query(bqclient, **new_kwds)
 
   return ReadSchemaAndJobRows(
-      bqclient, job['jobReference'], start_row=start_row, max_rows=max_rows
+      bqclient,
+      job['jobReference'],
+      start_row=start_row,
+      max_rows=max_rows,
   )
 
 

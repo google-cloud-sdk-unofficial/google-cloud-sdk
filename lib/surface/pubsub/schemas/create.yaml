@@ -46,3 +46,16 @@
         enum_value: AVRO
       - arg_value: protocol-buffer
         enum_value: PROTOCOL_BUFFER
+    - arg_name: tags
+      release_tracks: [ALPHA]
+      hidden: true
+      api_field: schema.tags.additionalProperties
+      metavar: KEY=VALUE
+      help_text: |
+        List of tag KEY=VALUE pairs to add.
+      type:
+        arg_dict:
+          flatten: true
+          spec:
+          - api_field: key
+          - api_field: value

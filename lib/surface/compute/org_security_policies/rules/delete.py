@@ -68,9 +68,9 @@ class Delete(base.DeleteCommand):
 Delete.detailed_help = {
     "EXAMPLES":
         """\
-    To delete a rule with priority ``10" in an organization security policy with
-    ID ``123456789", run:
+    To delete a rule with priority ``10'' in an organization security policy with
+    ID ``123456789'', run:
 
-      $ {command} delete 10 --security-policy=123456789
+      $ {command} 10 --security-policy=123456789
     """,
 }

@@ -30,7 +30,7 @@
       is_positional: false
       is_primary_resource: true
       request_id_field: parent
-      resource_spec: !REF googlecloudsdk.command_lib.cluster_director.v1alpha_resources:projects_locations
+      resource_spec: !REF googlecloudsdk.command_lib.cluster_director.clusters.resources:projects_locations
       required: true
   request:
     api_version: v1alpha

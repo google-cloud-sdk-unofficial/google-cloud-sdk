@@ -15,7 +15,7 @@
 
           "projects/{project}/locations/{location}/flags/{flag_id}"
 
-        This follows the standard GCP naming scheme (URI).
+        This follows the standard Google Cloud naming scheme (URI).
       is_positional: true
       request_id_field: flagId
       resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag
@@ -42,6 +42,18 @@
         enum_value: FLAG_VALUE_TYPE_BOOL
         help_text: |-
           The flag's value type is a boolean.
+      - arg_value: int
+        enum_value: FLAG_VALUE_TYPE_INT
+        help_text: |-
+          The flag's value type is an integer.
+      - arg_value: string
+        enum_value: FLAG_VALUE_TYPE_STRING
+        help_text: |-
+          The flag's value type is a string.
+      - arg_value: double
+        enum_value: FLAG_VALUE_TYPE_DOUBLE
+        help_text: |-
+          The flag's value type is a double.
 
     - arg_name: evaluation-spec
       api_field: flag.evaluationSpec
@@ -65,7 +77,16 @@
             Max length: 128 bytes.
         - api_field: boolValue
           help_text: |-
-            Value is a single flag value for the variant.
+            Value is a single boolean flag value for the variant.
+        - api_field: intValue
+          help_text: |-
+            Value is a single integer flag value for the variant.
+        - api_field: stringValue
+          help_text: |-
+            Value is a single string flag value for the variant.
+        - api_field: doubleValue
+          help_text: |-
+            Value is a single double flag value for the variant.
 
     - arg_name: unit-kind
       help_text: |-

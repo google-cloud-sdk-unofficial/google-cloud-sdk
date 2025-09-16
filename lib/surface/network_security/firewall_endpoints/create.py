@@ -44,6 +44,7 @@ DETAILED_HELP = {
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint."""
 
@@ -78,6 +79,7 @@ class Create(base.CreateCommand):
         billing_project_id=args.billing_project,
         labels=labels,
         target_firewall_attachment=target_firewall_attachment,
+        enable_jumbo_frames=getattr(args, 'enable_jumbo_frames', None),
         endpoint_type=endpoint_type,
     )
     # Return the in-progress operation if async is requested.
@@ -98,12 +100,14 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
 class CreateAlpha(Create):
   """Create a Firewall Plus endpoint."""
 
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    activation_flags.AddEnableJumboFramesArg(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
 
   def Run(self, args):

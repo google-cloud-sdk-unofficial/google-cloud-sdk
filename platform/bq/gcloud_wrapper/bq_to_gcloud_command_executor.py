@@ -23,7 +23,11 @@ def _unpack_bq_global_flags() -> Dict[str, Union[str, int, bool]]:
   unpack_flag_holder(bq_flags.FORMAT, 'format')
   unpack_flag_holder(bq_flags.PROJECT_ID, 'project_id')
   unpack_flag_holder(bq_flags.HTTPLIB2_DEBUGLEVEL, 'httplib2_debuglevel')
-  unpack_flag_holder(logging.VERBOSITY, 'verbosity')
+  try:
+    unpack_flag_holder(logging.VERBOSITY, 'verbosity')
+  except AttributeError:
+    # Some versions of absl.logging don't have VERBOSITY.
+    pass
   unpack_flag_holder(bq_flags.APILOG, 'apilog')
 
   # Unsupported flags
@@ -39,7 +43,7 @@ def run_bq_command_using_gcloud(
     identifier: Optional[str] = None,
 ) -> int:
   bq_global_flags = _unpack_bq_global_flags()
-  dry_run: bool = True  # pylint:disable=unused-variable
+  dry_run = False  # pylint: disable=unused-variable
   return bq_to_gcloud_adapter.run_bq_command_using_gcloud(
       resource=resource,
       bq_command=bq_command,

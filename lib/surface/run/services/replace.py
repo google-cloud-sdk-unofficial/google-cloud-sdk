@@ -105,6 +105,9 @@ class Replace(base.Command):
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack()),
     ]
 
+  def _GetMultiRegionRegions(self, args, new_service, changes):  # used by child - pylint: disable=unused-argument
+    return None
+
   def _PrintSuccessMessage(self, service_obj, dry_run, args):
     if args.async_:
       pretty_print.Success(
@@ -197,6 +200,7 @@ class Replace(base.Command):
 
     with serverless_operations.Connect(conn_context) as client:
       service_obj = client.GetService(service_ref)
+      regions = self._GetMultiRegionRegions(args, new_service, changes)
 
       pretty_print.Info(
           run_messages_util.GetStartDeployMessage(
@@ -204,7 +208,7 @@ class Replace(base.Command):
           )
       )
 
-      deployment_stages = stages.ServiceStages()
+      deployment_stages = stages.ServiceStages(regions_list=regions)
       header = ('Deploying...' if service_obj else 'Deploying new service...')
       if dry_run:
         header = 'Validating...'
@@ -223,6 +227,7 @@ class Replace(base.Command):
             allow_unauthenticated=None,
             for_replace=True,
             dry_run=dry_run,
+            multiregion_regions=regions,
         )
       self._PrintSuccessMessage(service_obj, dry_run, args)
       return service_obj

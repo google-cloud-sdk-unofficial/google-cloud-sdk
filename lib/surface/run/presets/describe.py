@@ -22,8 +22,10 @@ import pkgutil
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import exceptions as run_exceptions
+from googlecloudsdk.command_lib.run.printers import presets_printer
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
+from googlecloudsdk.core.resource import resource_printer
 
 
 @base.UniverseCompatible
@@ -48,6 +50,12 @@ class Describe(base.DescribeCommand):
     parser.add_argument(
         'name',
         help='The name of the preset to describe.')
+    resource_printer.RegisterFormatter(
+        presets_printer.PRESETS_PRINTER_FORMAT,
+        presets_printer.PresetsPrinter,
+        hidden=True,
+    )
+    parser.display_info.AddFormat(presets_printer.PRESETS_PRINTER_FORMAT)
 
   def Run(self, args):
     """Returns the preset metadata details for the given preset name."""
@@ -60,7 +68,6 @@ class Describe(base.DescribeCommand):
     except IOError:
       raise exceptions.Error('Presets file not found.')
 
-    # TODO(b/441341253): Custom format print instead of returning yaml.
     for preset in presets_data.get('presets', []):
       if preset.get('name') == args.name:
         return preset

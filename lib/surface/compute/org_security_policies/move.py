@@ -76,9 +76,9 @@ class Move(base.UpdateCommand):
 Move.detailed_help = {
     'EXAMPLES':
         """\
-    To move an organization security policy under folder with ID "123456789" to
-    folder "987654321", run:
+    To move an organization security policy under folder with ID ``123456789'' to
+    folder ``987654321'', run:
 
-      $ {command} move 123456789 --folder=987654321
+      $ {command} 123456789 --folder=987654321
     """,
 }

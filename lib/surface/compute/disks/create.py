@@ -19,7 +19,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import argparse
+import re
 import textwrap
+from typing import Any, Optional
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import constants
@@ -82,7 +84,11 @@ DETAILED_HELP = {
 }
 
 
-def _SourceArgs(parser, support_source_snapshot_region):
+def _SourceArgs(
+    parser,
+    support_source_snapshot_region,
+    source_instant_snapshot_enabled=False,
+):
   """Add mutually exclusive source args."""
   source_parent_group = parser.add_group()
   source_group = source_parent_group.add_mutually_exclusive_group()
@@ -121,6 +127,9 @@ def _SourceArgs(parser, support_source_snapshot_region):
     )
   else:
     disks_flags.SOURCE_SNAPSHOT_ARG.AddArgument(source_group)
+  if source_instant_snapshot_enabled:
+    disks_flags.AddSourceInstantSnapshotProject(parser)
+
   disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(source_group)
   disks_flags.SOURCE_DISK_ARG.AddArgument(parser, mutex_group=source_group)
   disks_flags.ASYNC_PRIMARY_DISK_ARG.AddArgument(
@@ -139,6 +148,7 @@ def _CommonArgs(
     support_user_licenses=False,
     support_source_snapshot_region=False,
     support_gmi_restore=False,
+    source_instant_snapshot_enabled=False,
 ):
   """Add arguments used for parsing in all command tracks."""
   Create.disks_arg.AddArgument(parser, operation_type='create')
@@ -191,11 +201,16 @@ def _CommonArgs(
       '--licenses',
       type=arg_parsers.ArgList(),
       metavar='LICENSE',
-      help=('A list of URIs to license resources. The provided licenses will '
-            'be added onto the created disks to indicate the licensing and '
-            'billing policies.'))
+      help=(
+          'A list of URIs to license resources. The provided licenses will '
+          'be added onto the created disks to indicate the licensing and '
+          'billing policies.'
+      ),
+  )
 
-  _SourceArgs(parser, support_source_snapshot_region)
+  _SourceArgs(
+      parser, support_source_snapshot_region, source_instant_snapshot_enabled
+  )
 
   disks_flags.AddProvisionedIopsFlag(parser, arg_parsers)
   disks_flags.AddArchitectureFlag(parser, messages)
@@ -259,6 +274,79 @@ def _ParseGuestOsFeaturesToMessages(args, client_messages):
       guest_os_feature_messages.append(guest_os_feature)
 
   return guest_os_feature_messages
+
+
+def _GetSourceInstantSnapshotProjectFromPath(
+    source_instant_snapshot: Optional[str],
+) -> Optional[str]:
+  """Gets the source instant-snapshot project from the path."""
+  if not source_instant_snapshot:
+    return None
+  match = re.search(r'projects/([^/]+)', source_instant_snapshot)
+  return match.group(1) if match else None
+
+
+def _GetInstantSnapshotReference(
+    args: argparse.Namespace, compute_holder: Any, source_project: Optional[str]
+) -> Optional[str]:
+  """Resolves the instant snapshot reference to a URI."""
+  instant_snapshot_ref = (
+      disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
+          args,
+          compute_holder.resources,
+          source_project=source_project,
+      )
+  )
+  return instant_snapshot_ref.SelfLink() if instant_snapshot_ref else None
+
+
+def _GetSourceInstantSnapshotUriWithSourceProjectSpecified(
+    args: argparse.Namespace, compute_holder: Any
+) -> Optional[str]:
+  """Gets the URI when source_instant_snapshot_project is specified."""
+  actual_source_project = getattr(args, 'source_instant_snapshot_project', None)
+  expected_source_project = _GetSourceInstantSnapshotProjectFromPath(
+      args.source_instant_snapshot
+  )
+  # Checks if source projects match.
+  if (
+      expected_source_project
+      and actual_source_project != expected_source_project
+  ):
+    # Throw an error here
+    raise exceptions.BadArgumentException(
+        '--source_instant_snapshot_project',
+        'The project specified in --source-instant-snapshot-project does'
+        ' not match the project in the --source-instant-snapshot URI.'
+        ' Please ensure these values are consistent.',
+    )
+
+  elif (
+      expected_source_project
+      and actual_source_project == expected_source_project
+  ):
+    return _GetInstantSnapshotReference(
+        args, compute_holder, actual_source_project
+    )
+  elif not expected_source_project:
+    return _GetInstantSnapshotReference(
+        args, compute_holder, source_project=actual_source_project
+    )
+  return None
+
+
+def _GetSourceInstantSnapshotUri(
+    args: argparse.Namespace, compute_holder: Any
+) -> Optional[str]:
+  """Determines the source instant snapshot URI."""
+  if args.source_instant_snapshot:
+    # Check if source_instant_snapshot_project is not specified
+    if not getattr(args, 'source_instant_snapshot_project', None):
+      return _GetInstantSnapshotReference(args, compute_holder, None)
+    return _GetSourceInstantSnapshotUriWithSourceProjectSpecified(
+        args, compute_holder
+    )
+  return None
 
 
 @base.DefaultUniverseOnly
@@ -390,17 +478,6 @@ class Create(base.Command):
       )
     if snapshot_ref:
       return snapshot_ref.SelfLink()
-    return None
-
-  def GetSourceInstantSnapshotUri(self, args, compute_holder):
-    if args.source_instant_snapshot:
-      instant_snapshot_ref = (
-          disks_flags.SOURCE_INSTANT_SNAPSHOT_ARG.ResolveAsResource(
-              args, compute_holder.resources
-          )
-      )
-      if instant_snapshot_ref:
-        return instant_snapshot_ref.SelfLink()
     return None
 
   def GetSourceDiskUri(self, args, disk_ref, compute_holder):
@@ -587,7 +664,7 @@ class Create(base.Command):
           physicalBlockSizeBytes=physical_block_size_bytes,
           **kwargs)
       disk.sourceDisk = self.GetSourceDiskUri(args, disk_ref, compute_holder)
-      disk.sourceInstantSnapshot = self.GetSourceInstantSnapshotUri(
+      disk.sourceInstantSnapshot = _GetSourceInstantSnapshotUri(
           args, compute_holder)
 
       if (support_multiwriter_disk and
@@ -691,6 +768,7 @@ class CreateBeta(Create):
         vss_erase_enabled=True,
         support_pd_interface=True,
         support_source_snapshot_region=True,
+        source_instant_snapshot_enabled=False,
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)
@@ -730,6 +808,7 @@ class CreateAlpha(CreateBeta):
         support_user_licenses=True,
         support_source_snapshot_region=True,
         support_gmi_restore=True,
+        source_instant_snapshot_enabled=True
     )
     image_utils.AddGuestOsFeaturesArg(parser, messages)
     _AddReplicaZonesArg(parser)

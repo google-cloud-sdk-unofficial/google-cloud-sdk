@@ -122,7 +122,10 @@ class Download(base.Command):
       # ...files/sha256:123 -> 123
       # ...files/sha256:pkg%2Fv1.0 -> pkg/v1.0
       file_id = os.path.basename(file)
-      default_file_name = unquote(file_id.rsplit(':', 1)[1])
+      try:
+        default_file_name = unquote(file_id.rsplit(':', 1)[1])
+      except IndexError:
+        default_file_name = file_id
       file_name = self.get_file_name(file, default_file_name)
       final_path = os.path.join(args.destination, file_name)
       download_util.Download(

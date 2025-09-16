@@ -269,6 +269,9 @@ class Update(base.UpdateCommand):
     changed_fields = []
 
     has_changes = False
+    no_update_error_msg = (
+        'Must specify at least one cluster parameter to update.'
+    )
 
     if args.num_workers is not None:
       worker_config = dataproc.messages.InstanceGroupConfig(
@@ -481,6 +484,15 @@ class Update(base.UpdateCommand):
             'config.security_config.identity_config.user_service_account_mapping'
         )
         has_changes = True
+      else:
+        if args.add_user_mappings:
+          no_update_error_msg += (
+              ' User to add is already present in service account mapping.'
+          )
+        if args.remove_user_mappings:
+          no_update_error_msg += (
+              ' User to remove is not present in service account mapping.'
+          )
       user_sa_mapping = user_sa_mapping_update.GetOrNone()
       if user_sa_mapping:
         _UpdateSecurityConfig(cluster_config, user_sa_mapping)
@@ -501,8 +513,7 @@ class Update(base.UpdateCommand):
       has_changes = True
 
     if not has_changes:
-      raise exceptions.ArgumentError(
-          'Must specify at least one cluster parameter to update.')
+      raise exceptions.ArgumentError(no_update_error_msg)
 
     cluster = dataproc.messages.Cluster(
         config=cluster_config,

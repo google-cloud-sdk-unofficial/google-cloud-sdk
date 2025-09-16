@@ -11,7 +11,7 @@
   arguments:
     params:
     - help_text: |-
-        Flag Revision ID. GCP resource name (full URI of the resource) following the standard naming
+        Flag Revision ID. Google Cloud resource name (full URI of the resource) following the standard naming
         scheme:
 
           "projects/{project}/locations/{location}/flagRevisions/{flag_revision_id}"

@@ -618,13 +618,17 @@ class Query(bigquery_command.BigqueryCmd):
         raise app.UsageError('continuous cannot be specified in rpc mode.')
       kwds['job_creation_mode'] = self.job_creation_mode
       kwds['max_results'] = self.max_rows
+      use_full_timestamp = False
       logging.debug('Calling client_job.RunQueryRpc(%s, %s)', query, kwds)
-      fields, rows, execution = client_job.RunQueryRpc(client, query, **kwds)
+      fields, rows, execution = client_job.RunQueryRpc(
+          client, query,
+          **kwds
+      )
       if self.dry_run:
         frontend_utils.PrintDryRunInfo(execution)
       else:
         bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-            fields, rows, use_full_timestamp=False
+            fields, rows, use_full_timestamp=use_full_timestamp
         )
         # If we are here, the job succeeded, but print warnings if any.
         frontend_utils.PrintJobMessages(execution)
@@ -827,6 +831,7 @@ class Query(bigquery_command.BigqueryCmd):
         and not frontend_utils.IsSuccessfulDmlOrDdlJob(printable_job_info)
         and not is_assert_job
     ):
+      use_full_timestamp = False
       # ReadSchemaAndJobRows can handle failed jobs, but cannot handle
       # a successful DML job if the destination table is already deleted.
       # DML, DDL, and ASSERT do not have query result, so skip
@@ -838,7 +843,7 @@ class Query(bigquery_command.BigqueryCmd):
           max_rows=self.max_rows,
       )
       bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-          fields, rows, use_full_timestamp=False
+          fields, rows, use_full_timestamp=use_full_timestamp
       )
     elif json_escape:
       print(

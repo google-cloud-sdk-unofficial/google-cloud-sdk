@@ -453,6 +453,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
     flags.AddEnableDefaultComputeClassFlag(group)
     flags.AddNetworkTierFlag(group)
+    flags.AddControlPlaneEgressFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -610,6 +611,7 @@ class Update(base.UpdateCommand):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
+    opts.control_plane_egress_mode = args.control_plane_egress
     return opts
 
   def Run(self, args):
@@ -999,6 +1001,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'control_plane_egress', None) is not None:
+      try:
+        op_ref = adapter.ModifyControlPlaneEgress(
+            cluster_ref,
+            args.control_plane_egress,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -1238,6 +1248,7 @@ class UpdateBeta(Update):
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
+    flags.AddControlPlaneEgressFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1447,6 +1458,7 @@ class UpdateBeta(Update):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
+    opts.control_plane_egress_mode = args.control_plane_egress
     return opts
 
 
@@ -1598,6 +1610,7 @@ class UpdateAlpha(Update):
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
+    flags.AddControlPlaneEgressFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1803,4 +1816,5 @@ class UpdateAlpha(Update):
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
+    opts.control_plane_egress_mode = args.control_plane_egress
     return opts

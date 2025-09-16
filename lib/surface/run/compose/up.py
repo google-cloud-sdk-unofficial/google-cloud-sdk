@@ -18,6 +18,7 @@ import os
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
+from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.run import artifact_registry
 from googlecloudsdk.command_lib.run import compose_resource
 from googlecloudsdk.command_lib.run import exceptions
@@ -61,7 +62,7 @@ class Up(base.BinaryBackedCommand):
     Up.CommonArgs(parser)
 
   def _ResourceAndTranslateRun(
-      self, command_executor, compose_file, repo, args
+      self, command_executor, compose_file, repo, project_number, region, args
   ):
     """Handles the resource and translate run logic."""
     resource_response = command_executor(
@@ -80,7 +81,7 @@ class Up(base.BinaryBackedCommand):
       )
       log.debug('Successfully parsed resources config proto.')
       log.debug(f'ResourcesConfig:\n{config}')
-      resources_config = config.handle_resources()
+      resources_config = config.handle_resources(region=region)
       log.debug(f'Handled ResourcesConfig:\n{resources_config}')
 
       # Serialize the handled config to JSON
@@ -92,6 +93,8 @@ class Up(base.BinaryBackedCommand):
           resources_config=resources_config_json,  # Pass the JSON string
           debug=args.debug,
           dry_run=args.dry_run,
+          project_number=project_number,
+          region=region,
       )
       return response
     except Exception as e:
@@ -104,6 +107,7 @@ class Up(base.BinaryBackedCommand):
     region = flags.GetRegion(args, prompt=True)
     self._SetRegionConfig(region)
     project = properties.VALUES.core.project.Get(required=True)
+    project_number = projects_util.GetProjectNumber(project)
     repo = self._GenerateRepositoryName(
         project,
         region,
@@ -127,7 +131,7 @@ class Up(base.BinaryBackedCommand):
 
     if args.dev:
       response = self._ResourceAndTranslateRun(
-          command_executor, compose_file, repo, args
+          command_executor, compose_file, repo, project_number, region, args
       )
     else:
       response = command_executor(

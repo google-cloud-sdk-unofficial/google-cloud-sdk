@@ -400,10 +400,7 @@ def GetUserAgent() -> str:
     return 'bq/' + VERSION_NUMBER + ' ' + google_python_client_name
 
 
-# TODO: b/387350598 - Align service account name matching with gcloud.
+# See go/cloud-iam-service-account-types.
 def IsServiceAccount(account: str) -> bool:
   """Returns whether the account may be a service account based on the user-created or system-created account name."""
-  return (
-      re.fullmatch(r'^.+@((.+\.iam)|system)(\.gserviceaccount\.com)$', account)
-      is not None
-  )
+  return re.fullmatch(r'^.+@(.+)(\.gserviceaccount\.com)$', account) is not None

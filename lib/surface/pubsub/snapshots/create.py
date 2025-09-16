@@ -23,11 +23,14 @@ from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import snapshots
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.pubsub import flags
 from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates one or more Cloud Pub/Sub snapshots."""
 
@@ -81,12 +84,18 @@ class Create(base.CreateCommand):
     labels = labels_util.ParseCreateArgs(
         args, client.messages.CreateSnapshotRequest.LabelsValue)
 
+    tags = flags.GetTagsMessage(
+        args, client.messages.CreateSnapshotRequest.TagsValue
+    )
+
     failed = []
     for snapshot_name in args.snapshot:
       snapshot_ref = util.ParseSnapshot(snapshot_name)
 
       try:
-        result = client.Create(snapshot_ref, subscription_ref, labels=labels)
+        result = client.Create(
+            snapshot_ref, subscription_ref, labels=labels, tags=tags
+        )
       except api_ex.HttpError as error:
         exc = exceptions.HttpException(error)
         log.CreatedResource(
@@ -103,3 +112,13 @@ class Create(base.CreateCommand):
 
     if failed:
       raise util.RequestsFailedError(failed, 'create')
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Creates one or more Cloud Pub/Sub snapshots."""
+
+  @staticmethod
+  def Args(parser):
+    super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddTagsFlag(parser)

@@ -73,7 +73,7 @@ class List(base.DescribeCommand, base.ListCommand):
 List.detailed_help = {
     'EXAMPLES':
         """\
-    To list the associations of the folder with ID ``987654321", run:
+    To list the associations of the folder with ID ``987654321'', run:
 
       $ {command} --folder=987654321
     """,

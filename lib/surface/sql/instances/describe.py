@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import instances as instance_api_util
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
+from googlecloudsdk import core
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.core import properties
@@ -89,7 +90,23 @@ class Get(base.DescribeCommand):
       instance = sql_client.instances.Get(
           sql_messages.SqlInstancesGetRequest(
               project=instance_ref.project, instance=instance_ref.instance))
-      return instance_api_util.DatabaseInstancePresentation(instance)
+      instance_presentation = instance_api_util.DatabaseInstancePresentation(instance)
+      serialized_instance_presentation = core.resource.resource_projector.MakeSerializable(instance_presentation)
+      if 'settings' in serialized_instance_presentation.keys() and 'ipConfiguration' in serialized_instance_presentation['settings'].keys():
+        ipv4Enabled = False
+        if 'ipv4Enabled' in serialized_instance_presentation['settings']['ipConfiguration'].keys():
+          ipv4Enabled = serialized_instance_presentation['settings']['ipConfiguration']['ipv4Enabled']
+        authorizedNetworks = []
+        if 'authorizedNetworks' in serialized_instance_presentation['settings']['ipConfiguration'].keys():
+          authorizedNetworks = serialized_instance_presentation['settings']['ipConfiguration']['authorizedNetworks']
+        if ipv4Enabled and len(authorizedNetworks) == 0:
+          serialized_instance_presentation['settings']['ipConfiguration']['message'] = (
+            'Configuring authorized network or using CloudSQL auth proxy or'
+            ' language connectors is a prerequisite for connecting to Public'
+            ' IP. Please refer to the documentation for more details'
+            ' https://cloud.google.com/sql/docs/mysql/authorize-networks.'
+        )
+      return serialized_instance_presentation
     except apitools_exceptions.HttpError as error:
       if error.status_code == six.moves.http_client.FORBIDDEN:
         raise exceptions.ResourceNotFoundError(

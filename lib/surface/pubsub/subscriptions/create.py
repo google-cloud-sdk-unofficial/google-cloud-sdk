@@ -121,6 +121,8 @@ def _Run(
         args, client.messages.Subscription.LabelsValue
     )
 
+  tags = flags.GetTagsMessage(args, client.messages.Subscription.TagsValue)
+
   failed = []
   for subscription_ref in args.CONCEPTS.subscription.Parse():
     try:
@@ -161,6 +163,7 @@ def _Run(
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
           message_transforms_file=message_transforms_file,
+          tags=tags,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -256,3 +259,4 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+    flags.AddTagsFlag(parser)

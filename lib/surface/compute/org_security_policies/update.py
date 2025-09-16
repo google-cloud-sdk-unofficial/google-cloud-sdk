@@ -85,9 +85,9 @@ class Update(base.UpdateCommand):
 Update.detailed_help = {
     'EXAMPLES':
         """\
-    To update an organization security policy with ID "123456789" to change the
-    description to "New description", run:
+    To update an organization security policy with ID ``123456789'' to change the
+    description to ``New description'', run:
 
-      $ {command} update 123456789 --description='New description'
+      $ {command} 123456789 --description='New description'
     """,
 }

@@ -147,3 +147,15 @@ def define_event_driven_schedule(
       ' --schedule_start_time or --schedule_end_time.',
       flag_values=flag_values,
   )
+
+
+def define_use_full_timestamp(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[bool]:
+  return flags.DEFINE_boolean(
+      'use_full_timestamp',
+      False,
+      'Use full precision ISO8601 string representation for timestamp values'
+      ' in the result.',
+      flag_values=flag_values,
+  )

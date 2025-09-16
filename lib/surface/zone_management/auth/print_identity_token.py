@@ -73,4 +73,5 @@ class IdentityToken(base.DescribeCommand):
       log.error('Failed to refresh credentials: %s', e)
       return None
 
-    return credential.token
+    log.out.Print(credential.token)
+    return None

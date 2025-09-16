@@ -566,6 +566,19 @@ INSTALL_CMD_EXAMPLES_TEXT = """\
     credentials stored at '/example/path.json', run:
 
       $ {command} --creds-file=/example/path.json --pool=AGENT_POOL
+
+    To install an agent using service account impersonation, run:
+
+      $ {command} --creds-file=/example/path.json --pool=CUSTOM_AGENT_POOL --impersonate-service-account=impersonated-account@project-id.iam.gserviceaccount.com
+
+    Note : The `--impersonate-service-account` flag only applies to the API
+    calls made by gcloud during the agent installation and authorization process.
+    The impersonated credentials are not passed to the transfer agent's runtime
+    environment. The agent itself does not support impersonation and will use
+    the credentials provided via the `--creds-file` flag or the default gcloud
+    authenticated account for all of its operations. To grant the agent permissions,
+    you must provide a service account key with the required direct roles
+    (e.g., Storage Transfer Agent, Storage Object User)
 """
 
 

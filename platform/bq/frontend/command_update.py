@@ -842,10 +842,6 @@ class Update(bigquery_command.BigqueryCmd):
           )
           print(object_info)
         else:
-          if self.max_slots is not None or self.scaling_mode is not None:
-            utils_flags.fail_if_not_using_alpha_feature(
-                bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
-            )
           if self.reservation_group_name is not None:
             utils_flags.fail_if_not_using_alpha_feature(
                 bq_flags.AlphaFeatures.RESERVATION_GROUPS

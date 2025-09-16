@@ -181,6 +181,12 @@ class Update(base.Command):
     )
     return changes
 
+  def _IsMultiRegion(self):
+    return False
+
+  def _GetMultiRegionRegions(self, changes, service):  # used by child - pylint: disable=unused-argument
+    return None
+
   def _GetIap(self, args):
     if flags.FlagIsExplicitlySet(args, 'iap'):
       return args.iap
@@ -212,10 +218,12 @@ class Update(base.Command):
           service is None or traffic.LATEST_REVISION_KEY in service.spec_traffic
       )
       creates_revision = config_changes.AdjustsTemplate(changes)
+      multiregion_regions = self._GetMultiRegionRegions(changes, service)
       deployment_stages = stages.ServiceStages(
           include_iam_policy_set=False,
           include_route=creates_revision and has_latest,
           include_create_revision=creates_revision,
+          regions_list=multiregion_regions,
           include_iap=iap is not None,
       )
       if creates_revision:
@@ -247,6 +255,7 @@ class Update(base.Command):
               ),
               is_verbose=properties.VALUES.core.verbosity.Get() == 'debug',
               iap_enabled=iap,
+              multiregion_regions=multiregion_regions,
           )
 
       try:

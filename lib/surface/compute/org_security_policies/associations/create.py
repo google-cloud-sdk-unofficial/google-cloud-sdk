@@ -120,8 +120,8 @@ Create.detailed_help = {
     'EXAMPLES':
         """\
     To associate an organization security policy under folder with ID
-    ``123456789" to folder ``987654321", run:
+    ``123456789'' to folder ``987654321'', run:
 
-      $ {command} create --security-policy=123456789 --folder=987654321
+      $ {command} --security-policy=123456789 --folder=987654321
     """,
 }

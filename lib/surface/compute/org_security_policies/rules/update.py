@@ -244,11 +244,11 @@ class UpdateAlpha(Update):
 Update.detailed_help = {
     'EXAMPLES':
         """\
-    To update a rule with priority ``10" in an organization security policy
-    with ID ``123456789" to change the action to ``allow" and description to
-    ``new-example-rule", run:
+    To update a rule with priority ``10'' in an organization security policy
+    with ID ``123456789'' to change the action to ``allow'' and description to
+    ``new-example-rule'', run:
 
-      $ {command} create 10 --security-policy=123456789 --action=allow
+      $ {command} 10 --security-policy=123456789 --action=allow
       --description=new-example-rule
     """,
 }

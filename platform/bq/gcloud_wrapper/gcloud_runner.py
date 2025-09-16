@@ -14,7 +14,7 @@ from pyglib import resources
 if sys.version_info >= (3, 9):
   GcloudPopen: TypeAlias = subprocess.Popen[str]
 else:
-  # Before python 3.09 the type `subprocess.Popen[str]` is unsupported.
+  # Before python 3.9 the type `subprocess.Popen[str]` is unsupported.
   GcloudPopen: TypeAlias = subprocess.Popen  # pylint: disable=g-bare-generic
 
 _gcloud_path = None
@@ -58,14 +58,3 @@ def run_gcloud_command(
       stderr=stderr,
       universal_newlines=True,
   )
-
-
-def get_all_output(proc: GcloudPopen) -> str:
-  """Returns all output from the given Popen object."""
-  output = ''
-  if not proc.stdout:
-    return ''
-
-  for raw_line in iter(proc.stdout.readline, ''):
-    output += str(raw_line).strip()
-  return output

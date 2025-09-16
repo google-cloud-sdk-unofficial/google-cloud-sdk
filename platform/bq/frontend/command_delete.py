@@ -35,6 +35,7 @@ from utils import bq_id_utils
 
 class Delete(bigquery_command.BigqueryCmd):
   """The Delete CLI command."""
+
   usage = """rm [-f] [-r] [(-d|-t)] <identifier>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
@@ -116,6 +117,12 @@ class Delete(bigquery_command.BigqueryCmd):
     )
     flags.DEFINE_boolean(
         'connection', False, 'Delete a connection.', flag_values=fv
+    )
+    flags.DEFINE_boolean(
+        'migration_workflow',
+        False,
+        'Delete a migration workflow.',
+        flag_values=fv,
     )
     self._ProcessCommandRc(fv)
 
@@ -270,6 +277,8 @@ class Delete(bigquery_command.BigqueryCmd):
       client_connection.DeleteConnection(
           client=client.GetConnectionV1ApiClient(), reference=reference
       )
+    elif self.migration_workflow:
+      reference = identifier
     else:
       reference = bq_client_utils.GetReference(
           id_fallbacks=client, identifier=identifier
@@ -300,6 +309,9 @@ class Delete(bigquery_command.BigqueryCmd):
         isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference)
         and self.r
     ):
+      raise app.UsageError('Cannot specify -r with %r' % (reference,))
+
+    if self.migration_workflow and self.r:
       raise app.UsageError('Cannot specify -r with %r' % (reference,))
 
     if not self.force:
@@ -345,6 +357,7 @@ class Delete(bigquery_command.BigqueryCmd):
                   client.GetTransferV1ApiClient(), reference
               )
           )
+          or self.migration_workflow
       ):
         if 'y' != frontend_utils.PromptYN(
             'rm: remove %r? (y/N) ' % (reference,)
@@ -393,4 +406,11 @@ class Delete(bigquery_command.BigqueryCmd):
           client.GetTransferV1ApiClient(),
           reference,
           ignore_not_found=self.force,
+      )
+    elif self.migration_workflow:
+      # Prompt for confirmation has already occurred.
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'rm',
+          identifier,
       )

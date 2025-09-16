@@ -220,6 +220,7 @@ def format_time_from_proto_timestamp_json_string(json_string: str) -> str:
   seconds = (parsed_datetime - datetime.datetime(1970, 1, 1)).total_seconds()
   return format_time(seconds)
 
+
 StringReference: TypeAlias = str  # eg. 'project:dataset.routine'
 ResourceType: TypeAlias = str  # eg. 'ROUTINE' or 'All ROUTINES in DATASET'
 # Conditions is used as a key for the dictionary of ACL entries that is printed.
@@ -494,8 +495,20 @@ def configure_formatter(
             'File URIs',
             'Archive URIs',
         ))
+      if 'pythonOptions' in object_info:
+        formatter.AddColumns((
+            'Entry Point',
+            'Packages',
+        ))
+      if 'externalRuntimeOptions' in object_info:
+        formatter.AddColumns((
+            'Connection',
+            'Runtime Version',
+            'Container Memory',
+            'Container CPU',
+        ))
   elif reference_type == bq_id_utils.ApiClientHelper.RowAccessPolicyReference:
-    if print_format == 'list':
+    if print_format == 'list' or print_format == 'show':
       formatter.AddColumns((
           'Id',
           'Filter Predicate',
@@ -579,21 +592,18 @@ def configure_formatter(
         'updateTime',
         'multiRegionAuxiliary',
         'edition',
+        'autoscaleMaxSlots',
+        'autoscaleCurrentSlots',
+        'maxSlots',
+        'scalingMode',
     )
-    final_columns = None
     # TODO(b/426869105): Remove alpha flag after GA.
     if bq_flags.AlphaFeatures.RESERVATION_GROUPS in bq_flags.ALPHA.value:
       shared_columns = (
           *shared_columns,
           'reservationGroup',
       )
-    if not final_columns:
-      final_columns = (
-          *shared_columns,
-          'autoscaleMaxSlots',
-          'autoscaleCurrentSlots',
-      )
-    formatter.AddColumns(final_columns)
+    formatter.AddColumns(shared_columns)
   elif (
       reference_type == bq_id_utils.ApiClientHelper.CapacityCommitmentReference
   ):
@@ -940,6 +950,28 @@ def format_routine_info(routine_info):
     result['Connection'] = routine_info['remoteFunctionOptions']['connection']
     result['User Defined Context'] = routine_info['remoteFunctionOptions'].get(
         'userDefinedContext', ''
+    )
+  if 'pythonOptions' in routine_info:
+    result['Entry Point'] = routine_info['pythonOptions']['entryPoint']
+    result['Packages'] = routine_info['pythonOptions'].get('packages')
+    # if 'pythonOptions' is present, the routine is guaranteed to be a pythonUDF
+    # and 'importedLibraries' value is used for imported .py library files.
+    result['Libraries'] = routine_info.get('importedLibraries')
+  if 'externalRuntimeOptions' in routine_info:
+    result['Runtime Version'] = routine_info['externalRuntimeOptions'].get(
+        'runtimeVersion'
+    )
+    result['Container Memory'] = routine_info['externalRuntimeOptions'].get(
+        'containerMemory'
+    )
+    result['Container CPU'] = routine_info['externalRuntimeOptions'].get(
+        'containerCpu'
+    )
+    result['Connection'] = routine_info['externalRuntimeOptions'].get(
+        'runtimeConnection'
+    )
+    result['Max Batching Rows'] = routine_info['externalRuntimeOptions'].get(
+        'maxBatchingRows'
     )
   if 'sparkOptions' in routine_info:
     spark_options = routine_info['sparkOptions']

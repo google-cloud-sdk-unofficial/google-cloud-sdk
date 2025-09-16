@@ -70,6 +70,7 @@ class _Update(object):
     cp_flags.AddPasswordFlagGroup(parser)
     cp_flags.AddHostFlag(parser)
     cp_flags.AddPortFlag(parser)
+    cp_flags.AddDbmPortFlag(parser)
     cp_flags.AddCaCertificateFlag(parser)
     cp_flags.AddPrivateKeyFlag(parser)
     flags.AddLabelsUpdateFlags(parser)

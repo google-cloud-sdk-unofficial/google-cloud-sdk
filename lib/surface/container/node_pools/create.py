@@ -131,6 +131,7 @@ for examples.
   flags.AddSoleTenantMinNodeCpusFlag(parser)
   flags.AddContainerdConfigFlag(parser)
   flags.AddEnableKubeletReadonlyPortFlag(parser)
+  flags.AddGpuDirectStrategyFlag(parser)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -197,6 +198,7 @@ def ParseCreateNodePoolOptionsBase(args):
       reservation_affinity=args.reservation_affinity,
       reservation=args.reservation,
       sandbox=args.sandbox,
+      gpu_direct_strategy=args.gpu_direct_strategy,
       max_surge_upgrade=args.max_surge_upgrade,
       max_unavailable_upgrade=args.max_unavailable_upgrade,
       node_group=args.node_group,

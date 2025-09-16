@@ -322,4 +322,14 @@ class BigqueryCmd(NewCmd):
       identifier: Optional[str] = None,
       command_flags_for_this_resource: Optional[Dict[str, str]] = None,
   ):
-    pass  # pylint: disable=unreachable
+    bq_command_flags = {
+        **(command_flags_for_this_resource or {}),
+        **self.ParseCommandFlagsSharedWithAllResources(),
+    }
+    exit_code = bq_to_gcloud_command_executor.run_bq_command_using_gcloud(
+        resource,
+        bq_command,
+        bq_command_flags=bq_command_flags,
+        identifier=identifier,
+    )
+    sys.exit(exit_code)

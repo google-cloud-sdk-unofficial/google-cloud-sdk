@@ -101,8 +101,8 @@ def _CommonArgs(parser, support_max_pods_per_node, release_track):
   parser.add_argument(
       '--service-account',
       help='The Google Cloud Platform service account to be used by the node '
-      'VMs. If a service account is not specified, the "default" Compute '
-      'Engine service account for the project is used. Cannot be updated.')
+      'VMs. You must explicitly specify a service account. Cannot be '
+      'updated.')
   # Default is provided by API server.
   parser.add_argument(
       '--oauth-scopes',

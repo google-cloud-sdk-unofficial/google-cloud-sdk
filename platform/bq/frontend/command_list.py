@@ -239,6 +239,12 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         'List all connections for given project/location',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'migration_workflow',
+        False,
+        'List all migration workflows for the given project and location.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str = '') -> Optional[int]:
@@ -274,6 +280,7 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
           <reservation_id>
       bq ls --reservation_group --project_id=proj --location='us'
       bq ls --connection --project_id=proj --location=us
+      bq ls --migration_workflow --project_id=proj --location=us
     """
 
     # pylint: disable=g-doc-exception
@@ -641,6 +648,17 @@ class ListCmd(bigquery_command.BigqueryCmd):  # pylint: disable=missing-docstrin
         print('No row access policies found.')
       if 'nextPageToken' in response:
         frontend_utils.PrintPageToken(response)
+    elif self.migration_workflow:
+      if not bq_flags.LOCATION.value:
+        raise app.UsageError(
+            'Need to specify location for listing migration workflows.'
+        )
+      object_type = None
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'ls',
+          command_flags_for_this_resource={'location': bq_flags.LOCATION.value},
+      )
     elif self.d:
       reference = bq_client_utils.GetProjectReference(
           id_fallbacks=client, identifier=identifier

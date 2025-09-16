@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250730",
+  "revision": "20250903",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -1856,6 +1856,60 @@
           "description": "The apriori support minimum. Applies to contribution analysis models.",
           "type": "number",
           "format": "double"
+        },
+        "huggingFaceModelId": {
+          "description": "The id of a Hugging Face model. For example, `google\/gemma-2-2b-it`.",
+          "type": "string"
+        },
+        "modelGardenModelName": {
+          "description": "The name of a Vertex model garden publisher model. Format is `publishers\/{publisher}\/models\/{model}@{optional_version_id}`.",
+          "type": "string"
+        },
+        "endpointIdleTtl": {
+          "description": "The idle TTL of the endpoint before the resources get destroyed. The default value is 6.5 hours.",
+          "type": "string",
+          "format": "google-duration"
+        },
+        "machineType": {
+          "description": "The type of the machine used to deploy and serve the model.",
+          "type": "string"
+        },
+        "minReplicaCount": {
+          "description": "The minimum number of machine replicas that will be always deployed on an endpoint. This value must be greater than or equal to 1. The default value is 1.",
+          "type": "string",
+          "format": "int64"
+        },
+        "maxReplicaCount": {
+          "description": "The maximum number of machine replicas that will be deployed on an endpoint. The default value is equal to min_replica_count.",
+          "type": "string",
+          "format": "int64"
+        },
+        "reservationAffinityType": {
+          "description": "Specifies the reservation affinity type used to configure a Vertex AI resource. The default value is `NO_RESERVATION`.",
+          "type": "string",
+          "enumDescriptions": [
+            "Default value.",
+            "No reservation.",
+            "Any reservation.",
+            "Specific reservation."
+          ],
+          "enum": [
+            "RESERVATION_AFFINITY_TYPE_UNSPECIFIED",
+            "NO_RESERVATION",
+            "ANY_RESERVATION",
+            "SPECIFIC_RESERVATION"
+          ]
+        },
+        "reservationAffinityKey": {
+          "description": "Corresponds to the label key of a reservation resource used by Vertex AI. To target a SPECIFIC_RESERVATION by name, use `compute.googleapis.com\/reservation-name` as the key and specify the name of your reservation as its value.",
+          "type": "string"
+        },
+        "reservationAffinityValues": {
+          "description": "Corresponds to the label values of a reservation resource used by Vertex AI. This must be the full resource name of the reservation or reservation block.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1977,7 +2031,8 @@
               "Weekly period, 7 days.",
               "Monthly period, 30 days or irregular.",
               "Quarterly period, 90 days or irregular.",
-              "Yearly period, 365 days or irregular."
+              "Yearly period, 365 days or irregular.",
+              "Hourly period, 1 hour."
             ],
             "enum": [
               "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
@@ -1986,7 +2041,8 @@
               "WEEKLY",
               "MONTHLY",
               "QUARTERLY",
-              "YEARLY"
+              "YEARLY",
+              "HOURLY"
             ]
           }
         }
@@ -2036,7 +2092,8 @@
               "Weekly period, 7 days.",
               "Monthly period, 30 days or irregular.",
               "Quarterly period, 90 days or irregular.",
-              "Yearly period, 365 days or irregular."
+              "Yearly period, 365 days or irregular.",
+              "Hourly period, 1 hour."
             ],
             "enum": [
               "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
@@ -2045,7 +2102,8 @@
               "WEEKLY",
               "MONTHLY",
               "QUARTERLY",
-              "YEARLY"
+              "YEARLY",
+              "HOURLY"
             ]
           }
         },
@@ -2557,7 +2615,8 @@
               "Weekly period, 7 days.",
               "Monthly period, 30 days or irregular.",
               "Quarterly period, 90 days or irregular.",
-              "Yearly period, 365 days or irregular."
+              "Yearly period, 365 days or irregular.",
+              "Hourly period, 1 hour."
             ],
             "enum": [
               "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
@@ -2566,7 +2625,8 @@
               "WEEKLY",
               "MONTHLY",
               "QUARTERLY",
-              "YEARLY"
+              "YEARLY",
+              "HOURLY"
             ]
           }
         },
@@ -2635,7 +2695,8 @@
               "Weekly period, 7 days.",
               "Monthly period, 30 days or irregular.",
               "Quarterly period, 90 days or irregular.",
-              "Yearly period, 365 days or irregular."
+              "Yearly period, 365 days or irregular.",
+              "Hourly period, 1 hour."
             ],
             "enum": [
               "SEASONAL_PERIOD_TYPE_UNSPECIFIED",
@@ -2644,7 +2705,8 @@
               "WEEKLY",
               "MONTHLY",
               "QUARTERLY",
-              "YEARLY"
+              "YEARLY",
+              "HOURLY"
             ]
           }
         },
@@ -3435,7 +3497,7 @@
           "$ref": "SystemVariables"
         },
         "schemaUpdateOptions": {
-          "description": "Allows the schema of the destination table to be updated as a side effect of the query job. Schema update options are supported in two cases: when writeDisposition is WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE and the destination table is a partition of a table, specified by partition decorators. For normal tables, WRITE_TRUNCATE will always overwrite the schema. One or more of the following values are specified: * ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema. * ALLOW_FIELD_RELAXATION: allow relaxing a required field in the original schema to nullable.",
+          "description": "Allows the schema of the destination table to be updated as a side effect of the query job. Schema update options are supported in three cases: when writeDisposition is WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE_DATA; when writeDisposition is WRITE_TRUNCATE and the destination table is a partition of a table, specified by partition decorators. For normal tables, WRITE_TRUNCATE will always overwrite the schema. One or more of the following values are specified: * ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema. * ALLOW_FIELD_RELAXATION: allow relaxing a required field in the original schema to nullable.",
           "type": "array",
           "items": {
             "type": "string"
@@ -3707,7 +3769,7 @@
           }
         },
         "dataPolicies": {
-          "description": "Optional. Data policy options, will replace the data_policies.",
+          "description": "Optional. Data policies attached to this field, used for field-level access control.",
           "type": "array",
           "items": {
             "$ref": "DataPolicyOption"
@@ -3762,7 +3824,7 @@
     },
     "DataPolicyOption": {
       "id": "DataPolicyOption",
-      "description": "Data policy option proto, it currently supports name only, will support precedence later.",
+      "description": "Data policy option. For more information, see [Mask data by applying data policies to a column](https:\/\/cloud.google.com\/bigquery\/docs\/column-data-masking#data-policies-on-column\/).",
       "type": "object",
       "properties": {
         "name": {
@@ -4408,7 +4470,7 @@
           "type": "boolean"
         },
         "schemaUpdateOptions": {
-          "description": "Allows the schema of the destination table to be updated as a side effect of the load job if a schema is autodetected or supplied in the job configuration. Schema update options are supported in two cases: when writeDisposition is WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE and the destination table is a partition of a table, specified by partition decorators. For normal tables, WRITE_TRUNCATE will always overwrite the schema. One or more of the following values are specified: * ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema. * ALLOW_FIELD_RELAXATION: allow relaxing a required field in the original schema to nullable.",
+          "description": "Allows the schema of the destination table to be updated as a side effect of the load job if a schema is autodetected or supplied in the job configuration. Schema update options are supported in three cases: when writeDisposition is WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE_DATA; when writeDisposition is WRITE_TRUNCATE and the destination table is a partition of a table, specified by partition decorators. For normal tables, WRITE_TRUNCATE will always overwrite the schema. One or more of the following values are specified: * ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema. * ALLOW_FIELD_RELAXATION: allow relaxing a required field in the original schema to nullable.",
           "type": "array",
           "items": {
             "type": "string"
@@ -4991,7 +5053,7 @@
           "format": "int64"
         },
         "totalServicesSkuSlotMs": {
-          "description": "Output only. Total slot-milliseconds for the job that run on external services and billed on the service SKU. This field is only populated for jobs that have external service costs, and is the total of the usage for costs whose billing method is \"SERVICES_SKU\".",
+          "description": "Output only. Total slot milliseconds for the job that ran on external services and billed on the services SKU. This field is only populated for jobs that have external service costs, and is the total of the usage for costs whose billing method is `\"SERVICES_SKU\"`.",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -5186,6 +5248,11 @@
           "description": "Output only. Statistics of metadata cache usage in a query for BigLake tables.",
           "readOnly": true,
           "$ref": "MetadataCacheStatistics"
+        },
+        "incrementalResultStats": {
+          "description": "Output only. Statistics related to incremental query results, if enabled for the query. This feature is not yet available.",
+          "readOnly": true,
+          "$ref": "IncrementalResultStats"
         }
       }
     },
@@ -5623,7 +5690,7 @@
           "format": "int64"
         },
         "billingMethod": {
-          "description": "The billing method used for the external job. This field is only used when billed on the services sku, set to \"SERVICES_SKU\". Otherwise, it is unspecified for backward compatibility.",
+          "description": "The billing method used for the external job. This field, set to `SERVICES_SKU`, is only used when billing under the services SKU. Otherwise, it is unspecified for backward compatibility.",
           "type": "string"
         }
       }
@@ -6310,6 +6377,61 @@
         "tableType": {
           "description": "[Table type](https:\/\/cloud.google.com\/bigquery\/docs\/reference\/rest\/v2\/tables#Table.FIELDS.type).",
           "type": "string"
+        },
+        "pruningStats": {
+          "description": "The column metadata index pruning statistics.",
+          "$ref": "PruningStats"
+        }
+      }
+    },
+    "PruningStats": {
+      "id": "PruningStats",
+      "description": "The column metadata index pruning statistics.",
+      "type": "object",
+      "properties": {
+        "postCmetaPruningPartitionCount": {
+          "description": "The number of partitions matched.",
+          "type": "string",
+          "format": "int64"
+        },
+        "preCmetaPruningParallelInputCount": {
+          "description": "The number of parallel inputs scanned.",
+          "type": "string",
+          "format": "int64"
+        },
+        "postCmetaPruningParallelInputCount": {
+          "description": "The number of parallel inputs matched.",
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "IncrementalResultStats": {
+      "id": "IncrementalResultStats",
+      "description": "Statistics related to Incremental Query Results. Populated as part of JobStatistics2. This feature is not yet available.",
+      "type": "object",
+      "properties": {
+        "disabledReason": {
+          "description": "Reason why incremental query results are\/were not written by the query.",
+          "type": "string",
+          "enumDescriptions": [
+            "Disabled reason not specified.",
+            "Some other reason."
+          ],
+          "enum": [
+            "DISABLED_REASON_UNSPECIFIED",
+            "OTHER"
+          ]
+        },
+        "resultSetLastReplaceTime": {
+          "description": "The time at which the result table's contents were completely replaced. May be absent if no results have been written or the query has completed.",
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "resultSetLastModifyTime": {
+          "description": "The time at which the result table's contents were modified. May be absent if no results have been written or the query has completed.",
+          "type": "string",
+          "format": "google-datetime"
         }
       }
     },

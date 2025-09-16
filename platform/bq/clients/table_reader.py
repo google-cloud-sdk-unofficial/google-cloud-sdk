@@ -39,7 +39,9 @@ class _TableReader:
       list of rows, each of which is a list of field values.
     """
     (_, rows) = self.ReadSchemaAndRows(
-        start_row=start_row, max_rows=max_rows, selected_fields=selected_fields
+        start_row=start_row,
+        max_rows=max_rows,
+        selected_fields=selected_fields,
     )
     return rows
 

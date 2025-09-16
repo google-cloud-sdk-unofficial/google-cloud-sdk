@@ -175,6 +175,7 @@ class Deploy(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
+    flags.AddRegionsArg(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -184,18 +185,6 @@ class Deploy(base.Command):
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
-
-  def _GetAllowUnauthRegions(self, args):
-    """Returns regions to operate on SetIamPolicy for multi-region Services.
-
-    Args:
-      args: argparse.Namespace, Command line arguments
-
-    Returns:
-      None for single-region services, or a list of regions for multi-region
-      services.
-    """
-    return None
 
   def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     """Returns allow_unauth value for a service change.
@@ -214,6 +203,19 @@ class Deploy(base.Command):
       False means to disable unauthenticated access for the service.
       None means to retain the current value for the service.
     """
+    if self._IsMultiRegion():
+      allow_unauth = flags.GetAllowUnauthenticated(
+          args,
+          operations,
+          service_ref,
+          not service_exists,
+          region_override=self._GetRegionsForMultiRegion()[0],
+      )
+      # Avoid failure removing a policy binding for a service that
+      # doesn't exist.
+      if not service_exists and not allow_unauth:
+        return None
+      return allow_unauth
     allow_unauth = None
     if platforms.GetPlatform() == platforms.PLATFORM_MANAGED:
       allow_unauth = flags.GetAllowUnauthenticated(
@@ -636,6 +638,14 @@ class Deploy(base.Command):
       docker_string = ar_repo.GetDockerString()
     return docker_string, repo_to_create
 
+  def _GetRegionsForMultiRegion(self):
+    if self.__multi_region_regions:
+      return self.__multi_region_regions.split(',')
+    return None
+
+  def _IsMultiRegion(self):
+    return bool(self.__multi_region_regions)
+
   def _GetSourceBucketFromSourceLocation(self, source_location):
     logging.debug('source_location: %s', source_location)
     if not source_location:
@@ -658,6 +668,13 @@ class Deploy(base.Command):
     changes.append(
         config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
+    if self._IsMultiRegion():
+      changes.append(
+          # TODO(b/440397578): Use the array here once we merge beta and GA.
+          config_changes.SetRegionsAnnotationChange(
+              regions=self.__multi_region_regions
+          )
+      )
     return changes
 
   def _ConnectionContext(self, args):
@@ -668,6 +685,7 @@ class Deploy(base.Command):
         args,
         flags.Product.RUN,
         self.ReleaseTrack(),
+        is_multiregion=self._IsMultiRegion(),
     )
 
   def _GetTracker(
@@ -695,29 +713,51 @@ class Deploy(base.Command):
         include_build=requires_build,
         include_create_repo=repo_to_create is not None,
         include_iap=iap is not None,
+        regions_list=self._GetRegionsForMultiRegion(),
     )
     if requires_build:
       header = 'Building and deploying'
     else:
       header = 'Deploying'
     if service is None:
-      header += ' new service'
+      header += ' new'
+      if self._IsMultiRegion():
+        header += ' Multi-Region service'
+      else:
+        header += ' service'
       # new services default cpu boost on the client
       if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
         changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
+    if self._IsMultiRegion():
+      failure_message = (
+          'Multi-region deployment failed. Some regions might already be'
+          ' serving traffic.'
+      )
+    else:
+      failure_message = 'Deployment failed'
     header += '...'
     return progress_tracker.StagedProgressTracker(
         header,
         deployment_stages,
-        failure_message='Deployment failed',
+        failure_message=failure_message,
         suppress_output=args.async_,
     )
 
-  def _GetRequiredApis(self, args):
-    return [api_enabler.get_run_api()]
+  def _GetRequiredApis(self, build_from_source):
+    apis = [api_enabler.get_run_api()]
+    if build_from_source:
+      apis.append('artifactregistry.googleapis.com')
+      apis.append('cloudbuild.googleapis.com')
+    return apis
 
   def _DisplaySuccessMessage(self, service, args):
-    if args.async_:
+    if self._IsMultiRegion() and not args.async_:
+      pretty_print.Success(
+          messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
+              service, self._GetRegionsForMultiRegion()
+          )
+      )
+    elif args.async_:
       pretty_print.Success(
           'Service [{{bold}}{serv}{{reset}}] is deploying '
           'asynchronously.'.format(serv=service.name)
@@ -737,6 +777,7 @@ class Deploy(base.Command):
 
   def Run(self, args):
     """Deploy a container to Cloud Run."""
+    self.__multi_region_regions = flags.GetMultiRegion(args)
     platform = flags.GetAndValidatePlatform(
         args, self.ReleaseTrack(), flags.Product.RUN
     )
@@ -747,10 +788,7 @@ class Deploy(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    required_apis = self._GetRequiredApis(args)
-    if build_from_source:
-      required_apis.append('artifactregistry.googleapis.com')
-      required_apis.append('cloudbuild.googleapis.com')
+    required_apis = self._GetRequiredApis(build_from_source)
 
     already_activated_services = False
     if platform == platforms.PLATFORM_MANAGED:
@@ -873,7 +911,7 @@ class Deploy(base.Command):
               tracker,
               asyn=args.async_,
               allow_unauthenticated=allow_unauth,
-              allow_unauth_regions=self._GetAllowUnauthRegions(args),
+              multiregion_regions=self._GetRegionsForMultiRegion(),
               prefetch=service,
               build_image=image,
               build_pack=pack,
@@ -1109,123 +1147,11 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     flags.AddDeployHealthCheckFlag(parser)
-    flags.AddRegionsArg(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
-
-  def GetAllowUnauth(self, args, operations, service_ref, service_exists):
-    if self.__is_multi_region:
-      allow_unauth = flags.GetAllowUnauthenticated(
-          args,
-          operations,
-          service_ref,
-          not service_exists,
-          region_override=self.__is_multi_region.split(',')[0],
-      )
-      # Avoid failure removing a policy binding for a service that
-      # doesn't exist.
-      if not service_exists and not allow_unauth:
-        return None
-      return allow_unauth
-    return super().GetAllowUnauth(args, operations, service_ref, service_exists)
-
-  def _GetAllowUnauthRegions(self, args):
-    if self.__is_multi_region:
-      return self.__is_multi_region.split(',')
-    return None
-
-  def _DisplaySuccessMessage(self, service, args):
-    if not self.__is_multi_region or args.async_:
-      return super()._DisplaySuccessMessage(service, args)
-
-    pretty_print.Success(
-        messages_util.GetSuccessMessageForMultiRegionSynchronousDeploy(
-            service, self._GetAllowUnauthRegions(args)
-        )
-    )
-
-  def _ConnectionContext(self, args):
-    """Returns the connection context with is_multiregion set."""
-    return connection_context.GetConnectionContext(
-        args,
-        flags.Product.RUN,
-        self.ReleaseTrack(),
-        is_multiregion=self.__is_multi_region,
-    )
-
-  def _GetBaseChanges(self, args):
-    """Returns the service config changes with maybe multi-region annotation."""
-    changes = super()._GetBaseChanges(args)
-    if self.__is_multi_region:
-      changes.append(
-          config_changes.SetRegionsAnnotationChange(
-              regions=self.__is_multi_region
-          )
-      )
-    return changes
-
-  def _GetTracker(
-      self,
-      args,
-      service,
-      changes,
-      build_from_source,
-      repo_to_create,
-      allow_unauth,
-      has_latest,
-      iap,
-      skip_build,
-  ):
-    if not self.__is_multi_region:
-      return super()._GetTracker(
-          args,
-          service,
-          changes,
-          build_from_source,
-          repo_to_create,
-          allow_unauth,
-          has_latest,
-          iap,
-          skip_build,
-      )
-    requires_build = bool(build_from_source) and not skip_build
-    include_validate_service = requires_build and self.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    ]
-    deployment_stages = stages.ServiceStages(
-        include_iam_policy_set=allow_unauth is not None,
-        include_route=has_latest,
-        include_validate_service=include_validate_service,
-        include_upload_source=bool(build_from_source),
-        include_build=requires_build,
-        include_create_repo=repo_to_create is not None,
-        include_create_revision=True,
-        include_iap=iap is not None,
-    )
-    header = 'Deploying new Multi-Region service...'
-    # new services default cpu boost on the client
-    if not flags.FlagIsExplicitlySet(args, 'cpu_boost'):
-      changes.append(config_changes.StartupCpuBoostChange(cpu_boost=True))
-    return progress_tracker.StagedProgressTracker(
-        header,
-        deployment_stages,
-        failure_message=(
-            'Multi-region deployment failed. Some regions might already be'
-            ' serving traffic.'
-        ),
-        suppress_output=args.async_,
-    )
-
-  def Run(self, args):
-    """Deploy a container to Cloud Run."""
-    # If this is a multi-region Service, we will use the global endpoint
-    # for all operations, and append a regions annotation to the Service.
-    self.__is_multi_region = flags.GetMultiRegion(args)
-    return super().Run(args)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1241,7 +1167,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddServiceMaxInstancesFlag(parser)
-    flags.AddRegionsArg(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

@@ -168,6 +168,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     )
   if args.IsKnownAndSpecified('clear_unc_mappings'):
     cleared_fields.append('settings.uncMappings')
+  if args.clear_active_directory_dns_servers:
+    cleared_fields.append('settings.activeDirectoryConfig.dnsServers')
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -333,6 +335,11 @@ def AddBaseArgs(parser):
   flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
+  flags.AddActiveDirectoryMode(parser, hidden=True)
+  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
+  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
+  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
+  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
   flags.AddEnableConnectionPooling(parser)
@@ -360,9 +367,9 @@ def AddBetaArgs(parser):
   flags.AddClearUncMappings(unc_mappings_group)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Adds alpha args and flags to the parser."""
-  pass
+  flags.AddReadPoolAutoScaleConfig(parser, hidden=True)
 
 
 def IsBetaOrNewer(release_track):

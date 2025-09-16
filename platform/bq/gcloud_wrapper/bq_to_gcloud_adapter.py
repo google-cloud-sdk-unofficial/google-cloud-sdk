@@ -93,33 +93,50 @@ def run_bq_command_using_gcloud(
   command_mapping = GCLOUD_COMMAND_GENERATOR.get_command_mapping(
       resource=resource, bq_command=bq_command
   )
-  if command_mapping.print_resource and 'json' in bq_format:
-    json_output = gcloud_runner.get_all_output(proc)
-    parsed_json = json.loads(json_output)
-    if isinstance(parsed_json, list):
-      json_object = []
-      for item_dict in parsed_json:
-        json_object.append(command_mapping.json_mapping(item_dict, bq_format))
-    else:
-      json_object = command_mapping.json_mapping(parsed_json, bq_format)
-    if 'json' == bq_format:
-      print(json.dumps(json_object, separators=(',', ':')))
-    elif 'prettyjson' == bq_format:
-      print(json.dumps(json_object, indent=2, sort_keys=True))
-  elif proc.stdout:
-    for raw_line in iter(proc.stdout.readline, ''):
-      output = str(raw_line).strip()
+  if not proc.stdout:
+    return proc.returncode
+  # Print line-by-line unless for JSON output, where we first collect all the
+  # lines into a single JSON object before printing.
+  json_output = ''
+  for raw_line in iter(proc.stdout.readline, ''):
+    line_to_print = ''
+    output = str(raw_line).strip()
+    is_progress_message = command_mapping.synchronous_progress_message_matcher(
+        output
+    )
+    if is_progress_message:
+      line_to_print = output
+    elif not command_mapping.print_resource:
       # If this command doesn't print the resource, then print the raw output.
-      if not command_mapping.print_resource:
-        line_to_print = command_mapping.status_mapping(
-            output, identifier, bq_global_flags.get('project_id')
-        )
-      elif bq_format == 'pretty':
-        line_to_print = _swap_gcloud_box_to_bq_pretty(output)
-      elif bq_format == 'sparse':
-        line_to_print = _swap_gcloud_box_to_bq_sparse(output)
+      line_to_print = command_mapping.status_mapping(
+          output, identifier, bq_global_flags.get('project_id')
+      )
+    elif 'json' in bq_format:
+      # Collect all the lines before printing them as a single JSON object.
+      json_output += output
+    elif bq_format == 'pretty':
+      line_to_print = _swap_gcloud_box_to_bq_pretty(output)
+    elif bq_format == 'sparse':
+      line_to_print = _swap_gcloud_box_to_bq_sparse(output)
+    else:
+      line_to_print = output
+    if line_to_print:
+      print(line_to_print)
+  if json_output:
+    try:
+      parsed_json = json.loads(json_output)
+      if isinstance(parsed_json, list):
+        json_object = []
+        for item_dict in parsed_json:
+          json_object.append(command_mapping.json_mapping(item_dict, bq_format))
       else:
-        line_to_print = output
-      if line_to_print:
-        print(line_to_print)
+        json_object = command_mapping.json_mapping(parsed_json, bq_format)
+      if 'json' == bq_format:
+        print(json.dumps(json_object, separators=(',', ':')))
+      elif 'prettyjson' == bq_format:
+        print(json.dumps(json_object, indent=2, sort_keys=True))
+    except json.JSONDecodeError:
+      # Print the raw output even if it cannot be parsed as json.
+      # This likely happens when the command returns an error like "not found".
+      print(json_output)
   return proc.returncode

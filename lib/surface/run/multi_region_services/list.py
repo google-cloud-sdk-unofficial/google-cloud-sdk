@@ -25,7 +25,9 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import list as services_list
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class MultiRegionList(services_list.List):
   """List available multi-region services."""
 

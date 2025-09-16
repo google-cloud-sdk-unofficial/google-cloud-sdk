@@ -112,14 +112,14 @@ class Create(base.CreateCommand):
 
 Create.detailed_help = {
     'EXAMPLES': """\
-    To create an organization security policy under folder with ID "123456789",
+    To create an organization security policy under folder with ID ``123456789'',
     run:
 
-      $ {command} create --short-name=my-policy --folder=123456789
+      $ {command} --short-name=my-policy --folder=123456789
 
-    To create an organization security under organization with ID "12345" from
+    To create an organization security under organization with ID ``12345'' from
     an input file, run:
 
-      $ {command} create --file-name=my-file-name --organization=12345
+      $ {command} --file-name=my-file-name --organization=12345
     """,
 }

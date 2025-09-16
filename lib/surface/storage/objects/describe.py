@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.storage import errors_util
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
+from googlecloudsdk.command_lib.storage.resources import contexts_only_formatter
 from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
@@ -65,6 +66,9 @@ class Describe(base.DescribeCommand):
     flags.add_raw_display_flag(parser)
     flags.add_soft_deleted_flag(parser)
     gsutil_json_printer.GsutilJsonPrinter.Register()
+
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      contexts_only_formatter.ContextsOnlyPrinter.Register()
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
@@ -104,6 +108,9 @@ class Describe(base.DescribeCommand):
       )
     else:
       final_resource = resource
+
+    if args.format == contexts_only_formatter.CONTEXT_ONLY_PRINTER_FORMAT:
+      return final_resource
 
     return resource_util.get_display_dict_for_resource(
         final_resource,

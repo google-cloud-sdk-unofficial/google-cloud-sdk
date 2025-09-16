@@ -22,7 +22,9 @@ from googlecloudsdk.command_lib.run import platforms
 from surface.run.services import delete
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class MultiRegionReplace(delete.Delete):
   """Deletes a multi-region service."""
 

@@ -96,12 +96,12 @@ ListRules.detailed_help = {
     'EXAMPLES':
         """\
     To list the rules of an organization security policy with ID
-    "123456789", run:
+    ``123456789'', run:
 
-      $ {command} list-rules 123456789
+      $ {command} 123456789
 
     To list all the fields of the rules of an organization security policy with
-    ID "123456789", run:
+    ID ``123456789'', run:
 
       $ {command} list-rules 123456789 --format="table(
         priority,

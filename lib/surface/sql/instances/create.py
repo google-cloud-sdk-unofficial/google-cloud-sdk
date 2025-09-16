@@ -156,6 +156,11 @@ def AddBaseArgs(parser):
   flags.AddStorageProvisionedThroughput(parser)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
+  flags.AddActiveDirectoryMode(parser, hidden=True)
+  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
+  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
+  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
+  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
   flags.AddForceSqlNetworkArchitecture(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
@@ -181,9 +186,9 @@ def AddBetaArgs(parser):
   flags.AddEnableAutoUpgrade(parser)
 
 
-def AddAlphaArgs(unused_parser):
+def AddAlphaArgs(parser):
   """Declare alpha flags for this command parser."""
-  pass
+  flags.AddReadPoolAutoScaleConfig(parser, hidden=True)
 
 
 def RunBaseCreateCommand(args, release_track):

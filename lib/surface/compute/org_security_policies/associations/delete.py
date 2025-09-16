@@ -64,9 +64,9 @@ class Delete(base.DeleteCommand):
 Delete.detailed_help = {
     'EXAMPLES':
         """\
-    To delete an association with name ``example-association" of an organization
-    security policy with ID ``123456789", run:
+    To delete an association with name ``example-association'' of an organization
+    security policy with ID ``123456789'', run:
 
-      $ {command} delete example-association --security-policy=123456789
+      $ {command} example-association --security-policy=123456789
     """,
 }

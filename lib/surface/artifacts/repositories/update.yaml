@@ -73,7 +73,7 @@
       api_field: repository.remoteRepositoryConfig.enableIngestionAttestation
       action: store_true
       hidden: true
-      default: false
+      default: null
       type: bool
       help_text: |
         Enable generating attestation with verifiable signature on imported files in remote repositories.

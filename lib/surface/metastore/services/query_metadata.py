@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 import io
 import json
+import posixpath
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.metastore import operations_util
@@ -70,6 +71,7 @@ def AddBaseArgs(parser):
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Query(base.Command):
   """Execute a SQL query against a Dataproc Metastore Service's metadata."""
 
@@ -141,23 +143,18 @@ class Query(base.Command):
     return json.load(
         io.TextIOWrapper(
             gcs_client.ReadObject(
+                # GCS URIs follow POSIX path formatting.
                 storage_util.ObjectReference.FromUrl(
-                    self.ExtractQueryFolderUri(result_manifest_uri) +
-                    query_result_file_name, True)),
-            encoding='utf-8'))
-
-  def ExtractQueryFolderUri(self, gcs_uri):
-    """Returns the folder of query result gcs_uri.
-
-    This takes gcs_uri and alter the filename to /filename[0]
-    filename[0] is a string populated by grpc server.
-      e.g., given gs://bucket-id/query-results/uuid/result-manifest
-      output gs://bucket-id/query-results/uuid//
-
-    Args:
-      gcs_uri: the query metadata result gcs uri.
-    """
-    return gcs_uri[:gcs_uri.rfind('/')] + '//'
+                    posixpath.join(
+                        posixpath.dirname(result_manifest_uri),
+                        query_result_file_name,
+                    ),
+                    True,
+                )
+            ),
+            encoding='utf-8',
+        )
+    )
 
   def Display(self, args, result):
     """Displays the server response to a query.

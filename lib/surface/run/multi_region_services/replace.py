@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating multi-region Services."""
 
+from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.run import config_changes
@@ -24,7 +25,9 @@ from googlecloudsdk.command_lib.run import pretty_print
 from surface.run.services import replace
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class MultiRegionReplace(replace.Replace):
   """Create or Update multi-region service from YAML."""
 
@@ -35,7 +38,7 @@ class MultiRegionReplace(replace.Replace):
     flags.AddAddRegionsArg(parser)
     flags.AddRemoveRegionsArg(parser)
 
-  def _GetBaseChanges(self, new_service, args):
+  def _GetMultiRegionSettings(self, args):
     added_or_removed = flags.FlagIsExplicitlySet(
         args, 'add_regions'
     ) or flags.FlagIsExplicitlySet(args, 'remove_regions')
@@ -47,6 +50,12 @@ class MultiRegionReplace(replace.Replace):
               'Cannot specify --add-regions or --remove-regions with --regions'
           ),
       )
+    return all_regions, added_or_removed
+
+  def _GetBaseChanges(self, new_service, args):
+    if not new_service:
+      return None
+    all_regions, added_or_removed = self._GetMultiRegionSettings(args)
     changes = super()._GetBaseChanges(new_service, args)
     if added_or_removed:
       changes.append(
@@ -67,6 +76,23 @@ class MultiRegionReplace(replace.Replace):
         region_label=region_label,
         is_multiregion=True,
     )
+
+  def _GetMultiRegionRegions(self, args, new_service, changes):
+    if not new_service:
+      return None
+    # If the user set --regions, then we just use that. Otherwise, we need to
+    # parse the changes to figure out what regions are being added/removed.
+    all_regions, added_or_removed = self._GetMultiRegionSettings(args)
+    if all_regions:
+      return args.regions.split(',')
+    if added_or_removed:
+      modified = config_changes.WithChanges(new_service, changes)
+      annotation = (
+          modified.annotations.get(k8s_object.MULTI_REGION_REGIONS_ANNOTATION)
+          or None
+      )
+      return annotation.split(',') if annotation else None
+    return None
 
   def _PrintSuccessMessage(self, service_obj, dry_run, args):
     if args.async_:
@@ -94,5 +120,11 @@ class MultiRegionReplace(replace.Replace):
       raise c_exceptions.InvalidArgumentException(
           '--platform',
           'Multi-region Services are only supported on managed platform.',
+      )
+    if flags.FlagIsExplicitlySet(args, 'region'):
+      raise c_exceptions.InvalidArgumentException(
+          '--region',
+          'Multi-region Services do not support the --region flag. Use'
+          ' --regions, --add-regions, or --remove-regions instead.',
       )
     return super().Run(args)

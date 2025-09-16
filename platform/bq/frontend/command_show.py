@@ -12,6 +12,7 @@ from clients import client_data_transfer
 from clients import client_dataset
 from clients import client_deprecated
 from clients import client_reservation
+from clients import client_row_access_policy
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
@@ -20,6 +21,7 @@ from frontend import utils_flags
 from frontend import utils_id as frontend_id_utils
 from utils import bq_error
 from utils import bq_id_utils
+
 
 ApiClientHelper = bq_id_utils.ApiClientHelper
 DatasetReference = bq_id_utils.ApiClientHelper.DatasetReference
@@ -197,6 +199,12 @@ class Show(bigquery_command.BigqueryCmd):
         '\n If not set, defaults as FULL',
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'migration_workflow',
+        None,
+        'Show details of migration workflow described by this identifier.',
+        flag_values=fv,
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier: str = '') -> Optional[int]:
@@ -224,6 +232,7 @@ class Show(bigquery_command.BigqueryCmd):
           --assignee_type=ORGANIZATION --assignee_id=456 --job_type=QUERY
       bq show --reservation_group --location=US --project_id=project
           reservation_group_name
+      bq show --migration_workflow projects/p/locations/l/workflows/workflow_id
 
     Arguments:
       identifier: the identifier of the resource to show.
@@ -379,6 +388,14 @@ class Show(bigquery_command.BigqueryCmd):
       object_info = client_connection.GetConnection(
           client=client.GetConnectionV1ApiClient(), reference=reference
       )
+    elif self.migration_workflow:
+      reference = None
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'show',
+          identifier,
+      )
+
     else:
       reference = bq_client_utils.GetReference(
           id_fallbacks=client, identifier=identifier

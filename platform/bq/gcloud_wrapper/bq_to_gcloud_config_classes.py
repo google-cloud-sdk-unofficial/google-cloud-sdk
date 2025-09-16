@@ -51,10 +51,12 @@ if sys.version_info >= (3, 9, 2):
       [NestedStrDict, Optional[str]], NestedStrDict
   ]
   ConvertStatusFunction: TypeAlias = Callable[[str, str, str], str]
+  MatchOutputFunction: TypeAlias = Callable[[str], bool]
 else:
   ConvertFlagValuesFunction: TypeAlias = Callable
   ConvertJsonFunction: TypeAlias = Callable
   ConvertStatusFunction: TypeAlias = Callable
+  MatchOutputFunction: TypeAlias = Callable
 
 
 class FlagMapping:
@@ -173,6 +175,9 @@ class CommandMapping:
       csv_projection: Optional[str] = None,
       json_mapping: Optional[ConvertJsonFunction] = None,
       status_mapping: Optional[ConvertStatusFunction] = None,
+      synchronous_progress_message_matcher: Optional[
+          MatchOutputFunction
+      ] = None,
       print_resource: bool = True,
       no_prompts: bool = False,
   ):
@@ -195,6 +200,9 @@ class CommandMapping:
         example, lambda x: {'kind': 'bigquery#project', 'id': x['projectId']}
       status_mapping: A function to map the status output from gcloud to bq. For
         example, lambda orig, id, project: f'Dataset {project}:{id} deleted.'
+      synchronous_progress_message_matcher: A function to match a progress
+        message from gcloud when running a synchronous command. For example,
+        lambda message: 'Waiting for job' in message.
       print_resource: If the command also prints the resource it is operating
         on. For example, 'ls' will list resources but 'rm' usually prints status
         and not the resource.
@@ -215,6 +223,12 @@ class CommandMapping:
       self.status_mapping = status_mapping
     else:
       self.status_mapping = lambda original_status, _, __: original_status
+    if synchronous_progress_message_matcher:
+      self.synchronous_progress_message_matcher = (
+          synchronous_progress_message_matcher
+      )
+    else:
+      self.synchronous_progress_message_matcher = lambda _: False
     self.print_resource = print_resource
     self.no_prompts = no_prompts
 

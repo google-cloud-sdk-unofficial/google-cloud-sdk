@@ -33,7 +33,6 @@ def _Args(
     cls,
     parser,
     support_network_tier,
-    support_traffic_disabled,
 ):
   """Add the flags to create a forwarding rule."""
   cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
@@ -41,8 +40,6 @@ def _Args(
   labels_util.AddUpdateLabelsFlags(parser)
   if support_network_tier:
     flags.AddNetworkTier(parser, for_update=True)
-  if support_traffic_disabled:
-    flags.AddTrafficDisabled(parser)
   flags.AddSourceIpRanges(parser)
   flags.AddAllowGlobalAccess(parser)
   flags.AddAllowPscGlobalAccess(parser)
@@ -57,7 +54,6 @@ class UpdateGA(base.UpdateCommand):
   FORWARDING_RULE_ARG = None
 
   _support_network_tier = False
-  _support_traffic_disabled = False
 
   @classmethod
   def Args(cls, parser):
@@ -65,7 +61,6 @@ class UpdateGA(base.UpdateCommand):
         cls,
         parser,
         support_network_tier=cls._support_network_tier,
-        support_traffic_disabled=cls._support_traffic_disabled,
     )
 
   def _CreateGlobalSetLabelsRequest(self, messages, forwarding_rule_ref,
@@ -111,11 +106,6 @@ class UpdateGA(base.UpdateCommand):
   def _HasPscGlobalAccessChange(self, args):
     return args.IsSpecified('allow_psc_global_access')
 
-  def _HasTrafficDisabledChange(self, args):
-    return self._support_traffic_disabled and args.IsSpecified(
-        'traffic_disabled'
-    )
-
   def _HasExternalMigrationChange(self, args):
     return (
         args.IsSpecified(
@@ -151,10 +141,6 @@ class UpdateGA(base.UpdateCommand):
     if self._HasPscGlobalAccessChange(args):
       forwarding_rule.allowPscGlobalAccess = args.allow_psc_global_access
       forwarding_rule.fingerprint = existing.fingerprint
-      has_change = True
-
-    if self._HasTrafficDisabledChange(args):
-      forwarding_rule.trafficDisabled = args.traffic_disabled
       has_change = True
 
     if args.IsSpecified('external_managed_backend_bucket_migration_state'):
@@ -212,7 +198,6 @@ class UpdateGA(base.UpdateCommand):
         self._HasNextTierChange(args),
         self._HasGlobalAccessChange(args),
         self._HasPscGlobalAccessChange(args),
-        self._HasTrafficDisabledChange(args),
         self._HasSourceIpRangeChange(args),
         self._HasExternalMigrationChange(args),
     ])
@@ -285,7 +270,6 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine forwarding rule."""
 
   _support_network_tier = False
-  _support_traffic_disabled = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -293,7 +277,6 @@ class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine forwarding rule."""
 
   _support_network_tier = True
-  _support_traffic_disabled = True
 
 
 UpdateGA.detailed_help = {

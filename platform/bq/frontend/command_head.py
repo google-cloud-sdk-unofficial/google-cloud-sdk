@@ -12,6 +12,7 @@ from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command
 from frontend import bq_cached_client
+from frontend import flags as frontend_flags
 from utils import bq_id_utils
 
 # These aren't relevant for user-facing docstrings:
@@ -88,9 +89,14 @@ class Head(bigquery_command.BigqueryCmd):
           id_fallbacks=client, identifier=identifier
       )
 
+    use_full_timestamp = False
+
     if isinstance(reference, bq_id_utils.ApiClientHelper.JobReference):
       fields, rows = client_job.ReadSchemaAndJobRows(
-          client, dict(reference), start_row=self.s, max_rows=self.n
+          client,
+          dict(reference),
+          start_row=self.s,
+          max_rows=self.n,
       )
     elif isinstance(reference, bq_id_utils.ApiClientHelper.TableReference):
       fields, rows = client_table.read_schema_and_rows(
@@ -105,5 +111,5 @@ class Head(bigquery_command.BigqueryCmd):
       raise app.UsageError("Invalid identifier '%s' for head." % (identifier,))
 
     bq_cached_client.Factory.ClientTablePrinter.GetTablePrinter().PrintTable(
-        fields, rows, use_full_timestamp=False
+        fields, rows, use_full_timestamp=use_full_timestamp
     )

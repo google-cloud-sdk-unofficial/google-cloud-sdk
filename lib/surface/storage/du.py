@@ -81,8 +81,8 @@ class Du(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument('url', nargs='*', help='The url of objects to list.')
     parser.add_argument(
         '-0',
@@ -142,6 +142,9 @@ class Du(base.Command):
 
     flags.add_additional_headers_flag(parser)
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_server_filter_flag(parser)
+
   def Run(self, args):
 
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
@@ -179,4 +182,5 @@ class Du(base.Command):
         total=args.total,
         use_gsutil_style=use_gsutil_style,
         zero_terminator=args.zero_terminator,
+        list_filter=getattr(args, 'server_filter', None),
     ).list_urls()

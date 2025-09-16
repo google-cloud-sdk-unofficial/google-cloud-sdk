@@ -37,13 +37,18 @@ _INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
 # override flags , future override flags should be declared here.
 OVERRIDE_FLAGS_SET = (
     'activation_policy',
+    'active_directory_dns_servers',
     'active_directory_domain',
+    'active_directory_mode',
+    'active_directory_organizational_unit',
+    'active_directory_secret_manager_key',
     'assign_ip',
     'authorized_networks',
     'availability_type',
     'backup',
     'backup_start_time',
     'backup_location',
+    'clear_active_directory_dns_servers',
     'cpu',
     'collation',
     'enable_bin_log',
@@ -176,6 +181,11 @@ def AddInstanceSettingsArgs(parser):
   flags.AddRetainBackupsOnDelete(parser, hidden=True)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
+  flags.AddActiveDirectoryMode(parser, hidden=True)
+  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
+  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
+  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
+  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):
@@ -246,11 +256,15 @@ def _GetRestoreInstanceClearOverrides(args):
   Returns:
     An array with the database instance fields that should be cleared.
   """
-  return (
-      ['settings.ip_configuration.private_network']
-      if args.IsKnownAndSpecified('clear_network')
-      else []
-  )
+  cleared_fields = []
+
+  if args.IsKnownAndSpecified('clear_network'):
+    cleared_fields.append('settings.ip_configuration.private_network')
+
+  if args.clear_active_directory_dns_servers:
+    cleared_fields.append('settings.active_directory_config.dns_servers')
+
+  return cleared_fields
 
 
 @base.DefaultUniverseOnly

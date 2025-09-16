@@ -102,8 +102,14 @@ class _SQLServer(base.Command):
 
   def _ValidateArgs(self, args):
     """Validates the arguments for the command."""
-    self._ValidateHeterogeneousArgs(args)
+    self._ValidateHeterogeneousOrDagArgs(args)
     self._ValidateHomeogeneousDestinationArgs(args)
+
+  def _ValidateHeterogeneousOrDagArgs(self, args):
+    if args.IsKnownAndSpecified('dbm_port'):
+      self._ValidateDagArgs(args)
+    else:
+      self._ValidateHeterogeneousArgs(args)
 
   def _ValidateHeterogeneousArgs(self, args):
     """Validates the arguments for heterogeneous source connection profiles."""
@@ -128,6 +134,39 @@ class _SQLServer(base.Command):
             '--cloudsql-project-id',
             'Cloud SQL project ID can not be used with --host.',
         )
+
+  def _ValidateDagArgs(self, args):
+    """Validates the arguments for DAG HMM source/destination connection profiles."""
+    if not args.IsKnownAndSpecified('role'):
+      raise exceptions.BadArgumentException(
+          '--role',
+          'Role must be specified with --dbm-port.',
+      )
+    if args.username is None:
+      raise exceptions.BadArgumentException(
+          '--username',
+          'Username must be specified with --dbm-port.',
+      )
+    if (
+        not args.IsKnownAndSpecified('cloudsql_instance')
+        and args.IsKnownAndSpecified('role')
+        and args.role == 'DESTINATION'
+    ):
+      raise exceptions.BadArgumentException(
+          '--cloudsql-instance',
+          'Cloud SQL instance must be specified with --dbm-port and'
+          ' --role=DESTINATION.',
+      )
+    if args.IsKnownAndSpecified('cloudsql_project_id'):
+      raise exceptions.BadArgumentException(
+          '--cloudsql-project-id',
+          'Cloud SQL project ID can not be used with --dbm-port.',
+      )
+    if args.IsKnownAndSpecified('database'):
+      raise exceptions.BadArgumentException(
+          '--database',
+          'Database can not be used with --dbm-port.',
+      )
 
   def _ValidateHomeogeneousDestinationArgs(self, args):
     """Validates the arguments for homeogeneous destination connection profiles."""

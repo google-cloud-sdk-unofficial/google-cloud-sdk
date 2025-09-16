@@ -177,13 +177,7 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'schedule',
         None,
-        'Data transfer schedule. If the data source does not support a custom '
-        'schedule, this should be empty. If empty, the default '
-        'value for the data source will be used. The specified times are in '
-        'UTC. Examples of valid format: 1st,3rd monday of month 15:30, '
-        'every wed,fri of jan,jun 13:15, and first sunday of quarter 00:00. '
-        'See more explanation about the format here: '
-        'https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format',  # pylint: disable=line-too-long
+        'Data transfer schedule. If the data source does not support a custom schedule, this should be empty. If empty, the default value for the data source will be used. The specified times are in UTC. Examples of valid format: 1st,3rd monday of month 15:30, every wed,fri of jan,jun 13:15, and first sunday of quarter 00:00. See more explanation about the format here: https://cloud.google.com/appengine/docs/flexible/python/scheduling-jobs-with-cron-yaml#the_schedule_format',  # pylint: disable=line-too-long
         flag_values=fv,
     )
     flags.DEFINE_bool(
@@ -254,10 +248,7 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'connection_id',
         None,
-        'The connection specifying the credentials to be used to read external '
-        'storage. The connection_id can have the form '
-        '"<project_id>.<location_id>.<connection_id>" or '
-        '"projects/<project_id>/locations/<location_id>/connections/<connection_id>". ',  # pylint: disable=line-too-long
+        'The connection specifying the credentials to be used to read external storage. The connection_id can have the form "<project_id>.<location_id>.<connection_id>" or "projects/<project_id>/locations/<location_id>/connections/<connection_id>". ',  # pylint: disable=line-too-long
         flag_values=fv,
     )
     flags.DEFINE_string(
@@ -323,12 +314,7 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'max_staleness',
         None,
-        'INTERVAL value that determines the maximum staleness allowed when '
-        'querying a materialized view or an external table. By default no '
-        'staleness is allowed. Examples of valid max_staleness values: '
-        '1 day: "0-0 1 0:0:0"; 1 hour: "0-0 0 1:0:0".'
-        'See more explanation about the INTERVAL values: '
-        'https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type',  # pylint: disable=line-too-long
+        'INTERVAL value that determines the maximum staleness allowed when querying a materialized view or an external table. By default no staleness is allowed. Examples of valid max_staleness values: 1 day: "0-0 1 0:0:0"; 1 hour: "0-0 0 1:0:0".See more explanation about the INTERVAL values: https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#interval_type',  # pylint: disable=line-too-long
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -862,10 +848,13 @@ class Make(bigquery_command.BigqueryCmd):
     flags.DEFINE_string(
         'add_tags',
         None,
-        'Tags to attach to the dataset or table.'
-        ' The format is namespaced'
-        ' key:value pair like'
-        ' "1234567/my_tag_key:my_tag_value,test-project123/environment:production" ',  # pylint: disable=line-too-long
+        'Tags to attach to the dataset or table. The format is namespaced key:value pair like "1234567/my_tag_key:my_tag_value,test-project123/environment:production" ',  # pylint: disable=line-too-long
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'source',
+        None,
+        'Path to file with JSON payload for an update',
         flag_values=fv,
     )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
@@ -884,6 +873,18 @@ class Make(bigquery_command.BigqueryCmd):
     )
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
+    )
+    flags.DEFINE_boolean(
+        'migration_workflow',
+        None,
+        'Create a migration workflow.',
+        flag_values=fv,
+    )
+    flags.DEFINE_string(
+        'config_file',
+        None,
+        'The file containing the JSON of the migration workflow to create.',
+        flag_values=fv,
     )
     self._ProcessCommandRc(fv)
 
@@ -945,6 +946,8 @@ class Make(bigquery_command.BigqueryCmd):
       --target_table='existing_dataset.existing_table'
       --grantees='user:user1@google.com,group:group1@google.com'
       --filter_predicate='Region="US"'
+      bq mk --source=file.json
+      bq mk --migration_workflow --location=us --config_file=file.json
     """
 
     client = bq_cached_client.Client.Get()
@@ -998,10 +1001,6 @@ class Make(bigquery_command.BigqueryCmd):
           default_location=bq_flags.LOCATION.value,
       )
       try:
-        if self.max_slots is not None or self.scaling_mode is not None:
-          utils_flags.fail_if_not_using_alpha_feature(
-              bq_flags.AlphaFeatures.RESERVATION_MAX_SLOTS
-          )
         if self.reservation_group_name is not None:
           utils_flags.fail_if_not_using_alpha_feature(
               bq_flags.AlphaFeatures.RESERVATION_GROUPS
@@ -1268,6 +1267,27 @@ class Make(bigquery_command.BigqueryCmd):
         utils_formatting.maybe_print_manual_instructions_for_connection(
             created_connection, flag_format=bq_flags.FORMAT.value
         )
+    elif self.migration_workflow:
+      if not bq_flags.LOCATION.value:
+        raise app.UsageError(
+            'Need to specify location for creating migration workflows.'
+        )
+      if not self.config_file:
+        raise app.UsageError(
+            'Need to specify config file for creating migration workflows.'
+        )
+      reference = None
+      self.DelegateToGcloudAndExit(
+          'migration_workflows',
+          'mk',
+          identifier,
+          command_flags_for_this_resource={
+              'location': bq_flags.LOCATION.value,
+              'config_file': self.config_file,
+              'sync': bq_flags.SYNCHRONOUS_MODE.value,
+              'synchronous_mode': bq_flags.SYNCHRONOUS_MODE.value,
+          },
+      )
     elif self.d or not identifier:
       reference = bq_client_utils.GetDatasetReference(
           id_fallbacks=client, identifier=identifier
@@ -1290,6 +1310,8 @@ class Make(bigquery_command.BigqueryCmd):
     if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
       if self.schema:
         raise app.UsageError('Cannot specify schema with a dataset.')
+      if self.source and self.description:
+        raise app.UsageError('Cannot specify description with a source.')
       if self.expiration:
         raise app.UsageError('Cannot specify an expiration for a dataset.')
       if self.external_table_definition is not None:
@@ -1342,6 +1364,9 @@ class Make(bigquery_command.BigqueryCmd):
       resource_tags = None
       if self.add_tags is not None:
         resource_tags = bq_utils.ParseTags(self.add_tags)
+      self.description, acl = frontend_utils.ProcessSource(
+          self.description, self.source
+      )
       command_flags_for_this_resource = {
           'description': self.description,
           'force': self.force,
@@ -1361,6 +1386,7 @@ class Make(bigquery_command.BigqueryCmd):
           reference=reference,
           ignore_existing=self.force,
           description=self.description,
+          acl=acl,
           default_table_expiration_ms=default_table_exp_ms,
           default_partition_expiration_ms=default_partition_exp_ms,
           data_location=location,

@@ -250,6 +250,7 @@ def ParseCreateOptionsBase(
       additive_vpc_scope_dns_domain=get_default(
           'additive_vpc_scope_dns_domain'
       ),
+      tag_bindings=get_default('tag_bindings'),
       disable_additive_vpc_scope=get_default('disable_additive_vpc_scope'),
       cluster_dns_domain=get_default('cluster_dns_domain'),
       cluster_ipv4_cidr=get_default('cluster_ipv4_cidr'),
@@ -321,6 +322,7 @@ def ParseCreateOptionsBase(
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       enable_identity_service=getattr(args, 'enable_identity_service', None),
       ephemeral_storage_local_ssd=(ephemeral_storage_local_ssd),
+      gpu_direct_strategy=get_default('gpu_direct_strategy'),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
@@ -568,6 +570,7 @@ def ParseCreateOptionsBase(
           'boot_disk_provisioned_throughput'
       ),
       network_tier=get_default('network_tier'),
+      control_plane_egress_mode=get_default('control_plane_egress'),
   )
 
 GA = 'ga'
@@ -694,6 +697,7 @@ flags_to_add = {
         'issueclientcert': flags.AddIssueClientCertificateFlag,
         'gatewayapi': flags.AddGatewayFlags,
         'gvnic': flags.AddEnableGvnicFlag,
+        'gpudirectstrategy': flags.AddGpuDirectStrategyFlag,
         'kubernetesalpha': flags.AddEnableKubernetesAlphaFlag,
         'alphaclusterfeaturegates': flags.AddAlphaClusterFeatureGatesFlags,
         'labels': flags.AddLabelsFlag,
@@ -750,6 +754,7 @@ flags_to_add = {
         'storagePools': flags.AddStoragePoolsFlag,
         'ipv6accesstype': flags.AddIpv6AccessTypeFlag,
         'tags': flags.AddTagsCreate,
+        'tag_bindings': flags.AddTagBindingsCreate,
         'threads_per_core': flags.AddThreadsPerCore,
         'autoprovisioning_network_tags': (
             flags.AddAutoprovisioningNetworkTagsCreate
@@ -819,6 +824,7 @@ flags_to_add = {
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -874,6 +880,7 @@ flags_to_add = {
         'alphaclusterfeaturegates': flags.AddAlphaClusterFeatureGatesFlags,
         'kubernetesobjectsexport': AddKubernetesObjectsExportFlag,
         'gvnic': flags.AddEnableGvnicFlag,
+        'gpudirectstrategy': flags.AddGpuDirectStrategyFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
         'hostmaintenanceinterval': flags.AddHostMaintenanceIntervalFlag,
         'identityservice': flags.AddIdentityServiceFlag,
@@ -940,6 +947,7 @@ flags_to_add = {
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags': flags.AddTagsCreate,
+        'tag_bindings': flags.AddTagBindingsCreate,
         'autoprovisioning_network_tags': (
             flags.AddAutoprovisioningNetworkTagsCreate
         ),
@@ -1018,6 +1026,7 @@ flags_to_add = {
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1066,6 +1075,7 @@ flags_to_add = {
         'imagestreaming': flags.AddEnableImageStreamingFlag,
         'gkeoidc': flags.AddGkeOidcFlag,
         'gvnic': flags.AddEnableGvnicFlag,
+        'gpudirectstrategy': flags.AddGpuDirectStrategyFlag,
         'hostmaintenanceinterval': flags.AddHostMaintenanceIntervalFlag,
         'identityservice': flags.AddIdentityServiceFlag,
         'ilbsubsetting': flags.AddILBSubsettingFlags,
@@ -1148,6 +1158,7 @@ flags_to_add = {
         'surgeupgrade': lambda p: flags.AddSurgeUpgradeFlag(p, default=1),
         'systemconfig': lambda p: flags.AddSystemConfigFlag(p, hidden=False),
         'tags': flags.AddTagsCreate,
+        'tag_bindings': flags.AddTagBindingsCreate,
         'autoprovisioning_network_tags': (
             flags.AddAutoprovisioningNetworkTagsCreate
         ),
@@ -1225,6 +1236,7 @@ flags_to_add = {
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
+        'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1318,7 +1330,7 @@ class Create(base.CreateCommand):
           'https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters'
       )
 
-    if not options.enable_ip_alias:
+    if not options.enable_ip_alias and not options.enable_auto_ipam:
       max_node_number = util.CalculateMaxNodeNumberByPodRange(
           options.cluster_ipv4_cidr
       )
@@ -1584,6 +1596,8 @@ class CreateBeta(Create):
         'enable_default_compute_class'
     )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
+    ops.control_plane_egress_mode = get_default('control_plane_egress')
+    ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
     return ops
 
 
@@ -1744,4 +1758,6 @@ class CreateAlpha(Create):
         'enable_default_compute_class'
     )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
+    ops.control_plane_egress_mode = get_default('control_plane_egress')
+    ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
     return ops

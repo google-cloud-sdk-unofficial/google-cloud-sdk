@@ -188,6 +188,9 @@ class Ls(base.Command):
     flags.add_read_paths_from_stdin_flag(parser)
     flags.add_soft_delete_flags(parser)
 
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.add_server_filter_flag(parser)
+
   @classmethod
   def _get_args(cls, args):
     """Get the args for the command."""
@@ -259,6 +262,7 @@ class Ls(base.Command):
         recursion_flag=args.recursive,
         use_gsutil_style=use_gsutil_style,
         soft_deleted_buckets=buckets and soft_deleted,
+        list_filter=getattr(args, 'server_filter', None),
     ).list_urls()
 
     if found_non_default_provider and args.full:

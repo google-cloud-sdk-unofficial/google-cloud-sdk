@@ -197,6 +197,8 @@ def _Run(args, legacy_output=False):
   ingestion_log_severity = getattr(args, 'ingestion_log_severity', None)
   message_transforms_file = getattr(args, 'message_transforms_file', None)
 
+  tags = flags.GetTagsMessage(args, client.messages.Topic.TagsValue)
+
   failed = []
   for topic_ref in args.CONCEPTS.topic.Parse():
     try:
@@ -238,6 +240,7 @@ def _Run(args, legacy_output=False):
           confluent_cloud_ingestion_service_account=confluent_cloud_ingestion_service_account,
           ingestion_log_severity=ingestion_log_severity,
           message_transforms_file=message_transforms_file,
+          tags=tags,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -325,6 +328,5 @@ class CreateAlpha(CreateBeta):
 
   @staticmethod
   def Args(parser):
-    _Args(
-        parser,
-    )
+    super(CreateAlpha, CreateAlpha).Args(parser)
+    flags.AddTagsFlag(parser)

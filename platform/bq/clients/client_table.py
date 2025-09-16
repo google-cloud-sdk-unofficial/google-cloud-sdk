@@ -99,7 +99,9 @@ def read_schema_and_rows(
       apiclient, max_rows_per_request, table_ref
   )
   return table_reader.ReadSchemaAndRows(
-      start_row, max_rows, selected_fields=selected_fields
+      start_row,
+      max_rows,
+      selected_fields=selected_fields,
   )
 
 

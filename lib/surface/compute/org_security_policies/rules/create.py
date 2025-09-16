@@ -207,10 +207,10 @@ class CreateAlpha(Create):
 
 Create.detailed_help = {
     'EXAMPLES': """\
-    To create a rule with priority "10" in an organization security policy with
-    ID "123456789", run:
+    To create a rule with priority ``10'' in an organization security policy with
+    ID ``123456789'', run:
 
-      $ {command} create 10 --security-policy=123456789 --action=allow
+      $ {command} 10 --security-policy=123456789 --action=allow
       --description=example-rule --cloud-armor
     """,
 }

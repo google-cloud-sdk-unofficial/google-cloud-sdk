@@ -206,6 +206,11 @@ class CreateBeta(Create):
       protocol = instances_flags.GetProtocolArg(
           client.messages
       ).GetEnumForChoice(args.protocol)
+    backend_type = None
+    if args.backend_type is not None:
+      backend_type = instances_flags.GetBackendTypeArg(
+          client.messages
+      ).GetEnumForChoice(args.backend_type)
     managed_ad = args.managed_ad or None
     ldap = args.ldap or None
     source_instance = args.source_instance or None
@@ -238,6 +243,7 @@ class CreateBeta(Create):
         source_instance=source_instance,
         deletion_protection_enabled=args.deletion_protection,
         deletion_protection_reason=args.deletion_protection_reason,
+        backend_type=backend_type,
     )
 
     result = client.CreateInstance(instance_ref, args.async_, instance)
