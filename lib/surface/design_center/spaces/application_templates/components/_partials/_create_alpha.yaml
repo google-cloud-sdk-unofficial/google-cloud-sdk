@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a component
     description: Create a component in an application template.
@@ -30,6 +29,22 @@
       Or run:
 
       $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1
+
+      To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` using a google shared template `google-shared-template` and revision `rev1`, run:
+
+      $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=google/google-shared-template/revisions/rev1
+
+      To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` using a google shared template `google-shared-template` with its latest revision, run:
+
+      $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=google/google-shared-template
+
+      To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` using a shared template `my-shared-template` and revision `rev1` present in the same space, run:
+
+      $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=my-shared-template/revisions/rev1
+
+      To create the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` using a shared template `my-shared-template` with its latest revision present in the same space, run:
+
+      $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=my-shared-template
 
       To create the component `my-component` with a display name `My Component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` using a shared template revision, run:
 

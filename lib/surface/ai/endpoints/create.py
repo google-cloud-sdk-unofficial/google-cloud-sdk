@@ -131,6 +131,7 @@ class CreateGa(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class CreateBeta(base.CreateCommand):
   """Create a new Vertex AI endpoint.
 

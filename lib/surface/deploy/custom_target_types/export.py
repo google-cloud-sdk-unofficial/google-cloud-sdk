@@ -14,9 +14,6 @@
 # limitations under the License.
 """Exports a Cloud Deploy custom target type resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -44,6 +41,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Export(base.ExportCommand):
   """Returns the .yaml definition of the specified custom target type.
 
@@ -72,7 +70,9 @@ class Export(base.ExportCommand):
         custom_target_type_ref.RelativeName()
     )
     manifest = manifest_util.ProtoToManifest(
-        resource, custom_target_type_ref, manifest_util.CUSTOM_TARGET_TYPE_KIND
+        resource,
+        custom_target_type_ref,
+        manifest_util.ResourceKind.CUSTOM_TARGET_TYPE,
     )
 
     export_util.Export(manifest, args)

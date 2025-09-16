@@ -122,6 +122,7 @@ def _CommonArgs(
     support_disk_labels=False,
     support_source_snapshot_region=False,
     support_skip_guest_os_shutdown=False,
+    support_preemption_notice_duration=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -258,6 +259,9 @@ def _CommonArgs(
     instances_flags.AddMaxRunDurationVmArgs(parser)
     instances_flags.AddDiscardLocalSsdVmArgs(parser)
 
+  if support_preemption_notice_duration:
+    instances_flags.AddPreemptionNoticeDurationArgs(parser)
+
   if support_local_ssd_size:
     instances_flags.AddLocalSsdArgsWithSize(parser)
   else:
@@ -269,6 +273,7 @@ def _CommonArgs(
   instances_flags.AddTurboModeArgs(parser)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  instances_flags.AddRequestValidForDurationArgs(parser)
 
 
 @base.UniverseCompatible
@@ -321,6 +326,7 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = False
+  _support_preemption_notice_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -349,6 +355,7 @@ class Create(base.CreateCommand):
         support_ipv6_only=cls._support_ipv6_only,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -373,7 +380,7 @@ class Create(base.CreateCommand):
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
         parser,
-        support_flex_start=False,
+        support_flex_start=True,
     )
 
   def Collection(self):
@@ -423,6 +430,7 @@ class Create(base.CreateCommand):
         support_local_ssd_recovery_timeout=self._support_local_ssd_recovery_timeout,
         support_graceful_shutdown=self._support_graceful_shutdown,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=self._support_preemption_notice_duration,
     )
     tags = instance_utils.GetTags(args, compute_client)
     labels = instance_utils.GetLabels(args, compute_client)
@@ -836,6 +844,7 @@ class CreateBeta(Create):
   _support_ipv6_only = True
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -880,6 +889,7 @@ class CreateBeta(Create):
         support_ipv6_only=cls._support_ipv6_only,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -905,7 +915,7 @@ class CreateBeta(Create):
     instances_flags.AddPerformanceMonitoringUnitArgs(parser)
     instances_flags.AddProvisioningModelVmArgs(
         parser,
-        support_flex_start=False,
+        support_flex_start=True,
     )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
 
@@ -958,6 +968,7 @@ class CreateAlpha(CreateBeta):
   _support_disk_labels = True
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -990,6 +1001,7 @@ class CreateAlpha(CreateBeta):
         support_disk_labels=cls._support_disk_labels,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (
@@ -1025,7 +1037,6 @@ class CreateAlpha(CreateBeta):
         support_flex_start=True,
     )
     partner_metadata_utils.AddPartnerMetadataArgs(parser)
-    instances_flags.AddRequestValidForDurationArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

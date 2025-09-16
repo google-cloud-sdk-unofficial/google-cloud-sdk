@@ -47,6 +47,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DeleteGa(base.DeleteCommand):
   """Delete an existing Vertex AI endpoint.
 
@@ -68,6 +69,7 @@ class DeleteGa(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class DeleteBeta(DeleteGa):
   """Delete an existing Vertex AI endpoint.
 

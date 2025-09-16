@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describes a Gcloud Deploy target resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
@@ -53,6 +50,7 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describes details specific to the individual target, delivery pipeline qualified.
 

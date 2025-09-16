@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a catalog
     description: Create a catalog in a space.
     examples: |-
       To create the catalog `my-catalog` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-catalog --space=my-space --project=my-project --location=us-central1
+        $ {command} my-catalog --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog
 
       To create the catalog `my-catalog` with a display name of `My Catalog` and description of `My catalog description` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My Catalog" --description="My catalog description"
+        $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My Catalog" --description="My catalog description"
   arguments:
     params:
     - help_text: |-

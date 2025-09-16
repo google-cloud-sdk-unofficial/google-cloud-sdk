@@ -18,7 +18,6 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Import to an application template
     description: Imports to an existing application template from a given shared template
@@ -26,11 +25,11 @@
     examples: |-
       To import from a shared template revision to the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1
+        $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --shared-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/rev1
 
       To import from an application template revision to the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --application-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/another-app-template/revisions/rev2
+        $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --application-template-revision-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/another-app-template/revisions/rev2
   arguments:
     params:
     - arg_name: application-template-revision-uri

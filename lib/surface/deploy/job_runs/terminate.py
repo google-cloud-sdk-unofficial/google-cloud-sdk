@@ -14,9 +14,6 @@
 # limitations under the License.
 """Terminates a Cloud Deploy job run."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import job_run
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
@@ -42,6 +39,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Terminate(base.UpdateCommand):
   """Terminates a Cloud Deploy job run."""
 

@@ -346,6 +346,9 @@ def AddBaseArgs(parser):
   connection_pool_flags_group = parser.add_mutually_exclusive_group()
   flags.AddConnectionPoolFlags(connection_pool_flags_group)
   flags.AddClearConnectionPoolFlags(connection_pool_flags_group)
+  psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
+  flags.AddPscAutoConnections(psc_update_auto_connections_group)
+  flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
 
 
 def AddBetaArgs(parser):
@@ -354,9 +357,6 @@ def AddBetaArgs(parser):
   flags.AddAllocatedIpRangeName(parser)
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
-  psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
-  flags.AddPscAutoConnections(psc_update_auto_connections_group)
-  flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
   flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddEnableAutoUpgrade(parser)

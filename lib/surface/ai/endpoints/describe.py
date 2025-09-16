@@ -34,6 +34,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DescribeGa(base.DescribeCommand):
   """Describe an existing Vertex AI endpoint.
 
@@ -55,6 +56,7 @@ class DescribeGa(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class DescribeBeta(DescribeGa):
   """Describe an existing Vertex AI endpoint.
 

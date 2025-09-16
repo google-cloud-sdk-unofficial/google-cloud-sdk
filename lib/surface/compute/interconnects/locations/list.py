@@ -35,23 +35,14 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      parser.display_info.AddFormat("""
-          table(
-            name,
-            description,
-            facilityProvider,
-            singleRegionProductionCriticalPeerLocations.basename().join(sep="\n"):label=99.99%_PEER_LOCATIONS
-          )
-      """)
-    else:
-      parser.display_info.AddFormat("""
-          table(
-            name,
-            description,
-            facilityProvider
-          )
-      """)
+    parser.display_info.AddFormat("""
+        table(
+          name,
+          description,
+          facilityProvider,
+          singleRegionProductionCriticalPeerLocations.basename().join(sep="\n"):label=99.99%_PEER_LOCATIONS
+        )
+    """)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

@@ -83,7 +83,6 @@ class GetLatestRecoveryTime(base.Command):
             'The deletion time of the source instance. This is used to identify'
             ' the instance if it has been deleted.'
         ),
-        hidden=True,
     )
 
   def Run(self, args):
@@ -156,7 +155,6 @@ class GetLatestRecoveryTimeBeta(base.Command):
             'The deletion time of the source instance. This is used to identify'
             ' the instance if it has been deleted.'
         ),
-        hidden=True,
     )
 
   def Run(self, args):

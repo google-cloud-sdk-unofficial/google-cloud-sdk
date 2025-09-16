@@ -18,42 +18,41 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update a connection
     description: Update a connection between components in an application template.
     examples: |-
       To update the destination component URI to `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-new-component` in the connection `my-connection` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-new-component
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-new-component
 
       Or run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-new-component
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-new-component
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component/connections/my-connection --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-new-component
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component/connections/my-connection --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-new-component
 
       To add a new parameter key-value pair of `new_parameter_key:new-parameter` to the connection `my-connection` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run the following shorthand example:
 
-      $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters=key=project_id,value=new-project --add-parameters=key=new_parameter_key,value=new-parameter
+        $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters=key=project_id,value=new-project --add-parameters=key=new_parameter_key,value=new-parameter
 
       Or run the following JSON example:
 
-      $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters='[{"key": "project_id", "value": "new-project"}, {"key": "new_parameter_key", "value": "new-parameter"}]'
+        $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters='[{"key": "project_id", "value": "new-project"}, {"key": "new_parameter_key", "value": "new-parameter"}]'
 
       Or create a YAML or JSON file with the parameters and run the following file example:
 
-      $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters=my-parameters.yaml
+        $ {command} my-connection --application-template=my-app-template --component=my-component --space=my-space --project=my-project --location=us-central1 --add-parameters=my-parameters.yaml
 
       To clear all parameters from the connection `my-connection` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --clear-parameters
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --clear-parameters
 
       To remove an existing parameter key-value pair of `type:connection-type` from the connection `my-connection` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --remove-parameters=key=type,value=connection-type
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --remove-parameters=key=type,value=connection-type
   arguments:
     params:
     - help_text: |-

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Exports a Gcloud Deploy target resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -45,6 +42,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Export(base.ExportCommand):
   """Returns the .yaml definition of the specified target.
 
@@ -70,6 +68,6 @@ class Export(base.ExportCommand):
     target_ref = args.CONCEPTS.target.Parse()
     target_obj = target_util.GetTarget(target_ref)
     manifest = manifest_util.ProtoToManifest(target_obj, target_ref,
-                                             manifest_util.TARGET_KIND_V1BETA1)
+                                             manifest_util.ResourceKind.TARGET)
 
     export_util.Export(manifest, args)

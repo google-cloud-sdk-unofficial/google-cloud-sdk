@@ -78,7 +78,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class ListGa(base.ListCommand):
   """List existing Vertex AI endpoints.
 
@@ -105,7 +105,7 @@ class ListGa(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class ListBeta(base.ListCommand):
   """List existing Vertex AI endpoints.
 

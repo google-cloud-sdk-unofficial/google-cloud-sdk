@@ -75,6 +75,7 @@ def _CommonArgs(
     support_flex_start=False,
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
+    support_preemption_notice_duration=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -143,6 +144,9 @@ def _CommonArgs(
   if support_max_run_duration:
     instances_flags.AddMaxRunDurationVmArgs(parser)
     instances_flags.AddDiscardLocalSsdVmArgs(parser)
+
+  if support_preemption_notice_duration:
+    instances_flags.AddPreemptionNoticeDurationArgs(parser)
 
   instance_templates_flags.AddServiceProxyConfigArgs(
       parser, release_track=release_track
@@ -577,6 +581,7 @@ def _RunCreate(
     support_disk_labels=False,
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
+    support_preemption_notice_duration=False,
 ):
   """Common routine for creating instance template.
 
@@ -631,6 +636,8 @@ def _RunCreate(
       support_display_device: Indicate whether display device is supported.
       support_skip_guest_os_shutdown: Indicate whether skip guest os shutdown is
         supported.
+      support_preemption_notice_duration: Indicate whether preemption notice
+        duration is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -832,6 +839,12 @@ def _RunCreate(
   ):
     skip_guest_os_shutdown = args.skip_guest_os_shutdown
 
+  preemption_notice_duration = None
+  if support_preemption_notice_duration and args.IsSpecified(
+      'preemption_notice_duration'
+  ):
+    preemption_notice_duration = args.preemption_notice_duration
+
   scheduling = instance_utils.CreateSchedulingMessage(
       messages=client.messages,
       maintenance_policy=args.maintenance_policy,
@@ -850,6 +863,7 @@ def _RunCreate(
       graceful_shutdown=graceful_shutdown,
       discard_local_ssds_at_termination_timestamp=discard_local_ssds_at_termination_timestamp,
       skip_guest_os_shutdown=skip_guest_os_shutdown,
+      preemption_notice_duration=preemption_notice_duration,
   )
 
   if args.no_service_account:
@@ -1172,9 +1186,10 @@ class Create(base.CreateCommand):
   _support_ipv6_only = True
   _support_igmp_query = False
   _support_host_error_timeout_seconds = True
-  _support_flex_start = False
+  _support_flex_start = True
   _support_display_device = False
   _support_skip_guest_os_shutdown = False
+  _support_preemption_notice_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -1205,6 +1220,7 @@ class Create(base.CreateCommand):
         support_flex_start=cls._support_flex_start,
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1257,6 +1273,7 @@ class Create(base.CreateCommand):
         support_host_error_timeout_seconds=self._support_host_error_timeout_seconds,
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=self._support_preemption_notice_duration,
     )
 
 
@@ -1307,6 +1324,7 @@ class CreateBeta(Create):
   _support_flex_start = True
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -1337,6 +1355,7 @@ class CreateBeta(Create):
         support_flex_start=cls._support_flex_start,
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1392,6 +1411,7 @@ class CreateBeta(Create):
         support_disk_labels=self._support_disk_labels,
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=self._support_preemption_notice_duration,
     )
 
 
@@ -1442,6 +1462,7 @@ class CreateAlpha(Create):
   _support_flex_start = True
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -1473,6 +1494,7 @@ class CreateAlpha(Create):
         support_flex_start=cls._support_flex_start,
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1531,6 +1553,7 @@ class CreateAlpha(Create):
         support_disk_labels=self._support_disk_labels,
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=self._support_preemption_notice_duration,
     )
 
 

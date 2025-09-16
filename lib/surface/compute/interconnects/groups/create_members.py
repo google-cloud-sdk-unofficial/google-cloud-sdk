@@ -83,7 +83,9 @@ class CreateMembers(base.UpdateCommand):
     flags.AddFacility(parser)
     flags.AddRemoteLocation(parser)
     flags.AddIntentMismatchBehavior(parser)
-    interconnect_flags.AddCreateGaArgs(parser, required=False)
+    interconnect_flags.AddCreateArgsForInterconnectGroupsCreateMembers(
+        parser, required=False
+    )
 
   def Collection(self):
     return 'compute.interconnectGroups'

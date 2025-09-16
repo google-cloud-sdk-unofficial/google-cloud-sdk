@@ -14,9 +14,6 @@
 # limitations under the License.
 """Approves a Cloud Deploy rollout."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import release
@@ -48,6 +45,7 @@ $ {command} test-rollout --delivery-pipeline=test-pipeline --release=test-releas
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Approve(base.CreateCommand):
   """Approves a rollout having an Approval state of "Required"."""
   detailed_help = _DETAILED_HELP

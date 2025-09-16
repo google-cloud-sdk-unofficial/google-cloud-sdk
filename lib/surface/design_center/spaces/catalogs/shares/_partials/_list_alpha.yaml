@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List shares
     description: List shares in a catalog.
     examples: |-
       To list all shares in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --catalog=my-catalog --space=my-space --location=us-central1
+        $ {command} --catalog=my-catalog --space=my-space --location=us-central1
 
       To list up to 10 shares in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --catalog=my-catalog --space=my-space --location=us-central1 --limit=10
+        $ {command} --catalog=my-catalog --space=my-space --location=us-central1 --limit=10
   arguments:
     params:
     - help_text: |-

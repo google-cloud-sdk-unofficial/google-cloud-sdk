@@ -35,7 +35,7 @@ from surface.run import deploy
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AppEngineToCloudRun(deploy.Deploy):
+class AppEngineToCloudRun(deploy.AlphaDeploy):
   """Migrate the second-generation App Engine app to Cloud Run."""
 
   detailed_help = {

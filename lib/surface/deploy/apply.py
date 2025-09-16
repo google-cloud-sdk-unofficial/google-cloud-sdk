@@ -14,9 +14,6 @@
 # limitations under the License.
 """Applies a yaml configuration containing Delivery Pipeline(s), Target(s), Custom Target Type(s), and Automation(s) declarative definitions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import deploy
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception

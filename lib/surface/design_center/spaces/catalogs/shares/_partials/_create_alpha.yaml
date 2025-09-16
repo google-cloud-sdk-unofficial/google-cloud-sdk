@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a share
     description: Create a share in a catalog.
     examples: |-
       To create a share `my-share` in catalog `my-catalog` to destination space `my-destination-space`, in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-share --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --destination-space=my-destination-space
+        $ {command} my-share --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --destination-space=my-destination-space
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/shares/my-share --destination-space=my-destination-space
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/shares/my-share --destination-space=my-destination-space
 
       To create the share `my-share` in catalog `my-catalog` to destination space `projects/my-descendant-project/locations/us-central1/spaces/my-destination-space` present in a descendant management project `my-descendant-project`, in the space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-share --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --destination-space=projects/my-descendant-project/locations/us-central1/spaces/my-destination-space
+        $ {command} my-share --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --destination-space=projects/my-descendant-project/locations/us-central1/spaces/my-destination-space
   arguments:
     params:
     - help_text: |-

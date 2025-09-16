@@ -30,7 +30,6 @@ from googlecloudsdk.core import yaml
 class List(base.ListCommand):
   """List available Cloud Run presets. Currently only available in alpha."""
 
-  hidden = True
   detailed_help = {
       'DESCRIPTION': """
           {description}

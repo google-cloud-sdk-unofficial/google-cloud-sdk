@@ -290,12 +290,10 @@ class Restore(base.Command):
               --deleted-after-time="2023-01-01T00:00:00Z"
 
       This command filters the objects that were live at 2023-01-01T00:00:00Z
-      and then soft-deleted afterwards.
-
-     This combination of filters is especially helpful if there is a period of
-     erroneous overwrites. They allow you to go back to the point just before
-     the overwrites began. You will also need to set the `--allow-overwrite`
-     option to true.
+      and then soft-deleted afterwards. This combination of filters is
+      especially helpful if there is a period of erroneous overwrites.
+      They allow you to go back to the point just before the overwrites began.
+      You will also need to set the `--allow-overwrite` option to true.
       """,
   }
 

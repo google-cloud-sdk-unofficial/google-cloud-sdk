@@ -71,9 +71,11 @@ def _inject_encrypted_credentials(dataproc, project, region, cluster_name,
   return dataproc.client.projects_regions_clusters.InjectCredentials(request)
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class EnablePersonalAuthSession(base.Command):
   """Enable a personal auth session on a cluster."""
 

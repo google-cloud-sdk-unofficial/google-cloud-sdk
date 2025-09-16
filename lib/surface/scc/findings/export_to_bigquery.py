@@ -64,6 +64,9 @@ class Export(base.Command):
     messages = securitycenter_client.GetMessages(version)
     client = securitycenter_client.GetClient(version)
 
+    if args.parent is None:
+      raise ValueError("Parent must be specified.")
+
     request = (
         messages.SecuritycenterOrganizationsSourcesLocationsFindingsExportRequest()
     )

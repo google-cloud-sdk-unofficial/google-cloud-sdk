@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List catalogs
     description: List catalogs in a space.
     examples: |-
       To list all catalogs in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1
+        $ {command} --space=my-space --project=my-project --location=us-central1
 
       To filter and list catalogs that contain a `my-catalog` prefix in the display name in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-catalog*"
+        $ {command} --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-catalog*"
 
       To list catalogs sorted by display name in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1 --sort-by=displayName
+        $ {command} --space=my-space --project=my-project --location=us-central1 --sort-by=displayName
   arguments:
     params:
     - help_text: |-

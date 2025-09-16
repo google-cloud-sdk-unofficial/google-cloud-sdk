@@ -26,7 +26,7 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )

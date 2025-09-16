@@ -28,7 +28,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Init(base.Command):
   """Initialize a Backup and DR Service configuration."""

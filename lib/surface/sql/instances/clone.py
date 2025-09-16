@@ -325,8 +325,7 @@ def AddBaseArgs(parser):
       help="""\
       The time the source instance was deleted. This is required if cloning
       from a deleted instance.
-      """,
-      hidden=True)
+      """)
 
 
 @base.DefaultUniverseOnly

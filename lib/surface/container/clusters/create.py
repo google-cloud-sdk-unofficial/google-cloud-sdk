@@ -187,7 +187,14 @@ def ParseCreateOptionsBase(
   """Parses the flags provided with the cluster creation command."""
   flags.MungeBasicAuthFlags(args)
 
-  flags.WarnForUnspecifiedKubeletReadonlyPort()
+  # The readonly port has been disabled by default since 02/2025. We should only
+  # alert users to the risk of this port if they explicitly enable it.
+  enable_insecure_roport = get_default('enable_insecure_kubelet_readonly_port')
+  autoprovisioning_enable_insecure_roport = get_default(
+      'autoprovisioning_enable_insecure_kubelet_readonly_port'
+  )
+  if enable_insecure_roport or autoprovisioning_enable_insecure_roport:
+    flags.WarnForUnspecifiedKubeletReadonlyPort()
 
   flags.WarnForEnablingBetaAPIs(args)
   enable_autorepair = None
@@ -482,12 +489,8 @@ def ParseCreateOptionsBase(
       compliance_standards=get_default('compliance_standards'),
       enable_security_posture=get_default('enable_security_posture'),
       network_performance_config=get_default('network_performance_configs'),
-      enable_insecure_kubelet_readonly_port=get_default(
-          'enable_insecure_kubelet_readonly_port'
-      ),
-      autoprovisioning_enable_insecure_kubelet_readonly_port=get_default(
-          'autoprovisioning_enable_insecure_kubelet_readonly_port'
-      ),
+      enable_insecure_kubelet_readonly_port=enable_insecure_roport,
+      autoprovisioning_enable_insecure_kubelet_readonly_port=autoprovisioning_enable_insecure_roport,
       enable_k8s_beta_apis=getattr(args, 'enable_kubernetes_unstable_apis'),
       security_posture=get_default('security_posture'),
       workload_vulnerability_scanning=get_default(

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describes a Gcloud Deploy delivery pipeline resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.clouddeploy import delivery_pipeline
@@ -53,6 +50,7 @@ def _CommonArgs(parser):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Show details about a delivery pipeline.
 

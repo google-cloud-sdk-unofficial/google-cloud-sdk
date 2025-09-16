@@ -18,34 +18,33 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List spaces
     description: List spaces.
     examples: |-
       To list all spaces in project `my-project` and location `us-central1`, run:
 
-      $ {command} --project=my-project --location=us-central1
+        $ {command} --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} --location=projects/my-project/locations/us-central1
+        $ {command} --location=projects/my-project/locations/us-central1
 
       To filter and list spaces that contains `my-space` prefix in the display name in project `my-project` and location `us-central1`, run:
 
-      $ {command} --project=my-project --location=us-central1 --filter="displayName:my-space*"
+        $ {command} --project=my-project --location=us-central1 --filter="displayName:my-space*"
 
       To list up to 10 spaces in project `my-project` and location `us-central1`, run:
 
-      $ {command} --project=my-project --location=us-central1 --limit=10
+        $ {command} --project=my-project --location=us-central1 --limit=10
 
       To list up to 5 pages of spaces in project `my-project` and location `us-central1`, run:
 
-      $ {command} --project=my-project --location=us-central1 --page-size=5
+        $ {command} --project=my-project --location=us-central1 --page-size=5
 
       To list spaces sorted by display name in project `my-project` and location `us-central1`, run:
 
-      $ {command} --project=my-project --location=us-central1 --sort-by=displayName
+        $ {command} --project=my-project --location=us-central1 --sort-by=displayName
   arguments:
     params:
     - help_text: |-

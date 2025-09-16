@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cancels a Cloud Deploy AutomationRun."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -42,6 +39,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Cancel(base.CreateCommand):
   """Cancels a Cloud Deploy Automation Run."""
 

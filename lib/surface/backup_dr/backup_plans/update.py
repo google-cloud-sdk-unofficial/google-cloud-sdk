@@ -196,6 +196,7 @@ class Update(base.UpdateCommand):
         """
     flags.AddDescription(parser, description_help)
     flags.AddLogRetentionDays(parser)
+    flags.AddMaxCustomOnDemandRetentionDays(parser)
 
   class YamlOrJsonLoadError(core_exceptions.Error):
     """Error parsing YAML or JSON file content."""
@@ -238,6 +239,9 @@ class Update(base.UpdateCommand):
 
     log_retention_days = args.log_retention_days
     description = args.description
+    max_custom_on_demand_retention_days = (
+        args.max_custom_on_demand_retention_days
+    )
 
     try:
       current_backup_plan = client.Describe(backup_plan)
@@ -254,6 +258,7 @@ class Update(base.UpdateCommand):
           remove_backup_rules,
           current_backup_plan,
           log_retention_days,
+          max_custom_on_demand_retention_days,
       )
       update_mask = []
       if (
@@ -266,6 +271,12 @@ class Update(base.UpdateCommand):
           and log_retention_days != current_backup_plan.logRetentionDays
       ):
         update_mask.append('logRetentionDays')
+      if (
+          max_custom_on_demand_retention_days is not None
+          and max_custom_on_demand_retention_days
+          != current_backup_plan.maxCustomOnDemandRetentionDays
+      ):
+        update_mask.append('maxCustomOnDemandRetentionDays')
       if any([
           update_backup_rules,
           add_backup_rules,

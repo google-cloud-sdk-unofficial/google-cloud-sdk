@@ -47,6 +47,7 @@ def AddBaseArgs(parser):
   flags.AddPasswordPolicyPasswordExpirationDuration(parser)
   flags.AddPasswordPolicyEnableFailedAttemptsCheck(parser)
   flags.AddPasswordPolicyEnablePasswordVerification(parser)
+  flags.AddDatabaseRoles(parser)
 
 
 def AddBetaArgs(parser):
@@ -89,7 +90,8 @@ def RunBaseCreateCommand(args):
       host=args.host,
       password=args.password,
       passwordPolicy=password_policy,
-      type=user_type)
+      type=user_type,
+      databaseRoles=args.database_roles)
 
   result_operation = sql_client.users.Insert(new_user)
   operation_ref = client.resource_parser.Create(
@@ -112,6 +114,7 @@ def RunBaseCreateCommand(args):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Creates a user in a given instance.
 
@@ -130,6 +133,7 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class CreateBeta(Create):
   """Creates a user in a given instance.
 
@@ -149,6 +153,7 @@ class CreateBeta(Create):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class CreateAlpha(CreateBeta):
   """Creates a user in a given instance.
 

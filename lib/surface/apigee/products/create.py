@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.apigee import argument_groups
 from googlecloudsdk.command_lib.apigee import defaults
 from googlecloudsdk.command_lib.apigee import prompts
 from googlecloudsdk.command_lib.apigee import resource_args
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 
 
@@ -313,7 +314,10 @@ If specified, `--quota-interval` and `--quota-unit` must be specified too.""")
       if args.organization is None:
 
         def _ListOrgs():
-          response = apigee.OrganizationsClient.List()
+          if properties.VALUES.api_endpoint_overrides.apigee.Get():
+            response = apigee.OrganizationsClient.List()
+          else:
+            response = apigee.OrganizationsClient.ListOrganizationsGlobal()
           if "organizations" in response:
             return [item["organization"] for item in response["organizations"]]
           else:

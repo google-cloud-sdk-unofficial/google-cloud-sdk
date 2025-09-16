@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete an application template revision
     description: Delete an application template revision.
     examples: |-
       To delete the application template revision `my-revision` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-revision --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
+        $ {command} my-revision --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/my-revision
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/my-revision
   arguments:
     params:
     - help_text: |-

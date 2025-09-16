@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete an application
     description: Delete an application in a space.
     examples: |-
       To delete the application `my-application` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application
 
       If your application contains child resources, force delete the application. To force delete the application `my-application` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --force
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --force
   arguments:
     params:
     - help_text: |-

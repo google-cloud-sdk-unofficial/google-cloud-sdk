@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a space
     description: Create a space.
     examples: |-
       To create the space `my-space` in project `my-project` and location `us-central1`, run:
 
-      $ {command} my-space --project=my-project --location=us-central1
+        $ {command} my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space
 
       To create the space `my-space` in project `my-project` and location `us-central1` with display name, description, and enable google templates, run:
 
-      $ {command} my-space --project=my-project --location=us-central1 --display-name=my-display-name --description=my-description --enable-gcp-shared-templates
+        $ {command} my-space --project=my-project --location=us-central1 --display-name=my-display-name --description=my-description --enable-gcp-shared-templates
   arguments:
     params:
     - group:

@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update a catalog
     description: Update a catalog in a space.
     examples: |-
       To update the display name to `My New Catalog Name` for the catalog `my-catalog` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My New Catalog Name"
+        $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My New Catalog Name"
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog --display-name="My New Catalog Name"
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog --display-name="My New Catalog Name"
 
       To update the description to `My new description` for the catalog `my-catalog` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --description="My new description"
+        $ {command} my-catalog --space=my-space --project=my-project --location=us-central1 --description="My new description"
   arguments:
     params:
     - help_text: |-

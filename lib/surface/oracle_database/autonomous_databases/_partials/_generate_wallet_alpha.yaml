@@ -49,10 +49,12 @@
         enum_value: ALL
         help_text: |-
           Used to generate wallet for all databases in the region.
+        hidden: true
       - arg_value: single
         enum_value: SINGLE
         help_text: |-
           Used to generate wallet for a single database.
+        hidden: true
     - arg_name: is-regional
       api_field: generateAutonomousDatabaseWalletRequest.isRegional
       action: store_true

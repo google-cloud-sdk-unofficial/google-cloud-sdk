@@ -18,22 +18,21 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List catalog templates
     description: List catalog templates in a given catalog.
     examples: |-
       To list all catalog templates in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
+        $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
 
       To filter and list catalog templates that contain a `my-template` prefix in the display name in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-template*"
+        $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-template*"
 
       To list up to 10 catalog templates in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --limit=10
+        $ {command} --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --limit=10
   arguments:
     params:
     - help_text: |-

@@ -20,26 +20,23 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe a shared template revision
-    description: Describe a shared template revision.
+    brief: Get details of a PluggableDatabase.
+    description: Get details of a PluggableDatabase.
     examples: |-
-      To describe the shared template revision `my-revision` in shared template `my-shared-template`, space `my-space`, project `my-project` and location `us-central1`, run:
+      To get a PluggableDatabase with id `my-pluggable-database` in the location `us-east4`
+      for a given DbSystem with id `my-db-system`, run:
 
-      $ {command} my-revision --shared-template=my-shared-template --space=my-space --project=my-project --location=us-central1
-
-      Or run:
-
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/my-revision
+      $ {command} my-pluggable-database --location=us-east4
   arguments:
     params:
     - help_text: |-
-        The shared template revision name, in the following format:
-        projects/$project/locations/$location/spaces/$space/sharedTemplates/$sharedTemplate/revisions/$revision
+        The name of the PluggableDatabase resource in the following format:
+        projects/{project}/locations/{region}/pluggableDatabases/{pluggable_database}
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_spaces_shared_templates_revisions
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_pluggable_databases
       required: true
   request:
     api_version: v1alpha
     collection:
-    - designcenter.projects.locations.spaces.sharedTemplates.revisions
+    - oracledatabase.projects.locations.pluggableDatabases

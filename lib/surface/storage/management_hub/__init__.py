@@ -22,6 +22,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(is_removed=False, warning='This command group is deprecated. '
+                'Use `gcloud alpha storage intelligence-configs` command group '
+                'instead.')
 # TODO: b/369949089 - Remove default universe flag after checking the
 # availability of management hub in different universes.
 @base.DefaultUniverseOnly

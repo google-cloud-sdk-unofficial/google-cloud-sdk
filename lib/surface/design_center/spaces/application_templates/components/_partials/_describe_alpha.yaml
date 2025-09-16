@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Describe a component
     description: Describe a component in an application template.
     examples: |-
       To describe the component `my-component` in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
+        $ {command} my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component
   arguments:
     params:
     - help_text: |-

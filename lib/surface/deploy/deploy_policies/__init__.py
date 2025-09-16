@@ -14,9 +14,6 @@
 # limitations under the License.
 """The Deploy Policy command group for Google Cloud Deploy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

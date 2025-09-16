@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Deletes a Gcloud Deploy delivery target resource."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -40,6 +37,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Deletes a Cloud Deploy target."""
   detailed_help = _DETAILED_HELP

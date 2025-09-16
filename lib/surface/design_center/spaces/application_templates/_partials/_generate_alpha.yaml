@@ -18,26 +18,25 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Generate IaC for an application template
     description: Generates Terraform files for an application template.
     examples: |-
       To generate IaC for the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template
 
       To generate IaC for the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1` and save to cloud storage bucket `my-bucket`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --gcs-uri=gs://my-bucket
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --gcs-uri=gs://my-bucket
 
       To generate IaC for the application template `my-app-template` in Terraform format in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --iac-format=terraform
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --iac-format=terraform
   arguments:
     params:
     - help_text: |-
@@ -56,12 +55,63 @@
         enum_value: TERRAFORM
         help_text: |-
           IaC format is Terraform.
+      - arg_value: helm
+        enum_value: HELM
+        help_text: |-
+          IaC format is HELM.
     - arg_name: gcs-uri
       api_field: generateApplicationTemplateIaCRequest.gcsUri
       required: false
       repeated: false
       help_text: |-
         The Cloud Storage URI to write the generated IaC to.
+
+        DEPRECATED: Use the 'artifact_location' field instead.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the location.
+        params:
+        - group:
+            api_field: generateApplicationTemplateIaCRequest.artifactLocation.developerConnectExportConfig
+            required: false
+            help_text: |-
+              Through Developer Connect, defines a location where content such as
+              Infrastructure as Code (IaC) is stored.
+            params:
+            - arg_name: developer-connect-export-config-repo-uri
+              help_text: |-
+                The Developer Connect Git repository link, formatted as
+                `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.design_center.v1alpha_resources:projects_locations_connections_git_repository_links
+              resource_method_params:
+                generateApplicationTemplateIaCRequest.artifactLocation.developerConnectExportConfig.developerConnectRepoUri: '{__relative_name__}'
+              required: true
+            - arg_name: developer-connect-export-config-branch
+              api_field: generateApplicationTemplateIaCRequest.artifactLocation.developerConnectExportConfig.branch
+              required: false
+              repeated: false
+              help_text: |-
+                The branch in repo to which the content such as Infrastructure as Code
+                (IaC) should be written to. If empty, ADC will create a branch and push the
+                changes.
+            - arg_name: developer-connect-export-config-dir
+              api_field: generateApplicationTemplateIaCRequest.artifactLocation.developerConnectExportConfig.dir
+              required: true
+              repeated: false
+              help_text: |-
+                Directory, relative to the source repo, where content such as
+                Infrastructure as Code (IaC) will be stored.
+                This must be a relative path.To specify the root directory, use '/'.
+                If the path or any subdirectories do not exist, they will be created.
+        - arg_name: artifact-location-gcs-uri
+          api_field: generateApplicationTemplateIaCRequest.artifactLocation.gcsUri
+          required: false
+          repeated: false
+          help_text: |-
+            The Cloud Storage URI for storing the generated IaC.
   request:
     api_version: v1alpha
     collection:

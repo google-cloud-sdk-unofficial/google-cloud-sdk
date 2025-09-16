@@ -19,8 +19,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib import apigee
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Apigee organizations and their paired Cloud Platform projects."""
 
@@ -54,7 +56,10 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    result = apigee.OrganizationsClient.List(vars(args))
+    if properties.VALUES.api_endpoint_overrides.apigee.Get():
+      result = apigee.OrganizationsClient.List(vars(args))
+    else:
+      result = apigee.OrganizationsClient.ListOrganizationsGlobal()
     if "organizations" in result:
       for organization in result["organizations"]:
         yield {

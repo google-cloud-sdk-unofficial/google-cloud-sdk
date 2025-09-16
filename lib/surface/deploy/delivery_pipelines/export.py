@@ -14,9 +14,6 @@
 # limitations under the License.
 """Exports a Gcloud Deploy delivery pipeline resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -45,6 +42,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Export(base.ExportCommand):
   """Returns the .yaml definition of the specified delivery pipeline.
 
@@ -73,6 +71,6 @@ class Export(base.ExportCommand):
     )
 
     manifest = manifest_util.ProtoToManifest(
-        pipeline, pipeline_ref, manifest_util.DELIVERY_PIPELINE_KIND_V1BETA1)
+        pipeline, pipeline_ref, manifest_util.ResourceKind.DELIVERY_PIPELINE)
 
     export_util.Export(manifest, args)

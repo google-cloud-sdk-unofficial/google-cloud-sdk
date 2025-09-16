@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create an application
     description: Create an application in a space.
     examples: |-
       To create the application `my-application` with a display name of `My Application`, description of `My application description` and source application template revision `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My Application" --description="My application description" --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My Application" --description="My application description" --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
 
       To create the application `my-application` with a deployment project `my-deployment-project`, deployment region `us-east1`, scope type `regional` and source application template revision `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --deployment-project=my-deployment-project --deployment-region=us-east1 --scope-type=regional --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --deployment-project=my-deployment-project --deployment-region=us-east1 --scope-type=regional --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
   arguments:
     params:
     - help_text: |-
@@ -43,7 +42,7 @@
       required: true
     - group:
         api_field: application.source
-        required: false
+        required: true
         help_text: |-
           Source template information for the deployment.
         params:

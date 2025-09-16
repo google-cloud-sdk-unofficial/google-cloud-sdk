@@ -18,8 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-import base64
-
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -38,10 +36,12 @@ class GetPublicKey(base.DescribeCommand):
   If not specified, the public key will be printed to stdout.
 
   The optional flag `public-key-format` indicates the format in which the
-  public key will be returned. For the PQC algorithms, this must be
-  specified and set to `nist-pqc`. For all other algorithms, this flag is
-  optional and defaults to `pem`. See "Retrieve a public key" in the Cloud KMS
-  documentation (https://cloud.google.com/kms/docs/retrieve-public-key) for more
+  public key will be returned. For the NIST PQC algorithms, this must be
+  specified and set to `nist-pqc`. For kem-xwing this must be specified and set to
+  `xwing-raw-bytes`. For all other algorithms, this flag is
+  optional and can be either `pem` or `der`; the default value is `pem`.
+  See "Retrieve a public key" in the Cloud KMS
+  documentation (https://cloud.google.com/kms/help/get-public-key) for more
   information about the supported formats.
 
   ## EXAMPLES
@@ -76,6 +76,17 @@ class GetPublicKey(base.DescribeCommand):
         name=version_ref.RelativeName(),
     )
     if args.public_key_format:
+      if args.public_key_format not in [
+          'pem',
+          'der',
+          'nist-pqc',
+          'xwing-raw-bytes',
+      ]:
+        raise exceptions.InvalidArgumentException(
+            '--public-key-format',
+            'Invalid value for public key format. Supported values are "der",'
+            ' "pem", "xwing-raw-bytes" and "nist-pqc".',
+        )
       req.publicKeyFormat = maps.PUBLIC_KEY_FORMAT_MAPPER.GetEnumForChoice(
           args.public_key_format
       )
@@ -83,12 +94,17 @@ class GetPublicKey(base.DescribeCommand):
         req
     )
 
+    # DER, NIST_PQC and XWING_RAW_BYTES are in raw byte format.
+    # So the output is in binary format.
+    write_binary_file = args.public_key_format in [
+        'der',
+        'nist-pqc',
+        'xwing-raw-bytes',
+    ]
     log.WriteToFileOrStdout(
         args.output_file if args.output_file else '-',
-        resp.pem
-        if resp.pem
-        else base64.b64encode(resp.publicKey.data).decode('utf-8'),
+        resp.pem if resp.pem else resp.publicKey.data,
         overwrite=True,
-        binary=False,
+        binary=write_binary_file,
         private=True,
     )

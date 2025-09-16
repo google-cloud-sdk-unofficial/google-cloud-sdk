@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List connections
     description: List connections in a component of an application template.
     examples: |-
       To list all connections in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command}  --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
+        $ {command}  --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} --component=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component
+        $ {command} --component=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component
   arguments:
     params:
     - help_text: |-

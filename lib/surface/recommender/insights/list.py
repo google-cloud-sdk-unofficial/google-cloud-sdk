@@ -54,7 +54,7 @@ DISPLAY_FORMAT = """
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List insights for Google Cloud resources.
 
@@ -117,8 +117,10 @@ class List(base.ListCommand):
             projects. The maximum number of resources (organization,
             folders, projects, and descendant resources) that can be accessed at
             once with the `--recursive` flag is 100. For a larger
-            number of nested resources, use BigQuery Export. Using `--recursive`
-            can add 15-20 seconds per resource to the runtime.
+            number of nested resources, use
+            [BigQuery export](https://cloud.google.com/recommender/docs/bq-export/export-recommendations-to-bq).
+            Using `--recursive` can add 15-20 seconds per resource to the
+            runtime.
             """),
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)
@@ -291,6 +293,7 @@ class List(base.ListCommand):
       insights = itertools.chain(
           insights, (peek,), new_insights
       )
+
     return insights
 
   def Run(self, args):
@@ -324,123 +327,6 @@ class List(base.ListCommand):
         ])
 
     return self.GetInsights(args, asset_insight_types)
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListOrigBeta(base.ListCommand):
-  r"""List insights for a Google Cloud entity.
-
-  This command lists all insights for a given Google Cloud entity, location, and
-  insight type. If insight-type or location is not specified,
-  insights for all supported insight-types and locations are listed.  Supported
-  insight-types can be found here:
-  https://cloud.google.com/recommender/docs/insights/insight-types.
-  The following Google Cloud entity types are supported: project,
-  billing_account, folder, and organization.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command.
-    """
-    flags.AddParentFlagsToParser(parser)
-    parser.add_argument(
-        '--location',
-        metavar='LOCATION',
-        required=False,
-        help=(
-            'Location to list insights for. If no location is specified,'
-            ' insights for all supported locations are listed.'
-        ),
-    )
-    parser.add_argument(
-        '--insight-type',
-        metavar='INSIGHT_TYPE',
-        required=False,
-        help=(
-            'Insight type to list insights for. Supported insight-types can '
-            'be found here: '
-            'https://cloud.google.com/recommender/docs/insights/insight-types'
-        ),
-    )
-    parser.display_info.AddFormat("""
-        table(
-          name.basename(): label=INSIGHT_ID,
-          category: label=CATEGORY,
-          stateInfo.state: label=INSIGHT_STATE,
-          lastRefreshTime: label=LAST_REFRESH_TIME,
-          severity: label=SEVERITY,
-          insightSubtype: label=INSIGHT_SUBTYPE,
-          description: label=DESCRIPTION
-        )
-    """)
-
-  def Run(self, args):
-    """Run 'gcloud recommender insights list'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-        with.
-
-    Returns:
-      The list of insights for this project.
-    """
-
-    insights = []
-
-    if args.location is not None:
-      locations_local = [flags.GetResourceSegment(args) +
-                         f'/locations/{args.location}']
-    else:
-      loc_client = locations.CreateClient(self.ReleaseTrack())
-      locations_local = [
-          loc.name
-          for loc in loc_client.List(
-              args.page_size,
-              project=args.project,
-              organization=args.organization,
-              folder=args.folder,
-              billing_account=args.billing_account,
-          )
-      ]
-
-    parent_names = []
-    for location in locations_local:
-      if args.insight_type is not None:
-        parent_names.append(
-            f'{location}/insightTypes/{args.insight_type}'
-        )
-      else:
-        insight_types_client = insight_types.CreateClient(self.ReleaseTrack())
-        insight_response = insight_types_client.List(args.page_size)
-        parent_names.extend(
-            [
-                f'{location}/insightTypes/{response.name}'
-                for response in insight_response
-            ]
-        )
-
-    insights_client = insight.CreateClient(self.ReleaseTrack())
-    for parent_name in parent_names:
-      new_insights = insights_client.List(parent_name, args.page_size)
-      try:  # skip insight-types that do not allow customer access
-        peek = next(new_insights)  # execute first element of generator
-      except (
-          apitools_exceptions.HttpBadRequestError,
-          apitools_exceptions.BadStatusCodeError,
-          StopIteration,
-      ):
-        continue
-      insights = itertools.chain(insights, [peek], new_insights)
-
-    return insights
 
 
 @base.DefaultUniverseOnly

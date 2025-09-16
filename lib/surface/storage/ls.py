@@ -230,12 +230,15 @@ class Ls(base.Command):
     else:
       paths = [cloud_api.DEFAULT_PROVIDER.value + '://']
 
+    server_filter = getattr(args, 'server_filter', None)
     storage_urls = [storage_url.storage_url_from_string(path) for path in paths]
     for url in storage_urls:
       if not isinstance(url, storage_url.CloudUrl):
         raise errors.InvalidUrlError(
             'Ls only works for cloud URLs. Error for: {}'.format(url.url_string)
         )
+      if server_filter is not None and url.scheme != cloud_api.DEFAULT_PROVIDER:
+        raise errors.Error('Server filter is only supported for GCS URLs.')
       if url.scheme is not cloud_api.DEFAULT_PROVIDER:
         found_non_default_provider = True
 
@@ -262,7 +265,7 @@ class Ls(base.Command):
         recursion_flag=args.recursive,
         use_gsutil_style=use_gsutil_style,
         soft_deleted_buckets=buckets and soft_deleted,
-        list_filter=getattr(args, 'server_filter', None),
+        list_filter=server_filter,
     ).list_urls()
 
     if found_non_default_provider and args.full:

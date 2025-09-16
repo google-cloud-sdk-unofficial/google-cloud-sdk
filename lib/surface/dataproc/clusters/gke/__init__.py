@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class Gke(base.Group):
   """Create Dataproc GKE-based virtual clusters.
 

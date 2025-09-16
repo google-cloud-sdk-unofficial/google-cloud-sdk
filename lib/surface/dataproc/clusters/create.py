@@ -29,10 +29,11 @@ from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a cluster."""
 
@@ -59,8 +60,11 @@ class Create(base.CreateCommand):
         cls.BETA,
         cls.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_ttl_config=True,
-        include_gke_platform_args=cls.BETA,
-        include_driver_pool_args=True)
+        # GKE platform args are only supported in the default universe.
+        include_gke_platform_args=cls.BETA and properties.IsDefaultUniverse(),
+        # Driver pools are only supported in the default universe.
+        include_driver_pool_args=properties.IsDefaultUniverse(),
+    )
     # Add arguments for failure action for primary workers
     if not cls.BETA:
       parser.add_argument(

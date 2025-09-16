@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.run import platforms
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
 class Presets(base.Group):
   """View available Cloud Run service presets.
 
@@ -32,7 +33,6 @@ class Presets(base.Group):
   services.
   """
 
-  hidden = True
   detailed_help = {
       'DESCRIPTION': """
           This command group allows you to list and describe presets for your

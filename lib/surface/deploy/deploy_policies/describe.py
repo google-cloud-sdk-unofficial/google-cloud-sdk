@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describes a Gcloud Deploy Policy resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 
@@ -71,7 +68,7 @@ class Describe(base.DescribeCommand):
     policy_obj = deploy_policy_util.GetDeployPolicy(policy_ref)
     manifest = collections.OrderedDict(
         apiVersion=manifest_util.API_VERSION_V1,
-        kind=manifest_util.DEPLOY_POLICY_KIND,
+        kind=manifest_util.ResourceKind.DEPLOY_POLICY.value,
     )
     for f in policy_obj.all_fields():
       value = getattr(policy_obj, f.name)

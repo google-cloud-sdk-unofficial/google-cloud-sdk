@@ -29,8 +29,8 @@ DETAILED_HELP = {
         *{command}* facilitates the creation of a cluster resource.
 
         There are following ways to create a cluster:
-        - Using granular flags to define cluster specs.
-        - Using --config flag with cluster specs in JSON format.
+        - [Preferred] Use granular flags to define cluster specs.
+        - Use --config flag with cluster specs in JSON format.
 
         Please refer to the examples below for more details.
         """),
@@ -40,20 +40,17 @@ DETAILED_HELP = {
         $ {command} my-cluster --location us-central1-a \
         --description "My cluster description" \
         --labels env=prod,client=gcloud-cli \
-        --create-network network0 \
-        --create-filestores name=locations/us-central1-a/instances/filestore0,tier=TIER_BASIC_HDD,sizeGb={filestoreSize},fileshare={fileshare} \
+        --create-network name=network0 \
+        --create-filestores name=locations/us-central1-a/instances/filestore0,tier=BASIC_HDD,capacityGb={filestoreSize},fileshare={fileshare} \
         --filestores locations/us-central1-a/instances/filestore1 \
-        --create-gcs-buckets name=bucket0 \
-        --gcs-buckets bucket1 \
-        --create-lustres name=locations/us-central1-a/instances/lustre0,sizeGb={lustreSize},filesystem={filesystem} \
+        --create-buckets name=bucket0 \
+        --buckets bucket1 \
+        --create-lustres name=locations/us-central1-a/instances/lustre0,capacityGb={lustreSize},filesystem={filesystem} \
         --lustres locations/us-central1-a/instances/lustre1 \
-        --compute-resources name=compute0,zone=us-central1-a,machineType={machineType} \
-        --compute-resource-disks computeId=compute0,type={diskType},sizeGb={diskSize},boot=true,sourceImage={family/image} \
-        --compute-resource-reservations computeId=compute0,type=RESERVATION_TYPE_SPECIFIC_RESERVATION,values=zones/us-central1-a/reservations/{reservation} \
+        --reserved-instances id=compute0,machineType={machineType},reservation=zones/us-central1-a/reservations/{reservation} \
         --slurm-login-node machineType={machineType},zone=us-central1-a \
-        --slurm-login-node-disks type={diskType},sizeGb={diskSize},boot=true,sourceImage={family/image} \
-        --slurm-node-sets name=nodeset0,computeId=compute0 \
-        --slurm-partitions name=partition0,nodesetIds=[nodeset0] \
+        --slurm-node-sets id=nodeset0,computeId=compute0 \
+        --slurm-partitions id=partition0,nodesetIds=[nodeset0] \
         --slurm-default-partition partition0 \
         --format json
 
@@ -73,10 +70,15 @@ DETAILED_HELP = {
 class Create(base.CreateCommand):
   """Creates a Cluster Director resource."""
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
+    """Specifies command flags.
+
+    Args:
+      parser: argparse.Parser: Parser object for command line inputs.
+    """
     base.ASYNC_FLAG.AddToParser(parser)
-    api_version = api_utils.GetApiVersion(base.ReleaseTrack.ALPHA)
+    api_version = api_utils.GetApiVersion(cls.ReleaseTrack())
     utils.AddClusterNameArgToParser(parser=parser, api_version=api_version)
     group = parser.add_group(
         help="Cluster configuration for provisioning.",
@@ -98,27 +100,43 @@ class Create(base.CreateCommand):
     network_source_group = network_group.add_group(
         help="Use an existing network source for the cluster.",
     )
-    flags.AddNetworkSource(group=network_source_group, api_version=api_version)
-    flags.AddSubnetSource(group=network_source_group, api_version=api_version)
+    flags.AddNetworkSource(
+        group=network_source_group, api_version=api_version, required=True
+    )
+    flags.AddSubnetSource(
+        group=network_source_group, api_version=api_version, required=True
+    )
     flags.AddCreateFilestores(group=flag_group, api_version=api_version)
     flags.AddFilestores(group=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(group=flag_group, api_version=api_version)
     flags.AddGcsBuckets(group=flag_group, api_version=api_version)
     flags.AddCreateLustres(group=flag_group, api_version=api_version)
     flags.AddLustres(group=flag_group, api_version=api_version)
-    flags.AddComputeResources(group=flag_group, api_version=api_version)
-    flags.AddComputeResourceDisks(group=flag_group, api_version=api_version)
-    flags.AddComputeResourceReservations(
-        group=flag_group, api_version=api_version
+    flags.AddOnDemandInstances(group=flag_group, api_version=api_version)
+    flags.AddSpotInstances(group=flag_group, api_version=api_version)
+    flags.AddReservedInstances(group=flag_group, api_version=api_version)
+    flags.AddDwsFlexInstances(group=flag_group, api_version=api_version)
+    flags.AddSlurmLoginNode(
+        group=flag_group, api_version=api_version, required=True
     )
-    flags.AddSlurmNodeSets(group=flag_group, api_version=api_version)
-    flags.AddSlurmPartitions(group=flag_group, api_version=api_version)
+    flags.AddSlurmNodeSets(
+        group=flag_group, api_version=api_version, required=True
+    )
+    flags.AddSlurmPartitions(
+        group=flag_group, api_version=api_version, required=True
+    )
     flags.AddSlurmDefaultPartition(group=flag_group, api_version=api_version)
-    flags.AddSlurmLoginNode(group=flag_group, api_version=api_version)
-    flags.AddSlurmLoginNodeDisks(group=flag_group, api_version=api_version)
-    flags.AddSlurmConfig(group=flag_group, api_version=api_version)
 
   def Run(self, args):
+    """Constructs and sends request.
+
+    Args:
+      args: argparse.Namespace, An object that contains the values for the
+        arguments specified in the .Args() method.
+
+    Returns:
+      ProcessHttpResponse of the request made.
+    """
     release_track = self.ReleaseTrack()
     client = api_utils.GetClientInstance(release_track)
     messages = api_utils.GetMessagesModule(release_track)

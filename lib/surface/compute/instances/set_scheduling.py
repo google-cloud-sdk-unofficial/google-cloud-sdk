@@ -148,7 +148,16 @@ class SetSchedulingInstances(base.SilentCommand):
     if args.IsSpecified('maintenance_policy'):
       scheduling_options.onHostMaintenance = (
           client.messages.Scheduling.OnHostMaintenanceValueValuesEnum(
-              args.maintenance_policy))
+              args.maintenance_policy
+          )
+      )
+
+    if hasattr(args, 'preemption_notice_duration') and args.IsSpecified(
+        'preemption_notice_duration'
+    ):
+      scheduling_options.preemptionNoticeDuration = client.messages.Duration(
+          seconds=args.preemption_notice_duration
+      )
 
     if hasattr(args, 'max_run_duration') and args.IsSpecified(
         'max_run_duration'
@@ -296,3 +305,4 @@ class SetSchedulingInstancesAlpha(SetSchedulingInstancesBeta):
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddGracefulShutdownArgs(parser)
     flags.AddSkipGuestOsShutdownArgs(parser)
+    flags.AddPreemptionNoticeDurationArgs(parser)

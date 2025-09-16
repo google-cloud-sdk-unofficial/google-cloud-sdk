@@ -25,6 +25,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Provision(base.DescribeCommand):
   """Provision an Apigee SaaS organization."""
@@ -118,9 +119,15 @@ class Provision(base.DescribeCommand):
     if project is None:
       exceptions.RequiredArgumentException(
           "--project",
-          "Must provide a GCP project in which to provision the organization.")
+          "Must provide a GCP project in which to provision the organization.",
+      )
 
-    operation = apigee.ProjectsClient.ProvisionOrganization(project, org_info)
+    location = "global"
+    if properties.VALUES.api_endpoint_overrides.apigee.Get():
+      location = None
+    operation = apigee.ProjectsClient.ProvisionOrganization(
+        project, org_info, location
+    )
     apigee.OperationsClient.SplitName(operation)
     if args.async_:
       return operation

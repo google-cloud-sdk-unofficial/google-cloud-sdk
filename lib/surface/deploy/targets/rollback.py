@@ -14,9 +14,6 @@
 # limitations under the License.
 """Rollback a Cloud Deploy target to a prior rollout."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 

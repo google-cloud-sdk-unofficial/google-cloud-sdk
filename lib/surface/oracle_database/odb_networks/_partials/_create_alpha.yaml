@@ -57,6 +57,14 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: gcp-oracle-zone
+      api_field: odbNetwork.gcpOracleZone
+      required: false
+      repeated: false
+      help_text: |-
+        The GCP Oracle zone where OdbNetwork is hosted.
+        Example: us-east4-b-r2.
+        If not specified, the system will pick a zone based on availability.
     - arg_name: request-id
       api_field: requestId
       required: false

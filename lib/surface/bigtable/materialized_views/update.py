@@ -42,7 +42,8 @@ class UpdateMaterializedView(base.UpdateCommand):
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
           To update a materialized view, run:
-            $ {command} my-materialized-view-id --instance=my-instance-id --deletion-protection=true"
+
+            $ {command} my-materialized-view-id --instance=my-instance-id --deletion-protection=true
           """),
   }
 

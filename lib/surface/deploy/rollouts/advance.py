@@ -14,9 +14,6 @@
 # limitations under the License.
 """Advances a Cloud Deploy rollout to the specified phase."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import apis as core_apis
@@ -44,6 +41,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Advance(base.CreateCommand):
   """Advances a rollout."""
 

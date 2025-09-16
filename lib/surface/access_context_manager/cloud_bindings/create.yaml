@@ -133,6 +133,12 @@
             --level=accessPolicies/123/accessLevels/abc \
             --organization='1234567890' \
 
+        To create a new cloud access binding for a specific federated principal, run:
+
+          $ {command} --federated-principal='//iam.googleapis.com/projects/1234567890/locations/global/workloadIdentityPools/my-pool/subject/my-subject' \
+            --level=accessPolicies/123/accessLevels/abc \
+            --organization='1234567890'
+
         To create a new cloud access binding with global session settings, specify your session
         length using an ISO duration string and the `session-length` flag. For example:
 
@@ -326,6 +332,14 @@
       type: str
       help_text: |
         The access level that binds to all the service accounts belong to the given project number.
+    - api_field: gcpUserAccessBinding.principal.federatedPrincipal
+      arg_name: federated-principal
+      hidden: true
+      required: false
+      release_tracks: [ALPHA]
+      type: str
+      help_text: |
+        The access level that binds to the given federated principal.
 
   output:
     format: yaml

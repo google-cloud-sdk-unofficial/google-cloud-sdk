@@ -25,7 +25,7 @@
     examples: |-
       To update the autonomousDatabase, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -102,19 +102,23 @@
             enum_value: OLTP
             help_text: |-
               Autonomous Transaction Processing database.
+            hidden: true
           - arg_value: dw
             enum_value: DW
             help_text: |-
               Autonomous Data Warehouse database.
+            hidden: true
           - arg_value: ajd
             enum_value: AJD
             help_text: |-
               Autonomous JSON Database.
+            hidden: true
           - arg_value: apex
             enum_value: APEX
             help_text: |-
               Autonomous Database with the Oracle APEX Application Development workload
               type.
+            hidden: true
         - arg_name: properties-db-edition
           api_field: autonomousDatabase.properties.dbEdition
           required: false
@@ -125,10 +129,12 @@
             enum_value: STANDARD_EDITION
             help_text: |-
               Standard Database Edition
+            hidden: true
           - arg_value: enterprise-edition
             enum_value: ENTERPRISE_EDITION
             help_text: |-
               Enterprise Database Edition
+            hidden: true
         - arg_name: properties-character-set
           api_field: autonomousDatabase.properties.characterSet
           required: false
@@ -186,10 +192,12 @@
             enum_value: LICENSE_INCLUDED
             help_text: |-
               License included part of offer
+            hidden: true
           - arg_value: bring-your-own-license
             enum_value: BRING_YOUR_OWN_LICENSE
             help_text: |-
               Bring your own license
+            hidden: true
         - arg_name: properties-customer-contacts
           api_field: autonomousDatabase.properties.customerContacts
           required: false
@@ -225,10 +233,12 @@
             help_text: |-
               An EARLY maintenance schedule patches the database before
               the regular scheduled maintenance.
+            hidden: true
           - arg_value: regular
             enum_value: REGULAR
             help_text: |-
               A REGULAR maintenance schedule follows the normal maintenance cycle.
+            hidden: true
         - arg_name: properties-mtls-connection-required
           api_field: autonomousDatabase.properties.mtlsConnectionRequired
           action: store_true_false
@@ -268,10 +278,12 @@
                 enum_value: GOOGLE_MANAGED
                 help_text: |-
                   Google Managed KMS key, if selected, please provide the KMS key name.
+                hidden: true
               - arg_value: oracle-managed
                 enum_value: ORACLE_MANAGED
                 help_text: |-
                   Oracle Managed.
+                hidden: true
             - arg_name: encryption-key-kms
               api_field: autonomousDatabase.properties.encryptionKey.kmsKey
               required: false

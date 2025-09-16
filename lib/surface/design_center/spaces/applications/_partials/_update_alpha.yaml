@@ -18,34 +18,33 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update an application
     description: Update an application in a space.
     examples: |-
       To update the display name to `My New Application Name` for the application `my-application` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My New Application Name"
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My New Application Name"
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application --display-name="My New Application Name"
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application --display-name="My New Application Name"
 
       To update the source application template revision to `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev2` for the application `my-application` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev2
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev2
 
       To update the component parameters with new key-value pairs of `project_id:new-project` and `service_name:new-service` for the component `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component` in application `my-application`, space `my-space`, project `my-project` and location `us-central1`, run the following shorthand example:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters=component=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component,parameters='[{"key": "project_id", "value": "new-project"}, {"key": "service_name", "value": "new-service"}]'
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters=component=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component,parameters='[{"key": "project_id", "value": "new-project"}, {"key": "service_name", "value": "new-service"}]'
 
       Or run the following JSON example:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters='[{"component": "projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component", "parameters": [{"key": "project_id", "value": "new-project"}, {"key": "service_name", "value": "new-service"}]}]'
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters='[{"component": "projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component", "parameters": [{"key": "project_id", "value": "new-project"}, {"key": "service_name", "value": "new-service"}]}]'
 
       Or create a YAML or JSON file with the parameters and run the following file example:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters=component-parameters.json
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --component-parameters=component-parameters.json
   arguments:
     params:
     - help_text: |-

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Exports a Cloud Deploy deploy policy resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -74,7 +71,9 @@ class Export(base.ExportCommand):
     )
 
     manifest = manifest_util.ProtoToManifest(
-        resource, deploy_policy_type_ref, manifest_util.DEPLOY_POLICY_KIND
+        resource,
+        deploy_policy_type_ref,
+        manifest_util.ResourceKind.DEPLOY_POLICY,
     )
 
     export_util.Export(manifest, args)

@@ -18,30 +18,29 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Update an application template
     description: Update an application template.
     examples: |-
       To update the display name to `My New App Template Name` for the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --display-name="My New App Template Name"
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --display-name="My New App Template Name"
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template --display-name="My New App Template Name"
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template --display-name="My New App Template Name"
 
       To clear the application parameters for the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --clear-application-parameters
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --clear-application-parameters
 
       To add an application parameter key-value pair of `project_id:new-project` to the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --add-application-parameters=key=project_id,value=new-project
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --add-application-parameters=key=project_id,value=new-project
 
       To remove an application parameter key-value pair of `project_id:new-project` from the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --remove-application-parameters=key=project_id,value=my-project
+        $ {command} my-app-template --space=my-space --project=my-project --location=us-central1 --remove-application-parameters=key=project_id,value=my-project
   arguments:
     params:
     - help_text: |-

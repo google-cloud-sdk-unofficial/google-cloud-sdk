@@ -93,7 +93,7 @@ class Create(base.CreateCommand):
         zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
     )
     if not args.async_:
-      return api_utils.Insert(client, ha_controller, ha_controller_ref)
+      return api_utils.Insert(ha_controller, ha_controller_ref, holder)
 
     errors_to_collect = []
     response = api_utils.InsertAsync(

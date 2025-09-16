@@ -18,26 +18,25 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List application template revisions
     description: List application template revisions in an application template.
     examples: |-
       To list all application template revisions in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
+        $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} --application-template=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template
+        $ {command} --application-template=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template
 
       To list up to 10 application template revisions in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --limit=10
+        $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --limit=10
 
       To list application template revisions sorted by creation time in application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --sort-by=createTime
+        $ {command} --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --sort-by=createTime
   arguments:
     params:
     - help_text: |-

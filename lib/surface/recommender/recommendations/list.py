@@ -54,7 +54,7 @@ DISPLAY_FORMAT = """
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   r"""List recommendations for Google Cloud resources.
 
@@ -119,8 +119,10 @@ class List(base.ListCommand):
             projects.  The maximum number of resources (organization,
             folders, projects, and descendant resources) that can be accessed at
             once with the `--recursive` flag is 100. For a larger
-            number of nested resources, use BigQuery Export. Using `--recursive`
-            can add 15-20 seconds per resource to the runtime.
+            number of nested resources, use
+            [BigQuery export](https://cloud.google.com/recommender/docs/bq-export/export-recommendations-to-bq).
+            Using `--recursive` can add 15-20 seconds per resource to the
+            runtime.
             """),
     )
     parser.display_info.AddFormat(DISPLAY_FORMAT)
@@ -198,7 +200,6 @@ class List(base.ListCommand):
       ):
         args.scope = self.read(r.folders)
         resources.extend(client.SearchAllResources(args))
-
       if len(self.resource_locations) > 100:
         raise exceptions.UnsupportedOperationError(
             'The maximum number of resources (organizations, folders, projects,'
@@ -206,7 +207,6 @@ class List(base.ListCommand):
             ' recommendations is 100. To access'
             ' a larger number of resources, use BigQuery Export.'
         )
-
     return self.resource_locations
 
   def CollectAssets(self, args):
@@ -270,6 +270,7 @@ class List(base.ListCommand):
     Returns:
       (Recommendations) a iterator for all returned recommendations
     """
+
     recommendations = []
     recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
 
@@ -295,6 +296,7 @@ class List(base.ListCommand):
       recommendations = itertools.chain(
           recommendations, (peek,), new_recommendations
       )
+
     return recommendations
 
   def Run(self, args):
@@ -328,118 +330,6 @@ class List(base.ListCommand):
         ])
 
     return self.GetRecommendations(args, asset_recommenders)
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class ListOriginal2(base.ListCommand):
-  r"""List operations for a recommendation.
-
-  This command lists all recommendations for a given Google Cloud entity ID,
-  location, and recommender. If recommender or location is not specified,
-  recommendations for all supported recommenders and locations are listed.
-  Supported recommenders can be found here:
-  https://cloud.google.com/recommender/docs/recommenders.
-  The following Google Cloud entity types are supported: project,
-  billing_account, folder and organization.
-  """
-
-  detailed_help = DETAILED_HELP
-
-  @staticmethod
-  def Args(parser):
-    """Args is called by calliope to gather arguments for this command.
-
-    Args:
-      parser: An argparse parser that you can use to add arguments that go on
-        the command line after this command.
-    """
-    flags.AddParentFlagsToParser(parser)
-    parser.add_argument(
-        '--location',
-        metavar='LOCATION',
-        required=False,
-        help=(
-            'Location to list recommendations for. If no location is specified,'
-            ' recommendations for all supported locations are listed.'
-        ),
-    )
-    parser.add_argument(
-        '--recommender',
-        metavar='RECOMMENDER',
-        required=False,
-        help=(
-            'Recommender to list recommendations for. If no recommender is'
-            ' specified, recommendations for all supported recommenders are'
-            ' listed. Supported recommenders can be found here:'
-            ' https://cloud.google.com/recommender/docs/recommenders'
-        ),
-    )
-    parser.display_info.AddFormat(DISPLAY_FORMAT)
-
-  def Run(self, args):
-    """Run 'gcloud recommender recommendations list'.
-
-    Args:
-      args: argparse.Namespace, The arguments that this command was invoked
-        with.
-
-    Returns:
-      The list of recommendations for this project.
-    """
-
-    recommendations = []
-
-    if args.location is not None:
-      locations_local = [flags.GetResourceSegment(args) +
-                         f'/locations/{args.location}']
-    else:
-      loc_client = locations.CreateClient(self.ReleaseTrack())
-      locations_local = [
-          loc.name
-          for loc in loc_client.List(
-              args.page_size,
-              project=args.project,
-              organization=args.organization,
-              folder=args.folder,
-              billing_account=args.billing_account,
-          )
-      ]
-
-    parent_names = []
-    for location in locations_local:
-      if args.recommender is not None:
-        parent_names.append(
-            f'{location}/recommenders/{args.recommender}'
-        )
-      else:
-        recommenders_client = recommenders.CreateClient(self.ReleaseTrack())
-        recommenders_response = recommenders_client.List(args.page_size)
-        parent_names.extend(
-            [
-                f'{location}/recommenders/{response.name}'
-                for response in recommenders_response
-            ]
-        )
-
-    recommendations_client = recommendation.CreateClient(self.ReleaseTrack())
-    for parent_name in parent_names:
-      new_recommendations = recommendations_client.List(
-          parent_name, args.page_size
-      )
-      try:  # skip recommenders that the user does not have access to.
-        peek = next(new_recommendations)  # execute first element of generator
-      except (
-          apitools_exceptions.HttpBadRequestError,
-          apitools_exceptions.BadStatusCodeError,
-          StopIteration,
-      ):
-        continue
-      recommendations = itertools.chain(
-          recommendations, (peek,), new_recommendations
-      )
-
-    return recommendations
 
 
 @base.UniverseCompatible

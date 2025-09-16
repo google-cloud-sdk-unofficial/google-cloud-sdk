@@ -18,26 +18,25 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List application templates
     description: List application templates in a given space.
     examples: |-
       To list all application templates in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1
+        $ {command} --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} --space=projects/my-project/locations/us-central1/spaces/my-space
+        $ {command} --space=projects/my-project/locations/us-central1/spaces/my-space
 
       To filter and list application templates with a display name of `my-app-template` prefix in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-app-template*"
+        $ {command} --space=my-space --project=my-project --location=us-central1 --filter="displayName:my-app-template*"
 
       To list up to 10 application templates in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --space=my-space --project=my-project --location=us-central1 --limit=10
+        $ {command} --space=my-space --project=my-project --location=us-central1 --limit=10
   arguments:
     params:
     - help_text: |-

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Exports a Gcloud Deploy automation resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -44,6 +41,7 @@ _DETAILED_HELP = {
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.DefaultUniverseOnly
 class Export(base.ExportCommand):
   """Returns the YAML definition of the specified Automation.
 
@@ -72,7 +70,7 @@ class Export(base.ExportCommand):
     resource = automation.AutomationsClient().Get(resource_ref.RelativeName())
 
     manifest = manifest_util.ProtoToManifest(
-        resource, resource_ref, manifest_util.AUTOMATION_KIND
+        resource, resource_ref, manifest_util.ResourceKind.AUTOMATION
     )
 
     export_util.Export(manifest, args)

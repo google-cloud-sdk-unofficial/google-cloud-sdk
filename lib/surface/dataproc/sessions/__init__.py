@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.UniverseCompatible
 class Sessions(base.Group):
   """Create and manage Dataproc sessions.
 

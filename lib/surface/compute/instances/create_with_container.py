@@ -48,7 +48,7 @@ def _Args(
     support_disk_labels=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
-    support_flex_start=False,
+    support_flex_start=True,
     support_skip_guest_os_shutdown=False,
 ):
   """Add flags shared by all release tracks."""
@@ -132,6 +132,7 @@ def _Args(
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  instances_flags.AddRequestValidForDurationArgs(parser)
 
 
 # TODO(b/305707759):Change @base.DefaultUniverseOnly to
@@ -468,7 +469,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_disk_labels=True,
         support_graceful_shutdown=True,
         support_ipv6_only=True,
-        support_flex_start=False,
+        support_flex_start=True,
         support_skip_guest_os_shutdown=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
@@ -534,7 +535,6 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddIPv6AddressAlphaArgs(parser)
     instances_flags.AddIPv6PrefixLengthAlphaArgs(parser)
-    instances_flags.AddRequestValidForDurationArgs(parser)
 
   def _ValidateTrackSpecificArgs(self, args):
     instances_flags.ValidateLocalSsdFlags(args)

@@ -97,10 +97,12 @@
             enum_value: LICENSE_INCLUDED
             help_text: |-
               License included part of offer
+            hidden: true
           - arg_value: bring-your-own-license
             enum_value: BRING_YOUR_OWN_LICENSE
             help_text: |-
               Bring your own license
+            hidden: true
         - arg_name: properties-gi-version
           api_field: cloudVmCluster.properties.giVersion
           required: false
@@ -177,10 +179,12 @@
             enum_value: HIGH
             help_text: |-
               High -  3 way mirror.
+            hidden: true
           - arg_value: normal
             enum_value: NORMAL
             help_text: |-
               Normal - 2 way mirror.
+            hidden: true
         - arg_name: properties-sparse-diskgroup-enabled
           api_field: cloudVmCluster.properties.sparseDiskgroupEnabled
           action: store_true

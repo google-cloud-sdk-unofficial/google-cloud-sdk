@@ -33,7 +33,6 @@ from googlecloudsdk.core.resource import resource_printer
 class Describe(base.DescribeCommand):
   """Describe a Cloud Run preset. Currently only available in alpha."""
 
-  hidden = True
   detailed_help = {
       'DESCRIPTION': """
           {description}

@@ -22,7 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class ServiceConfig(base.Group):
   """Manage Backup and DR Service configuration."""

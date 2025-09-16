@@ -55,10 +55,12 @@
         enum_value: CLIENT_SUBNET
         help_text: |-
           Subnet to be used for client connections.
+        hidden: true
       - arg_value: backup-subnet
         enum_value: BACKUP_SUBNET
         help_text: |-
           Subnet to be used for backup.
+        hidden: true
     - arg_name: labels
       api_field: odbSubnet.labels
       required: false

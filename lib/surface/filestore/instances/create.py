@@ -41,13 +41,11 @@ class Create(base.CreateCommand):
   _API_VERSION = filestore_client.V1_API_VERSION
 
   detailed_help = {
-      'DESCRIPTION':
-          'Create a Filestore instance.',
-      'EXAMPLES':
-          """\
+      'DESCRIPTION': 'Create a Filestore instance.',
+      'EXAMPLES': """\
     The following command creates a Filestore instance named NAME with a single volume.
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE,psc-endpoint-project=PSC_ENDPOINT_PROJECT --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
 
     Example json configuration file:
   {
@@ -76,7 +74,7 @@ class Create(base.CreateCommand):
   }
   }
 
-    """
+    """,
   }
 
   @staticmethod

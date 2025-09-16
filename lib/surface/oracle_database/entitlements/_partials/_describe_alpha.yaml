@@ -25,7 +25,7 @@
     examples: |-
       To describe the entitlement, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

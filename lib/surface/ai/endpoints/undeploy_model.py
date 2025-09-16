@@ -60,6 +60,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class UndeployModelGa(base.Command):
   """Undeploy a model from an existing Vertex AI endpoint.
 
@@ -81,6 +82,7 @@ class UndeployModelGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class UndeployModelBeta(UndeployModelGa):
   """Undeploy a model from an existing Vertex AI endpoint.
 

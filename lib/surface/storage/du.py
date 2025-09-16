@@ -148,6 +148,7 @@ class Du(base.Command):
   def Run(self, args):
 
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
+    server_filter = getattr(args, 'server_filter', None)
 
     if args.url:
       storage_urls = []
@@ -158,6 +159,11 @@ class Du(base.Command):
               'Du only works for valid cloud URLs.'
               ' {} is an invalid cloud URL.'.format(url_object.url_string)
           )
+        if (
+            server_filter is not None
+            and url_object.scheme != cloud_api.DEFAULT_PROVIDER
+        ):
+          raise errors.Error('Server filter is only supported for GCS URLs.')
         storage_urls.append(url_object)
     else:
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
@@ -182,5 +188,5 @@ class Du(base.Command):
         total=args.total,
         use_gsutil_style=use_gsutil_style,
         zero_terminator=args.zero_terminator,
-        list_filter=getattr(args, 'server_filter', None),
+        list_filter=server_filter,
     ).list_urls()

@@ -52,6 +52,12 @@ def UpdatedPscFields(args, export_psc_config):
   ):
     return None, None
 
+  # Handle the case where export_psc_config is None. This will happen if the
+  # user does not have the NCC_PSC_GAPI visiblity label: b/391865147#comment29.
+  # TODO: b/406009715 - Remove this once the API is GA.
+  if export_psc_config is None:
+    return args.export_psc, None
+
   # Check if this is the legacy case. We can ignore the other flags because the
   # mutex group ensures that the other flags are not set.
   if args.export_psc is not None:

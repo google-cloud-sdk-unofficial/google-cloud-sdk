@@ -1,9 +1,9 @@
 - release_tracks: [ALPHA, BETA]
   help_text:
-    brief: Update a Rollout Type
-    description: Update a Rollout Type
+    brief: Update a Rollout Kind
+    description: Update a Rollout Kind
     examples: |-
-      To update the Rollout Type, run:
+      To update the Rollout Kind, run:
 
       $ {command}
   arguments:

@@ -263,12 +263,20 @@ class Deploy(base.Command):
     return containers
 
   def _ValidateNoAutomaticUpdatesForContainers(
-      self, build_from_source, containers
+      self, deploy_from_source, containers
   ):
-    pass
+    for name, container in containers.items():
+      if name not in deploy_from_source and container.IsSpecified(
+          'automatic_updates'
+      ):
+        raise c_exceptions.InvalidArgumentException(
+            '--automatic-updates',
+            '--automatic-updates can only be specified in the container that'
+            ' builds from source.',
+        )
 
-  def _ValidateAndGetBuildFromSource(self, containers):
-    build_from_source = {
+  def _ValidateAndGeDeployFromSource(self, containers):
+    deploy_from_source = {
         name: container
         for name, container in containers.items()
         if (
@@ -276,10 +284,10 @@ class Deploy(base.Command):
             or flags.FlagIsExplicitlySet(container, 'source')
         )
     }
-    if len(build_from_source) > 1:
+    if len(deploy_from_source) > 1:
       needs_image = [
           name
-          for name, container in build_from_source.items()
+          for name, container in deploy_from_source.items()
           if not flags.FlagIsExplicitlySet(container, 'source')
       ]
       if needs_image:
@@ -287,8 +295,10 @@ class Deploy(base.Command):
       raise c_exceptions.InvalidArgumentException(
           '--container', 'At most one container can be deployed from source.'
       )
-    self._ValidateNoAutomaticUpdatesForContainers(build_from_source, containers)
-    for name, container in build_from_source.items():
+    self._ValidateNoAutomaticUpdatesForContainers(
+        deploy_from_source, containers
+    )
+    for name, container in deploy_from_source.items():
       if not flags.FlagIsExplicitlySet(container, 'source'):
         if console_io.CanPrompt():
           container.source = flags.PromptForDefaultSource(name)
@@ -309,24 +319,24 @@ class Deploy(base.Command):
               '--image',
               message,
           )
-    self._ValidateNoBuildFromSource(build_from_source)
-    return build_from_source
+    self._ValidateNoBuildFromSource(deploy_from_source)
+    return deploy_from_source
 
-  def _ValidateNoBuildFromSource(self, build_from_source):
+  def _ValidateNoBuildFromSource(self, deploy_from_source):
     """Extra validation for Zip deployments.
 
     This is a no-op for if the --no-build flag is not set.
 
     Args:
-      build_from_source: The build from source map of container name to
+      deploy_from_source: The build from source map of container name to
         container object.
     """
-    if not _IsNoBuildFromSource(self.ReleaseTrack(), build_from_source):
+    if not _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
       return
 
     # TODO(b/424567464): Remove this check once we support multiple containers
     # with --no-build.
-    container = next(iter(build_from_source.items()))[1]
+    container = next(iter(deploy_from_source.items()))[1]
     if not container.IsSpecified('base_image'):
       raise c_exceptions.InvalidArgumentException(
           '--no-build',
@@ -783,12 +793,12 @@ class Deploy(base.Command):
     )
 
     containers = self._ValidateAndGetContainers(args)
-    build_from_source = self._ValidateAndGetBuildFromSource(containers)
+    deploy_from_source = self._ValidateAndGeDeployFromSource(containers)
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    required_apis = self._GetRequiredApis(build_from_source)
+    required_apis = self._GetRequiredApis(deploy_from_source)
 
     already_activated_services = False
     if platform == platforms.PLATFORM_MANAGED:
@@ -811,7 +821,7 @@ class Deploy(base.Command):
     build_worker_pool = None
     build_machine_type = None
     build_changes = []
-    build_from_source_container_name = ''
+    deploy_from_source_container_name = ''
     enable_automatic_updates = None
     source_bucket = None
     skip_build = False
@@ -820,20 +830,20 @@ class Deploy(base.Command):
     ) as operations:
       service = operations.GetService(service_ref)
       # Build an image from source if source specified
-      if _IsNoBuildFromSource(self.ReleaseTrack(), build_from_source):
+      if _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
         image = 'scratch'
         skip_build = True
-        build_from_source_container_name, container_args = next(
-            iter(build_from_source.items())
+        deploy_from_source_container_name, container_args = next(
+            iter(deploy_from_source.items())
         )
         # re-use the existing container name if it is not specified.
-        if not build_from_source_container_name and service:
-          build_from_source_container_name = (
+        if not deploy_from_source_container_name and service:
+          deploy_from_source_container_name = (
               service.template.container.name or ''
           )
         source = container_args.source
         container_args.image = 'scratch'
-      elif build_from_source:
+      elif deploy_from_source:
         (
             is_function,
             image,
@@ -844,7 +854,7 @@ class Deploy(base.Command):
             base_image,
             build_service_account,
             build_changes,
-            build_from_source_container_name,
+            deploy_from_source_container_name,
             build_worker_pool,
             build_machine_type,
             build_env_vars,
@@ -852,7 +862,7 @@ class Deploy(base.Command):
             source_bucket,
         ) = self._BuildFromSource(
             args,
-            build_from_source,
+            deploy_from_source,
             service_ref,
             conn_context,
             platform,
@@ -897,7 +907,7 @@ class Deploy(base.Command):
             args,
             service,
             changes_,
-            build_from_source,
+            deploy_from_source,
             repo_to_create,
             allow_unauth,
             has_latest,
@@ -927,7 +937,7 @@ class Deploy(base.Command):
                   args, 'delegate_builds'
               ),
               base_image=base_image,
-              build_from_source_container_name=build_from_source_container_name,
+              deploy_from_source_container_name=deploy_from_source_container_name,
               build_service_account=build_service_account,
               build_worker_pool=build_worker_pool,
               build_machine_type=build_machine_type,
@@ -1128,19 +1138,6 @@ def _ShouldClearBuildServiceAccount(args, build_service_account):
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
 
-  def _ValidateNoAutomaticUpdatesForContainers(
-      self, build_from_source, containers
-  ):
-    for name, container in containers.items():
-      if name not in build_from_source and container.IsSpecified(
-          'automatic_updates'
-      ):
-        raise c_exceptions.InvalidArgumentException(
-            '--automatic-updates',
-            '--automatic-updates can only be specified in the container that'
-            ' is built from source.',
-        )
-
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
@@ -1157,6 +1154,19 @@ class BetaDeploy(Deploy):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDeploy(BetaDeploy):
   """Create or update a Cloud Run service."""
+
+  def _ValidateNoAutomaticUpdatesForContainers(
+      self, deploy_from_source, containers
+  ):
+    for name, container in containers.items():
+      if container.IsSpecified('automatic_updates') and (
+          name not in deploy_from_source or container.IsSpecified('no_build')
+      ):
+        raise c_exceptions.InvalidArgumentException(
+            '--automatic-updates',
+            '--automatic-updates can only be specified in the container that'
+            ' builds from source.',
+        )
 
   @classmethod
   def Args(cls, parser):
@@ -1176,7 +1186,7 @@ class AlphaDeploy(BetaDeploy):
     container_parser.AddContainerFlags(parser, container_args)
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)
-    flags.AddPresetFlag(parser)
+    flags.AddPresetFlags(parser)
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

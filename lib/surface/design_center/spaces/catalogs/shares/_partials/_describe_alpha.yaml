@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Describe a share
     description: Describe a share in a catalog.
     examples: |-
       To describe the share `my-share` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-share --catalog=my-catalog --space=my-space --location=us-central1
+        $ {command} my-share --catalog=my-catalog --space=my-space --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/shares/my-share
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/shares/my-share
   arguments:
     params:
     - help_text: |-

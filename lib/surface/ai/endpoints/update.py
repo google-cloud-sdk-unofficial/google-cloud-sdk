@@ -98,6 +98,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class UpdateGa(base.UpdateCommand):
   """Update an existing Vertex AI endpoint.
 
@@ -119,6 +120,7 @@ class UpdateGa(base.UpdateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class UpdateBeta(UpdateGa):
   """Update an existing Vertex AI endpoint.
 

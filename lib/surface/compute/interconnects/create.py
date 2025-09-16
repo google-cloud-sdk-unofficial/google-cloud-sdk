@@ -126,7 +126,7 @@ class Create(base.CreateCommand):
         admin_enabled=args.admin_enabled,
         noc_contact_email=args.noc_contact_email,
         location=location_ref.SelfLink(),
-        subzone=getattr(args, 'subzone', None),
+        subzone=flags.GetSubzone(messages, args.subzone),
         customer_name=args.customer_name,
         remote_location=remote_location,
         requested_features=flags.GetRequestedFeatures(

@@ -18,26 +18,25 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete a catalog template
     description: Delete a catalog template.
     examples: |-
       To delete the catalog template `my-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
+        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/templates/my-template
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/templates/my-template
 
       If your catalog template contains child resources such as catalog template revisions, force delete the catalog template. To force delete the catalog template `my-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --force
+        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --force
 
       To delete the catalog template `my-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1` asynchronously, run:
 
-      $ {command} my-template --catalog=my-catalog --space=my-space --location=us-central1 --async
+        $ {command} my-template --catalog=my-catalog --space=my-space --location=us-central1 --async
   arguments:
     params:
     - help_text: |-

@@ -18,34 +18,33 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create a connection
     description: Create a connection between components in an application template.
     examples: |-
       To create the connection `my-connection` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` with a destination component `other-component`, run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component
 
       Or run:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-component
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-component
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component/connections/my-connection --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-component
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/my-component/connections/my-connection --destination-component-uri=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/components/other-component
 
       To create the connection `my-connection` with a parameter key-value pair of `type:connection-type` in component `my-component` of application template `my-app-template`, space `my-space`, project `my-project` and location `us-central1` with a destination component `other-component`, run the following shorthand example:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters=key=type,value=connection-type
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters=key=type,value=connection-type
 
       Or run the following JSON example:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters='[{"key": "type", "value": "connection-type"}]'
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters='[{"key": "type", "value": "connection-type"}]'
 
       Or create a YAML or JSON file with the parameters and run the following file example:
 
-      $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters=my-parameters.yaml
+        $ {command} my-connection --component=my-component --application-template=my-app-template --space=my-space --project=my-project --location=us-central1 --destination-component-uri=other-component --parameters=my-parameters.yaml
   arguments:
     params:
     - help_text: |-

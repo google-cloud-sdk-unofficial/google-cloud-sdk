@@ -70,6 +70,7 @@ class Up(base.BinaryBackedCommand):
         compose_file=compose_file,
         debug=args.debug,
         dry_run=args.dry_run,
+        region=region,
     )
     if not resource_response.stdout:
       raise exceptions.ConfigurationError(
@@ -81,7 +82,7 @@ class Up(base.BinaryBackedCommand):
       )
       log.debug('Successfully parsed resources config proto.')
       log.debug(f'ResourcesConfig:\n{config}')
-      resources_config = config.handle_resources(region=region)
+      resources_config = config.handle_resources(region, repo)
       log.debug(f'Handled ResourcesConfig:\n{resources_config}')
 
       # Serialize the handled config to JSON
@@ -96,9 +97,16 @@ class Up(base.BinaryBackedCommand):
           project_number=project_number,
           region=region,
       )
+
+      if response.stdout:
+        log.debug('Successfully translated resources config to YAML.')
+        log.debug(f'Translated YAML:\n{response.stdout[0]}')
+        compose_resource.deploy_application(
+            yaml_file_path=response.stdout[0], region=region
+        )
       return response
     except Exception as e:
-      log.error(f'Failed to parse resources config: {e}')
+      log.error(f'Failed to handle resources config and translate to YAML: {e}')
       log.error(f'Raw output: {resource_response.stdout}')
       raise
 
@@ -141,7 +149,7 @@ class Up(base.BinaryBackedCommand):
           debug=args.debug,
           dry_run=args.dry_run,
       )
-    return self._DefaultOperationResponseHandler(response)
+    return response
 
   def _GenerateRepositoryName(self, project, region):
     """Generate a name for the repository."""
@@ -160,12 +168,17 @@ class Up(base.BinaryBackedCommand):
       properties.VALUES.run.region.Set(region)
 
   def _GetComposeFile(self):
-    if os.path.exists('compose.yaml'):
-      return 'compose.yaml'
-    else:
-      raise exceptions.ConfigurationError(
-          'No compose file found. Please provide a compose file.'
-      )
+    for filename in [
+        'compose.yaml',
+        'compose.yml',
+        'docker-compose.yaml',
+        'docker-compose.yml',
+    ]:
+      if os.path.exists(filename):
+        return filename
+    raise exceptions.ConfigurationError(
+        'No compose file found. Please provide a compose file.'
+    )
 
   def _CreateARRepository(self, docker_repo):
     """Create an Artifact Registry Repository if not present."""

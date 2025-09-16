@@ -18,18 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: List catalog template revisions
     description: List catalog template revisions in a given template.
     examples: |-
       To list all catalog template revisions in template `my-template`, catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --template=my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
+        $ {command} --template=my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
 
       To list up to 10 catalog template revisions in template `my-template`, catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} --template=my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --limit=10
+        $ {command} --template=my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --limit=10
   arguments:
     params:
     - help_text: |-

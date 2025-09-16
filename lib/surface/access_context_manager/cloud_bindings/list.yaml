@@ -152,6 +152,19 @@
           serviceAccountProjectNumber: 123456789
           name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
 
+        If filter is specified as
+        `principal:federatedPrincipal`,
+        the output is printed in the following format:
+
+          ---
+          accessLevels:
+          - accessPolicies/9522/accessLevels/device_trusted
+          dryRunAccessLevels:
+          - accessPolicies/9522/accessLevels/specific_location
+          principal:
+          federatedPrincipal: principal://iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool-id/subject/subject-id
+          name: organizations/256/gcpUserAccessBindings/b3-BhcX_Ud5N
+
   request:
     collection: accesscontextmanager.organizations.gcpUserAccessBindings
     GA:

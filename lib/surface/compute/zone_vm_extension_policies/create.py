@@ -33,9 +33,9 @@ class Create(base.CreateCommand):
 
        $ {command} test-policy-name \
         --description="test policy" \
-        --extensions=filestore \
-        --filestore-version=20250101RC00 \
-        --filestore-config=config1 \
+        --extensions=extension1,extension2 \
+        --version=extension1=version1,extension2=version2 \
+        --config=extension1="config1",extension2="config2" \
         --inclusion-labels=env=prod \
         --inclusion-labels=env=preprod,workload=load-test \
         --priority=1000
@@ -67,6 +67,8 @@ class Create(base.CreateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client),
     )
+    flags.ParseExtensionConfigs(args.extensions, args.config)
+    flags.ParseExtensionVersions(args.extensions, args.version)
     zve_policy = flags.BuildZoneVmExtensionPolicy(resource_ref, args, messages)
     return client.MakeRequests([(
         client.apitools_client.zoneVmExtensionPolicies,

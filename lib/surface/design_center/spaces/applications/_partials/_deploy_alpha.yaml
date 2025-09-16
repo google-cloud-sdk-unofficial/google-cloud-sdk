@@ -18,30 +18,29 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Deploy an application
     description: Deploy an application in a space.
     examples: |-
       To deploy the application `my-application` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1
 
       Or run:
 
-      $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/applications/my-application
 
       To deploy the application `my-application` in space `my-space`, project `my-project` and location `us-central1` and replace the existing deployment, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --replace
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --replace
 
       To deploy the application `my-application` in space `my-space`, project `my-project` and location `us-central1` using a worker pool `projects/my-project/locations/us-central1/workerPools/my-worker-pool`, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --worker-pool=projects/my-project/locations/us-central1/workerPools/my-worker-pool
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --worker-pool=projects/my-project/locations/us-central1/workerPools/my-worker-pool
 
       To deploy the application `my-application` in space `my-space`, project `my-project` and location `us-central1` asynchronously, run:
 
-      $ {command} my-application --space=my-space --project=my-project --location=us-central1 --async
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --async
   arguments:
     params:
     - help_text: |-
@@ -67,11 +66,11 @@
       repeated: false
       help_text: |-
         The user-specified Worker Pool resource in which the Cloud Build job will
-        execute.
-        Format projects/{project}/locations/{location}/workerPools/{workerPoolId}
-        If this field is unspecified, the default Cloud Build worker pool will be
-        used. If omitted and application resource ref provided has worker_pool
-        defined, that worker pool is used.
+        execute, in the following format:
+        projects/{project}/locations/{location}/workerPools/{workerPoolId} If this
+        field is unspecified, the default Cloud Build worker pool will be used. If
+        omitted and application resource ref provided has worker_pool defined, that
+        worker pool is used.
     - arg_name: service-account
       api_field: deployApplicationRequest.serviceAccount
       required: false
@@ -81,15 +80,14 @@
 
         - If provided, this service account will be used to execute the deployment
           process, taking precedence over any service_account specified on the
-          Application resource itself for this operation.
-        - The caller MUST have the 'iam.serviceAccounts.actAs' permission on this
+          Application resource.
+        - The caller must have the 'iam.serviceAccounts.actAs' permission on this
           service account.
         - If this field is omitted, the system will use the 'service_account'
           defined within the Application resource.
-        - It is strongly RECOMMENDED to provide a service account either here or on
-          the Application resource, as deployment will fail if no service account
-          can be determined.
-
+        - We recommend that you provide a service account here or on the
+          Application resource. If you don't provide a service account, the
+          deployment will fail.
         Format: projects/{PROJECT}/serviceAccounts/{EMAIL_ADDRESS}
   request:
     api_version: v1alpha

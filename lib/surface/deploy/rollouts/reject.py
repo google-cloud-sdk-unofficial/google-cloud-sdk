@@ -14,9 +14,6 @@
 # limitations under the License.
 """Rejects a Cloud Deploy rollout."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
@@ -43,6 +40,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Reject(base.CreateCommand):
   """Rejects a rollout having an Approval state of "Required"."""
   detailed_help = _DETAILED_HELP

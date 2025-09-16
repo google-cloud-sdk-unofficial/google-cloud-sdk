@@ -14,9 +14,6 @@
 # limitations under the License.
 """Retries a Cloud Deploy rollout job specified by job and phase."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.clouddeploy import rollout
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
@@ -43,6 +40,7 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class RetryJob(base.CreateCommand):
   """Retries a specified job, phase combination on a rollout."""
   detailed_help = _DETAILED_HELP
