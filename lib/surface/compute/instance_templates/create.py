@@ -76,6 +76,7 @@ def _CommonArgs(
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
+    support_enable_vpc_scoped_dns=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -101,6 +102,7 @@ def _CommonArgs(
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
       support_igmp_query=support_igmp_query,
+      support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -582,6 +584,7 @@ def _RunCreate(
     support_display_device=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
+    support_enable_vpc_scoped_dns=False,
 ):
   """Common routine for creating instance template.
 
@@ -638,6 +641,8 @@ def _RunCreate(
         supported.
       support_preemption_notice_duration: Indicate whether preemption notice
         duration is supported.
+      support_enable_vpc_scoped_dns: Indicate whether enable-vpc-scoped-dns is
+        supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -694,6 +699,7 @@ def _RunCreate(
         messages=client.messages,
         network_interface_arg=args.network_interface,
         subnet_region=subnet_region,
+        support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
     )
   else:
     network_tier = getattr(args, 'network_tier', None)
@@ -1158,6 +1164,7 @@ class Create(base.CreateCommand):
   instances in any zone.
   """
 
+  # TODO(b/445859137): clean up flags which are true in all tracks.
   _support_source_instance = True
   _support_kms = True
   _support_post_key_revocation_action_type = False
@@ -1188,8 +1195,9 @@ class Create(base.CreateCommand):
   _support_host_error_timeout_seconds = True
   _support_flex_start = True
   _support_display_device = False
-  _support_skip_guest_os_shutdown = False
+  _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
+  _support_enable_vpc_scoped_dns = False
 
   @classmethod
   def Args(cls, parser):
@@ -1221,6 +1229,7 @@ class Create(base.CreateCommand):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1274,6 +1283,7 @@ class Create(base.CreateCommand):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
     )
 
 
@@ -1325,6 +1335,7 @@ class CreateBeta(Create):
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
+  _support_enable_vpc_scoped_dns = False
 
   @classmethod
   def Args(cls, parser):
@@ -1356,6 +1367,7 @@ class CreateBeta(Create):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1412,6 +1424,7 @@ class CreateBeta(Create):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
     )
 
 
@@ -1463,6 +1476,7 @@ class CreateAlpha(Create):
   _support_display_device = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
+  _support_enable_vpc_scoped_dns = True
 
   @classmethod
   def Args(cls, parser):
@@ -1495,6 +1509,7 @@ class CreateAlpha(Create):
         support_display_device=cls._support_display_device,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1554,6 +1569,7 @@ class CreateAlpha(Create):
         support_display_device=self._support_display_device,
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
     )
 
 

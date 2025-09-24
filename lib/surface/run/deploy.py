@@ -146,7 +146,7 @@ class Deploy(base.Command):
     flags.AddVpcNetworkGroupFlagsForUpdate(parser)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddServiceMinInstancesFlag(parser)
+    flags.AddServiceMinMaxInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddScalingFlag(parser)
 
@@ -203,6 +203,16 @@ class Deploy(base.Command):
       False means to disable unauthenticated access for the service.
       None means to retain the current value for the service.
     """
+    if (
+        flags.FlagIsExplicitlySet(args, 'preset')
+        and args.preset['name'] in flags.PRIVATE_ACCESS_PRESETS
+    ):
+      return False
+    if (
+        flags.FlagIsExplicitlySet(args, 'preset')
+        and args.preset['name'] in flags.PUBLIC_ACCESS_PRESETS
+    ):
+      return True
     if self._IsMultiRegion():
       allow_unauth = flags.GetAllowUnauthenticated(
           args,
@@ -234,13 +244,17 @@ class Deploy(base.Command):
       # implemented.
       if (
           flags.FlagIsExplicitlySet(args, 'preset')
-          and args.preset in flags.INGRESS_CONTAINER_PRESETS
+          and args.preset['name'] in flags.INGRESS_CONTAINER_PRESETS
       ):
-        specified_args = getattr(containers[args.preset], '_specified_args')
+        specified_args = getattr(
+            containers[args.preset['name']], '_specified_args'
+        )
         specified_args['image'] = '--image'
-        setattr(containers[args.preset], '_specified_args', specified_args)
-        setattr(containers[args.preset], 'image', 'imageplaceholder')
-        setattr(containers[args.preset], 'automatic_updates', None)
+        setattr(
+            containers[args.preset['name']], '_specified_args', specified_args
+        )
+        setattr(containers[args.preset['name']], 'image', 'imageplaceholder')
+        setattr(containers[args.preset['name']], 'automatic_updates', None)
     else:
       containers = {'': args}
 
@@ -486,7 +500,7 @@ class Deploy(base.Command):
     changes = []
     source = container_args.source
     source_bucket = (
-        self._GetSourceBucketFromSourceLocation(service.source_location)
+        self._GetSourceBucketFromBuildSourceLocation(service.source_location)
         if service
         else None
     )
@@ -656,7 +670,40 @@ class Deploy(base.Command):
   def _IsMultiRegion(self):
     return bool(self.__multi_region_regions)
 
-  def _GetSourceBucketFromSourceLocation(self, source_location):
+  def _GetSourceBucketFromZipDeploySourceLocation(self, service):
+    """Returns the source bucket from the zip deploy source annotation run.googleapis.com/source.
+
+    If the annotations has more than one entry, return None.
+
+    Args:
+      service: existing Cloud run service.
+    """
+    source_location_map = service.source_deploy_no_build_source_location_map
+    logging.debug('source_location map: %s', source_location_map)
+    if not source_location_map:
+      return None
+    try:
+      container_to_source_map = json.loads(source_location_map)
+      if (
+          not isinstance(container_to_source_map, dict)
+          or len(container_to_source_map) != 1
+      ):
+        logging.debug(
+            'source_location is not a valid map or has more than one entry'
+        )
+        return None
+      x = re.search(
+          r'gs://([^/]+)/.*', next(iter(container_to_source_map.values()))
+      )
+      if x:
+        return x.group(1)
+      logging.debug('source_location does not match pattern gs://([^/]+)/.*')
+      return None
+    except (json.JSONDecodeError, TypeError) as e:
+      logging.debug('failed to parse source location: %s', e)
+      return None
+
+  def _GetSourceBucketFromBuildSourceLocation(self, source_location):
     logging.debug('source_location: %s', source_location)
     if not source_location:
       return None
@@ -842,6 +889,9 @@ class Deploy(base.Command):
               service.template.container.name or ''
           )
         source = container_args.source
+        source_bucket = self._GetSourceBucketFromZipDeploySourceLocation(
+            service
+        )
         container_args.image = 'scratch'
       elif deploy_from_source:
         (
@@ -1146,7 +1196,6 @@ class BetaDeploy(Deploy):
     flags.AddDeployHealthCheckFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
-    flags.AddServiceMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -1176,7 +1225,6 @@ class AlphaDeploy(BetaDeploy):
     flags.AddDeployHealthCheckFlag(parser)
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
-    flags.AddServiceMaxInstancesFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

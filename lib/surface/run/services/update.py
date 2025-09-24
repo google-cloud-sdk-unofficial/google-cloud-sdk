@@ -110,7 +110,7 @@ class Update(base.Command):
     flags.AddVpcNetworkGroupFlagsForUpdate(parser)
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
-    flags.AddServiceMinInstancesFlag(parser)
+    flags.AddServiceMinMaxInstancesFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
     flags.AddScalingFlag(parser)
     # Flags specific to connecting to a cluster
@@ -311,7 +311,6 @@ class BetaUpdate(Update):
     flags.AddDeployHealthCheckFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
-    flags.AddServiceMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(parser, container_args)
 
@@ -334,7 +333,6 @@ class AlphaUpdate(BetaUpdate):
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
-    flags.AddServiceMaxInstancesFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)

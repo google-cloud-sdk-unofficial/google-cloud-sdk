@@ -113,12 +113,10 @@ class Update(base.UpdateCommand):
     else:
       backup_config = None
       source_backup = None
+    cache_parameters = args.cache_parameters
     block_devices = []
     if self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      cache_parameters = args.cache_parameters
       block_devices = args.block_devices
-    else:
-      cache_parameters = None
     throughput_mibps = args.throughput_mibps
 
     volume = client.ParseUpdatedVolumeConfig(
@@ -213,8 +211,7 @@ class Update(base.UpdateCommand):
     ):
       updated_fields.append('labels')
     if (
-        self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]
-        and args.IsSpecified('cache_parameters')
+        args.IsSpecified('cache_parameters')
         and args.cache_parameters.get('cache-config') is not None
     ):
       for config in args.cache_parameters.get('cache-config'):

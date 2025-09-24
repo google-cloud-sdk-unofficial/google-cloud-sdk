@@ -88,7 +88,6 @@ class TestType(enum.Enum):
   LATENCY = 'LATENCY'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Diagnose(base.Command):
   """Diagnose Google Cloud Storage."""
@@ -435,5 +434,4 @@ class Diagnose(base.Command):
       return None
 
     log.status.Print('Generating diagnostic report...')
-
     return test_results

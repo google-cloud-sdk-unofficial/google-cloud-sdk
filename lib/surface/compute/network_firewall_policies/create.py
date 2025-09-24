@@ -35,6 +35,7 @@ class Create(base.CreateCommand):
   """
 
   support_policy_type = False
+  support_ull_policy_type = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
   @classmethod
@@ -46,7 +47,9 @@ class Create(base.CreateCommand):
     flags.AddArgNetworkFirewallPolicyCreation(parser)
 
     if cls.support_policy_type:
-      flags.AddPolicyType(parser)
+      flags.AddPolicyType(
+          parser, ['ULL_POLICY'] if cls.support_ull_policy_type else []
+      )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -86,6 +89,7 @@ class CreateBeta(Create):
   """
 
   support_policy_type = True
+  support_ull_policy_type = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -97,6 +101,7 @@ class CreateAlpha(Create):
   """
 
   support_policy_type = True
+  support_ull_policy_type = True
 
 
 Create.detailed_help = {

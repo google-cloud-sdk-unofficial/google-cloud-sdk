@@ -189,7 +189,7 @@ class Ls(base.Command):
     flags.add_soft_delete_flags(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_server_filter_flag(parser)
+      flags.add_metadata_filter_flag(parser)
 
   @classmethod
   def _get_args(cls, args):
@@ -230,15 +230,18 @@ class Ls(base.Command):
     else:
       paths = [cloud_api.DEFAULT_PROVIDER.value + '://']
 
-    server_filter = getattr(args, 'server_filter', None)
+    metadata_filter = getattr(args, 'metadata_filter', None)
     storage_urls = [storage_url.storage_url_from_string(path) for path in paths]
     for url in storage_urls:
       if not isinstance(url, storage_url.CloudUrl):
         raise errors.InvalidUrlError(
             'Ls only works for cloud URLs. Error for: {}'.format(url.url_string)
         )
-      if server_filter is not None and url.scheme != cloud_api.DEFAULT_PROVIDER:
-        raise errors.Error('Server filter is only supported for GCS URLs.')
+      if (
+          metadata_filter is not None
+          and url.scheme != cloud_api.DEFAULT_PROVIDER
+      ):
+        raise errors.Error('Metadata filter is only supported for GCS URLs.')
       if url.scheme is not cloud_api.DEFAULT_PROVIDER:
         found_non_default_provider = True
 
@@ -265,7 +268,7 @@ class Ls(base.Command):
         recursion_flag=args.recursive,
         use_gsutil_style=use_gsutil_style,
         soft_deleted_buckets=buckets and soft_deleted,
-        list_filter=server_filter,
+        list_filter=metadata_filter,
     ).list_urls()
 
     if found_non_default_provider and args.full:

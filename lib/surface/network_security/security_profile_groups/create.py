@@ -40,7 +40,7 @@ _DETAILED_HELP = {
 }
 
 _URL_FILTERING_SUPPORTED = (
-    base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
 
 _INCOMPATIBLE_PAIRS = (

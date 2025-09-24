@@ -55,7 +55,8 @@ def _Args(
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
   metadata_utils.AddMetadataArgs(parser)
   instances_flags.AddDiskArgs(
-      parser, True, container_mount_enabled=container_mount_enabled)
+      parser, True, container_mount_enabled=container_mount_enabled
+  )
   instances_flags.AddCreateDiskArgs(
       parser,
       container_mount_enabled=container_mount_enabled,
@@ -73,7 +74,8 @@ def _Args(
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
-      parser, deprecate=deprecate_maintenance_policy)
+      parser, deprecate=deprecate_maintenance_policy
+  )
   instances_flags.AddNoRestartOnFailureArgs(parser)
   instances_flags.AddPreemptibleVmArgs(parser)
   instances_flags.AddProvisioningModelVmArgs(
@@ -88,7 +90,8 @@ def _Args(
   instances_flags.AddPrivateNetworkIpArgs(parser)
   instances_flags.AddNetworkPerformanceConfigsArgs(parser)
   instances_flags.AddShieldedInstanceConfigArgs(
-      parser=parser, for_container=True)
+      parser=parser, for_container=True
+  )
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddPublicPtrArgs(parser, instance=True)
   instances_flags.AddImageArgs(parser)
@@ -122,12 +125,14 @@ def _Args(
   maintenance_flags.AddResourcePoliciesArgs(parser, 'added to', 'instance')
 
   parser.add_argument(
-      '--description', help='Specifies a textual description of the instances.')
+      '--description', help='Specifies a textual description of the instances.'
+  )
 
   instances_flags.INSTANCES_ARG.AddArgument(parser, operation_type='create')
 
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE = (
-      instances_flags.MakeSourceInstanceTemplateArg())
+      instances_flags.MakeSourceInstanceTemplateArg()
+  )
   CreateWithContainer.SOURCE_INSTANCE_TEMPLATE.AddArgument(parser)
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
   if support_skip_guest_os_shutdown:
@@ -135,6 +140,21 @@ def _Args(
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'The option to deploy a container during VM creation using the'
+        ' container startup agent is deprecated. Use alternative services to'
+        ' run containers on your VMs. Learn more at'
+        ' https://cloud.google.com/compute/docs/containers/migrate-containers.'
+    ),
+    error=(
+        'The option to deploy a container during VM creation using the'
+        ' container startup agent is deprecated. Use alternative services to'
+        ' run containers on your VMs. Learn more at'
+        ' https://cloud.google.com/compute/docs/containers/migrate-containers.'
+    ),
+)
 # TODO(b/305707759):Change @base.DefaultUniverseOnly to
 # @base.UniverseCompatible once b/305707759 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
@@ -158,7 +178,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_disk_labels = False
   _support_max_run_duration = True
   _support_graceful_shutdown = True
-  _support_skip_guest_os_shutdown = False
+  _support_skip_guest_os_shutdown = True
 
   @staticmethod
   def Args(parser):
@@ -173,12 +193,13 @@ class CreateWithContainer(base.CreateCommand):
         support_specific_then_x_affinity=False,
         support_disk_labels=False,
         support_ipv6_only=True,
-        support_skip_guest_os_shutdown=False,
+        support_skip_guest_os_shutdown=True,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
-    instances_flags.AddPrivateIpv6GoogleAccessArg(parser,
-                                                  utils.COMPUTE_GA_API_VERSION)
+    instances_flags.AddPrivateIpv6GoogleAccessArg(
+        parser, utils.COMPUTE_GA_API_VERSION
+    )
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
@@ -201,38 +222,63 @@ class CreateWithContainer(base.CreateCommand):
 
     if instance_utils.UseExistingBootDisk(args.disk or []):
       raise exceptions.InvalidArgumentException(
-          '--disk', 'Boot disk specified for containerized VM.')
+          '--disk', 'Boot disk specified for containerized VM.'
+      )
 
   def _ValidateTrackSpecificArgs(self, args):
     return None
 
   def GetImageUri(self, args, compute_client, resource_parser, instance_refs):
-    if (args.IsSpecified('image') or args.IsSpecified('image_family') or
-        args.IsSpecified('image_project')):
-      image_expander = image_utils.ImageExpander(compute_client,
-                                                 resource_parser)
+    if (
+        args.IsSpecified('image')
+        or args.IsSpecified('image_family')
+        or args.IsSpecified('image_project')
+    ):
+      image_expander = image_utils.ImageExpander(
+          compute_client, resource_parser
+      )
       image_uri, _ = image_expander.ExpandImageFlag(
           user_project=instance_refs[0].project,
           image=args.image,
           image_family=args.image_family,
-          image_project=args.image_project)
+          image_project=args.image_project,
+      )
       if resource_parser.Parse(image_uri).project != 'cos-cloud':
-        log.warning('This container deployment mechanism requires a '
-                    'Container-Optimized OS image in order to work. Select an '
-                    'image from a cos-cloud project (cos-stable, cos-beta, '
-                    'cos-dev image families).')
+        log.warning(
+            'This container deployment mechanism requires a '
+            'Container-Optimized OS image in order to work. Select an '
+            'image from a cos-cloud project (cos-stable, cos-beta, '
+            'cos-dev image families).'
+        )
     else:
       image_uri = containers_utils.ExpandKonletCosImageFlag(compute_client)
     return image_uri
 
-  def _GetNetworkInterfaces(self, args, client, holder, project, location,
-                            scope, skip_defaults):
+  def _GetNetworkInterfaces(
+      self, args, client, holder, project, location, scope, skip_defaults
+  ):
     return create_utils.GetNetworkInterfaces(
-        args, client, holder, project, location, scope, skip_defaults,
-        support_internal_ipv6_reservation=True)
+        args,
+        client,
+        holder,
+        project,
+        location,
+        scope,
+        skip_defaults,
+        support_internal_ipv6_reservation=True,
+    )
 
-  def GetNetworkInterfaces(self, args, resources, client, holder, project,
-                           location, scope, skip_defaults):
+  def GetNetworkInterfaces(
+      self,
+      args,
+      resources,
+      client,
+      holder,
+      project,
+      location,
+      scope,
+      skip_defaults,
+  ):
     if args.network_interface:
       return create_utils.CreateNetworkInterfaceMessages(
           resources=resources,
@@ -243,19 +289,27 @@ class CreateWithContainer(base.CreateCommand):
           scope=scope,
           support_internal_ipv6_reservation=True,
       )
-    return self._GetNetworkInterfaces(args, client, holder, project, location,
-                                      scope, skip_defaults)
+    return self._GetNetworkInterfaces(
+        args, client, holder, project, location, scope, skip_defaults
+    )
 
   def CheckDiskMessageArgs(self, args, skip_defaults):
     """Creates API messages with disks attached to VM instance."""
     flags_to_check = [
-        'create_disk', 'local_ssd', 'boot_disk_type', 'boot_disk_device_name',
-        'boot_disk_auto_delete', 'boot_disk_provisioned_iops'
+        'create_disk',
+        'local_ssd',
+        'boot_disk_type',
+        'boot_disk_device_name',
+        'boot_disk_auto_delete',
+        'boot_disk_provisioned_iops',
     ]
     if hasattr(args, 'local_nvdimm'):
       flags_to_check.append('local_nvdimm')
-    if (skip_defaults and not args.IsSpecified('disk') and
-        not instance_utils.IsAnySpecified(args, *flags_to_check)):
+    if (
+        skip_defaults
+        and not args.IsSpecified('disk')
+        and not instance_utils.IsAnySpecified(args, *flags_to_check)
+    ):
       return False
     return True
 
@@ -267,9 +321,11 @@ class CreateWithContainer(base.CreateCommand):
     resource_parser = holder.resources
 
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder, args.container_mount_disk, args.disk, args.create_disk)
+        holder, args.container_mount_disk, args.disk, args.create_disk
+    )
     source_instance_template = instance_utils.GetSourceInstanceTemplate(
-        args, resource_parser, self.SOURCE_INSTANCE_TEMPLATE)
+        args, resource_parser, self.SOURCE_INSTANCE_TEMPLATE
+    )
     skip_defaults = instance_utils.GetSkipDefaults(source_instance_template)
     scheduling = instance_utils.GetScheduling(
         args,
@@ -283,23 +339,37 @@ class CreateWithContainer(base.CreateCommand):
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
     )
     service_accounts = instance_utils.GetServiceAccounts(
-        args, compute_client, skip_defaults)
+        args, compute_client, skip_defaults
+    )
     user_metadata = instance_utils.GetValidatedMetadata(args, compute_client)
     boot_disk_size_gb = instance_utils.GetBootDiskSizeGb(args)
     instance_refs = instance_utils.GetInstanceRefs(args, compute_client, holder)
     network_interfaces = self.GetNetworkInterfaces(
-        args, resource_parser, compute_client, holder, instance_refs[0].project,
-        instance_refs[0].zone, compute_scopes.ScopeEnum.ZONE, skip_defaults)
-    image_uri = self.GetImageUri(args, compute_client, resource_parser,
-                                 instance_refs)
+        args,
+        resource_parser,
+        compute_client,
+        holder,
+        instance_refs[0].project,
+        instance_refs[0].zone,
+        compute_scopes.ScopeEnum.ZONE,
+        skip_defaults,
+    )
+    image_uri = self.GetImageUri(
+        args, compute_client, resource_parser, instance_refs
+    )
     labels = containers_utils.GetLabelsMessageWithCosVersion(
-        args.labels, image_uri, resource_parser,
-        compute_client.messages.Instance)
+        args.labels,
+        image_uri,
+        resource_parser,
+        compute_client.messages.Instance,
+    )
     can_ip_forward = instance_utils.GetCanIpForward(args, skip_defaults)
-    tags = containers_utils.CreateTagsMessage(compute_client.messages,
-                                              args.tags)
+    tags = containers_utils.CreateTagsMessage(
+        compute_client.messages, args.tags
+    )
     confidential_vm_type = instance_utils.GetConfidentialVmType(
-        args, self._support_confidential_compute_type)
+        args, self._support_confidential_compute_type
+    )
 
     requests = []
     for instance_ref in instance_refs:
@@ -309,7 +379,8 @@ class CreateWithContainer(base.CreateCommand):
           instance_ref.Name(),
           user_metadata,
           container_mount_disk_enabled=self._container_mount_disk_enabled,
-          container_mount_disk=container_mount_disk)
+          container_mount_disk=container_mount_disk,
+      )
 
       disks = []
       if self.CheckDiskMessageArgs(args, skip_defaults):
@@ -338,7 +409,8 @@ class CreateWithContainer(base.CreateCommand):
             project=instance_ref.project,
             location=instance_ref.zone,
             scope=compute_scopes.ScopeEnum.ZONE,
-            confidential_vm_type=confidential_vm_type)
+            confidential_vm_type=confidential_vm_type,
+        )
 
       guest_accelerators = create_utils.GetAccelerators(
           args=args,
@@ -346,7 +418,8 @@ class CreateWithContainer(base.CreateCommand):
           resource_parser=resource_parser,
           project=instance_ref.project,
           location=instance_ref.zone,
-          scope=compute_scopes.ScopeEnum.ZONE)
+          scope=compute_scopes.ScopeEnum.ZONE,
+      )
 
       instance = compute_client.messages.Instance(
           canIpForward=can_ip_forward,
@@ -361,42 +434,52 @@ class CreateWithContainer(base.CreateCommand):
           networkInterfaces=network_interfaces,
           serviceAccounts=service_accounts,
           scheduling=scheduling,
-          tags=tags)
+          tags=tags,
+      )
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
             instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
-                compute_client.messages).GetEnumForChoice(
-                    args.private_ipv6_google_access_type))
+                compute_client.messages
+            ).GetEnumForChoice(args.private_ipv6_google_access_type)
+        )
 
       if args.IsKnownAndSpecified('request_valid_for_duration'):
         instance.params = instance_utils.CreateParams(args, compute_client)
 
-      confidential_instance_config = (
-          create_utils.BuildConfidentialInstanceConfigMessage(
-              messages=compute_client.messages,
-              args=args,
-              support_confidential_compute_type=self
-              ._support_confidential_compute_type,
-              support_confidential_compute_type_tdx=self
-              ._support_confidential_compute_type_tdx,
-              support_snp_svsm=self._support_snp_svsm))
+      confidential_instance_config = create_utils.BuildConfidentialInstanceConfigMessage(
+          messages=compute_client.messages,
+          args=args,
+          support_confidential_compute_type=self._support_confidential_compute_type,
+          support_confidential_compute_type_tdx=self._support_confidential_compute_type_tdx,
+          support_snp_svsm=self._support_snp_svsm,
+      )
       if confidential_instance_config:
         instance.confidentialInstanceConfig = confidential_instance_config
 
       has_visible_core_count = (
-          self._support_visible_core_count and
-          args.visible_core_count is not None)
-      if (args.enable_nested_virtualization is not None or
-          args.threads_per_core is not None or
-          (self._support_numa_node_count and
-           args.numa_node_count is not None) or has_visible_core_count):
-        visible_core_count = args.visible_core_count if has_visible_core_count else None
+          self._support_visible_core_count
+          and args.visible_core_count is not None
+      )
+      if (
+          args.enable_nested_virtualization is not None
+          or args.threads_per_core is not None
+          or (
+              self._support_numa_node_count and args.numa_node_count is not None
+          )
+          or has_visible_core_count
+      ):
+        visible_core_count = (
+            args.visible_core_count if has_visible_core_count else None
+        )
         instance.advancedMachineFeatures = (
             instance_utils.CreateAdvancedMachineFeaturesMessage(
-                compute_client.messages, args.enable_nested_virtualization,
+                compute_client.messages,
+                args.enable_nested_virtualization,
                 args.threads_per_core,
                 args.numa_node_count if self._support_numa_node_count else None,
-                visible_core_count))
+                visible_core_count,
+            )
+        )
 
       resource_policies = getattr(args, 'resource_policies', None)
       if resource_policies:
@@ -411,20 +494,25 @@ class CreateWithContainer(base.CreateCommand):
           parsed_resource_policies.append(resource_policy_ref.SelfLink())
         instance.resourcePolicies = parsed_resource_policies
 
-      shielded_instance_config = create_utils.BuildShieldedInstanceConfigMessage(
-          messages=compute_client.messages, args=args)
+      shielded_instance_config = (
+          create_utils.BuildShieldedInstanceConfigMessage(
+              messages=compute_client.messages, args=args
+          )
+      )
       if shielded_instance_config:
         instance.shieldedInstanceConfig = shielded_instance_config
 
       if args.IsSpecified('network_performance_configs'):
         instance.networkPerformanceConfig = (
-            instance_utils.GetNetworkPerformanceConfig(args, compute_client))
+            instance_utils.GetNetworkPerformanceConfig(args, compute_client)
+        )
 
       request = compute_client.messages.ComputeInstancesInsertRequest(
           instance=instance,
           sourceInstanceTemplate=source_instance_template,
           project=instance_ref.project,
-          zone=instance_ref.zone)
+          zone=instance_ref.zone,
+      )
 
       request.instance.reservationAffinity = (
           instance_utils.GetReservationAffinity(
@@ -432,7 +520,8 @@ class CreateWithContainer(base.CreateCommand):
           )
       )
       requests.append(
-          (compute_client.apitools_client.instances, 'Insert', request))
+          (compute_client.apitools_client.instances, 'Insert', request)
+      )
 
     return compute_client.MakeRequests(requests)
 
@@ -476,7 +565,8 @@ class CreateWithContainerBeta(CreateWithContainer):
     instances_flags.AddLocalSsdArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
-        parser, utils.COMPUTE_BETA_API_VERSION)
+        parser, utils.COMPUTE_BETA_API_VERSION
+    )
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddVisibleCoreCountArgs(parser)
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
@@ -528,7 +618,8 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddPublicDnsArgs(parser, instance=True)
     instances_flags.AddPrivateIpv6GoogleAccessArg(
-        parser, utils.COMPUTE_ALPHA_API_VERSION)
+        parser, utils.COMPUTE_ALPHA_API_VERSION
+    )
     instances_flags.AddHostErrorTimeoutSecondsArgs(parser)
     instances_flags.AddLocalSsdRecoveryTimeoutArgs(parser)
     instances_flags.AddNumaNodeCountArgs(parser)
@@ -541,21 +632,20 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
     instances_flags.ValidatePublicDnsFlags(args)
     instances_flags.ValidatePublicPtrFlags(args)
 
-  def _GetNetworkInterfaces(self, args, client, holder, project, location,
-                            scope, skip_defaults):
-    return create_utils.GetNetworkInterfacesAlpha(args, client, holder, project,
-                                                  location, scope,
-                                                  skip_defaults)
+  def _GetNetworkInterfaces(
+      self, args, client, holder, project, location, scope, skip_defaults
+  ):
+    return create_utils.GetNetworkInterfacesAlpha(
+        args, client, holder, project, location, scope, skip_defaults
+    )
 
 
 CreateWithContainer.detailed_help = {
-    'brief':
-        """\
+    'brief': """\
     Creates Compute Engine virtual machine instances running
     container images.
     """,
-    'DESCRIPTION':
-        """\
+    'DESCRIPTION': """\
         *{command}* creates Compute Engine virtual
         machines that runs a Docker image. For example:
 
@@ -567,8 +657,7 @@ CreateWithContainer.detailed_help = {
 
         For more examples, refer to the *EXAMPLES* section below.
         """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
         To run the gcr.io/google-containers/busybox image on an instance named
         'instance-1' that executes 'echo "Hello world"' as a run command, run:
 
@@ -582,5 +671,5 @@ CreateWithContainer.detailed_help = {
           $ {command} instance-1 \
             --container-image=gcr.io/google-containers/busybox
             --container-privileged
-        """
+        """,
 }

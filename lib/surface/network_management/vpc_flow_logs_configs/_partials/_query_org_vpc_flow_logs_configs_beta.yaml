@@ -31,8 +31,8 @@
   arguments:
     params:
     - help_text: |-
-        The parent resource of the VpcFlowLogsConfig:
-            `projects/{project_id}/locations/global`
+        The parent resource of the VpcFlowLogsConfig, specified in
+        the following format: `projects/{project_id}/locations/global`
       is_positional: false
       is_parent_resource: true
       is_primary_resource: true

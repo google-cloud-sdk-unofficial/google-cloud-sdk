@@ -147,6 +147,17 @@ class CreateCredConfig(base.CreateCommand):
         ),
     )
 
+    parser.add_argument(
+        '--sts-location',
+        help=(
+            'The location to use for the Security Token Service token '
+            'endpoint. For example, specifying `us-central1` will configure '
+            'the client to use the regional endpoint '
+            '`sts.us-central1.rep.googleapis.com`. If not specified, the '
+            'global endpoint `sts.googleapis.com` is used.'
+        ),
+    )
+
   def _ValidateArgs(self, args):
     if args.enable_imdsv2 and not args.aws:
       raise exceptions.ConflictingArgumentsException(
@@ -156,6 +167,16 @@ class CreateCredConfig(base.CreateCommand):
       raise exceptions.ConflictingArgumentsException(
           '--credential-cert-private-key-path can be used only for X.509'
           ' certificate credential types'
+      )
+    if (args.sts_location and args.sts_location != 'global') and (
+        args.credential_cert_path
+        or args.credential_cert_private_key_path
+        or args.credential_cert_trust_chain_path
+    ):
+      # X.509 federation is not GA-ed on REP/locational endpoints.
+      raise exceptions.ConflictingArgumentsException(
+          'Workload Identity Federation with X.509 certificates is not'
+          ' supported on locational Security Token Service endpoints.'
       )
 
   def Run(self, args):

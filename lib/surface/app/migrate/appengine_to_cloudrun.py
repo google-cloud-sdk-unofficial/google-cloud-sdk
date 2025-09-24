@@ -138,6 +138,8 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     )
     print_deploy_command = ''
     for command_str in cloud_run_deploy_command:
+      if command_str.startswith('--labels'):
+        command_str = '--labels=gae2cr-version=1'
       print_deploy_command += command_str + ' '
     if args.entrypoint:
       setattr(
@@ -156,6 +158,8 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     for command_str in cloud_run_deploy_command:
       if command_str.startswith('--'):
         command_str = command_str.replace('--', '')
+        # TODO: b/445905035 - Use ArgDict type for args to simplify the parsing
+        # logic
         command_args = command_str.split('=')
         command_args[0] = command_args[0].replace('-', '_')
         self._migration_flags.append(command_args[0])
@@ -172,6 +176,12 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
             args.__setattr__(command_args[0], 600)
           elif command_args[1] == '3600':
             args.__setattr__(command_args[0], 3600)
+          continue
+        if command_args[0] == 'min_instances':
+          args.__setattr__(command_args[0], flags.ScaleValue(command_args[1]))
+          continue
+        if command_args[0] == 'max_instances':
+          args.__setattr__(command_args[0], flags.ScaleValue(command_args[1]))
           continue
         if len(command_args) > 1:
           args.__setattr__(command_args[0], command_args[1])

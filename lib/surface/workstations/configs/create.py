@@ -96,6 +96,7 @@ class Create(base.CreateCommand):
       )
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddDisableLocalhostReplacementFlag(parser)
+      workstations_flags.AddReservationAffinity(parser)
 
   def Collection(self):
     return (

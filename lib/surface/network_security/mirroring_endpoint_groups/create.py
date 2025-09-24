@@ -56,6 +56,8 @@ DETAILED_HELP = {
         """,
 }
 
+_PACKET_BROKER_SUPPORTED = (base.ReleaseTrack.ALPHA,)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
@@ -74,6 +76,8 @@ class Create(base.CreateCommand):
         '20m',  # default to 20 minutes wait.
     )
     endpoint_group_flags.AddDescriptionArg(parser)
+    if cls.ReleaseTrack() in _PACKET_BROKER_SUPPORTED:
+      endpoint_group_flags.AddType(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -99,6 +103,7 @@ class Create(base.CreateCommand):
         parent=endpoint_group.Parent().RelativeName(),
         mirroring_deployment_group=mirroring_deployment_group.RelativeName(),
         description=getattr(args, 'description', None),
+        endpoint_group_type=getattr(args, 'type', None),
         labels=labels,
     )
     # Return the in-progress operation if async is requested.

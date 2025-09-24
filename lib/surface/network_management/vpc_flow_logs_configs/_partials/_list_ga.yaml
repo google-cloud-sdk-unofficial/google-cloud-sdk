@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@
   - GA
   auto_generated: true
   help_text:
-    brief: List all VPC Flow Logs configurations in the project.
-    description: Lists all VPC Flow Logs configurations in the project.
+    brief: List all VPC Flow Logs configurations.
+    description: By default, lists all project-level VPC Flow Logs configurations.
+      Use the --organization flag to list all organization-level configurations.
     examples: |-
       To list all the VPC Flow Logs configurations within the project, run:
 
@@ -32,15 +33,21 @@
   arguments:
     params:
     - help_text: |-
-        The parent resource of the VpcFlowLogsConfig:
-            `projects/{project_id}/locations/global`
+        The parent resource of the VpcFlowLogsConfig,
+        in one of the following formats:
+
+        - For project-level resourcs: `projects/{project_id}/locations/global`
+
+        - For organization-level resources:
+        `organizations/{organization_id}/locations/global`
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1_resources:organizations_or_projects_locations
       required: true
   request:
     api_version: v1
     collection:
+    - networkmanagement.organizations.locations.vpcFlowLogsConfigs
     - networkmanagement.projects.locations.vpcFlowLogsConfigs
   response:
     id_field: name

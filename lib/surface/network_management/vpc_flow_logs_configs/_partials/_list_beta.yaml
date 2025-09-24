@@ -33,9 +33,13 @@
   arguments:
     params:
     - help_text: |-
-        The parent resource of the VpcFlowLogsConfig:
-            `projects/{project_id}/locations/global`
-            `organizations/{organization_id}/locations/global`
+        The parent resource of the VpcFlowLogsConfig,
+        in one of the following formats:
+
+        - For project-level resourcs: `projects/{project_id}/locations/global`
+
+        - For organization-level resources:
+        `organizations/{organization_id}/locations/global`
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_management.v1beta1_resources:organizations_or_projects_locations

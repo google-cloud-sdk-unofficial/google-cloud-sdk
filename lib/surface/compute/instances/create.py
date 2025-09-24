@@ -123,6 +123,7 @@ def _CommonArgs(
     support_source_snapshot_region=False,
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
+    support_enable_vpc_scoped_dns=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -150,7 +151,9 @@ def _CommonArgs(
       support_network_queue_count=support_network_queue_count,
       support_vlan_nic=support_vlan_nic,
       support_ipv6_only=support_ipv6_only,
-      support_igmp_query=support_igmp_query)
+      support_igmp_query=support_igmp_query,
+      support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
+  )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
   instances_flags.AddMaintenancePolicyArgs(
@@ -281,6 +284,7 @@ def _CommonArgs(
 class Create(base.CreateCommand):
   """Create Compute Engine virtual machine instances."""
 
+  # TODO(b/445859137): clean up flags which are true in all tracks.
   _support_regional = True
   _support_kms = True
   _support_nvdimm = False
@@ -325,8 +329,9 @@ class Create(base.CreateCommand):
   _support_disk_labels = False
   _support_ipv6_only = True
   _support_source_snapshot_region = False
-  _support_skip_guest_os_shutdown = False
+  _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
+  _support_enable_vpc_scoped_dns = False
 
   @classmethod
   def Args(cls, parser):
@@ -356,6 +361,7 @@ class Create(base.CreateCommand):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -449,6 +455,7 @@ class Create(base.CreateCommand):
         support_public_dns=self._support_public_dns,
         support_ipv6_assignment=self._support_ipv6_assignment,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
+        support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
     )
 
     confidential_vm_type = instance_utils.GetConfidentialVmType(
@@ -845,6 +852,7 @@ class CreateBeta(Create):
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
+  _support_enable_vpc_scoped_dns = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -890,6 +898,7 @@ class CreateBeta(Create):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -969,6 +978,7 @@ class CreateAlpha(CreateBeta):
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
+  _support_enable_vpc_scoped_dns = True
 
   @classmethod
   def Args(cls, parser):
@@ -1002,6 +1012,7 @@ class CreateAlpha(CreateBeta):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
+        support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

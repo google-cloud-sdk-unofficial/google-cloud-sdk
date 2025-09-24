@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AddNamedSet(base.CreateCommand):
   """Add an empty named set to a Compute Engine router.
@@ -104,7 +105,11 @@ class AddNamedSet(base.CreateCommand):
       client.MakeRequests([request])
     except Exception as exception:
       if (
-          "Could not fetch resource:\n - Invalid value for field 'namedSet': "
+          "The named set '{set_name}' was not found.".format(set_name=set_name)
+          in exception.__str__()
+          # TODO(b/437296415): Remove this legacy error message once the new
+          # error message is fully rolled out.
+          or "Could not fetch resource:\n - Invalid value for field 'namedSet': "
           in exception.__str__()
       ):
         return

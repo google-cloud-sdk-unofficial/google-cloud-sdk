@@ -143,7 +143,7 @@ class AdjustTraffic(base.Command):
               tracker,
               args.async_,
               properties.VALUES.core.verbosity.Get() == 'debug',
-          )
+              self.ReleaseTrack())
       except:
         serv = client.GetService(service_ref)
         if serv:

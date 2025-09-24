@@ -99,11 +99,22 @@ class Up(base.BinaryBackedCommand):
       )
 
       if response.stdout:
-        log.debug('Successfully translated resources config to YAML.')
-        log.debug(f'Translated YAML:\n{response.stdout[0]}')
-        compose_resource.deploy_application(
-            yaml_file_path=response.stdout[0], region=region
+        translate_result = compose_resource.TranslateResult.from_json(
+            response.stdout[0]
         )
+        log.debug('Successfully translated resources config to YAML.')
+        log.debug(
+            'YAML files:\n'
+            f'{list(translate_result.services.values()) + list(translate_result.models.values())}'
+        )
+        for model_yaml in translate_result.models.values():
+          compose_resource.deploy_application(
+              yaml_file_path=model_yaml, region=region
+          )
+        for service_yaml in translate_result.services.values():
+          compose_resource.deploy_application(
+              yaml_file_path=service_yaml, region=region
+          )
       return response
     except Exception as e:
       log.error(f'Failed to handle resources config and translate to YAML: {e}')

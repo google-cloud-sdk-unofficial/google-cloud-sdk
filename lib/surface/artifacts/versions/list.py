@@ -115,4 +115,7 @@ class List(base.ListCommand):
     Returns:
       A list of package versions.
     """
-    return version_util.ListVersions(args)
+    return (
+        version_util.ConvertFingerprint(v, args)
+        for v in version_util.ListVersions(args)
+    )

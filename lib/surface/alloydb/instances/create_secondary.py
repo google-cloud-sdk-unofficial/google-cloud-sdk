@@ -68,6 +68,20 @@ class CreateSecondary(base.CreateCommand):
     flags.AddPSCAutoConnections(parser)
     flags.AddAllocatedIPRangeOverride(parser)
 
+    # Connection pooling flags.
+    flags.AddEnableConnectionPooling(parser)
+    flags.AddConnectionPoolingPoolMode(parser)
+    flags.AddConnectionPoolingMinPoolSize(parser)
+    flags.AddConnectionPoolingMaxPoolSize(parser)
+    flags.AddConnectionPoolingMaxClientConnections(parser)
+    flags.AddConnectionPoolingServerIdleTimeout(parser)
+    flags.AddConnectionPoolingQueryWaitTimeout(parser)
+    flags.AddConnectionPoolingStatsUsers(parser)
+    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+    flags.AddConnectionPoolingServerLifetime(parser)
+    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
+    flags.AddConnectionPoolingMaxPreparedStatements(parser)
+
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
   ):
@@ -135,20 +149,6 @@ class CreateSecondaryAlpha(CreateSecondaryBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateSecondaryAlpha, CreateSecondaryAlpha).Args(parser)
-
-    # Connection pooling flags.
-    flags.AddEnableConnectionPooling(parser)
-    flags.AddConnectionPoolingPoolMode(parser)
-    flags.AddConnectionPoolingMinPoolSize(parser)
-    flags.AddConnectionPoolingMaxPoolSize(parser)
-    flags.AddConnectionPoolingMaxClientConnections(parser)
-    flags.AddConnectionPoolingServerIdleTimeout(parser)
-    flags.AddConnectionPoolingQueryWaitTimeout(parser)
-    flags.AddConnectionPoolingStatsUsers(parser)
-    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
-    flags.AddConnectionPoolingServerLifetime(parser)
-    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
-    flags.AddConnectionPoolingMaxPreparedStatements(parser)
 
   def ConstructSecondaryCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args

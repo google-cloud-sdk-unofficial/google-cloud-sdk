@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: Show effective Privileged Access Manager (PAM) settings on a resource.
     description: |
@@ -27,7 +26,7 @@
   request:
     ALPHA:
       api_version: v1alpha
-    method: effectiveSettings
+    method: fetchEffectiveSettings
     collection:
     - privilegedaccessmanager.projects.locations
     - privilegedaccessmanager.folders.locations

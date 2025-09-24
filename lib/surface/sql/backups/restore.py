@@ -186,6 +186,7 @@ def AddInstanceSettingsArgs(parser):
   flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
   flags.AddActiveDirectoryDNSServers(parser, hidden=True)
   flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
+  flags.AddClearActiveDirectory(parser, hidden=True)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):
@@ -264,6 +265,12 @@ def _GetRestoreInstanceClearOverrides(args):
   if args.clear_active_directory_dns_servers:
     cleared_fields.append('settings.active_directory_config.dns_servers')
 
+  if args.IsKnownAndSpecified('clear_disk_encryption'):
+    cleared_fields.append('disk_encryption_config')
+
+  if args.clear_active_directory:
+    cleared_fields.append('settings.active_directory_config')
+
   return cleared_fields
 
 
@@ -328,6 +335,13 @@ class RestoreBackup(base.RestoreCommand):
             ' project. This flag is not supported when restore happens from'
             ' backup name, only supported when restore happens from backup ID'
             ' in timestamp format.'
+        ),
+    )
+    parser.add_argument(
+        '--clear-disk-encryption',
+        required=False,
+        help=(
+            'Disables CMEK in the restored instance.'
         ),
     )
     base.ASYNC_FLAG.AddToParser(parser)

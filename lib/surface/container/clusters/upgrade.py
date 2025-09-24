@@ -30,6 +30,8 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import iso_duration
+from googlecloudsdk.core.util import times
 from googlecloudsdk.core.util.semver import SemVer
 
 
@@ -76,14 +78,20 @@ class VersionVerifier(object):
 
 def ParseUpgradeOptionsBase(args):
   """Parses the flags provided with the cluster upgrade command."""
-  return api_adapter.UpdateClusterOptions(
+  opts = api_adapter.UpdateClusterOptions(
       version=args.cluster_version,
       update_master=args.master,
       update_nodes=(not args.master),
       node_pool=args.node_pool,
       image_type=args.image_type,
       image=args.image,
-      image_project=args.image_project)
+      image_project=args.image_project,
+  )
+  if args.control_plane_soak_duration:
+    opts.control_plane_soak_duration = times.FormatDurationForJson(
+        iso_duration.Duration(seconds=args.control_plane_soak_duration)
+    )
+  return opts
 
 
 def _Args(parser):
@@ -128,6 +136,7 @@ You can find the list of allowed versions for upgrades by running:
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)
+  flags.AddControlPlaneSoakDurationFlag(parser, hidden=True)
 
 
 def MaybeLog122UpgradeWarning(cluster):
@@ -192,11 +201,17 @@ class Upgrade(base.Command):
                        console_attr.SafeText(error)))
       server_conf = None
 
+    if args.control_plane_soak_duration and not args.master:
+      raise exceptions.InvalidArgumentException(
+          '--control-plane-soak-duration',
+          '--control-plane-soak-duration can only be specified with --master')
+
     upgrade_message = container_command_util.ClusterUpgradeMessage(
         name=args.name,
         server_conf=server_conf,
         cluster=cluster,
         master=args.master,
+        control_plane_soak_duration=args.control_plane_soak_duration,
         node_pool_name=args.node_pool,
         new_version=args.cluster_version,
         new_image_type=args.image_type)

@@ -88,6 +88,20 @@ class Update(base.UpdateCommand):
     flags.AddPSCAutoConnectionGroup(parser)
     flags.AddActivationPolicy(parser, alloydb_messages)
 
+    # Connection pooling flags.
+    flags.AddEnableConnectionPooling(parser)
+    flags.AddConnectionPoolingPoolMode(parser)
+    flags.AddConnectionPoolingMinPoolSize(parser)
+    flags.AddConnectionPoolingMaxPoolSize(parser)
+    flags.AddConnectionPoolingMaxClientConnections(parser)
+    flags.AddConnectionPoolingServerIdleTimeout(parser)
+    flags.AddConnectionPoolingQueryWaitTimeout(parser)
+    flags.AddConnectionPoolingStatsUsers(parser)
+    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
+    flags.AddConnectionPoolingServerLifetime(parser)
+    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
+    flags.AddConnectionPoolingMaxPreparedStatements(parser)
+
     # TODO(b/185795425): Add --ssl-required and --labels later once we
     # understand the use cases
 
@@ -169,20 +183,6 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
-
-    # Connection pooling flags.
-    flags.AddEnableConnectionPooling(parser)
-    flags.AddConnectionPoolingPoolMode(parser)
-    flags.AddConnectionPoolingMinPoolSize(parser)
-    flags.AddConnectionPoolingMaxPoolSize(parser)
-    flags.AddConnectionPoolingMaxClientConnections(parser)
-    flags.AddConnectionPoolingServerIdleTimeout(parser)
-    flags.AddConnectionPoolingQueryWaitTimeout(parser)
-    flags.AddConnectionPoolingStatsUsers(parser)
-    flags.AddConnectionPoolingIgnoreStartupParameters(parser)
-    flags.AddConnectionPoolingServerLifetime(parser)
-    flags.AddConnectionPoolingClientConnectionIdleTimeout(parser)
-    flags.AddConnectionPoolingMaxPreparedStatements(parser)
 
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsAlpha(

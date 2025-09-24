@@ -25,6 +25,7 @@ from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ha_controllers import utils
+from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.compute.alpha import compute_alpha_messages
@@ -51,13 +52,19 @@ class Create(base.CreateCommand):
     parser.add_argument(
         '--failover-initiation',
         required=True,
-        type=compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum,
+        type=lambda x: arg_utils.ChoiceToEnum(
+            x,
+            compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum,
+        ),
         help='Indicates how failover should be initiated.',
     )
     parser.add_argument(
         '--secondary-zone-capacity',
         required=True,
-        type=compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum,
+        type=lambda x: arg_utils.ChoiceToEnum(
+            x,
+            compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum,
+        ),
         help='Indicates capacity guarantees in the secondary zone.',
     )
     parser.add_argument(
@@ -66,12 +73,14 @@ class Create(base.CreateCommand):
         type=arg_parsers.ArgObject(
             spec={
                 'zone': str,
-                'reservation-affinity': (
-                    compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum
+                'reservation-affinity': lambda x: arg_utils.ChoiceToEnum(
+                    x,
+                    compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum,
                 ),
                 'reservation': str,
-                'node-affinity': (
-                    compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum
+                'node-affinity': lambda x: arg_utils.ChoiceToEnum(
+                    x,
+                    compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum,
                 ),
             }
         ),

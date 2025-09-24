@@ -20,7 +20,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.cloudlocationfinder import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
 class List(base.ListCommand):
   """List cloudLocations.
@@ -52,8 +52,12 @@ class List(base.ListCommand):
     Returns:
       List of CloudLocations for specified project.
     """
-    client = core_apis.GetClientInstance('cloudlocationfinder', 'v1alpha')
-    messages = core_apis.GetMessagesModule('cloudlocationfinder', 'v1alpha')
+    if self.ReleaseTrack() == base.ReleaseTrack.GA:
+      api_version = 'v1'
+    else:
+      api_version = 'v1alpha'
+    client = core_apis.GetClientInstance('cloudlocationfinder', api_version)
+    messages = core_apis.GetMessagesModule('cloudlocationfinder', api_version)
     cloud_locations_service = client.projects_locations_cloudLocations
     location = args.CONCEPTS.location.Parse().RelativeName()
     request = (

@@ -1,5 +1,6 @@
 - release_tracks: [ALPHA, BETA]
-  hidden: true
+  BETA:
+    hidden: true
   help_text:
     brief: Withdraw a Privileged Access Manager (PAM) grant.
     description: Withdraw a Privileged Access Manager (PAM) grant.

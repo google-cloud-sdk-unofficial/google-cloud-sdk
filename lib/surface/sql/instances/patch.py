@@ -56,12 +56,24 @@ def _PrintAndConfirmWarningMessage(args, database_version):
   continue_msg = None
 
   insights_query_length_changed = (
-      'insights_config_query_string_length' in args and
-      args.insights_config_query_string_length is not None)
+      'insights_config_query_string_length' in args
+      and args.insights_config_query_string_length is not None
+  )
+
+  active_directory_config_changed = any([
+      args.active_directory_domain is not None,
+      args.clear_active_directory is not None,
+      args.clear_active_directory_dns_servers is not None,
+      args.active_directory_dns_servers is not None,
+      args.active_directory_secret_manager_key is not None,
+      args.active_directory_organizational_unit is not None,
+      args.active_directory_mode is not None,
+  ])
+
   if any([
       args.tier,
       args.enable_database_replication is not None,
-      args.active_directory_domain is not None,
+      active_directory_config_changed,
       insights_query_length_changed,
   ]):
     continue_msg = ('WARNING: This patch modifies a value that requires '
@@ -170,6 +182,8 @@ def _GetConfirmedClearedFields(args, patch_instance, original_instance):
     cleared_fields.append('settings.uncMappings')
   if args.clear_active_directory_dns_servers:
     cleared_fields.append('settings.activeDirectoryConfig.dnsServers')
+  if args.clear_active_directory:
+    cleared_fields.append('settings.activeDirectoryConfig')
 
   log.status.write(
       'The following message will be used for the patch API method.\n'
@@ -340,6 +354,7 @@ def AddBaseArgs(parser):
   flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
   flags.AddActiveDirectoryDNSServers(parser, hidden=True)
   flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
+  flags.AddClearActiveDirectory(parser, hidden=True)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
   flags.AddEnableConnectionPooling(parser)

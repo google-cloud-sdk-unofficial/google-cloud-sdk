@@ -38,3 +38,4 @@
     modify_response_hooks:
     - googlecloudsdk.command_lib.artifacts.version_util:ShortenRelatedTags
     - googlecloudsdk.command_lib.artifacts.version_util:ListOccurrences
+    - googlecloudsdk.command_lib.artifacts.version_util:ConvertFingerprint

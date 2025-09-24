@@ -89,9 +89,9 @@ class RestoreBackupFilesBeta(RestoreBackupFiles):
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
-# @base.Hidden  # TODO(b/409505431): Uncomment this and make for GA launch
-# @base.ReleaseTracks(base.ReleaseTrack.GA)
-# class RestoreBackupFilesGA(RestoreBackupFiles):
-#   """Restore specific files from a backup to a Volume."""
 
-#   _RELEASE_TRACK = base.ReleaseTrack.GA
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class RestoreBackupFilesGA(RestoreBackupFiles):
+  """Restore specific files from a backup to a Volume."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.GA

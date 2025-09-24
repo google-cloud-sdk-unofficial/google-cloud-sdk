@@ -160,7 +160,7 @@ class Create(base.Command):
   _support_graceful_shutdown = True
   _support_flex_start = False
   _support_source_snapshot_region = False
-  _support_skip_guest_os_shutdown = False
+  _support_skip_guest_os_shutdown = True
 
   _log_async = False
 

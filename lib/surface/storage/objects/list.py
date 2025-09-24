@@ -108,7 +108,7 @@ class List(base.ListCommand):
     flags.add_uri_support_to_list_commands(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_server_filter_flag(parser)
+      flags.add_metadata_filter_flag(parser)
       contexts_only_formatter.ContextsOnlyPrinter.Register()
 
   def Display(self, args, resources):
@@ -119,7 +119,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     encryption_util.initialize_key_store(args)
-    server_filter = getattr(args, 'server_filter', None)
+    metadata_filter = getattr(args, 'metadata_filter', None)
 
     urls = []
     for url_string in args.urls:
@@ -129,9 +129,12 @@ class List(base.ListCommand):
                                    url.bucket_name)):
         raise errors.InvalidUrlError(
             'URL does not match objects: {}'.format(url_string))
-      if server_filter and url.scheme != storage_url.ProviderPrefix.GCS:
+      if (
+          metadata_filter is not None
+          and url.scheme != storage_url.ProviderPrefix.GCS
+      ):
         raise errors.InvalidUrlError(
-            'Server filter is only supported for GCS URLs.'
+            'Metadata filter is only supported for GCS URLs.'
         )
       if url.is_bucket():
         # Convert gs://bucket to gs://bucket/* to retrieve objects.
@@ -153,7 +156,7 @@ class List(base.ListCommand):
           halt_on_empty_response=not getattr(args, 'exhaustive', False),
           next_page_token=getattr(args, 'next_page_token', None),
           object_state=object_state,
-          list_filter=server_filter,
+          list_filter=metadata_filter,
       )
       if args.stat:
         # Replicating gsutil "stat" command behavior.

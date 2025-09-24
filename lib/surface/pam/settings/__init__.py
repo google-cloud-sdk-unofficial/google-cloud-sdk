@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Settings(base.Group):
   r"""Manage Privileged Access Manager (PAM) Settings.

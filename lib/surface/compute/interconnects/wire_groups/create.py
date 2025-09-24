@@ -70,6 +70,7 @@ class Create(base.CreateCommand):
     flags.AddDescription(parser)
     flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser)
+    flags.AddBandwidthAllocation(parser)
     flags.AddFaultResponse(parser)
     flags.AddAdminEnabled(parser)
     flags.AddValidateOnly(parser)
@@ -120,7 +121,6 @@ class CreateAlpha(Create):
     super(CreateAlpha, cls).Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
-    flags.AddBandwidthAllocation(parser)
 
 
 Create.detailed_help = DETAILED_HELP

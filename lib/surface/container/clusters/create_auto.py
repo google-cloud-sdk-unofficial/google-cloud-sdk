@@ -73,7 +73,8 @@ auto_flags = [
     'secretSyncConfig',
     'controlPlaneEgress',
     'tag_bindings',
-    'gpudirectstrategy',
+    'managedOTelScope',
+    'autopilotPrivilegedAdmission',
 ]
 # LINT.ThenChange()
 

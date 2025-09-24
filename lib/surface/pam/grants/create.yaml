@@ -55,7 +55,8 @@
     - group:
         release_tracks: [ALPHA, BETA]
         mutex: true
-        hidden: true
+        BETA:
+          hidden: true
         help_text: |
           Specify the grant's scope using either high-level resource or a fine-grained scope
           configuration.

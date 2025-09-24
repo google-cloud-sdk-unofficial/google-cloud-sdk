@@ -29,7 +29,7 @@ import ipaddr
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_psc_google_apis):
+def _Args(cls, parser, support_psc_google_apis, include_ip_collection):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -48,6 +48,8 @@ def _Args(cls, parser, support_psc_google_apis):
 
   cls.NETWORK_ARG = flags.NetworkArgument()
   cls.NETWORK_ARG.AddArgument(parser)
+  if include_ip_collection:
+    flags.IpCollectionArgument().AddArgument(parser)
 
 
 @base.UniverseCompatible
@@ -103,13 +105,15 @@ class Create(base.CreateCommand):
   NETWORK_ARG = None
 
   _support_psc_google_apis = True
+  _include_ip_collection = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         cls,
         parser,
-        support_psc_google_apis=cls._support_psc_google_apis)
+        support_psc_google_apis=cls._support_psc_google_apis,
+        include_ip_collection=cls._include_ip_collection)
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -328,7 +332,7 @@ class Create(base.CreateCommand):
             '--prefix-length', 'prefix length is needed for reserving IP ranges'
             ' for HA VPN over Cloud Interconnect.')
 
-    return messages.Address(
+    address_msg = messages.Address(
         address=address,
         prefixLength=args.prefix_length,
         description=args.description,
@@ -340,6 +344,12 @@ class Create(base.CreateCommand):
         subnetwork=subnetwork_url,
         network=network_url,
         ipv6EndpointType=ipv6_endpoint_type)
+
+    if self._include_ip_collection and args.ip_collection:
+      address_msg.ipCollection = flags.IpCollectionArgument().ResolveAsResource(
+          args, resource_parser).SelfLink()
+
+    return address_msg
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -395,10 +405,11 @@ class CreateBeta(Create):
   """
 
   _support_psc_google_apis = True
+  _include_ip_collection = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   # pylint: disable=line-too-long
   r"""Reserve IP addresses.
 

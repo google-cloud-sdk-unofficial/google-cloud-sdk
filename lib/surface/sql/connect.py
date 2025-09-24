@@ -33,6 +33,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.sql import flags as sql_flags
 from googlecloudsdk.command_lib.sql import instances as instances_command_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
@@ -210,6 +211,50 @@ def AddBetaArgs(parser):
       default=constants.DEFAULT_PROXY_PORT_NUMBER,
       help=('Port number that gcloud will use to connect to the Cloud SQL '
             'Proxy through localhost.'))
+
+
+def AddAlphaArgs(parser):
+  """Declare alpha flag arguments for this command parser.
+
+  Args:
+      parser: An argparse parser that you can use it to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+  """
+  parser.add_argument(
+      '--auto-iam-authn',
+      action='store_true',
+      help='Enables IAM database authentication for connections to MySQL and '
+           'Postgres instances.')
+  parser.add_argument(
+      '--skip-ssl',
+      action='store_true',
+      help='Skip SSL certificate verification for MySQL instances.')
+  parser.add_argument(
+      '--debug-logs',
+      action='store_true',
+      help='Enable verbose debug logs for Cloud SQL Proxy.')
+  parser.add_argument(
+      '--sqladmin-api-endpoint',
+      help='Cloud SQL Admin API endpoint for Cloud SQL Proxy to use.')
+  parser.add_argument(
+      '--run-connection-test',
+      action='store_true',
+      help='Run connection test for Cloud SQL Proxy.')
+
+  ip_group = parser.add_mutually_exclusive_group(
+      'IP address selection settings for Cloud SQL Proxy connection.')
+  ip_group.add_argument(
+      '--private-ip',
+      action='store_true',
+      help='Connect to the Cloud SQL instance using private IP.')
+  ip_group.add_argument(
+      '--psc',
+      action='store_true',
+      help='Connect to the Cloud SQL instance using PSC.')
+  ip_group.add_argument(
+      '--auto-ip',
+      action='store_true',
+      help='Connect to the Cloud SQL instance with auto IP detection.')
 
 
 def RunConnectCommand(args, supports_database=False):
@@ -436,15 +481,63 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
         )
     )
 
+  auto_iam_authn = getattr(args, 'auto_iam_authn', False)
+  if auto_iam_authn and exe_name == 'mssql-cli':
+    raise calliope_exceptions.InvalidArgumentException(
+        '--auto-iam-authn',
+        'The --auto-iam-authn flag is only valid for MySQL and Postgres'
+        ' instances.',
+    )
+
+  skip_ssl = getattr(args, 'skip_ssl', False)
+  if skip_ssl and exe_name != 'mysql':
+    raise calliope_exceptions.InvalidArgumentException(
+        '--skip-ssl', 'The --skip-ssl flag is only valid for MySQL instances.'
+    )
+
   # Start the Cloud SQL Proxy and wait for it to be ready to accept connections.
   port = str(args.port)
-  proxy_process = instances_api_util.StartCloudSqlProxyV2(instance_info, port)
+  impersonate_service_account = (
+      properties.VALUES.auth.impersonate_service_account.Get()
+  )
+  private_ip = getattr(args, 'private_ip', False)
+  psc = getattr(args, 'psc', False)
+  auto_ip = getattr(args, 'auto_ip', False)
+  debug_logs = getattr(args, 'debug_logs', False)
+  sqladmin_api_endpoint = getattr(args, 'sqladmin_api_endpoint', None)
+  run_connection_test = getattr(args, 'run_connection_test', False)
+  proxy_process = instances_api_util.StartCloudSqlProxyV2(
+      instance_info,
+      port,
+      impersonate_service_account=impersonate_service_account,
+      auto_iam_authn=auto_iam_authn,
+      private_ip=private_ip,
+      psc=psc,
+      auto_ip=auto_ip,
+      debug_logs=debug_logs,
+      sqladmin_api_endpoint=sqladmin_api_endpoint,
+      run_connection_test=run_connection_test)
   atexit.register(proxy_process.kill)
 
+  if run_connection_test:
+    proxy_process.kill()
+    return
+
   # Determine what database user to connect with.
-  database_user = constants.DEFAULT_SQL_USER[exe_name]
-  if args.user:
+  if auto_iam_authn:
+    database_user = impersonate_service_account
+    if not database_user:
+      database_user = properties.VALUES.core.account.Get(required=True)
+    if exe_name == 'mysql':
+      # MySQL IAM db auth uses username without domain.
+      database_user = database_user.split('@')[0]
+    elif exe_name == 'psql' and database_user.endswith('.gserviceaccount.com'):
+      # Postgres IAM db auth uses user@project.iam for service accounts.
+      database_user = database_user.replace('.gserviceaccount.com', '')
+  elif args.user:
     database_user = args.user
+  else:
+    database_user = constants.DEFAULT_SQL_USER[exe_name]
 
   # We have everything we need, time to party!
   flags = constants.EXE_FLAGS[exe_name]
@@ -456,11 +549,23 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
   else:
     sql_args.extend([flags['hostname'], '127.0.0.1', flags['port'], port])
   sql_args.extend([flags['user'], database_user])
-  if 'password' in flags:
+  if 'password' in flags and not auto_iam_authn:
     sql_args.append(flags['password'])
 
   if supports_database:
-    sql_args.extend(instances_command_util.GetDatabaseArgs(args, flags))
+    if exe_name == 'mysql' and args.database:
+      raise calliope_exceptions.InvalidArgumentException(
+          '--database',
+          'The --database flag is only valid for PostgreSQL or SQL Server'
+          ' instances.',
+      )
+    db_args = instances_command_util.GetDatabaseArgs(args, flags)
+    if not db_args and auto_iam_authn and exe_name == 'psql':
+      db_args = [flags['database'], 'postgres']
+    sql_args.extend(db_args)
+
+  if skip_ssl and exe_name == 'mysql':
+    sql_args.append('--skip-ssl')
 
   instances_command_util.ConnectToInstance(sql_args, database_user)
   proxy_process.kill()
@@ -517,6 +622,7 @@ class ConnectAlpha(base.Command):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     AddBetaArgs(parser)
+    AddAlphaArgs(parser)
     sql_flags.AddDatabase(
         parser, 'The PostgreSQL or SQL Server database to connect to.'
     )

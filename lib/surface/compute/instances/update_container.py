@@ -24,6 +24,22 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'The option to deploy a container during VM creation using the'
+        ' container startup agent is deprecated. Use alternative services to'
+        ' run containers on your VMs. Learn more at'
+        ' https://cloud.google.com/compute/docs/containers/migrate-containers.'
+    ),
+    error=(
+        'The option to deploy a container during VM creation using the'
+        ' container startup agent is deprecated. Use alternative services to'
+        ' run containers on your VMs. Learn more at'
+        ' https://cloud.google.com/compute/docs/containers/migrate-containers.'
+    ),
+)
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateContainer(base.UpdateCommand):
   """Command for updating VM instances running container images."""
@@ -31,8 +47,9 @@ class UpdateContainer(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     """Register parser args."""
-    instances_flags.AddUpdateContainerArgs(parser,
-                                           container_mount_disk_enabled=True)
+    instances_flags.AddUpdateContainerArgs(
+        parser, container_mount_disk_enabled=True
+    )
 
   def Run(self, args):
     """Issues requests necessary to update Container."""
@@ -42,28 +59,39 @@ class UpdateContainer(base.UpdateCommand):
     instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=instances_flags.GetInstanceZoneScopeLister(client))
+        scope_lister=instances_flags.GetInstanceZoneScopeLister(client),
+    )
 
     instance = client.apitools_client.instances.Get(
-        client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+        client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+    )
 
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder, args.container_mount_disk, instance.disks, [], for_update=True,
-        client=client.apitools_client)
+        holder,
+        args.container_mount_disk,
+        instance.disks,
+        [],
+        for_update=True,
+        client=client.apitools_client,
+    )
 
-    containers_utils.UpdateInstance(holder, client, instance_ref, instance,
-                                    args, container_mount_disk_enabled=True,
-                                    container_mount_disk=container_mount_disk)
+    containers_utils.UpdateInstance(
+        holder,
+        client,
+        instance_ref,
+        instance,
+        args,
+        container_mount_disk_enabled=True,
+        container_mount_disk=container_mount_disk,
+    )
 
 
 UpdateContainer.detailed_help = {
-    'brief':
-        """\
+    'brief': """\
     Updates Compute Engine virtual machine instances running container
     images.
     """,
-    'DESCRIPTION':
-        """\
+    'DESCRIPTION': """\
     *{command}* updates Compute Engine virtual
     machines that runs a Docker image. For example:
 
@@ -75,8 +103,7 @@ UpdateContainer.detailed_help = {
 
     For more examples, refer to the *EXAMPLES* section below.
     """,
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To run the gcr.io/google-containers/busybox image on an instance named
     'instance-1' that executes 'echo "Hello world"' as a run command, run:
 
@@ -89,7 +116,7 @@ UpdateContainer.detailed_help = {
       $ {command} instance-1 \
         --container-image=gcr.io/google-containers/busybox \
         --container-privileged
-    """
+    """,
 }
 
 
@@ -99,8 +126,9 @@ class UpdateContainerAlpha(UpdateContainer):
 
   @staticmethod
   def Args(parser):
-    instances_flags.AddUpdateContainerArgs(parser,
-                                           container_mount_disk_enabled=True)
+    instances_flags.AddUpdateContainerArgs(
+        parser, container_mount_disk_enabled=True
+    )
 
   def Run(self, args):
     """Issues requests necessary to update Container."""
@@ -110,12 +138,25 @@ class UpdateContainerAlpha(UpdateContainer):
     instance_ref = instances_flags.INSTANCE_ARG.ResolveAsResource(
         args,
         holder.resources,
-        scope_lister=instances_flags.GetInstanceZoneScopeLister(client))
+        scope_lister=instances_flags.GetInstanceZoneScopeLister(client),
+    )
     instance = client.apitools_client.instances.Get(
-        client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict()))
+        client.messages.ComputeInstancesGetRequest(**instance_ref.AsDict())
+    )
     container_mount_disk = instances_flags.GetValidatedContainerMountDisk(
-        holder, args.container_mount_disk, instance.disks, [], for_update=True,
-        client=client.apitools_client)
-    containers_utils.UpdateInstance(holder, client, instance_ref, instance,
-                                    args, container_mount_disk_enabled=True,
-                                    container_mount_disk=container_mount_disk)
+        holder,
+        args.container_mount_disk,
+        instance.disks,
+        [],
+        for_update=True,
+        client=client.apitools_client,
+    )
+    containers_utils.UpdateInstance(
+        holder,
+        client,
+        instance_ref,
+        instance,
+        args,
+        container_mount_disk_enabled=True,
+        container_mount_disk=container_mount_disk,
+    )

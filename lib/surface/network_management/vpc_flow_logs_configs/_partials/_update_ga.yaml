@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,10 @@
     brief: Updates one or more fields in an existing VPC Flow Logs configuration.
     description: Updates one or more fields in an existing VPC Flow Logs configuration.
     examples: |-
+      To update the state field to be 'DISABLED' in the VPC Flow Logs configuration `my-config`, run:
+
+      $ {command} my-config --location=global --organization=<my-org-number> --state=DISABLED
+
       To update the state field to be 'DISABLED' in the VPC Flow Logs configuration `my-config`, run:
 
       $ {command} my-config --location=global --state=DISABLED
@@ -47,9 +51,10 @@
         - arg_name: state
           api_field: vpcFlowLogsConfig.state
           required: false
-          help_text: |
+          help_text: |-
             The state of the VPC Flow Log configuration. Default value is ENABLED.
             When creating a new configuration, it must be enabled.
+            Setting state=DISABLED will pause the log generation for this config.
           choices:
           - arg_value: enabled
             enum_value: ENABLED
@@ -149,8 +154,46 @@
     - group:
         mutex: true
         help_text: |-
+          Arguments for the  cross project metadata.
+        params:
+        - arg_name: cross-project-metadata
+          api_field: vpcFlowLogsConfig.crossProjectMetadata
+          required: false
+          help_text: |-
+            Determines whether to include cross project annotations in the logs.
+            This field is available only for organization configurations. If not
+            specified in org configs will be set to CROSS_PROJECT_METADATA_ENABLED.
+          choices:
+          - arg_value: cross-project-metadata-enabled
+            enum_value: CROSS_PROJECT_METADATA_ENABLED
+            help_text: |-
+              When CROSS_PROJECT_METADATA_ENABLED, metadata from other projects will be
+              included in the logs.
+          - arg_value: cross-project-metadata-disabled
+            enum_value: CROSS_PROJECT_METADATA_DISABLED
+            help_text: |-
+              When CROSS_PROJECT_METADATA_DISABLED, metadata from other projects will
+              not be included in the logs.
+    - group:
+        mutex: true
+        help_text: |-
           Arguments for the target resource.
         params:
+        - arg_name: network
+          api_field: vpcFlowLogsConfig.network
+          required: false
+          repeated: false
+          help_text: |-
+            Traffic will be logged from VMs, VPN tunnels and Interconnect Attachments
+            within the network.
+            Format: projects/{project_id}/global/networks/{name}
+        - arg_name: subnet
+          api_field: vpcFlowLogsConfig.subnet
+          required: false
+          repeated: false
+          help_text: |-
+            Traffic will be logged from VMs within the subnetwork.
+            Format: projects/{project_id}/regions/{region}/subnetworks/{name}
         - arg_name: interconnect-attachment
           api_field: vpcFlowLogsConfig.interconnectAttachment
           required: false
@@ -167,11 +210,17 @@
             Traffic will be logged from the VPN Tunnel.
             Format: projects/{project_id}/regions/{region}/vpnTunnels/{name}
     - help_text: |-
-        Identifier. Unique name of the configuration using the form:
-            `projects/{project_id}/locations/global/vpcFlowLogsConfigs/{vpc_flow_logs_config_id}`
+        Identifier. Unique name of the configuration. The name can have one of the following
+        forms:
+
+        - For project-level configurations:
+        `projects/{project_id}/locations/global/vpcFlowLogsConfigs/{vpc_flow_logs_config_id}`
+
+        - For organization-level configurations:
+        `organizations/{organization_id}/locations/global/vpcFlowLogsConfigs/{vpc_flow_logs_config_id}`
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1_resources:project_location_vpc_flow_logs_config
+      resource_spec: !REF googlecloudsdk.command_lib.network_management.v1_resources:organizations_or_projects_locations_vpc_flow_logs_configs
       required: true
     - arg_name: metadata-fields
       api_field: vpcFlowLogsConfig.metadataFields
@@ -194,9 +243,11 @@
   request:
     api_version: v1
     collection:
+    - networkmanagement.organizations.locations.vpcFlowLogsConfigs
     - networkmanagement.projects.locations.vpcFlowLogsConfigs
   async:
     collection:
+    - networkmanagement.organizations.locations.operations
     - networkmanagement.projects.locations.global.operations
   update:
     read_modify_update: true

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import pkgutil
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run.printers import presets_printer
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import yaml
 
@@ -44,7 +45,8 @@ class List(base.ListCommand):
   @classmethod
   def CommonArgs(cls, parser):
     """Adds the display format for the command output."""
-    parser.display_info.AddFormat('table(name, category, description)')
+    parser.display_info.AddFormat('table(name, category(), description)')
+    parser.display_info.AddTransforms({'category': _TransformCategory})
 
   @classmethod
   def Args(cls, parser):
@@ -61,3 +63,7 @@ class List(base.ListCommand):
     except IOError:
       raise exceptions.Error('Presets file not found.')
     return presets_data['presets']
+
+
+def _TransformCategory(r):
+  return presets_printer.PRESETS_ENUM_MAP.get(r.get('category'))

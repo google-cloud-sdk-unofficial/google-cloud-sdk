@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: Show details of Privileged Access Manager (PAM) settings on a resource.
     description: Show details of Privileged Access Manager (PAM) settings on a resource.

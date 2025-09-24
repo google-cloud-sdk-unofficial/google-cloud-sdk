@@ -454,6 +454,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableDefaultComputeClassFlag(group)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
+    flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -612,6 +613,9 @@ class Update(base.UpdateCommand):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
+    opts.autopilot_privileged_admission = (
+        args.autopilot_privileged_admission
+    )
     return opts
 
   def Run(self, args):
@@ -1124,6 +1128,7 @@ class UpdateBeta(Update):
     flags.AddAutoMonitoringScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
+    flags.AddManagedOTelScopeFlags(group_logging_monitoring_config, hidden=True)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1249,6 +1254,7 @@ class UpdateBeta(Update):
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
+    flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1459,6 +1465,10 @@ class UpdateBeta(Update):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
+    opts.managed_otel_scope = args.managed_otel_scope
+    opts.autopilot_privileged_admission = (
+        args.autopilot_privileged_admission
+    )
     return opts
 
 
@@ -1485,6 +1495,7 @@ class UpdateAlpha(Update):
     flags.AddAutoMonitoringScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
+    flags.AddManagedOTelScopeFlags(group_logging_monitoring_config, hidden=True)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1611,6 +1622,7 @@ class UpdateAlpha(Update):
     flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
+    flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1817,4 +1829,8 @@ class UpdateAlpha(Update):
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
+    opts.managed_otel_scope = args.managed_otel_scope
+    opts.autopilot_privileged_admission = (
+        args.autopilot_privileged_admission
+    )
     return opts

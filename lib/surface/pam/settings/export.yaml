@@ -1,5 +1,4 @@
 - release_tracks: [ALPHA]
-  hidden: true
   help_text:
     brief: |
       Export Privileged Access Manager (PAM) settings configured on a project, folder, or

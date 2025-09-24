@@ -444,6 +444,9 @@ def ParseCreateOptionsBase(
       autoprovisioning_min_cpu_platform=get_default(
           'autoprovisioning_min_cpu_platform'
       ),
+      autopilot_privileged_admission=get_default(
+          'autopilot_privileged_admission'
+      ),
       min_cpu=get_default('min_cpu'),
       max_cpu=get_default('max_cpu'),
       min_memory=get_default('min_memory'),
@@ -828,6 +831,9 @@ flags_to_add = {
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
+        'autopilotPrivilegedAdmission': (
+            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -942,7 +948,9 @@ flags_to_add = {
         'shieldednodes': flags.AddEnableShieldedNodesFlags,
         'spot': flags.AddSpotFlag,
         'stackdriver': flags.AddEnableStackdriverKubernetesFlag,
-        'stacktype': flags.AddStackTypeFlag,
+        'stacktype': lambda parser: flags.AddStackTypeFlag(
+            parser, release_track=base.ReleaseTrack.BETA
+        ),
         'storagePools': flags.AddStoragePoolsFlag,
         'localSsdEncryptionMode': flags.AddLocalSsdEncryptionModeFlag,
         'dataCacheCount': flags.AddDataCacheCountFlag,
@@ -1030,6 +1038,12 @@ flags_to_add = {
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
+        'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
+            p, hidden=True
+        ),
+        'autopilotPrivilegedAdmission': (
+            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1240,6 +1254,12 @@ flags_to_add = {
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
+        'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
+            p, hidden=True
+        ),
+        'autopilotPrivilegedAdmission': (
+            lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+        ),
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1601,6 +1621,7 @@ class CreateBeta(Create):
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
+    ops.managed_otel_scope = get_default('managed_otel_scope')
     return ops
 
 
@@ -1763,4 +1784,5 @@ class CreateAlpha(Create):
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
+    ops.managed_otel_scope = get_default('managed_otel_scope')
     return ops

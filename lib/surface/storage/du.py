@@ -143,12 +143,12 @@ class Du(base.Command):
     flags.add_additional_headers_flag(parser)
 
     if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
-      flags.add_server_filter_flag(parser)
+      flags.add_metadata_filter_flag(parser)
 
   def Run(self, args):
 
     use_gsutil_style = flags.check_if_use_gsutil_style(args)
-    server_filter = getattr(args, 'server_filter', None)
+    metadata_filter = getattr(args, 'metadata_filter', None)
 
     if args.url:
       storage_urls = []
@@ -160,10 +160,10 @@ class Du(base.Command):
               ' {} is an invalid cloud URL.'.format(url_object.url_string)
           )
         if (
-            server_filter is not None
+            metadata_filter is not None
             and url_object.scheme != cloud_api.DEFAULT_PROVIDER
         ):
-          raise errors.Error('Server filter is only supported for GCS URLs.')
+          raise errors.Error('Metadata filter is only supported for GCS URLs.')
         storage_urls.append(url_object)
     else:
       storage_urls = [storage_url.CloudUrl(cloud_api.DEFAULT_PROVIDER)]
@@ -188,5 +188,5 @@ class Du(base.Command):
         total=args.total,
         use_gsutil_style=use_gsutil_style,
         zero_terminator=args.zero_terminator,
-        list_filter=server_filter,
+        list_filter=metadata_filter,
     ).list_urls()

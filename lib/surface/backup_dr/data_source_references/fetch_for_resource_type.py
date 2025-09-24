@@ -42,7 +42,7 @@ class FetchForResourceType(base.ListCommand):
       'EXAMPLES': """\
         To list data source references for Cloud SQL with location `us-central1` in project `test-project`, run:
 
-          $ {command} sqladmin.googleapis.com/Instance --location="us-central1" --project-id="test-project"
+          $ {command} sqladmin.googleapis.com/Instance --location="us-central1" --project="test-project"
         """,
   }
 

@@ -74,6 +74,7 @@ class SetSchedulingInstances(base.SilentCommand):
     flags.AddMaxRunDurationVmArgs(parser, is_update=True)
     flags.AddDiscardLocalSsdVmArgs(parser, is_update=True)
     flags.AddHostErrorTimeoutSecondsArgs(parser)
+    flags.AddSkipGuestOsShutdownArgs(parser)
 
   def _Run(self, args):
     """Issues request necessary for setting scheduling options."""

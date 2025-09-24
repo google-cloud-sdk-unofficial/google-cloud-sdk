@@ -41,6 +41,8 @@ DETAILED_HELP = {
         """,
 }
 
+_BROKER_RELEASE_TRACKS = (base.ReleaseTrack.ALPHA,)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -61,6 +63,8 @@ class Create(base.CreateCommand):
     mirroring_flags.AddMirroringEndpointGroupResource(
         cls.ReleaseTrack(), parser
     )
+    if cls.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
+      sp_flags.AddCustomMirroringDeploymentGroupsArg(parser)
 
   def Run(self, args):
     client = mirroring_api.Client(self.ReleaseTrack())
@@ -71,6 +75,10 @@ class Create(base.CreateCommand):
     )
     is_async = args.async_
     mirroring_endpoint_group = args.CONCEPTS.mirroring_endpoint_group.Parse()
+
+    mirroring_deployment_groups = None
+    if self.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
+      mirroring_deployment_groups = args.mirroring_deployment_groups
 
     if args.location != 'global':
       raise core_exceptions.Error(
@@ -83,6 +91,7 @@ class Create(base.CreateCommand):
         description=description,
         labels=labels,
         mirroring_endpoint_group=mirroring_endpoint_group.RelativeName(),
+        mirroring_deployment_groups=mirroring_deployment_groups,
     )
 
     # Return the in-progress operation if async is requested.

@@ -57,6 +57,52 @@ _DETAILED_HELP = {
             --developer-connect-repo-ref=refs/tags/v1.0.0 \\
             --developer-connect-repo-dir=modules/my-product \\
             --metadata=/path/to/metadata.yaml
+
+          To create a revision using a Git repository as the source, run:
+
+            $ {command} my-revision --project=my-project --location=us-central1 \\
+            --space=my-space \\
+            --catalog=my-catalog \\
+            --template=my-template \\
+            --git-source-repo=GoogleCloudPlatform/terraform-google-cloud-run \\
+            --git-source-ref-tag=v1.0.0 \\
+            --git-source-dir=modules/my-product
+
+          To create a revision using a Google Cloud Storage URI as the source, run:
+
+            $ {command} my-revision --project=my-project --location=us-central1 \\
+            --space=my-space \\
+            --catalog=my-catalog \\
+            --template=my-template \\
+            --gcs-source-uri=gs://my-bucket/my-template
+
+          To create a revision using an OCI repository as the source, run:
+
+            $ {command} my-revision --project=my-project --location=us-central1 \\
+            --space=my-space \\
+            --catalog=my-catalog \\
+            --template=my-template \\
+            --oci-repo-uri=oci://us-west1-docker.pkg.dev/my-project/my-repo/my-chart \\
+            --oci-repo-version=1.0.0
+
+          To create a revision using an Application Template Revision as the source, run:
+
+            $ {command} my-revision --project=my-project --location=us-central1 \\
+            --space=my-space \\
+            --catalog=my-catalog \\
+            --template=my-template \\
+            --application-template-revision-source=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/a1
+
+          To create a revision using Git source and a metadata file from a local path, run:
+
+            $ {command} my-revision --project=my-project --location=us-central1 \\
+            --space=my-space \\
+            --catalog=my-catalog \\
+            --template=my-template \\
+            --git-source-repo=GoogleCloudPlatform/terraform-google-cloud-run \\
+            --git-source-ref-tag=v1.0.0 \\
+            --git-source-dir=modules/my-product \\
+            --metadata=/path/to/metadata.yaml
           """,
     'API REFERENCE': """ \
         This command uses the designcenter/v1alpha API. The full documentation for
@@ -120,22 +166,50 @@ class Create(base.CreateCommand):
     client = utils.GetClientInstance(self.ReleaseTrack())
     messages = utils.GetMessagesModule(self.ReleaseTrack())
     catalog_template_revision = messages.CatalogTemplateRevision()
-    git_reference = messages.GitReference()
 
     revision_ref = args.CONCEPTS.revision.Parse()
     parent = revision_ref.Parent().RelativeName()
     revision_id = revision_ref.Name()
 
-    # Determine which 'oneof' field to set based on the reference string.
-    _set_git_reference(git_reference, args.developer_connect_repo_ref)
+    if (
+        args.IsSpecified('git_source_repo')
+        or args.IsSpecified('git_source_ref_tag')
+        or args.IsSpecified('git_source_dir')
+    ):
+      catalog_template_revision.gitSource = messages.GitSource(
+          repo=args.git_source_repo,
+          refTag=args.git_source_ref_tag,
+          dir=args.git_source_dir,
+      )
+    elif (
+        args.IsSpecified('developer_connect_repo')
+        or args.IsSpecified('developer_connect_repo_ref')
+        or args.IsSpecified('developer_connect_repo_dir')
+    ):
+      git_reference = messages.GitReference()
+      # Determine which 'oneof' field to set based on the reference string.
+      _set_git_reference(git_reference, args.developer_connect_repo_ref)
 
-    catalog_template_revision.developerConnectSourceConfig = (
-        messages.DeveloperConnectSourceConfig(
-            developerConnectRepoUri=args.developer_connect_repo,
-            reference=git_reference,
-            dir=args.developer_connect_repo_dir,
-        )
-    )
+      catalog_template_revision.developerConnectSourceConfig = (
+          messages.DeveloperConnectSourceConfig(
+              developerConnectRepoUri=args.developer_connect_repo,
+              reference=git_reference,
+              dir=args.developer_connect_repo_dir,
+          )
+      )
+    elif args.application_template_revision_source:
+      catalog_template_revision.applicationTemplateRevisionSource = (
+          args.application_template_revision_source
+      )
+    elif args.gcs_source_uri:
+      catalog_template_revision.gcsSourceUri = args.gcs_source_uri
+    elif args.IsSpecified('oci_repo_uri') or args.IsSpecified(
+        'oci_repo_version'
+    ):
+      catalog_template_revision.ociRepo = messages.OciRepo(
+          uri=args.oci_repo_uri,
+          version=args.oci_repo_version,
+      )
 
     if args.description:
       catalog_template_revision.description = args.description

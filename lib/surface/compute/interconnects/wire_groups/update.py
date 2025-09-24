@@ -50,6 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddDescription(parser)
     flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser, required=False)
+    flags.AddBandwidthAllocation(parser, required=False)
     flags.AddFaultResponse(parser)
     flags.AddAdminEnabled(parser, update=True)
     flags.AddValidateOnly(parser)
@@ -102,4 +103,3 @@ class UpdateAlpha(Update):
     super(UpdateAlpha, cls).Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
-    flags.AddBandwidthAllocation(parser)

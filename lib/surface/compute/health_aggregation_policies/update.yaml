@@ -68,3 +68,5 @@
             network endpoints within a Network Endpoint Group or instances within an
             Instance Group.
           type: int
+  update:
+    read_modify_update: true
