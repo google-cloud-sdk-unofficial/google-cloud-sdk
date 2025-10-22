@@ -22,6 +22,7 @@ import textwrap
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.bigtable import util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import properties
@@ -44,6 +45,7 @@ def _TransformOperationName(resource):
   return short_name
 
 
+@base.DefaultUniverseOnly
 class ListOperations(base.ListCommand):
   """List Cloud Bigtable operations."""
 
@@ -59,6 +61,10 @@ class ListOperations(base.ListCommand):
           To list all operations for instance INSTANCE_NAME, run:
 
             $ {command} --instance=INSTANCE_NAME
+
+          To fail the command if any location is unreachable, run:
+
+            $ {command} --return-partial-success=false
           """),
   }
 
@@ -68,6 +74,15 @@ class ListOperations(base.ListCommand):
     arguments.AddInstanceResourceArg(parser,
                                      'to list operations for',
                                      required=False)
+    base.Argument(
+        '--return-partial-success',
+        default=True,
+        help=textwrap.dedent("""\
+          If true, operations that are reachable are returned as normal, and
+          those that are unreachable are returned in the `unreachable` field of
+          the response. If false, the command will fail if any location is unreachable.
+          """),
+    ).AddToParser(parser)
     parser.display_info.AddFormat("""
           table(
              name():label=NAME,
@@ -100,7 +115,8 @@ class ListOperations(base.ListCommand):
     msg = (
         util.GetAdminMessages()
         .BigtableadminOperationsProjectsOperationsListRequest(
-            name=ref_name))
+            name=ref_name,
+            returnPartialSuccess=args.return_partial_success))
 
     return list_pager.YieldFromList(
         cli.operations_projects_operations,

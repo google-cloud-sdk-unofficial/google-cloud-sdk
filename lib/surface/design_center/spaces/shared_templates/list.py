@@ -179,7 +179,7 @@ class List(base.ListCommand):
         raise SpaceResourceError(
             f'{_BASE_ERROR_MESSAGE}\n{_LOCATION_NOT_SPECIFIED_MESSAGE}'
         )
-      project_id = 'gcpdesigncenter'
+      project_id = api_lib_utils.GetGoogleCatalogProjectId()
       space_id = 'googlespace'
       parent = 'projects/{}/locations/{}/spaces/{}'.format(
           project_id, args.location, space_id

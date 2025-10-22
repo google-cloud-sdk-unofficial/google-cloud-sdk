@@ -24,7 +24,7 @@
     examples: |-
       To delete a DbSystem with id `my-db-system` in the location `us-east4`, run:
 
-      $ {command} my-db-system --location=us-east4
+        $ {command} my-db-system --location=us-east4
   arguments:
     params:
     - help_text: |-

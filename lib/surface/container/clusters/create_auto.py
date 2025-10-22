@@ -75,6 +75,9 @@ auto_flags = [
     'tag_bindings',
     'managedOTelScope',
     'autopilotPrivilegedAdmission',
+    'enablePodSnapshots',
+    'disablePodSnapshots',
+    'enableKernelModuleSignatureEnforcement',
 ]
 # LINT.ThenChange()
 
@@ -117,6 +120,8 @@ def AddAutoFlags(parser, release_track):
   flags.AddKubecontextOverrideFlag(parser)
   flags.AddAnonymousAuthenticationConfigFlag(parser)
   flags.AddEnableLegacyLustrePortFlag(parser, hidden=False)
+  if release_track != base.ReleaseTrack.GA:
+    flags.AddPodSnapshotConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

@@ -185,7 +185,9 @@ class Deploy(base.Command):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
   def GetAllowUnauth(self, args, operations, service_ref, service_exists):
     """Returns allow_unauth value for a service change.
@@ -1199,7 +1201,9 @@ class BetaDeploy(Deploy):
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -1232,9 +1236,13 @@ class AlphaDeploy(BetaDeploy):
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
     flags.AddDelegateBuildsFlag(parser)
     flags.AddOverflowScalingFlag(parser)
+    flags.AddCpuUtilizationFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddPresetFlags(parser)
 
 

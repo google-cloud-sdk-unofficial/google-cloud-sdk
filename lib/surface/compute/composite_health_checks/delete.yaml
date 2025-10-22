@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: "Delete a composite health check."
   description: "Delete a composite health check."
@@ -10,6 +10,8 @@ help_text:
 request:
   ALPHA:
     api_version: alpha
+  BETA:
+    api_version: beta
   collection: compute.regionCompositeHealthChecks
 
 async:

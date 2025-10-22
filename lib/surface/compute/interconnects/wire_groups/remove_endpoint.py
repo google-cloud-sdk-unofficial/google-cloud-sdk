@@ -27,29 +27,34 @@ from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to remove endpoints from a wire group.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To remove endpoint example-endpoint from wire group example-wire-group, run:
+        To remove an endpoint from a wire group, run:
 
-          $ {command} example-wire-group --project=example-project --cross-site-network=example-cross-site-network --endpoint-label=example-endpoint
+          $ {command} example-wg \
+              --cross-site-network=example-csn \
+              --endpoint-label=endpoint-1
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class RemoveEndpoint(base.UpdateCommand):
   """Remove endpoint from a Compute Engine wire group.
 
   *{command}* remove endpoint from a Compute Engine wire group.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUP_ARG = None
   CROSS_SITE_NETWORK_ARG = None
@@ -161,6 +166,3 @@ def _build_endpoint_messages(messages, endpoints_map):
   return messages.WireGroup.EndpointsValue(
       additionalProperties=endpoint_properties_list
   )
-
-
-RemoveEndpoint.detailed_help = DETAILED_HELP

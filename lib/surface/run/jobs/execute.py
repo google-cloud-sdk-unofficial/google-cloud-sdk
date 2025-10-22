@@ -187,7 +187,9 @@ class BetaExecute(Execute):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     container_args = ContainerOverridesGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -198,4 +200,6 @@ class AlphaExecute(BetaExecute):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     container_args = ContainerOverridesGroup()
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )

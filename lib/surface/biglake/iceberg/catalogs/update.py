@@ -17,7 +17,6 @@
 from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import flags
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 
 
@@ -29,19 +28,9 @@ class UpdateCatalog(base.UpdateCommand):
   @staticmethod
   def Args(parser):
     flags.AddCatalogResourceArg(parser, 'to update')
-    parser.add_argument(
-        '--credential-mode',
-        metavar='TYPE',
-        choices=[
-            'CREDENTIAL_MODE_END_USER',
-            'CREDENTIAL_MODE_VENDED_CREDENTIALS',
-        ],
-        default='CREDENTIAL_MODE_END_USER',
-        required=False,
-        help=(
-            'Credential mode to update the catalog with.'
-        ),
-    )
+    util.GetCredentialModeEnumMapper(
+        base.ReleaseTrack.ALPHA
+    ).choice_arg.AddToParser(parser)
 
   def Run(self, args):
     client = util.GetClientInstance(self.ReleaseTrack())
@@ -50,22 +39,19 @@ class UpdateCatalog(base.UpdateCommand):
     catalog_name = util.GetCatalogName(args.catalog)
 
     update_mask = []
+    credential_mode = None
+    if args.IsSpecified('credential_mode'):
+      update_mask.append('credential_mode')
+      credential_mode = util.GetCredentialModeEnumMapper(
+          self.ReleaseTrack()
+      ).GetEnumForChoice(args.credential_mode)
+
     catalog_type_enum = messages.IcebergCatalog.CatalogTypeValueValuesEnum
     catalog = messages.IcebergCatalog(
         name=catalog_name,
         catalog_type=catalog_type_enum.CATALOG_TYPE_GCS_BUCKET,
+        credential_mode=credential_mode,
     )
-    if args.IsSpecified('credential_mode'):
-      update_mask.append('credential_mode')
-      credential_mode_enum = (
-          messages.IcebergCatalog.CredentialModeValueValuesEnum
-      )
-      credential_mode = credential_mode_enum.CREDENTIAL_MODE_END_USER
-      if args.credential_mode == 'CREDENTIAL_MODE_VENDED_CREDENTIALS':
-        credential_mode = (
-            credential_mode_enum.CREDENTIAL_MODE_VENDED_CREDENTIALS
-        )
-      catalog.credential_mode = credential_mode
 
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsPatchRequest(
         name=catalog_name,

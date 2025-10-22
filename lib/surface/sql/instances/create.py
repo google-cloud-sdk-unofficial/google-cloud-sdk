@@ -139,6 +139,7 @@ def AddBaseArgs(parser):
   flags.AddThreadsPerCore(parser)
   flags.AddCascadableReplica(parser)
   flags.AddEnableDataCache(parser)
+  flags.AddEnableAutoUpgrade(parser)
   flags.AddRecreateReplicasOnPrimaryCrash(parser)
   psc_setup_group = parser.add_group()
   flags.AddEnablePrivateServiceConnect(psc_setup_group)
@@ -183,7 +184,6 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
-  flags.AddEnableAutoUpgrade(parser)
 
 
 def AddAlphaArgs(parser):

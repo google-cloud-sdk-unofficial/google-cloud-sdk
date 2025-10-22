@@ -23,15 +23,13 @@ from googlecloudsdk.calliope import base
 
 _DEPRECATION_WARNING = (
     'This command group is deprecated and will be removed in a future '
-    'release. We recommend that you use the TPU-VM or Queued Resource API. '
-    'See https://cloud.google.com/tpu/docs/managing-tpus-tpu-vm for more '
-    'information.'
+    'release.'
 )
 
 
 @base.DefaultUniverseOnly
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=_DEPRECATION_WARNING,
     error=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,

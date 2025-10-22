@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command for reporting a faulty reservation sub block."""
+"""Command for reporting a faulty reservation sub-block."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -45,36 +45,43 @@ def _GetReportFaultyRequest(args, reservation_ref, holder):
           )
       )
 
-  disruption_schedule = (
-      util.MakeDisruptionSchedule(client.messages, args.disruption_schedule)
+  disruption_schedule = util.MakeDisruptionSchedule(
+      client.messages, args.disruption_schedule
   )
-  failure_component = (
-      util.MakeFailureComponent(client.messages, args.failure_component)
+  failure_component = util.MakeFailureComponent(
+      client.messages, args.failure_component
   )
   report_faulty_body = client.messages.ReservationSubBlocksReportFaultyRequest(
       disruptionSchedule=disruption_schedule,
       faultReasons=fault_reasons,
-      failureComponent=failure_component)
+      failureComponent=failure_component,
+  )
 
-  request = (
-      client.messages.ComputeReservationSubBlocksReportFaultyRequest(
-          parentName=parent_name,
-          zone=reservation_ref.zone,
-          project=reservation_ref.project,
-          reservationSubBlock=args.sub_block_name,
-          reservationSubBlocksReportFaultyRequest=report_faulty_body))
+  request = client.messages.ComputeReservationSubBlocksReportFaultyRequest(
+      parentName=parent_name,
+      zone=reservation_ref.zone,
+      project=reservation_ref.project,
+      reservationSubBlock=args.sub_block_name,
+      reservationSubBlocksReportFaultyRequest=report_faulty_body,
+  )
   return request
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ReportFaulty(base.UpdateCommand):
-  """Report a faulty reservation sub block."""
+  """Report a sub-block within a reservation as faulty."""
 
   @staticmethod
   def Args(parser):
-    resource_args.GetReservationResourceArg().AddArgument(
-        parser, operation_type='report-subblock-as-faulty')
+    resource_args.GetReservationResourceArg(
+        help_text=(
+            'The name of the reservation containing the sub-block to report as'
+            ' faulty'
+        )
+    ).AddArgument(parser, operation_type='report-subblock-as-faulty')
     flags.AddDescribeFlags(parser)
     flags.GetDisruptionScheduleFlag().AddToParser(parser)
     flags.GetFaultReasonsFlag().AddToParser(parser)

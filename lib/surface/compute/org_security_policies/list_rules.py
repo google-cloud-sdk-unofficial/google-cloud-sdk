@@ -48,7 +48,9 @@ DEFAULT_LIST_FORMAT = """\
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class ListRules(base.DescribeCommand, base.ListCommand):
   """List the rules of a Compute Engine organization security policy.
 

@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import re
 
 from googlecloudsdk.api_lib.design_center import shared_templates as apis
+from googlecloudsdk.api_lib.design_center import utils as api_lib_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import properties
@@ -203,7 +204,7 @@ class DescribeAlpha(base.DescribeCommand):
     location_id = args.location
 
     if args.google_catalog:
-      project_id = 'gcpdesigncenter'
+      project_id = api_lib_utils.GetGoogleCatalogProjectId()
       space_id = 'googlespace'
     else:
       project_id = args.project or properties.VALUES.core.project.Get()

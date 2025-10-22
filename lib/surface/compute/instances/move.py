@@ -29,7 +29,7 @@ from googlecloudsdk.core import resources
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. Please see'
         ' https://cloud.google.com/compute/docs/instances/moving-instance-across-zones'
@@ -38,7 +38,7 @@ from googlecloudsdk.core import resources
     error=(
         'This command has been removed. Please see'
         ' https://cloud.google.com/compute/docs/instances/moving-instance-across-zones'
-        'for an alternative method.'
+        ' for an alternative method.'
     ),
 )
 @base.DefaultUniverseOnly

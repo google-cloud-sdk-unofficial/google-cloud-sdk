@@ -18,9 +18,9 @@ from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 
 
-
 def _GetUriFunction(resource):
   return util.GetCatalogRef(resource.name).SelfLink()
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly

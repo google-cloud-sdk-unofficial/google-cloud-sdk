@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ha_controllers import utils as api_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -28,7 +30,26 @@ from googlecloudsdk.command_lib.compute.ha_controllers import utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
-from googlecloudsdk.generated_clients.apis.compute.alpha import compute_alpha_messages
+
+
+_NODE_AFFINITY_FILE_HELP_TEXT = textwrap.dedent("""\
+    The JSON/YAML file containing the configuration of desired nodes onto
+    which instance in this zone could be scheduled. These rules filter the nodes
+    according to their node affinity labels. A node's affinity labels come
+    from the node template of the group the node is in.
+
+    The file should contain a list of a JSON/YAML objects. For an example,
+    see https://cloud.google.com/compute/docs/nodes/provisioning-sole-tenant-vms#configure_node_affinity_labels.
+    The following list describes the fields:
+
+    *key*::: Corresponds to the node affinity label keys of
+    the Node resource.
+    *operator*::: Specifies the node selection type. Must be one of:
+      `IN`: Requires Compute Engine to seek for matched nodes.
+      `NOT_IN`: Requires Compute Engine to avoid certain nodes.
+    *values*::: Optional. A list of values which correspond to the node
+    affinity label values of the Node resource.
+    """)
 
 
 @base.DefaultUniverseOnly
@@ -47,6 +68,7 @@ class Create(base.CreateCommand):
     utils.AddHaControllerNameArgToParser(
         parser, base.ReleaseTrack.ALPHA.name.lower()
     )
+    messages = utils.GetMessagesModule('alpha')
     parser.add_argument(
         '--description',
         help=(
@@ -67,12 +89,12 @@ class Create(base.CreateCommand):
         required=True,
         type=lambda x: arg_utils.ChoiceToEnum(
             x,
-            compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum,
+            messages.HaController.FailoverInitiationValueValuesEnum,
         ),
         help=(
             'Specifies how a failover is triggered. Set to MANUAL_ONLY if you'
             ' want to trigger failovers yourself. Must be one of:'
-            f' {utils.EnumTypeToChoices(compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum)}'
+            f' {utils.EnumTypeToChoices(messages.HaController.FailoverInitiationValueValuesEnum)}'
         ),
     )
     parser.add_argument(
@@ -80,32 +102,22 @@ class Create(base.CreateCommand):
         required=True,
         type=lambda x: arg_utils.ChoiceToEnum(
             x,
-            compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum,
+            messages.HaController.SecondaryZoneCapacityValueValuesEnum,
         ),
         help=(
             'Determines the capacity guarantee in the secondary zone. Use'
             ' BEST_EFFORT to create a VM based on capacity availability at the'
             ' time of failover, suitable for workloads that can tolerate longer'
             ' recovery times. Must be one of:'
-            f' {utils.EnumTypeToChoices(compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum)}'
+            f' {utils.EnumTypeToChoices(messages.HaController.SecondaryZoneCapacityValueValuesEnum)}'
         ),
     )
     parser.add_argument(
         '--zone-configuration',
         required=True,
         type=arg_parsers.ArgObject(
+            enable_file_upload=False,
             spec={
-                'node-affinity': arg_parsers.ArgObject(
-                    value_type=lambda x: arg_utils.ChoiceToEnum(
-                        x,
-                        compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum,
-                    ),
-                    help_text=(
-                        'Specifies the node-affinity value.'
-                        ' Must be one of:'
-                        f' {utils.EnumTypeToChoices(compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum)}'
-                    ),
-                ),
                 'reservation': arg_parsers.ArgObject(
                     value_type=str,
                     help_text=(
@@ -116,12 +128,40 @@ class Create(base.CreateCommand):
                 'reservation-affinity': arg_parsers.ArgObject(
                     value_type=lambda x: arg_utils.ChoiceToEnum(
                         x,
-                        compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum,
+                        messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum,
                     ),
                     help_text=(
                         'Specifies the reservation-affinity value.'
                         ' Must be one of:'
-                        f' {utils.EnumTypeToChoices(compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum)}'
+                        f' {utils.EnumTypeToChoices(messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum)}'
+                    ),
+                ),
+                'node': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies the node name. The node must exist within'
+                        ' the HA Controller region.'
+                    ),
+                ),
+                'node-group': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies the node-group name. The node-group must'
+                        ' exist within the HA Controller region. Must be one'
+                        ' of:'
+                        f' {utils.EnumTypeToChoices(messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum)}'
+                    ),
+                ),
+                'node-affinity-file': arg_parsers.ArgObject(
+                    value_type=arg_parsers.FileContents(),
+                    enable_file_upload=False,
+                    help_text=_NODE_AFFINITY_FILE_HELP_TEXT,
+                ),
+                'node-project': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies the name of the project with shared sole'
+                        ' tenant node groups to create an instance in.'
                     ),
                 ),
                 'zone': arg_parsers.ArgObject(
@@ -141,6 +181,45 @@ class Create(base.CreateCommand):
             ' node-group to guarantee capacity.'
         ),
     )
+    parser.add_argument(
+        '--network-auto-configuration',
+        required=False,
+        type=arg_parsers.ArgObject(
+            spec={
+                'stack-type': arg_parsers.ArgObject(
+                    value_type=lambda x: arg_utils.ChoiceToEnum(
+                        x,
+                        messages.HaControllerNetworkingAutoConfigurationInternal.StackTypeValueValuesEnum),
+                    help_text=(
+                        'Specifies the stack type for the network'
+                        ' configuration. Must match the stack type of the'
+                        ' instance. Must be one of:'
+                        f' {utils.EnumTypeToChoices(messages.HaControllerNetworkingAutoConfigurationInternal.StackTypeValueValuesEnum)}'
+                    ),
+                ),
+                'address': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies an optional IPv4 address to assign to'
+                        ' the instance. If not specified, an ephemeral IP will'
+                        ' be generated.'
+                    ),
+                ),
+                'internal-ipv6-address': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies an optional IPv6 address to assign to'
+                        ' the instance. If not specified, an ephemeral IP will'
+                        ' be generated.'
+                    ),
+                ),
+            },
+        ),
+        action=arg_parsers.FlattenAction(),
+        help=(
+            'Adds a network interface to the instance.'
+        ),
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -154,6 +233,9 @@ class Create(base.CreateCommand):
         failoverInitiation=args.failover_initiation,
         secondaryZoneCapacity=args.secondary_zone_capacity,
         zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
+        networkingAutoConfiguration=utils.MakeNetworkConfiguration(
+            args.network_auto_configuration
+        ),
     )
     if not args.async_:
       return api_utils.Insert(ha_controller, ha_controller_ref, holder)

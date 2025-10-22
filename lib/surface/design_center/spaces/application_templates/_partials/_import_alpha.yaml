@@ -20,8 +20,7 @@
   auto_generated: true
   help_text:
     brief: Import to an application template
-    description: Imports to an existing application template from a given shared template
-      or application template revision.
+    description: Imports to an existing application template from a given shared template or application template revision.
     examples: |-
       To import from a shared template revision to the application template `my-app-template` in space `my-space`, project `my-project` and location `us-central1`, run:
 

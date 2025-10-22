@@ -30,24 +30,22 @@ from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to add interconnects to a wire group.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To add an interconnect example-interconnect to wire group example-wire-group, run:
+        To add an interconnect to a wire group, run:
 
-          $ {command} example-wire-group --project=example-project \
-              --cross-site-network=example-cross-site-network \
-              --endpoint-label=example-endpoint \
-              --interconnect-label=example-interconnect \
-              --interconnect=some-interconnect-uri \
-              --vlan-tags=111,222
+          $ {command} example-wg \
+              --cross-site-network=example-csn \
+              --endpoint-label=endpoint-1 \
+              --interconnect-label=interconnect-1 \
+              --interconnect=example-interconnect \
+              --vlan-tags=111
         """,
-    # pylint: enable=line-too-long
 }
 
 
@@ -56,12 +54,17 @@ class InvalidEndpointError(exceptions.Error):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddInterconnect(base.UpdateCommand):
   """Add interconnect to a Compute Engine wire group.
 
   *{command}* adds interconnect to a Compute Engine wire group.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUP_ARG = None
   CROSS_SITE_NETWORK_ARG = None
@@ -269,5 +272,3 @@ def _build_endpoint_messages(messages, endpoints_map):
   return messages.WireGroup.EndpointsValue(
       additionalProperties=endpoint_properties_list
   )
-
-AddInterconnect.detailed_help = DETAILED_HELP

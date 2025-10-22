@@ -360,7 +360,7 @@ class UpdateBackendAlpha(UpdateBackendBeta):
           'At least one property must be modified.')
 
 
-def _ClearMutualExclusiveBackendCapacityThresholds(backend):
+def _ClearMutualExclusiveBackendCapacityThresholds(backend, release_track=None):
   """Initialize the backend's mutually exclusive capacity thresholds."""
   backend.maxRate = None
   backend.maxRatePerInstance = None
@@ -368,6 +368,13 @@ def _ClearMutualExclusiveBackendCapacityThresholds(backend):
   backend.maxConnectionsPerInstance = None
   backend.maxRatePerEndpoint = None
   backend.maxConnectionsPerEndpoint = None
+  if (
+      release_track == base.ReleaseTrack.ALPHA
+      or release_track == base.ReleaseTrack.BETA
+  ):
+    backend.maxInFlightRequests = None
+    backend.maxInFlightRequestsPerInstance = None
+    backend.maxInFlightRequestsPerEndpoint = None
 
 
 def _ModifyBalancingModeArgs(
@@ -470,15 +477,21 @@ def _ModifyBalancingModeArgs(
       or release_track == base.ReleaseTrack.BETA
   ):
     if args.max_in_flight_requests is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      _ClearMutualExclusiveBackendCapacityThresholds(
+          backend_to_update, release_track
+      )
       backend_to_update.maxInFlightRequests = args.max_in_flight_requests
     elif args.max_in_flight_requests_per_instance is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      _ClearMutualExclusiveBackendCapacityThresholds(
+          backend_to_update, release_track
+      )
       backend_to_update.maxInFlightRequestsPerInstance = (
           args.max_in_flight_requests_per_instance
       )
     elif args.max_in_flight_requests_per_endpoint is not None:
-      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      _ClearMutualExclusiveBackendCapacityThresholds(
+          backend_to_update, release_track
+      )
       backend_to_update.maxInFlightRequestsPerEndpoint = (
           args.max_in_flight_requests_per_endpoint
       )

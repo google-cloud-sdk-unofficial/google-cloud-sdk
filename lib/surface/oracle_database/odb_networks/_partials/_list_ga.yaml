@@ -24,7 +24,7 @@
     examples: |-
       To list all OdbNetworks in the location `us-east4`, run:
 
-      $ {command} --location=us-east4
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-

@@ -26,7 +26,9 @@ from googlecloudsdk.command_lib.compute.org_security_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Compute Engine organization security policies.
 

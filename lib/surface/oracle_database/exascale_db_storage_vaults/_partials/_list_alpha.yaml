@@ -20,23 +20,24 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe databaseCharacterSets
-    description: Describe a databaseCharacterSet
+    brief: List exascaleDbStorageVaults
+    description: List exascaleDbStorageVaults
     examples: |-
-      To describe the databaseCharacterSet, run:
+      To list all exascaleDbStorageVaults, run:
 
           $ {command}
   arguments:
     params:
     - help_text: |-
-        The name of the Database Character Set resource in the
-        following format:
-        projects/{project}/locations/{region}/databaseCharacterSets/{database_character_set}
-      is_positional: true
+        The parent value for ExascaleDbStorageVault in the following format:
+        projects/{project}/locations/{location}.
+      is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_database_character_sets
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations
       required: true
   request:
     api_version: v1alpha
     collection:
-    - oracledatabase.projects.locations.databaseCharacterSets
+    - oracledatabase.projects.locations.exascaleDbStorageVaults
+  response:
+    id_field: name

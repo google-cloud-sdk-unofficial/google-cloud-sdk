@@ -271,6 +271,40 @@
               action: store_true
               help_text: |
                 Remove all allowed VPCs from the PSC config of the instance.
+    # Group for Periodic Export Config
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        mutex: true
+        params:
+        - group:
+            help_text: |
+              Configuration for periodic export. All flags in this group must be provided to enable or update the configuration.
+            params:
+            - arg_name: periodic-export-kms-key
+              api_field: instance.periodicExportConfig.kmsKey
+              required: false
+              help_text: |
+                Name of the CMEK key in KMS.
+                Format: projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}
+            - arg_name: periodic-export-gcs-uri
+              api_field: instance.periodicExportConfig.gcsUri
+              required: false
+              help_text: |
+                Cloud Storage bucket URI for periodic export.
+                Format: gs://{bucket_name}
+            - arg_name: periodic-export-start-time
+              api_field: instance.periodicExportConfig.startTime
+              required: false
+              ALPHA:
+                processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayPeriodicExportStartTimeV1Alpha
+              help_text: |
+                Time in UTC when the periodic export job starts. A valid time of day must be
+                specified in 24hr format (ex: 13:00, 17:30, 23:45).
+        - arg_name: clear-periodic-export-config
+          action: 'store_true'
+          help_text: |
+            Clears all periodic export configuration from the instance.
 
   request:
     ALPHA:
@@ -286,6 +320,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateGeminiAiConfig
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePeriodicExportConfig
     GA:
       api_version: v1
       modify_request_hooks:

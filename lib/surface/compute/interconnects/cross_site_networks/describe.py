@@ -25,14 +25,33 @@ from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to describe a cross site network.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To describe a cross site network, run:
+
+          $ {command} example-csn
+        """,
+}
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine cross site network.
 
   *{command}* displays all data associated with Compute Engine
   cross site network in a project.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   CROSS_SITE_NETWORK_ARG = None
 

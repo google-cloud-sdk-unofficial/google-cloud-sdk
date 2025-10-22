@@ -260,7 +260,7 @@ class AddPreconfigWafExclusionHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class AddPreconfigWafExclusionBeta(base.UpdateCommand):
   r"""Add an exclusion configuration for preconfigured WAF evaluation into a security policy rule.
 

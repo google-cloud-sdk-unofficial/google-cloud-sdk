@@ -123,6 +123,7 @@ class Update(base.UpdateCommand):
         group, for_node_pool=True, for_create=False)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddConsolidationDelayFlag(group, hidden=True)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -132,6 +133,9 @@ class Update(base.UpdateCommand):
     flags.AddDiskSizeFlag(node_config_group)
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=True, hidden=True
+    )
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -175,6 +179,7 @@ class Update(base.UpdateCommand):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        consolidation_delay=args.consolidation_delay,
         flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
@@ -185,6 +190,7 @@ class Update(base.UpdateCommand):
         resource_manager_tags=args.resource_manager_tags,
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
+        enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
     )
 
   def Run(self, args):
@@ -320,6 +326,7 @@ class UpdateBeta(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddConsolidationDelayFlag(group, hidden=True)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -330,6 +337,10 @@ class UpdateBeta(Update):
     flags.AddDiskSizeFlag(node_config_group)
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
+
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=True, hidden=True
+    )
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -375,6 +386,7 @@ class UpdateBeta(Update):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        consolidation_delay=args.consolidation_delay,
         flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
@@ -384,6 +396,7 @@ class UpdateBeta(Update):
         else None,
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
+        enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
     )
     return ops
 
@@ -450,6 +463,7 @@ class UpdateAlpha(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
+    flags.AddConsolidationDelayFlag(group, hidden=True)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -460,6 +474,10 @@ class UpdateAlpha(Update):
     flags.AddDiskSizeFlag(node_config_group)
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
+
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=True, hidden=True
+    )
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -505,6 +523,7 @@ class UpdateAlpha(Update):
         storage_pools=args.storage_pools,
         enable_queued_provisioning=args.enable_queued_provisioning,
         max_run_duration=args.max_run_duration,
+        consolidation_delay=args.consolidation_delay,
         flex_start=args.flex_start,
         machine_type=args.machine_type,
         disk_type=args.disk_type,
@@ -514,6 +533,7 @@ class UpdateAlpha(Update):
         else None,
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
+        enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
     )
     return ops
 

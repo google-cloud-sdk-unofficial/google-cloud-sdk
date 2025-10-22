@@ -457,6 +457,9 @@ class Update(base.UpdateCommand):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=False, hidden=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -619,6 +622,10 @@ class Update(base.UpdateCommand):
     opts.control_plane_egress_mode = args.control_plane_egress
     opts.autopilot_privileged_admission = (
         args.autopilot_privileged_admission
+    )
+    opts.enable_pod_snapshots = getattr(args, 'pod_snapshots_enabled', None)
+    opts.enable_kernel_module_signature_enforcement = (
+        args.enable_kernel_module_signature_enforcement
     )
     return opts
 
@@ -1017,6 +1024,17 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (
+        getattr(args, 'enable_kernel_module_signature_enforcement', None)
+        is not None
+    ):
+      try:
+        op_ref = adapter.ModifyKernelModuleSignatureEnforcement(
+            cluster_ref,
+            args.enable_kernel_module_signature_enforcement,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     else:
       if args.enable_legacy_authorization is not None:
         op_ref = adapter.SetLegacyAuthorization(
@@ -1259,6 +1277,10 @@ class UpdateBeta(Update):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
+    flags.AddPodSnapshotConfigFlags(group, hidden=True)
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=True, hidden=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1473,6 +1495,9 @@ class UpdateBeta(Update):
     opts.autopilot_privileged_admission = (
         args.autopilot_privileged_admission
     )
+    opts.enable_kernel_module_signature_enforcement = (
+        args.enable_kernel_module_signature_enforcement
+    )
     return opts
 
 
@@ -1627,6 +1652,10 @@ class UpdateAlpha(Update):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
+    flags.AddPodSnapshotConfigFlags(group, hidden=True)
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(
+        group, for_node_pool=True, hidden=True
+    )
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1836,5 +1865,8 @@ class UpdateAlpha(Update):
     opts.managed_otel_scope = args.managed_otel_scope
     opts.autopilot_privileged_admission = (
         args.autopilot_privileged_admission
+    )
+    opts.enable_kernel_module_signature_enforcement = (
+        args.enable_kernel_module_signature_enforcement
     )
     return opts

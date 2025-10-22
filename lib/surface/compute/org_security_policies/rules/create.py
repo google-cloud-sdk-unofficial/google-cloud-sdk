@@ -29,7 +29,7 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a Compute Engine organizationsecurity policy rule.
 
@@ -152,12 +152,16 @@ class Create(base.CreateCommand):
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),
         action=rule_utils.ConvertAction(args.action),
         match=matcher,
-        direction=traffic_direct,
-        targetResources=target_resources,
-        targetServiceAccounts=target_service_accounts,
         description=args.description,
-        enableLogging=enable_logging,
         preview=preview)
+    if traffic_direct:
+      security_policy_rule.direction = traffic_direct
+    if target_resources:
+      security_policy_rule.targetResources = target_resources
+    if target_service_accounts:
+      security_policy_rule.targetServiceAccounts = target_service_accounts,
+    if enable_logging:
+      security_policy_rule.enableLogging = enable_logging
 
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         security_policy_rule_client,

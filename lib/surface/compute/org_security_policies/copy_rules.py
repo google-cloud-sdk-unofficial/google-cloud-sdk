@@ -27,7 +27,9 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CopyRules(base.UpdateCommand):
   """Replace the rules of a Compute Engine organization security policy with rules from another policy.
 

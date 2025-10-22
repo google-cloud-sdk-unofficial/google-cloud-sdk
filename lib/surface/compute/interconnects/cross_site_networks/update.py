@@ -25,14 +25,33 @@ from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to update cross site networks.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To update a cross site network's description, run:
+
+          $ {command} example-csn --description="New description"
+        """,
+}
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Update(base.UpdateCommand):
   """Update a Compute Engine cross site network.
 
   *{command}* is used to update cross site networks. A cross site network
   encapsulates wire groups.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   CROSS_SITE_NETWORK_ARG = None
 

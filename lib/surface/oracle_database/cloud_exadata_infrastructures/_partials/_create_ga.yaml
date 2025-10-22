@@ -27,7 +27,7 @@
       To create Exadata Infrastructure instance with id `my-instance` in the location `us-east4`
       with display-name `my instance`, compute count `2` and choosen shape "Exadata.FOO", run:
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --properties-shape=Exadata.FOO --properties-compute-count=2 --properties-storage-count=3
   arguments:
     params:

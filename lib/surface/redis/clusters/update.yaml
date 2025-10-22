@@ -38,6 +38,10 @@
       type: int
       help_text: |
         The replica count of each shard.
+    - arg_name: maintenance-version
+      api_field: cluster.maintenanceVersion
+      help_text: |
+        The maintenance version of the cluster.
     - arg_name: shard-count
       api_field: cluster.shardCount
       type: int
@@ -190,6 +194,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
     BETA:
       api_version: v1beta1
       modify_request_hooks:
@@ -204,6 +209,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
     GA:
       api_version: v1
       modify_request_hooks:
@@ -218,6 +224,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion
     collection: redis.projects.locations.clusters
 
   update:

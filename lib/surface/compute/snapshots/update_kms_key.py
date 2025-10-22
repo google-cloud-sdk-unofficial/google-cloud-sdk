@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for updating the KMS key of a persistent snapshot."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -80,7 +77,7 @@ class UpdateKmsKey(base.Command):
           project=snapshot_ref.project,
           snapshot=snapshot_ref.Name(),
       )
-      return service.UpdateKmsKey(request)
+      return client.MakeRequests([(service, 'UpdateKmsKey', request)])
     elif snapshot_ref.Collection() == 'compute.regionSnapshots':
       service = client.apitools_client.regionSnapshots
       request = messages.ComputeRegionSnapshotsUpdateKmsKeyRequest(
@@ -88,7 +85,7 @@ class UpdateKmsKey(base.Command):
           region=snapshot_ref.region,
           snapshot=snapshot_ref.Name(),
       )
-      return service.UpdateKmsKey(request)
+      return client.MakeRequests([(service, 'UpdateKmsKey', request)])
 
 
 UpdateKmsKey.detailed_help = DETAILED_HELP

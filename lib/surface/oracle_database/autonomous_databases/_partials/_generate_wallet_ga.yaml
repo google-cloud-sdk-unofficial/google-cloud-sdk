@@ -26,7 +26,7 @@
       to encrypt the keys inside the wallet in the location `us-east4`,
       run:
 
-      $ {command} my-instance --location=us-east4 --password=123Abpassword
+        $ {command} my-instance --location=us-east4 --password=123Abpassword
   arguments:
     params:
     - help_text: |-

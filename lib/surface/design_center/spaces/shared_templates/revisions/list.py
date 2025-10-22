@@ -219,7 +219,7 @@ class List(base.ListCommand):
       location_id = args.location
 
       if args.google_catalog:
-        project_id = 'gcpdesigncenter'
+        project_id = api_lib_utils.GetGoogleCatalogProjectId()
         space_id = 'googlespace'
       else:
         project_id = args.project or properties.VALUES.core.project.Get()

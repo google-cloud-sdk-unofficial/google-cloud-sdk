@@ -146,7 +146,9 @@ class Update(base.Command):
   def Args(cls, parser):
     Update.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
   def _ConnectionContext(self, args):
     return connection_context.GetConnectionContext(
@@ -312,7 +314,9 @@ class BetaUpdate(Update):
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -337,10 +341,14 @@ class AlphaUpdate(BetaUpdate):
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
+    flags.AddCpuUtilizationFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
     flags.AddClearPresetFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 AlphaUpdate.__doc__ = Update.__doc__

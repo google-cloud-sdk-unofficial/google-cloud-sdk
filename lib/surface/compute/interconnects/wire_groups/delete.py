@@ -29,13 +29,32 @@ from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to delete wire groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To delete a wire group, run:
+
+          $ {command} example-wg --cross-site-network=example-csn
+        """,
+}
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine wire groups.
 
   *{command}* deletes Compute Engine wire groups.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUPS_ARG = None
 

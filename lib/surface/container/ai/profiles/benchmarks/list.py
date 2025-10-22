@@ -26,7 +26,7 @@ from googlecloudsdk.core.resource import resource_printer
 _EXAMPLE = """
 To get benchmarking data for a given model and model server, run:
 
-$ {command} --model=google/gemma-2-27b-it--model-server=vllm
+$ {command} --model=google/gemma-2-27b-it --model-server=vllm --pricing-model=spot
 """
 
 
@@ -103,6 +103,15 @@ class List(commands.List):
         ),
     )
 
+    parser.add_argument(
+        "--pricing-model",
+        required=False,
+        help=(
+            "The pricing model to use to calculate token cost. Currently, this"
+            " supports on-demand, spot, 3-years-cud, 1-year-cud"
+        ),
+    )
+
     resource_printer.RegisterFormatter(
         profiles_csv_printer.PROFILES_PRINTER_FORMAT,
         profiles_csv_printer.ProfileCSVPrinter,
@@ -122,6 +131,7 @@ class List(commands.List):
       request = messages.FetchBenchmarkingDataRequest(
           modelServerInfo=model_server_info,
           instanceType=args.instance_type,
+          pricingModel=args.pricing_model,
       )
       response = client.benchmarkingData.Fetch(request)
       if not response.profile:

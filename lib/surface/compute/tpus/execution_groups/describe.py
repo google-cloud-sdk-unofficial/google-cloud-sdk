@@ -26,16 +26,13 @@ from googlecloudsdk.command_lib.compute.tpus.execution_groups import util as tpu
 
 
 _DEPRECATION_WARNING = (
-    'This command is deprecated and will be removed in a future release. '
-    'We recommend that you use the TPU-VM or Queued Resource API. '
-    'See https://cloud.google.com/tpu/docs/managing-tpus-tpu-vm for more '
-    'information.'
+    'This command is deprecated and will be removed in a future release.'
 )
 
 
 @base.DefaultUniverseOnly
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=_DEPRECATION_WARNING,
     error=_DEPRECATION_WARNING)
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,

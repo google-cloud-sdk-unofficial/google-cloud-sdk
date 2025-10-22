@@ -24,31 +24,34 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import flags
 from googlecloudsdk.core import properties
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to create cross site networks. A cross site network
         contains wire groups.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
         To create a cross site network, run:
 
-          $ {command} example-cross-site-network --project=my-project --description="Example cross site network"
+          $ {command} example-csn --description="Example cross site network"
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Compute Engine cross site network.
 
   *{command}* is used to cross site networks. A cross site network
   contains wire groups.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   CROSS_SITE_NETWORK_ARG = None
 
@@ -75,6 +78,3 @@ class Create(base.CreateCommand):
     return cross_site_network.Create(
         description=args.description,
     )
-
-
-Create.detailed_help = DETAILED_HELP

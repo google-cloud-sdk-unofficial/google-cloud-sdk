@@ -24,7 +24,9 @@ from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.command_lib.sql import constants
 from googlecloudsdk.command_lib.sql import flags
+from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
@@ -170,6 +172,7 @@ class PointInTimeRestore(base.Command):
       set, the destination instance will only restore the specified databases.
       """,
     )
+    flags.AddSourceInstanceOverrideArgs(parser=parser, for_pitr=True)
 
   def Run(self, args: parser_extensions.Namespace):
     """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery.
@@ -189,10 +192,15 @@ class PointInTimeRestore(base.Command):
     sql_client = client.sql_client
     sql_messages = client.sql_messages
 
+    specified_args_dict = getattr(args, '_specified_args', None)
+    overrides = [
+        key
+        for key in specified_args_dict
+        if key in constants.TARGET_INSTANCE_OVERRIDE_FLAGS
+    ]
+
     request = sql_messages.SqlInstancesPointInTimeRestoreRequest(
-        parent='projects/{0}'.format(
-            properties.VALUES.core.project.GetOrFail()
-        ),
+        parent=f'projects/{properties.VALUES.core.project.GetOrFail()}',
         pointInTimeRestoreContext=sql_messages.PointInTimeRestoreContext(
             datasource=args.datasource,
             targetInstance=args.target,
@@ -201,6 +209,22 @@ class PointInTimeRestore(base.Command):
     )
     _UpdateRequestFromArgs(request, args)
     destination_instance_ref = _GetInstanceRefFromArgs(args, client)
+
+    # If the request has overrides, construct the target instance resource from
+    # the args and pass it with the request. Note that currently, overrides are
+    # only supported for cross project PITR. But here in gcloud, we do not have
+    # a way to know whether the PITR is cross project because we do not know the
+    # source project. So the check is done in the backend, where if the source
+    # and target projects are not different, the overrides will be ignored.
+    if overrides:
+      instance_resource = (
+          command_util.InstancesV1Beta4.ConstructCreateInstanceFromArgs(
+              sql_messages, args, instance_ref=destination_instance_ref
+          )
+      )
+      request.pointInTimeRestoreContext.targetInstanceSettings = (
+          instance_resource
+      )
 
     response = sql_client.instances.PointInTimeRestore(request)
 

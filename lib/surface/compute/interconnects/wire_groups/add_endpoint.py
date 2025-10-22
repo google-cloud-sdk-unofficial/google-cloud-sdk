@@ -27,29 +27,34 @@ from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import
 from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to add endpoints to a wire group.
 
         For an example, refer to the *EXAMPLES* section below.
         """,
-    # pylint: disable=line-too-long
     'EXAMPLES': """\
-        To add endpoint example-endpoint to wire group example-wire-group, run:
+        To add an endpoint to a wire group, run:
 
-          $ {command} example-wire-group --project=example-project --cross-site-network=example-cross-site-network --endpoint-label=example-endpoint
+          $ {command} example-wg \
+              --cross-site-network=example-csn \
+              --endpoint-label=endpoint-1
         """,
-    # pylint: enable=line-too-long
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddEndpoint(base.UpdateCommand):
   """Add endpoint to a Compute Engine wire group.
 
   *{command}* adds endpoint to a Compute Engine wire group.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUP_ARG = None
   CROSS_SITE_NETWORK_ARG = None
@@ -150,5 +155,3 @@ def _build_endpoint_messages(messages, endpoints_map):
   return messages.WireGroup.EndpointsValue(
       additionalProperties=endpoint_properties_list
   )
-
-AddEndpoint.detailed_help = DETAILED_HELP

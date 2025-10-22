@@ -20,11 +20,11 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.command_lib.run import artifact_registry
-from googlecloudsdk.command_lib.run import compose_resource
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import up
+from googlecloudsdk.command_lib.run.compose import compose_resource
 from googlecloudsdk.command_lib.run.compose import tracker as stages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -61,7 +61,6 @@ class Up(base.BinaryBackedCommand):
     flags.AddRegionArg(parser)
     flags.AddDebugFlag(parser)
     flags.AddDryRunFlag(parser)
-    flags.AddDevFlag(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
     parser.add_argument(
         '--no-build',
@@ -105,7 +104,7 @@ class Up(base.BinaryBackedCommand):
           self._AddTrackerStages(config),
           failure_message='Setup failed',
           suppress_output=False,
-          done_message_callback=lambda: 'Resources setup complete.',
+          success_message='Resource setup complete.',
       ) as tracker:
         resources_config = config.handle_resources(
             region, repo, tracker, args.no_build
@@ -189,18 +188,9 @@ class Up(base.BinaryBackedCommand):
     else:
       compose_file = self._GetComposeFile()
 
-    if args.dev:
-      response = self._ResourceAndTranslateRun(
-          command_executor, compose_file, repo, project_number, region, args
-      )
-    else:
-      response = command_executor(
-          command='up',
-          repo=repo,
-          compose_file=compose_file,
-          debug=args.debug,
-          dry_run=args.dry_run,
-      )
+    response = self._ResourceAndTranslateRun(
+        command_executor, compose_file, repo, project_number, region, args
+    )
     return response
 
   def _GenerateRepositoryName(self, project, region):

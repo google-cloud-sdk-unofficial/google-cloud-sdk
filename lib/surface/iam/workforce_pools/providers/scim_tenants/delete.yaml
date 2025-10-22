@@ -41,6 +41,5 @@
     params:
     - arg_name: hard-delete
       api_field: hardDelete
-      hidden: true
       required: false
-      help_text: If set, hard delete the scim tenant. This will delete the scim tenant resources i.e. the scim tenant project and service account associated with it. This action cannot be undone.
+      help_text: Deletes the SCIM tenant immediately. This operation cannot be undone.

@@ -168,6 +168,21 @@ class Login(base.Command):
         return
 
     scopes = args.scopes or auth_util.DEFAULT_SCOPES
+
+    target_impersonation_principal, delegates, target_scopes = None, None, None
+    impersonation_service_accounts = (
+        properties.VALUES.auth.impersonate_service_account.Get()
+    )
+    if impersonation_service_accounts:
+      (target_impersonation_principal, delegates
+      ) = c_store.ParseImpersonationAccounts(impersonation_service_accounts)
+      # Only set target_scopes if user explicitly asked for something, if not
+      # we will let auth and client library decide on the scopes.
+      target_scopes = args.scopes or None
+      # Source credential just needs the scope needed to call the IAM API for
+      # impersonation. Asking user to consent any other scope is unnecessary.
+      scopes = [auth_util.CLOUD_PLATFORM_SCOPE]
+
     flow_params = dict(
         no_launch_browser=not args.launch_browser,
         no_browser=not args.browser,
@@ -230,13 +245,6 @@ class Login(base.Command):
       _ = command_auth_util.ExtractAndValidateAccount(args.account, creds)
       creds = creds.with_account(args.account)
 
-    target_impersonation_principal, delegates = None, None
-    impersonation_service_accounts = (
-        properties.VALUES.auth.impersonate_service_account.Get()
-    )
-    if impersonation_service_accounts:
-      (target_impersonation_principal, delegates
-      ) = c_store.ParseImpersonationAccounts(impersonation_service_accounts)
     if not target_impersonation_principal:
       if args.IsSpecified('client_id_file'):
         command_auth_util.DumpADC(creds, quota_project_disabled=False)
@@ -249,7 +257,8 @@ class Login(base.Command):
       command_auth_util.DumpImpersonatedServiceAccountToADC(
           creds,
           target_principal=target_impersonation_principal,
-          delegates=delegates)
+          delegates=delegates,
+          scopes=target_scopes)
     return creds
 
 

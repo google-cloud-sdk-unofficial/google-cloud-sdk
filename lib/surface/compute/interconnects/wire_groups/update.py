@@ -27,14 +27,47 @@ from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to update wire groups.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To disable a wire group, run:
+
+        $ {command} example-wg --cross-site-network=example-csn --no-admin-enabled
+
+        To change a wire group's unmetered bandwidth, run:
+
+        $ {command} example-wg --cross-site-network=example-csn --bandwidth-unmetered=5
+
+        To enable automatic failure detection for a wire group, run:
+
+        $ {command} example-wg --cross-site-network=example-csn --fault-response=DISABLE_PORT
+
+        To enable bandwidth sharing for a wire group, run:
+
+        $ {command} example-wg --cross-site-network=example-csn --bandwidth-allocation=SHARED_WITH_WIRE_GROUP
+
+        To update a wire group's description, run:
+
+        $ {command} example-wg --cross-site-network=example-csn --description="new description"
+        """,
+}
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine wire group.
 
   *{command}* is used to update wire groups. A wire group represents a group of
   redundant wires.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUP_ARG = None
   CROSS_SITE_NETWORK_ARG = None
@@ -48,7 +81,6 @@ class Update(base.UpdateCommand):
     )
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
     flags.AddDescription(parser)
-    flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser, required=False)
     flags.AddBandwidthAllocation(parser, required=False)
     flags.AddFaultResponse(parser)
@@ -77,8 +109,7 @@ class Update(base.UpdateCommand):
 
     return wire_group.Patch(
         description=args.description,
-        # Need to rename type as it conflicts with python built in type()
-        wire_group_type=args.type,
+        wire_group_type=getattr(args, 'type', None),
         bandwidth_unmetered=args.bandwidth_unmetered,
         bandwidth_metered=getattr(args, 'bandwidth_metered', None),
         fault_response=args.fault_response,
@@ -90,8 +121,23 @@ class Update(base.UpdateCommand):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine wire group.
+
+  *{command}* is used to update wire groups. A wire group represents a group of
+  redundant wires.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateBeta, cls).Args(parser)
+    flags.AddType(parser)
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine wire group.
 
   *{command}* is used to update wire groups. A wire group represents a group of

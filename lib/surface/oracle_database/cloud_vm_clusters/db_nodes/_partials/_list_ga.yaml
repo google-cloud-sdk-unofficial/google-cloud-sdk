@@ -24,7 +24,7 @@
     examples: |-
       To list all DbNodes in the location `us-east4`, run:
 
-      $ {command} --location=us-east4
+        $ {command} --location=us-east4
   arguments:
     params:
     - help_text: |-
@@ -33,11 +33,12 @@
         .
       is_positional: false
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_cloud_vm_clusters
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_cloud_vm_clusters_or_exadb_vm_clusters
       required: true
   request:
     api_version: v1
     collection:
     - oracledatabase.projects.locations.cloudVmClusters.dbNodes
+    - oracledatabase.projects.locations.exadbVmClusters.dbNodes
   response:
     id_field: name

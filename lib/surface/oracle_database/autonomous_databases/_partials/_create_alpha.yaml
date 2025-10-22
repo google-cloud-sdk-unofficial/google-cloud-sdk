@@ -308,14 +308,17 @@
                   Oracle Managed.
                 hidden: true
             - arg_name: encryption-key-kms
-              api_field: autonomousDatabase.properties.encryptionKey.kmsKey
-              required: false
-              repeated: false
               help_text: |-
                 The KMS key used to encrypt the Autonomous Database.
                 This field is required if the provider is GOOGLE_MANAGED.
                 The name of the KMS key resource in the following format:
                 `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_key_rings_crypto_keys
+              resource_method_params:
+                autonomousDatabase.properties.encryptionKey.kmsKey: '{__relative_name__}'
+              required: false
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false

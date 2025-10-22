@@ -59,18 +59,33 @@ class UpdateHelper(object):
   SERVICE_ATTACHMENT_ARG = None
   NAT_SUBNETWORK_ARG = None
 
-  def __init__(self, holder, support_target_service_arg):
+  def __init__(
+      self,
+      holder,
+      support_target_service_arg,
+      support_endpoint_based_security_arg,
+  ):
     self._holder = holder
     self._support_target_service_arg = support_target_service_arg
+    self._support_endpoint_based_security_arg = (
+        support_endpoint_based_security_arg
+    )
 
   @classmethod
-  def Args(cls, parser, support_target_service_arg):
+  def Args(
+      cls,
+      parser,
+      support_target_service_arg,
+      support_endpoint_based_security_arg,
+  ):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
       support_target_service_arg: Whether to add arguments for producer
         forwarding rule.
+      support_endpoint_based_security_arg: Whether to support endpoint based
+        security.
 
     cls: Hold onto the definition of a complex argument so it can be used later
       to process the user's input.
@@ -78,8 +93,9 @@ class UpdateHelper(object):
     """
     cls.SERVICE_ATTACHMENT_ARG = flags.ServiceAttachmentArgument()
     cls.SERVICE_ATTACHMENT_ARG.AddArgument(parser, operation_type='update')
-    cls.NAT_SUBNETWORK_ARG = subnetwork_flags.SubnetworkArgumentForServiceAttachment(
-        required=False)
+    cls.NAT_SUBNETWORK_ARG = (
+        subnetwork_flags.SubnetworkArgumentForServiceAttachment(required=False)
+    )
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
     flags.AddDescription(parser)
@@ -89,12 +105,36 @@ class UpdateHelper(object):
     flags.AddEnableProxyProtocolForUpdate(parser)
     flags.AddReconcileConnectionsForUpdate(parser)
     flags.AddConsumerRejectList(parser)
-    flags.AddConsumerAcceptList(parser)
+    if support_endpoint_based_security_arg:
+      flags.AddConsumerAcceptList(parser)
+    else:
+      flags.AddConsumerAcceptListOld(parser)
     flags.AddPropagatedConnectionLimit(parser)
+
+  def _GetConsumerAcceptList(self, args, holder):
+    if self._support_endpoint_based_security_arg:
+      return service_attachments_utils.GetConsumerAcceptListWithEndpointBasedSecurity(
+          args, holder.client.messages
+      )
+    return service_attachments_utils.GetConsumerAcceptList(
+        args, holder.client.messages
+    )
+
+  def _GetProjectOrNetworkOrEndpointBasedOnArg(self, consumer_limit):
+    if self._support_endpoint_based_security_arg:
+      return self._GetProjectOrNetworkOrEndpoint(consumer_limit)
+    return self._GetProjectOrNetwork(consumer_limit)
 
   def _GetProjectOrNetwork(self, consumer_limit):
     if consumer_limit.projectIdOrNum is not None:
       return (consumer_limit.projectIdOrNum, consumer_limit.connectionLimit)
+    return (consumer_limit.networkUrl, consumer_limit.connectionLimit)
+
+  def _GetProjectOrNetworkOrEndpoint(self, consumer_limit):
+    if consumer_limit.projectIdOrNum is not None:
+      return (consumer_limit.projectIdOrNum, consumer_limit.connectionLimit)
+    elif consumer_limit.endpointUrl is not None:
+      return (consumer_limit.endpointUrl, consumer_limit.connectionLimit)
     return (consumer_limit.networkUrl, consumer_limit.connectionLimit)
 
   def _GetOldResource(self, client, service_attachment_ref):
@@ -173,13 +213,14 @@ class UpdateHelper(object):
           cleared_fields.append('consumerRejectLists')
 
     if args.IsSpecified('consumer_accept_list'):
-      consumer_accept_list = service_attachments_utils.GetConsumerAcceptList(
-          args, holder.client.messages)
+      consumer_accept_list = self._GetConsumerAcceptList(args, holder)
       new_accept_list = sorted(
-          consumer_accept_list, key=self._GetProjectOrNetwork
+          consumer_accept_list,
+          key=self._GetProjectOrNetworkOrEndpointBasedOnArg,
       )
       if old_resource.consumerAcceptLists is None or new_accept_list != sorted(
-          old_resource.consumerAcceptLists, key=self._GetProjectOrNetwork
+          old_resource.consumerAcceptLists,
+          key=self._GetProjectOrNetworkOrEndpointBasedOnArg,
       ):
         replacement.consumerAcceptLists = new_accept_list
         is_updated = True
@@ -228,6 +269,7 @@ class UpdateHelper(object):
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
   _support_target_service_arg = False
+  _support_endpoint_based_security_arg = False
   detailed_help = _DetailedHelp()
 
   @classmethod
@@ -235,6 +277,7 @@ class Update(base.UpdateCommand):
     UpdateHelper.Args(
         parser,
         cls._support_target_service_arg,
+        cls._support_endpoint_based_security_arg,
     )
 
   def Run(self, args):
@@ -243,6 +286,7 @@ class Update(base.UpdateCommand):
     return UpdateHelper(
         holder,
         self._support_target_service_arg,
+        self._support_endpoint_based_security_arg,
     ).Run(args)
 
 
@@ -250,4 +294,5 @@ class Update(base.UpdateCommand):
 class UpdateAlpha(Update):
   """Update a Google Compute Engine service attachment."""
   _support_target_service_arg = True
+  _support_endpoint_based_security_arg = True
   detailed_help = _DetailedHelp()

@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Update a health aggregation policy."
     description: "Update a health aggregation policy."
@@ -13,6 +13,8 @@
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.regionHealthAggregationPolicies
     method: patch
 

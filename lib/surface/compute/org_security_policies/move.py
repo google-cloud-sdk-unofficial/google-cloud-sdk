@@ -24,14 +24,15 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.org_security_policies import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.org_security_policies import flags
-from googlecloudsdk.command_lib.compute.org_security_policies \
-    import org_security_policies_utils
+from googlecloudsdk.command_lib.compute.org_security_policies import org_security_policies_utils
 from googlecloudsdk.core import log
 import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Move(base.UpdateCommand):
   """Move a Compute Engine organization security policy.
 

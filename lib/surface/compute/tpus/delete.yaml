@@ -7,7 +7,7 @@
         $ {command} my-tpu --zone=us-central1-b
 
   deprecate:
-    is_removed: false
+    is_removed: true
     warning: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm delete` instead."
     error: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm delete` instead."
 

@@ -366,6 +366,59 @@
           type: arg_json
           help_text: |-
             The value of the parameter.
+    - arg_name: type
+      api_field: application.type
+      required: false
+      help_text: |-
+        The type of the application.
+      choices:
+      - arg_value: terraform-app
+        enum_value: TERRAFORM_APP
+        help_text: |-
+          Application type is terraform application.
+      - arg_value: helm-app
+        enum_value: HELM_APP
+        help_text: |-
+          Application type is helm application.
+    - group:
+        api_field: application.deploymentTarget
+        arg_name: deployment-target
+        clearable: true
+        required: false
+        help_text: |-
+          The deployment target of the application.
+        params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the target.
+            params:
+            - group:
+                api_field: application.deploymentTarget.gkeDeploymentTarget
+                required: false
+                help_text: |-
+                  The GKE deployment target.
+                params:
+                - arg_name: gke-deployment-target-cluster-self-link
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.clusterSelfLink
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The self link of the cluster where GKE based application is deployed.
+                - arg_name: gke-deployment-target-namespace
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.namespace
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The namespace where the application is deployed.
+                - arg_name: gke-deployment-target-kubernetes-service-account
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.kubernetesServiceAccount
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The kubernetes service account that is created within the namespace
+                    provided above.
+                    Example: default or node-sa
   request:
     api_version: v1alpha
     collection:

@@ -26,7 +26,7 @@
       The restore-time is the 'endTime' property of a backup.
       run:
 
-      $ {command} my-instance --location=us-east4 --restore-time=2024-05-01T00:00:00.000Z
+        $ {command} my-instance --location=us-east4 --restore-time=2024-05-01T00:00:00.000Z
   arguments:
     params:
     - help_text: |-

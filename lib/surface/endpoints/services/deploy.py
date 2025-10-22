@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+from typing import Final
 
 from googlecloudsdk.api_lib.endpoints import config_reporter
 from googlecloudsdk.api_lib.endpoints import exceptions
@@ -32,31 +33,41 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util import http_encoding
-
 import six.moves.urllib.parse
 
 
-ADVICE_STRING = ('Advice found for changes in the new service config. If this '
-                 'is a --validate-only run, the config push would have failed. '
-                 'See the outputted report for failure reason(s). If this is '
-                 'not a --validate-only run and you would like to ignore these '
-                 'warnings, rerun the command with --force. NOTE: setting this '
-                 'flag will ignore all change advice. For production systems, '
-                 'best practice is to set this for a single execution only '
-                 'after manually reviewing all changes with advice.')
+ADVICE_STRING = (
+    'Advice found for changes in the new service config. If this '
+    'is a --validate-only run, the config push would have failed. '
+    'See the outputted report for failure reason(s). If this is '
+    'not a --validate-only run and you would like to ignore these '
+    'warnings, rerun the command with --force. NOTE: setting this '
+    'flag will ignore all change advice. For production systems, '
+    'best practice is to set this for a single execution only '
+    'after manually reviewing all changes with advice.'
+)
 
-FORCE_ADVICE_STRING = ('Advice found for changes in the new service config, '
-                       'but proceeding anyway because --force is set...')
+FORCE_ADVICE_STRING = (
+    'Advice found for changes in the new service config, '
+    'but proceeding anyway because --force is set...'
+)
 
-VALIDATE_NEW_PROMPT = ('The service {service_name} must exist in order to '
-                       'validate the configuration. Do you want to create the '
-                       'service in project {project_id}?')
-VALIDATE_NEW_ERROR = ('The service {service_name} must exist in order to '
-                      'validate the configuration. To create the service in '
-                      'project {project_id}, rerun the command without the '
-                      '--validate-only flag.')
+VALIDATE_NEW_PROMPT = (
+    'The service {service_name} must exist in order to '
+    'validate the configuration. Do you want to create the '
+    'service in project {project_id}?'
+)
+VALIDATE_NEW_ERROR = (
+    'The service {service_name} must exist in order to '
+    'validate the configuration. To create the service in '
+    'project {project_id}, rerun the command without the '
+    '--validate-only flag.'
+)
 
 NUM_ADVICE_TO_PRINT = 3
+
+SWAGGER_VERSION: Final[str] = '2.x'
+OPENAPI_V3_VERSION: Final[str] = '3.x'
 
 
 def _CommonArgs(parser):
@@ -64,10 +75,13 @@ def _CommonArgs(parser):
   parser.add_argument(
       'service_config_file',
       nargs='+',
-      help=('The service configuration file (or files) containing the API '
-            'specification to upload. Proto Descriptors, Open API (Swagger) '
-            'specifications, and Google Service Configuration files in JSON '
-            'and YAML formats are acceptable.'))
+      help=(
+          'The service configuration file (or files) containing the API '
+          'specification to upload. Proto Descriptors, Open API (Swagger) '
+          'specifications, and Google Service Configuration files in JSON '
+          'and YAML formats are acceptable.'
+      ),
+  )
   base.ASYNC_FLAG.AddToParser(parser)
 
 
@@ -85,10 +99,13 @@ def GenerateManagementUrl(service):
   response = client.services.Get(get_request)
   project = response.producerProjectId
 
-  return ('https://console.cloud.google.com/endpoints/api/'
-          '{service}/overview?project={project}'.format(
-              service=six.moves.urllib.parse.quote(service),
-              project=six.moves.urllib.parse.quote(project)))
+  return (
+      'https://console.cloud.google.com/endpoints/api/'
+      '{service}/overview?project={project}'.format(
+          service=six.moves.urllib.parse.quote(service),
+          project=six.moves.urllib.parse.quote(project),
+      )
+  )
 
 
 class _BaseDeploy(object):
@@ -99,27 +116,37 @@ class _BaseDeploy(object):
     """Args is called by calliope to gather arguments for this command.
 
     Args:
-      parser: An argparse parser that you can use to add arguments that go
-          on the command line after this command. Positional arguments are
-          allowed.
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
     """
     _CommonArgs(parser)
     parser.add_argument(
         '--validate-only',
         action='store_true',
-        help='If included, the command validates the service configuration(s), '
-             'but does not deploy them. The service must exist in order to '
-             'validate the configuration(s).')
+        help=(
+            'If included, the command validates the service configuration(s), '
+            'but does not deploy them. The service must exist in order to '
+            'validate the configuration(s).'
+        ),
+    )
 
     parser.add_argument(
         '--force',
         '-f',
         action='store_true',
         default=False,
-        help='Force the deployment even if any hazardous changes to the '
-             'service configuration are detected.')
+        help=(
+            'Force the deployment even if any hazardous changes to the '
+            'service configuration are detected.'
+        ),
+    )
 
-  def MakeConfigFileMessage(self, file_contents, filename, file_type):
+  def MakeConfigFileMessage(
+      self,
+      file_contents: str,
+      filename: str,
+      file_type,
+  ):
     """Constructs a ConfigFile message from a config file.
 
     Args:
@@ -140,7 +167,8 @@ class _BaseDeploy(object):
     return messages.ConfigFile(
         fileContents=file_contents,
         filePath=os.path.basename(filename),
-        fileType=file_type,)
+        fileType=file_type,
+    )
 
   def ShowConfigReport(self, service, service_config_id, log_func=log.warning):
     """Run and display results (if any) from the Push Advisor.
@@ -148,8 +176,8 @@ class _BaseDeploy(object):
     Args:
       service: The name of the service for which to compare configs.
       service_config_id: The new config ID to compare against the active config.
-      log_func: The function to which to pass advisory messages
-        (default: log.warning).
+      log_func: The function to which to pass advisory messages (default:
+        log.warning).
 
     Returns:
       The number of advisory messages returned by the Push Advisor.
@@ -173,14 +201,17 @@ class _BaseDeploy(object):
     for change in changes:
       if change.advices:
         if num_changes_with_advice < NUM_ADVICE_TO_PRINT:
-          log_func('%s\n',
-                   services_util.PushAdvisorConfigChangeToString(change))
+          log_func(
+              '%s\n', services_util.PushAdvisorConfigChangeToString(change)
+          )
         num_changes_with_advice += 1
 
     if num_changes_with_advice > NUM_ADVICE_TO_PRINT:
       log_func(
           '%s total changes with advice found, check config report file '
-          'for full list.\n', num_changes_with_advice)
+          'for full list.\n',
+          num_changes_with_advice,
+      )
 
     return num_changes_with_advice
 
@@ -203,7 +234,7 @@ class _BaseDeploy(object):
     Args:
       service_name: The service to enable.
       is_async: If true, return immediately instead of waiting for the operation
-          to finish.
+        to finish.
     """
     project_id = properties.VALUES.core.project.Get(required=True)
     try:
@@ -213,17 +244,21 @@ class _BaseDeploy(object):
       # newline when the command is successful.
       log.status.Print('\n')
     except services_exceptions.EnableServiceException:
-      log.warning(('Attempted to enable service [{0}] on project [{1}], but '
-                   'did not have required permissions. Please ensure this '
-                   'service is enabled before using your Endpoints '
-                   'service.\n').format(service_name, project_id))
+      log.warning(
+          (
+              'Attempted to enable service [{0}] on project [{1}], but '
+              'did not have required permissions. Please ensure this '
+              'service is enabled before using your Endpoints '
+              'service.\n'
+          ).format(service_name, project_id)
+      )
 
   def Run(self, args):
     """Run 'endpoints services deploy'.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked
-          with.
+        with.
 
     Returns:
       The response from the Update API call.
@@ -251,39 +286,154 @@ class _BaseDeploy(object):
     if not self.validate_only and not args.IsSpecified('format'):
       args.format = 'none'
 
-    for service_config_file in args.service_config_file:
+    oas_version = None
+    for i, service_config_file in enumerate(args.service_config_file):
       config_contents = services_util.ReadServiceConfigFile(service_config_file)
 
       if services_util.FilenameMatchesExtension(
-          service_config_file, ['.json', '.yaml', '.yml']):
+          service_config_file, ['.json', '.yaml', '.yml']
+      ):
         # Try to load the file as JSON. If that fails, try YAML.
         service_config_dict = services_util.LoadJsonOrYaml(config_contents)
         if not service_config_dict:
           raise calliope_exceptions.BadFileException(
               'Could not read JSON or YAML from service config file '
-              '[{0}].'.format(service_config_file))
+              '[{0}].'.format(service_config_file)
+          )
 
         if 'swagger' in service_config_dict:
+          # Only one OpenAPI version is supported per deployment.
+          if oas_version and oas_version != SWAGGER_VERSION:
+            raise calliope_exceptions.BadFileException(
+                (
+                    'Malformed input. Found OpenAPI service config in file'
+                    ' [{}], but a different OpenAPI version was'
+                    ' specified in another file. Only one OpenAPI version is'
+                    ' supported per deployment.'
+                ).format(service_config_file)
+            )
+          if not oas_version:
+            oas_version = SWAGGER_VERSION
+
           if 'host' not in service_config_dict:
-            raise calliope_exceptions.BadFileException((
-                'Malformed input. Found Swagger service config in file [{}], '
-                'but no host was specified. Add a host specification to the '
-                'config file.').format(
-                    service_config_file))
+            raise calliope_exceptions.BadFileException(
+                (
+                    'Malformed input. Found Swagger service config in file'
+                    ' [{}], but no host was specified. Add a host specification'
+                    ' to the config file.'
+                ).format(service_config_file)
+            )
           if not self.service_name and service_config_dict.get('host'):
             self.service_name = service_config_dict.get('host')
 
           # Always use YAML for Open API because JSON is a subset of YAML.
           config_files.append(
-              self.MakeConfigFileMessage(config_contents, service_config_file,
-                                         file_types.OPEN_API_YAML))
+              self.MakeConfigFileMessage(
+                  config_contents, service_config_file, file_types.OPEN_API_YAML
+              )
+          )
+        elif 'openapi' in service_config_dict:
+          # Only one OpenAPI version is supported per deployment.
+          if oas_version and oas_version != OPENAPI_V3_VERSION:
+            raise calliope_exceptions.BadFileException(
+                (
+                    'Malformed input. Found OpenAPI service config in file'
+                    ' [{}], but a different OpenAPI version was'
+                    ' specified in another file. Only one OpenAPI version is'
+                    ' supported per deployment.'
+                ).format(service_config_file)
+            )
+          if not oas_version:
+            oas_version = OPENAPI_V3_VERSION
+
+          # For Endpoints, exactly only one server may be configured with the
+          # "x-google-endpoint" extension per file and one must be configured
+          # across all provided files. The server's hostname will be used as the
+          # service name. If multiple oas files are provided, the service name
+          # must be the same across all files.
+          found_x_google_endpoint = False
+          x_google_endpoint_service_name = None
+          for s in service_config_dict.get('servers') or []:
+            if 'x-google-endpoint' in s:
+              if found_x_google_endpoint:
+                raise calliope_exceptions.BadFileException(
+                    (
+                        'Malformed input. Found OpenAPI service config in file'
+                        ' [{}], but multiple servers were specified with the'
+                        ' "x-google-endpoint" extension. At most one server'
+                        ' can have the "x-google-endpoint" extension per file.'
+                    ).format(service_config_file)
+                )
+              if 'url' not in s:
+                raise calliope_exceptions.BadFileException(
+                    (
+                        'Malformed input. Found OpenAPI service config in file'
+                        ' [{}], but no url was specified for the server with'
+                        ' the "x-google-endpoint" extension. Add a url'
+                        ' specification to the server with the'
+                        ' "x-google-endpoint" extension.'
+                    ).format(service_config_file)
+                )
+              x_google_endpoint_service_name = six.moves.urllib.parse.urlparse(
+                  s.get('url')
+              ).hostname
+              found_x_google_endpoint = True
+
+          # If this is the first file with the "x-google-endpoint" extension,
+          # use the server URL's hostname as the service name.
+          if self.service_name is None and x_google_endpoint_service_name:
+            self.service_name = x_google_endpoint_service_name
+
+          # If this is the last (or only) file and no server with the
+          # "x-google-endpoint" extension was found, raise an error.
+          if (
+              i == len(args.service_config_file) - 1
+              and self.service_name is None
+          ):
+            raise calliope_exceptions.BadFileException(
+                'Malformed input. No servers were specified with the'
+                ' "x-google-endpoint" extension in the provided OpenAPI'
+                ' file(s). Add a servers specification to at least one config'
+                ' file with exactly one server configured with the'
+                ' "x-google-endpoint" extension.'
+            )
+
+          # If multiple files are provided, ensure that all files with the
+          # "x-google-endpoint" extension define the same server URL. This
+          # ensures that the same service name is used for all files.
+          if (
+              self.service_name
+              and x_google_endpoint_service_name
+              and self.service_name != x_google_endpoint_service_name
+          ):
+            raise calliope_exceptions.BadFileException((
+                'Ambiguous input. Multiple OpenAPI files were provided with'
+                ' different server URLs containing the "x-google-endpoint"'
+                ' extension. When using multiple OpenAPI files, ensure that all'
+                ' files with the "x-google-endpoint" extension define the same'
+                ' server URL with at most one server with the'
+                ' "x-google-endpoint" extension defined per file. Additionally,'
+                ' at least one server across all provided files must have the'
+                ' "x-google-endpoint" extension.'
+            ))
+
+          # Always use YAML for Open API because JSON is a subset of YAML.
+          config_files.append(
+              self.MakeConfigFileMessage(
+                  config_contents, service_config_file, file_types.OPEN_API_YAML
+              )
+          )
         elif service_config_dict.get('type') == 'google.api.Service':
           if not self.service_name and service_config_dict.get('name'):
             self.service_name = service_config_dict.get('name')
 
           config_files.append(
-              self.MakeConfigFileMessage(config_contents, service_config_file,
-                                         file_types.SERVICE_CONFIG_YAML))
+              self.MakeConfigFileMessage(
+                  config_contents,
+                  service_config_file,
+                  file_types.SERVICE_CONFIG_YAML,
+              )
+          )
         elif 'name' in service_config_dict:
           # This is a special case. If we have been provided a Google Service
           # Configuration file which has a service 'name' field, but no 'type'
@@ -291,47 +441,62 @@ class _BaseDeploy(object):
           # and can be uploaded via the CreateServiceConfig API. Therefore,
           # we can short circute the process here.
           if len(args.service_config_file) > 1:
-            raise calliope_exceptions.BadFileException((
-                'Ambiguous input. Found normalized service configuration in '
-                'file [{0}], but received multiple input files. To upload '
-                'normalized service config, please provide it separately from '
-                'other input files to avoid ambiguity.').format(
-                    service_config_file))
+            raise calliope_exceptions.BadFileException(
+                (
+                    'Ambiguous input. Found normalized service configuration in'
+                    ' file [{0}], but received multiple input files. To upload'
+                    ' normalized service config, please provide it separately'
+                    ' from other input files to avoid ambiguity.'
+                ).format(service_config_file)
+            )
 
           # If this is a validate-only run, abort now, since this is not
           # supported in the ServiceConfigs.Create API
           if self.validate_only:
             raise exceptions.InvalidFlagError(
                 'The --validate-only flag is not supported when using '
-                'normalized service configs as input.')
+                'normalized service configs as input.'
+            )
 
           self.service_name = service_config_dict.get('name')
           config_files = []
           break
         else:
-          raise calliope_exceptions.BadFileException((
-              'Unable to parse Open API, or Google Service Configuration '
-              'specification from {0}').format(service_config_file))
+          raise calliope_exceptions.BadFileException(
+              (
+                  'Unable to parse Open API, or Google Service Configuration '
+                  'specification from {0}'
+              ).format(service_config_file)
+          )
 
       elif services_util.IsProtoDescriptor(service_config_file):
         config_files.append(
-            self.MakeConfigFileMessage(config_contents, service_config_file,
-                                       file_types.FILE_DESCRIPTOR_SET_PROTO))
+            self.MakeConfigFileMessage(
+                config_contents,
+                service_config_file,
+                file_types.FILE_DESCRIPTOR_SET_PROTO,
+            )
+        )
       elif services_util.IsRawProto(service_config_file):
         give_proto_deprecate_warning = True
         config_files.append(
-            self.MakeConfigFileMessage(config_contents, service_config_file,
-                                       file_types.PROTO_FILE))
+            self.MakeConfigFileMessage(
+                config_contents, service_config_file, file_types.PROTO_FILE
+            )
+        )
       else:
-        raise calliope_exceptions.BadFileException((
-            'Could not determine the content type of file [{0}]. Supported '
-            'extensions are .json .yaml .yml .pb and .descriptor').format(
-                service_config_file))
+        raise calliope_exceptions.BadFileException(
+            (
+                'Could not determine the content type of file [{0}]. Supported '
+                'extensions are .json .yaml .yml .pb and .descriptor'
+            ).format(service_config_file)
+        )
 
     if give_proto_deprecate_warning:
       log.warning(
           'Support for uploading uncompiled .proto files is deprecated and '
-          'will soon be removed. Use compiled descriptor sets (.pb) instead.\n')
+          'will soon be removed. Use compiled descriptor sets (.pb) instead.\n'
+      )
 
     # Check if we need to create the service.
     was_service_created = False
@@ -341,33 +506,44 @@ class _BaseDeploy(object):
       # being created
       if self.validate_only:
         if not console_io.CanPrompt():
-          raise exceptions.InvalidConditionError(VALIDATE_NEW_ERROR.format(
-              service_name=self.service_name, project_id=project_id))
+          raise exceptions.InvalidConditionError(
+              VALIDATE_NEW_ERROR.format(
+                  service_name=self.service_name, project_id=project_id
+              )
+          )
         if not console_io.PromptContinue(
             VALIDATE_NEW_PROMPT.format(
-                service_name=self.service_name, project_id=project_id)):
+                service_name=self.service_name, project_id=project_id
+            )
+        ):
           return None
       services_util.CreateService(self.service_name, project_id)
       was_service_created = True
 
     if config_files:
       push_config_result = services_util.PushMultipleServiceConfigFiles(
-          self.service_name, config_files, args.async_,
-          validate_only=self.validate_only)
+          self.service_name,
+          config_files,
+          args.async_,
+          validate_only=self.validate_only,
+      )
       self.service_config_id = (
           services_util.GetServiceConfigIdFromSubmitConfigSourceResponse(
-              push_config_result)
+              push_config_result
+          )
       )
     else:
       push_config_result = services_util.PushNormalizedGoogleServiceConfig(
           self.service_name,
           properties.VALUES.core.project.Get(required=True),
-          services_util.LoadJsonOrYaml(config_contents))
+          services_util.LoadJsonOrYaml(config_contents),
+      )
       self.service_config_id = push_config_result.id
 
     if not self.service_config_id:
       raise exceptions.InvalidConditionError(
-          'Failed to retrieve Service Configuration Id.')
+          'Failed to retrieve Service Configuration Id.'
+      )
 
     # Run the Push Advisor to see if we need to warn the user of any
     # potentially hazardous changes to the service configuration.
@@ -377,14 +553,18 @@ class _BaseDeploy(object):
     # Create a Rollout for the new service configuration
     if not self.validate_only:
       percentages = messages.TrafficPercentStrategy.PercentagesValue()
-      percentages.additionalProperties.append(
-          (messages.TrafficPercentStrategy.PercentagesValue.AdditionalProperty(
-              key=self.service_config_id, value=100.0)))
+      percentages.additionalProperties.append((
+          messages.TrafficPercentStrategy.PercentagesValue.AdditionalProperty(
+              key=self.service_config_id, value=100.0
+          )
+      ))
       traffic_percent_strategy = messages.TrafficPercentStrategy(
-          percentages=percentages)
+          percentages=percentages
+      )
       rollout = messages.Rollout(
           serviceName=self.service_name,
-          trafficPercentStrategy=traffic_percent_strategy,)
+          trafficPercentStrategy=traffic_percent_strategy,
+      )
       rollout_create = messages.ServicemanagementServicesRolloutsCreateRequest(
           rollout=rollout,
           serviceName=self.service_name,
@@ -401,44 +581,47 @@ class _BaseDeploy(object):
     # Print this to screen not to the log because the output is needed by the
     # human user. Only print this when not doing a validate-only run.
     if resources_were_displayed and not self.validate_only:
-      log.status.Print(('Service Configuration [{0}] uploaded for '
-                        'service [{1}]\n').format(self.service_config_id,
-                                                  self.service_name))
+      log.status.Print(
+          ('Service Configuration [{0}] uploaded for service [{1}]\n').format(
+              self.service_config_id, self.service_name
+          )
+      )
 
       management_url = GenerateManagementUrl(self.service_name)
       log.status.Print('To manage your API, go to: ' + management_url)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
 class Deploy(_BaseDeploy, base.Command):
   # pylint: disable=line-too-long
   """Deploys a service configuration for the given service name.
 
-     This command is used to deploy a service configuration for a service
-     to Google Service Management. As input, it takes one or more paths
-     to service configurations that should be uploaded. These configuration
-     files can be Proto Descriptors, Open API (Swagger) specifications,
-     or Google Service Configuration files in JSON or YAML formats.
+  This command is used to deploy a service configuration for a service
+  to Google Service Management. As input, it takes one or more paths
+  to service configurations that should be uploaded. These configuration
+  files can be Proto Descriptors, Open API (Swagger) specifications,
+  or Google Service Configuration files in JSON or YAML formats.
 
-     If a service name is present in multiple configuration files (given
-     in the `host` field in OpenAPI specifications or the `name` field in
-     Google Service Configuration files), the first one will take precedence.
+  If a service name is present in multiple configuration files (given
+  in the `host` field in OpenAPI specifications or the `name` field in
+  Google Service Configuration files), the first one will take precedence.
 
-     This command will block until deployment is complete unless the
-     `--async` flag is passed.
+  This command will block until deployment is complete unless the
+  `--async` flag is passed.
 
-     ## EXAMPLES
-     To deploy a single Open API service configuration, run:
+  ## EXAMPLES
+  To deploy a single Open API service configuration, run:
 
-       $ {command} ~/my_app/openapi.json
+    $ {command} ~/my_app/openapi.json
 
-     To run the deployment asynchronously (non-blocking), run:
+  To run the deployment asynchronously (non-blocking), run:
 
-       $ {command} ~/my_app/openapi.json --async
+    $ {command} ~/my_app/openapi.json --async
 
-     To deploy a service config with a Proto, run:
+  To deploy a service config with a Proto, run:
 
-       $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
+    $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
   """
   # pylint: enable=line-too-long
 
@@ -446,42 +629,43 @@ class Deploy(_BaseDeploy, base.Command):
 # TODO(b/65455903) Once PushAdvisor is ready to be included by default,
 # merge this back into _BaseDeploy and rename it to Deploy.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
 class DeployBetaAlpha(_BaseDeploy, base.Command):
   # pylint: disable=line-too-long
   """Deploys a service configuration for the given service name.
 
-     This command is used to deploy a service configuration for a service
-     to Google Service Management. As input, it takes one or more paths
-     to service configurations that should be uploaded. These configuration
-     files can be Proto Descriptors, Open API (Swagger) specifications,
-     or Google Service Configuration files in JSON or YAML formats.
+  This command is used to deploy a service configuration for a service
+  to Google Service Management. As input, it takes one or more paths
+  to service configurations that should be uploaded. These configuration
+  files can be Proto Descriptors, Open API (Swagger) specifications,
+  or Google Service Configuration files in JSON or YAML formats.
 
-     If a service name is present in multiple configuration files (given
-     in the `host` field in OpenAPI specifications or the `name` field in
-     Google Service Configuration files), the first one will take precedence.
+  If a service name is present in multiple configuration files (given
+  in the `host` field in OpenAPI specifications or the `name` field in
+  Google Service Configuration files), the first one will take precedence.
 
-     When deploying a new service configuration to an already-existing
-     service, some safety checks will be made comparing the new configuration
-     to the active configuration. If any actionable advice is provided, it
-     will be printed out to the log, and the deployment will be halted. It is
-     recommended that these warnings be addressed before proceeding, but they
-     can be overridden with the --force flag.
+  When deploying a new service configuration to an already-existing
+  service, some safety checks will be made comparing the new configuration
+  to the active configuration. If any actionable advice is provided, it
+  will be printed out to the log, and the deployment will be halted. It is
+  recommended that these warnings be addressed before proceeding, but they
+  can be overridden with the --force flag.
 
-     This command will block until deployment is complete unless the
-     `--async` flag is passed.
+  This command will block until deployment is complete unless the
+  `--async` flag is passed.
 
-     ## EXAMPLES
-     To deploy a single Open API service configuration, run:
+  ## EXAMPLES
+  To deploy a single Open API service configuration, run:
 
-       $ {command} ~/my_app/openapi.json
+    $ {command} ~/my_app/openapi.json
 
-     To run the deployment asynchronously (non-blocking), run:
+  To run the deployment asynchronously (non-blocking), run:
 
-       $ {command} ~/my_app/openapi.json --async
+    $ {command} ~/my_app/openapi.json --async
 
-     To deploy a service config with a Proto, run:
+  To deploy a service config with a Proto, run:
 
-       $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
+    $ {command} ~/my_app/service-config.yaml ~/my_app/service-protos.pb
   """
   # pylint: enable=line-too-long
 
@@ -498,7 +682,8 @@ class DeployBetaAlpha(_BaseDeploy, base.Command):
     """
     log_func = log.warning if force else log.error
     num_advices = self.ShowConfigReport(
-        self.service_name, self.service_config_id, log_func)
+        self.service_name, self.service_config_id, log_func
+    )
     if num_advices > 0:
       if force:
         log_func(('{0}\n').format(FORCE_ADVICE_STRING))

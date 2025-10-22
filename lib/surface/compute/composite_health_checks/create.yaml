@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Create a composite health check."
     description: "Create a composite health check."
@@ -7,12 +7,14 @@
 
         $ {command} <COMPOSITE_HEALTH_CHECK_NAME> \
           --region=<REGION> \
-          --health-sources=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/healthSources/my-hs \
-          --health-destination=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/forwardingRules/my-fr
+          --health-sources=my-hs \
+          --health-destination=my-fr
 
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.regionCompositeHealthChecks
     method: insert
     modify_request_hooks:

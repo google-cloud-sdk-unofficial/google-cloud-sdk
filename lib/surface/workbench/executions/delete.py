@@ -69,8 +69,12 @@ class Delete(base.DeleteCommand):
       executions_service = (
           api_client.projects_locations_notebookExecutionJobs
       )
+      # We skip validating the execution type for deletion as a workaround to
+      # allow the gcloud e2e script to delete both Colab Enterprise and
+      # Workbench executions. Currently the e2e script does not allow specifying
+      # multiple commands for deleting a single API resource.
       executions_util.ValidateAndGetWorkbenchExecution(
-          args, messages, executions_service
+          args, messages, executions_service, skip_workbench_check=True
       )
       operation = executions_service.Delete(
           executions_util.CreateExecutionDeleteRequest(

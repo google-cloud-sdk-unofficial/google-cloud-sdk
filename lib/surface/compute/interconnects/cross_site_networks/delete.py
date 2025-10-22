@@ -27,13 +27,35 @@ from googlecloudsdk.command_lib.compute.interconnects.cross_site_networks import
 from googlecloudsdk.core import properties
 
 
+_DETAILED_HELP = {
+    'DESCRIPTION': """\
+        *{command}* is used to delete cross site networks.
+
+        For an example, refer to the *EXAMPLES* section below.
+        """,
+    'EXAMPLES': """\
+        To delete a cross site network, run:
+
+          $ {command} example-csn
+
+        Although not shown in this example, you can delete multiple cross site
+        networks in a single command.
+        """,
+}
+
+
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Delete(base.DeleteCommand):
   """Delete Compute Engine cross site networks.
 
   *{command}* deletes Compute Engine cross site networks.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   CROSS_SITE_NETWORK_ARG = None
 

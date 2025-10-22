@@ -24,7 +24,7 @@
     examples: |-
       To get an AutonomousDatabase with id `my-instance` in the location `us-east4`, run:
 
-      $ {command} my-instance --location=us-east4
+        $ {command} my-instance --location=us-east4
   arguments:
     params:
     - help_text: |-

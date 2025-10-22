@@ -23,170 +23,13 @@ from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.api_lib.sql import validate
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
+from googlecloudsdk.command_lib.sql import constants
 from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.command_lib.sql import validate as command_validate
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
-
-
-# 1h, based off of the max time it usually takes to create a SQL instance.
-_INSTANCE_CREATION_TIMEOUT_SECONDS = 3600
-# override flags , future override flags should be declared here.
-OVERRIDE_FLAGS_SET = (
-    'activation_policy',
-    'active_directory_dns_servers',
-    'active_directory_domain',
-    'active_directory_mode',
-    'active_directory_organizational_unit',
-    'active_directory_secret_manager_key',
-    'assign_ip',
-    'authorized_networks',
-    'availability_type',
-    'backup',
-    'backup_start_time',
-    'backup_location',
-    'clear_active_directory_dns_servers',
-    'cpu',
-    'collation',
-    'enable_bin_log',
-    'retained_backups_count',
-    'retained_transaction_log_days',
-    'failover_replica_name',
-    'maintenance_release_channel',
-    'maintenance_window_day',
-    'maintenance_window_hour',
-    'deny_maintenance_period_start_date',
-    'deny_maintenance_period_end_date',
-    'deny_maintenance_period_time',
-    'insights_config_query_insights_enabled',
-    'insights_config_query_string_length',
-    'insights_config_record_application_tags',
-    'insights_config_record_client_address',
-    'insights_config_query_plans_per_minute',
-    'memory',
-    'require_ssl',
-    'storage_auto_increase',
-    'storage_size',
-    'storage_provisioned_iops',
-    'storage_provisioned_throughput',
-    'storage_type',
-    'tier',
-    'edition',
-    'enable_point_in_time_recovery',
-    'network',
-    'clear_network',
-    'audit_bucket_path',
-    'deletion_protection',
-    'time_zone',
-    'connector_enforcement',
-    'timeout',
-    'enable_google_private_path',
-    'enable_data_cache',
-    'enable_private_service_connect',
-    'allowed_psc_projects',
-    'ssl_mode',
-    'enable_google_ml_integration',
-    'database_version',
-    'disk_encryption_key',
-    'disk_encryption_key_keyring',
-    'disk_encryption_key_location',
-    'disk_encryption_key_project',
-    'psc_auto_connections',
-    'server_ca_mode',
-    'region',
-    'retain_backups_on_delete',
-    'final_backup',
-    'final_backup_retention_days',
-)
-
-
-def AddInstanceSettingsArgs(parser):
-  """Declare flag for instance settings."""
-  parser.display_info.AddFormat(flags.GetInstanceListFormat())
-  flags.AddActivationPolicy(parser)
-  flags.AddActiveDirectoryDomain(parser)
-  flags.AddAssignIp(parser)
-  flags.AddAuthorizedNetworks(parser)
-  flags.AddAvailabilityType(parser)
-  flags.AddBackup(parser)
-  flags.AddBackupStartTime(parser)
-  flags.AddBackupLocation(parser, allow_empty=False)
-  flags.AddCPU(parser)
-  flags.AddInstanceCollation(parser)
-  flags.AddEnableBinLog(parser)
-  flags.AddRetainedBackupsCount(parser)
-  flags.AddRetainedTransactionLogDays(parser)
-  flags.AddMaintenanceReleaseChannel(parser)
-  flags.AddMaintenanceWindowDay(parser)
-  flags.AddMaintenanceWindowHour(parser)
-  flags.AddDenyMaintenancePeriodStartDate(parser)
-  flags.AddDenyMaintenancePeriodEndDate(parser)
-  flags.AddDenyMaintenancePeriodTime(parser)
-  flags.AddInsightsConfigQueryInsightsEnabled(parser)
-  flags.AddInsightsConfigQueryStringLength(parser)
-  flags.AddInsightsConfigRecordApplicationTags(parser)
-  flags.AddInsightsConfigRecordClientAddress(parser)
-  flags.AddInsightsConfigQueryPlansPerMinute(parser)
-  flags.AddMemory(parser)
-  flags.AddRequireSsl(parser)
-  flags.AddStorageAutoIncrease(parser)
-  flags.AddStorageSize(parser)
-  flags.AddStorageProvisionedIops(parser)
-  flags.AddStorageProvisionedThroughput(parser)
-  flags.AddStorageType(parser)
-  flags.AddTier(parser)
-  flags.AddEdition(parser)
-  kms_flag_overrides = {
-      'kms-key': '--disk-encryption-key',
-      'kms-keyring': '--disk-encryption-key-keyring',
-      'kms-location': '--disk-encryption-key-location',
-      'kms-project': '--disk-encryption-key-project',
-  }
-  kms_resource_args.AddKmsKeyResourceArg(
-      parser, 'instance', flag_overrides=kms_flag_overrides
-  )
-  flags.AddEnablePointInTimeRecovery(parser)
-  flags.AddNetwork(parser)
-  flags.AddClearNetwork(parser)
-  flags.AddSqlServerAudit(parser)
-  flags.AddDeletionProtection(parser)
-  flags.AddSqlServerTimeZone(parser)
-  flags.AddConnectorEnforcement(parser)
-  flags.AddTimeout(parser, _INSTANCE_CREATION_TIMEOUT_SECONDS)
-  flags.AddEnableGooglePrivatePath(parser, show_negated_in_help=False)
-  flags.AddEnableDataCache(parser, hidden=True)
-  psc_setup_group = parser.add_group()
-  flags.AddEnablePrivateServiceConnect(psc_setup_group)
-  flags.AddAllowedPscProjects(psc_setup_group)
-  flags.AddPscAutoConnections(parser, hidden=True)
-  flags.AddSslMode(parser)
-  flags.AddEnableGoogleMLIntegration(parser, hidden=True)
-  flags.AddEnableDataplexIntegration(parser, hidden=True)
-  flags.AddLocationGroup(parser, hidden=False, specify_default_region=False)
-  flags.AddDatabaseVersion(
-      parser,
-      restrict_choices=False,
-      hidden=False,
-      support_default_version=False,
-      additional_help_text=(
-          ' Note for restore to new instance major version upgrades are not'
-          ' supported. Only minor version upgrades are allowed.'
-      ),
-  )
-  flags.AddServerCaMode(parser, hidden=True)
-  flags.AddTags(parser, hidden=True)
-  flags.AddRetainBackupsOnDelete(parser, hidden=True)
-  flags.AddFinalBackup(parser)
-  flags.AddFinalbackupRetentionDays(parser)
-  flags.AddActiveDirectoryMode(parser, hidden=True)
-  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
-  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
-  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
-  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
-  flags.AddClearActiveDirectory(parser, hidden=True)
 
 
 def _ValidateBackupRequest(is_project_backup, args, overrides):
@@ -337,15 +180,8 @@ class RestoreBackup(base.RestoreCommand):
             ' in timestamp format.'
         ),
     )
-    parser.add_argument(
-        '--clear-disk-encryption',
-        required=False,
-        help=(
-            'Disables CMEK in the restored instance.'
-        ),
-    )
     base.ASYNC_FLAG.AddToParser(parser)
-    AddInstanceSettingsArgs(parser)
+    flags.AddSourceInstanceOverrideArgs(parser)
 
   def Run(self, args):
     """Restores a backup of a Cloud SQL instance.
@@ -365,12 +201,12 @@ class RestoreBackup(base.RestoreCommand):
 
     specified_args_dict = getattr(args, '_specified_args', None)
     overrides = [
-        key for key in specified_args_dict if key in OVERRIDE_FLAGS_SET
+        key
+        for key in specified_args_dict
+        if key in constants.TARGET_INSTANCE_OVERRIDE_FLAGS
     ]
 
-    is_project_backup = command_validate.IsProjectLevelBackupRequest(
-        args.id
-    )
+    is_project_backup = command_validate.IsProjectLevelBackupRequest(args.id)
     _ValidateBackupRequest(is_project_backup, args, overrides)
 
     instance_ref = client.resource_parser.Parse(

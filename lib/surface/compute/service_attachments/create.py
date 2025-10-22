@@ -92,7 +92,7 @@ class CreateHelper(object):
     flags.AddEnableProxyProtocolForCreate(parser)
     flags.AddReconcileConnectionsForCreate(parser)
     flags.AddConsumerRejectList(parser)
-    flags.AddConsumerAcceptList(parser)
+    flags.AddConsumerAcceptListOld(parser)
     flags.AddDomainNames(parser)
     flags.AddPropagatedConnectionLimit(parser)
 

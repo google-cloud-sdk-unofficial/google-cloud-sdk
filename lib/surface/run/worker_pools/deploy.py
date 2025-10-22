@@ -141,7 +141,9 @@ class Deploy(base.Command):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
   def _GetBaseChanges(self, args):
     """Returns the worker pool config changes with some default settings."""
@@ -406,7 +408,9 @@ class AlphaDeploy(Deploy):
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 AlphaDeploy.__doc__ = Deploy.__doc__

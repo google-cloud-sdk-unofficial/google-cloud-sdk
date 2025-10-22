@@ -33,7 +33,7 @@
 
       ODBNetwork based configuration(This is the recommended way):
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW \
@@ -42,7 +42,7 @@
 
       Network and CIDR based configuration:
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --network=projects/my-project/locations/global/networks/default --cidr=12.2.0.0/24 \
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
@@ -294,14 +294,17 @@
                 help_text: |-
                   Oracle Managed.
             - arg_name: encryption-key-kms
-              api_field: autonomousDatabase.properties.encryptionKey.kmsKey
-              required: false
-              repeated: false
               help_text: |-
                 The KMS key used to encrypt the Autonomous Database.
                 This field is required if the provider is GOOGLE_MANAGED.
                 The name of the KMS key resource in the following format:
                 `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1_resources:projects_locations_key_rings_crypto_keys
+              resource_method_params:
+                autonomousDatabase.properties.encryptionKey.kmsKey: '{__relative_name__}'
+              required: false
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false

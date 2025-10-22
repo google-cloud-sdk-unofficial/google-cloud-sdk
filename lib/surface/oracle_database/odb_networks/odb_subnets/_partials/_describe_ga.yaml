@@ -25,7 +25,7 @@
       To get an OdbSubnet with id `my-odbsubnet` in the location `us-east4`
       for a given OdbNetwork with id `my-odbnetwork`, run:
 
-      $ {command} my-odbsubnet --odb-network=my-odbnetwork --location=us-east4
+        $ {command} my-odbsubnet --odb-network=my-odbnetwork --location=us-east4
   arguments:
     params:
     - help_text: |-

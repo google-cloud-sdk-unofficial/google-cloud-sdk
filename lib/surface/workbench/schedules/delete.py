@@ -71,8 +71,12 @@ class Delete(base.DeleteCommand):
       schedules_service = (
           api_client.projects_locations_schedules
       )
+      # We skip validating the schedule type for deletion as a workaround to
+      # allow the gcloud e2e script to delete both Colab Enterprise and
+      # Workbench schedules. Currently the e2e script does not allow specifying
+      # multiple commands for deleting a single API resource.
       schedules_util.ValidateAndGetWorkbenchSchedule(
-          args, messages, schedules_service
+          args, messages, schedules_service, skip_workbench_check=True
       )
       operation = schedules_service.Delete(
           schedules_util.CreateScheduleDeleteRequest(

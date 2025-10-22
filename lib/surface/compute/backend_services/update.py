@@ -145,7 +145,7 @@ class UpdateHelper(object):
     flags.AddServiceLoadBalancingPolicy(parser, required=False, is_update=True)
 
     flags.AddServiceBindings(parser, required=False, is_update=True)
-    flags.AddLocalityLbPolicy(parser)
+    flags.AddLocalityLbPolicy(parser, is_update=True)
     flags.AddIpAddressSelectionPolicy(parser)
     flags.AddExternalMigration(parser)
 
@@ -254,6 +254,9 @@ class UpdateHelper(object):
       replacement.localityLbPolicy = (
           client.messages.BackendService.LocalityLbPolicyValueValuesEnum(
               args.locality_lb_policy))
+    if args.no_locality_lb_policy is not None:
+      replacement.localityLbPolicy = None
+      cleared_fields.append('localityLbPolicy')
 
     backend_services_utils.ApplyCdnPolicyArgs(
         client,
@@ -422,6 +425,7 @@ class UpdateHelper(object):
         args.IsSpecified('service_bindings'),
         args.IsSpecified('no_service_bindings'),
         args.IsSpecified('locality_lb_policy'),
+        args.IsSpecified('no_locality_lb_policy'),
         args.IsSpecified('ip_address_selection_policy'),
         args.IsSpecified('external_managed_migration_state'),
         args.IsSpecified('external_managed_migration_testing_percentage'),

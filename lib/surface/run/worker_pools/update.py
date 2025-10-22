@@ -127,7 +127,9 @@ class Update(base.Command):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
   def _AssertChanges(self, changes, flags_text, ignore_empty):
     if ignore_empty:
@@ -239,7 +241,9 @@ class AlphaUpdate(Update):
     flags.AddWorkerPoolMinInstancesFlag(parser)
     flags.AddWorkerPoolMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(parser, container_args)
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
 
 
 AlphaUpdate.__doc__ = Update.__doc__

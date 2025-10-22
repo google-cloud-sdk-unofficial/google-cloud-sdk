@@ -34,7 +34,6 @@ class Create(base.CreateCommand):
   firewall policy is a set of rules that controls access to various resources.
   """
 
-  support_policy_type = False
   support_ull_policy_type = False
   NETWORK_FIREWALL_POLICY_ARG = None
 
@@ -46,10 +45,9 @@ class Create(base.CreateCommand):
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddArgNetworkFirewallPolicyCreation(parser)
 
-    if cls.support_policy_type:
-      flags.AddPolicyType(
-          parser, ['ULL_POLICY'] if cls.support_ull_policy_type else []
-      )
+    flags.AddPolicyType(
+        parser, ['ULL_POLICY'] if cls.support_ull_policy_type else []
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -68,7 +66,7 @@ class Create(base.CreateCommand):
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description, name=ref.Name()
     )
-    if self.support_policy_type and args.IsSpecified('policy_type'):
+    if args.IsSpecified('policy_type'):
       firewall_policy.policyType = (
           holder.client.messages.FirewallPolicy.PolicyTypeValueValuesEnum(
               args.policy_type
@@ -88,7 +86,6 @@ class CreateBeta(Create):
   firewall policy is a set of rules that controls access to various resources.
   """
 
-  support_policy_type = True
   support_ull_policy_type = False
 
 
@@ -100,7 +97,6 @@ class CreateAlpha(Create):
   firewall policy is a set of rules that controls access to various resources.
   """
 
-  support_policy_type = True
   support_ull_policy_type = True
 
 

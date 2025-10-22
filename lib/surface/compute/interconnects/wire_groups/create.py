@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.interconnects.wire_groups import flags
 from googlecloudsdk.core import properties
 
 
-DETAILED_HELP = {
+_DETAILED_HELP = {
     'DESCRIPTION': """\
         *{command}* is used to create wire groups. A wire group represents a
         group of redundant wires between interconnects in two different metros.
@@ -38,16 +38,15 @@ DETAILED_HELP = {
     'EXAMPLES': """\
         To create a wire group, run:
 
-          $ {command} example-wire-group \
-              --project my-project \
-              --cross-site-network example-cross-site-network \
-              --bandwidth-unmetered 1
+          $ {command} example-wg \
+              --cross-site-network=example-csn
+              --bandwidth-unmetered=1
         """,
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine wire group.
 
@@ -55,6 +54,9 @@ class Create(base.CreateCommand):
   group of redundant wires between interconnects in two different metros.
   Each WireGroup belongs to a CrossSiteNetwork.
   """
+
+  # Framework override.
+  detailed_help = _DETAILED_HELP
 
   WIRE_GROUP_ARG = None
   CROSS_SITE_NETWORK_ARG = None
@@ -67,8 +69,8 @@ class Create(base.CreateCommand):
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
     cls.WIRE_GROUP_ARG = flags.WireGroupArgument(plural=False)
     cls.WIRE_GROUP_ARG.AddArgument(parser, operation_type='create')
+
     flags.AddDescription(parser)
-    flags.AddType(parser)
     flags.AddBandwidthUnmetered(parser)
     flags.AddBandwidthAllocation(parser)
     flags.AddFaultResponse(parser)
@@ -95,7 +97,7 @@ class Create(base.CreateCommand):
     return wire_group.Create(
         description=args.description,
         # Need to rename type as it conflicts with python built in type()
-        wire_group_type=args.type,
+        wire_group_type=getattr(args, 'type', None),
         bandwidth_unmetered=args.bandwidth_unmetered,
         bandwidth_metered=getattr(args, 'bandwidth_metered', None),
         fault_response=args.fault_response,
@@ -107,8 +109,19 @@ class Create(base.CreateCommand):
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(Create):
+  """Create a Compute Engine wire group."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateBeta, cls).Args(parser)
+    flags.AddType(parser)
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
+class CreateAlpha(CreateBeta):
   """Create a Compute Engine wire group.
 
   *{command}* is used to create wire groups. A wire group represents a
@@ -121,6 +134,3 @@ class CreateAlpha(Create):
     super(CreateAlpha, cls).Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)
-
-
-Create.detailed_help = DETAILED_HELP

@@ -20,12 +20,14 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update autonomousDatabases
-    description: Update an autonomousDatabase
+    brief: Update an AutonomousDatabase.
+    description: Update an AutonomousDatabase.
     examples: |-
-      To update the autonomousDatabase, run:
+      To Update the encryption for a given AutonomousDatabase with id `my-autonomous-database`
+      with custom KMS encryption key
+      `projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key`, run:
 
-          $ {command}
+        $ {command} my-autonomous-database --location=us-east4 --properties-encryption-key-provider=GOOGLE_MANAGED --properties-encryption-key-kms-key=projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key
   arguments:
     params:
     - help_text: |-
@@ -285,14 +287,18 @@
                   Oracle Managed.
                 hidden: true
             - arg_name: encryption-key-kms
-              api_field: autonomousDatabase.properties.encryptionKey.kmsKey
-              required: false
-              repeated: false
               help_text: |-
                 The KMS key used to encrypt the Autonomous Database.
                 This field is required if the provider is GOOGLE_MANAGED.
                 The name of the KMS key resource in the following format:
                 `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`.
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_key_rings_crypto_keys
+              resource_method_params:
+                autonomousDatabase.properties.encryptionKey.kmsKey: '{__relative_name__}'
+              required: false
+              clearable: true
     - arg_name: labels
       api_field: autonomousDatabase.labels
       required: false

@@ -761,7 +761,7 @@ def deploy_application(
         stages.ServiceStages(allow_unauthenticated is not None),
         failure_message='Deployment failed',
         suppress_output=False,
-        done_message_callback=lambda: f"Service '{new_service.name}' has been deployed.",
+        success_message=f"Service '{new_service.name}' has been deployed.",
     ) as tracker:
       deployed_service = client.ReleaseService(
           service_ref,

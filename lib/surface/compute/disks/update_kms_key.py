@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for updating the KMS key of a persistent disk."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -75,7 +72,7 @@ class UpdateKmsKey(base.Command):
           zone=disk_ref.zone,
           disk=disk_ref.Name(),
       )
-      return service.UpdateKmsKey(request)
+      return client.MakeRequests([(service, 'UpdateKmsKey', request)])
     elif disk_ref.Collection() == 'compute.regionDisks':
       service = client.apitools_client.regionDisks
       request = messages.ComputeRegionDisksUpdateKmsKeyRequest(
@@ -83,7 +80,7 @@ class UpdateKmsKey(base.Command):
           region=disk_ref.region,
           disk=disk_ref.Name(),
       )
-      return service.UpdateKmsKey(request)
+      return client.MakeRequests([(service, 'UpdateKmsKey', request)])
 
 
 UpdateKmsKey.detailed_help = DETAILED_HELP

@@ -27,7 +27,7 @@
       for a given OdbNetwork with id `my-odbnetwork`.
       run:
 
-      $ {command} my-odbsubnet --odb-network=my-odbnetwork --cidr-range=10.0.10.0/24 --purpose=CLIENT_SUBNET --location=us-east4
+        $ {command} my-odbsubnet --odb-network=my-odbnetwork --cidr-range=10.0.10.0/24 --purpose=CLIENT_SUBNET --location=us-east4
   arguments:
     params:
     - help_text: |-

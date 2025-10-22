@@ -112,6 +112,19 @@
             instance.kmsKey: '{__relative_name__}'
           required: false
           clearable: true
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  maintenance version.
+        params:
+        - arg_name: maintenance-version
+          api_field: instance.maintenanceVersion
+          required: false
+          repeated: false
+          help_text: |-
+            This field can be used to trigger self service update to indicate the
+            desired maintenance version. The input to this field can be determined by
+            the available_maintenance_versions field.
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}

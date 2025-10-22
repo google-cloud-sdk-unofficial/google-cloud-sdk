@@ -23,11 +23,11 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class CrossSiteNetworks(base.Group):
   """Create or manipulate cross site networks."""
-
-  pass
 
 
 CrossSiteNetworks.detailed_help = {

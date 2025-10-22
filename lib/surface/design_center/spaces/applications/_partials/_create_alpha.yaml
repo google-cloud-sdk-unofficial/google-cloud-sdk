@@ -22,9 +22,9 @@
     brief: Create an application
     description: Create an application in a space.
     examples: |-
-      To create the application `my-application` with a display name of `My Application`, description of `My application description` and source application template revision `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1` in space `my-space`, project `my-project` and location `us-central1`, run:
+      To create the application `my-application` with a display name `My Application`, description `My application description`, scope type `global` and source application template revision `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1` in space `my-space`, project `my-project` and location `us-central1`, run:
 
-        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My Application" --description="My application description" --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
+        $ {command} my-application --space=my-space --project=my-project --location=us-central1 --display-name="My Application" --description="My application description" --scope-type=global --source-application-template-revision=projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1
 
       To create the application `my-application` with a deployment project `my-deployment-project`, deployment region `us-east1`, scope type `regional` and source application template revision `projects/my-project/locations/us-central1/spaces/my-space/applicationTemplates/my-app-template/revisions/rev1` in space `my-space`, project `my-project` and location `us-central1`, run:
 
@@ -341,6 +341,57 @@
           type: arg_json
           help_text: |-
             The value of the parameter.
+    - arg_name: type
+      api_field: application.type
+      required: false
+      help_text: |-
+        The type of the application.
+      choices:
+      - arg_value: terraform-app
+        enum_value: TERRAFORM_APP
+        help_text: |-
+          Application type is terraform application.
+      - arg_value: helm-app
+        enum_value: HELM_APP
+        help_text: |-
+          Application type is helm application.
+    - group:
+        api_field: application.deploymentTarget
+        required: false
+        help_text: |-
+          The deployment target of the application.
+        params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the target.
+            params:
+            - group:
+                api_field: application.deploymentTarget.gkeDeploymentTarget
+                required: false
+                help_text: |-
+                  The GKE deployment target.
+                params:
+                - arg_name: gke-deployment-target-cluster-self-link
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.clusterSelfLink
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The self link of the cluster where GKE based application is deployed.
+                - arg_name: gke-deployment-target-namespace
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.namespace
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The namespace where the application is deployed.
+                - arg_name: gke-deployment-target-kubernetes-service-account
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.kubernetesServiceAccount
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The kubernetes service account that is created within the namespace
+                    provided above.
+                    Example: default or node-sa
   request:
     api_version: v1alpha
     collection:

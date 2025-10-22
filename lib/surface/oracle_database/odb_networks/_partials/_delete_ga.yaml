@@ -24,7 +24,7 @@
     examples: |-
       To delete an OdbNetwork with id `my-odbnetwork` in the location `us-east4`, run:
 
-      $ {command} my-odbnetwork --location=us-east4
+        $ {command} my-odbnetwork --location=us-east4
   arguments:
     params:
     - help_text: |-

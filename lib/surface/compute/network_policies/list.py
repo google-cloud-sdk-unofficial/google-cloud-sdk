@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.network_policies import flags
 from googlecloudsdk.core import properties
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):

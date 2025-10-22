@@ -29,7 +29,7 @@ import six
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   r"""Update a Compute Engine security policy rule.
 
@@ -119,12 +119,8 @@ class Update(base.UpdateCommand):
     dest_ip_ranges = []
     dest_ports_list = []
     layer4_config_list = []
-    target_resources = []
-    target_service_accounts = []
-    enable_logging = None
     preview = None
     should_setup_match = False
-    traffic_direct = None
     matcher = None
     if args.IsSpecified('expression'):
       expression = args.expression
@@ -144,12 +140,6 @@ class Update(base.UpdateCommand):
       should_setup_match = True
       layer4_config_list = rule_utils.ParseLayer4Configs(
           args.layer4_configs, holder.client.messages)
-    if args.IsSpecified('target_resources'):
-      target_resources = args.target_resources
-    if args.IsSpecified('target_service_accounts'):
-      target_service_accounts = args.target_service_accounts
-    if args.IsSpecified('enable_logging'):
-      enable_logging = True
     if args.IsSpecified('preview'):
       preview = args.preview
     if args.IsSpecified('new_priority'):
@@ -171,27 +161,34 @@ class Update(base.UpdateCommand):
             dest_ports_list,
             layer4_config_list,
         )
-    if args.IsSpecified('direction'):
-      if args.direction == 'INGRESS':
-        traffic_direct = (
-            holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
-        )
-      else:
-        traffic_direct = (
-            holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
-        )
 
     security_policy_rule = holder.client.messages.SecurityPolicyRule(
         priority=new_priority,
         action=rule_utils.ConvertAction(args.action),
         match=matcher,
-        direction=traffic_direct,
-        targetResources=target_resources,
-        targetServiceAccounts=target_service_accounts,
         description=args.description,
-        enableLogging=enable_logging,
         preview=preview,
     )
+
+    # only support firewall fields in Alpha/Beta
+    if self.ReleaseTrack() != base.ReleaseTrack.GA:
+      if args.IsSpecified('target_resources'):
+        security_policy_rule.targetResources = args.target_resources
+      if args.IsSpecified('target_service_accounts'):
+        security_policy_rule.targetServiceAccounts = (
+            args.target_service_accounts
+        )
+      if args.IsSpecified('enable_logging'):
+        security_policy_rule.enableLogging = True
+      if args.IsSpecified('direction'):
+        if args.direction == 'INGRESS':
+          security_policy_rule.direction = (
+              holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.INGRESS
+          )
+        else:
+          security_policy_rule.direction = (
+              holder.client.messages.SecurityPolicyRule.DirectionValueValuesEnum.EGRESS
+          )
 
     security_policy_id = org_security_policies_utils.GetSecurityPolicyId(
         security_policy_rule_client,

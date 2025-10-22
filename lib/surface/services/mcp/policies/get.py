@@ -125,12 +125,8 @@ class Get(base.Command):
     else:
       result = _ConvertToDict(policy)
       for k, v in result.items():
-        if k not in ['mcpEnableRules', 'contentSecurity'] and v:
+        if k not in ['mcpEnableRules'] and v:
           log.status.Print(k + ': ' + v)
-        if k == 'contentSecurity':
-          log.status.Print(k + ':')
-          for content_security_provider in v.contentSecurityProviders:
-            print(content_security_provider)
         elif k == 'mcpEnableRules':
           log.status.Print(k + ':')
           for enable_rule in v:
@@ -154,7 +150,6 @@ def _ConvertToDict(policy):
       'updateTime': policy.updateTime,
       'createTime': policy.createTime,
       'etag': policy.etag,
-      'contentSecurity': policy.contentSecurity,
   }
 
   for enable_rule in policy.mcpEnableRules:

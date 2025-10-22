@@ -24,7 +24,7 @@
     examples: |-
       To list all DatabaseCharacterSets in the location `us-east4` for character set `character-set`, run:
 
-      $ {command} --location=us-east4 --filter="character_set_type=character-set"
+        $ {command} --location=us-east4 --filter="character_set_type=character-set"
   arguments:
     params:
     - help_text: |-

@@ -28,9 +28,14 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List cross site networks."""
+
+  # Framework override.
+  detailed_help = base_classes.GetGlobalListerHelp('cross site networks')
 
   @classmethod
   def Args(cls, parser):
@@ -66,6 +71,3 @@ class List(base.ListCommand):
         limit=args.limit,
         batch_size=None,
     )
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp('cross site networks')

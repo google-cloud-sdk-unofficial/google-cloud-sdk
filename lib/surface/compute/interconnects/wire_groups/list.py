@@ -31,11 +31,27 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List wire groups."""
 
+  # Framework override.
+  detailed_help = base_classes.GetGlobalListerHelp('wire groups')
+
   CROSS_SITE_NETWORK_ARG = None
+
+  @classmethod
+  def _SetDisplayInfoFormat(cls, parser):
+    parser.display_info.AddFormat("""
+        table(
+          name,
+          description,
+          crossSiteNetwork,
+          wireProperties.bandwidthUnmetered,
+          wireProperties.faultResponse,
+          adminEnabled
+        )
+    """)
 
   @classmethod
   def Args(cls, parser):
@@ -43,17 +59,7 @@ class List(base.ListCommand):
         cross_site_network_flags.CrossSiteNetworkArgumentForOtherResource()
     )
     cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
-    parser.display_info.AddFormat("""
-        table(
-          name,
-          description,
-          crossSiteNetwork,
-          wireGroupProperties.type,
-          wireProperties.bandwidthUnmetered,
-          wireProperties.faultResponse,
-          adminEnabled
-        )
-    """)
+    cls._SetDisplayInfoFormat(parser)
 
   def Run(self, args: Any):
     """Run the list command.
@@ -94,18 +100,32 @@ class List(base.ListCommand):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ListBeta(List):
   """List wire groups."""
 
-  CROSS_SITE_NETWORK_ARG = None
+  @classmethod
+  def _SetDisplayInfoFormat(cls, parser):
+    parser.display_info.AddFormat("""
+        table(
+          name,
+          description,
+          crossSiteNetwork,
+          wireGroupProperties.type,
+          wireProperties.bandwidthUnmetered,
+          wireProperties.faultResponse,
+          adminEnabled
+        )
+    """)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListAlpha(ListBeta):
+  """List wire groups."""
 
   @classmethod
-  def Args(cls, parser):
-    cls.CROSS_SITE_NETWORK_ARG = (
-        cross_site_network_flags.CrossSiteNetworkArgumentForOtherResource()
-    )
-    cls.CROSS_SITE_NETWORK_ARG.AddArgument(parser)
+  def _SetDisplayInfoFormat(cls, parser):
     parser.display_info.AddFormat("""
         table(
           name,
@@ -120,6 +140,3 @@ class ListAlpha(List):
           adminEnabled
         )
     """)
-
-
-List.detailed_help = base_classes.GetGlobalListerHelp('wire groups')

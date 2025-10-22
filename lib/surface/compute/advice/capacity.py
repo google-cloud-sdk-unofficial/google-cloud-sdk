@@ -260,12 +260,12 @@ class Capacity(base.Command):
         distributionPolicy=distribution_policy,
         instanceFlexibilityPolicy=instance_flexibility_policy,
         instanceProperties=instance_properties,
+        size=args.size,
     )
 
     outer_request = messages.ComputeAdviceCapacityRequest(
         project=project,
         region=region,
-        size=args.size,
         capacityAdviceRequest=inner_request,
     )
 

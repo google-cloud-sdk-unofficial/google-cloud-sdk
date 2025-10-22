@@ -132,6 +132,9 @@ for examples.
   flags.AddContainerdConfigFlag(parser)
   flags.AddEnableKubeletReadonlyPortFlag(parser)
   flags.AddGpuDirectStrategyFlag(parser)
+  flags.AddEnableKernelModuleSignatureEnforcementFlag(
+      parser, for_node_pool=True, hidden=True
+  )
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -232,6 +235,7 @@ def ParseCreateNodePoolOptionsBase(args):
       boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
       boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
       accelerator_network_profile=args.accelerator_network_profile,
+      enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
   )
 
 
@@ -290,6 +294,7 @@ class Create(base.CreateCommand):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddConsolidationDelayFlag(parser, hidden=True)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddBestEffortProvisionFlags(parser)
@@ -315,6 +320,7 @@ class Create(base.CreateCommand):
     ops.placement_policy = args.placement_policy
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.consolidation_delay = args.consolidation_delay
     ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.secondary_boot_disks = args.secondary_boot_disk
@@ -447,6 +453,7 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddConsolidationDelayFlag(parser, hidden=True)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)
@@ -494,6 +501,7 @@ class CreateBeta(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.consolidation_delay = args.consolidation_delay
     ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
@@ -549,6 +557,7 @@ class CreateAlpha(Create):
     ops.enable_fast_socket = args.enable_fast_socket
     ops.enable_queued_provisioning = args.enable_queued_provisioning
     ops.max_run_duration = args.max_run_duration
+    ops.consolidation_delay = args.consolidation_delay
     ops.flex_start = args.flex_start
     ops.tpu_topology = args.tpu_topology
     ops.enable_nested_virtualization = args.enable_nested_virtualization
@@ -622,6 +631,7 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
+    flags.AddConsolidationDelayFlag(parser, hidden=True)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)

@@ -246,6 +246,7 @@ def ParseCreateOptionsBase(
       addons = {api_adapter.LUSTRECSIDRIVER: True}
     else:
       addons[api_adapter.LUSTRECSIDRIVER] = True
+  enable_pod_snapshots = get_default('pod_snapshots_enabled')
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -504,6 +505,9 @@ def ParseCreateOptionsBase(
       ),
       workload_policies=get_default('workload_policies'),
       in_transit_encryption=get_default('in_transit_encryption'),
+      enable_kernel_module_signature_enforcement=get_default(
+          'enable_kernel_module_signature_enforcement'
+      ),
       containerd_config_from_file=get_default('containerd_config_from_file'),
       fleet_project=get_default('fleet_project'),
       enable_fleet=get_default('enable_fleet'),
@@ -569,6 +573,7 @@ def ParseCreateOptionsBase(
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
+      enable_pod_snapshots=enable_pod_snapshots,
       enable_default_compute_class=get_default('enable_default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
       boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
@@ -840,6 +845,11 @@ flags_to_add = {
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
         ),
+        'enableKernelModuleSignatureEnforcement': (
+            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
+                p, hidden=True
+            )
+        ),
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1049,6 +1059,12 @@ flags_to_add = {
         ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+        ),
+        'podsnapshots': flags.AddPodSnapshotConfigFlags,
+        'enableKernelModuleSignatureEnforcement': (
+            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
+                p, hidden=True
+            )
         ),
     },
     ALPHA: {
@@ -1265,6 +1281,12 @@ flags_to_add = {
         ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
+        ),
+        'podsnapshots': flags.AddPodSnapshotConfigFlags,
+        'enableKernelModuleSignatureEnforcement': (
+            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
+                p, hidden=True
+            )
         ),
     },
 }

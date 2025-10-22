@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 # deployment resource pool not yet ready for v1 API
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DeploymentResourcePools(base.Group):
   """Manage Vertex AI deployment resource pools."""
 
