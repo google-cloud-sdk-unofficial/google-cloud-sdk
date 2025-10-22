@@ -324,6 +324,7 @@ class AlphaCreate(Create):
         autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
         asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        disable_downscaling=args.disable_downscaling,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         default_storage_type=default_storage_type,

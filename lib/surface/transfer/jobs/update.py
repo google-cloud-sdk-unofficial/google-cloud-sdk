@@ -55,8 +55,17 @@ def _clear_fields(args, messages, job):
     if getattr(args, 'clear_s3_cloudfront_domain', None):
       job.transferSpec.awsS3DataSource.cloudfrontDomain = None
 
-  if getattr(job.transferSpec, 'objectConditions', None):
-    object_conditions = job.transferSpec.objectConditions
+  object_conditions, transfer_options = None, None
+  if job.transferSpec:
+    # It is a transfer job.
+    object_conditions = getattr(job.transferSpec, 'objectConditions', None)
+    transfer_options = getattr(job.transferSpec, 'transferOptions', None)
+  elif job.replicationSpec:
+    # Otherwise, it's a replication job.
+    object_conditions = getattr(job.replicationSpec, 'objectConditions', None)
+    transfer_options = getattr(job.replicationSpec, 'transferOptions', None)
+
+  if object_conditions:
     if args.clear_include_prefixes:
       object_conditions.includePrefixes = []
     if args.clear_exclude_prefixes:
@@ -71,10 +80,12 @@ def _clear_fields(args, messages, job):
       object_conditions.maxTimeElapsedSinceLastModification = None
 
     if object_conditions == messages.ObjectConditions():
-      job.transferSpec.objectConditions = None
+      if job.transferSpec:
+        job.transferSpec.objectConditions = None
+      else:
+        job.replicationSpec.objectConditions = None
 
-  if getattr(job.transferSpec, 'transferOptions', None):
-    transfer_options = job.transferSpec.transferOptions
+  if transfer_options:
     if args.clear_delete_from:
       transfer_options.deleteObjectsFromSourceAfterTransfer = None
       transfer_options.deleteObjectsUniqueInSink = None
@@ -103,7 +114,10 @@ def _clear_fields(args, messages, job):
         transfer_options.metadataOptions = new_metadata_options
 
     if transfer_options == messages.TransferOptions():
-      job.transferSpec.transferOptions = None
+      if job.transferSpec:
+        job.transferSpec.transferOptions = None
+      else:
+        job.replicationSpec.transferOptions = None
 
   if args.clear_notification_config:
     job.notificationConfig = None

@@ -84,6 +84,7 @@ class UpdateGa(base.UpdateCommand):
 
   def Run(self, args):
     self._ValidateArgs(args)
+    field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
@@ -125,6 +126,7 @@ class UpdateGa(base.UpdateCommand):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
+      field_mask.append('ddos_protection_config')
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
@@ -134,7 +136,9 @@ class UpdateGa(base.UpdateCommand):
         ddosProtectionConfig=ddos_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 
-    return security_policy.Patch(security_policy=updated_security_policy)
+    return security_policy.Patch(
+        security_policy=updated_security_policy,
+        field_mask=','.join(field_mask))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -214,6 +218,7 @@ class UpdateBeta(UpdateGa):
 
   def Run(self, args):
     self._ValidateArgs(args)
+    field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
@@ -264,6 +269,7 @@ class UpdateBeta(UpdateGa):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
+      field_mask.append('ddos_protection_config')
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
@@ -273,7 +279,9 @@ class UpdateBeta(UpdateGa):
         ddosProtectionConfig=ddos_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 
-    return security_policy.Patch(security_policy=updated_security_policy)
+    return security_policy.Patch(
+        security_policy=updated_security_policy,
+        field_mask=','.join(field_mask))
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -336,6 +344,7 @@ class UpdateAlpha(UpdateBeta):
         or args.IsSpecified('network_ddos_protection')
         or args.IsSpecified('network_ddos_adaptive_protection')
         or args.IsSpecified('network_ddos_impacted_baseline_threshold')
+        or args.IsSpecified('clear_network_ddos_impacted_baseline_threshold')
         or args.IsSpecified('ddos_protection')
     ):
       parameter_names = [
@@ -352,6 +361,7 @@ class UpdateAlpha(UpdateBeta):
           '--network-ddos-protection',
           '--network-ddos-adaptive-protection',
           '--network-ddos-impacted-baseline-threshold',
+          '--clear-network-ddos-impacted-baseline-threshold',
           '--ddos-protection',
       ]
       raise exceptions.MinimumArgumentException(
@@ -359,6 +369,7 @@ class UpdateAlpha(UpdateBeta):
 
   def Run(self, args):
     self._ValidateArgs(args)
+    field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
@@ -413,17 +424,39 @@ class UpdateAlpha(UpdateBeta):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfigOld(
               holder.client, args, ddos_protection_config))
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
     if args.IsSpecified('network_ddos_protection'):
       ddos_protection_config = (
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
     if args.IsSpecified('network_ddos_adaptive_protection'):
       ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithDdosAdaptiveProtection(
           holder.client, args, ddos_protection_config
       )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
     if args.IsSpecified('network_ddos_impacted_baseline_threshold'):
       ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithNetworkDdosImpactedBaselineThreshold(
           holder.client, args, ddos_protection_config
+      )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
+      )
+    elif args.IsSpecified('clear_network_ddos_impacted_baseline_threshold'):
+      if ddos_protection_config is None:
+        ddos_protection_config = (
+            holder.client.messages.SecurityPolicyDdosProtectionConfig()
+        )
+      ddos_protection_config.ddosImpactedBaselineThreshold = None
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
       )
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
@@ -435,4 +468,6 @@ class UpdateAlpha(UpdateBeta):
         ddosProtectionConfig=ddos_protection_config,
         fingerprint=existing_security_policy.fingerprint)
 
-    return security_policy.Patch(security_policy=updated_security_policy)
+    return security_policy.Patch(
+        security_policy=updated_security_policy,
+        field_mask=','.join(field_mask))

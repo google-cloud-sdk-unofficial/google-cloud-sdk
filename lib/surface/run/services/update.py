@@ -98,6 +98,7 @@ class Update(base.Command):
     flags.AddCpuThrottlingFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
     flags.AddDefaultUrlFlag(parser)
+    flags.AddDeployHealthCheckFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
     flags.AddGpuTypeFlag(parser)
@@ -308,7 +309,6 @@ class BetaUpdate(Update):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDeployHealthCheckFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -329,7 +329,6 @@ class AlphaUpdate(BetaUpdate):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDeployHealthCheckFlag(parser)
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)

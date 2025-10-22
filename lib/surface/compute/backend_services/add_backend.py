@@ -176,7 +176,10 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          or self.ReleaseTrack() == base.ReleaseTrack.BETA
+      ):
         backend.maxInFlightRequests = args.max_in_flight_requests
         backend.maxInFlightRequestsPerInstance = (
             args.max_in_flight_requests_per_instance
@@ -202,7 +205,10 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          or self.ReleaseTrack() == base.ReleaseTrack.BETA
+      ):
         backend.maxInFlightRequests = args.max_in_flight_requests
         backend.maxInFlightRequestsPerInstance = (
             args.max_in_flight_requests_per_instance
@@ -256,8 +262,8 @@ class AddBackend(base.UpdateCommand):
     traffic_duration = None
     if (
         self.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        and args.traffic_duration
-    ):
+        or self.ReleaseTrack() == base.ReleaseTrack.BETA
+    ) and args.traffic_duration:
       traffic_duration = client.messages.Backend.TrafficDurationValueValuesEnum(
           args.traffic_duration
       )
@@ -319,6 +325,7 @@ class AddBackendBeta(AddBackend):
   """
 
   # Allow --preference flag to be set when updating the backend.
+  support_in_flight_balancing = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

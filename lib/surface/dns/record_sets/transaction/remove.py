@@ -30,6 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.UniverseCompatible
 class Remove(base.Command):
   r"""Append a record-set deletion to the transaction.
 
@@ -47,11 +48,6 @@ class Remove(base.Command):
     $ {command} --zone=MANAGED_ZONE --name=my.domain. --ttl=2345 \
         --type=TXT "Hello world" "Bye world"
   """
-
-  @classmethod
-  def _IsBetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
 
   @staticmethod
   def Args(parser):
@@ -95,8 +91,7 @@ class Remove(base.Command):
     record_to_remove = rrsets_util.CreateRecordSetFromArgs(
         args,
         zone_ref.project,
-        api_version=api_version,
-        allow_extended_records=self._IsBetaOrAlpha())
+        api_version=api_version)
 
     existing_records = [record for record in list_pager.YieldFromList(
         dns.resourceRecordSets,

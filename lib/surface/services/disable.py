@@ -186,7 +186,7 @@ class DisableAlpha(base.SilentCommand):
     if args.validate_only:
       services_util.PrintOperation(op)
     else:
-      services_util.PrintOperationWithResponse(op)
+      services_util.PrintOperationWithResponseForUpdateConsumerPolicy(op)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

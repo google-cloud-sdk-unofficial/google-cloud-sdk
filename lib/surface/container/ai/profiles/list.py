@@ -14,7 +14,9 @@
 # limitations under the License.
 """Lists compatible accelerator profiles for GKE Inference Quickstart."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.recommender import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run.printers import profiles_csv_printer
@@ -213,21 +215,23 @@ class List(commands.List):
       if args.pricing_model:
         cost.pricingModel = args.pricing_model
       performance_requirements.targetCost = cost
+    try:
+      request = messages.FetchProfilesRequest(
+          model=args.model,
+          modelServer=args.model_server,
+          modelServerVersion=args.model_server_version,
+      )
+      if (
+          performance_requirements.targetNtpotMilliseconds is not None
+          or performance_requirements.targetTtftMilliseconds is not None
+          or performance_requirements.targetCost is not None
+      ):
+        request.performanceRequirements = performance_requirements
 
-    request = messages.FetchProfilesRequest(
-        model=args.model,
-        modelServer=args.model_server,
-        modelServerVersion=args.model_server_version,
-    )
-    if (
-        performance_requirements.targetNtpotMilliseconds is not None
-        or performance_requirements.targetTtftMilliseconds is not None
-        or performance_requirements.targetCost is not None
-    ):
-      request.performanceRequirements = performance_requirements
-
-    response = client.profiles.Fetch(request)
-    if response.profile:
-      return response.profile
-    else:
-      return []
+      response = client.profiles.Fetch(request)
+      if response.profile:
+        return response.profile
+      else:
+        return []
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

@@ -33,6 +33,7 @@ from googlecloudsdk.core.util import files
 
 
 @base.UnicodeIsSupported
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Import(base.Command):
@@ -62,11 +63,6 @@ class Import(base.Command):
 
     $ {command} YAML_RECORDS_FILE --delete-all-existing --zone=MANAGED_ZONE
   """
-
-  @classmethod
-  def _IsBetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
@@ -149,7 +145,7 @@ class Import(base.Command):
         else:
           imported = import_util.RecordSetsFromYamlFile(
               import_file,
-              include_extended_records=self._IsBetaOrAlpha(),
+              include_extended_records=True,
               api_version=api_version)
     except Exception as exp:
       msg = ('Unable to read record-sets from specified records-file [{0}] '

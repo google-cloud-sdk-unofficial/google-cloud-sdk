@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Add(base.Command):
   r"""Append a record-set addition to the transaction.
 
@@ -51,11 +52,6 @@ class Add(base.Command):
         --name=my.domain. --ttl=14400 \
         --type=TXT --zone=MANAGED_ZONE
   """
-
-  @classmethod
-  def _IsBetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
 
   @staticmethod
   def Args(parser):
@@ -96,8 +92,7 @@ class Add(base.Command):
         rrsets_util.CreateRecordSetFromArgs(
             args,
             zone_ref.project,
-            api_version=api_version,
-            allow_extended_records=self._IsBetaOrAlpha()))
+            api_version=api_version))
 
     with trans_util.TransactionFile(args.transaction_file, 'w') as trans_file:
       trans_util.WriteToYamlFile(trans_file, change)

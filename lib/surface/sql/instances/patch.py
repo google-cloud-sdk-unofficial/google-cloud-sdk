@@ -364,6 +364,8 @@ def AddBaseArgs(parser):
   psc_update_auto_connections_group = parser.add_mutually_exclusive_group()
   flags.AddPscAutoConnections(psc_update_auto_connections_group)
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
+  flags.AddServerCaMode(parser)
+  flags.AddServerCaPool(parser)
 
 
 def AddBetaArgs(parser):
@@ -375,8 +377,6 @@ def AddBetaArgs(parser):
   flags.AddReconcilePsaNetworking(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddEnableAutoUpgrade(parser)
-  flags.AddServerCaMode(parser, hidden=True)
-  flags.AddServerCaPool(parser, hidden=True)
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)

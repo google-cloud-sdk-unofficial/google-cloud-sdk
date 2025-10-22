@@ -728,6 +728,7 @@ flags_to_add = {
         'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
         'maxunavailable': flags.AddMaxUnavailableUpgradeFlag,
+        'membershipType': flags.AddMembershipTypeFlags,
         'meshcertificates': flags.AddMeshCertificatesFlags,
         'metadata': flags.AddMetadataFlags,
         'mincpu': flags.AddMinCpuPlatformFlag,

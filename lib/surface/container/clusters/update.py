@@ -413,7 +413,9 @@ class Update(base.UpdateCommand):
     flags.AddEnableMultiNetworkingFlag(group)
     flags.AddContainerdConfigFlag(group)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
-    flags.AddFleetProjectFlag(group, is_update=True)
+    group_fleet_flags = group.add_group()
+    flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
+    flags.AddMembershipTypeFlags(group_fleet_flags, is_update=True)
     flags.AddInTransitEncryptionFlag(group)
     flags.AddEnableCiliumClusterwideNetworkPolicyFlag(group, is_update=True)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
@@ -557,6 +559,8 @@ class Update(base.UpdateCommand):
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
     opts.clear_fleet_project = args.clear_fleet_project
+    opts.membership_type = args.membership_type
+    opts.unset_membership_type = args.unset_membership_type
     opts.enable_cilium_clusterwide_network_policy = (
         args.enable_cilium_clusterwide_network_policy
     )

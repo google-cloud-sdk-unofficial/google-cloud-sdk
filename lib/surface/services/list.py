@@ -30,7 +30,8 @@ class ListAlpha(base.ListCommand):
 
   This command lists the services that are enabled or available (Google first
   party services) to be enabled
-  by a project, folder or organization. Service enablement can be inherited from
+  by a project, folder or organization. Service enablement and availability can
+  be inherited from
   resource ancestors. A resource's enabled services include services that are
   enabled on the resource itself and enabled on all resource ancestors.
   services by using exactly one of the `--enabled` or `--available` flags.
@@ -72,15 +73,13 @@ class ListAlpha(base.ListCommand):
         action='store_true',
         help=(
             'Return the Google first party services available to the '
-            'project, folder or organization to enable. This list will '
-            'include any services that the project, folder or organization '
-            'has already enabled.'
+            'project, folder or organization to enable.'
         ),
     )
 
     common_flags.add_resource_args(parser)
 
-    base.PAGE_SIZE_FLAG.SetDefault(parser, 200)
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 1000)
 
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)

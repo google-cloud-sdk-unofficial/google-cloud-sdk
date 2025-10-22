@@ -14,7 +14,9 @@
 # limitations under the License.
 """Generates optimized Kubernetes manifests for GKE Inference Quickstart."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.recommender import util
+from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -148,10 +150,8 @@ class Create(base.CreateCommand):
 
       response = client.optimizedManifest.Generate(request)
       return response
-    except exceptions.Error as e:
-      log.error(f"An error has occurred: {e}")
-      log.status.Print(f"An error has occurred: {e}")
-      return []
+    except apitools_exceptions.HttpError as error:
+      raise api_lib_exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
   def Display(self, args, resources):
     if not resources:

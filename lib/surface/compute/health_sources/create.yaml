@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Create a health source."
     description: "Create a health source."
@@ -14,6 +14,8 @@
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.regionHealthSources
     method: insert
     modify_request_hooks:

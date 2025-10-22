@@ -59,6 +59,15 @@ order to avoid potential race conditions:
 """
 
 _ALPHA_EXAMPLES = """
+The following command overwrites the custom contexts of an object:
+
+  $ {command} gs://bucket/my-object --custom-contexts=key1=value1,key2=value2
+
+The following example simultaneously updates and removes custom contexts, with
+remove being applied first:
+
+  $ {command} gs://bucket/my-object --update-custom-contexts=key2=value3 \
+      --remove-custom-contexts=key2,key3
 """
 
 

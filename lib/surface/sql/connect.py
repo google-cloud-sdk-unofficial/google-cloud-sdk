@@ -213,7 +213,7 @@ def AddBetaArgs(parser):
             'Proxy through localhost.'))
 
 
-def AddAlphaArgs(parser):
+def AddProxyV2Args(parser) -> None:
   """Declare alpha flag arguments for this command parser.
 
   Args:
@@ -221,10 +221,28 @@ def AddAlphaArgs(parser):
         the command line after this command. Positional arguments are allowed.
   """
   parser.add_argument(
+      'instance',
+      completer=sql_flags.InstanceCompleter,
+      help='Cloud SQL instance ID.')
+
+  parser.add_argument(
+      '--port',
+      type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=65535),
+      default=constants.DEFAULT_PROXY_PORT_NUMBER,
+      help=('Port number that gcloud will use to connect to the Cloud SQL '
+            'Proxy through localhost.'))
+  user_group = parser.add_mutually_exclusive_group(
+      'User selection settings for Cloud SQL Proxy connection.')
+  user_group.add_argument(
       '--auto-iam-authn',
       action='store_true',
       help='Enables IAM database authentication for connections to MySQL and '
            'Postgres instances.')
+  user_group.add_argument(
+      '--user',
+      '-u',
+      required=False,
+      help='Cloud SQL instance user to connect as.')
   parser.add_argument(
       '--skip-ssl',
       action='store_true',
@@ -620,9 +638,7 @@ class ConnectAlpha(base.Command):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
-    AddAlphaArgs(parser)
+    AddProxyV2Args(parser)
     sql_flags.AddDatabase(
         parser, 'The PostgreSQL or SQL Server database to connect to.'
     )

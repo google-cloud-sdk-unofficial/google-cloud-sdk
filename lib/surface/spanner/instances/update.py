@@ -309,6 +309,7 @@ class AlphaUpdate(base.Command):
         autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
         asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        disable_downscaling=args.disable_downscaling,
         clear_asymmetric_autoscaling_options=args.clear_asymmetric_autoscaling_option,
         instance_type=instance_type,
         expire_behavior=expire_behavior,

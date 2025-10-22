@@ -50,13 +50,13 @@
               api_field: cluster.maintenancePolicy.window.recurringWindow.window.startTime
               repeated: false
               help_text: |
-                Start time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+                Start time of the recurring cluster maintenance window in the [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339.txt)
                 format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
             - arg_name: maintenance-window-end
               api_field: cluster.maintenancePolicy.window.recurringWindow.window.endTime
               repeated: false
               help_text: |
-                End time of the recurring cluster maintenance window in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+                End time of the recurring cluster maintenance window in the [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339.txt)
                 format. E.g. "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00"
             - arg_name: maintenance-window-recurrence
               api_field: cluster.maintenancePolicy.window.recurringWindow.recurrence
@@ -80,13 +80,13 @@
               repeated: false
               help_text: |
                 Start time of the maintenance exclusion window (can occur in the past) in the RFC 3339
-                (https://www.ietf.org/rfc/rfc3339.txt) format. E.g.
+                (https://www.rfc-editor.org/rfc/rfc3339.txt) format. E.g.
                 "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00".
             - arg_name: add-maintenance-exclusion-end
               repeated: false
               help_text: |
                 End time of the maintenance exclusion window in the RFC 3339
-                (https://www.ietf.org/rfc/rfc3339.txt) format. E.g.
+                (https://www.rfc-editor.org/rfc/rfc3339.txt) format. E.g.
                 "2021-01-01T00:00:00Z" or "2021-01-01T00:00:00-05:00".
     - arg_name: release-channel
       api_field: cluster.releaseChannel

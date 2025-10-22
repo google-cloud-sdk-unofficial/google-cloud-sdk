@@ -98,6 +98,12 @@ class List(base.Command):
         help='Include additional table columns (job name, source, destination,'
         ' frequency, lastest operation name, job status) in command output.'
         ' Tip: increase the size of your terminal before running the command.')
+    parser.add_argument(
+        '--job-type',
+        choices=[JobType.TRANSFER.value, JobType.REPLICATION.value],
+        default=JobType.TRANSFER.value,
+        help='The type of the job you want to list.',
+    )
 
   def Display(self, args, resources):
     """API response display logic."""
@@ -142,10 +148,7 @@ class List(base.Command):
         'jobStatuses': job_statuses,
         'projectId': properties.VALUES.core.project.Get(),
     }
-    if (
-        self.ReleaseTrack() is base.ReleaseTrack.ALPHA
-        and args.job_type == JobType.REPLICATION.value
-    ):
+    if args.job_type == JobType.REPLICATION.value:
       # Filter to list replication jobs.
       filter_dictionary['dataBackend'] = 'QUERY_REPLICATION_CONFIGS'
     filter_string = json.dumps(filter_dictionary)
@@ -170,9 +173,3 @@ class ListAlpha(List):
   @staticmethod
   def Args(parser):
     List.Args(parser)
-    parser.add_argument(
-        '--job-type',
-        choices=[JobType.TRANSFER.value, JobType.REPLICATION.value],
-        default=JobType.TRANSFER.value,
-        help='The type of the job you want to list.',
-    )

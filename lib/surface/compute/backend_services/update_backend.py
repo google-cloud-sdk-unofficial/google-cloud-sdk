@@ -57,7 +57,6 @@ class UpdateBackend(base.UpdateCommand):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
-    # backend_flags.AddTrafficDuration(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _GetGetRequest(self, client, backend_service_ref):
@@ -148,7 +147,10 @@ class UpdateBackend(base.UpdateCommand):
       )
 
     if (
-        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        (
+            self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+            or self.ReleaseTrack() == base.ReleaseTrack.BETA
+        )
         and backend_to_update is not None
         and args.traffic_duration is not None
     ):
@@ -199,10 +201,6 @@ class UpdateBackend(base.UpdateCommand):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
-        # args.max_in_flight_requests is not None,
-        # args.max_in_flight_requests_per_instance is not None,
-        # args.max_in_flight_requests_per_endpoint is not None,
-        # args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -264,13 +262,13 @@ class UpdateBackendBeta(UpdateBackend):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
+    backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
+    backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
-    # backend_flags.AddTrafficDuration(parser)
+    backend_flags.AddTrafficDuration(parser)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -285,10 +283,10 @@ class UpdateBackendBeta(UpdateBackend):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
-        # args.max_in_flight_requests is not None,
-        # args.max_in_flight_requests_per_instance is not None,
-        # args.max_in_flight_requests_per_endpoint is not None,
-        # args.traffic_duration is not None,
+        args.max_in_flight_requests is not None,
+        args.max_in_flight_requests_per_instance is not None,
+        args.max_in_flight_requests_per_endpoint is not None,
+        args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -403,7 +401,10 @@ def _ModifyBalancingModeArgs(
       backend_to_update.maxConnections = None
       backend_to_update.maxConnectionsPerInstance = None
       backend_to_update.maxConnectionsPerEndpoint = None
-      if release_track == base.ReleaseTrack.ALPHA:
+      if (
+          release_track == base.ReleaseTrack.ALPHA
+          or release_track == base.ReleaseTrack.BETA
+      ):
         backend_to_update.maxInFlightRequests = None
         backend_to_update.maxInFlightRequestsPerInstance = None
         backend_to_update.maxInFlightRequestsPerEndpoint = None
@@ -413,12 +414,18 @@ def _ModifyBalancingModeArgs(
       backend_to_update.maxRate = None
       backend_to_update.maxRatePerInstance = None
       backend_to_update.maxRatePerEndpoint = None
-      if release_track == base.ReleaseTrack.ALPHA:
+      if (
+          release_track == base.ReleaseTrack.ALPHA
+          or release_track == base.ReleaseTrack.BETA
+      ):
         backend_to_update.maxInFlightRequests = None
         backend_to_update.maxInFlightRequestsPerInstance = None
         backend_to_update.maxInFlightRequestsPerEndpoint = None
     elif (
-        release_track == base.ReleaseTrack.ALPHA
+        (
+            release_track == base.ReleaseTrack.ALPHA
+            or release_track == base.ReleaseTrack.BETA
+        )
         and backend_to_update.balancingMode
         == messages.Backend.BalancingModeValueValuesEnum.IN_FLIGHT
     ):
@@ -458,7 +465,10 @@ def _ModifyBalancingModeArgs(
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerEndpoint = (
         args.max_connections_per_endpoint)
-  elif release_track == base.ReleaseTrack.ALPHA:
+  elif (
+      release_track == base.ReleaseTrack.ALPHA
+      or release_track == base.ReleaseTrack.BETA
+  ):
     if args.max_in_flight_requests is not None:
       _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
       backend_to_update.maxInFlightRequests = args.max_in_flight_requests

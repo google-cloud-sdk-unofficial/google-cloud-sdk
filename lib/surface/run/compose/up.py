@@ -77,6 +77,7 @@ class Up(base.BinaryBackedCommand):
       self, command_executor, compose_file, repo, project_number, region, args
   ):
     """Handles the resource and translate run logic."""
+    release_track = self.ReleaseTrack()
     resource_response = command_executor(
         command='resource',
         compose_file=compose_file,
@@ -135,11 +136,17 @@ class Up(base.BinaryBackedCommand):
         )
         for model_yaml in translate_result.models.values():
           compose_resource.deploy_application(
-              yaml_file_path=model_yaml, region=region, args=args
+              yaml_file_path=model_yaml,
+              region=region,
+              args=args,
+              release_track=release_track,
           )
         for service_yaml in translate_result.services.values():
           compose_resource.deploy_application(
-              yaml_file_path=service_yaml, region=region, args=args
+              yaml_file_path=service_yaml,
+              region=region,
+              args=args,
+              release_track=release_track,
           )
       else:
         log.error(f'Translate failed with error: {response.stderr}')

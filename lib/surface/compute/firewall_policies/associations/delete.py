@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.compute.firewall_policies import flags
 import six
 
 
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine organization firewall policy association.
 
@@ -37,7 +38,8 @@ class Delete(base.DeleteCommand):
   @classmethod
   def Args(cls, parser):
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyAssociationsArgument(
-        required=True)
+        required=True
+    )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='delete')
     flags.AddArgsDeleteAssociation(parser)
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
@@ -45,23 +47,28 @@ class Delete(base.DeleteCommand):
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, with_project=False)
+        args, holder.resources, with_project=False
+    )
     org_firewall_policy = client.OrgFirewallPolicy(
         ref=ref,
         compute_client=holder.client,
         resources=holder.resources,
-        version=six.text_type(self.ReleaseTrack()).lower())
+        version=six.text_type(self.ReleaseTrack()).lower(),
+    )
     firewall_policy_id = firewall_policies_utils.GetFirewallPolicyId(
         org_firewall_policy,
         args.firewall_policy,
-        organization=args.organization)
+        organization=args.organization,
+    )
     return org_firewall_policy.DeleteAssociation(
-        firewall_policy_id=firewall_policy_id, only_generate_request=False)
+        firewall_policy_id=firewall_policy_id,
+        association_name=args.name,
+        only_generate_request=False,
+    )
 
 
 Delete.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To delete an association with name ``example-association" of an organization
     firewall policy with ID ``123456789", run:
 

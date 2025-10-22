@@ -50,6 +50,11 @@ The following command creates a new object `target.txt` by concatenating
   $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt
 """
 _ALPHA_EXAMPLES = """
+Contexts are merged from source objects on the composed object by default.
+However, the following command overwrites custom contexts on composed object:
+
+  $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt \
+      --custom-contexts=key1=value1,key2=value2
 """
 
 

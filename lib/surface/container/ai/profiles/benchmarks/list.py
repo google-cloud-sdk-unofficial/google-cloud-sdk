@@ -14,13 +14,14 @@
 # limitations under the License.
 """Outputs benchmarking data for GKE Inference Quickstart."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.recommender import util
+from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run.printers import profiles_csv_printer
-from googlecloudsdk.core import exceptions
-from googlecloudsdk.core import log
 from googlecloudsdk.core.resource import resource_printer
+
 
 _EXAMPLE = """
 To get benchmarking data for a given model and model server, run:
@@ -127,7 +128,5 @@ class List(commands.List):
         return []
       else:
         return response.profile
-    except exceptions.Error as e:
-      log.error(f"An error has occurred: {e}")
-      log.status.Print(f"An error has occurred: {e}")
-      return []
+    except apitools_exceptions.HttpError as error:
+      raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

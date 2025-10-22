@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Export(base.Command):
@@ -54,11 +55,6 @@ class Export(base.Command):
     $ gcloud dns record-sets import pathto.zonefile --zone-file-format \
       --zone=examplezonename
   """
-
-  @classmethod
-  def _IsBetaOrAlpha(cls):
-    return cls.ReleaseTrack() in (base.ReleaseTrack.BETA,
-                                  base.ReleaseTrack.ALPHA)
 
   @classmethod
   def Args(cls, parser):
@@ -109,21 +105,15 @@ class Export(base.Command):
 
     for record_set in list_pager.YieldFromList(
         dns.resourceRecordSets, list_request, field='rrsets'):
-      # Alpha/beta are handled differently as they support ALIAS records.
-      if self._IsBetaOrAlpha():
-        # For BIND file format, ALIAS record sets must be ignored, as they are
-        # not DNS standards. A zone will have at most one ALIAS record.
-        if args.zone_file_format:
-          if record_set.type == 'ALIAS':
-            log.warning(
-                'Skippig ALIAS record found in zone, as ALIAS record are custom'
-                ' to Cloud DNS and do not have a standard BIND format. To '
-                'export ALIAS records, use YAML format instead.'
-            )
-            continue
-      else:  # GA
-        # Quietly ignore ALIAS records in GA - they aren't supported yet.
+      if args.zone_file_format:
         if record_set.type == 'ALIAS':
+          # For BIND file format, ALIAS record sets must be ignored, as they are
+          # not DNS standards. A zone will have at most one ALIAS record.
+          log.warning(
+              'Skipping ALIAS record found in zone, as ALIAS record are custom'
+              ' to Cloud DNS and do not have a standard BIND format. To '
+              'export ALIAS records, use YAML format instead.'
+          )
           continue
 
       record_sets.append(record_set)

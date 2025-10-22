@@ -133,6 +133,7 @@ class Deploy(base.Command):
     flags.AddCpuThrottlingFlag(parser)
     flags.AddCustomAudiencesFlag(parser)
     flags.AddDefaultUrlFlag(parser)
+    flags.AddDeployHealthCheckFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.AddEgressSettingsFlag(parser)
     flags.AddEncryptionKeyShutdownHoursFlag(parser)
@@ -1195,7 +1196,6 @@ class BetaDeploy(Deploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDeployHealthCheckFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
@@ -1224,7 +1224,6 @@ class AlphaDeploy(BetaDeploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddDeployHealthCheckFlag(parser)
     flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

@@ -71,6 +71,11 @@ project:
   $ {command} --summarize --readable-sizes --total
 """
 _ALPHA_EXAMPLES = """
+The following command summarizes the size of objects that match the specified
+filter.
+
+  $ {command} gs://my-bucket --metadata-filter='contexts."foo"="bar"' --summarize
+
 """
 
 

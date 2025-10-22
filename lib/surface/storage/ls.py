@@ -86,6 +86,13 @@ Recursive listings are similar to `**` except recursive listings include
 line breaks and header formatting for each subdirectory.
 """
 _ALPHA_EXAMPLES = """
+The following command filters objects based on specified filter while listing.
+Note that the flag is only supported for Google Cloud Storage URLs and only
+applies to objects. This means that directories or buckets will still be listed
+even if they do not contain objects that match the filter.
+
+  $ {command} gs://my-bucket --metadata-filter='contexts."foo"="bar"'
+
 """
 
 

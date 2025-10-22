@@ -20,6 +20,11 @@
             --description='My TF Node' \
             --version='1.1'
 
+  deprecate:
+    is_removed: false
+    warning: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm create` instead."
+    error: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm create` instead."
+
   request:
     _COMMON_: create_request
     BETA:
@@ -71,6 +76,11 @@
             --network=my-tf-network \
             --description='My TF Node' \
             --version='1.1'
+
+  deprecate:
+    is_removed: false
+    warning: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm create` instead."
+    error: "This command is being deprecated. Please use `gcloud compute tpus tpu-vm create` instead."
 
   request:
     _COMMON_: create_request

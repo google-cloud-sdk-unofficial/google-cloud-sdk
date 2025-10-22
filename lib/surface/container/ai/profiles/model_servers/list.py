@@ -14,7 +14,9 @@
 # limitations under the License.
 """Lists supported model servers for GKE Inference Quickstart."""
 
+from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.recommender import util
+from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.core import exceptions
@@ -58,10 +60,8 @@ class List(commands.List):
         return response.modelServers
       else:
         return []
-    except exceptions.Error as e:
-      log.error(f"An error has occurred: {e}")
-      log.status.Print(f"An error has occurred: {e}")
-      return []
+    except apitools_exceptions.HttpError as error:
+      raise api_lib_exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
 
   def Display(self, _, resources):
     if resources:

@@ -23,8 +23,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.recommender import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Describe(base.Command):
   """Describe an insight."""
 
@@ -36,8 +38,8 @@ class Describe(base.Command):
       'EXAMPLES': """\
       To describe an insight:
 
-        $ {command} INSIGHT_ID --project=${PROJECT} --location=${LOCATION}
-     """
+        $ {command} --insight-type=${INSIGHT_TYPE} --project=${PROJECT} --location=${LOCATION}
+     """,
   }
 
   @staticmethod

@@ -36,8 +36,8 @@ class DateTimes(base.TopicCommand):
 
   Absolute date/time input formats minimally support
   [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) and
-  [RFC 822](https://www.ietf.org/rfc/rfc0822.txt) date/times. When omitted the
-  date/time value defaults are:
+  [RFC 822](https://www.rfc-editor.org/rfc/rfc0822.txt) date/times. When omitted
+  the date/time value defaults are:
 
   * year, month, day - current value
   * hour, minute, second, fractional second - 0

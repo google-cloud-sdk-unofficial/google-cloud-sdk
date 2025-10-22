@@ -60,6 +60,13 @@ would be copied in the following.
   $ {command} ~/Downloads/**/dir gs://my-bucket
 """
 _ALPHA_EXAMPLES = """
+The contexts are preserved when copying to Google Cloud Storage. To overwrite
+contexts on the destination object, use `--custom-contexts` or
+`--custom-contexts-file`. For example:
+
+  $ {command} gs://my-bucket/object \
+    gs://destination-bucket/object \
+    --custom-contexts=key1=value1,key2=value2
 """
 
 

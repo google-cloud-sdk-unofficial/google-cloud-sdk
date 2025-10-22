@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Update a health source."
     description: "Update a health source."
@@ -8,12 +8,14 @@
 
         $ {command} <HEALTH_SOURCE_NAME> --region=<REGION> \
           --source-type=BACKEND_SERVICE
-          --sources=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/backendServices/my-backend-service
-          --health-aggregation-policy=https://www.googleapis.com/compute/alpha/projects/my-project/regions/us-east1/my-health-aggregation-policy
+          --sources=my-backend-service
+          --health-aggregation-policy=my-health-aggregation-policy
 
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.regionHealthSources
     method: patch
     modify_request_hooks:

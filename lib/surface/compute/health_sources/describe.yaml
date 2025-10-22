@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: "Describe a health source."
     description: "Describe a health source."
@@ -11,6 +11,8 @@
   request:
     ALPHA:
       api_version: alpha
+    BETA:
+      api_version: beta
     collection: compute.regionHealthSources
 
   arguments:

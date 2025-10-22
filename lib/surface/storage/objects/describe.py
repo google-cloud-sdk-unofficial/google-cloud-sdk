@@ -47,6 +47,9 @@ Describe object with JSON formatting, only returning the "name" key:
   $ {command} gs://bucket/my-object --format="json(name)"
 """
 _ALPHA_EXAMPLES = """
+Describe only contexts attached to objects as key value pairs.
+
+  $ {command} gs://my-bucket/object --format=contextsonly
 """
 
 

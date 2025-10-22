@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete a project.
 
@@ -78,7 +79,7 @@ class Delete(base.DeleteCommand):
       )
       base.DisableUserProjectQuota()
     else:
-      prompt_message = 'Your project will be deleted.'
+      prompt_message = 'Your project will be deleted: [{0}]'.format(args.id)
     if not console_io.PromptContinue(prompt_message):
       return None
     result = projects_api.Delete(project_ref)

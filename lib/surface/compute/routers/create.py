@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
 
   ROUTER_ARG = None
   _support_ncc_gateway = False
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
   @classmethod
   def _Args(cls, parser):
@@ -60,7 +60,8 @@ class Create(base.CreateCommand):
           type=arg_parsers.ArgDict(),
           metavar='KEY=VALUE',
           help="""\
-            A comma-separated list of Resource Manager tags to apply to the router.
+            Comma-separated list of Resource Manager tags to attach to the router. Key-value pairs must be provided in the form tagKeys/{TagKey_Numeric_ID}=tagValues/{TagValue_Numeric_ID}.
+            See [Listing tag keys](https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-managing#listing_keys).
         """,
       )
 

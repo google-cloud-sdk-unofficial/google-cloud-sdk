@@ -148,7 +148,7 @@ def RunBaseResetSslConfigCommand(args, release_track):
       'Resetting your SSL configuration will delete all client certificates and'
       ' generate a new server certificate.'
   )
-  if IsBetaOrNewer(release_track) and args.IsSpecified('mode'):
+  if args.IsSpecified('mode'):
     req.mode = sql_messages.SqlInstancesResetSslConfigRequest.ModeValueValuesEnum.lookup_by_name(
         args.mode.upper()
     )
@@ -157,6 +157,8 @@ def RunBaseResetSslConfigCommand(args, release_track):
           'Syncing related SSL configs from the primary may cause SSL update'
           ' operations if needed.'
       )
+  if IsBetaOrNewer(release_track):
+    pass  # future beta arguments go here
 
   console_io.PromptContinue(message=prompt_msg, default=True, cancel_on_no=True)
 
@@ -189,8 +191,19 @@ def AddAlphaArgs(unused_parser):
   pass
 
 
-def AddBetaArgs(parser):
+def AddBetaArgs(unused_parser):
   """Adds beta args and flags to the parser."""
+  pass
+
+
+def AddBaseArgs(parser):
+  """Adds base args and flags to the parser."""
+  base.ASYNC_FLAG.AddToParser(parser)
+  parser.add_argument(
+      'instance',
+      completer=flags.InstanceCompleter,
+      help='Cloud SQL instance ID.',
+  )
   parser.add_argument(
       '--mode',
       choices={
@@ -204,17 +217,6 @@ def AddBetaArgs(parser):
       required=False,
       default=None,
       help='Selectively refresh the SSL materials',
-      hidden=True,
-  )
-
-
-def AddBaseArgs(parser):
-  """Adds base args and flags to the parser."""
-  base.ASYNC_FLAG.AddToParser(parser)
-  parser.add_argument(
-      'instance',
-      completer=flags.InstanceCompleter,
-      help='Cloud SQL instance ID.',
   )
 
 

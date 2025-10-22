@@ -58,6 +58,9 @@ value of the ``name'' metadata field:
   $ {command} gs://my-bucket --format="json(name)"
 """
 _ALPHA_EXAMPLES = """
+List only contexts attached to objects as key value pairs.
+
+  $ {command} gs://my-bucket --format=contextsonly
 """
 
 
