@@ -1,4 +1,3 @@
-
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +16,6 @@
 
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
-
 from google.longrunning import (
     operations_proto_pb2 as google_dot_longrunning_dot_operations__pb2,
 )
@@ -133,9 +131,9 @@ class OperationsServicer(object):
         raise NotImplementedError("Method not implemented!")
 
     def WaitOperation(self, request, context):
-        """Waits for the specified long-running operation until it is done or reaches
-        at most a specified timeout, returning the latest state.  If the operation
-        is already done, the latest state is immediately returned.  If the timeout
+        """Waits until the specified long-running operation is done or reaches at most
+        a specified timeout, returning the latest state.  If the operation is
+        already done, the latest state is immediately returned.  If the timeout
         specified is greater than the default HTTP/RPC timeout, the HTTP/RPC
         timeout is used.  If the server does not support this method, it returns
         `google.rpc.Code.UNIMPLEMENTED`.

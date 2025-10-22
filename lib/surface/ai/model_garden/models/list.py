@@ -60,12 +60,26 @@ _FULL_RESOURCE_NAME_TABLE_FORMAT = (
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the publisher models in Model Garden.
 
   This command lists either all models in Model Garden or all Hugging
   Face models supported by Model Garden.
+
+  ## EXAMPLES
+
+  To list all models in Model Garden, run:
+
+    $ gcloud ai model-garden models list
+
+  To list Hugging Face models that can be deployed in Model Garden, run:
+
+    $ gcloud ai model-garden models list --can-deploy-hugging-face-models
+
+  To list models with `gemma` in their names, run:
+
+    $ gcloud ai model-garden models list --model-filter=gemma
 
   Note: Since the number of Hugging Face models is large, the default limit is
   set to 500 with a page size of 100 when listing supported Hugging Face models.

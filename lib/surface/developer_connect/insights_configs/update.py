@@ -69,7 +69,7 @@ class Update(base.UpdateCommand):
     client = insights_config.InsightsConfigClient(base.ReleaseTrack.ALPHA)
     insights_config_ref = args.CONCEPTS.insights_config.Parse()
     try:
-      operation = client.Update(
+      operation = client.update(
           insight_config_ref=insights_config_ref,
           discovery=args.run_discovery,
           build_project=args.build_project,
@@ -85,11 +85,11 @@ class Update(base.UpdateCommand):
         insights_config_ref.RelativeName()
     ))
 
-    return client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation),
+    return client.wait_for_operation(
+        operation_ref=client.get_operation_ref(operation),
         message='Waiting for operation [{}] to be completed...'
         .format(
-            client.GetOperationRef(operation).RelativeName()),
+            client.get_operation_ref(operation).RelativeName()),
         has_result=True,
         max_wait=max_wait,
     )

@@ -252,9 +252,6 @@ def AddProxyV2Args(parser) -> None:
       action='store_true',
       help='Enable verbose debug logs for Cloud SQL Proxy.')
   parser.add_argument(
-      '--sqladmin-api-endpoint',
-      help='Cloud SQL Admin API endpoint for Cloud SQL Proxy to use.')
-  parser.add_argument(
       '--run-connection-test',
       action='store_true',
       help='Run connection test for Cloud SQL Proxy.')
@@ -522,7 +519,6 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
   psc = getattr(args, 'psc', False)
   auto_ip = getattr(args, 'auto_ip', False)
   debug_logs = getattr(args, 'debug_logs', False)
-  sqladmin_api_endpoint = getattr(args, 'sqladmin_api_endpoint', None)
   run_connection_test = getattr(args, 'run_connection_test', False)
   proxy_process = instances_api_util.StartCloudSqlProxyV2(
       instance_info,
@@ -533,7 +529,6 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
       psc=psc,
       auto_ip=auto_ip,
       debug_logs=debug_logs,
-      sqladmin_api_endpoint=sqladmin_api_endpoint,
       run_connection_test=run_connection_test)
   atexit.register(proxy_process.kill)
 

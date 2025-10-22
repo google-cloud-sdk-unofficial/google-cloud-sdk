@@ -350,12 +350,12 @@ def AddBaseArgs(parser):
   flags.AddClearPSCNetworkAttachmentUri(psc_na_uri_update_group)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
-  flags.AddActiveDirectoryMode(parser, hidden=True)
-  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
-  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
-  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
-  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
-  flags.AddClearActiveDirectory(parser, hidden=True)
+  flags.AddActiveDirectoryMode(parser)
+  flags.AddActiveDirectorySecretManagerKey(parser)
+  flags.AddActiveDirectoryOrganizationalUnit(parser)
+  flags.AddActiveDirectoryDNSServers(parser)
+  flags.ClearActiveDirectoryDNSServers(parser)
+  flags.AddClearActiveDirectory(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
   flags.AddEnableConnectionPooling(parser)
@@ -367,6 +367,7 @@ def AddBaseArgs(parser):
   flags.AddClearPscAutoConnections(psc_update_auto_connections_group)
   flags.AddServerCaMode(parser)
   flags.AddServerCaPool(parser)
+  flags.AddReadPoolAutoScaleConfig(parser)
 
 
 def AddBetaArgs(parser):
@@ -382,9 +383,9 @@ def AddBetaArgs(parser):
   flags.AddClearUncMappings(unc_mappings_group)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Adds alpha args and flags to the parser."""
-  flags.AddReadPoolAutoScaleConfig(parser, hidden=True)
+  pass
 
 
 def IsBetaOrNewer(release_track):

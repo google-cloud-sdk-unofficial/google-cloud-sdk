@@ -24,7 +24,7 @@
     examples: |-
       To create the accountConnector, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - group:
@@ -89,6 +89,10 @@
                     help_text: |-
                       Datastax provider.
                       No scopes are allowed.
+                  - arg_value: dynatrace
+                    enum_value: DYNATRACE
+                    help_text: |-
+                      Dynatrace provider.
             - arg_name: provider-oauth-config-scopes
               api_field: accountConnector.providerOauthConfig.scopes
               required: true

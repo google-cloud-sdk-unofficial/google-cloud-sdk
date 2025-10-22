@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
+from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
@@ -148,7 +149,6 @@ class Update(base.Command):
     )
 
     execute_now = args.execute_now or args.wait
-    execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
@@ -160,19 +160,37 @@ class Update(base.Command):
         header_msg = 'Updating and running job...'
       else:
         header_msg = 'Updating job...'
-      with progress_tracker.StagedProgressTracker(
-          header_msg,
-          stages.JobStages(
-              execute_now=execute_now, include_completion=args.wait
-          ),
-          failure_message='Job failed to deploy',
-          suppress_output=args.async_,
-      ) as tracker:
-        job = operations.UpdateJob(job_ref, changes, tracker, asyn=args.async_)
-        if execute_now:
-          execution = operations.RunJob(
-              job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+      def _UpdateJob(changes_):
+        with progress_tracker.StagedProgressTracker(
+            header_msg,
+            stages.JobStages(
+                execute_now=execute_now, include_completion=args.wait
+            ),
+            failure_message='Job failed to deploy',
+            suppress_output=args.async_,
+        ) as tracker:
+          execution_ = None
+          job_ = operations.UpdateJob(
+              job_ref, changes_, tracker, asyn=args.async_
           )
+          if execute_now:
+            execution_ = operations.RunJob(
+                job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+            )
+          return job_, execution_
+
+      try:
+        job, execution = _UpdateJob(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
+          job, execution = _UpdateJob(changes)
+        else:
+          raise e
 
       if args.async_ and not execute_now:
         pretty_print.Success(

@@ -171,7 +171,6 @@ class Create(base.Command):
     )
 
     execute_now = args.execute_now or args.wait
-    execution = None
 
     messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
     with serverless_operations.Connect(conn_context) as operations:
@@ -184,21 +183,38 @@ class Create(base.Command):
         header_msg = 'Creating and running job...'
       else:
         header_msg = 'Creating job...'
-      with progress_tracker.StagedProgressTracker(
-          header_msg,
-          stages.JobStages(
-              execute_now=execute_now, include_completion=args.wait
-          ),
-          failure_message='Job failed to deploy',
-          suppress_output=args.async_,
-      ) as tracker:
-        job = operations.CreateJob(
-            job_ref, changes, tracker, asyn=(args.async_ and not execute_now)
-        )
-        if execute_now:
-          execution = operations.RunJob(
-              job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+
+      def _CreateJob(changes_):
+        with progress_tracker.StagedProgressTracker(
+            header_msg,
+            stages.JobStages(
+                execute_now=execute_now, include_completion=args.wait
+            ),
+            failure_message='Job failed to deploy',
+            suppress_output=args.async_,
+        ) as tracker:
+          execution_ = None
+          job_ = operations.CreateJob(
+              job_ref, changes_, tracker, asyn=(args.async_ and not execute_now)
           )
+          if execute_now:
+            execution_ = operations.RunJob(
+                job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+            )
+          return job_, execution_
+
+      try:
+        job, execution = _CreateJob(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
+          job, execution = _CreateJob(changes)
+        else:
+          raise e
 
       if args.async_ and not execute_now:
         pretty_print.Success(

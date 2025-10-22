@@ -157,16 +157,17 @@ def AddBaseArgs(parser):
   flags.AddStorageProvisionedThroughput(parser)
   flags.AddInstanceType(parser)
   flags.AddNodeCount(parser)
-  flags.AddActiveDirectoryMode(parser, hidden=True)
-  flags.AddActiveDirectorySecretManagerKey(parser, hidden=True)
-  flags.AddActiveDirectoryOrganizationalUnit(parser, hidden=True)
-  flags.AddActiveDirectoryDNSServers(parser, hidden=True)
-  flags.ClearActiveDirectoryDNSServers(parser, hidden=True)
+  flags.AddActiveDirectoryMode(parser)
+  flags.AddActiveDirectorySecretManagerKey(parser)
+  flags.AddActiveDirectoryOrganizationalUnit(parser)
+  flags.AddActiveDirectoryDNSServers(parser)
+  flags.ClearActiveDirectoryDNSServers(parser)
   flags.AddForceSqlNetworkArchitecture(parser)
   flags.AddFinalBackup(parser)
   flags.AddFinalbackupRetentionDays(parser)
   flags.AddEnableConnectionPooling(parser)
   flags.AddConnectionPoolFlags(parser)
+  flags.AddReadPoolAutoScaleConfig(parser)
 
   # When adding a new field for instance creation, determine if it should also
   # be included in the restore to new instance command. This command uses backup
@@ -186,9 +187,9 @@ def AddBetaArgs(parser):
   flags.AddEnableAcceleratedReplicaMode(parser)
 
 
-def AddAlphaArgs(parser):
+def AddAlphaArgs(unused_parser):
   """Declare alpha flags for this command parser."""
-  flags.AddReadPoolAutoScaleConfig(parser, hidden=True)
+  pass
 
 
 def RunBaseCreateCommand(args, release_track):

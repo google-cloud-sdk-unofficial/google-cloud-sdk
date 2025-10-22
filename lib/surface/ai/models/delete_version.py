@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DeleteVersionV1(base.DeleteCommand):
   """Delete an existing Vertex AI model version.
 
@@ -65,6 +66,7 @@ class DeleteVersionV1(base.DeleteCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DeleteVersionV1Beta1(DeleteVersionV1):
   """Delete an existing Vertex AI model version.
 

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DescribeV1(base.DescribeCommand):
   """Get detailed model information about the given model id.
 
@@ -66,6 +67,7 @@ class DescribeV1(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DescribeV1Beta1(DescribeV1):
   """Get detailed model information about the given model id.
 

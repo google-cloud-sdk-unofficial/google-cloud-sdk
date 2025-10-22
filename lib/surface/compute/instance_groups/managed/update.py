@@ -33,7 +33,11 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
 
 # Flags valid only for regional MIGs.
-REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
+REGIONAL_FLAGS = [
+    'instance_redistribution_type',
+    'target_distribution_shape',
+    'on_repair_allow_changing_zone',
+]
 
 
 # TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
@@ -464,6 +468,7 @@ class UpdateBeta(UpdateGA):
   @classmethod
   def Args(cls, parser):
     managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
+    managed_flags.AddOnRepairFlags(parser)
     super(UpdateBeta, cls).Args(parser)
 
   def _CreateInstanceGroupManagerPatch(

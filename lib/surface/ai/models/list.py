@@ -36,6 +36,7 @@ _DEFAULT_FORMAT = """
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class ListV1(base.ListCommand):
   """List the models of the given project and region.
 
@@ -69,6 +70,7 @@ class ListV1(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class ListV1Beta1(ListV1):
   """List the models of the given project and region.
 

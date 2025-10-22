@@ -56,7 +56,6 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_condition
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.saml_idp_metadata_path
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.scim_usage
-      hidden: true
     additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddClearableExtraAndExtendedAttributesOAuth2Client
 
   async:

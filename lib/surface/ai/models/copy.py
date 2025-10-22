@@ -31,6 +31,7 @@ from googlecloudsdk.command_lib.ai import region_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class CopyV1(base.CreateCommand):
   """Copy a model.
 
@@ -77,6 +78,7 @@ class CopyV1(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class CopyV1Beta1(CopyV1):
   """Copy a model.
 

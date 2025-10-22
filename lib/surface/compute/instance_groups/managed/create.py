@@ -45,7 +45,11 @@ import six
 _MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
 
 # Flags valid only for regional MIGs.
-REGIONAL_FLAGS = ['instance_redistribution_type', 'target_distribution_shape']
+REGIONAL_FLAGS = [
+    'instance_redistribution_type',
+    'target_distribution_shape',
+    'on_repair_allow_changing_zone',
+]
 
 
 def _AddInstanceGroupManagerArgs(parser):
@@ -472,6 +476,7 @@ class CreateBeta(CreateGA):
   def Args(cls, parser):
     managed_flags.AddMigActionOnVmFailedHealthCheck(parser)
     managed_flags.AddTargetSizePolicyModeFlag(parser)
+    managed_flags.AddOnRepairFlags(parser)
     super(CreateBeta, cls).Args(parser)
 
   def _CreateInstanceGroupManager(self, args, group_ref, template_ref, client,

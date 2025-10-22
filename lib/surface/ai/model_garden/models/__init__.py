@@ -24,7 +24,7 @@ from googlecloudsdk.calliope import base
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Models(base.Group):
   """List and use Model Garden models."""
 

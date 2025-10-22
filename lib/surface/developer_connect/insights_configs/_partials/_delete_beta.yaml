@@ -24,7 +24,7 @@
     examples: |-
       To delete the insightsConfig, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

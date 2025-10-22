@@ -20,6 +20,7 @@ from .. import prediction_utils
 from .._interfaces import PredictionClient
 
 import numpy as np
+from sklearn import linear_model
 
 from ..prediction_utils import DEFAULT_MODEL_FILE_NAME_JOBLIB
 from ..prediction_utils import DEFAULT_MODEL_FILE_NAME_PICKLE
@@ -131,6 +132,11 @@ def create_sklearn_client(model_path, **unused_kwargs):
   """Returns a prediction client for the corresponding sklearn model."""
   logging.info("Loading the scikit-learn model file from %s", model_path)
   sklearn_predictor = load_joblib_or_pickle_model(model_path)
+  # Serialized LinearRegression models from sklearn v1.0.2 do not have the
+  # positive attribute. Patch this here to prevent errors downstream.
+  if (isinstance(sklearn_predictor, linear_model.LinearRegression)
+      and not hasattr(sklearn_predictor, "positive")):
+    sklearn_predictor.positive = False
   if not sklearn_predictor:
     error_msg = "Could not find either {} or {} in {}".format(
         DEFAULT_MODEL_FILE_NAME_JOBLIB, DEFAULT_MODEL_FILE_NAME_PICKLE,
@@ -238,6 +244,11 @@ def create_sk_xg_model(model_path, unused_flags):
 
   # detect framework in ambiguous situations.
   model_obj = load_joblib_or_pickle_model(model_path)
+  # Serialized LinearRegression models from sklearn v1.0.2 do not have the
+  # positive attribute. Patch this here to prevent errors downstream.
+  if (isinstance(model_obj, linear_model.LinearRegression)
+      and not hasattr(model_obj, "positive")):
+    model_obj.positive = False
   framework = prediction_utils.detect_sk_xgb_framework_from_obj(model_obj)
 
   if framework == prediction_utils.SCIKIT_LEARN_FRAMEWORK_NAME:

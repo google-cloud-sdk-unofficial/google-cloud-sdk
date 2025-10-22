@@ -16,4 +16,5 @@
 # googleapis-common-protos <= 1.5.0, where this was the import path.
 
 from __future__ import absolute_import
-from google.longrunning.operations_grpc_pb2 import *
+
+from google.longrunning.operations_grpc_pb2 import *  # noqa: F401, F403

@@ -119,6 +119,7 @@ class Create(base.CreateCommand):
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
+        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
     )
     self._pairing_key = attachment.pairingKey
     return attachment
@@ -144,6 +145,7 @@ class CreateBeta(Create):
     attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
     attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
+    attachment_flags.AddResourceManagerTags(parser)
 
 
 @base.UniverseCompatible

@@ -24,7 +24,7 @@
     examples: |-
       To wait the operation, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

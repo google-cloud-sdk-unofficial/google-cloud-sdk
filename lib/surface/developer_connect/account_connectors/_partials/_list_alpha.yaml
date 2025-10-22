@@ -24,7 +24,7 @@
     examples: |-
       To list all accountConnectors, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

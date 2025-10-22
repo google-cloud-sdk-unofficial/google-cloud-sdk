@@ -143,6 +143,7 @@ class Create(base.CreateCommand):
             args, 'candidate_customer_router_ipv6_address', None
         ),
         supports_400g=self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
     )
 
   def Epilog(self, resources_were_displayed):
@@ -173,6 +174,7 @@ class CreateBeta(Create):
     attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
     attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
+    attachment_flags.AddResourceManagerTags(parser)
 
   def Run(self, args):
     """See base.CreateCommand."""

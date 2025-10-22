@@ -148,7 +148,7 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
           {'GOOGLE_ENTRYPOINT': args.entrypoint},
       )
       print_deploy_command += (
-          ' --set-build-env-vars GOOGLE_ENTRYPOINT=gunicorn -b :$PORT main:app'
+          ' --set-build-env-vars GOOGLE_ENTRYPOINT=' + args.entrypoint
       )
 
     # Run gcloud run deploy command.

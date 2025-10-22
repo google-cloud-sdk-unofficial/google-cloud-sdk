@@ -21,13 +21,13 @@
 
       Upon successful creation, the command returns the created SCIM tenant resource.
     examples: |
-      To create a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global`:
+      To create a SCIM tenant with ID `my-tenant` under provider `my-okta-provider` in pool `my-pool` located in `global` with claim mappings:
 
-        $ {command} my-tenant --location=global --workforce-pool=my-pool --provider=my-okta-provider
+        $ {command} my-tenant --location=global --workforce-pool=my-pool --provider=my-okta-provider --claim-mapping="google.subject=user.externalId,google.group=group.externalId"
 
-      To create a SCIM tenant `sales-tenant` under provider `salesforce` in pool `partner-pool` located in `europe-west1` with specific claim mappings:
+      To create a SCIM tenant `sales-tenant` under provider `salesforce` in pool `partner-pool` located in `europe-west1` with claim mappings:
 
-        $ {command} sales-tenant --location=europe-west1 --workforce-pool=partner-pool --provider=salesforce --claim-mapping="google.subject=salesforce_id,assertion.groups=memberOf"
+        $ {command} sales-tenant --location=europe-west1 --workforce-pool=partner-pool --provider=salesforce --claim-mapping="google.subject=user.externalId,google.group=group.externalId"
 
   request:
     collection: iam.locations.workforcePools.providers.scimTenants

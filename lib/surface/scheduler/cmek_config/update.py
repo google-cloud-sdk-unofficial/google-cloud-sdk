@@ -25,7 +25,6 @@ from googlecloudsdk.generated_clients.apis.cloudscheduler.v1 import cloudschedul
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class UpdateCmekConfig(base.Command):
   """Update CMEK configuration for Cloud Scheduler in the specified location."""

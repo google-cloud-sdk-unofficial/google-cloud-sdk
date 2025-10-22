@@ -63,6 +63,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddTunnelEndpointIpAddress(parser)
     attachment_flags.AddZ2zVlan(parser)
     attachment_flags.AddDryRun(parser)
+    attachment_flags.AddResourceManagerTags(parser)
 
   def _Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -101,6 +102,7 @@ class Create(base.CreateCommand):
             args, 'tunnel_endpoint_ip_address', None
         ),
         vlan_tag_802_1q=getattr(args, 'z2z_vlan', None),
+        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
     )
 
   def Epilog(self, resources_were_displayed):

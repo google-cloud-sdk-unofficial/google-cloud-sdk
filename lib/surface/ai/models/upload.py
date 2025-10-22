@@ -35,6 +35,7 @@ from googlecloudsdk.core import yaml
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class UploadV1(base.CreateCommand):
   """Upload a new model.
 
@@ -212,6 +213,7 @@ class UploadV1(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class UploadV1Beta1(UploadV1):
   """Upload a new model.
 

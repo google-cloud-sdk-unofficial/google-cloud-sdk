@@ -27,7 +27,6 @@ from googlecloudsdk.core import resources
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Export(base.Command):
   """Export an Artifact Registry package version.
 

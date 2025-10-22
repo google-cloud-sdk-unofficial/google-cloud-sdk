@@ -53,6 +53,7 @@ class Create(base.CreateCommand):
     activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
+    activation_flags.AddEnableJumboFramesArg(parser)
     activation_flags.AddBillingProjectArg(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
@@ -107,7 +108,6 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    activation_flags.AddEnableJumboFramesArg(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
 
   def Run(self, args):

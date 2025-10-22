@@ -60,7 +60,7 @@ class Create(base.CreateCommand):
     client = insights_config.InsightsConfigClient(base.ReleaseTrack.ALPHA)
     insights_config_ref = args.CONCEPTS.insights_config.Parse()
     try:
-      operation = client.Create(
+      operation = client.create(
           insight_config_ref=insights_config_ref,
           app_hub=args.app_hub_application,
           user_artifact_configs=args.artifact_configs,
@@ -75,11 +75,11 @@ class Create(base.CreateCommand):
         insights_config_ref.RelativeName()
     ))
 
-    return client.WaitForOperation(
-        operation_ref=client.GetOperationRef(operation),
+    return client.wait_for_operation(
+        operation_ref=client.get_operation_ref(operation),
         message='Waiting for operation [{}] to be completed...'
         .format(
-            client.GetOperationRef(operation).RelativeName()),
+            client.get_operation_ref(operation).RelativeName()),
         has_result=True,
         max_wait=max_wait,
     )

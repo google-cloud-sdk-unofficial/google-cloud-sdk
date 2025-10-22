@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Contains FieldMask class."""
 
@@ -123,7 +100,7 @@ def _IsValidPath(message_descriptor, path):
   for name in parts:
     field = message_descriptor.fields_by_name.get(name)
     if (field is None or
-        field.label == FieldDescriptor.LABEL_REPEATED or
+        field.is_repeated or
         field.type != FieldDescriptor.TYPE_MESSAGE):
       return False
     message_descriptor = field.message_type
@@ -294,7 +271,7 @@ def _MergeMessage(
           name, source_descriptor.full_name))
     if child:
       # Sub-paths are only allowed for singular message fields.
-      if (field.label == FieldDescriptor.LABEL_REPEATED or
+      if (field.is_repeated or
           field.cpp_type != FieldDescriptor.CPPTYPE_MESSAGE):
         raise ValueError('Error: Field {0} in message {1} is not a singular '
                          'message field and cannot have sub-fields.'.format(
@@ -304,7 +281,7 @@ def _MergeMessage(
             child, getattr(source, name), getattr(destination, name),
             replace_message, replace_repeated)
       continue
-    if field.label == FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if replace_repeated:
         destination.ClearField(_StrConvert(name))
       repeated_source = getattr(source, name)
@@ -316,8 +293,10 @@ def _MergeMessage(
           destination.ClearField(_StrConvert(name))
         if source.HasField(name):
           getattr(destination, name).MergeFrom(getattr(source, name))
-      else:
+      elif not field.has_presence or source.HasField(name):
         setattr(destination, name, getattr(source, name))
+      else:
+        destination.ClearField(_StrConvert(name))
 
 
 def _AddFieldPaths(node, prefix, field_mask):

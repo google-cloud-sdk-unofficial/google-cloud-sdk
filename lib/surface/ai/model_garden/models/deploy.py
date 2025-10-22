@@ -39,7 +39,7 @@ from googlecloudsdk.core import properties
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Deploy(base.Command):
   """Deploy a model in Model Garden to a Vertex AI endpoint.
 

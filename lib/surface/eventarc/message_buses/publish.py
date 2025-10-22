@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import message_buses
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.eventarc import flags
 from googlecloudsdk.core import log
 
@@ -46,9 +47,6 @@ class Publish(base.Command):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddMessageBusResourceArg(
-        parser, 'Message bus to publish to.', required=True
-    )
     flags.AddMessageBusPublishingArgs(parser)
 
   def Run(self, args):
@@ -61,6 +59,18 @@ class Publish(base.Command):
         'Publishing to message bus: {}'.format(message_bus_ref.messageBusesId)
     )
 
+    destination_enrollment_ref = args.CONCEPTS.destination_enrollment.Parse()
+    if (
+        destination_enrollment_ref
+        and destination_enrollment_ref.locationsId
+        != message_bus_ref.locationsId
+    ):
+      raise calliope_exceptions.InvalidArgumentException(
+          '--destination-enrollment',
+          'Destination Enrollment and Message Bus must be in the same'
+          ' location.',
+      )
+
     client.Publish(
         message_bus_ref,
         args.json_message,
@@ -70,6 +80,7 @@ class Publish(base.Command):
         args.event_source,
         args.event_data,
         args.event_attributes,
+        destination_enrollment_ref,
     )
 
     return log.out.Print('Event published successfully')

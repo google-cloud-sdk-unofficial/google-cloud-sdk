@@ -28,9 +28,10 @@ from googlecloudsdk.command_lib.compute.future_reservations import flags as fr_f
 from googlecloudsdk.command_lib.compute.future_reservations import util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-class UpdateBeta(base.UpdateCommand):
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+class UpdateV1(base.UpdateCommand):
   """Update Compute Engine future reservations."""
 
   fr_arg = None
@@ -225,6 +226,44 @@ class UpdateBeta(base.UpdateCommand):
     if errors:
       utils.RaiseToolException(errors)
     return result
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(UpdateV1):
+  """Update Compute Engine future reservations."""
+
+  fr_arg = None
+
+  detailed_help = {'EXAMPLES': """
+        To update total count, start and end time of a Compute Engine future reservation in ``us-central1-a'', run:
+
+            $ {command} my-future-reservation --total-count=1000 --start-time=2021-11-10T07:00:00Z
+          --end-time=2021-12-10T07:00:00Z --zone=us-central1-a
+        """}
+
+  @classmethod
+  def Args(cls, parser):
+    cls.fr_arg = compute_flags.ResourceArgument(
+        resource_name='future reservation',
+        plural=False,
+        name='FUTURE_RESERVATION',
+        zonal_collection='compute.futureReservations',
+        zone_explanation=compute_flags.ZONE_PROPERTY_EXPLANATION,
+    )
+
+    cls.fr_arg.AddArgument(parser, operation_type='update')
+    fr_flags.AddUpdateFlags(
+        parser,
+        support_fleet=False,
+        support_planning_status=True,
+        support_local_ssd_count=True,
+        support_share_setting=True,
+        support_auto_delete=True,
+        support_require_specific_reservation=True,
+        support_gsc=True,
+        support_cuds=True,
+        support_emergent_maintenance=True,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

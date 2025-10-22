@@ -23,34 +23,54 @@ import glob
 import json
 
 from googlecloudsdk.api_lib.design_center import utils
+from googlecloudsdk.api_lib.storage import storage_api
+from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.design_center import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.util import files
 
 
 def ExtractResourceInfoFromTfstate(tfstate_path):
   """Parses a .tfstate file to extract info from resource instances.
 
   Args:
-    tfstate_path: Path to the .tfstate file.
+    tfstate_path: Path to the .tfstate file (local path or GCS URI).
 
   Returns:
     A list of dictionaries, each containing info about a resource
     instance that has an 'id' attribute. Returns None if file cannot be read
     or parsed.
   """
-  try:
-    with open(tfstate_path, 'r') as f:
-      data = json.load(f)
-  except FileNotFoundError:
-    raise exceptions.BadFileException(
-        'Could not read tfstate file: {0}'.format(tfstate_path)
-    )
-  except json.JSONDecodeError:
-    raise exceptions.BadFileException(
-        'Could not parse tfstate file: {0}'.format(tfstate_path)
-    )
+  if tfstate_path.startswith('gs://'):
+    log.status.Print(f'Reading tfstate file from GCS: {tfstate_path}')
+    try:
+      storage_client = storage_api.StorageClient()
+      object_ref = storage_util.ObjectReference.FromUrl(tfstate_path)
+      file_content = storage_client.ReadObject(object_ref)
+      with file_content as f:
+        data = json.load(f)
+    except (storage_api.Error, storage_util.Error) as e:
+      raise exceptions.BadFileException(
+          f'Could not read GCS file [{tfstate_path}]: {e}'
+      )
+    except json.JSONDecodeError:
+      raise exceptions.BadFileException(
+          f'Could not parse GCS tfstate file: {tfstate_path}'
+      )
+  else:
+    try:
+      with files.FileReader(tfstate_path) as f:
+        data = json.load(f)
+    except files.Error as e:
+      raise exceptions.BadFileException(
+          'Could not read tfstate file: {0}: {1}'.format(tfstate_path, e)
+      )
+    except json.JSONDecodeError:
+      raise exceptions.BadFileException(
+          'Could not parse tfstate file: {0}'.format(tfstate_path)
+      )
 
   extracted_info = []
   resources = data.get('resources', [])
@@ -98,6 +118,13 @@ _DETAILED_HELP = {
             $ {command} my-space --project=my-project --location=us-central1 \\
             --adc-application-uri=`projects/my-project/locations/us-central1/spaces/my-space/applications/my-application` \\
             --tfstate-location=`./my-module.tfstate`
+
+          To register deployed resources with an AppHub application using the Application Design Center application URI in the space `my-space`, in the project `my-project` and location `us-central1`, when the tfstate file is stored in a Google Cloud Storage bucket, run:
+
+            $ {command} my-space --project=my-project --location=us-central1 \\
+            --adc-application-uri=`projects/my-project/locations/us-central1/spaces/my-space/applications/my-application` \\
+            --tfstate-location=`gs://my-bucket/my-module.tfstate`
+
           """,
     'API REFERENCE': """ \
         This command uses the designcenter/v1alpha API. The full documentation for

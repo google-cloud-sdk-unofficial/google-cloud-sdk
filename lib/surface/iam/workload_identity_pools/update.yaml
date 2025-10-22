@@ -42,6 +42,8 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.disabled
     - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.session_duration
       hidden: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.enable_mesh_ca_compatibility
+      hidden: true
     - group:
         mutex: true
         params:
@@ -51,6 +53,8 @@
             - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.key_algorithm
             - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.certificate_lifetime
             - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.rotation_window_percentage
+            - _REF_: googlecloudsdk.command_lib.iam.flags:workload_identity_pool.use_default_shared_ca
+              hidden: true
     - group:
         mutex: true
         params:

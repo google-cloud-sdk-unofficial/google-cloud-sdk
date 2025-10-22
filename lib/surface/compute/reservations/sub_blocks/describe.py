@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.reservations.sub_blocks import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine reservation sub-block."""
@@ -39,39 +39,6 @@ class Describe(base.DescribeCommand):
     )
     Describe.ReservationArg.AddArgument(parser, operation_type='describe')
     flags.AddDescribeFlags(parser)
-
-  def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    client = holder.client
-
-    reservation_ref = Describe.ReservationArg.ResolveAsResource(
-        args,
-        holder.resources,
-        default_scope=compute_scope.ScopeEnum.ZONE,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
-
-    parent_name = f'reservations/{reservation_ref.reservation}/reservationBlocks/{args.block_name}'
-
-    request = (
-        client.messages.ComputeReservationSubBlocksGetRequest(
-            parentName=parent_name,
-            zone=reservation_ref.zone,
-            project=reservation_ref.project,
-            reservationSubBlock=args.sub_block_name,)
-    )
-
-    return client.MakeRequests([(client.apitools_client.reservationSubBlocks,
-                                 'Get', request)])[0]
-
-
-@base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DescribeAlpha(Describe):
-  """Describe a Compute Engine reservation sub-block."""
-
-  @staticmethod
-  def Args(parser):
-    Describe.Args(parser)
     flags.AddFullViewFlag(parser)
 
   def Run(self, args):

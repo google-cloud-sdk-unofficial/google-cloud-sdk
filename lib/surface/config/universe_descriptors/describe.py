@@ -47,5 +47,5 @@ class Describe(base.Command):
         args.universe_domain, fetch_if_not_cached=False
     )
     return json_format.MessageToDict(
-        descriptor_json, including_default_value_fields=True
+        descriptor_json, always_print_fields_with_no_presence=True
     )

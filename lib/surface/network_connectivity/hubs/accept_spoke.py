@@ -77,14 +77,12 @@ class AcceptSpoke(base.Command):
 
 
 AcceptSpoke.detailed_help = {
-    'EXAMPLES':
-        f""" \
+    'EXAMPLES': f""" \
   To accept a spoke named ``my-spoke'' into a hub named ``my-hub'', run:
 
-    $ {{command}} my-hub --spoke="https://networkconnectivity.{properties.VALUES.core.universe_domain.Get()}/v1/projects/spoke-project/locations/global/spokes/my-spoke"
+      $ {{command}} my-hub --spoke="https://networkconnectivity.{properties.VALUES.core.universe_domain.Get()}/v1/projects/spoke-project/locations/global/spokes/my-spoke"
   """,
-    'API REFERENCE':
-        """ \
+    'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation
   for this API can be found at:
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest

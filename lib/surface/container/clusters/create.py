@@ -25,6 +25,7 @@ from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.container import api_adapter
+from googlecloudsdk.api_lib.container import constants as api_constants
 from googlecloudsdk.api_lib.container import kubeconfig as kconfig
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.api_lib.functions import api_enablement
@@ -1381,7 +1382,16 @@ class Create(base.CreateCommand):
           'https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters'
       )
 
-    if not options.enable_ip_alias and not options.enable_auto_ipam:
+    is_cluster_ipv6 = (
+        options.stack_type
+        and options.stack_type.lower() == api_constants.IPV6_STACK_TYPE
+    )
+
+    if (
+        not options.enable_ip_alias
+        and not options.enable_auto_ipam
+        and not is_cluster_ipv6
+    ):
       max_node_number = util.CalculateMaxNodeNumberByPodRange(
           options.cluster_ipv4_cidr
       )

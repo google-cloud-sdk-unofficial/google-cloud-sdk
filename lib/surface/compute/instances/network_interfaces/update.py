@@ -52,7 +52,6 @@ class Update(base.UpdateCommand):
   """
 
   support_ipv6_assignment = False
-  support_igmp_query = False
 
   SECURITY_POLICY_ARG = None
 
@@ -70,13 +69,11 @@ class Update(base.UpdateCommand):
     network_interfaces_flags.AddExternalIpv6PrefixLengthArg(parser)
     network_interfaces_flags.AddInternalIpv6AddressArg(parser)
     network_interfaces_flags.AddInternalIpv6PrefixLengthArg(parser)
+    network_interfaces_flags.AddIgmpQueryArg(parser)
 
     if cls.support_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
       network_interfaces_flags.AddIpv6PrefixLengthArg(parser)
-
-    if cls.support_igmp_query:
-      network_interfaces_flags.AddIgmpQueryArg(parser)
 
     cls.SECURITY_POLICY_ARG = (
         security_policy_flags.SecurityPolicyRegionalArgumentForTargetResource(
@@ -118,7 +115,8 @@ class Update(base.UpdateCommand):
     if getattr(args, 'security_policy', None) is not None:
       if getattr(args, 'security_policy', None):
         security_policy_ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
-            args, holder.resources).SelfLink()
+            args, holder.resources
+        ).SelfLink()
       # If security policy is an empty string we should clear the current policy
       else:
         security_policy_ref = None

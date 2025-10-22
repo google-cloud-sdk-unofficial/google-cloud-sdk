@@ -149,6 +149,9 @@ class Update(base.UpdateCommand):
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
+    flags.AddSlurmLoginNode(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
 
   def Run(self, args):
     """Constructs and sends request.

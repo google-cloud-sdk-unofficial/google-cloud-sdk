@@ -117,7 +117,7 @@ def _CommonArgs(
     support_specific_then_x_affinity=False,
     support_ipv6_only=False,
     support_graceful_shutdown=False,
-    support_igmp_query=False,
+    support_igmp_query=True,
     support_watchdog_timer=False,
     support_disk_labels=False,
     support_source_snapshot_region=False,
@@ -324,7 +324,7 @@ class Create(base.CreateCommand):
   _support_enable_confidential_compute = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
-  _support_igmp_query = False
+  _support_igmp_query = True
   _support_watchdog_timer = False
   _support_disk_labels = False
   _support_ipv6_only = True

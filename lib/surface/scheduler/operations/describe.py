@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.scheduler import util
 from googlecloudsdk.core import resources
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Show the latest status of an operation."""

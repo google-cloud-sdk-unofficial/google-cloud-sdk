@@ -274,7 +274,6 @@ class Deploy(base.Command):
     )
 
     execute_now = args.execute_now or args.wait
-    execution = None
 
     with serverless_operations.Connect(conn_context) as operations:
       job_obj = operations.GetJob(job_ref)
@@ -293,34 +292,51 @@ class Deploy(base.Command):
         header_msg = '{} and running job...'.format(operation)
       else:
         header_msg = '{} job...'.format(operation)
-      with progress_tracker.StagedProgressTracker(
-          header_msg,
-          stages.JobStages(
-              execute_now=execute_now,
-              include_completion=args.wait,
-              include_build=bool(build_from_source),
-              include_create_repo=repo_to_create is not None,
-          ),
-          failure_message='Job failed to deploy',
-          suppress_output=args.async_,
-      ) as tracker:
-        job = operations.DeployJob(
-            job_ref,
-            changes,
-            self.ReleaseTrack(),
-            tracker,
-            asyn=(args.async_ and not execute_now),
-            build_image=image,
-            build_pack=pack,
-            build_source=source,
-            repo_to_create=repo_to_create,
-            prefetch=job_obj,
-            already_activated_services=already_activated_services,
-        )
-        if execute_now:
-          execution = operations.RunJob(
-              job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+
+      def _DeployJob(changes_):
+        with progress_tracker.StagedProgressTracker(
+            header_msg,
+            stages.JobStages(
+                execute_now=execute_now,
+                include_completion=args.wait,
+                include_build=bool(build_from_source),
+                include_create_repo=repo_to_create is not None,
+            ),
+            failure_message='Job failed to deploy',
+            suppress_output=args.async_,
+        ) as tracker:
+          job_ = operations.DeployJob(
+              job_ref,
+              changes_,
+              self.ReleaseTrack(),
+              tracker,
+              asyn=(args.async_ and not execute_now),
+              build_image=image,
+              build_pack=pack,
+              build_source=source,
+              repo_to_create=repo_to_create,
+              prefetch=job_obj,
+              already_activated_services=already_activated_services,
           )
+          execution_ = None
+          if execute_now:
+            execution_ = operations.RunJob(
+                job_ref, tracker, args.wait, args.async_, self.ReleaseTrack()
+            )
+          return job_, execution_
+
+      try:
+        job, execution = _DeployJob(changes)
+      except exceptions.HttpError as e:
+        if flags.ShouldRetryNoZonalRedundancy(args, str(e)):
+          changes.append(
+              config_changes.GpuZonalRedundancyChange(
+                  gpu_zonal_redundancy=False
+              )
+          )
+          job, execution = _DeployJob(changes)
+        else:
+          raise e
 
       if args.async_ and not execute_now:
         pretty_print.Success(

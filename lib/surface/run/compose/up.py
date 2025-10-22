@@ -16,6 +16,7 @@
 
 import os
 
+from googlecloudsdk.api_lib.run import api_enabler
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util
 from googlecloudsdk.command_lib.projects import util as projects_util
@@ -84,21 +85,27 @@ class Up(base.BinaryBackedCommand):
         dry_run=args.dry_run,
         region=region,
     )
+    error_message = 'Failed to process compose file.'
     if not resource_response.stdout:
       # This should never happen since project is always returned by resource
       # command
-      log.error(
-          f'Resource command failed with error: {resource_response.stderr}'
-      )
-      raise exceptions.ConfigurationError(
-          'No resource config found in compose file.'
-      )
+      if resource_response.stderr and isinstance(
+          resource_response.stderr, list
+      ):
+        error_message = resource_response.stderr[-1]
+      raise exceptions.ConfigurationError(error_message)
     try:
       config = compose_resource.ResourcesConfig.from_json(
           resource_response.stdout[0]
       )
       log.debug('Successfully parsed resources config proto.')
       log.debug(f'ResourcesConfig:\n{config}')
+
+      project_id = properties.VALUES.core.project.Get(required=True)
+      required_apis = config.get_required_apis(args.no_build)
+      if required_apis:
+        api_enabler.check_and_enable_apis(project_id, required_apis)
+
       with progress_tracker.StagedProgressTracker(
           'Setting up resources...',
           self._AddTrackerStages(config),
@@ -148,16 +155,14 @@ class Up(base.BinaryBackedCommand):
               release_track=release_track,
           )
       else:
-        log.error(f'Translate failed with error: {response.stderr}')
-        raise exceptions.ConfigurationError(
-            'Something went wrong while translating compose file to Cloud Run'
-            ' service YAMLs.'
-        )
+        if response.stderr and isinstance(response.stderr, list):
+          error_message = response.stderr[-1]
+        raise exceptions.ConfigurationError(error_message)
 
       return response
     except Exception as e:
-      log.error(f'Failed to handle resources config and translate to YAML: {e}')
-      log.error(f'Raw output: {resource_response.stdout}')
+      log.error(f'Error: {e}')
+      log.debug(f'Raw output: {resource_response.stdout}')
       raise
 
   def Run(self, args):

@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 _PROJECT_RESOURCE = 'projects/%s'
-_MCP_POLICY_DEFAULT = '/mcpPolicies/default'
+_CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/default'
 
 
 # TODO(b/321801975) make command public after suv2 launch.
@@ -69,16 +69,18 @@ class Get(base.Command):
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE % project
 
-    content_security = serviceusage.GetMcpPolicy(
-        resource_name + _MCP_POLICY_DEFAULT,
-    ).contentSecurity
+    mcp_content_security = serviceusage.GetContentSecurityPolicy(
+        resource_name + _CONTENT_SECURITY_POLICY_DEFAULT,
+    ).mcpContentSecurity
 
     content_security_providers = []
     results = collections.namedtuple(
         'ContentSecurityProvider', ['contentSecurityProvider']
     )
 
-    for content_security_provider in content_security.contentSecurityProviders:
+    for (
+        content_security_provider
+    ) in mcp_content_security.contentSecurityProviders:
       content_security_providers.append(results(content_security_provider.name))
 
     return content_security_providers

@@ -25,7 +25,6 @@ from googlecloudsdk.command_lib.scheduler import parsers
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class GetCmekConfig(base.Command):
   """Get CMEK configuration for Cloud Scheduler in the specified location."""

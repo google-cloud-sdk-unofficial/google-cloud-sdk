@@ -132,6 +132,7 @@ class Create(base.CreateCommand):
         requested_features=flags.GetRequestedFeatures(
             messages, args.requested_features
         ),
+        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
     )
 
   def Epilog(self, resources_were_displayed):

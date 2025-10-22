@@ -107,9 +107,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddPipelineResourceArg(
-        parser, 'The pipeline to create.', required=True
-    )
+    flags.AddCreatePipelineResourceArgs(parser)
     flags.AddPipelineDestinationsArg(parser, required=True)
     flags.AddInputPayloadFormatArgs(parser)
     flags.AddMediationsArg(parser)
@@ -123,6 +121,7 @@ class Create(base.CreateCommand):
     """Run the create command."""
     client = pipelines.PipelineClientV1()
     pipelines_ref = args.CONCEPTS.pipeline.Parse()
+    error_message_bus_ref = args.CONCEPTS.error_message_bus.Parse()
 
     log.debug(
         'Creating pipeline {} for project {} in location {}'.format(
@@ -146,6 +145,7 @@ class Create(base.CreateCommand):
             max_retry_delay=args.max_retry_delay,
             crypto_key_name=args.crypto_key,
             labels=labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
+            error_message_bus_ref=error_message_bus_ref,
         ),
     )
 
