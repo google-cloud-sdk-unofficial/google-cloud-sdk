@@ -46,8 +46,6 @@ DETAILED_HELP = {
 }
 
 
-# TODO(b/425850257): remove Hidden label once we are ready to launch.
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class PreCheckMajorVersionUpgrade(base.Command):

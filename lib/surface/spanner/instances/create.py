@@ -290,6 +290,7 @@ class AlphaCreate(Create):
         autoscaling_cpu_target_group=True,
         add_asymmetric_total_cpu_target_flag=True,
         add_asymmetric_disable_autoscaling_flags=True,
+        add_disable_downscaling_flag=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)

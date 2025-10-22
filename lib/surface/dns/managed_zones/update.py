@@ -28,12 +28,12 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import properties
 
 
-def _CommonArgs(parser, messages):
+def _CommonArgs(parser, messages, api_version='v1'):
   """Helper function to retrieve necessary flag values."""
   flags.GetZoneResourceArg(
       'The name of the managed-zone to be updated.'
   ).AddToParser(parser)
-  flags.AddCommonManagedZonesDnssecArgs(parser, messages)
+  flags.AddCommonManagedZonesDnssecArgs(parser, messages, api_version)
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
   labels_util.AddUpdateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
@@ -159,7 +159,7 @@ class UpdateGA(base.UpdateCommand):
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
-    _CommonArgs(parser, messages)
+    _CommonArgs(parser, messages, api_version=api_version)
 
   def Run(self, args):
     api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)

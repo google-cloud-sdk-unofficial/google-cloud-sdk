@@ -386,6 +386,13 @@ class Query(bigquery_command.BigqueryCmd):
         ' query engine decides to bypass job creation.',
         flag_values=fv,
     )
+    flags.DEFINE_integer(
+        'max_slots',
+        None,
+        'Cap on target rate of slot consumption by the query. Requires'
+        ' --alpha=query_max_slots to be specified.',
+        flag_values=fv,
+    )
     self.reservation_id_for_a_job_flag = (
         frontend_flags.define_reservation_id_for_a_job(flag_values=fv)
     )
@@ -597,6 +604,11 @@ class Query(bigquery_command.BigqueryCmd):
       kwds['reservation_id'] = self.reservation_id_for_a_job_flag.value
     if self.job_timeout_ms:
       kwds['job_timeout_ms'] = self.job_timeout_ms
+    if self.max_slots is not None:
+      utils_flags.fail_if_not_using_alpha_feature(
+          bq_flags.AlphaFeatures.QUERY_MAX_SLOTS
+      )
+      kwds['max_slots'] = self.max_slots
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(

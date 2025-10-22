@@ -21,10 +21,21 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Deprecate(is_removed=False, warning=('This command is deprecated.'))
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated and will be non-functional after the IAP'
+        ' OAuth Admin APIs are turned down. Jan 19, 2026: Google will'
+        ' discontinue support for the IAP OAuth Admin APIs. New projects will'
+        ' not be able to use these APIs. March 19, 2026: The IAP OAuth Admin'
+        ' APIs will be permanently shut down. Access to this feature will no'
+        ' longer be available.'
+    ),
+)
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Iap(base.Group):
   """Manage IAP OAuth clients.
 

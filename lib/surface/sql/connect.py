@@ -409,8 +409,8 @@ def RunProxyConnectCommand(args,
   # We have everything we need, time to party!
   flags = constants.EXE_FLAGS[exe_name]
   sql_args = [exe_name]
-  if exe_name == 'mssql-cli':
-    # mssql-cli merges hostname and port into a single argument
+  if exe_name == 'sqlcmd':
+    # sqlcmd merges hostname and port into a single argument
     hostname = 'tcp:127.0.0.1,{0}'.format(port)
     sql_args.extend([flags['hostname'], hostname])
   else:
@@ -482,7 +482,7 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
     )
 
   auto_iam_authn = getattr(args, 'auto_iam_authn', False)
-  if auto_iam_authn and exe_name == 'mssql-cli':
+  if auto_iam_authn and exe_name == 'sqlcmd':
     raise calliope_exceptions.InvalidArgumentException(
         '--auto-iam-authn',
         'The --auto-iam-authn flag is only valid for MySQL and Postgres'
@@ -542,8 +542,8 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
   # We have everything we need, time to party!
   flags = constants.EXE_FLAGS[exe_name]
   sql_args = [exe_name]
-  if exe_name == 'mssql-cli':
-    # mssql-cli merges hostname and port into a single argument
+  if exe_name == 'sqlcmd':
+    # sqlcmd merges hostname and port into a single argument
     hostname = 'tcp:127.0.0.1,{0}'.format(port)
     sql_args.extend([flags['hostname'], hostname])
   else:
@@ -560,7 +560,7 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
           ' instances.',
       )
     db_args = instances_command_util.GetDatabaseArgs(args, flags)
-    if not db_args and auto_iam_authn and exe_name == 'psql':
+    if not db_args and exe_name == 'psql':
       db_args = [flags['database'], 'postgres']
     sql_args.extend(db_args)
 

@@ -15,8 +15,7 @@
 """Describes a Gcloud Deploy Policy resource."""
 
 
-import collections
-
+from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.deploy import deploy_policy_util
@@ -66,16 +65,41 @@ class Describe(base.DescribeCommand):
     policy_ref = args.CONCEPTS.deploy_policy.Parse()
     # Check if the policy exists.
     policy_obj = deploy_policy_util.GetDeployPolicy(policy_ref)
-    manifest = collections.OrderedDict(
-        apiVersion=manifest_util.API_VERSION_V1,
-        kind=manifest_util.ResourceKind.DEPLOY_POLICY.value,
+    manifest = encoding.MessageToDict(policy_obj)
+    manifest_util.ApplyTransforms(
+        manifest,
+        _TRANSFORMS,
+        manifest_util.ResourceKind.DEPLOY_POLICY,
+        policy_ref.Name(),
+        policy_ref.projectsId,
+        policy_ref.locationsId,
     )
-    for f in policy_obj.all_fields():
-      value = getattr(policy_obj, f.name)
-      # Only output populated values.
-      if value:
-        if f.name == 'rules':
-          manifest_util.ExportDeployPolicyRules(manifest, value)
-          continue
-        manifest[f.name] = value
     return manifest
+
+# We can't use manifest_util._EXPORT_TRANSFORMS because it has several
+# transforms we don't want for `describe`. Specifically:
+# * it adds `apiVersion`/`kind`
+# * it moves a bunch of fields into `metadata`, and turns the `name` into an id
+# * it removes fields like `createTime`/`updateTime`
+_TRANSFORMS = [
+    manifest_util.TransformConfig(
+        kinds=[manifest_util.ResourceKind.DEPLOY_POLICY],
+        # Using the always-present `name` field to make sure this transform is
+        # always applied.
+        fields=['name'],
+        move=manifest_util.AddApiVersionAndKind,
+    ),
+    manifest_util.TransformConfig(
+        kinds=[manifest_util.ResourceKind.DEPLOY_POLICY],
+        fields=['rules[].rolloutRestriction.timeWindows.oneTimeWindows[]'],
+        replace=manifest_util.ConvertPolicyOneTimeWindowToYamlFormat,
+    ),
+    manifest_util.TransformConfig(
+        kinds=[manifest_util.ResourceKind.DEPLOY_POLICY],
+        fields=[
+            'rules[].rolloutRestriction.timeWindows.weeklyWindows[].startTime',
+            'rules[].rolloutRestriction.timeWindows.weeklyWindows[].endTime',
+        ],
+        replace=manifest_util.ConvertTimeProtoToString,
+    ),
+]

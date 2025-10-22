@@ -68,7 +68,7 @@ def _CommonArgs(
     support_specific_then_x_affinity=False,
     support_graceful_shutdown=False,
     support_ipv6_only=False,
-    support_vlan_nic=False,
+    support_vlan_nic=True,
     support_watchdog_timer=False,
     support_disk_labels=False,
     support_igmp_query=False,
@@ -1187,7 +1187,7 @@ class Create(base.CreateCommand):
   _support_local_ssd_recovery_timeout = True
   _support_specific_then_x_affinity = False
   _support_graceful_shutdown = False
-  _support_vlan_nic = False
+  _support_vlan_nic = True
   _support_watchdog_timer = False
   _support_disk_labels = False
   _support_ipv6_only = True

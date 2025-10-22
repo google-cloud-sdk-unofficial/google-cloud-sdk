@@ -22,52 +22,55 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util
 from googlecloudsdk.command_lib.storage import flags
 
+_COMMAND_DESCRIPTION = """
+Copy data between your local file system and the cloud, within the cloud,
+and between cloud storage providers.
+"""
+_GA_EXAMPLES = """
+The following command uploads all text files from the local directory to a
+bucket:
+
+  $ {command} *.txt gs://my-bucket
+
+The following command downloads all text files from a bucket to your
+current directory:
+
+  $ {command} gs://my-bucket/*.txt .
+
+The following command transfers all text files from a bucket to a
+different cloud storage provider:
+
+  $ {command} gs://my-bucket/*.txt s3://my-bucket
+
+Use the `--recursive` option to copy an entire directory tree. The
+following command uploads the directory tree ``dir'':
+
+  $ {command} --recursive dir gs://my-bucket
+
+Recursive listings are similar to adding `**` to a query, except
+`**` matches only cloud objects and will not match prefixes. For
+example, the following would not match ``gs://my-bucket/dir/log.txt''
+
+  $ {command} gs://my-bucket/**/dir dir
+
+`**` retrieves a flat list of objects in a single API call. However, `**`
+matches folders for non-cloud queries. For example, a folder ``dir''
+would be copied in the following.
+
+  $ {command} ~/Downloads/**/dir gs://my-bucket
+"""
+_ALPHA_EXAMPLES = """
+"""
+
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cp(base.Command):
   """Upload, download, and copy Cloud Storage objects."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
-      Copy data between your local file system and the cloud, within the cloud,
-      and between cloud storage providers.
-      """,
-      'EXAMPLES':
-          """
-
-      The following command uploads all text files from the local directory to a
-      bucket:
-
-        $ {command} *.txt gs://my-bucket
-
-      The following command downloads all text files from a bucket to your
-      current directory:
-
-        $ {command} gs://my-bucket/*.txt .
-
-      The following command transfers all text files from a bucket to a
-      different cloud storage provider:
-
-        $ {command} gs://my-bucket/*.txt s3://my-bucket
-
-      Use the `--recursive` option to copy an entire directory tree. The
-      following command uploads the directory tree ``dir'':
-
-        $ {command} --recursive dir gs://my-bucket
-
-      Recursive listings are similar to adding `**` to a query, except
-      `**` matches only cloud objects and will not match prefixes. For
-      example, the following would not match ``gs://my-bucket/dir/log.txt''
-
-        $ {command} gs://my-bucket/**/dir dir
-
-      `**` retrieves a flat list of objects in a single API call. However, `**`
-      matches folders for non-cloud queries. For example, a folder ``dir''
-      would be copied in the following.
-
-        $ {command} ~/Downloads/**/dir gs://my-bucket
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @classmethod
@@ -79,3 +82,14 @@ class Cp(base.Command):
   def Run(self, args):
 
     self.exit_code = cp_command_util.run_cp(args)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CpAlpha(Cp):
+  """Upload, download, and copy Cloud Storage objects."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }

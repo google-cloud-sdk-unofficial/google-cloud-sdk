@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.backupdr import util
 from googlecloudsdk.api_lib.backupdr.backup_plan_associations import BackupPlanAssociationsClient
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.backupdr import flags
 from googlecloudsdk.core import log
 
@@ -71,9 +72,18 @@ class TriggerBackup(base.Command):
 
     backup_plan_association = args.CONCEPTS.backup_plan_association.Parse()
     backup_rule = args.backup_rule_id
+    custom_retention_days = args.custom_retention_days
+
+    if backup_rule and custom_retention_days:
+      raise calliope_exceptions.MutualExclusionError(
+          'argument --custom-retention-days: At most one of --backup-rule-id |'
+          ' --custom-retention-days may be specified.'
+      )
 
     try:
-      operation = client.TriggerBackup(backup_plan_association, backup_rule)
+      operation = client.TriggerBackup(
+          backup_plan_association, backup_rule, custom_retention_days
+      )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
     if is_async:

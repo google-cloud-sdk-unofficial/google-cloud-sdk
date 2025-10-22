@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 
           $ {command} --space=my-space --project=my-project --location=us-central1
 
-          Or run:
+        Or run:
 
           $ {command} --space=projects/my-project/locations/us-central1/spaces/my-space
 

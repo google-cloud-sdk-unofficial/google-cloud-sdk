@@ -33,7 +33,7 @@ _DETAILED_HELP = {
 
           $ {command} my-revision --shared-template=my-shared-template --space=my-space --project=my-project --location=us-central1
 
-          Or run:
+        Or run:
 
           $ {command} projects/my-project/locations/us-central1/spaces/my-space/sharedTemplates/my-shared-template/revisions/my-revision
 

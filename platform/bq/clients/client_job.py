@@ -421,6 +421,7 @@ def _StartQueryRpc(
     max_results: Optional[int] = None,
     timeout_ms: Optional[int] = None,
     job_timeout_ms: Optional[int] = None,
+    max_slots: Optional[int] = None,
     min_completion_ratio: Optional[float] = None,
     project_id: Optional[str] = None,
     external_table_definitions_json=None,
@@ -455,6 +456,7 @@ def _StartQueryRpc(
     max_results: Maximum number of results to return.
     timeout_ms: Timeout, in milliseconds, for the call to query().
     job_timeout_ms: Optional. How long to let the job run.
+    max_slots: Optional. Cap on target rate of slot consumption by the query.
     min_completion_ratio: Optional. Specifies the minimum fraction of data that
       must be scanned before a query returns. This value should be between 0.0
       and 1.0 inclusive.
@@ -526,6 +528,7 @@ def _StartQueryRpc(
       use_query_cache=use_cache,
       timeout_ms=timeout_ms,
       job_timeout_ms=job_timeout_ms,
+      max_slots=max_slots,
       max_results=max_results,
       use_legacy_sql=use_legacy_sql,
       min_completion_ratio=min_completion_ratio,
@@ -898,6 +901,7 @@ def RunQueryRpc(
     ] = None,
     reservation_id: Optional[str] = None,
     job_timeout_ms: Optional[int] = None,
+    max_slots: Optional[int] = None,
     **kwds,
 ):
   """Executes the given query using the rpc-style query api.
@@ -938,6 +942,7 @@ def RunQueryRpc(
       "project_id:reservation_id", "project_id:location.reservation_id", or
       "reservation_id".
     job_timeout_ms: Optional. How long to let the job run.
+    max_slots: Optional. Cap on target rate of slot consumption by the query.
     **kwds: Passed directly to ExecuteSyncQuery.
 
   Raises:
@@ -1003,6 +1008,7 @@ def RunQueryRpc(
             dry_run=dry_run,
             min_completion_ratio=min_completion_ratio,
             job_timeout_ms=job_timeout_ms,
+            max_slots=max_slots,
             max_results=rows_to_read,
             external_table_definitions_json=external_table_definitions_json,
             udf_resources=udf_resources,
@@ -1094,6 +1100,7 @@ def Query(
     range_partitioning=None,
     script_options=None,
     job_timeout_ms: Optional[int] = None,
+    max_slots: Optional[int] = None,
     create_session: Optional[bool] = None,
     connection_properties=None,
     continuous=None,
@@ -1240,6 +1247,10 @@ def Query(
       labels=labels,
       job_timeout_ms=job_timeout_ms,
       reservation=reservation_path,
+  )
+  bq_processor_utils.ApplyParameters(
+      request,
+      max_slots=max_slots,
   )
   return ExecuteJob(bqclient, request, **kwds)
 

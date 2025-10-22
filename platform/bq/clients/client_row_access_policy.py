@@ -134,6 +134,26 @@ def _get_row_access_policy_reference(
   )
 
 
+def delete_row_access_policy(
+    bqclient: bigquery_client.BigqueryClient,
+    policy_reference: 'bq_id_utils.ApiClientHelper.RowAccessPolicyReference',
+    force: bool = False,
+):
+  """Delete a row access policy on the given table reference."""
+  return (
+      bqclient.GetRowAccessPoliciesApiClient()
+      .rowAccessPolicies()
+      .delete(
+          projectId=policy_reference.projectId,
+          datasetId=policy_reference.datasetId,
+          tableId=policy_reference.tableId,
+          policyId=policy_reference.policyId,
+          force=force,
+      )
+      .execute()
+  )
+
+
 def _list_row_access_policies(
     bqclient: bigquery_client.BigqueryClient,
     table_reference: 'bq_id_utils.ApiClientHelper.TableReference',

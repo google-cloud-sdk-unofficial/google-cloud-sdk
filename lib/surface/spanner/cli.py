@@ -60,7 +60,7 @@ def AddBaseArgs(parser):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Cli(base.BinaryBackedCommand):
   """An interactive shell for Spanner."""
 

@@ -403,7 +403,7 @@ class Update(base.UpdateCommand):
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
   _support_share_type = False
-  _support_scheduling_type = False
+  _support_scheduling_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -414,6 +414,7 @@ class Update(base.UpdateCommand):
     r_flags.GetVmCountFlag(False).AddToParser(parser)
     r_flags.GetReservationSharingPolicyFlag().AddToParser(parser)
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
+    r_flags.GetSchedulingTypeFlag().AddToParser(parser)
 
   def Run(self, args):
     """Common routine for updating reservation."""
@@ -551,7 +552,7 @@ class UpdateBeta(Update):
   _support_reservation_sharing_policy = True
   _support_emergent_maintenance = True
   _support_share_type = True
-  _support_scheduling_type = False
+  _support_scheduling_type = True
 
   @classmethod
   def Args(cls, parser):
@@ -565,6 +566,7 @@ class UpdateBeta(Update):
     r_flags.GetEnableEmergentMaintenanceFlag().AddToParser(parser)
     r_flags.GetSharedSettingFlag(
         support_folder_share_setting=False).AddToParser(parser)
+    r_flags.GetSchedulingTypeFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

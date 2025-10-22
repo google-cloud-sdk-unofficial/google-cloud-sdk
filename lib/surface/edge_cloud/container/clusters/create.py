@@ -156,3 +156,4 @@ class CreateAlpha(Create):
     container_flags.AddEnableClusterIsolation(parser)
     container_flags.AddEnableRemoteBackup(parser)
     container_flags.AddEnableRobinCNS(parser)
+    container_flags.AddControlPlaneNodeSystemPartitionSize(parser)

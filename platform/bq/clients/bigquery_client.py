@@ -332,7 +332,9 @@ class BigqueryClient:
       try:
         discovery_document = (
             discovery_document_loader.load_local_discovery_doc_from_service(
-                service=service, api=self.api, api_version=api_version
+                service=service,
+                api=self.api,
+                api_version=api_version,
             )
         )
         if discovery_document:
@@ -441,12 +443,17 @@ class BigqueryClient:
       self,
       service: Service,
       discovery_url: Optional[str] = None,
+      discovery_root_url: Optional[str] = None,
       api_version: Optional[str] = None,
       domain_root: Optional[str] = None,
       labels: Optional[str] = None,
   ) -> discovery.Resource:
     """Build and return BigQuery Dynamic client from discovery document."""
-    logging.info('BuildApiClient discovery_url: %s', discovery_url)
+    logging.info(
+        'BuildApiClient discovery_url: %s, discovery_root_url: %s',
+        discovery_url,
+        discovery_root_url,
+    )
     if api_version is None:
       api_version = self.api_version
     # If self.credentials is of type google.auth, it has to be cleared of the

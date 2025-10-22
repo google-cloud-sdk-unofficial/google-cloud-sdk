@@ -33,6 +33,34 @@ from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.objects import patch_object_task
 from googlecloudsdk.command_lib.storage.tasks.objects import rewrite_object_task
 
+_COMMAND_DESCRIPTION = """
+Update Cloud Storage objects.
+"""
+
+_GA_EXAMPLES = """
+Update a Google Cloud Storage object's custom-metadata:
+
+  $ {command} gs://bucket/my-object --custom-metadata=key1=value1,key2=value2
+
+One can use [wildcards](https://cloud.google.com/storage/docs/wildcards)
+to update multiple objects in a single command. for instance to update
+all objects to have a custom-metadata key:
+
+  $ {command} gs://bucket/** --custom-metadata=key1=value1,key2=value2
+
+Rewrite all JPEG images to the NEARLINE storage class:
+
+  $ {command} gs://bucket/*.jpg --storage-class=NEARLINE
+
+You can also provide a precondition on an object's metageneration in
+order to avoid potential race conditions:
+
+  $ {command} gs://bucket/*.jpg --storage-class=NEARLINE --if-metageneration-match=123456789
+"""
+
+_ALPHA_EXAMPLES = """
+"""
+
 
 def _get_task_iterator(urls, args):
   """Yields PatchObjectTask's or RewriteObjectTask's."""
@@ -171,32 +199,8 @@ class Update(base.Command):
   """Update Cloud Storage objects."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
-      Update Cloud Storage objects.
-      """,
-      'EXAMPLES':
-          """
-
-      Update a Google Cloud Storage object's custom-metadata:
-
-        $ {command} gs://bucket/my-object --custom-metadata=key1=value1,key2=value2
-
-      One can use [wildcards](https://cloud.google.com/storage/docs/wildcards)
-      to update multiple objects in a single command. for instance to update
-      all objects to have a custom-metadata key:
-
-        $ {command} gs://bucket/** --custom-metadata=key1=value1,key2=value2
-
-      Rewrite all JPEG images to the NEARLINE storage class:
-
-        $ {command} gs://bucket/*.jpg --storage-class=NEARLINE
-
-      You can also provide a precondition on an object's metageneration in
-      order to avoid potential race conditions:
-
-        $ {command} gs://bucket/*.jpg --storage-class=NEARLINE --if-metageneration-match=123456789
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @staticmethod
@@ -229,6 +233,11 @@ class Update(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(Update):
   """Update Cloud Storage objects."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }
 
   @staticmethod
   def Args(parser):

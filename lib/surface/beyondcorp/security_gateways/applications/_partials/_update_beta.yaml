@@ -24,7 +24,7 @@
     examples: |-
       To update the application, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -44,12 +44,12 @@
         Match conditions for OR logic.
         An array of match conditions to allow for multiple matching criteria.
         The rule is considered a match if one of the conditions is met.
-        The conditions can be one of the following combinations
-        (Hostname), (Hostname & Ports)
+        The conditions should be the following combination:
+        (Hostname & Ports)
 
         EXAMPLES:
-        Hostname - ("*.example.com"), ("xyz.example.com")
-        Hostname and Ports - ("example.com" and "22"), ("example.com" and "22,33") etc
+        Hostname and Ports - ("*.example.com", "443"), ("example.com" and "22"),
+        ("example.com" and "22,33") etc
       clearable: true
       spec:
       - api_field: hostname
@@ -63,7 +63,7 @@
       required: false
       repeated: false
       help_text: |-
-        An arbitrary user-provided name for the Application resource.
+        An arbitrary user-provided name for the application resource.
         Cannot exceed 64 characters.
     - arg_name: upstreams
       api_field: googleCloudBeyondcorpSecuritygatewaysV1Application.upstreams
@@ -82,6 +82,72 @@
           help_text: |-
             Network name is of the format:
             `projects/{project}/global/networks/{network}
+      - api_field: external
+        one_of_index: 0
+        help_text: |-
+          List of the external endpoints to forward traffic to.
+        spec:
+        - api_field: endpoints
+          help_text: |-
+            List of the endpoints to forward traffic to.
+          spec:
+          - api_field: hostname
+            help_text: |-
+              Hostname of the endpoint.
+          - api_field: port
+            help_text: |-
+              Port of the endpoint.
+      - api_field: proxyProtocol
+        help_text: |-
+          Enables proxy protocol configuration for the upstream.
+        spec:
+        - api_field: allowedClientHeaders
+          help_text: |-
+            List of the allowed client header names.
+        - api_field: contextualHeaders
+          help_text: |-
+            Configuration for the contextual headers.
+          spec:
+          - api_field: userInfo
+            help_text: |-
+              User info configuration.
+            spec:
+            - api_field: outputType
+              help_text: |-
+                The output type of the delegated user info.
+          - api_field: groupInfo
+            help_text: |-
+              Group info configuration.
+            spec:
+            - api_field: outputType
+              help_text: |-
+                The output type of the delegated group info.
+          - api_field: deviceInfo
+            help_text: |-
+              Device info configuration.
+            spec:
+            - api_field: outputType
+              help_text: |-
+                The output type of the delegated device info.
+          - api_field: outputType
+            help_text: |-
+              Default output type for all enabled headers.
+        - api_field: metadataHeaders
+          help_text: |-
+            Custom resource specific headers along with the values.
+            The names should conform to RFC 9110:
+            > Field names SHOULD constrain themselves to alphanumeric characters, "-",
+            and ".", and SHOULD begin with a letter.
+            Field values SHOULD contain only ASCII printable characters and tab.
+          spec:
+          - api_field: key
+          - api_field: value
+        - api_field: gatewayIdentity
+          help_text: |-
+            Gateway identity configuration.
+        - api_field: clientIp
+          help_text: |-
+            Client IP configuration. The client IP address is included if true.
       - api_field: egressPolicy
         help_text: |-
           Routing policy information.
@@ -89,6 +155,22 @@
         - api_field: regions
           help_text: |-
             List of the regions where the application sends traffic.
+    - arg_name: schema
+      api_field: googleCloudBeyondcorpSecuritygatewaysV1Application.schema
+      required: false
+      help_text: |-
+        Type of the external application.
+      choices:
+      - arg_value: proxy-gateway
+        enum_value: PROXY_GATEWAY
+        help_text: |-
+          Proxy which routes traffic to actual applications, like Netscaler
+          Gateway.
+      - arg_value: api-gateway
+        enum_value: API_GATEWAY
+        help_text: |-
+          Service Discovery API endpoint when Service Discovery is enabled in
+          Gateway.
     - arg_name: request-id
       api_field: requestId
       required: false

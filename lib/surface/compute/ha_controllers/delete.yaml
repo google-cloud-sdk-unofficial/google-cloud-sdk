@@ -1,11 +1,11 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Delete an HA controller.
-    description: Delete an HA controller.
+    brief: Permanently delete a specified HA Controller.
+    description: Delete an High Availability (HA) Controller to permanently remove the high availability and failover capabilities from the associated virtual machine (VM) instance.
     examples: |
-      The following command deletes an HA controller with ID `my-hac` in region `us-central1`:
+      To delete an HA Controller named `my-ha-controller` in the `us-central1` region, run the following command:
 
-        $ {command} my-hac \
+        $ {command} my-ha-controller \
             --region=us-central1
 
   request:
@@ -22,6 +22,6 @@
 
   arguments:
     resource:
-      help_text: Name of the HA controller you want to delete.
+      help_text: The HA Controller that you want to delete.
       spec: !REF googlecloudsdk.command_lib.compute.ha_controllers.resources:ha_controller
       is_positional: true

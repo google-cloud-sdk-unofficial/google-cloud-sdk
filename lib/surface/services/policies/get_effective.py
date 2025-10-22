@@ -18,7 +18,6 @@
 
 import collections
 
-from googlecloudsdk.api_lib.services import exceptions
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
@@ -60,6 +59,7 @@ class GetEffectivePolicy(base.Command):
             ' related to effective policy.'
         ),
         default='BASIC',
+        choices=['BASIC', 'FULL'],
     )
     common_flags.add_resource_args(parser)
 
@@ -80,12 +80,6 @@ class GetEffectivePolicy(base.Command):
     Returns:
       Effective Policy.
     """
-
-    if args.view not in ('BASIC', 'FULL'):
-      raise exceptions.ConfigError(
-          'Invalid view. Please provide a valid view. Excepted view : BASIC,'
-          ' FULL'
-      )
     if args.IsSpecified('folder'):
       resource_name = _FOLDER_RESOURCE.format(args.folder)
     elif args.IsSpecified('organization'):

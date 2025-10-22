@@ -123,6 +123,7 @@ class Create(base.Command):
           exclude_source_locations=args.exclude_source_locations,
           auto_add_new_buckets=args.auto_add_new_buckets,
           retention_period=args.retention_period_days,
+          activity_data_retention_period=args.activity_data_retention_period_days,
           identity_type=args.identity,
           description=args.description,
       )

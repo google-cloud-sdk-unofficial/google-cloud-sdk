@@ -29,14 +29,14 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-def _AddArgsCommon(parser, messages):
+def _AddArgsCommon(parser, messages, api_version='v1'):
   """Adds the common arguments for all versions."""
   flags.GetDnsZoneArg(
       'The name of the managed-zone to be created.'
   ).AddToParser(parser)
   flags.GetManagedZonesDnsNameArg().AddToParser(parser)
   flags.GetManagedZonesDescriptionArg().AddToParser(parser)
-  flags.AddCommonManagedZonesDnssecArgs(parser, messages)
+  flags.AddCommonManagedZonesDnssecArgs(parser, messages, api_version)
   labels_util.AddCreateLabelsFlags(parser)
   flags.GetManagedZoneNetworksArg().AddToParser(parser)
   flags.GetManagedZoneVisibilityArg().AddToParser(parser)
@@ -116,7 +116,7 @@ class Create(base.CreateCommand):
   def Args(cls, parser):
     api_version = util.GetApiFromTrack(cls.ReleaseTrack())
     messages = apis.GetMessagesModule('dns', api_version)
-    _AddArgsCommon(parser, messages)
+    _AddArgsCommon(parser, messages, api_version=api_version)
     parser.display_info.AddCacheUpdater(flags.ManagedZoneCompleter)
 
   def Run(self, args):

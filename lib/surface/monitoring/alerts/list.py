@@ -60,6 +60,7 @@ class List(base.ListCommand):
     # filter handling.
     super(List, List).Args(parser)
 
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 1000)
     parser.display_info.AddFormat('yaml')
     parser.display_info.AddUriFunc(resource_args.GetAlertResourceUriFunc())
 
@@ -80,6 +81,9 @@ class List(base.ListCommand):
 
     # Pass the filter and order_by to the API client
     response = client.List(
-        project_ref=project_ref, a_filter=args.filter, order_by=order_by_string
+        project_ref,
+        a_filter=args.filter,
+        order_by=order_by_string,
+        page_size=args.page_size,
     )
     return response.alerts

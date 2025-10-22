@@ -33,28 +33,31 @@ from googlecloudsdk.command_lib.storage.resources import full_resource_formatter
 from googlecloudsdk.command_lib.storage.resources import gsutil_json_printer
 from googlecloudsdk.command_lib.storage.resources import resource_util
 
+_COMMAND_DESCRIPTION = """
+Describe a Cloud Storage object.
+"""
+_GA_EXAMPLES = """
+Describe a Google Cloud Storage object with the url
+"gs://bucket/my-object":
+
+  $ {command} gs://bucket/my-object
+
+Describe object with JSON formatting, only returning the "name" key:
+
+  $ {command} gs://bucket/my-object --format="json(name)"
+"""
+_ALPHA_EXAMPLES = """
+"""
+
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Storage object."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
-      Describe a Cloud Storage object.
-      """,
-      'EXAMPLES':
-          """
-
-      Describe a Google Cloud Storage object with the url
-      "gs://bucket/my-object":
-
-        $ {command} gs://bucket/my-object
-
-      Describe object with JSON formatting, only returning the "name" key:
-
-        $ {command} gs://bucket/my-object --format="json(name)"
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @classmethod
@@ -117,3 +120,14 @@ class Describe(base.DescribeCommand):
         full_resource_formatter.ObjectDisplayTitlesAndDefaults,
         display_raw_keys=args.raw,
     )
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a Cloud Storage object."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }

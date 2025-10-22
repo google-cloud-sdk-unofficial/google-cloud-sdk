@@ -35,6 +35,73 @@ from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 
 
+_COMMAND_DESCRIPTION = """
+*{command}* copies to and updates objects at `DESTINATION` to match
+`SOURCE`. `SOURCE` must specify a directory, bucket, or bucket
+subdirectory. *{command}* does not copy empty directory trees,
+since storage providers use a [flat namespace](https://cloud.google.com/storage/docs/folders).
+
+Note, shells (like bash, zsh) sometimes attempt to expand wildcards in
+ways that can be surprising. Also, attempting to copy files whose names
+contain wildcard characters can result in problems.
+
+If synchronizing a large amount of data between clouds you might consider
+setting up a Google Compute Engine account and running *{command}* there.
+Since *{command}* cross-provider data transfers flow through the machine
+where *{command}* is running, doing this can make your transfer run
+significantly faster than on your local workstation.
+
+"""
+_GA_EXAMPLES = """
+To sync the contents of the local directory `data` to the bucket
+gs://my-bucket/data:
+
+  $ {command} data gs://my-bucket/data
+
+To recurse into directories use `--recursive`:
+
+  $ {command} data gs://my-bucket/data --recursive
+
+To make the local directory `my-data` the same as the contents of
+gs://mybucket/data and delete objects in the local directory that are
+not in gs://mybucket/data:
+
+  $ {command} gs://mybucket/data my-data --recursive \
+      --delete-unmatched-destination-objects
+
+To make the contents of gs://mybucket2 the same as gs://mybucket1 and
+delete objects in gs://mybucket2 that are not in gs://mybucket1:
+
+  $ {command} gs://mybucket1 gs://mybucket2 --recursive \
+      --delete-unmatched-destination-objects
+
+To copy all objects from `dir1` into `dir2` and delete all objects
+in `dir2` which are not in `dir1`:
+
+  $ {command} dir1 dir2 --recursive -\
+      --delete-unmatched-destination-objects
+
+To mirror your objects across cloud providers:
+
+  $ {command} gs://my-gs-bucket s3://my-s3-bucket --recursive \
+      --delete-unmatched-destination-objects
+
+To apply gzip compression to only uploaded image files in `dir`:
+
+  $ {command} dir gs://my-bucket/data --gzip-in-flight=jpeg,jpg,gif,png
+
+To skip the file `dir/data1/a.txt`:
+
+  $ {command} dir gs://my-bucket --exclude="data./.*\\.txt$"
+
+To skip all .txt and .jpg files:
+
+  $ {command} dir gs://my-bucket --exclude=".*\\.txt$|.*\\.jpg$"
+"""
+_ALPHA_EXAMPLES = """
+"""
+
+
 def _get_list_tasks_and_cleanup_paths(
     args,
     source_container,
@@ -153,73 +220,13 @@ def _perform_rsync(
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Rsync(base.Command):
   """Synchronize content of two buckets/directories."""
 
   detailed_help = {
-      'DESCRIPTION': """
-      *{command}* copies to and updates objects at `DESTINATION` to match
-      `SOURCE`. `SOURCE` must specify a directory, bucket, or bucket
-      subdirectory. *{command}* does not copy empty directory trees,
-      since storage providers use a [flat namespace](https://cloud.google.com/storage/docs/folders).
-
-      Note, shells (like bash, zsh) sometimes attempt to expand wildcards in
-      ways that can be surprising. Also, attempting to copy files whose names
-      contain wildcard characters can result in problems.
-
-      If synchronizing a large amount of data between clouds you might consider
-      setting up a Google Compute Engine account and running *{command}* there.
-      Since *{command}* cross-provider data transfers flow through the machine
-      where *{command}* is running, doing this can make your transfer run
-      significantly faster than on your local workstation.
-
-      """,
-      'EXAMPLES': """
-      To sync the contents of the local directory `data` to the bucket
-      gs://my-bucket/data:
-
-        $ {command} data gs://my-bucket/data
-
-      To recurse into directories use `--recursive`:
-
-        $ {command} data gs://my-bucket/data --recursive
-
-      To make the local directory `my-data` the same as the contents of
-      gs://mybucket/data and delete objects in the local directory that are
-      not in gs://mybucket/data:
-
-        $ {command} gs://mybucket/data my-data --recursive \
-           --delete-unmatched-destination-objects
-
-      To make the contents of gs://mybucket2 the same as gs://mybucket1 and
-      delete objects in gs://mybucket2 that are not in gs://mybucket1:
-
-        $ {command} gs://mybucket1 gs://mybucket2 --recursive \
-           --delete-unmatched-destination-objects
-
-      To copy all objects from `dir1` into `dir2` and delete all objects
-      in `dir2` which are not in `dir1`:
-
-        $ {command} dir1 dir2 --recursive -\
-           --delete-unmatched-destination-objects
-
-      To mirror your objects across cloud providers:
-
-        $ {command} gs://my-gs-bucket s3://my-s3-bucket --recursive \
-           --delete-unmatched-destination-objects
-
-      To apply gzip compression to only uploaded image files in `dir`:
-
-        $ {command} dir gs://my-bucket/data --gzip-in-flight=jpeg,jpg,gif,png
-
-      To skip the file `dir/data1/a.txt`:
-
-        $ {command} dir gs://my-bucket --exclude="data./.*\\.txt$"
-
-      To skip all .txt and .jpg files:
-
-        $ {command} dir gs://my-bucket --exclude=".*\\.txt$|.*\\.jpg$"
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @classmethod
@@ -353,3 +360,14 @@ character. When using Windows PowerShell, use `'` instead of
     finally:
       for path in cleanup_paths:
         rsync_command_util.try_to_delete_file(path)
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RsyncAlpha(Rsync):
+  """Synchronize content of two buckets/directories."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }

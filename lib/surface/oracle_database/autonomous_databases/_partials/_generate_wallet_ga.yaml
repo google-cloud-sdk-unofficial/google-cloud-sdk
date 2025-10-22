@@ -20,8 +20,7 @@
   auto_generated: true
   help_text:
     brief: Generate wallet for an AutonomousDatabase.
-    description: Generate wallet for an AutonomousDatabase, Content is base64 encoded
-      zip archive.
+    description: Generate wallet for an AutonomousDatabase, Content is base64 encoded zip archive.
     examples: |-
       To generate wallet for an AutonomousDatabase with id `my-instance` with password `123Abpassword`,
       to encrypt the keys inside the wallet in the location `us-east4`,

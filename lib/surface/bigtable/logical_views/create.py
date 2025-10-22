@@ -45,7 +45,9 @@ class CreateLogicalView(base.CreateCommand):
   @staticmethod
   def Args(parser):
     arguments.AddLogicalViewResourceArg(parser, 'to create')
-    arguments.ArgAdder(parser).AddViewQuery().AddAsync().AddDeletionProtection()
+    arguments.ArgAdder(parser).AddViewQuery(
+        required=True
+    ).AddAsync().AddDeletionProtection()
 
   def _CreateLogicalView(self, logical_view_ref, args):
     """Creates a logical view with the given arguments.

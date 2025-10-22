@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import operations_util
 from googlecloudsdk.command_lib.ai import region_util
+from googlecloudsdk.command_lib.ai import validation
 from googlecloudsdk.core import log
 
 
@@ -57,6 +58,8 @@ def _AddArgsBeta(parser):
 
 def _RunBeta(args):
   """Create a new Vertex AI deployment resource pool."""
+  validation.ValidateRequiredReplicaCount(args.required_replica_count,
+                                          args.min_replica_count)
   version = constants.BETA_VERSION
   region_ref = args.CONCEPTS.region.Parse()
   args.region = region_ref.AsDict()['locationsId']
@@ -75,6 +78,7 @@ def _RunBeta(args):
         multihost_gpu_node_count=args.multihost_gpu_node_count,
         reservation_affinity=args.reservation_affinity,
         spot=args.spot,
+        required_replica_count=args.required_replica_count,
     )
     response_msg = operations_util.WaitForOpMaybe(
         operations.OperationsClient(), op,

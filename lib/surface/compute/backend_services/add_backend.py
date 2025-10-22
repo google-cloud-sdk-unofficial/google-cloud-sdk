@@ -53,6 +53,7 @@ class AddBackend(base.UpdateCommand):
   support_global_neg = True
   support_region_neg = True
   support_failover = True
+  support_in_flight_balancing = False
 
   @classmethod
   def Args(cls, parser):
@@ -66,18 +67,25 @@ class AddBackend(base.UpdateCommand):
     backend_flags.AddBalancingMode(
         parser,
         support_global_neg=cls.support_global_neg,
-        support_region_neg=cls.support_region_neg)
+        support_region_neg=cls.support_region_neg,
+        release_track=cls.ReleaseTrack(),
+    )
     backend_flags.AddCapacityLimits(
         parser,
         support_global_neg=cls.support_global_neg,
-        support_region_neg=cls.support_region_neg)
+        support_region_neg=cls.support_region_neg,
+        release_track=cls.ReleaseTrack(),
+    )
     backend_flags.AddCapacityScalar(
         parser,
         support_global_neg=cls.support_global_neg,
-        support_region_neg=cls.support_region_neg)
+        support_region_neg=cls.support_region_neg,
+    )
     backend_flags.AddPreference(parser)
     if cls.support_failover:
       backend_flags.AddFailover(parser, default=None)
+    if cls.support_in_flight_balancing:
+      backend_flags.AddTrafficDuration(parser)
     backend_flags.AddCustomMetrics(parser)
 
   def _GetGetRequest(self, client, backend_service_ref):
@@ -130,6 +138,7 @@ class AddBackend(base.UpdateCommand):
       group_uri,
       balancing_mode,
       preference,
+      traffic_duration,
       args,
   ):
     """Create a backend message.
@@ -140,15 +149,19 @@ class AddBackend(base.UpdateCommand):
       balancing_mode: Backend.BalancingModeValueValuesEnum. The backend load
         balancing mode.
       preference: Backend.PreferenceValueValuesEnum. The backend preference
+      traffic_duration: Backend.TrafficDurationValueValuesEnum. The traffic
+        duration for the backend.
       args: argparse Namespace. The arguments given to the add-backend command.
 
     Returns:
       A new Backend message with its fields set according to the given
       arguments.
     """
-    backend_services_utils.ValidateBalancingModeArgs(messages, args)
+    backend_services_utils.ValidateBalancingModeArgs(
+        messages, args, self.ReleaseTrack()
+    )
     if preference is not None:
-      return messages.Backend(
+      backend = messages.Backend(
           balancingMode=balancing_mode,
           preference=preference,
           capacityScaler=args.capacity_scaler,
@@ -163,8 +176,19 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        backend.maxInFlightRequests = args.max_in_flight_requests
+        backend.maxInFlightRequestsPerInstance = (
+            args.max_in_flight_requests_per_instance
+        )
+        backend.maxInFlightRequestsPerEndpoint = (
+            args.max_in_flight_requests_per_endpoint
+        )
+        backend.trafficDuration = traffic_duration
+
+      return backend
     else:
-      return messages.Backend(
+      backend = messages.Backend(
           balancingMode=balancing_mode,
           capacityScaler=args.capacity_scaler,
           description=args.description,
@@ -178,6 +202,17 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        backend.maxInFlightRequests = args.max_in_flight_requests
+        backend.maxInFlightRequestsPerInstance = (
+            args.max_in_flight_requests_per_instance
+        )
+        backend.maxInFlightRequestsPerEndpoint = (
+            args.max_in_flight_requests_per_endpoint
+        )
+        backend.trafficDuration = traffic_duration
+
+      return backend
 
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
@@ -218,11 +253,21 @@ class AddBackend(base.UpdateCommand):
       preference = client.messages.Backend.PreferenceValueValuesEnum(
           args.preference)
 
+    traffic_duration = None
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and args.traffic_duration
+    ):
+      traffic_duration = client.messages.Backend.TrafficDurationValueValuesEnum(
+          args.traffic_duration
+      )
+
     backend = self._CreateBackendMessage(
         client.messages,
         group_uri,
         balancing_mode,
         preference,
+        traffic_duration,
         args,
     )
     if args.custom_metrics:
@@ -295,3 +340,4 @@ class AddBackendAlpha(AddBackend):
   or `gcloud compute backend-services edit` command.
   """
   # Allow --preference flag to be set when updating the backend.
+  support_in_flight_balancing = True

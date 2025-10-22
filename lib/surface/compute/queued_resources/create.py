@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
   _support_flex_start = True
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -81,6 +82,7 @@ class Create(base.CreateCommand):
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     cls.AddSourceInstanceTemplate(parser)
     instances_flags.AddSecureTagsArgs(parser)
@@ -148,6 +150,7 @@ class Create(base.CreateCommand):
         self._support_graceful_shutdown,
         self._support_source_snapshot_region,
         self._support_skip_guest_os_shutdown,
+        self._support_preemption_notice_duration,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,

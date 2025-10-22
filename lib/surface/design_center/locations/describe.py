@@ -30,7 +30,7 @@ _DETAILED_HELP = {
 
           $ {command} my-location --project=my-project
 
-          Or run:
+        Or run:
 
           $ {command} projects/my-project/locations/my-location
         """,

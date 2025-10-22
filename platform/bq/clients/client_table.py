@@ -507,6 +507,7 @@ def update_table(
     materialized_view_args['refreshIntervalMs'] = refresh_interval_ms
   if materialized_view_args:
     table['materializedView'] = materialized_view_args
+
   if external_data_config is not None:
     table['externalDataConfiguration'] = external_data_config
     if max_staleness is not None:

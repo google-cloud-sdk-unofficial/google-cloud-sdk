@@ -11,7 +11,6 @@ from typing import Any, Dict, NamedTuple, Optional
 
 from googleapiclient import discovery
 
-from clients import client_dataset
 from clients import utils as bq_client_utils
 from utils import bq_api_utils
 from utils import bq_error
@@ -459,7 +458,6 @@ def _fetch_data_source(
 
 def update_transfer_config(
     transfer_client: discovery.Resource,
-    apiclient: discovery.Resource,
     id_fallbacks: NamedTuple(
         'IDS',
         [
@@ -481,7 +479,6 @@ def update_transfer_config(
 
   Args:
     transfer_client: the transfer client to use.
-    apiclient: the apiclient to use.
     id_fallbacks: IDs to use when they have not been explicitly specified.
     reference: the TransferConfigReference to update.
     target_dataset: Optional updated target dataset.
@@ -501,7 +498,6 @@ def update_transfer_config(
 
   Raises:
     BigqueryTypeError: if reference is not a TransferConfigReference.
-    BigqueryNotFoundError: if dataset is not found
     bq_error.BigqueryError: required field not given.
   """
 
@@ -520,19 +516,8 @@ def update_transfer_config(
   update_items = {}
   update_items['dataSourceId'] = current_config['dataSourceId']
   if target_dataset:
-    dataset_reference = bq_client_utils.GetDatasetReference(
-        id_fallbacks=id_fallbacks, identifier=target_dataset
-    )
-    if client_dataset.DatasetExists(
-        apiclient=apiclient, reference=dataset_reference
-    ):
-      update_items['destinationDatasetId'] = target_dataset
-      update_mask.append('transfer_config.destination_dataset_id')
-    else:
-      raise bq_error.BigqueryNotFoundError(
-          'Unknown %r' % (dataset_reference,), {'reason': 'notFound'}, []
-      )
     update_items['destinationDatasetId'] = target_dataset
+    update_mask.append('transfer_config.destination_dataset_id')
 
   if display_name:
     update_mask.append('transfer_config.display_name')
@@ -582,17 +567,26 @@ def update_transfer_config(
     }
     update_mask.append('encryption_configuration.kms_key_name')
 
-  transfer_client.projects().locations().transferConfigs().patch(
-      body=update_items,
-      name=reference.transferConfigName,
-      updateMask=','.join(update_mask),
-      authorizationCode=(
-          None if auth_info is None else auth_info.get(AUTHORIZATION_CODE)
-      ),
-      versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
-      serviceAccountName=service_account_name,
-      x__xgafv='2',
-  ).execute()
+  try:
+    transfer_client.projects().locations().transferConfigs().patch(
+        body=update_items,
+        name=reference.transferConfigName,
+        updateMask=','.join(update_mask),
+        authorizationCode=(
+            None if auth_info is None else auth_info.get(AUTHORIZATION_CODE)
+        ),
+        versionInfo=None if auth_info is None else auth_info.get(VERSION_INFO),
+        serviceAccountName=service_account_name,
+        x__xgafv='2',
+    ).execute()
+  except bq_error.BigqueryInterfaceError as e:
+    if target_dataset and 'Not found: Dataset' in str(e):
+      dataset_reference = bq_client_utils.GetDatasetReference(
+          id_fallbacks=id_fallbacks, identifier=target_dataset
+      )
+      raise bq_error.BigqueryNotFoundError(
+          'Not found: %r' % (dataset_reference,), {'reason': 'notFound'}, []
+      ) from e
 
 
 def create_transfer_config(

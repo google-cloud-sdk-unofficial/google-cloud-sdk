@@ -26,19 +26,22 @@ from googlecloudsdk.command_lib.workstations import flags as workstations_flags
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.DefaultUniverseOnly
 class StartTcpTunnel(base.Command):
-  """Start a tunnel through which a local process can forward TCP traffic to the workstation."""
+  """Start a tunnel through which a local process can forward TCP traffic to the workstation.
 
-  detailed_help = {
-      'DESCRIPTION':
-          '{description}',
-      'EXAMPLES':
-          """\
-          To start a tunnel to port 22 on a workstation, run:
+  Start a tunnel through which a local process can forward TCP traffic to the
+  workstation.
 
-            $ {command} --project=my-project --region=us-central1 --cluster=my-cluster --config=my-config my-workstation 22
-          """,
-  }
+  Note that arguments for the `NO_PROXY` environment variable must be FQDNs.
+
+  ## EXAMPLES
+
+    To start a tunnel to port 22 on a workstation, run:
+
+    $ {command} --project=my-project --region=us-central1 --cluster=my-cluster
+    --config=my-config my-workstation 22
+  """
 
   @staticmethod
   def Args(parser):

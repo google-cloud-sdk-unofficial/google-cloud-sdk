@@ -22,6 +22,7 @@ DISCOVERY_NEXT_RESERVATIONS = (
     'discovery_next/bigqueryreservation_google_rest_v1.json'
 )
 
+
 SUPPORTED_BIGQUERY_APIS = frozenset([
     'https://www.googleapis.com',
     'https://bigquery.googleapis.com',

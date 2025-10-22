@@ -34,28 +34,33 @@ from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import compose_objects_task
 
 
+_COMMAND_DESCRIPTION = """
+{command} creates a new object whose content is the concatenation
+of a given sequence of source objects in the same bucket.
+For more information, please see:
+[composite objects documentation](https://cloud.google.com/storage/docs/composite-objects).
+
+There is a limit (currently 32) to the number of components
+that can be composed in a single operation.
+"""
+_GA_EXAMPLES = """
+The following command creates a new object `target.txt` by concatenating
+`a.txt` and `b.txt`:
+
+  $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt
+"""
+_ALPHA_EXAMPLES = """
+"""
+
+
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Compose(base.Command):
   """Concatenate a sequence of objects into a new composite object."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
-      {command} creates a new object whose content is the concatenation
-      of a given sequence of source objects in the same bucket.
-      For more information, please see:
-      [composite objects documentation](https://cloud.google.com/storage/docs/composite-objects).
-
-      There is a limit (currently 32) to the number of components
-      that can be composed in a single operation.
-      """,
-      'EXAMPLES':
-          """
-      The following command creates a new object `target.txt` by concatenating
-      `a.txt` and `b.txt`:
-
-        $ {command} gs://bucket/a.txt gs://bucket/b.txt gs://bucket/target.txt
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @classmethod
@@ -114,3 +119,13 @@ class Compose(base.Command):
         print_status_message=True,
         user_request_args=user_request_args,
     ).execute()
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ComposeAlpha(Compose):
+  """Concatenate a sequence of objects into a new composite object."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }

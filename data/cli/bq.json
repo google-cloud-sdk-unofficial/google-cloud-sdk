@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.23",
+  "CLI_VERSION": "2.1.24",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -89,8 +89,8 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset, table or\nconnection resource, and prints it to stdout. The\npolicy is in JSON format.\n\nUsage: get-iam-policy <identifier>\n",
-        "EXAMPLES": "bq get-iam-policy ds.table1\nbq get-iam-policy --project_id=proj -t ds.table1\nbq get-iam-policy proj:ds.table1\n"
+        "DESCRIPTION": "Get the IAM policy for a resource.\n\nGets the IAM policy for a dataset, table, routine,\nconnection, or reservation resource, and prints it to\nstdout. The policy is in JSON format.\n\nUsage: get-iam-policy <identifier>\n",
+        "EXAMPLES": "bq get-iam-policy ds.table1\nbq get-iam-policy --project_id=proj -t ds.table1\nbq get-iam-policy proj:ds.table1\nbq get-iam-policy --reservation proj:ds.reservation1\n"
       }
     },
     "head": {
@@ -338,8 +338,8 @@
       "positionals": [],
       "release": "GA",
       "sections": {
-        "DESCRIPTION": "Set the IAM policy for a resource.\n\nSets the IAM policy for a dataset, table or\nconnection resource. After setting the policy, the\nnew policy is printed to stdout. Policies are in JSON\nformat.\n\nIf the 'etag' field is present in the policy, it must\nmatch the value in the current policy, which can be\nobtained with 'bq get-iam-policy'. Otherwise this\ncommand will fail. This feature allows users to\nprevent concurrent updates.\n\nUsage: set-iam-policy <identifier> <filename>\n",
-        "EXAMPLES": "bq set-iam-policy ds.table1 /tmp/policy.json\nbq set-iam-policy --project_id=proj -t ds.table1\n/tmp/policy.json\nbq set-iam-policy proj:ds.table1 /tmp/policy.json\n"
+        "DESCRIPTION": "Set the IAM policy for a resource.\n\nSets the IAM policy for a dataset, table, routine,\nconnection, or reservation resource. After setting\nthe policy, the new policy is printed to stdout.\nPolicies are in JSON format.\n\nIf the 'etag' field is present in the policy, it must\nmatch the value in the current policy, which can be\nobtained with 'bq get-iam-policy'. Otherwise this\ncommand will fail. This feature allows users to\nprevent concurrent updates.\n\nUsage: set-iam-policy <identifier> <filename>\n",
+        "EXAMPLES": "bq set-iam-policy ds.table1 /tmp/policy.json\nbq set-iam-policy --project_id=proj -t ds.table1\n/tmp/policy.json\nbq set-iam-policy proj:ds.table1 /tmp/policy.json\nbq set-iam-policy --reservation proj:ds.reservation1\n/tmp/policy.json\n"
       }
     },
     "shell": {
@@ -472,7 +472,7 @@
       "attr": {},
       "category": "",
       "default": "''",
-      "description": "<none|reservation_groups>: Naming an alpha feature with this flag will cause it be used.; repeat this option to specify a list of values",
+      "description": "<none|query_max_slots|reservation_groups>: Naming an alpha feature with this flag will cause it be used.; repeat this option to specify a list of values",
       "group": "",
       "is_global": true,
       "is_hidden": false,

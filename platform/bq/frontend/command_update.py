@@ -724,6 +724,7 @@ class Update(bigquery_command.BigqueryCmd):
         ]),
         flag_values=fv,
     )
+
     self._ProcessCommandRc(fv)
 
   def printSuccessMessage(self, object_name: str, reference: Any):
@@ -1181,7 +1182,6 @@ class Update(bigquery_command.BigqueryCmd):
           self.range_partitioning
       )
       clustering = frontend_utils.ParseClustering(self.clustering_fields)
-
       encryption_configuration = None
       if self.destination_kms_key:
         encryption_configuration = {'kmsKeyName': self.destination_kms_key}
@@ -1266,7 +1266,6 @@ class Update(bigquery_command.BigqueryCmd):
         )
         client_data_transfer.update_transfer_config(
             transfer_client=client.GetTransferV1ApiClient(),
-            apiclient=client.apiclient,
             id_fallbacks=client,
             reference=reference,
             target_dataset=self.target_dataset,

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to create an HA controller."""
+"""Command to create an HA Controller."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,10 +30,16 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.compute.alpha import compute_alpha_messages
 
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create an HA controller."""
+  """Create an HA Controller.
+
+  Create an High Availability (HA) Controller, which helps
+  ensure that a virtual machine (VM) instance remains operational by
+  automatically managing failover across two zones.
+  """
 
   @staticmethod
   def Args(parser):
@@ -43,11 +49,18 @@ class Create(base.CreateCommand):
     )
     parser.add_argument(
         '--description',
-        help='Description of the HA controller.',
+        help=(
+            'An optional, user-provided description for the HA Controller to'
+            ' help identify its purpose.'
+        ),
     )
     parser.add_argument(
         '--instance-name',
-        help='Name of the instance that HaController is in charge of.',
+        help=(
+            'The name of the existing VM that the HA Controller manages. This'
+            ' VM must already exist in one of the zones specified in'
+            ' --zone-configuration.'
+        ),
     )
     parser.add_argument(
         '--failover-initiation',
@@ -56,7 +69,11 @@ class Create(base.CreateCommand):
             x,
             compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum,
         ),
-        help='Indicates how failover should be initiated.',
+        help=(
+            'Specifies how a failover is triggered. Set to MANUAL_ONLY if you'
+            ' want to trigger failovers yourself. Must be one of:'
+            f' {utils.EnumTypeToChoices(compute_alpha_messages.HaController.FailoverInitiationValueValuesEnum)}'
+        ),
     )
     parser.add_argument(
         '--secondary-zone-capacity',
@@ -65,27 +82,64 @@ class Create(base.CreateCommand):
             x,
             compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum,
         ),
-        help='Indicates capacity guarantees in the secondary zone.',
+        help=(
+            'Determines the capacity guarantee in the secondary zone. Use'
+            ' BEST_EFFORT to create a VM based on capacity availability at the'
+            ' time of failover, suitable for workloads that can tolerate longer'
+            ' recovery times. Must be one of:'
+            f' {utils.EnumTypeToChoices(compute_alpha_messages.HaController.SecondaryZoneCapacityValueValuesEnum)}'
+        ),
     )
     parser.add_argument(
         '--zone-configuration',
         required=True,
         type=arg_parsers.ArgObject(
             spec={
-                'zone': str,
-                'reservation-affinity': lambda x: arg_utils.ChoiceToEnum(
-                    x,
-                    compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum,
+                'node-affinity': arg_parsers.ArgObject(
+                    value_type=lambda x: arg_utils.ChoiceToEnum(
+                        x,
+                        compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum,
+                    ),
+                    help_text=(
+                        'Specifies the node-affinity value.'
+                        ' Must be one of:'
+                        f' {utils.EnumTypeToChoices(compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum)}'
+                    ),
                 ),
-                'reservation': str,
-                'node-affinity': lambda x: arg_utils.ChoiceToEnum(
-                    x,
-                    compute_alpha_messages.HaControllerZoneConfigurationNodeAffinity.OperatorValueValuesEnum,
+                'reservation': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies the reservation name. The reservation must'
+                        ' exist within the HA Controller region.'
+                    ),
                 ),
-            }
+                'reservation-affinity': arg_parsers.ArgObject(
+                    value_type=lambda x: arg_utils.ChoiceToEnum(
+                        x,
+                        compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum,
+                    ),
+                    help_text=(
+                        'Specifies the reservation-affinity value.'
+                        ' Must be one of:'
+                        f' {utils.EnumTypeToChoices(compute_alpha_messages.HaControllerZoneConfigurationReservationAffinity.ConsumeReservationTypeValueValuesEnum)}'
+                    ),
+                ),
+                'zone': arg_parsers.ArgObject(
+                    value_type=str,
+                    help_text=(
+                        'Specifies the zone. The zone must be within the HA'
+                        ' Controller region.'
+                    ),
+                ),
+            },
         ),
         action=arg_parsers.FlattenAction(),
-        help='Zone configuration for HA controller.',
+        help=(
+            'Configures the two zones for the HA Controller and specifies how'
+            ' VM capacity is reserved in each zone. You must provide two zone'
+            ' configurations. You can also specify an existing reservation or'
+            ' node-group to guarantee capacity.'
+        ),
     )
 
   def Run(self, args):
@@ -117,7 +171,7 @@ class Create(base.CreateCommand):
     operation_ref = holder.resources.Parse(response.selfLink)
 
     log.status.Print(
-        'HA controller creation in progress for [{}]: {}'.format(
+        'HA Controller creation in progress for [{}]: {}'.format(
             ha_controller.name, operation_ref.SelfLink()
         )
     )

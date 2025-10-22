@@ -161,6 +161,7 @@ class Create(base.Command):
   _support_flex_start = False
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = False
 
   _log_async = False
 
@@ -179,6 +180,7 @@ class Create(base.Command):
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -221,6 +223,7 @@ class Create(base.Command):
         self._support_graceful_shutdown,
         self._support_source_snapshot_region,
         self._support_skip_guest_os_shutdown,
+        self._support_preemption_notice_duration,
     )
     bulk_instance_resource = bulk_util.CreateBulkInsertInstanceResource(
         args,
@@ -365,6 +368,7 @@ class CreateBeta(Create):
   _support_igmp_query = False
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = False
 
   @classmethod
   def Args(cls, parser):
@@ -383,6 +387,7 @@ class CreateBeta(Create):
         support_igmp_query=cls._support_igmp_query,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
     cls.AddSourceInstanceTemplate(parser)
 
@@ -409,6 +414,7 @@ class CreateAlpha(Create):
   _support_flex_start = False
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
+  _support_preemption_notice_duration = True
 
   @classmethod
   def Args(cls, parser):
@@ -427,6 +433,7 @@ class CreateAlpha(Create):
         support_flex_start=cls._support_flex_start,
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
+        support_preemption_notice_duration=cls._support_preemption_notice_duration,
     )
 
     cls.AddSourceInstanceTemplate(parser)

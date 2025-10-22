@@ -28,16 +28,16 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 from googlecloudsdk.command_lib.compute.instances.network_interfaces import flags as network_interfaces_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class AddBeta(base.UpdateCommand):
-  r"""Add a dynamic network interface to a Compute Engine instance.
+class Add(base.UpdateCommand):
+  r"""Add a Dynamic Network Interface to a Compute Engine instance.
 
-  *{command}* adds a dynamic network interface to a Compute Engine instance.
+  *{command}* adds a Dynamic Network Interface to a Compute Engine instance.
   For example:
 
-    $ {command} instance-name --parent-nic-name nic1 --vlan 2
-    --network network-1 --subnetwork subnetwork-1
+    $ {command} instance-name --parent-nic-name=nic1 --vlan=2
+    --network=network-1 --subnetwork=subnetwork-1
   """
 
   enable_ipv6_assignment = False
@@ -135,16 +135,45 @@ class AddBeta(base.UpdateCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AddAlpha(AddBeta):
-  r"""Add a dynamic network interface to a Compute Engine instance.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class AddBeta(Add):
+  r"""Add a Dynamic Network Interface to a Compute Engine instance.
 
-  *{command}* adds a dynamic network interface to a Compute Engine instance.
+  *{command}* adds a Dynamic Network Interface to a Compute Engine instance.
   For example:
 
-    $ {command} instance-name --parent-nic-name nic1 --vlan 2
-    --network network-1 --subnetwork subnetwork-1
+    $ {command} instance-name --parent-nic-name=nic1 --vlan=2
+    --network=network-1 --subnetwork=subnetwork-1
+  """
+
+  enable_ipv6_assignment = False
+  support_igmp_query = False
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AddAlpha(AddBeta):
+  r"""Add a Dynamic Network Interface to a Compute Engine instance.
+
+  *{command}* adds a Dynamic Network Interface to a Compute Engine instance.
+  For example:
+
+    $ {command} instance-name --parent-nic-name=nic1 --vlan=2
+    --network=network-1 --subnetwork=subnetwork-1
   """
 
   enable_ipv6_assignment = True
   support_igmp_query = True
+
+
+Add.detailed_help = {
+    'brief': 'Add a Dynamic Network Interface to a Compute Engine instance.',
+    'DESCRIPTION': (
+        '*{command}* adds a Dynamic Network Interface to a Compute Engine'
+        ' instance.'
+    ),
+    'EXAMPLES': """\
+      To add a Dynamic Network Interface to a Compute Engine instance, run:
+        $ {command} instance-name --parent-nic-name=nic1 --vlan=2
+        --network=network-1 --subnetwork=subnetwork-1
+    """,
+}

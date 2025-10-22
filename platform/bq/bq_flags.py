@@ -15,6 +15,7 @@ class AlphaFeatures(enum.Enum):
 
   # A value is always needed in this enum so this is included as a noop.
   NONE = 'none'
+  QUERY_MAX_SLOTS = 'query_max_slots'
   RESERVATION_GROUPS = 'reservation_groups'
 
 

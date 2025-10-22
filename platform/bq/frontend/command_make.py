@@ -538,19 +538,34 @@ class Make(bigquery_command.BigqueryCmd):
             'BACKGROUND',
             'SPARK',
             'CONTINUOUS',
+            'BACKGROUND_CHANGE_DATA_CAPTURE',
+            'BACKGROUND_COLUMN_METADATA_INDEX',
+            'BACKGROUND_SEARCH_INDEX_REFRESH',
         ],
         (
-            'Type of jobs to create reservation assignment for. Options'
-            ' include:\n QUERY\n PIPELINE\n Note if PIPELINE reservations are'
+            'Type of jobs to create reservation assignment for.'
+            ' Options include:'
+            '\n QUERY'
+            '\n PIPELINE'
+            '\n Note if PIPELINE reservations are'
             ' created, then load jobs will just use the slots from this'
-            " reservation and slots from shared pool won't be used.\n"
-            ' ML_EXTERNAL\n BigQuery ML jobs that use services external to BQ'
+            " reservation and slots from shared pool won't be used."
+            '\n ML_EXTERNAL'
+            '\n BigQuery ML jobs that use services external to BQ'
             ' for model training will use slots from this reservation. Slots'
             ' used by these jobs are not preemptible, i.e., they are not'
             ' available for other jobs running in the reservation. These jobs'
-            ' will not utilize idle slots from other reservations.\n'
-            ' BACKGROUND\n BigQuery CDC background merge will use BACKGROUND'
-            ' reservations to execute if created.\n SPARK\n BigQuery Spark jobs'
+            ' will not utilize idle slots from other reservations.'
+            '\n BACKGROUND'
+            '\n BACKGROUND_CHANGE_DATA_CAPTURE'
+            '\n BigQuery CDC background merge will use'
+            ' BACKGROUND_CHANGE_DATA_CAPTURE'
+            ' reservations to execute if created, but will fall back to using'
+            ' BACKGROUND reservations if one does not exist.'
+            '\n BACKGROUND_COLUMN_METADATA_INDEX'
+            '\n BACKGROUND_SEARCH_INDEX_REFRESH'
+            '\n SPARK'
+            '\n BigQuery Spark jobs'
             ' that use services external to BQ for executing SPARK procedure'
             ' job. Slots used by these jobs are not preemptible, i.e., they are'
             ' not available for other jobs running in the reservation. These'

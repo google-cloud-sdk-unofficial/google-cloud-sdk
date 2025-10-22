@@ -102,7 +102,7 @@ class CreateGA(base.CreateCommand):
       vpn_gateway_flags.GetPeerVpnGatewayArgumentForOtherResource(
           required=False))
 
-  _support_cipher_suite = False
+  _support_cipher_suite = True
   _support_tagging_at_creation = False
 
   @classmethod

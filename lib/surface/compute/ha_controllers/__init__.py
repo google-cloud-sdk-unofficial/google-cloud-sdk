@@ -21,9 +21,10 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class HaControllers(base.Group):
-  """Manage HA controllers.
+  """Manage HA Controllers.
 
-  HA controller is a regional resource that provides high availability for a VM
+  Manage High Availability (HA) Controllers. An HA Controller is a regional
+  resource that provides high availability for a virtual machine (VM) instance
   in case of a zonal outage by offering a failover path to a VM in another zone.
   """
 

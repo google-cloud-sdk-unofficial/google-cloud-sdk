@@ -57,6 +57,8 @@ def _Run(args, version):
   """Deploy a model to an existing Vertex AI endpoint."""
   validation.ValidateDisplayName(args.display_name)
   validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
+  validation.ValidateRequiredReplicaCount(args.required_replica_count,
+                                          args.min_replica_count)
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
@@ -72,6 +74,7 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          required_replica_count=args.required_replica_count,
           reservation_affinity=args.reservation_affinity,
           autoscaling_metric_specs=args.autoscaling_metric_specs,
           spot=args.spot,
@@ -88,6 +91,7 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          required_replica_count=args.required_replica_count,
           autoscaling_metric_specs=args.autoscaling_metric_specs)
       validation.ValidateScaleToZeroArgs(
           args.min_replica_count,
@@ -105,6 +109,7 @@ def _Run(args, version):
           accelerator_dict=args.accelerator,
           min_replica_count=args.min_replica_count,
           max_replica_count=args.max_replica_count,
+          required_replica_count=args.required_replica_count,
           reservation_affinity=args.reservation_affinity,
           autoscaling_metric_specs=args.autoscaling_metric_specs,
           spot=args.spot,

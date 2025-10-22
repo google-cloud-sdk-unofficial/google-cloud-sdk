@@ -57,6 +57,7 @@ class UpdateBackend(base.UpdateCommand):
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
+    # backend_flags.AddTrafficDuration(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _GetGetRequest(self, client, backend_service_ref):
@@ -134,7 +135,9 @@ class UpdateBackend(base.UpdateCommand):
     elif args.description is not None:
       backend_to_update.description = None
 
-    self._ModifyBalancingModeArgs(client, args, backend_to_update)
+    self._ModifyBalancingModeArgs(
+        client, args, backend_to_update, self.ReleaseTrack()
+    )
 
     if backend_to_update is not None and args.failover is not None:
       backend_to_update.failover = args.failover
@@ -142,6 +145,17 @@ class UpdateBackend(base.UpdateCommand):
     if backend_to_update is not None and args.preference is not None:
       backend_to_update.preference = (
           client.messages.Backend.PreferenceValueValuesEnum(args.preference)
+      )
+
+    if (
+        self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+        and backend_to_update is not None
+        and args.traffic_duration is not None
+    ):
+      backend_to_update.trafficDuration = (
+          client.messages.Backend.TrafficDurationValueValuesEnum(
+              args.traffic_duration
+          )
       )
 
     if args.custom_metrics:
@@ -153,16 +167,20 @@ class UpdateBackend(base.UpdateCommand):
 
     return replacement
 
-  def _ModifyBalancingModeArgs(self, client, args, backend_to_update):
+  def _ModifyBalancingModeArgs(
+      self, client, args, backend_to_update, release_track=None
+  ):
     """Update balancing mode fields in backend_to_update according to args.
 
     Args:
       client: The compute client.
       args: The arguments given to the update-backend command.
       backend_to_update: The backend message to modify.
+      release_track: The release track of the command.
     """
-
-    _ModifyBalancingModeArgs(client.messages, args, backend_to_update)
+    _ModifyBalancingModeArgs(
+        client.messages, args, backend_to_update, release_track
+    )
 
   def _ValidateArgs(self, args):
     """Validatest that at least one field to update is specified.
@@ -181,6 +199,10 @@ class UpdateBackend(base.UpdateCommand):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
+        # args.max_in_flight_requests is not None,
+        # args.max_in_flight_requests_per_instance is not None,
+        # args.max_in_flight_requests_per_endpoint is not None,
+        # args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -248,6 +270,7 @@ class UpdateBackendBeta(UpdateBackend):
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
+    # backend_flags.AddTrafficDuration(parser)
 
   def _ValidateArgs(self, args):
     """Overrides."""
@@ -262,6 +285,10 @@ class UpdateBackendBeta(UpdateBackend):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
+        # args.max_in_flight_requests is not None,
+        # args.max_in_flight_requests_per_instance is not None,
+        # args.max_in_flight_requests_per_endpoint is not None,
+        # args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -299,11 +326,12 @@ class UpdateBackendAlpha(UpdateBackendBeta):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
     flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
     backend_flags.AddDescription(parser)
-    backend_flags.AddBalancingMode(parser)
-    backend_flags.AddCapacityLimits(parser)
+    backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
+    backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())
     backend_flags.AddCapacityScalar(parser)
     backend_flags.AddFailover(parser, default=None)
     backend_flags.AddPreference(parser)
+    backend_flags.AddTrafficDuration(parser)
     backend_flags.AddCustomMetrics(parser, add_clear_argument=True)
 
   def _ValidateArgs(self, args):
@@ -319,6 +347,10 @@ class UpdateBackendAlpha(UpdateBackendBeta):
         args.max_connections is not None,
         args.max_connections_per_instance is not None,
         args.max_connections_per_endpoint is not None,
+        args.max_in_flight_requests is not None,
+        args.max_in_flight_requests_per_instance is not None,
+        args.max_in_flight_requests_per_endpoint is not None,
+        args.traffic_duration is not None,
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
@@ -340,17 +372,20 @@ def _ClearMutualExclusiveBackendCapacityThresholds(backend):
   backend.maxConnectionsPerEndpoint = None
 
 
-def _ModifyBalancingModeArgs(messages, args, backend_to_update):
+def _ModifyBalancingModeArgs(
+    messages, args, backend_to_update, release_track=None
+):
   """Update balancing mode fields in backend_to_update according to args.
 
   Args:
     messages: API messages class, determined by the release track.
     args: The arguments given to the update-backend command.
     backend_to_update: The backend message to modify.
+    release_track: The release track of the command.
   """
 
   backend_services_utils.ValidateBalancingModeArgs(
-      messages, args, backend_to_update.balancingMode)
+      messages, args, backend_to_update.balancingMode, release_track)
 
   if args.balancing_mode:
     backend_to_update.balancingMode = (
@@ -358,20 +393,41 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update):
             args.balancing_mode))
 
     # If the balancing mode is being changed to RATE (CONNECTION), we must
-    # clear the max utilization and max connections (rate) fields, otherwise
-    # the server will reject the request.
+    # clear the max utilization, max inflight requests and max connections
+    # (rate) fields. If the balancing mode is being chagned to IN_FLIGHT,
+    # we must clear the max rate and max connections fields otherwise the
+    # server will reject the request.
     if (backend_to_update.balancingMode ==
         messages.Backend.BalancingModeValueValuesEnum.RATE):
       backend_to_update.maxUtilization = None
       backend_to_update.maxConnections = None
       backend_to_update.maxConnectionsPerInstance = None
       backend_to_update.maxConnectionsPerEndpoint = None
+      if release_track == base.ReleaseTrack.ALPHA:
+        backend_to_update.maxInFlightRequests = None
+        backend_to_update.maxInFlightRequestsPerInstance = None
+        backend_to_update.maxInFlightRequestsPerEndpoint = None
     elif (backend_to_update.balancingMode ==
           messages.Backend.BalancingModeValueValuesEnum.CONNECTION):
       backend_to_update.maxUtilization = None
       backend_to_update.maxRate = None
       backend_to_update.maxRatePerInstance = None
       backend_to_update.maxRatePerEndpoint = None
+      if release_track == base.ReleaseTrack.ALPHA:
+        backend_to_update.maxInFlightRequests = None
+        backend_to_update.maxInFlightRequestsPerInstance = None
+        backend_to_update.maxInFlightRequestsPerEndpoint = None
+    elif (
+        release_track == base.ReleaseTrack.ALPHA
+        and backend_to_update.balancingMode
+        == messages.Backend.BalancingModeValueValuesEnum.IN_FLIGHT
+    ):
+      backend_to_update.maxRate = None
+      backend_to_update.maxRatePerInstance = None
+      backend_to_update.maxRatePerEndpoint = None
+      backend_to_update.maxConnections = None
+      backend_to_update.maxConnectionsPerInstance = None
+      backend_to_update.maxConnectionsPerEndpoint = None
 
   # Now, we set the parameters that control load balancing.
   # ValidateBalancingModeArgs takes care that the control parameters
@@ -380,7 +436,8 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update):
     backend_to_update.maxUtilization = args.max_utilization
 
   # max_rate, max_rate_per_instance, max_connections and
-  # max_connections_per_instance are mutually exclusive arguments.
+  # max_connections_per_instance, max_in_flight_requests
+  # and max_in_flight_requests_per_instance are mutually exclusive arguments.
   if args.max_rate is not None:
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxRate = args.max_rate
@@ -401,6 +458,20 @@ def _ModifyBalancingModeArgs(messages, args, backend_to_update):
     _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
     backend_to_update.maxConnectionsPerEndpoint = (
         args.max_connections_per_endpoint)
+  elif release_track == base.ReleaseTrack.ALPHA:
+    if args.max_in_flight_requests is not None:
+      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      backend_to_update.maxInFlightRequests = args.max_in_flight_requests
+    elif args.max_in_flight_requests_per_instance is not None:
+      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      backend_to_update.maxInFlightRequestsPerInstance = (
+          args.max_in_flight_requests_per_instance
+      )
+    elif args.max_in_flight_requests_per_endpoint is not None:
+      _ClearMutualExclusiveBackendCapacityThresholds(backend_to_update)
+      backend_to_update.maxInFlightRequestsPerEndpoint = (
+          args.max_in_flight_requests_per_endpoint
+      )
 
   if args.capacity_scaler is not None:
     backend_to_update.capacityScaler = args.capacity_scaler

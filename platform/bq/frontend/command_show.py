@@ -148,6 +148,9 @@ class Show(bigquery_command.BigqueryCmd):
             'BACKGROUND',
             'SPARK',
             'CONTINUOUS',
+            'BACKGROUND_CHANGE_DATA_CAPTURE',
+            'BACKGROUND_COLUMN_METADATA_INDEX',
+            'BACKGROUND_SEARCH_INDEX_REFRESH',
         ],
         (
             'Type of jobs to search reservation assignment for. Options'
@@ -158,6 +161,9 @@ class Show(bigquery_command.BigqueryCmd):
             '\n BACKGROUND'
             '\n SPARK'
             '\n CONTINUOUS'
+            '\n BACKGROUND_CHANGE_DATA_CAPTURE'
+            '\n BACKGROUND_COLUMN_METADATA_INDEX'
+            '\n BACKGROUND_SEARCH_INDEX_REFRESH'
             '\n Used in conjunction with --reservation_assignment.'
         ),
         flag_values=fv,

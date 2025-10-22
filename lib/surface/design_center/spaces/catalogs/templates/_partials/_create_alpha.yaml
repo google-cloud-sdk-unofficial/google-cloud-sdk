@@ -22,17 +22,17 @@
     brief: Create a catalog template
     description: Create a catalog template.
     examples: |-
-      To create the catalog template `my-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
+      To create the catalog template `my-template` with template category `application-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1
+        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --template-category=application-template
 
       Or run:
 
-        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/templates/my-template
+        $ {command} projects/my-project/locations/us-central1/spaces/my-space/catalogs/my-catalog/templates/my-template --template-category=application-template
 
-      To create the catalog template `my-template` with a display name of `My Template` and description of `My template description` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
+      To create the catalog template `my-template` with a display name of `My Template`, description of `My template description` and template category of `application-template` in catalog `my-catalog`, space `my-space`, project `my-project` and location `us-central1`, run:
 
-        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My Template" --description="My template description"
+        $ {command} my-template --catalog=my-catalog --space=my-space --project=my-project --location=us-central1 --display-name="My Template" --description="My template description" --template-category=application-template
   arguments:
     params:
     - help_text: |-
@@ -57,7 +57,7 @@
         The catalog template description.
     - arg_name: template-category
       api_field: catalogTemplate.templateCategory
-      required: false
+      required: true
       help_text: |-
         The category of the ADC template.
       choices:

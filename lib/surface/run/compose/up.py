@@ -25,8 +25,10 @@ from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import up
+from googlecloudsdk.command_lib.run.compose import tracker as stages
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import progress_tracker
 
 
 DEFAULT_REPO_NAME = 'cloud-run-source-deploy'
@@ -46,7 +48,11 @@ class Up(base.BinaryBackedCommand):
           To deploy a container from the source Compose file on Cloud Run:
 
               $ {command} compose.yaml
-          """,
+
+          To deploy to Cloud Run with unauthenticated access:
+
+              $ {command} compose.yaml --allow-unauthenticated
+         """,
   }
 
   @staticmethod
@@ -56,6 +62,12 @@ class Up(base.BinaryBackedCommand):
     flags.AddDebugFlag(parser)
     flags.AddDryRunFlag(parser)
     flags.AddDevFlag(parser)
+    flags.AddAllowUnauthenticatedFlag(parser)
+    parser.add_argument(
+        '--no-build',
+        action='store_true',
+        help='Skip building from source if applicable.',
+    )
 
   @staticmethod
   def Args(parser):
@@ -73,6 +85,11 @@ class Up(base.BinaryBackedCommand):
         region=region,
     )
     if not resource_response.stdout:
+      # This should never happen since project is always returned by resource
+      # command
+      log.error(
+          f'Resource command failed with error: {resource_response.stderr}'
+      )
       raise exceptions.ConfigurationError(
           'No resource config found in compose file.'
       )
@@ -82,8 +99,17 @@ class Up(base.BinaryBackedCommand):
       )
       log.debug('Successfully parsed resources config proto.')
       log.debug(f'ResourcesConfig:\n{config}')
-      resources_config = config.handle_resources(region, repo)
-      log.debug(f'Handled ResourcesConfig:\n{resources_config}')
+      with progress_tracker.StagedProgressTracker(
+          'Setting up resources...',
+          self._AddTrackerStages(config),
+          failure_message='Setup failed',
+          suppress_output=False,
+          done_message_callback=lambda: 'Resources setup complete.',
+      ) as tracker:
+        resources_config = config.handle_resources(
+            region, repo, tracker, args.no_build
+        )
+        log.debug(f'Handled ResourcesConfig:\n{resources_config}')
 
       # Serialize the handled config to JSON
       resources_config_json = resources_config.to_json()
@@ -109,12 +135,19 @@ class Up(base.BinaryBackedCommand):
         )
         for model_yaml in translate_result.models.values():
           compose_resource.deploy_application(
-              yaml_file_path=model_yaml, region=region
+              yaml_file_path=model_yaml, region=region, args=args
           )
         for service_yaml in translate_result.services.values():
           compose_resource.deploy_application(
-              yaml_file_path=service_yaml, region=region
+              yaml_file_path=service_yaml, region=region, args=args
           )
+      else:
+        log.error(f'Translate failed with error: {response.stderr}')
+        raise exceptions.ConfigurationError(
+            'Something went wrong while translating compose file to Cloud Run'
+            ' service YAMLs.'
+        )
+
       return response
     except Exception as e:
       log.error(f'Failed to handle resources config and translate to YAML: {e}')
@@ -123,6 +156,7 @@ class Up(base.BinaryBackedCommand):
 
   def Run(self, args):
     """Deploy a container from the source Compose file to Cloud Run."""
+    log.status.Print('Deploying from Compose to Cloud Run...')
     region = flags.GetRegion(args, prompt=True)
     self._SetRegionConfig(region)
     project = properties.VALUES.core.project.Get(required=True)
@@ -197,3 +231,39 @@ class Up(base.BinaryBackedCommand):
         f'Creating AR Repository in the region: {docker_repo.location}'
     )
     artifact_registry.CreateRepository(docker_repo, skip_activation_prompt=True)
+
+  def _AddTrackerStages(self, config):
+    """Add a tracker to the progress tracker."""
+    staged_operations = []
+    if config.source_builds:
+      for container_name in config.source_builds:
+        staged_operations.append(
+            progress_tracker.Stage(
+                f'Building container {container_name} from source...',
+                key=stages.StagedProgressTrackerStage.BUILD.get_key(
+                    container=container_name
+                ),
+            )
+        )
+    if config.secrets:
+      staged_operations.append(
+          progress_tracker.Stage(
+              'Creating secrets...',
+              key=stages.StagedProgressTrackerStage.SECRETS.get_key(),
+          )
+      )
+    if config.volumes.bind_mount or config.volumes.named_volume:
+      staged_operations.append(
+          progress_tracker.Stage(
+              'Creating volumes...',
+              key=stages.StagedProgressTrackerStage.VOLUMES.get_key(),
+          )
+      )
+    if config.configs:
+      staged_operations.append(
+          progress_tracker.Stage(
+              'Creating configs...',
+              key=stages.StagedProgressTrackerStage.CONFIGS.get_key(),
+          )
+      )
+    return staged_operations

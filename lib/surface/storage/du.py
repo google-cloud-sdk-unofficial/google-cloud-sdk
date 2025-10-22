@@ -30,55 +30,58 @@ from googlecloudsdk.command_lib.storage import regex_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core.util import files
 
+_COMMAND_DESCRIPTION = """
+Displays the amount of space in bytes used by the objects in a bucket,
+subdirectory, or project. This command calculates the current space usage
+by making a series of object listing requests, which can take a long time
+for large buckets. If your bucket contains hundreds of thousands of
+objects, or if you want to monitor your bucket size over time, use
+Monitoring instead, as described in [Get bucket size](https://cloud.google.com/storage/docs/getting-bucket-size)
+"""
+_GA_EXAMPLES = """
+To list the size of each object in a bucket:
+
+  $ {command} gs://bucketname
+
+To list the size of each object in the prefix subdirectory:
+
+  $ {command} gs://bucketname/prefix/*
+
+To print the total number of bytes in a bucket in human-readable form:
+
+  $ {command} -c gs://bucketname
+
+To see a summary of the total number of bytes in two given buckets:
+
+  $ {command} -s gs://bucket1 gs://bucket2
+
+To list the size of each object in a bucket with Object Versioning
+enabled, including noncurrent objects:
+
+  $ {command} -a gs://bucketname
+
+To list the size of each object in a bucket, except objects that end in
+".bak", with each object printed ending in a null byte:
+
+  $ {command} -e "*.bak" -0 gs://bucketname
+
+To list the size of each bucket in a project and the total size of the
+project:
+
+  $ {command} --summarize --readable-sizes --total
+"""
+_ALPHA_EXAMPLES = """
+"""
+
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Du(base.Command):
   """Displays the amount of space in bytes used by storage resources."""
 
   detailed_help = {
-      'DESCRIPTION':
-          """
-      Displays the amount of space in bytes used by the objects in a bucket,
-      subdirectory, or project. This command calculates the current space usage
-      by making a series of object listing requests, which can take a long time
-      for large buckets. If your bucket contains hundreds of thousands of
-      objects, or if you want to monitor your bucket size over time, use
-      Monitoring instead, as described in [Get bucket size](https://cloud.google.com/storage/docs/getting-bucket-size)
-      """,
-      'EXAMPLES':
-          """
-
-      To list the size of each object in a bucket:
-
-        $ {command} gs://bucketname
-
-      To list the size of each object in the prefix subdirectory:
-
-        $ {command} gs://bucketname/prefix/*
-
-      To print the total number of bytes in a bucket in human-readable form:
-
-        $ {command} -c gs://bucketname
-
-      To see a summary of the total number of bytes in two given buckets:
-
-        $ {command} -s gs://bucket1 gs://bucket2
-
-      To list the size of each object in a bucket with Object Versioning
-      enabled, including noncurrent objects:
-
-        $ {command} -a gs://bucketname
-
-      To list the size of each object in a bucket, except objects that end in
-      ".bak", with each object printed ending in a null byte:
-
-        $ {command} -e "*.bak" -0 gs://bucketname
-
-      To list the size of each bucket in a project and the total size of the
-      project:
-
-        $ {command} --summarize --readable-sizes --total
-      """,
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES,
   }
 
   @classmethod
@@ -190,3 +193,14 @@ class Du(base.Command):
         zero_terminator=args.zero_terminator,
         list_filter=metadata_filter,
     ).list_urls()
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DuAlpha(Du):
+  """Displays the amount of space in bytes used by storage resources."""
+
+  detailed_help = {
+      'DESCRIPTION': _COMMAND_DESCRIPTION,
+      'EXAMPLES': _GA_EXAMPLES + _ALPHA_EXAMPLES,
+  }

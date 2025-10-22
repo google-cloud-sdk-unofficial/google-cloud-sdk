@@ -67,7 +67,9 @@ class Create(base.CreateCommand):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client),
     )
-    flags.ParseExtensionConfigs(args.extensions, args.config)
+    flags.ParseExtensionConfigs(
+        args.extensions, args.config, args.config_from_file
+    )
     flags.ParseExtensionVersions(args.extensions, args.version)
     zve_policy = flags.BuildZoneVmExtensionPolicy(resource_ref, args, messages)
     return client.MakeRequests([(

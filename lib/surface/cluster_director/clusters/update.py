@@ -42,7 +42,7 @@ DETAILED_HELP = {
     "EXAMPLES": textwrap.dedent("""
         To update a cluster `my-cluster` in location `us-central1-a` with granular flags, run the following example:
 
-        Add labels, reserved instances, slurm node sets, slurm partitions and update description and default partition:
+        Add labels, compute instances, slurm node sets, slurm partitions and update description and default partition:
 
         $ {command} my-cluster --location us-central1-a \
         --description "My updated cluster description" \
@@ -65,7 +65,7 @@ DETAILED_HELP = {
         --update-slurm-node-sets id=nodeset1,staticNodeCount=2,maxDynamicNodeCount=10 \
         --update-slurm-partitions id=partition1,nodesetIds=[nodeset0],exclusive=true
 
-        Remove slurm node sets, slurm partitions and reserved instances and update default partition:
+        Remove slurm node sets, slurm partitions and compute instances and update default partition:
 
         $ {command} my-cluster --location us-central1-a \
         --slurm-default-partition partition0 \
@@ -119,36 +119,36 @@ class Update(base.UpdateCommand):
     config_group = group.add_group(
         help="Cluster configuration for updates.",
     )
-    flags.AddConfig(group=config_group, api_version=api_version, required=True)
+    flags.AddConfig(parser=config_group, api_version=api_version, required=True)
     flags.AddUpdateMask(
-        group=config_group, api_version=api_version, required=True
+        parser=config_group, api_version=api_version, required=True
     )
     flag_group = group.add_group(
         help="Flag Configurations to define cluster updates.",
     )
-    flags.AddDescription(group=flag_group, api_version=api_version)
+    flags.AddDescription(parser=flag_group, api_version=api_version)
     flags.AddLabels(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddOnDemandInstances(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSpotInstances(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddReservedInstances(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddDwsFlexInstances(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmNodeSets(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmPartitions(
-        group=flag_group, api_version=api_version, include_update_flags=True
+        parser=flag_group, api_version=api_version, include_update_flags=True
     )
-    flags.AddSlurmDefaultPartition(group=flag_group, api_version=api_version)
+    flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
 
   def Run(self, args):
     """Constructs and sends request.

@@ -338,6 +338,7 @@ class AlphaUpdate(BetaUpdate):
     flags.ENABLE_WORKLOAD_CERTIFICATE_FLAG.AddToParser(parser)
     flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
     flags.AddOverflowScalingFlag(parser)
+    flags.AddClearPresetFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(parser, container_args)

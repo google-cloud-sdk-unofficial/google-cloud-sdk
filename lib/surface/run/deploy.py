@@ -678,6 +678,8 @@ class Deploy(base.Command):
     Args:
       service: existing Cloud run service.
     """
+    if not service:
+      return None
     source_location_map = service.source_deploy_no_build_source_location_map
     logging.debug('source_location map: %s', source_location_map)
     if not source_location_map:

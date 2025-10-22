@@ -36,6 +36,10 @@ class UpdateLogicalView(base.UpdateCommand):
 
             $ {command} my-logical-view-id --instance=my-instance-id --query="SELECT my-column-family2 FROM my-table"
 
+          To enable deletion protection on a logical view, run:
+
+            $ {command} my-logical-view-id --instance=my-instance-id --deletion-protection
+
           """),
   }
 
@@ -43,7 +47,12 @@ class UpdateLogicalView(base.UpdateCommand):
   def Args(parser):
     """Register flags for this command."""
     arguments.AddLogicalViewResourceArg(parser, 'to update')
-    arguments.ArgAdder(parser).AddViewQuery().AddAsync().AddDeletionProtection()
+    # At least one of query or deletion_protection must be specified.
+    update_group = parser.add_group(required=True)
+    arg_adder = arguments.ArgAdder(update_group)
+    arg_adder.AddDeletionProtection()
+    arg_adder.AddViewQuery()
+    arguments.ArgAdder(parser).AddAsync()
 
   def _UpdateLogicalView(self, logical_view_ref, args):
     """Updates a logical view with the given arguments.

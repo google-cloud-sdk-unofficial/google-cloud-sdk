@@ -34,6 +34,8 @@ class Start(base.Command):
 
   SSH into a running workstation.
 
+  Note that arguments for the `NO_PROXY` environment variable must be FQDNs.
+
   ## EXAMPLES
 
     To ssh into a running workstation, run:

@@ -24,7 +24,7 @@
     examples: |-
       To update the securityGateway, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -52,6 +52,175 @@
       - api_field: key
       - api_field: value
         spec: []
+    - group:
+        api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig
+        arg_name: proxy-protocol-config
+        clearable: true
+        required: false
+        help_text: |-
+          The configuration for the proxy.
+        params:
+        - arg_name: proxy-protocol-config-allowed-client-headers
+          api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.allowedClientHeaders
+          required: false
+          repeated: true
+          help_text: |-
+            List of the allowed client header names.
+          clearable: true
+        - group:
+            api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders
+            required: false
+            help_text: |-
+              Contextual headers configuration.
+            params:
+            - group:
+                api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.userInfo
+                required: false
+                help_text: |-
+                  Delegated user info configuration.
+                params:
+                - arg_name: user-info-output-type
+                  api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.userInfo.outputType
+                  required: false
+                  help_text: |-
+                    The output type of the delegated user info.
+                  choices:
+                  - arg_value: protobuf
+                    enum_value: PROTOBUF
+                    help_text: |-
+                      Protobuf output type.
+                  - arg_value: json
+                    enum_value: JSON
+                    help_text: |-
+                      JSON output type.
+                  - arg_value: none
+                    enum_value: NONE
+                    help_text: |-
+                      Explicitly disable header output.
+            - group:
+                api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.groupInfo
+                required: false
+                help_text: |-
+                  Delegated group info configuration.
+                params:
+                - arg_name: group-info-output-type
+                  api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.groupInfo.outputType
+                  required: false
+                  help_text: |-
+                    The output type of the delegated group info.
+                  choices:
+                  - arg_value: protobuf
+                    enum_value: PROTOBUF
+                    help_text: |-
+                      Protobuf output type.
+                  - arg_value: json
+                    enum_value: JSON
+                    help_text: |-
+                      JSON output type.
+                  - arg_value: none
+                    enum_value: NONE
+                    help_text: |-
+                      Explicitly disable header output.
+            - group:
+                api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.deviceInfo
+                required: false
+                help_text: |-
+                  Delegated device info configuration.
+                params:
+                - arg_name: device-info-output-type
+                  api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.deviceInfo.outputType
+                  required: false
+                  help_text: |-
+                    The output type of the delegated device info.
+                  choices:
+                  - arg_value: protobuf
+                    enum_value: PROTOBUF
+                    help_text: |-
+                      Protobuf output type.
+                  - arg_value: json
+                    enum_value: JSON
+                    help_text: |-
+                      JSON output type.
+                  - arg_value: none
+                    enum_value: NONE
+                    help_text: |-
+                      Explicitly disable header output.
+            - arg_name: contextual-headers-output-type
+              api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.outputType
+              required: false
+              help_text: |-
+                Default output type for all enabled headers.
+              choices:
+              - arg_value: protobuf
+                enum_value: PROTOBUF
+                help_text: |-
+                  Protobuf output type.
+              - arg_value: json
+                enum_value: JSON
+                help_text: |-
+                  JSON output type.
+              - arg_value: none
+                enum_value: NONE
+                help_text: |-
+                  Explicitly disable header output.
+        - arg_name: proxy-protocol-config-metadata-headers
+          api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.metadataHeaders
+          required: false
+          repeated: true
+          help_text: |-
+            Custom resource specific headers along with the values.
+            The names should conform to RFC 9110:
+            > Field names SHOULD constrain themselves to alphanumeric characters, "-",
+            and ".", and SHOULD begin with a letter.
+            Field values SHOULD contain only ASCII printable characters and tab.
+          clearable: true
+          spec:
+          - api_field: key
+          - api_field: value
+        - arg_name: proxy-protocol-config-gateway-identity
+          api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.gatewayIdentity
+          required: false
+          help_text: |-
+            Gateway identity configuration.
+          choices:
+          - arg_value: resource-name
+            enum_value: RESOURCE_NAME
+            help_text: |-
+              Resource name for gateway identity, in the format:
+              projects/{project_id}/locations/{location_id}/securityGateways/{security_gateway_id}
+        - arg_name: proxy-protocol-config-client-ip
+          api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.clientIp
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Client IP configuration. The client IP address is included if true.
+    - group:
+        api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery
+        arg_name: service-discovery
+        clearable: true
+        required: false
+        help_text: |-
+          Settings related to the Service Discovery.
+        params:
+        - group:
+            api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway
+            required: false
+            help_text: |-
+              If Service Discovery is done through API, defines its settings.
+            params:
+            - group:
+                api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway.resourceOverride
+                required: false
+                help_text: |-
+                  API operation descriptor.
+                params:
+                - arg_name: resource-override-path
+                  api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.serviceDiscovery.apiGateway.resourceOverride.path
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    Contains uri path fragment where HTTP request is sent.
     - arg_name: request-id
       api_field: requestId
       required: false

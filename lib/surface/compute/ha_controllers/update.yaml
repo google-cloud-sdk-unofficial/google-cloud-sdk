@@ -1,12 +1,12 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Update an HA controller.
-    description: Update an HA controller. To change the existing HA Controller failover initiation configuration from automatic to manual or vice-versa use this command.
+    brief: Update the settings of an existing HA Controller.
+    description: Update an High Availability (HA) Controller to, for example, change the existing HA Controller failover initiation configuration from automatic to manual, or vice-versa.
     examples: |
-      The following command updates the descprition of an HA controller with ID `my-hac` in region `us-central1`:
+      To update the description of an HA Controller named `my-ha-controller` in the `us-central1` region, run the following command:
 
-        $ {command} my-hac \
-            --description="new description"
+        $ {command} my-ha-controller \
+            --description="new description" \
             --region=us-central1
 
   request:
@@ -25,7 +25,7 @@
 
   arguments:
     resource:
-      help_text: Name of the HA controller you want to Update.
+      help_text: The HA Controller that you want to update.
       spec: !REF googlecloudsdk.command_lib.compute.ha_controllers.resources:ha_controller
       is_positional: true
 
@@ -37,12 +37,12 @@
         - arg_name: description
           api_field: haControllerResource.description
           help_text: |
-            Description of the HA controller.
+            Updates the text description of the HA controller.
         - arg_name: failover-initiation
           api_field: haControllerResource.failoverInitiation
           help_text: |
-            Indicates how failover should be initiated.
+            Changes the failover trigger between AUTOMATIC and MANUAL_ONLY.
         - arg_name: secondary-zone-capacity
           api_field: haControllerResource.secondaryZoneCapacity
           help_text: |
-            Indicates capacity guarantees in the secondary zone.
+            Changes the capacity guarantee in the secondary zone between GUARANTEED_STOPPED and BEST_EFFORT.

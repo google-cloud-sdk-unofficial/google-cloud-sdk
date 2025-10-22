@@ -18,6 +18,7 @@ from clients import client_job
 from clients import client_model
 from clients import client_reservation
 from clients import client_routine
+from clients import client_row_access_policy
 from clients import client_table
 from clients import utils as bq_client_utils
 from frontend import bigquery_command

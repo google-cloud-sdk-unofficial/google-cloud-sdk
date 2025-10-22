@@ -22,9 +22,9 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class AlphaGrants(base.Group):
+class AlphaBetaGrants(base.Group):
   r"""Manage Privileged Access Manager (PAM) grants.
 
   The `gcloud pam grants` command group lets you manage Privileged Access
@@ -90,10 +90,9 @@ class AlphaGrants(base.Group):
   """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-class BetaGAGrants(AlphaGrants):
+class GAGrants(AlphaBetaGrants):
   r"""Manage Privileged Access Manager (PAM) grants.
 
   The `gcloud pam grants` command group lets you manage Privileged Access

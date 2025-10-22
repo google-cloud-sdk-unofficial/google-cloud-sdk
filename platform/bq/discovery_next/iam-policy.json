@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250903",
+  "revision": "20250924",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3380,7 +3380,7 @@
           "type": "boolean"
         },
         "jobTimeoutMs": {
-          "description": "Optional. Job timeout in milliseconds. If this time limit is exceeded, BigQuery will attempt to stop a longer job, but may not always succeed in canceling it before the job completes. For example, a job that takes more than 60 seconds to complete has a better chance of being stopped than a job that takes 10 seconds to complete.",
+          "description": "Optional. Job timeout in milliseconds relative to the job creation time. If this time limit is exceeded, BigQuery attempts to stop the job, but might not always succeed in canceling it before the job completes. For example, a job that takes more than 60 seconds to complete has a better chance of being stopped than a job that takes 10 seconds to complete.",
           "type": "string",
           "format": "int64"
         },
@@ -3787,6 +3787,12 @@
         },
         "scale": {
           "description": "Optional. See documentation for precision.",
+          "type": "string",
+          "format": "int64"
+        },
+        "timestampPrecision": {
+          "description": "Optional. Precision (maximum number of total digits in base 10) for seconds of TIMESTAMP type. Possible values include: * 6 (Default, for TIMESTAMP type with microsecond precision) * 12 (For TIMESTAMP type with picosecond precision)",
+          "default": "6",
           "type": "string",
           "format": "int64"
         },
@@ -5851,6 +5857,13 @@
           "items": {
             "$ref": "IndexUnusedReason"
           }
+        },
+        "indexPruningStats": {
+          "description": "Search index pruning statistics, one for each base table that has a search index. If a base table does not have a search index or the index does not help with pruning on the base table, then there is no pruning statistics for that table.",
+          "type": "array",
+          "items": {
+            "$ref": "IndexPruningStats"
+          }
         }
       }
     },
@@ -5922,6 +5935,27 @@
         "indexName": {
           "description": "Specifies the name of the unused search index, if available.",
           "type": "string"
+        }
+      }
+    },
+    "IndexPruningStats": {
+      "id": "IndexPruningStats",
+      "description": "Statistics for index pruning.",
+      "type": "object",
+      "properties": {
+        "baseTable": {
+          "description": "The base table reference.",
+          "$ref": "TableReference"
+        },
+        "preIndexPruningParallelInputCount": {
+          "description": "The number of parallel inputs before index pruning.",
+          "type": "string",
+          "format": "int64"
+        },
+        "postIndexPruningParallelInputCount": {
+          "description": "The number of parallel inputs after index pruning.",
+          "type": "string",
+          "format": "int64"
         }
       }
     },

@@ -992,3 +992,33 @@ def DeleteReservationGroup(
 
 
 
+def GetReservationIAMPolicy(
+    apiclient: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationReference,
+) -> ...:
+  """Gets IAM policy for the given reservation resource.
+
+  Arguments:
+    apiclient: the apiclient used to make the request.
+    reference: the ReservationReference for the reservation resource.
+
+  Returns:
+    The IAM policy attached to the given reservation resource.
+
+  Raises:
+    BigqueryTypeError: if reference is not a ReservationReference.
+  """
+  bq_id_utils.typecheck(
+      reference,
+      bq_id_utils.ApiClientHelper.ReservationReference,
+      method='GetReservationIAMPolicy',
+  )
+  return (
+      apiclient.projects()
+      .locations()
+      .reservations()
+      .getIamPolicy(resource=reference.path())
+      .execute()
+  )
+
+

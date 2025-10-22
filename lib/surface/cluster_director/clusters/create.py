@@ -85,47 +85,47 @@ class Create(base.CreateCommand):
         mutex=True,
         required=True,
     )
-    flags.AddConfig(group=group, api_version=api_version)
+    flags.AddConfig(parser=group, api_version=api_version)
     flag_group = group.add_group(
         help="Flag Configurations to define cluster spec.",
     )
-    flags.AddDescription(group=flag_group, api_version=api_version)
-    flags.AddLabels(group=flag_group, api_version=api_version)
+    flags.AddDescription(parser=flag_group, api_version=api_version)
+    flags.AddLabels(parser=flag_group, api_version=api_version)
     network_group = flag_group.add_group(
         mutex=True,
         required=True,
         help="Network configuration for the cluster.",
     )
-    flags.AddCreateNetwork(group=network_group, api_version=api_version)
+    flags.AddCreateNetwork(parser=network_group, api_version=api_version)
     network_source_group = network_group.add_group(
         help="Use an existing network source for the cluster.",
     )
     flags.AddNetworkSource(
-        group=network_source_group, api_version=api_version, required=True
+        parser=network_source_group, api_version=api_version, required=True
     )
     flags.AddSubnetSource(
-        group=network_source_group, api_version=api_version, required=True
+        parser=network_source_group, api_version=api_version, required=True
     )
-    flags.AddCreateFilestores(group=flag_group, api_version=api_version)
-    flags.AddFilestores(group=flag_group, api_version=api_version)
-    flags.AddCreateGcsBuckets(group=flag_group, api_version=api_version)
-    flags.AddGcsBuckets(group=flag_group, api_version=api_version)
-    flags.AddCreateLustres(group=flag_group, api_version=api_version)
-    flags.AddLustres(group=flag_group, api_version=api_version)
-    flags.AddOnDemandInstances(group=flag_group, api_version=api_version)
-    flags.AddSpotInstances(group=flag_group, api_version=api_version)
-    flags.AddReservedInstances(group=flag_group, api_version=api_version)
-    flags.AddDwsFlexInstances(group=flag_group, api_version=api_version)
+    flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
+    flags.AddFilestores(parser=flag_group, api_version=api_version)
+    flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)
+    flags.AddGcsBuckets(parser=flag_group, api_version=api_version)
+    flags.AddCreateLustres(parser=flag_group, api_version=api_version)
+    flags.AddLustres(parser=flag_group, api_version=api_version)
+    flags.AddOnDemandInstances(parser=flag_group, api_version=api_version)
+    flags.AddSpotInstances(parser=flag_group, api_version=api_version)
+    flags.AddReservedInstances(parser=flag_group, api_version=api_version)
+    flags.AddDwsFlexInstances(parser=flag_group, api_version=api_version)
     flags.AddSlurmLoginNode(
-        group=flag_group, api_version=api_version, required=True
+        parser=flag_group, api_version=api_version, required=True
     )
     flags.AddSlurmNodeSets(
-        group=flag_group, api_version=api_version, required=True
+        parser=flag_group, api_version=api_version, required=True
     )
     flags.AddSlurmPartitions(
-        group=flag_group, api_version=api_version, required=True
+        parser=flag_group, api_version=api_version, required=True
     )
-    flags.AddSlurmDefaultPartition(group=flag_group, api_version=api_version)
+    flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
 
   def Run(self, args):
     """Constructs and sends request.

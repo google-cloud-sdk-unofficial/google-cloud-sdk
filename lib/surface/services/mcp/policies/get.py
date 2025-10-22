@@ -37,7 +37,7 @@ _INVALID_TIMESTAMP = (
 # TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Get(base.Command):
   """Get MCP policy for a project, folder or organization.
 

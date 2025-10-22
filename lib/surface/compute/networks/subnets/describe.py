@@ -50,7 +50,7 @@ class Describe(base.DescribeCommand):
   subnetwork.
   """
 
-  _include_view = False
+  _include_view = True
 
   SUBNETWORK_ARG = None
   detailed_help = _DetailedHelp()
@@ -64,14 +64,15 @@ class Describe(base.DescribeCommand):
           '--view',
           choices={
               'WITH_UTILIZATION': (
-                  'Output includes the IP utilization data of all subnetwork'
-                  ' ranges, showing total allocated and free IPv4 and IPv6 IPs.'
+                  'Output includes the IP address utilization data of all'
+                  ' subnetwork ranges, showing total allocated and free IPv4'
+                  ' and IPv6 IP addresses.'
               ),
           },
           type=arg_utils.ChoiceToEnumName,
           action='append',
           help=(
-              'Specifies the information that the output should contain.'
+              'Specifies the information to include in the output.'
           ),
       )
 

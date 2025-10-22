@@ -78,6 +78,12 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         '%s IAM policy for routine described by this identifier.' % verb,
         flag_values=fv,
     )
+    flags.DEFINE_boolean(
+        'reservation',
+        False,
+        '%s IAM policy for reservation described by this identifier.' % verb,
+        flag_values=fv,
+    )
     # Subclasses should call self._ProcessCommandRc(fv) after calling this
     # superclass initializer and adding their own flags.
 
@@ -88,10 +94,12 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
         self.t,
         self.connection,
         self.routine,
+        self.reservation,
     ):
       raise app.UsageError(
           'Cannot specify more than one of -d, -t, --routine, --connection,'
-          ' --reservation or --reservation_assignment.'
+          ' --reservation'
+          '.'
       )
 
     if not identifier:
@@ -117,6 +125,12 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       reference = bq_client_utils.GetRoutineReference(
           id_fallbacks=client, identifier=identifier
       )
+    elif self.reservation:
+      reference = bq_client_utils.GetReservationReference(
+          id_fallbacks=client,
+          identifier=identifier,
+          default_location=bq_flags.LOCATION.value,
+      )
     else:
       reference = bq_client_utils.GetReference(
           id_fallbacks=client, identifier=identifier
@@ -127,6 +141,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
               bq_id_utils.ApiClientHelper.DatasetReference,
               bq_id_utils.ApiClientHelper.TableReference,
               bq_id_utils.ApiClientHelper.RoutineReference,
+              bq_id_utils.ApiClientHelper.ReservationReference,
           ),
           'Invalid identifier "%s" for %s.' % (identifier, self._command_name),
           is_usage_error=True,
@@ -134,10 +149,11 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     return reference
 
   def GetPolicyForReference(self, client, reference):
-    """Get the IAM policy for a table or dataset.
+    """Get the IAM policy for a table, dataset, routine or reservation.
 
     Args:
-      reference: A DatasetReference or TableReference.
+      reference: A DatasetReference, TableReference, RoutineReference, or
+        ReservationReference.
 
     Returns:
       The policy object, composed of dictionaries, lists, and primitive types.
@@ -161,15 +177,21 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
       return client_routine.GetRoutineIAMPolicy(
           apiclient=client.GetIAMPolicyApiClient(), reference=reference
       )
+    elif isinstance(
+        reference, bq_id_utils.ApiClientHelper.ReservationReference
+    ):
+      return client_reservation.GetReservationIAMPolicy(
+          apiclient=client.GetReservationApiClient(), reference=reference
+      )
     raise RuntimeError(
         'Unexpected reference type: {r_type}'.format(r_type=type(reference))
     )
 
   def SetPolicyForReference(self, client, reference, policy):
-    """Set the IAM policy for a table or dataset.
+    """Set the IAM policy for a table, dataset or routine.
 
     Args:
-      reference: A DatasetReference or TableReference.
+      reference: A DatasetReference, TableReference or RoutineReference.
       policy: The policy object, composed of dictionaries, lists, and primitive
         types.
 
@@ -206,7 +228,7 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
 
 
 class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  usage = """get-iam-policy [(-d|-t|-connection)] <identifier>"""
+  usage = """get-iam-policy [(-d|-t|-connection|--reservation|-routine)] <identifier>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super().__init__(name, fv, 'Get')
@@ -215,8 +237,8 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   def RunWithArgs(self, identifier: str) -> Optional[int]:
     """Get the IAM policy for a resource.
 
-    Gets the IAM policy for a dataset, table or connection resource, and prints
-    it to stdout. The policy is in JSON format.
+    Gets the IAM policy for a dataset, table, routine, connection, or
+    reservation resource, and prints it to stdout. The policy is in JSON format.
 
     Usage:
     get-iam-policy <identifier>
@@ -225,10 +247,12 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
       bq get-iam-policy ds.table1
       bq get-iam-policy --project_id=proj -t ds.table1
       bq get-iam-policy proj:ds.table1
+      bq get-iam-policy --reservation proj:ds.reservation1
 
     Arguments:
-      identifier: The identifier of the resource. Presently only table, view and
-        connection resources are fully supported. (Last updated: 2022-04-25)
+      identifier: The identifier of the resource. Presently only table, view,
+        connection, and reservation resources are fully supported. (Last
+        updated: 2025-08-22)
     """
     client = bq_cached_client.Client.Get()
     reference = self.GetReferenceFromIdentifier(client, identifier)
@@ -239,7 +263,7 @@ class GetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
 
 
 class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
-  usage = """set-iam-policy [(-d|-t|-connection)] <identifier> <filename>"""
+  usage = """set-iam-policy [(-d|-t|-connection|--reservation|-routine)] <identifier> <filename>"""
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super().__init__(name, fv, 'Set')
@@ -248,9 +272,9 @@ class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
   def RunWithArgs(self, identifier: str, filename: str) -> Optional[int]:
     """Set the IAM policy for a resource.
 
-    Sets the IAM policy for a dataset, table or connection resource. After
-    setting the policy, the new policy is printed to stdout. Policies are in
-    JSON format.
+    Sets the IAM policy for a dataset, table, routine, connection, or
+    reservation resource. After setting the policy, the new policy is printed to
+    stdout. Policies are in JSON format.
 
     If the 'etag' field is present in the policy, it must match the value in the
     current policy, which can be obtained with 'bq get-iam-policy'. Otherwise
@@ -264,10 +288,12 @@ class SetIamPolicy(_IamPolicyCmd):  # pylint: disable=missing-docstring
       bq set-iam-policy ds.table1 /tmp/policy.json
       bq set-iam-policy --project_id=proj -t ds.table1 /tmp/policy.json
       bq set-iam-policy proj:ds.table1 /tmp/policy.json
+      bq set-iam-policy --reservation proj:ds.reservation1 /tmp/policy.json
 
     Arguments:
-      identifier: The identifier of the resource. Presently only table, view and
-        connection resources are fully supported. (Last updated: 2022-04-25)
+      identifier: The identifier of the resource. Presently only table, view,
+        routine, connection, and reservation resources are fully supported.
+        (Last updated: 2025-09-05)
       filename: The name of a file containing the policy in JSON format.
     """
     client = bq_cached_client.Client.Get()

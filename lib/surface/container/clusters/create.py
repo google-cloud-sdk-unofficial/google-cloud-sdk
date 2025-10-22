@@ -329,7 +329,7 @@ def ParseCreateOptionsBase(
       enable_gke_oidc=getattr(args, 'enable_gke_oidc', None),
       enable_identity_service=getattr(args, 'enable_identity_service', None),
       ephemeral_storage_local_ssd=(ephemeral_storage_local_ssd),
-      gpu_direct_strategy=get_default('gpu_direct_strategy'),
+      gpudirect_strategy=get_default('gpudirect_strategy'),
       image_type=get_default('image_type'),
       image=get_default('image'),
       image_project=get_default('image_project'),
@@ -599,8 +599,13 @@ def AddEnableAutoUpgradeWithDefault(parser):
   flags.AddEnableAutoUpgradeFlag(parser, default=True)
 
 
-def AddAutoprovisioning(parser):
-  flags.AddAutoprovisioningFlags(parser, hidden=False, for_create=True)
+def AddAutoprovisioning(parser, napless=False):
+  flags.AddAutoprovisioningFlags(
+      parser,
+      hidden=False,
+      for_create=True,
+      napless=napless,
+  )
 
 
 def AddTpuWithServiceNetworking(parser):
@@ -842,7 +847,7 @@ flags_to_add = {
         'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
         'args': _Args,
         'autorepair': AddAutoRepair,
-        'autoprovisioning': AddAutoprovisioning,
+        'autoprovisioning': lambda p: AddAutoprovisioning(p, napless=True),
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
@@ -1052,7 +1057,7 @@ flags_to_add = {
         'allowrouteoverlap': flags.AddAllowRouteOverlapFlag,
         'args': _Args,
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
-        'autoprovisioning': AddAutoprovisioning,
+        'autoprovisioning': lambda p: AddAutoprovisioning(p, napless=True),
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
@@ -1620,7 +1625,7 @@ class CreateBeta(Create):
     )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
-    ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
+    ops.gpudirect_strategy = get_default('gpudirect_strategy')
     ops.managed_otel_scope = get_default('managed_otel_scope')
     return ops
 
@@ -1783,6 +1788,6 @@ class CreateAlpha(Create):
     )
     ops.enable_k8s_certs_via_dns = get_default('enable_k8s_certs_via_dns')
     ops.control_plane_egress_mode = get_default('control_plane_egress')
-    ops.gpu_direct_strategy = get_default('gpu_direct_strategy')
+    ops.gpudirect_strategy = get_default('gpudirect_strategy')
     ops.managed_otel_scope = get_default('managed_otel_scope')
     return ops

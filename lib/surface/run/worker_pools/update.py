@@ -102,7 +102,6 @@ class Update(base.Command):
     )
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
-    flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.AddAsyncFlag(parser)
     flags.AddLabelsFlags(parser)
     flags.AddGeneralAnnotationFlags(parser)

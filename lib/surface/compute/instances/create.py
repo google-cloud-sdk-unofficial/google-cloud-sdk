@@ -316,7 +316,7 @@ class Create(base.CreateCommand):
   _support_local_ssd_recovery_timeout = True
   _support_internal_ipv6_reservation = True
   _support_local_ssd_size = True
-  _support_vlan_nic = False
+  _support_vlan_nic = True
   _support_performance_monitoring_unit = True
   _support_source_instant_snapshot = False
   _support_boot_instant_snapshot_uri = False

@@ -139,7 +139,7 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     print_deploy_command = ''
     for command_str in cloud_run_deploy_command:
       if command_str.startswith('--labels'):
-        command_str = '--labels=gae2cr-version=1'
+        command_str = '--labels=migrated-from=app-engine,migration-tool=gcloud-app-migrate-standard-v1'
       print_deploy_command += command_str + ' '
     if args.entrypoint:
       setattr(
@@ -164,12 +164,16 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         command_args[0] = command_args[0].replace('-', '_')
         self._migration_flags.append(command_args[0])
         if command_args[0] == 'labels':
-          args.__setattr__(command_args[0], {'gae2cr-version': '1'})
+          args.__setattr__(
+              command_args[0],
+              {
+                  'migrated-from': 'app-engine',
+                  'migration-tool': 'gcloud-app-migrate-standard-v1',
+              },
+          )
           continue
         if command_args[0] == 'set_env_vars':
-          args.__setattr__(
-              command_args[0], self.ParseSetEnvVars(command_str)
-          )
+          args.__setattr__(command_args[0], self.ParseSetEnvVars(command_str))
           continue
         if command_args[0] == 'timeout':
           if command_args[1] == '600':

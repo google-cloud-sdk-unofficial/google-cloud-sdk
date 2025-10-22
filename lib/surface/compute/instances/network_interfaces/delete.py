@@ -28,14 +28,14 @@ from googlecloudsdk.command_lib.compute.instances import flags as instances_flag
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class DeleteBeta(base.DeleteCommand):
-  r"""Delete a dynamic network interface from a Compute Engine instance.
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class Delete(base.DeleteCommand):
+  r"""Delete a Dynamic Network Interface from a Compute Engine instance.
 
-  *{command}* deletes a dynamic network interface from a Compute Engine
+  *{command}* deletes a Dynamic Network Interface from a Compute Engine
   instance. For example:
 
-    $ {command} instance-name --network-interface nic1.2
+    $ {command} instance-name --network-interface=nic1.2
   """
 
   @classmethod
@@ -75,12 +75,37 @@ class DeleteBeta(base.DeleteCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class DeleteAlpha(DeleteBeta):
-  r"""Delete a dynamic network interface from a Compute Engine instance.
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DeleteBeta(Delete):
+  r"""Delete a Dynamic Network Interface from a Compute Engine instance.
 
-  *{command}* deletes a dynamic network interface from a Compute Engine
+  *{command}* deletes a Dynamic Network Interface from a Compute Engine
   instance. For example:
 
-    $ {command} instance-name --network-interface nic1.2
+    $ {command} instance-name --network-interface=nic1.2
   """
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(DeleteBeta):
+  r"""Delete a Dynamic Network Interface from a Compute Engine instance.
+
+  *{command}* deletes a Dynamic Network Interface from a Compute Engine
+  instance. For example:
+
+    $ {command} instance-name --network-interface=nic1.2
+  """
+
+
+Delete.detailed_help = {
+    'brief': 'Delete a Dynamic Network Interface from a Compute Engine'
+             ' instance.',
+    'DESCRIPTION': (
+        '*{command}* deletes a Dynamic Network Interface from a Compute Engine'
+        ' instance.'
+    ),
+    'EXAMPLES': """\
+      To delete a Dynamic Network Interface from a Compute Engine instance, run:
+        $ {command} instance-name --network-interface=nic1.2
+    """,
+}

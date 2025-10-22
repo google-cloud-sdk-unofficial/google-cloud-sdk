@@ -20,8 +20,7 @@
   auto_generated: true
   help_text:
     brief: Switchovers an AutonomousDatabase to a new primary.
-    description: Switchovers an AutonomousDatabase from a standby database to a new
-      primary.
+    description: Switchovers an AutonomousDatabase from a standby database to a new primary.
     examples: |-
       To switchover an AutonomousDatabase with id `my-instance` in the location `us-east4` with
       primary database name as 'projects/project-id/locations/us-west3/autonomousDatabases/my-instance'

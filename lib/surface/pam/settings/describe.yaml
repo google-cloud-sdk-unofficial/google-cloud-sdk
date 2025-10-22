@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
   help_text:
     brief: Show details of Privileged Access Manager (PAM) settings on a resource.
     description: Show details of Privileged Access Manager (PAM) settings on a resource.
@@ -21,6 +21,8 @@
   request:
     ALPHA:
       api_version: v1alpha
+    BETA:
+      api_version: v1beta
     method: getSettings
     collection:
     - privilegedaccessmanager.projects.locations

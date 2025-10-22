@@ -148,6 +148,7 @@ class Update(base.Command):
         exclude_source_locations=args.exclude_source_locations,
         auto_add_new_buckets=auto_add_new_buckets,
         retention_period=args.retention_period_days,
+        activity_data_retention_period=args.activity_data_retention_period_days,
         description=args.description,
     )
 
