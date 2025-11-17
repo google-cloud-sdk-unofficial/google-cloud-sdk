@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create AccessPolicy instance.
     description: |
@@ -87,7 +86,7 @@
           - api_field: effect
             one_of_index: 1
             help_text: |-
-              The effect of the rule (deny)
+              The effect of the rule.
           - api_field: principals
             help_text: |-
               The identities for which this rule's effect governs using one or more

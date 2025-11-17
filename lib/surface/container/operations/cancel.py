@@ -93,6 +93,8 @@ have already completed can not be cancelled. If the operation has passed the
 An example of "point of no-return" in the context of Upgrade operations would
 be if all the nodes have been upgraded but the operation hasn't been marked as
 complete.
+
+Only node pool upgrade operations support cancellation.
 """,
     'EXAMPLES':
         """\

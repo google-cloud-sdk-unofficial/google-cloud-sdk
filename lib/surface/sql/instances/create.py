@@ -185,6 +185,7 @@ def AddBetaArgs(parser):
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
+  flags.AddDataApiAccess(parser)
 
 
 def AddAlphaArgs(unused_parser):

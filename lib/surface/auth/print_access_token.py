@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
 from oauth2client import client
@@ -130,6 +131,18 @@ class AccessToken(base.Command):
   )
   def Run(self, args):
     """Run the helper command."""
+    if (
+        properties.VALUES.context_aware.use_client_certificate.GetBool()
+        and properties.IsInternalUserCheck()
+    ):
+      log.warning(
+          'This is a bound token requiring an mTLS endpoint. Either use the'
+          " API's mTLS endpoint or get an ADC token by running 'gcloud auth"
+          " application-default login' and using 'gcloud auth"
+          " application-default print-access-token' to get the token instead of"
+          " 'gcloud auth print-access-token'."
+      )
+
     if args.lifetime and not args.impersonate_service_account:
       raise c_exc.InvalidArgumentException(
           '--lifetime',

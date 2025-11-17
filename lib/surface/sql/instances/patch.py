@@ -15,6 +15,7 @@
 """Updates the settings of a Cloud SQL instance."""
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 
@@ -380,6 +381,7 @@ def AddBetaArgs(parser):
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
+  flags.AddDataApiAccess(parser)
 
 
 def AddAlphaArgs(unused_parser):

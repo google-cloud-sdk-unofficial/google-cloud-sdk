@@ -48,12 +48,6 @@
       help_text: |
         The list of fields to update. Eg: "description,display_name"
 
-    - arg_name: validate-only
-      api_field: validateOnly
-      type: bool
-      help_text: |
-        If set, the request will be validated but not executed.
-
     - arg_name: allow-missing
       api_field: allowMissing
       type: bool

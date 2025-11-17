@@ -66,11 +66,12 @@
       repeated: false
       help_text: |-
         The user-specified Worker Pool resource in which the Cloud Build job will
-        execute, in the following format:
-        projects/{project}/locations/{location}/workerPools/{workerPoolId} If this
-        field is unspecified, the default Cloud Build worker pool will be used. If
-        omitted and application resource ref provided has worker_pool defined, that
-        worker pool is used.
+        execute.
+        Format: projects/{project}/locations/{location}/workerPools/{workerPoolId}
+        If this flag is omitted, the worker pool already defined on the
+        application will be used. If no worker pool is defined on the application,
+        the default Cloud Build worker pool is used.
+        The worker pool must exist in the same region as the application.
     - arg_name: service-account
       api_field: deployApplicationRequest.serviceAccount
       required: false

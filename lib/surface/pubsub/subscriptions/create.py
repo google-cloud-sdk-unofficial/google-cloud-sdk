@@ -185,6 +185,28 @@ def _Run(
     raise util.RequestsFailedError(failed, 'create')
 
 
+def _Args(parser, enable_push_to_cps=False):
+  """Add flags to the arg parser for creating a subscription."""
+  topic_help_text = (
+      'from which this subscription is receiving messages. Each subscription is'
+      ' attached to a single topic.'
+  )
+  topic = resource_args.CreateTopicResourceArg(
+      topic_help_text, positional=False
+  )
+  subscription = resource_args.CreateSubscriptionResourceArg(
+      'to create.', plural=True
+  )
+  resource_args.AddResourceArgs(parser, [topic, subscription])
+  flags.AddSubscriptionSettingsFlags(
+      parser, enable_push_to_cps=enable_push_to_cps
+  )
+
+  labels_util.AddCreateLabelsFlags(parser)
+  flags.AddMessageTransformsFlags(parser)
+  flags.AddTagsFlag(parser)
+
+
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -197,20 +219,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    topic_help_text = (
-        'from which this subscription is receiving messages. '
-        'Each subscription is attached to a single topic.'
-    )
-    topic = resource_args.CreateTopicResourceArg(
-        topic_help_text, positional=False
-    )
-    subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.', plural=True
-    )
-    resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(parser)
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddMessageTransformsFlags(parser)
+    _Args(parser)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
@@ -223,23 +232,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    topic_help_text = (
-        'from which this subscription is receiving messages. '
-        'Each subscription is attached to a single topic.'
-    )
-    topic = resource_args.CreateTopicResourceArg(
-        topic_help_text, positional=False
-    )
-    subscription = resource_args.CreateSubscriptionResourceArg(
-        'to create.', plural=True
-    )
-    resource_args.AddResourceArgs(parser, [topic, subscription])
-    flags.AddSubscriptionSettingsFlags(
-        parser,
-        enable_push_to_cps=True,
-    )
-    labels_util.AddCreateLabelsFlags(parser)
-    flags.AddMessageTransformsFlags(parser)
+    _Args(parser, enable_push_to_cps=True)
 
   def Run(self, args):
     flags.ValidateFilterString(args)
@@ -259,4 +252,3 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
-    flags.AddTagsFlag(parser)

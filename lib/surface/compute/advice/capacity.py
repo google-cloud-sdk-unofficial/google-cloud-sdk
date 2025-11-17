@@ -166,6 +166,12 @@ class Capacity(base.Command):
     client = holder.client
     messages = client.messages
     flags.ValidateZonesAndRegionFlags(args, holder.resources)
+    if args.IsSpecified("instance_selection") and args.IsSpecified(
+        "instance_selection_machine_types"
+    ):
+      raise exceptions.ConflictingArgumentsException(
+          "Exactly one 'instance-selection' must be specified."
+      )
     if args.instance_selection and not args.instance_selection.get(
         "machine-type"
     ):
@@ -231,7 +237,7 @@ class Capacity(base.Command):
               machineTypes=args.instance_selection.get("machine-type"),
           )
       )
-    elif args.instance_selection_machine_types:
+    if args.instance_selection_machine_types:
       selections_map[default_instance_selection_name] = (
           messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
               machineTypes=args.instance_selection_machine_types,

@@ -102,6 +102,17 @@
         GKE clients are not supported.
         Deprecated. No longer required for GKE instance creation.
       default: null
+    - arg_name: kms-key
+      api_field: instance.kmsKey
+      required: false
+      repeated: false
+      help_text: |-
+        The Cloud KMS key name to use for data encryption.
+        If not set, the instance will use Google-managed encryption keys.
+        If set, the instance will use customer-managed encryption keys.
+        The key must be in the same region as the instance.
+        The key format is:
+        projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}
     - arg_name: placement-policy
       api_field: instance.placementPolicy
       required: false

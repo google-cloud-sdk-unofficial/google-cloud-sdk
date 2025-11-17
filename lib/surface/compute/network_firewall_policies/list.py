@@ -47,13 +47,24 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
-    parser.display_info.AddFormat("""\
+    beta = """\
+      table(
+        name,
+        region.basename(),
+        policySource:label=SOURCE,
+        description
+      )
+      """
+    ga = """\
       table(
         name,
         region.basename(),
         description
       )
-      """)
+      """
+    parser.display_info.AddFormat(
+        ga if cls.ReleaseTrack() == base.ReleaseTrack.GA else beta
+    )
     lister.AddMultiScopeListerFlags(parser, regional=True, global_=True)
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 

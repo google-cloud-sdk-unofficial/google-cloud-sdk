@@ -60,7 +60,8 @@ class Describe(base.DescribeCommand):
         labels,
         backupMinimumEnforcedRetentionDuration,
         effectiveTime,
-        backupRetentionInheritance
+        backupRetentionInheritance,
+        encryptionConfig
         )
         """
 

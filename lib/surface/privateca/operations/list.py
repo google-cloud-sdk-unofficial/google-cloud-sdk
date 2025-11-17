@@ -18,8 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-# from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import operations
+from googlecloudsdk.api_lib.privateca import resource_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
@@ -53,9 +53,13 @@ class List(base.ListCommand):
 
   detailed_help = {
       'DESCRIPTION': """\
-          Returns completed, failed, and pending operations on the Private CA API
-          in a given location.""",
+          Returns completed, failed, and pending operations on the Private CA
+          API in a given location or across all locations.""",
       'EXAMPLES': """\
+          To list all operations:
+
+          $ {command}
+
           To list all operations in a given location:
 
           $ {command} --location=us-west1
@@ -71,16 +75,32 @@ class List(base.ListCommand):
     concept_parsers.ConceptParser.ForResource(
         '--location',
         _GetLocationResourceSpec(),
-        'The location to list operations in.',
-        required=True).AddToParser(parser)
+        'The location to list operations in. If not specified, operations '
+        'from all locations will be listed.',
+        required=False,
+    ).AddToParser(parser)
     parser.display_info.AddFormat(
         'table(name.segment(-1):label=ID, name.segment(-3):label=LOCATION,'
         ' metadata.createTime:label=START_TIME, status():label=STATUS)'
     )
     parser.display_info.AddTransforms({'status': _GetOperationStatus})
+    parser.display_info.AddUriFunc(
+        resource_utils.MakeGetUriFunc(
+            'privateca.projects.locations.operations'
+        )
+    )
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 100)
 
   def Run(self, args):
     """Runs the command."""
-    location_ref = args.CONCEPTS.location.Parse()
-    operations_list = operations.ListOperations(location_ref.locationsId)
-    return operations_list
+    location_id = '-'
+    if args.IsSpecified('location'):
+      location_id = args.CONCEPTS.location.Parse().locationsId
+
+    # Note: there is no orderBy on the list operations request so args.sort_by
+    # is handled client-side.
+    return operations.ListOperations(
+        location=location_id,
+        list_filter=args.filter,
+        limit=args.limit,
+        page_size=args.page_size)

@@ -165,6 +165,9 @@ class Create(base.CreateCommand):
       core_exceptions.reraise(exceptions.HttpException(msg))
     log.CreatedResource(project_ref, is_async=True)
     create_op = operations.WaitForOperation(create_op)
+    project = operations.ExtractOperationResponse(
+        create_op, apis.GetMessagesModule('cloudresourcemanager', 'v1').Project
+    )
 
     # Enable cloudapis.googleapis.com
     if args.enable_cloud_apis:
@@ -174,10 +177,10 @@ class Create(base.CreateCommand):
     if args.set_as_default:
       project_property = properties.FromString('core/project')
       properties.PersistProperty(project_property, project_id)
-      log.status.Print('Updated property [core/project] to [{0}].'
-                       .format(project_id))
+      log.status.Print(
+          'Updated property [core/project] to [{0}].'.format(project_id)
+      )
 
-    return operations.ExtractOperationResponse(create_op,
-                                               apis.GetMessagesModule(
-                                                   'cloudresourcemanager',
-                                                   'v1').Project)
+    command_lib_util.CheckAndPrintEnvironmentTagMessage(project)
+
+    return project

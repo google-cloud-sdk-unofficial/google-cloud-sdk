@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.network_security.security_profiles import mirroring_
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.command_lib.util.args import labels_util
+from googlecloudsdk.command_lib.util.args import repeated
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -47,6 +48,8 @@ DETAILED_HELP = {
         """,
 }
 
+_BROKER_RELEASE_TRACKS = (base.ReleaseTrack.ALPHA,)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -65,22 +68,42 @@ class Update(base.UpdateCommand):
     base.ASYNC_FLAG.SetDefault(parser, False)
     labels_util.AddUpdateLabelsFlags(parser)
 
+    if cls.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
+      repeated.AddPrimitiveArgs(
+          parser,
+          'security_profile',
+          'mirroring-deployment-groups',
+          'mirroring deployment groups',
+          include_set=False,
+      )
+
   def Run(self, args):
     client = mirroring_api.Client(self.ReleaseTrack())
     security_profile = args.CONCEPTS.security_profile.Parse()
     description = args.description
     is_async = args.async_
 
+    sp_instance = client.GetSecurityProfile(security_profile.RelativeName())
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
         client.messages.SecurityProfile.LabelsValue,
-        orig_labels_thunk=lambda: self.getLabels(client, security_profile),
+        orig_labels_thunk=lambda: sp_instance.labels,
     )
 
-    response = client.UpdateSecurityProfile(
+    if self.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
+      updated_dgs = repeated.ParsePrimitiveArgs(
+          args,
+          'mirroring-deployment-groups',
+          lambda: sp_instance.customMirroringProfile.mirroringDeploymentGroups,
+      )
+    else:
+      updated_dgs = None
+
+    response = client.UpdateCustomMirroringProfile(
         name=security_profile.RelativeName(),
         description=description,
         labels=labels_update.GetOrNone(),
+        deployment_groups=updated_dgs,
     )
 
     # Return the in-progress operation if async is requested.
@@ -100,6 +123,3 @@ class Update(base.UpdateCommand):
         ),
         has_result=True,
     )
-
-  def getLabels(self, client, security_profile):
-    return client.GetSecurityProfile(security_profile.RelativeName()).labels

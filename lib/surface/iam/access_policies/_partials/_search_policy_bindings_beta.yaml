@@ -18,14 +18,13 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: search accessPolicies
     description: search accessPolicies
     examples: |-
       To search all accessPolicies, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

@@ -43,23 +43,27 @@ class Create(base.CreateCommand):
   detailed_help = {
       'DESCRIPTION': 'Create a Filestore instance.',
       'EXAMPLES': """\
-    The following command creates a Filestore instance named NAME with a single volume.
+    To create a Basic HDD instance named `my-instance` in zone `us-central1-c` with a 1TB volume named `my_vol` on the default network, run:
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE,psc-endpoint-project=PSC_ENDPOINT_PROJECT --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} my-instance --zone=us-central1-c --tier=BASIC_HDD --file-share=name=my_vol,capacity=1TB --network=name=default
 
-    Example json configuration file:
+    To create an Enterprise instance named `my-ent-instance` in region `us-central1` with a 2TB volume named `my_vol` on network `my-network`, run:
+
+      $ {command} my-ent-instance --zone=us-central1 --tier=ENTERPRISE --file-share=name=my_vol,capacity=2TB --network=name=my-network
+
+    To create an instance with specific NFS export options, you can use a JSON configuration file with `--flags-file`. For example, create a file named `config.json` with the following content:
   {
   "--file-share":
   {
-    "capacity": "61440",
+    "capacity": "1024",
     "name": "my_vol",
     "nfs-export-options": [
       {
         "access-mode": "READ_WRITE",
         "ip-ranges": [
-          "10.0.0.0/8",
+          "10.0.0.0/8"
         ],
-        "squash-mode": "NO_ROOT_SQUASH",
+        "squash-mode": "NO_ROOT_SQUASH"
       },
        {
         "access-mode": "READ_ONLY",
@@ -74,6 +78,8 @@ class Create(base.CreateCommand):
   }
   }
 
+    To create a Basic SSD instance named `my-nfs-instance` using the above configuration file, run:
+      $ {command} my-nfs-instance --zone=us-central1-c --tier=BASIC_SSD --network=name=default --flags-file=config.json
     """,
   }
 
@@ -143,40 +149,43 @@ class CreateBeta(Create):
   detailed_help = {
       'DESCRIPTION': 'Create a Filestore instance.',
       'EXAMPLES': """\
-    The following command creates a Filestore instance named NAME with a single volume.
+    To create a Basic HDD instance named `my-instance` in zone `us-central1-c` with a 1TB volume named `my_vol` on the default network, run:
 
-      $ {command} NAME --description=DESCRIPTION --tier=TIER --protocol=PROTOCOL --file-share=name=VOLUME_NAME,capacity=CAPACITY --network=name=NETWORK_NAME,reserved-ip-range=RESERVED_IP_RANGE,connect-mode=CONNECT_MODE,psc-endpoint-project=PSC_ENDPOINT_PROJECT --zone=ZONE --performance=max-iops-per-tb=MAX-IOPS-PER-TB --kms-key=KMS-KEY --kms-keyring=KMS_KEYRING --kms-location=KMS_LOCATION --kms-project=KMS_PROJECT --managed-ad=domain=DOMAIN,computer=COMPUTER --flags-file=FLAGS_FILE --source-instance=SOURCE_INSTANCE
+      $ {command} my-instance --zone=us-central1-c --tier=BASIC_HDD --file-share=name=my_vol,capacity=1TB --network=name=default
 
-    Example json configuration file:
+    To create an Enterprise instance named `my-ent-instance` in region `us-central1` with a 2TB volume named `my_vol` on network `my-network`, run:
+
+      $ {command} my-ent-instance --zone=us-central1 --tier=ENTERPRISE --file-share=name=my_vol,capacity=2TB --network=name=my-network
+
+    To create an instance with specific NFS export options, you can use a JSON configuration file with `--flags-file`. For example, create a file named `config.json` with the following content:
   {
   "--file-share":
   {
-    "capacity": "61440",
+    "capacity": "1024",
     "name": "my_vol",
     "nfs-export-options": [
       {
         "access-mode": "READ_WRITE",
         "ip-ranges": [
-          "10.0.0.0/8",
+          "10.0.0.0/8"
         ],
-        "squash-mode": "NO_ROOT_SQUASH",
-        "security-flavors": [
-            "AUTH_SYS",
-            "KRB5P",
-        ],
+        "squash-mode": "NO_ROOT_SQUASH"
       },
        {
         "access-mode": "READ_ONLY",
         "ip-ranges": [
           "192.168.0.0/24"
         ],
-        "squash-mode": "ROOT_SQUASH"
+        "squash-mode": "ROOT_SQUASH",
         "anon_uid": 1003,
         "anon_gid": 1003
       }
-    ],
+    ]
   }
   }
+
+    To create a Basic SSD instance named `my-nfs-instance` using the above configuration file, run:
+      $ {command} my-nfs-instance --zone=us-central1-c --tier=BASIC_SSD --network=name=default --flags-file=config.json
 
     """,
   }

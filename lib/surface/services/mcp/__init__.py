@@ -17,9 +17,7 @@
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MCP(base.Group):
-  """Enable/disable MCP endpoints, get/update MCP policies and get the effective MCP policy."""
+  """List, enable and disable MCP endpoints."""

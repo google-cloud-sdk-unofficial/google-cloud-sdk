@@ -29,7 +29,8 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA)
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Clone(base.Command):
   """Clone a Google Cloud Firestore database from another.
 
@@ -37,14 +38,14 @@ class Clone(base.Command):
 
   To clone a database from another:
 
-      $ gcloud alpha firestore databases clone
+      $ {command} gcloud firestore databases clone
         --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
         --snapshot-time=2025-05-26T10:20:00.00Z
         --destination-database=DATABASE_ID
 
   To clone to a CMEK-enabled database:
 
-      $ gcloud alpha firestore databases clone
+      $ {command} gcloud firestore databases clone
         --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
         --snapshot-time=2025-05-26T10:20:00.00Z
         --destination-database=DATABASE_ID

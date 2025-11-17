@@ -124,6 +124,7 @@ def _CommonArgs(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
+    support_workload_identity_config=False,
 ):
   """Register parser args common to all tracks."""
   metadata_utils.AddMetadataArgs(parser)
@@ -276,6 +277,8 @@ def _CommonArgs(
   instances_flags.AddTurboModeArgs(parser)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  if support_workload_identity_config:
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -332,6 +335,7 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_workload_identity_config = False
 
   @classmethod
   def Args(cls, parser):
@@ -493,6 +497,13 @@ class Create(base.CreateCommand):
 
     project_to_sa = create_utils.GetProjectToServiceAccountMap(
         args, instance_refs, compute_client, skip_defaults)
+    workload_identity_config = (
+        instance_utils.CreateWorkloadIdentityConfigMessage(
+            args,
+            compute_client.messages,
+            self._support_workload_identity_config,
+        )
+    )
 
     requests = []
     for instance_ref in instance_refs:
@@ -564,7 +575,11 @@ class Create(base.CreateCommand):
           networkInterfaces=network_interfaces,
           serviceAccounts=project_to_sa[instance_ref.project],
           scheduling=scheduling,
-          tags=tags)
+          tags=tags,
+      )
+
+      if self._support_workload_identity_config and workload_identity_config:
+        instance.workloadIdentityConfig = workload_identity_config
 
       if self._support_partner_metadata and (
           args.partner_metadata or args.partner_metadata_from_file
@@ -853,6 +868,7 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_workload_identity_config = False
 
   def GetSourceMachineImage(self, args, resources):
     """Retrieves the specified source machine image's selflink.
@@ -899,6 +915,7 @@ class CreateBeta(Create):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=cls._support_workload_identity_config,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -979,6 +996,7 @@ class CreateAlpha(CreateBeta):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
+  _support_workload_identity_config = True
 
   @classmethod
   def Args(cls, parser):
@@ -1013,6 +1031,7 @@ class CreateAlpha(CreateBeta):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=cls._support_workload_identity_config,
     )
 
     CreateAlpha.SOURCE_INSTANCE_TEMPLATE = (

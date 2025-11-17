@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.zone_vm_extension_policies import flags
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a Compute Engine zone VM extension policy."""
 
@@ -39,6 +39,12 @@ class Create(base.CreateCommand):
         --inclusion-labels=env=prod \
         --inclusion-labels=env=preprod,workload=load-test \
         --priority=1000
+
+      Available extensions:
+        ops-agent
+        google-cloud-sap-extension
+        google-cloud-workload-extension
+
    """,
   }
 

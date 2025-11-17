@@ -37,9 +37,3 @@
       processor: googlecloudsdk.core.yaml:load
       help_text: |
         YAML file containing the body of the policy to be created.
-
-    - arg_name: validate-only
-      api_field: validateOnly
-      type: bool
-      help_text: |
-        If set, the request will be validated but not executed.

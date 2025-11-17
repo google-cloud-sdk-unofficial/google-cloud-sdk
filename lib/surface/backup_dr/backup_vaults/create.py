@@ -45,11 +45,11 @@ def _add_common_args(parser: argparse.ArgumentParser):
   flags.AddEffectiveTime(parser)
   flags.AddLabels(parser)
   flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
+  flags.AddBackupRetentionInheritance(parser)
 
 
 def _run(
     args: argparse.Namespace,
-    support_backup_retention_inheritance: bool,
     support_kms_key: bool,
 ):
   """Constructs and sends request.
@@ -57,8 +57,6 @@ def _run(
   Args:
     args: argparse.Namespace, An object that contains the values for the
       arguments specified in the .Args() method.
-    support_backup_retention_inheritance: bool, A boolean that indicates if the
-      backup vault supports setting the backup_retention_inheritance field.
     support_kms_key: bool, A boolean that indicates if the backup vault
       supports setting the kms_key field.
 
@@ -79,9 +77,7 @@ def _run(
   )
   no_async = args.no_async
   access_restriction = args.access_restriction
-  backup_retention_inheritance = None
-  if support_backup_retention_inheritance:
-    backup_retention_inheritance = args.backup_retention_inheritance
+  backup_retention_inheritance = args.backup_retention_inheritance
 
   encryption_config = (
       client.messages.EncryptionConfig(kmsKeyName=args.kms_key)
@@ -91,13 +87,12 @@ def _run(
   try:
     operation = client.Create(
         backup_vault,
-        support_backup_retention_inheritance,
         backup_min_enforced_retention,
         description,
         labels,
         effective_time,
         access_restriction,
-        backup_retention_inheritance,
+        backup_retention_inheritance=backup_retention_inheritance,
         encryption_config=encryption_config,
     )
 
@@ -188,7 +183,6 @@ class Create(base.CreateCommand):
     """
     return _run(
         args,
-        support_backup_retention_inheritance=False,
         support_kms_key=False,
     )
 
@@ -205,7 +199,6 @@ class CreateAlpha(Create):
       parser: argparse.Parser: Parser object for command line inputs.
     """
     _add_common_args(parser)
-    flags.AddBackupRetentionInheritance(parser)
     flags.AddKmsKey(parser)
 
   def Run(self, args: argparse.Namespace):
@@ -219,5 +212,5 @@ class CreateAlpha(Create):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args, support_backup_retention_inheritance=True, support_kms_key=True
+        args, support_kms_key=True
     )

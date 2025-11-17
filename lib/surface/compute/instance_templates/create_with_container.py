@@ -49,6 +49,7 @@ def _Args(
     support_ipv6_only=False,
     support_flex_start=False,
     support_skip_guest_os_shutdown=False,
+    support_workload_identity_config=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -137,6 +138,8 @@ def _Args(
   parser.display_info.AddCacheUpdater(completers.InstanceTemplatesCompleter)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  if support_workload_identity_config:
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
 
 
 @base.Deprecate(
@@ -165,6 +168,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_specific_then_x_affinity = False
   _support_disk_labels = False
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = False
 
   @staticmethod
   def Args(parser):
@@ -178,6 +182,7 @@ class CreateWithContainer(base.CreateCommand):
         support_disk_labels=False,
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_GA_API_VERSION
@@ -411,6 +416,11 @@ class CreateWithContainer(base.CreateCommand):
             support_confidential_compute_type_tdx=True,
         )
     )
+    workload_identity_config = (
+        instance_utils.CreateWorkloadIdentityConfigMessage(
+            args, client.messages, self._support_workload_identity_config
+        )
+    )
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,
@@ -425,6 +435,9 @@ class CreateWithContainer(base.CreateCommand):
         scheduling=scheduling,
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
     )
+
+    if self._support_workload_identity_config and workload_identity_config:
+      properties.workloadIdentityConfig = workload_identity_config
 
     if args.resource_policies:
       properties.resourcePolicies = args.resource_policies
@@ -471,6 +484,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = False
 
   @staticmethod
   def Args(parser):
@@ -485,6 +499,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_ipv6_only=True,
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=False,
     )
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
         parser, utils.COMPUTE_BETA_API_VERSION
@@ -554,6 +569,11 @@ class CreateWithContainerBeta(CreateWithContainer):
             client.messages, getattr(args, 'accelerator', None)
         )
     )
+    workload_identity_config = (
+        instance_utils.CreateWorkloadIdentityConfigMessage(
+            args, client.messages, self._support_workload_identity_config
+        )
+    )
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,
@@ -569,6 +589,9 @@ class CreateWithContainerBeta(CreateWithContainer):
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
         guestAccelerators=guest_accelerators,
     )
+
+    if self._support_workload_identity_config and workload_identity_config:
+      properties.workloadIdentityConfig = workload_identity_config
 
     if args.resource_policies:
       properties.resourcePolicies = args.resource_policies
@@ -616,6 +639,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = True
 
   @staticmethod
   def Args(parser):
@@ -630,6 +654,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_ipv6_only=True,
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=True,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -699,6 +724,11 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
             client.messages, getattr(args, 'accelerator', None)
         )
     )
+    workload_identity_config = (
+        instance_utils.CreateWorkloadIdentityConfigMessage(
+            args, client.messages, self._support_workload_identity_config
+        )
+    )
 
     properties = client.messages.InstanceProperties(
         machineType=machine_type,
@@ -714,6 +744,9 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         tags=containers_utils.CreateTagsMessage(client.messages, args.tags),
         guestAccelerators=guest_accelerators,
     )
+
+    if self._support_workload_identity_config and workload_identity_config:
+      properties.workloadIdentityConfig = workload_identity_config
 
     if args.resource_policies is not None:
       properties.resourcePolicies = args.resource_policies

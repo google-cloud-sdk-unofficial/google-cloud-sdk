@@ -83,6 +83,18 @@
         Format: {$bucket_name}
         For example, if the Cloud Storage bucket URI is gs:\/\/{$bucket_name}, the
         format is {$bucket_name}.
+    - arg_name: tags
+      api_field: space.tags
+      required: false
+      repeated: true
+      help_text: |-
+        Tags are key/values bound to space resource.
+        Example: `"123/environment": "production"
+          "123/costCenter": "marketing"`. For more information on tag creation and management, see
+        https://cloud.google.com/resource-manager/docs/tags/tags-overview.
+      spec:
+      - api_field: key
+      - api_field: value
   request:
     api_version: v1alpha
     collection:

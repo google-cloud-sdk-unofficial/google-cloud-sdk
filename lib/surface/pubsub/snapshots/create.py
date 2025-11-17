@@ -60,6 +60,7 @@ class Create(base.CreateCommand):
               ' cloud project.'))
 
     labels_util.AddCreateLabelsFlags(parser)
+    flags.AddTagsFlag(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -121,4 +122,3 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
-    flags.AddTagsFlag(parser)

@@ -237,29 +237,6 @@ class Create(base.CreateCommand):
             args.network_auto_configuration
         ),
     )
-    if not args.async_:
-      return api_utils.Insert(ha_controller, ha_controller_ref, holder)
-
-    errors_to_collect = []
-    response = api_utils.InsertAsync(
-        client, ha_controller, ha_controller_ref, errors_to_collect
+    return api_utils.Insert(
+        holder, ha_controller, ha_controller_ref, args.async_
     )
-    err = getattr(response, 'error', None)
-    if err:
-      errors_to_collect.append(poller.OperationErrors(err.errors))
-    if errors_to_collect:
-      raise core_exceptions.MultiError(errors_to_collect)
-
-    operation_ref = holder.resources.Parse(response.selfLink)
-
-    log.status.Print(
-        'HA Controller creation in progress for [{}]: {}'.format(
-            ha_controller.name, operation_ref.SelfLink()
-        )
-    )
-    log.status.Print(
-        'Use [gcloud compute operations describe URI] command '
-        'to check the status of the operation.'
-    )
-
-    return response

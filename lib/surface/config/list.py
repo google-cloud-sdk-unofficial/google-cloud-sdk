@@ -18,8 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
+from googlecloudsdk.command_lib.projects import util as command_lib_util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -30,6 +33,7 @@ class BadConfigListInvocation(exceptions.Error):
   """Exception for incorrect invocations of `config list`."""
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Google Cloud CLI properties for the currently active configuration.
 
@@ -114,9 +118,24 @@ class List(base.ListCommand):
       raise BadConfigListInvocation(
           'Commands with the `--all` flag must be in the format `gcloud '
           'config list <SECTION>/` without a property specified.')
+
+    project_id = properties.VALUES.core.project.Get()
+    if project_id:
+      try:
+        project_ref = command_lib_util.ParseProject(project_id)
+        project = projects_api.Get(project_ref)
+        command_lib_util.CheckAndPrintEnvironmentTagMessage(project)
+      except (apitools_exceptions.HttpError, exceptions.Error) as e:
+        # Gracefully print a warning message.
+        log.status.Print(
+            'WARNING: Unable to get environment tag for project [{0}]: {1}'
+            .format(project_id, e)
+        )
+
     return self._GetPropertiesToDisplay(args)
 
   def Epilog(self, resources_were_displayed):
     config_name = named_configs.ConfigurationStore.ActiveConfig().name
     log.status.write(
-        '\nYour active configuration is: [{0}]\n'.format(config_name))
+        '\nYour active configuration is: [{0}]\n'.format(config_name)
+    )

@@ -120,7 +120,7 @@ class Create(base.CreateCommand):
         self.BETA,
         self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
         include_ttl_config=True,
-        include_gke_platform_args=self.BETA)
+        include_gke_platform_args=self.BETA and properties.IsDefaultUniverse())
 
     action_on_failed_primary_workers = None
     if not self.BETA:

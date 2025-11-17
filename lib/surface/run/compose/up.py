@@ -36,7 +36,7 @@ DEFAULT_REPO_NAME = 'cloud-run-source-deploy'
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Up(base.BinaryBackedCommand):
   """Deploy to Cloud Run from compose specification."""
@@ -60,7 +60,6 @@ class Up(base.BinaryBackedCommand):
   def CommonArgs(parser):
     flags.AddDeployFromComposeArgument(parser)
     flags.AddRegionArg(parser)
-    flags.AddDebugFlag(parser)
     flags.AddDryRunFlag(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
     parser.add_argument(
@@ -81,7 +80,7 @@ class Up(base.BinaryBackedCommand):
     resource_response = command_executor(
         command='resource',
         compose_file=compose_file,
-        debug=args.debug,
+        debug=log.GetVerbosity() <= log.logging.DEBUG,
         dry_run=args.dry_run,
         region=region,
     )
@@ -125,7 +124,7 @@ class Up(base.BinaryBackedCommand):
           repo=repo,
           compose_file=compose_file,
           resources_config=resources_config_json,  # Pass the JSON string
-          debug=args.debug,
+          debug=log.GetVerbosity() <= log.logging.DEBUG,
           dry_run=args.dry_run,
           project_number=project_number,
           region=region,
@@ -160,8 +159,7 @@ class Up(base.BinaryBackedCommand):
         raise exceptions.ConfigurationError(error_message)
 
       return response
-    except Exception as e:
-      log.error(f'Error: {e}')
+    except Exception:
       log.debug(f'Raw output: {resource_response.stdout}')
       raise
 

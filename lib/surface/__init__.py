@@ -54,6 +54,18 @@ class Gcloud(base.Group):
         hidden=True,
         action=actions.StoreProperty(properties.VALUES.core.universe_domain))
 
+    parser.add_argument(
+        '--force-endpoint-mode',
+        metavar='ENDPOINT_MODE',
+        choices=[
+            properties.VALUES.regional.LEGACY,
+            properties.VALUES.regional.AUTO,
+            properties.VALUES.regional.REGIONAL_ONLY,
+        ],
+        help='Regional endpoint mode to use.',
+        hidden=True,
+        action=actions.StoreProperty(properties.VALUES.regional.endpoint_mode))
+
     # Ideally this would be on the alpha group (since it's alpha) but there are
     # a bunch of problems with doing that. Global flags are treated differently
     # than other flags and flags on the Alpha group are not treated as global.

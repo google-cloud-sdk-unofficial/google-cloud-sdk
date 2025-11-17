@@ -51,6 +51,8 @@ DETAILED_HELP = {
         --add-reserved-instances id=compute2,reservation=zones/us-central1-a/reservations/{reservation},machineType={machineType} \
         --add-spot-instances id=compute3,zone=us-central1-a,machineType=n2-standard-2 \
         --add-dws-flex-instances id=compute4,zone=us-central1-a,machineType=a4-highgpu-8g,maxDuration=10000s \
+        --add-new-lustre-instances lustre=locations/us-central1-a/instances/lustre1,capacityGb=1024,filesystem=lustre1 \
+        --add-lustre-instances locations/us-central1-a/instances/lustre0 \
         --add-slurm-node-sets id=nodeset1,computeId=compute1 \
         --add-slurm-node-sets id=nodeset2,computeId=compute2 \
         --add-slurm-node-sets id=nodeset3,computeId=compute3 \
@@ -70,6 +72,7 @@ DETAILED_HELP = {
         $ {command} my-cluster --location us-central1-a \
         --slurm-default-partition partition0 \
         --remove-labels env,client \
+        --remove-lustre-instances locations/us-central1-a/instances/lustre0 \
         --remove-slurm-partitions partition1 \
         --remove-slurm-partitions partition2 \
         --remove-slurm-node-sets nodeset1 \
@@ -128,6 +131,24 @@ class Update(base.UpdateCommand):
     )
     flags.AddDescription(parser=flag_group, api_version=api_version)
     flags.AddLabels(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddCreateFilestores(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddFilestores(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddGcsBuckets(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddCreateGcsBuckets(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddCreateLustres(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddLustres(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddOnDemandInstances(

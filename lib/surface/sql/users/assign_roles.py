@@ -118,6 +118,18 @@ def RunBaseAssignRolesCommand(args):
     host = name.split('@')[1]
     name = name.split('@')[0]
 
+  if is_mysql and user_type in [
+      # TODO: b/437180966 - Add support for 3P user types in MySQL once the
+      # support for 3P users is launched.
+      sql_messages.User.TypeValueValuesEnum.CLOUD_IAM_USER,
+      sql_messages.User.TypeValueValuesEnum.CLOUD_IAM_SERVICE_ACCOUNT,
+  ]:
+    # Truncate the domain from the username for MySQL IAM users and service
+    # accounts.
+    name = name.split('@')[0]
+    # For MySQL IAM users, the host is not supported.
+    host = '%'
+
   user = sql_client.users.Get(
       sql_messages.SqlUsersGetRequest(
           project=instance_ref.project,

@@ -96,6 +96,7 @@ class CreateHelper(object):
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
       support_allow_multinetwork,
+      support_identity,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -112,7 +113,9 @@ class CreateHelper(object):
     cls.HTTPS_HEALTH_CHECK_ARG.AddArgument(
         parser, cust_metavar='HTTPS_HEALTH_CHECK')
     flags.AddServiceLoadBalancingPolicy(parser)
-    flags.AddBackendServiceTlsSettings(parser)
+    flags.AddBackendServiceTlsSettings(
+        parser, support_identity=support_identity
+    )
     flags.AddServiceBindings(parser)
     flags.AddTimeout(parser)
     flags.AddPortName(parser)
@@ -167,6 +170,7 @@ class CreateHelper(object):
       support_ip_port_dynamic_forwarding,
       support_zonal_affinity,
       support_allow_multinetwork,
+      support_identity,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_port_dynamic_forwarding = (
@@ -175,6 +179,7 @@ class CreateHelper(object):
     self._support_zonal_affinity = support_zonal_affinity
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
+    self._support_identity = support_identity
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -213,7 +218,9 @@ class CreateHelper(object):
           policy_name=args.service_lb_policy,
           release_track=self._release_track,
       )
-    if args.tls_settings is not None:
+    if args.tls_settings is not None or (
+        self._support_identity and hasattr(args, 'identity') and args.identity
+    ):
       backend_services_utils.ApplyTlsSettingsArgs(
           client,
           args,
@@ -334,7 +341,9 @@ class CreateHelper(object):
           ' service.'
       )
 
-    if args.tls_settings is not None:
+    if args.tls_settings is not None or (
+        self._support_identity and hasattr(args, 'identity') and args.identity
+    ):
       backend_services_utils.ApplyTlsSettingsArgs(
           client,
           args,
@@ -511,6 +520,7 @@ class CreateGA(base.CreateCommand):
   _support_ip_port_dynamic_forwarding = False
   _support_zonal_affinity = False
   _support_allow_multinetwork = False
+  _support_identity = False
 
   @classmethod
   def Args(cls, parser):
@@ -520,6 +530,7 @@ class CreateGA(base.CreateCommand):
         support_ip_port_dynamic_forwarding=cls._support_ip_port_dynamic_forwarding,
         support_zonal_affinity=cls._support_zonal_affinity,
         support_allow_multinetwork=cls._support_allow_multinetwork,
+        support_identity=cls._support_identity,
     )
 
   def Run(self, args):
@@ -532,6 +543,7 @@ class CreateGA(base.CreateCommand):
         support_zonal_affinity=self._support_zonal_affinity,
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
+        support_identity=self._support_identity,
     ).Run(args, holder)
 
 
@@ -557,6 +569,7 @@ class CreateBeta(CreateGA):
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
   _support_allow_multinetwork = False
+  _support_identity = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -581,3 +594,4 @@ class CreateAlpha(CreateBeta):
   _support_ip_port_dynamic_forwarding = True
   _support_zonal_affinity = True
   _support_allow_multinetwork = True
+  _support_identity = True

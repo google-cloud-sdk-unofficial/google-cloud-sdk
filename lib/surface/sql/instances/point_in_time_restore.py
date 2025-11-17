@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery."""
+"""Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery (DR) Service."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,7 +36,7 @@ from googlecloudsdk.generated_clients.apis.sqladmin.v1beta4 import sqladmin_v1be
 DESCRIPTION = """\
 
     *{command}* performs a point in time restore for a Cloud SQL instance
-    managed by Google Cloud Backup and Disaster Recovery.
+    managed by Google Cloud Backup and Disaster Recovery (DR) Service.
 
     """
 
@@ -89,9 +89,11 @@ def _UpdateRequestFromArgs(
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA
+)
 class PointInTimeRestore(base.Command):
-  """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery."""
+  """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery (DR) Service."""
 
   detailed_help = DETAILED_HELP
 
@@ -108,7 +110,7 @@ class PointInTimeRestore(base.Command):
     parser.add_argument(
         'datasource',
         help="""\
-        The Google Cloud Backup and Disaster Recovery Datasource URI,
+        The Google Cloud Backup and Disaster Recovery (DR) Service Datasource URI,
         of the form projects/{project}/locations/{region}/backupVaults/
         {backupvault}/dataSources/{datasource}.
         """,
@@ -175,7 +177,10 @@ class PointInTimeRestore(base.Command):
     flags.AddSourceInstanceOverrideArgs(parser=parser, for_pitr=True)
 
   def Run(self, args: parser_extensions.Namespace):
-    """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery.
+    """Performs a point in time restore for a Cloud SQL instance.
+
+    The instance is managed by Google Cloud Backup and Disaster Recovery
+    (DR) Service.
 
     Args:
       args: argparse.Namespace, The arguments that this command was invoked

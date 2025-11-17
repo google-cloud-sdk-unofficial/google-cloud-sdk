@@ -77,6 +77,7 @@ def _CommonArgs(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
+    support_workload_identity_config=False,
 ):
   """Adding arguments applicable for creating instance templates."""
   parser.display_info.AddFormat(instance_templates_flags.DEFAULT_LIST_FORMAT)
@@ -221,6 +222,8 @@ The type of reservation for instances created from this template.
     instances_flags.AddDisplayDeviceArg(parser)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  if support_workload_identity_config:
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
 
 
 def _ValidateInstancesFlags(
@@ -585,6 +588,7 @@ def _RunCreate(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
+    support_workload_identity_config=False,
 ):
   """Common routine for creating instance template.
 
@@ -643,6 +647,8 @@ def _RunCreate(
         duration is supported.
       support_enable_vpc_scoped_dns: Indicate whether enable-vpc-scoped-dns is
         supported.
+      support_workload_identity_config: Indicate whether workload identity
+        config is supported.
 
   Returns:
       A resource object dispatched by display.Displayer().
@@ -947,6 +953,10 @@ def _RunCreate(
       client.messages, getattr(args, 'accelerator', None)
   )
 
+  workload_identity_config = instance_utils.CreateWorkloadIdentityConfigMessage(
+      args, client.messages, support_workload_identity_config
+  )
+
   if support_region_instance_template and args.IsSpecified(
       'instance_template_region'
   ):
@@ -983,6 +993,11 @@ def _RunCreate(
         ),
         description=args.description,
         name=instance_template_ref.Name(),
+    )
+
+  if support_workload_identity_config and workload_identity_config:
+    instance_template.properties.workloadIdentityConfig = (
+        workload_identity_config
     )
 
   instance_template.properties.shieldedInstanceConfig = (
@@ -1198,6 +1213,7 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_workload_identity_config = False
 
   @classmethod
   def Args(cls, parser):
@@ -1230,6 +1246,7 @@ class Create(base.CreateCommand):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=cls._support_workload_identity_config,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1284,6 +1301,7 @@ class Create(base.CreateCommand):
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=self._support_workload_identity_config,
     )
 
 
@@ -1336,6 +1354,7 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_workload_identity_config = False
 
   @classmethod
   def Args(cls, parser):
@@ -1368,6 +1387,7 @@ class CreateBeta(Create):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=cls._support_workload_identity_config,
     )
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
     instances_flags.AddPrivateIpv6GoogleAccessArgForTemplate(
@@ -1425,6 +1445,7 @@ class CreateBeta(Create):
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=self._support_workload_identity_config,
     )
 
 
@@ -1477,6 +1498,7 @@ class CreateAlpha(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
+  _support_workload_identity_config = True
 
   @classmethod
   def Args(cls, parser):
@@ -1510,6 +1532,7 @@ class CreateAlpha(Create):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=cls._support_workload_identity_config,
     )
     instances_flags.AddLocalNvdimmArgs(parser)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
@@ -1570,6 +1593,7 @@ class CreateAlpha(Create):
         support_skip_guest_os_shutdown=self._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=self._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
+        support_workload_identity_config=self._support_workload_identity_config,
     )
 
 

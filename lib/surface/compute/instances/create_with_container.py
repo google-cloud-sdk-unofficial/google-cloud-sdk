@@ -50,6 +50,7 @@ def _Args(
     support_graceful_shutdown=False,
     support_flex_start=True,
     support_skip_guest_os_shutdown=False,
+    support_workload_identity_config=False,
 ):
   """Add flags shared by all release tracks."""
   parser.display_info.AddFormat(instances_flags.DEFAULT_LIST_FORMAT)
@@ -137,6 +138,8 @@ def _Args(
   parser.display_info.AddCacheUpdater(completers.InstancesCompleter)
   if support_skip_guest_os_shutdown:
     instances_flags.AddSkipGuestOsShutdownArgs(parser)
+  if support_workload_identity_config:
+    instances_flags.AddWorkloadIdentityConfigArgs(parser)
   instances_flags.AddRequestValidForDurationArgs(parser)
 
 
@@ -179,6 +182,7 @@ class CreateWithContainer(base.CreateCommand):
   _support_max_run_duration = True
   _support_graceful_shutdown = True
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = False
 
   @staticmethod
   def Args(parser):
@@ -194,6 +198,7 @@ class CreateWithContainer(base.CreateCommand):
         support_disk_labels=False,
         support_ipv6_only=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.GA)
@@ -370,6 +375,13 @@ class CreateWithContainer(base.CreateCommand):
     confidential_vm_type = instance_utils.GetConfidentialVmType(
         args, self._support_confidential_compute_type
     )
+    workload_identity_config = (
+        instance_utils.CreateWorkloadIdentityConfigMessage(
+            args,
+            compute_client.messages,
+            self._support_workload_identity_config,
+        )
+    )
 
     requests = []
     for instance_ref in instance_refs:
@@ -436,6 +448,10 @@ class CreateWithContainer(base.CreateCommand):
           scheduling=scheduling,
           tags=tags,
       )
+
+      if self._support_workload_identity_config and workload_identity_config:
+        instance.workloadIdentityConfig = workload_identity_config
+
       if args.private_ipv6_google_access_type is not None:
         instance.privateIpv6GoogleAccess = (
             instances_flags.GetPrivateIpv6GoogleAccessTypeFlagMapper(
@@ -544,6 +560,7 @@ class CreateWithContainerBeta(CreateWithContainer):
   _support_specific_then_x_affinity = True
   _support_disk_labels = True
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = False
 
   @staticmethod
   def Args(parser):
@@ -560,6 +577,7 @@ class CreateWithContainerBeta(CreateWithContainer):
         support_ipv6_only=True,
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=False,
     )
     instances_flags.AddNetworkTierArgs(parser, instance=True)
     instances_flags.AddLocalSsdArgs(parser)
@@ -594,6 +612,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
   _support_disk_labels = True
   _support_ipv6_only = True
   _support_skip_guest_os_shutdown = True
+  _support_workload_identity_config = True
 
   @staticmethod
   def Args(parser):
@@ -610,6 +629,7 @@ class CreateWithContainerAlpha(CreateWithContainerBeta):
         support_graceful_shutdown=True,
         support_flex_start=True,
         support_skip_guest_os_shutdown=True,
+        support_workload_identity_config=True,
     )
 
     instances_flags.AddNetworkTierArgs(parser, instance=True)

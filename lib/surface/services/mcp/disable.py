@@ -32,14 +32,101 @@ _ORGANIZATION_RESOURCE = 'organizations/{}'
 _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
 
 
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DisableAlpha(base.SilentCommand):
+  """Disable a service for MCP on a project, folder or organization.
+
+  Disable a service for MCP on a project, folder or organization
+
+  ## EXAMPLES
+
+  To disable a service for MCP called `my-service` on the current project, run:
+
+    $ {command} my-service
+
+  To disable a service for MCP called `my-service` on the project
+  `my-project`, run:
+
+    $ {command} my-service --project=my-project
+
+  To disable a service for MCP called `my-service` on the folder
+  `my-folder, run:
+
+    $ {command} my-service --folder=my-folder
+
+  To disable a service for MCP called `my-service` on the organization
+  `my-organization`, run:
+
+    $ {command} my-service --organization=my-organization
+
+  To run the same command asynchronously (non-blocking), run:
+
+    $ {command} my-service --async
+  """
+
+  @staticmethod
+  def Args(parser):
+    """Args is called by calliope to gather arguments for this command.
+
+    Args:
+      parser: An argparse parser that you can use to add arguments that go on
+        the command line after this command. Positional arguments are allowed.
+    """
+    common_flags.service_flag(suffix='to disable MCP').AddToParser(parser)
+    common_flags.add_resource_args(parser)
+    base.ASYNC_FLAG.AddToParser(parser)
+
+  def Run(self, args):
+    """Run 'services mcp disable'.
+
+    Args:
+      args: argparse.Namespace, The arguments that this command was invoked
+        with.
+
+    Returns:
+      Updated MCP Policy.
+    """
+
+    project = (
+        args.project
+        if args.IsSpecified('project')
+        else properties.VALUES.core.project.Get(required=True)
+    )
+    folder = args.folder if args.IsSpecified('folder') else None
+    organization = (
+        args.organization if args.IsSpecified('organization') else None
+    )
+
+    op = serviceusage.RemoveMcpEnableRule(
+        project,
+        args.service,
+        folder=folder,
+        organization=organization,
+    )
+
+    if args.async_:
+      cmd = _OP_WAIT_CMD.format(op.name)
+      log.status.Print(
+          'Asynchronous operation is in progress... '
+          'Use the following command to wait for its '
+          f'completion:\n {cmd}'
+      )
+      return
+
+    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+
+    services_util.PrintOperation(op)
+
+
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Disable(base.SilentCommand):
-  """Disables a service for MCP on a project, folder or organization.
+  """Disable a service for MCP on a project, folder or organization.
 
-  Disables a service for MCP on a project, folder or organization
+  Disable a service for MCP on a project, folder or organization
 
   ## EXAMPLES
 

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import atexit
+from http import client as http_client
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.sql import api_util
@@ -38,8 +39,6 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import iso_duration
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
-import six
-import six.moves.http_client
 
 EXAMPLES = (
     """\
@@ -129,7 +128,7 @@ def _AllowlistClientIP(instance_ref,
         sql_messages.SqlInstancesGetRequest(
             project=instance_ref.project, instance=instance_ref.instance))
   except apitools_exceptions.HttpError as error:
-    if error.status_code == six.moves.http_client.FORBIDDEN:
+    if error.status_code == http_client.FORBIDDEN:
       raise exceptions.ResourceNotFoundError(
           'There was no instance found at {} or you are not authorized to '
           'connect to it.'.format(instance_ref.RelativeName()))
@@ -265,7 +264,7 @@ def AddProxyV2Args(parser) -> None:
   ip_group.add_argument(
       '--psc',
       action='store_true',
-      help='Connect to the Cloud SQL instance using PSC.')
+      help='Connect to the Cloud SQL instance using Private Service Connect.')
   ip_group.add_argument(
       '--auto-ip',
       action='store_true',
@@ -412,7 +411,7 @@ def RunProxyConnectCommand(args,
             exe_name.title(), exe_name))
 
   # Start the Cloud SQL Proxy and wait for it to be ready to accept connections.
-  port = six.text_type(args.port)
+  port = str(args.port)
   proxy_process = instances_api_util.StartCloudSqlProxy(instance_info, port)
   atexit.register(proxy_process.kill)
 
@@ -613,14 +612,13 @@ class ConnectBeta(base.Command):
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddBaseArgs(parser)
-    AddBetaArgs(parser)
+    AddProxyV2Args(parser)
     sql_flags.AddDatabase(
         parser, 'The PostgreSQL or SQL Server database to connect to.')
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunProxyConnectCommand(args, supports_database=True)
+    return RunProxyV2ConnectCommand(args, supports_database=True)
 
 
 @base.UniverseCompatible
