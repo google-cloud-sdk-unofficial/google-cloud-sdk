@@ -33,8 +33,7 @@ BackupsClient = (
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class FetchForResourceType(base.ListCommand):
   """Fetch Backups for a given resource type and location."""
 

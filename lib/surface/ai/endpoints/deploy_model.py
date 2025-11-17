@@ -159,6 +159,7 @@ class DeployModelGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class DeployModelBeta(DeployModelGa):
   """Deploy a model to an existing Vertex AI endpoint.
 

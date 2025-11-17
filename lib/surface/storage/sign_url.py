@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import argparse
 import functools
 import textwrap
 
@@ -30,6 +31,7 @@ from googlecloudsdk.command_lib.storage import sign_url_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import wildcard_iterator
 from googlecloudsdk.command_lib.storage.resources import resource_reference
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
@@ -59,10 +61,16 @@ _MAX_EXPIRATION_TIME_WITH_SYSTEM_MANAGED_KEY = 12 * 60 * 60
 
 
 @functools.lru_cache(maxsize=None)
-def _get_region_with_cache(scheme, bucket_name):
+def _get_region_with_cache(scheme: str, bucket_name: str) -> str:
+  """Retrieves the region of the given bucket, using a cache."""
   api_client = api_factory.get_api(scheme)
   try:
     bucket_resource = api_client.get_bucket(bucket_name)
+  except api_errors.NotFoundError as not_found_error:
+    raise command_errors.Error(
+        f'Bucket {bucket_name} not found. To generate a signed URL for creating'
+        " a bucket, please specify a region using the '--region' flag."
+    ) from not_found_error
   except api_errors.CloudApiError:
     raise command_errors.Error(
         'Failed to auto-detect the region for {}. Please ensure you have'
@@ -72,19 +80,47 @@ def _get_region_with_cache(scheme, bucket_name):
   return bucket_resource.location
 
 
-def _get_region(args, resource):
+def _get_region(
+    args: argparse.Namespace, resource: resource_reference.Resource
+) -> str:
+  """Returns the region based on the flag or that of the resource."""
   if args.region:
     return args.region
-
-  if resource.storage_url.is_bucket():
-    raise command_errors.Error(
-        'Generating signed URLs for creating buckets requires a region to'
-        ' be specified using the --region flag.'
-    )
 
   return _get_region_with_cache(
       resource.storage_url.scheme, resource.storage_url.bucket_name
   )
+
+
+def _resolve_host_and_path(
+    args: argparse.Namespace,
+    resource: resource_reference.Resource,
+    original_host: str,
+) -> tuple[str, str]:
+  """Resolves the host and path for a signed URL."""
+  if '.' in resource.storage_url.bucket_name or args.path_style_url:
+    # Use path-style signed URL for domain-named buckets because virtual
+    # hosted-style URL does not work.
+    if not args.path_style_url:
+      log.warning(
+          'Falling back to path-style signed URL for domain-named bucket %s.'
+          ' Use --path-style-url flag to silence this warning.',
+          resource.storage_url.bucket_name,
+      )
+    host = original_host
+    path = f'/{resource.storage_url.bucket_name}'
+    if not resource.storage_url.is_bucket():
+      path += f'/{resource.storage_url.resource_name}'
+  else:
+    # Otherwise, prefer virtual hosted-style signed URL.
+    scheme, separator, original_host_without_scheme = original_host.rpartition(
+        '://'
+    )
+    host = f'{scheme}{separator}{resource.storage_url.bucket_name}.{original_host_without_scheme}'
+    path = '/'
+    if not resource.storage_url.is_bucket():
+      path += f'{resource.storage_url.resource_name}'
+  return (host, path)
 
 
 @base.UniverseCompatible
@@ -220,6 +256,21 @@ class SignUrl(base.Command):
             user's credentials, not the credentials from PRIVATE_KEY_FILE,
             are used to fetch the bucket's metadata."""),
     )
+    parser.add_argument(
+        '--path-style-url',
+        action='store_true',
+        help=textwrap.dedent(
+            """\
+            Generate path-style signed URL.
+
+            By default, virtual hosted-style signed URL is generated, except for
+            [domain-named buckets](https://cloud.google.com/storage/docs/domain-name-verification).
+            Use this flag to force the generation of path-style signed URL.
+            Signed URL generated for domain-named buckets is always path-style.
+            Learn more about the two URL styles
+            [here](https://cloud.google.com/storage/docs/request-endpoints#xml-api)."""
+        ),
+    )
 
   def Run(self, args):
 
@@ -274,7 +325,7 @@ class SignUrl(base.Command):
 
     # Signed URLs always hit the XML API, regardless of what API is preferred
     # for other operations.
-    host = properties.VALUES.storage.gs_xml_endpoint_url.Get()
+    original_host = properties.VALUES.storage.gs_xml_endpoint_url.Get()
 
     has_provider_url = any(
         storage_url.storage_url_from_string(url_string).is_provider()
@@ -293,13 +344,7 @@ class SignUrl(base.Command):
         resources = [resource_reference.UnknownResource(url)]
 
       for resource in resources:
-        if resource.storage_url.is_bucket():
-          path = '/{}'.format(resource.storage_url.bucket_name)
-        else:
-          path = '/{}/{}'.format(
-              resource.storage_url.bucket_name,
-              resource.storage_url.resource_name,
-          )
+        host, path = _resolve_host_and_path(args, resource, original_host)
 
         parameters = dict(args.query_params)
         if url.generation:

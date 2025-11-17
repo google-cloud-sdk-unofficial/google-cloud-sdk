@@ -136,6 +136,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True, hidden=True
     )
+    flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -191,6 +192,7 @@ class Update(base.UpdateCommand):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
 
   def Run(self, args):
@@ -341,6 +343,7 @@ class UpdateBeta(Update):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True, hidden=True
     )
+    flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -397,6 +400,7 @@ class UpdateBeta(Update):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
     return ops
 
@@ -478,6 +482,7 @@ class UpdateAlpha(Update):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True, hidden=True
     )
+    flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
     flags.ValidateSurgeUpgradeSettings(args)
@@ -534,6 +539,7 @@ class UpdateAlpha(Update):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
     return ops
 

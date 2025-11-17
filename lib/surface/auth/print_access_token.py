@@ -136,11 +136,15 @@ class AccessToken(base.Command):
         and properties.IsInternalUserCheck()
     ):
       log.warning(
-          'This is a bound token requiring an mTLS endpoint. Either use the'
-          " API's mTLS endpoint or get an ADC token by running 'gcloud auth"
-          " application-default login' and using 'gcloud auth"
-          " application-default print-access-token' to get the token instead of"
-          " 'gcloud auth print-access-token'."
+          'Warning: This access token is for the gcloud CLI tool itself and is'
+          ' bound to its specific client ID, which requires mTLS. This means it'
+          ' can only be used with mTLS-enabled API endpoints.\n\nIf you need a'
+          ' token for your own application code or scripts, you should use'
+          ' Application Default Credentials (ADC). Obtain an ADC token by'
+          ' running:\n  1.  gcloud auth application-default login (if you'
+          " haven't already)\n  2.  gcloud auth application-default"
+          ' print-access-token\n\nADC tokens are intended for local development'
+          ' and does not have the same mTLS restrictions.'
       )
 
     if args.lifetime and not args.impersonate_service_account:

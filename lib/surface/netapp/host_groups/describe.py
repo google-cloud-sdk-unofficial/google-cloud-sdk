@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe a Cloud NetApp Host Group."""
 
@@ -55,7 +54,6 @@ class Describe(base.DescribeCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class DescribeBeta(Describe):
   """Describe a Cloud NetApp Host Group."""
 
@@ -64,7 +62,6 @@ class DescribeBeta(Describe):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class DescribeAlpha(DescribeBeta):
   """Describe a Cloud NetApp Host Group."""
 

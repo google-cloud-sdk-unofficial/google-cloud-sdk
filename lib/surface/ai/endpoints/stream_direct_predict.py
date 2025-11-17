@@ -59,7 +59,7 @@ def _Run(args, version):
     )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class StreamDirectPredictGa(base.Command):
   """Run Vertex AI online stream direct prediction.
@@ -84,7 +84,7 @@ class StreamDirectPredictGa(base.Command):
     return _Run(args, constants.GA_VERSION)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StreamDirectPredictBeta(StreamDirectPredictGa):
   """Run Vertex AI online stream direct prediction.

@@ -47,6 +47,14 @@ class Ssh(base.Command):
         'service',
         help='The name of the service to SSH into.',
     )
+    parser.add_argument(
+        '--iap-tunnel-url-override',
+        hidden=True,
+        help=(
+            'Allows for overriding the connection endpoint for integration '
+            'testing.'
+        ),
+    )
 
   def Run(self, args):
     """Connect to a running Cloud Run Service deployment."""

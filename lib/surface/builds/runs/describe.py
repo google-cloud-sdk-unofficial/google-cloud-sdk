@@ -41,7 +41,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         pipeline_output_util.PRINTER_FORMAT,
         pipeline_output_util.TektonPrinter,
-        hidden=True,
     )
 
   def Run(self, args):

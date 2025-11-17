@@ -48,12 +48,13 @@ List all objects across nested directories using wildcards (https://cloud.google
 
   $ {command} gs://my-bucket/**
 
-List all objects in bucket beginning with ``o'':
+List all objects in bucket beginning with ``o'', including objects across nested
+directories:
 
-  $ {command} gs://my-bucket/o*
+  $ {command} gs://my-bucket/**/o*
 
-List all objects in bucket with JSON formatting, only returning the
-value of the ``name'' metadata field:
+List all objects within current directory of bucket with JSON formatting, only
+returning the value of the ``name'' metadata field:
 
   $ {command} gs://my-bucket --format="json(name)"
 """

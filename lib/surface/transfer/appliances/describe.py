@@ -58,7 +58,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         offline_import_printer.OFFLINE_IMPORT_PRINTER_FORMAT,
         offline_import_printer.OfflineImportPrinter,
-        hidden=True,
     )
 
   def Run(self, args):

@@ -125,7 +125,7 @@ def _Run(args, holder, include_log_config):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Create(base.CreateCommand):
+class CreateAlpha(base.CreateCommand):
   """Create a gRPC with TLS health check."""
 
   detailed_help = _DetailedHelp()
@@ -137,5 +137,50 @@ class Create(base.CreateCommand):
     _Args(parser, cls._include_log_config)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config)
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CreateBeta(base.CreateCommand):
+  """Create a gRPC with TLS health check."""
+
+  detailed_help = _DetailedHelp()
+
+  _include_log_config = True
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_log_config)
+
+  def Run(self, args):
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class CreateGa(base.CreateCommand):
+  """Create a gRPC with TLS health check."""
+
+  detailed_help = _DetailedHelp()
+
+  _include_log_config = True
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_log_config)
+
+  def Run(self, args):
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )

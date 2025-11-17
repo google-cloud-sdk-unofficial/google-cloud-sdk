@@ -55,8 +55,7 @@ class Describe(base.DescribeCommand):
     flags.AddNamePositionalArg(parser)
     resource_printer.RegisterFormatter(
         integration_printer.INTEGRATION_PRINTER_FORMAT,
-        integration_printer.IntegrationPrinter,
-        hidden=True)
+        integration_printer.IntegrationPrinter)
     parser.display_info.AddFormat(
         integration_printer.INTEGRATION_PRINTER_FORMAT)
 

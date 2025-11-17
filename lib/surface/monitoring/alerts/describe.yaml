@@ -1,4 +1,5 @@
-- help_text:
+- release_tracks: [ALPHA, BETA]
+  help_text:
     brief: Describe an alert.
     description: Describe an alert.
 

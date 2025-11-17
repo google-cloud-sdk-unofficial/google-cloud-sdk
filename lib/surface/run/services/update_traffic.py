@@ -95,7 +95,6 @@ class AdjustTraffic(base.Command):
     resource_printer.RegisterFormatter(
         traffic_printer.TRAFFIC_PRINTER_FORMAT,
         traffic_printer.TrafficPrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(traffic_printer.TRAFFIC_PRINTER_FORMAT)
 

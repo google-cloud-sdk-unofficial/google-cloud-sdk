@@ -312,6 +312,7 @@ def AddBaseArgs(parser):
             'over IP.'))
   flags.AddStorageAutoIncrease(parser)
   flags.AddStorageSize(parser)
+  flags.AddStorageType(parser)
   flags.AddTier(parser, is_patch=True)
   flags.AddEdition(parser)
   flags.AddEnablePointInTimeRecovery(parser)
@@ -382,6 +383,8 @@ def AddBetaArgs(parser):
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddDataApiAccess(parser)
+  flags.AddServerCertificateRotationMode(parser)
+  flags.AddPerformanceCaptureConfig(parser, hidden=True)
 
 
 def AddAlphaArgs(unused_parser):
@@ -465,6 +468,13 @@ def RunBasePatchCommand(args, release_track):
   original_instance_resource = sql_client.instances.Get(
       sql_messages.SqlInstancesGetRequest(
           project=instance_ref.project, instance=instance_ref.instance))
+
+  if args.IsKnownAndSpecified(
+      'performance_capture_config'
+  ) and not original_instance_resource.databaseVersion.name.startswith('MYSQL'):
+    raise exceptions.ArgumentError(
+        '`--performance-capture-config` is only supported for MySQL instances.'
+    )
 
   if (
       args.IsSpecified('deny_maintenance_period_start_date')

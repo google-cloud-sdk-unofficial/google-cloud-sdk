@@ -24,7 +24,6 @@ from googlecloudsdk.core.console import console_io
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Delete(base.DeleteCommand):
   """Delete a Cloud NetApp Host Group."""
 
@@ -79,7 +78,6 @@ class Delete(base.DeleteCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class DeleteBeta(Delete):
   """Delete a Cloud NetApp Host Group."""
 
@@ -88,7 +86,6 @@ class DeleteBeta(Delete):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class DeleteAlpha(DeleteBeta):
   """Delete a Cloud NetApp Host Group."""
 

@@ -14,10 +14,6 @@
 # limitations under the License.
 """Implementation of create command for batch actions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.storage import storage_batch_operations_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import flags
@@ -46,11 +42,12 @@ class Create(base.Command):
           --delete-object
 
       To create a batch job with the name `my-job` to update object metadata
-      `Content-Disposition` to `inline` and `Content-Language` to `en` on bucket `my-bucket` where
-      you want to match objects with the prefix `prefix1` or `prefix2`:
+      `Content-Disposition` to `inline`, `Content-Language` to `en`, and
+      set object retention mode to `locked` on bucket `my-bucket` where you want to match
+      objects with prefixes `prefix1` or `prefix2`:
 
           $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
-          --put-metadata=Content-Disposition=inline,Content-Language=en
+          --put-metadata=Content-Disposition=inline,Content-Language=en,Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
       To create a batch job with the name `my-job` to put object event based hold on objects in bucket `my-bucket` with
       logging config enabled for corresponding transform action and succeeded and failed action states:

@@ -1,0 +1,45 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: Create a new artifact guard connector.
+  description: |
+    Create a new artifact guard connector. Connectors are tags for images. When passed from CI
+    pipeline to the Artifact Guard service, it is used to decide which policies need to be run
+    against the image being built in the CI pipeline.
+  examples: |
+    Create a connector with full name:
+
+      $ {command} organizations/123/locations/global/connectors/my-connector \
+          --pipeline-type=GOOGLE_CLOUD_BUILD --display-name="My Connector" \
+          --description="This is my connector."
+
+    Create a connector with connector ID:
+
+      $ {command} my-connector --location=global --organization=123 \
+          --pipeline-type=GOOGLE_CLOUD_BUILD --display-name="My Connector" \
+          --description="This is my connector."
+
+request:
+  collection: artifactscanguard.organizations.locations.connectors
+  api_version: v1alpha
+  method: create
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.scc.resources:connector
+    help_text: |
+      The full name of the connector to create. For example:
+      `organizations/123/locations/global/connectors/myConnector`
+  params:
+  - arg_name: pipeline-type
+    api_field: connector.pipelineType
+    required: true
+    help_text: |
+      The type of pipeline for which connector is being created.
+  - arg_name: display-name
+    api_field: connector.displayName
+    help_text: |
+      User-specified name of the connector.
+  - arg_name: description
+    api_field: connector.description
+    help_text: |
+      Description of the connector.

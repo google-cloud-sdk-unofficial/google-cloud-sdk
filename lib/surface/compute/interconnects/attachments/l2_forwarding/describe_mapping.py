@@ -28,7 +28,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine L2 forwarding interconnect attachment.

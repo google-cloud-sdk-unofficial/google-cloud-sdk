@@ -59,7 +59,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         worker_pool_revision_printer.REVISION_PRINTER_FORMAT,
         worker_pool_revision_printer.WorkerPoolRevisionPrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(
         worker_pool_revision_printer.REVISION_PRINTER_FORMAT
@@ -67,7 +66,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
         export_printer.ExportPrinter,
-        hidden=True,
     )
 
   @staticmethod

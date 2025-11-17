@@ -102,10 +102,27 @@
         GKE clients are not supported.
         Deprecated. No longer required for GKE instance creation.
       default: null
+    - arg_name: kms-key
+      api_field: instance.kmsKey
+      required: false
+      repeated: false
+      help_text: |-
+        The Cloud KMS key name to use for data encryption.
+        If not set, the instance will use Google-managed encryption keys.
+        If set, the instance will use customer-managed encryption keys.
+        The key must be in the same region as the instance.
+        The key format is:
+        projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}
+    - arg_name: placement-policy
+      api_field: instance.placementPolicy
+      required: false
+      repeated: false
+      help_text: |-
+        The placement policy name for the instance in the format of
+        projects/{project}/locations/{location}/resourcePolicies/{resource_policy}
     - group:
         api_field: instance.accessRulesOptions
         required: false
-        hidden: true
         help_text: |-
           IP-based access rules for the Managed Lustre instance. These options
           define the root user squash configuration.
@@ -138,14 +155,14 @@
             help_text: |-
               Squash UID for the access rule. If the squash mode for this rule is
               [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
-              [ip_ranges][AccessRule.ip_ranges] are squashed to this UID.
-              Defaults to 0 (no root squash).
+              [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
+              UID. Defaults to 0 (no root squash).
           - api_field: squashGid
             help_text: |-
               Squash GID for the access rule. If the squash mode for this rule is
               [ROOT_SQUASH][google.cloud.lustre.v1alpha.AccessRulesOptions.SquashMode.ROOT_SQUASH], root users matching the
-              [ip_ranges][AccessRule.ip_ranges] are squashed to this GID.
-              Defaults to 0 (no root squash).
+              [ip_address_ranges][google.cloud.lustre.v1alpha.AccessRulesOptions.AccessRule.ip_address_ranges] are squashed to this
+              GID. Defaults to 0 (no root squash).
           - api_field: mountableSubdirectories
             help_text: |-
               The list of non-root directories that can be mounted from
@@ -192,6 +209,7 @@
               If this is for the [default_squash_mode][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_mode], then the
               [default_squash_uid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_uid] and
               [default_squash_gid][google.cloud.lustre.v1alpha.AccessRulesOptions.default_squash_gid] will be squashed.
+            hidden: true
         - arg_name: default-squash-uid
           api_field: instance.accessRulesOptions.defaultSquashUid
           required: false
@@ -212,6 +230,123 @@
             This user squash GID applies to all root users connecting from clients
             that are not matched by any of the access rules. If not set, the default
             is 0 (no GID squash).
+        - arg_name: default-mountable-subdirectories
+          api_field: instance.accessRulesOptions.defaultMountableSubdirectories
+          required: false
+          repeated: true
+          hidden: true
+          help_text: |-
+            The list of non-root directories that can be mounted from
+            clients in the default access rule. Currently, there can be only a single
+            directory at most. If no directory is mentioned, then the root directory
+            will be accessible.
+    - group:
+        api_field: instance.maintenancePolicy
+        required: false
+        hidden: true
+        help_text: |-
+          The maintenance policy for the instance to determine when to allow or deny
+          updates.
+        params:
+        - arg_name: maintenance-policy-windows
+          api_field: instance.maintenancePolicy.maintenanceWindows
+          required: true
+          repeated: true
+          help_text: |-
+            The maintenance window for the instance.
+          spec:
+          - api_field: dayOfWeek
+            help_text: |-
+              Day of the week for the maintenance window.
+          - api_field: startTime
+            help_text: |-
+              Start time of the maintenance window in UTC time zone.
+            spec:
+            - api_field: hours
+              help_text: |-
+                Hours of a day in 24 hour format. Must be greater than or equal to 0 and
+                typically must be less than or equal to 23. An API may choose to allow the
+                value "24:00:00" for scenarios like business closing time.
+            - api_field: minutes
+              help_text: |-
+                Minutes of an hour. Must be greater than or equal to 0 and less than or
+                equal to 59.
+            - api_field: seconds
+              help_text: |-
+                Seconds of a minute. Must be greater than or equal to 0 and typically must
+                be less than or equal to 59. An API may allow the value 60 if it allows
+                leap-seconds.
+            - api_field: nanos
+              help_text: |-
+                Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
+                and less than or equal to 999,999,999.
+        - arg_name: maintenance-policy-deny-periods
+          api_field: instance.maintenancePolicy.denyPeriods
+          required: false
+          repeated: true
+          help_text: |-
+            The deny periods for the instance.
+            Currently limited to 4.
+          spec:
+          - api_field: startDate
+            help_text: |-
+              Start date of the deny period in UTC time zone.
+            spec:
+            - api_field: year
+              help_text: |-
+                Year of the date. Must be from 1 to 9999, or 0 to specify a date without
+                a year.
+            - api_field: month
+              help_text: |-
+                Month of a year. Must be from 1 to 12, or 0 to specify a year without a
+                month and day.
+            - api_field: day
+              help_text: |-
+                Day of a month. Must be from 1 to 31 and valid for the year and month, or 0
+                to specify a year by itself or a year and month where the day isn't
+                significant.
+          - api_field: endDate
+            help_text: |-
+              End date of the deny period in UTC time zone.
+            spec:
+            - api_field: year
+              help_text: |-
+                Year of the date. Must be from 1 to 9999, or 0 to specify a date without
+                a year.
+            - api_field: month
+              help_text: |-
+                Month of a year. Must be from 1 to 12, or 0 to specify a year without a
+                month and day.
+            - api_field: day
+              help_text: |-
+                Day of a month. Must be from 1 to 31 and valid for the year and month, or 0
+                to specify a year by itself or a year and month where the day isn't
+                significant.
+          - api_field: time
+            help_text: |-
+              Time in UTC when the deny period starts on start_date and ends on
+              end_date. This can be:
+              * Full time OR
+              * All zeros for 00:00:00 UTC
+            spec:
+            - api_field: hours
+              help_text: |-
+                Hours of a day in 24 hour format. Must be greater than or equal to 0 and
+                typically must be less than or equal to 23. An API may choose to allow the
+                value "24:00:00" for scenarios like business closing time.
+            - api_field: minutes
+              help_text: |-
+                Minutes of an hour. Must be greater than or equal to 0 and less than or
+                equal to 59.
+            - api_field: seconds
+              help_text: |-
+                Seconds of a minute. Must be greater than or equal to 0 and typically must
+                be less than or equal to 59. An API may allow the value 60 if it allows
+                leap-seconds.
+            - api_field: nanos
+              help_text: |-
+                Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
+                and less than or equal to 999,999,999.
     - arg_name: request-id
       api_field: requestId
       required: false

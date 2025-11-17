@@ -22,11 +22,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import completers
 from googlecloudsdk.command_lib.config import config_validators
+from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 
 
+@base.UniverseCompatible
 class Activate(base.SilentCommand):
   """Activates an existing named configuration."""
 
@@ -63,6 +65,7 @@ class Activate(base.SilentCommand):
     if project_id:
       # Warning if current project does not match the one in ADC
       config_validators.WarnIfSettingProjectWhenAdcExists(project_id)
+      projects_util.CheckAndPrintEnvironmentTagMessageWithProjectID(project_id)
 
     return args.configuration_name
 

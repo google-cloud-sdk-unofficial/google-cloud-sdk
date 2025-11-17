@@ -25,6 +25,6 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Migrate(base.Group):
-  """Provides tools to migrate App Engine applications, such as upgrading runtimes or converting applications to Cloud Run."""
+  """Converts first-generation Python App Engine applications to second-generation."""
 
   category = base.APP_ENGINE_CATEGORY

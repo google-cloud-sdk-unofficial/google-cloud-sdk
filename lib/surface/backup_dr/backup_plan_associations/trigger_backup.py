@@ -73,6 +73,7 @@ class TriggerBackup(base.Command):
     backup_plan_association = args.CONCEPTS.backup_plan_association.Parse()
     backup_rule = args.backup_rule_id
     custom_retention_days = args.custom_retention_days
+    labels = args.labels
 
     if backup_rule and custom_retention_days:
       raise calliope_exceptions.MutualExclusionError(
@@ -82,7 +83,7 @@ class TriggerBackup(base.Command):
 
     try:
       operation = client.TriggerBackup(
-          backup_plan_association, backup_rule, custom_retention_days
+          backup_plan_association, backup_rule, custom_retention_days, labels
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

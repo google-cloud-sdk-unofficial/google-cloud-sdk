@@ -25,6 +25,9 @@ from googlecloudsdk.command_lib.storage import flags
 _COMMAND_DESCRIPTION = """
 Copy data between your local file system and the cloud, within the cloud,
 and between cloud storage providers.
+
+Please Note - By default, the `cp` command does not follow directory symlinks.
+You can use the `--preserve-symlinks` flag to follow directory symlinks.
 """
 _GA_EXAMPLES = """
 The following command uploads all text files from the local directory to a

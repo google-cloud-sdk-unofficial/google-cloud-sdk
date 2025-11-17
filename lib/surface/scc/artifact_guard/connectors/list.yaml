@@ -1,0 +1,22 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: List artifact guard connectors.
+  description: |
+    List artifact guard connectors for a given parent.
+  examples: |
+    To list connectors for `organizations/123/locations/global`:
+      $ {command} organizations/123/locations/global
+request:
+  collection: artifactscanguard.organizations.locations.connectors
+  disable_resource_check: true
+  api_version: v1alpha
+  method: list
+arguments:
+  params:
+  - arg_name: parent
+    api_field: parent
+    is_positional: true
+    required: true
+    help_text: |
+      The parent, which owns this collection of connectors. Format: organizations/{organization}/locations/{location}

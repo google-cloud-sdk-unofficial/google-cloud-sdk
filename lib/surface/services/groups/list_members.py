@@ -27,90 +27,8 @@ _SERVICE_RESOURCE = 'services/{}'
 _GROUP_RESOURCE = 'groups/{}'
 
 
-# TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListGroupMembersAlpha(base.ListCommand):
-  """List members of a specific service and group.
-
-  List members of a specific service and group.
-
-  ## EXAMPLES
-
-   List members of service my-service and group my-group:
-
-   $ {command} my-service my-group
-
-   List members of service my-service and group my-group
-   for a specific project '12345678':
-
-    $ {command} my-service my-group --project=12345678
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.add_argument('service', help='Name of the service.')
-    parser.add_argument(
-        'group', help='Service group name, for example "dependencies".'
-    )
-    common_flags.add_resource_args(parser)
-
-    base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
-
-    # Remove unneeded list-related flags from parser
-    base.URI_FLAG.RemoveFromParser(parser)
-
-    parser.display_info.AddFormat("""
-          table(
-            name,
-            reason
-          )
-        """)
-
-  def Run(self, args):
-    """Run command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Resource name and its parent name.
-    """
-    if args.IsSpecified('folder'):
-      resource_name = _FOLDER_RESOURCE.format(args.folder)
-    elif args.IsSpecified('organization'):
-      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
-    elif args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE.format(args.project)
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE.format(project)
-    member_states = serviceusage.ListGroupMembers(
-        resource_name,
-        '{}/{}'.format(
-            _SERVICE_RESOURCE.format(args.service),
-            _GROUP_RESOURCE.format(args.group),
-        ),
-        args.page_size,
-    )
-
-    members = []
-    results = collections.namedtuple('Member', ['name', 'reason'])
-
-    for member_state in member_states:
-      member = member_state.member
-      if member.groupName:
-        members.append(results(member.groupName, member.reason))
-      else:
-        members.append(results(member.serviceName, member.reason))
-
-    return members
-
-
-@base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListGroupMembers(base.ListCommand):
   """List members of a specific service and group.
 
@@ -126,7 +44,6 @@ class ListGroupMembers(base.ListCommand):
    for a specific project '12345678':
 
     $ {command} my-service my-group --project=12345678
-
   """
 
   @staticmethod

@@ -186,6 +186,9 @@ def AddBetaArgs(parser):
   flags.AddEnableDbAlignedAtomicWrites(parser)
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddDataApiAccess(parser)
+  flags.AddServerCertificateRotationMode(parser)
+  flags.AddPerformanceCaptureConfig(parser, hidden=True)
+  flags.AddUncMappings(parser)
 
 
 def AddAlphaArgs(unused_parser):
@@ -381,6 +384,15 @@ def RunBaseCreateCommand(args, release_track):
         'or sync_binlog may cause data loss. Check '
         'https://cloud.google.com/sql/docs/mysql/flags'
         ' for more details.'
+    )
+
+  if (
+      args.IsKnownAndSpecified('performance_capture_config')
+      and args.IsSpecified('database_version')
+      and not args.database_version.startswith('MYSQL')
+  ):
+    raise sql_exceptions.ArgumentError(
+        '`--performance-capture-config` is only supported for MySQL.'
     )
 
   if args.IsSpecified('edition') and args.edition == 'enterprise-plus':

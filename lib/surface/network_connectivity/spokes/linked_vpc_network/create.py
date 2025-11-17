@@ -26,6 +26,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_connectivity import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
@@ -125,12 +126,14 @@ class Create(base.Command):
     log.CreatedResource(spoke_ref.Name(), kind='spoke')
     return res
 
-
-Create.detailed_help = {
-    'EXAMPLES': """ \
+UNIVERSE_DOMAIN = properties.VALUES.core.universe_domain.Get()
+DETAILED_HELP = {
+    'EXAMPLES': f""" \
   To create a VPC spoke named ``myspoke'', run:
 
-    $ {command} myspoke --hub="https://www.googleapis.com/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub" --global --vpc-network="https://www.googleapis.com/compute/v1/projects/my-project/global/networks/my-vpc"
+    $ {{command}} myspoke --hub=https://www.{UNIVERSE_DOMAIN}/networkconnectivity/v1/projects/my-project/locations/global/hubs/my-hub \
+        --global \
+        --vpc-network=https://www.{UNIVERSE_DOMAIN}/compute/v1/projects/my-project/global/networks/my-vpc
   """,
     'API REFERENCE': """ \
   This command uses the networkconnectivity/v1 API. The full documentation
@@ -138,3 +141,5 @@ Create.detailed_help = {
   https://cloud.google.com/network-connectivity/docs/reference/networkconnectivity/rest
   """,
 }
+
+Create.detailed_help = DETAILED_HELP

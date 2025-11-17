@@ -103,7 +103,7 @@ _DETAILED_HELP = {
 
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class EnableAlpha(base.SilentCommand):
   """Enables a service for consumption for a project, folder or organization."""
 
@@ -182,7 +182,7 @@ class EnableAlpha(base.SilentCommand):
 EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Enable(base.SilentCommand):
   """Enables a service for consumption for a project."""
 

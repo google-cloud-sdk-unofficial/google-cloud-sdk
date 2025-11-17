@@ -252,3 +252,4 @@ class AlphaUpdate(BetaUpdate):
     )
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
+    flags.AddPriorityFlag(parser)

@@ -397,3 +397,5 @@ class AlphaDeploy(BetaDeploy):
         parser, container_args, cls.ReleaseTrack()
     )
     flags.RemoveContainersFlag().AddToParser(parser)
+    flags.AddRuntimeFlag(parser)
+    flags.AddPriorityFlag(parser)

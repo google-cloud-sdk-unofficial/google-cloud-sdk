@@ -71,6 +71,7 @@ def _RunBeta(args):
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DeleteV1Beta1(base.DeleteCommand):
   """Delete an existing Vertex AI deployment resource pool.
 

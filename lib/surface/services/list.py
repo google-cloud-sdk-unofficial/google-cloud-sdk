@@ -25,12 +25,11 @@ from googlecloudsdk.command_lib.services import common_flags
 
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListAlpha(base.ListCommand):
   """List services for a project, folder or organization.
 
-  This command lists the services that are enabled or available (Google first
-  party services) to be enabled
+  This command lists the services that are enabled or available to be enabled
   by a project, folder or organization. Service enablement and availability can
   be inherited from
   resource ancestors. A resource's enabled services include services that are
@@ -44,7 +43,7 @@ class ListAlpha(base.ListCommand):
 
     $ {command} --enabled
 
-  To list the Google first party services the current project can enable for
+  To list the services the current project can enable for
   consumption, run:
 
     $ {command} --available
@@ -73,7 +72,7 @@ class ListAlpha(base.ListCommand):
         '--available',
         action='store_true',
         help=(
-            'Return the Google first party services available to the '
+            'Return the services available to the '
             'project, folder or organization to enable.'
         ),
     )
@@ -134,7 +133,7 @@ class ListAlpha(base.ListCommand):
     )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
 
   """List services for a project.

@@ -74,6 +74,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class RawPredict(base.Command):
   """Run Vertex AI online raw prediction.
 
@@ -111,6 +112,7 @@ class RawPredict(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class RawPredictBeta(RawPredict):
   """Run Vertex AI online raw prediction.
 

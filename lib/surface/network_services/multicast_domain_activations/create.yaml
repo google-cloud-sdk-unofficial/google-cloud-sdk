@@ -9,13 +9,13 @@ help_text:
     multicast-domain 'path-to-md',
     and location 'zone'.
 
-      $ {command} my-multicast-group-definition --multicast-domain=path-to-md --location=zone
+      $ {command} my-multicast-domain-activation --multicast-domain=path-to-md --location=zone
 
 arguments:
   resource:
     spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastDomainActivation
     help_text: |
-      Name of the multicast group definition to be created.
+      Name of the multicast domain activation to be created.
   params:
   - arg_name:  multicast-domain
     api_field: multicastDomainActivation.multicastDomain
@@ -44,6 +44,10 @@ arguments:
       - arg_name: max-per-group-subscribers
         api_field: multicastDomainActivation.trafficSpec.maxPerGroupSubscribers
         help_text: Maximum number of subscribers for a single multicast group in this zone.
+  - arg_name: disable-placement-policy
+    api_field: multicastDomainActivation.disablePlacementPolicy
+    help_text: |
+      True to disable the use of the placement policy for this multicast domain activation.
   labels:
     api_field: multicastDomainActivation.labels
 async:

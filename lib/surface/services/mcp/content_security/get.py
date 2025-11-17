@@ -25,68 +25,7 @@ _CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/default'
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class GetAlpha(base.Command):
-  """Get MCP content security providers for a project.
-
-  Get MCP content security providers for a project.
-
-  ## EXAMPLES
-
-  Get MCP content security providers for a project:
-
-    $ {command}
-
-  Get MCP content security providers for a project `my-project`:
-
-    $ {command} --project=my-project
-  """
-
-  @staticmethod
-  def Args(parser):
-    parser.display_info.AddFormat("""
-          table(
-            contentSecurityProvider
-          )
-        """)
-
-  def Run(self, args):
-    """Run command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The content security providers for a project.
-    """
-
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-
-    mcp_content_security = serviceusage.GetContentSecurityPolicy(
-        resource_name + _CONTENT_SECURITY_POLICY_DEFAULT,
-    ).mcpContentSecurity
-
-    content_security_providers = []
-    results = collections.namedtuple(
-        'ContentSecurityProvider', ['contentSecurityProvider']
-    )
-
-    for (
-        content_security_provider
-    ) in mcp_content_security.contentSecurityProviders:
-      content_security_providers.append(results(content_security_provider.name))
-
-    return content_security_providers
-
-
-@base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Get(base.Command):
   """Get MCP content security providers for a project.
 

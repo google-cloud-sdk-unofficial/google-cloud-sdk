@@ -38,19 +38,19 @@ class Clone(base.Command):
 
   To clone a database from another:
 
-      $ {command} gcloud firestore databases clone
-        --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
-        --snapshot-time=2025-05-26T10:20:00.00Z
-        --destination-database=DATABASE_ID
+      $ {command}
+      --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
+      --snapshot-time=2025-05-26T10:20:00.00Z
+      --destination-database=DATABASE_ID
 
   To clone to a CMEK-enabled database:
 
-      $ {command} gcloud firestore databases clone
-        --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
-        --snapshot-time=2025-05-26T10:20:00.00Z
-        --destination-database=DATABASE_ID
-        --encryption-type=customer-managed-encryption
-        --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
+      $ {command}
+      --source-database=projects/PROJECT_ID/databases/SOURCE_DATABASE
+      --snapshot-time=2025-05-26T10:20:00.00Z
+      --destination-database=DATABASE_ID
+      --encryption-type=customer-managed-encryption
+      --kms-key-name=projects/PROJECT_ID/locations/LOCATION_ID/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
   """
 
   @classmethod

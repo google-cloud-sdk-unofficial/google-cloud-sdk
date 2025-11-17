@@ -50,6 +50,7 @@ def _RunBeta(args):
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class QueryDeployedModelsV1Beta1(base.ListCommand):
   """Queries Vertex AI deployed models sharing a specified deployment resource pool.
 

@@ -44,7 +44,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         workflow_output_util.PRINTER_FORMAT,
         workflow_output_util.WorkflowPrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(workflow_output_util.PRINTER_FORMAT)
     run_flags.AddsRegionResourceArg(parser)

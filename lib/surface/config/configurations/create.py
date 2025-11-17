@@ -17,7 +17,9 @@
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_validators
+from googlecloudsdk.command_lib.projects import util as projects_util
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
 
@@ -74,6 +76,11 @@ class Create(base.SilentCommand):
     if args.activate:
       named_configs.ConfigurationStore.ActivateConfig(args.configuration_name)
       log.status.Print('Activated [{0}].'.format(args.configuration_name))
+      project_id = properties.VALUES.core.project.Get()
+      if project_id:
+        projects_util.CheckAndPrintEnvironmentTagMessageWithProjectID(
+            project_id
+        )
     else:
       log.status.Print(
           'To use this configuration, activate it by running:\n'

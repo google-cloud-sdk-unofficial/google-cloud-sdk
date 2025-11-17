@@ -1,0 +1,21 @@
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: Delete an artifact guard connector.
+  description: |
+    Delete an artifact guard connector for a given connector name.
+  examples: |
+    To delete a connector named `organizations/123/locations/global/connectors/myConnector`:
+      $ {command} organizations/123/locations/global/connectors/myConnector
+      OR
+      $ {command} myConnector --location=global --organization=123
+request:
+  collection: artifactscanguard.organizations.locations.connectors
+  api_version: v1alpha
+  method: delete
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.scc.resources:connector
+    help_text: |
+      The full name of the connector to delete. For example:
+      `organizations/123/locations/global/connectors/myConnector`

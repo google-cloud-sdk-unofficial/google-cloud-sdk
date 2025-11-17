@@ -1299,7 +1299,7 @@ class UpdateBeta(Update):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
-    flags.AddPodSnapshotConfigFlags(group, hidden=True)
+    flags.AddPodSnapshotConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True, hidden=True
     )
@@ -1679,7 +1679,7 @@ class UpdateAlpha(Update):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
-    flags.AddPodSnapshotConfigFlags(group, hidden=True)
+    flags.AddPodSnapshotConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True, hidden=True
     )

@@ -14,6 +14,7 @@
 # limitations under the License.
 """Fetch the FloorSetting resource."""
 
+import dataclasses
 import json
 
 from googlecloudsdk.api_lib.model_armor import api as model_armor_api
@@ -21,6 +22,56 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.model_armor import args as model_armor_args
 from googlecloudsdk.command_lib.model_armor import util as model_armor_util
+from googlecloudsdk.core import log
+
+
+@dataclasses.dataclass
+class ServiceConfig:
+  """Configuration for an integrated service."""
+
+  name: str
+  enum: ...
+  enforcement_type_arg: str
+  cloud_logging_arg: str
+  service_floor_setting_arg: str
+  service_floor_setting_attr: str
+  defaulted_enforcement_flag_name: str
+  setting_message: ...
+  cli_name: str
+
+
+def _GetServicesConfig(messages):
+  """Returns a list of service configurations."""
+  return [
+      ServiceConfig(
+          name='VERTEX_AI',
+          enum=(
+              messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.AI_PLATFORM
+          ),
+          enforcement_type_arg='vertex_ai_enforcement_type',
+          cloud_logging_arg='enable_vertex_ai_cloud_logging',
+          service_floor_setting_arg='ai_platform_floor_setting',
+          service_floor_setting_attr='aiPlatformFloorSetting',
+          defaulted_enforcement_flag_name='vertex_ai_enforcement_defaulted',
+          setting_message=messages.AiPlatformFloorSetting,
+          cli_name='vertex-ai',
+      ),
+      ServiceConfig(
+          name='GOOGLE_MCP_SERVER',
+          enum=(
+              messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.GOOGLE_MCP_SERVER
+          ),
+          enforcement_type_arg='google_mcp_server_enforcement_type',
+          cloud_logging_arg='enable_google_mcp_server_cloud_logging',
+          service_floor_setting_attr='googleMcpServerFloorSetting',
+          service_floor_setting_arg='google_mcp_server_floor_setting',
+          defaulted_enforcement_flag_name=(
+              'google_mcp_server_enforcement_defaulted'
+          ),
+          setting_message=messages.McpServerFloorSetting,
+          cli_name='google-mcp-server',
+      ),
+  ]
 
 
 @base.DefaultUniverseOnly
@@ -423,23 +474,11 @@ class UpdateAlphaBeta(Update):
     Update.Args(parser)
     model_armor_args.AddIntegratedServices(parser)
     model_armor_args.AddVertexAiFloorSetting(parser)
+    model_armor_args.AddGoogleMcpServerFloorSetting(parser)
     model_armor_args.AddMultiLanguageDetection(parser)
 
   def _GetEnumValue(self, value):
     return value.upper().replace('-', '_')
-
-  def _validateEnforcementType(self, enforcement_type):
-    if (
-        enforcement_type == 'INSPECT_ONLY'
-        or enforcement_type == 'INSPECT_AND_BLOCK'
-    ):
-      return
-    raise exceptions.InvalidArgumentException(
-        'vertex-ai-enforcement-type',
-        'argument --vertex-ai-enforcement-type: Invalid choice:'
-        f" '{enforcement_type}'. Valid choices are [INSPECT_AND_BLOCK,"
-        ' INSPECT_ONLY].',
-    )
 
   def _validateIntegratedServices(self, messages, services):
     for service in services:
@@ -455,40 +494,82 @@ class UpdateAlphaBeta(Update):
   def _validateRemoveIntegratedServices(self, messages, args):
     """Validate the arguments for removing integrated services."""
     self._validateIntegratedServices(messages, args.remove_integrated_services)
-    for service in args.remove_integrated_services:
-      if service == 'VERTEX_AI':
-        if args.IsSpecified('vertex_ai_enforcement_type'):
-          raise exceptions.ConflictingArgumentsException(
-              '--remove-integrated-services=VERTEX_AI',
-              '--vertex-ai-enforcement-type',
-          )
-        if args.IsSpecified('enable_vertex_ai_cloud_logging'):
-          raise exceptions.ConflictingArgumentsException(
-              '--remove-integrated-services=VERTEX_AI',
-              '--enable-vertex-ai-cloud-logging',
-          )
+    services_config = _GetServicesConfig(messages)
+    services_config_by_name = {
+        service_config.name: service_config
+        for service_config in services_config
+    }
+    for service_name in args.remove_integrated_services:
+      if service_name in services_config_by_name:
+        service_config = services_config_by_name[service_name]
+        if service_name == service_config.name:
+          if args.IsSpecified(service_config.enforcement_type_arg):
+            raise exceptions.ConflictingArgumentsException(
+                f'--remove-integrated-services={service_config.name}',
+                f'--{service_config.cli_name}-enforcement-type',
+            )
+          if args.IsSpecified(service_config.cloud_logging_arg):
+            raise exceptions.ConflictingArgumentsException(
+                f'--remove-integrated-services={service_config.name}',
+                f'--enable-{service_config.cli_name}-cloud-logging',
+            )
 
-  def _validateClearIntegratedServices(self, args):
+  def _validateClearIntegratedServices(self, messages, args):
     """Validate the arguments for clearing integrated services."""
-    if args.IsSpecified('vertex_ai_enforcement_type'):
-      raise exceptions.ConflictingArgumentsException(
-          '--clear-integrated-services',
-          '--vertex-ai-enforcement-type',
-      )
-    if args.IsSpecified('enable_vertex_ai_cloud_logging'):
-      raise exceptions.ConflictingArgumentsException(
-          '--clear-integrated-services',
-          '--enable-vertex-ai-cloud-logging',
-      )
+    services_config = _GetServicesConfig(messages)
+    for service_config in services_config:
+      if args.IsSpecified(service_config.enforcement_type_arg):
+        raise exceptions.ConflictingArgumentsException(
+            '--clear-integrated-services',
+            f'--{service_config.cli_name}-enforcement-type',
+        )
+      if args.IsSpecified(service_config.cloud_logging_arg):
+        raise exceptions.ConflictingArgumentsException(
+            '--clear-integrated-services',
+            f'--enable-{service_config.cli_name}-cloud-logging',
+        )
+
+  def _updateMaskForEnforcementType(
+      self, *, service_floor_setting_arg, arg_enforcement_type, update_mask
+  ):
+    """Update the update mask for enforcement type."""
+    if arg_enforcement_type == 'INSPECT_ONLY':
+      update_mask.append(service_floor_setting_arg + '.inspect_only')
+    elif arg_enforcement_type == 'INSPECT_AND_BLOCK':
+      update_mask.append(service_floor_setting_arg + '.inspect_and_block')
 
   def _handleEnforcementType(self, arg_enforcement_type, service_floor_setting):
     """Handle the enforcement type for Integreated Services."""
+    # Reset both oneof fields to None before setting the desired one.
+    setattr(service_floor_setting, 'inspectOnly', None)
+    setattr(service_floor_setting, 'inspectAndBlock', None)
+
     if arg_enforcement_type == 'INSPECT_ONLY':
-      service_floor_setting.inspectOnly = True
-      service_floor_setting.inspectAndBlock = False
+      setattr(
+          service_floor_setting,
+          'inspectOnly',
+          True,
+      )
     elif arg_enforcement_type == 'INSPECT_AND_BLOCK':
-      service_floor_setting.inspectOnly = False
-      service_floor_setting.inspectAndBlock = True
+      setattr(
+          service_floor_setting,
+          'inspectAndBlock',
+          True,
+      )
+
+  def _validateEnforcementType(self, enforcement_type, service_name):
+    if (
+        enforcement_type == 'INSPECT_ONLY'
+        or enforcement_type == 'INSPECT_AND_BLOCK'
+    ):
+      return
+
+    raise exceptions.InvalidArgumentException(
+        f'{service_name}-enforcement-type',
+        f'argument --{service_name}-enforcement-type: Invalid choice:'
+        f' {enforcement_type!r}. Valid choices are [INSPECT_AND_BLOCK,'
+        ' INSPECT_ONLY].',
+    )
 
   def _validateArgs(self, messages, args):
     """Validate the arguments."""
@@ -500,9 +581,15 @@ class UpdateAlphaBeta(Update):
     if args.IsSpecified('remove_integrated_services'):
       self._validateRemoveIntegratedServices(messages, args)
     if args.IsSpecified('clear_integrated_services'):
-      self._validateClearIntegratedServices(args)
+      self._validateClearIntegratedServices(messages, args)
     if args.IsSpecified('vertex_ai_enforcement_type'):
-      self._validateEnforcementType(args.vertex_ai_enforcement_type)
+      self._validateEnforcementType(
+          args.vertex_ai_enforcement_type, 'vertex-ai'
+      )
+    if args.IsSpecified('google_mcp_server_enforcement_type'):
+      self._validateEnforcementType(
+          args.google_mcp_server_enforcement_type, 'google-mcp-server'
+      )
 
   def _RunUpdate(self, original, args):
     api_version = model_armor_api.GetApiFromTrack(self.ReleaseTrack())
@@ -511,6 +598,7 @@ class UpdateAlphaBeta(Update):
     self._validateArgs(messages, args)
     floor_setting_updated = original
     vertex_ai_enforcement_defaulted = False
+    google_mcp_server_enforcement_defaulted = False
 
     if floor_setting_updated.filterConfig is None:
       floor_setting_updated.filterConfig = messages.FilterConfig()
@@ -544,13 +632,22 @@ class UpdateAlphaBeta(Update):
         or args.IsSpecified('clear_integrated_services')
     ):
       update_mask.append('integrated_services')
+    if args.IsSpecified('vertex_ai_enforcement_type'):
+      self._updateMaskForEnforcementType(
+          service_floor_setting_arg='ai_platform_floor_setting',
+          arg_enforcement_type=args.vertex_ai_enforcement_type,
+          update_mask=update_mask,
+      )
+    if args.IsSpecified('google_mcp_server_enforcement_type'):
+      self._updateMaskForEnforcementType(
+          service_floor_setting_arg='google_mcp_server_floor_setting',
+          arg_enforcement_type=args.google_mcp_server_enforcement_type,
+          update_mask=update_mask,
+      )
     if args.IsSpecified('enable_vertex_ai_cloud_logging'):
       update_mask.append('ai_platform_floor_setting.enable_cloud_logging')
-    if args.IsSpecified('vertex_ai_enforcement_type'):
-      if args.vertex_ai_enforcement_type == 'INSPECT_ONLY':
-        update_mask.append('ai_platform_floor_setting.inspect_only')
-      elif args.vertex_ai_enforcement_type == 'INSPECT_AND_BLOCK':
-        update_mask.append('ai_platform_floor_setting.inspect_and_block')
+    if args.IsSpecified('enable_google_mcp_server_cloud_logging'):
+      update_mask.append('google_mcp_server_floor_setting.enable_cloud_logging')
     if args.IsSpecified('enable_multi_language_detection'):
       update_mask.append('floor_setting_metadata.multi_language_detection')
 
@@ -572,6 +669,8 @@ class UpdateAlphaBeta(Update):
           '--clear-integrated-services',
           '--enable-vertex-ai-cloud-logging',
           '--vertex-ai-enforcement-type',
+          '--enable-google-mcp-server-cloud-logging',
+          '--google-mcp-server-enforcement-type',
           '--enable-multi-language-detection',
       ]
 
@@ -580,14 +679,16 @@ class UpdateAlphaBeta(Update):
           self.NO_CHANGES_MESSAGE.format(floor_setting=args.full_uri),
       )
 
+    services_config = _GetServicesConfig(messages)
     if args.IsSpecified('clear_integrated_services'):
-      if (
-          floor_setting_updated.aiPlatformFloorSetting is not None
-          and messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.AI_PLATFORM
-          in floor_setting_updated.integratedServices
-      ):
-        floor_setting_updated.aiPlatformFloorSetting = None
-        update_mask.append('ai_platform_floor_setting')
+      for service_config in services_config:
+        service_attr = service_config.service_floor_setting_attr
+        if (
+            getattr(floor_setting_updated, service_attr) is not None
+            and service_config.enum in floor_setting_updated.integratedServices
+        ):
+          setattr(floor_setting_updated, service_attr, None)
+          update_mask.append(service_config.service_floor_setting_arg)
       floor_setting_updated.integratedServices = []
     if args.IsSpecified('add_integrated_services') or args.IsSpecified(
         'remove_integrated_services'
@@ -596,69 +697,90 @@ class UpdateAlphaBeta(Update):
       if floor_setting_updated.integratedServices is not None:
         integrated_services = list(floor_setting_updated.integratedServices)
 
+      services_config_by_name = {
+          service_config.name: service_config
+          for service_config in services_config
+      }
       if args.IsSpecified('add_integrated_services'):
         for service in args.add_integrated_services:
-          if service == 'VERTEX_AI':
-            service = 'AI_PLATFORM'
-          arg_service = (
-              messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum(
-                  self._GetEnumValue(service)
+          arg_service = self._GetEnumValue(service)
+          if arg_service in services_config_by_name:
+            found_config = services_config_by_name[arg_service]
+            # if no enforcement type is specified, set it to INSPECT_ONLY.
+            if not args.IsSpecified(found_config.enforcement_type_arg):
+              setting_attr = found_config.service_floor_setting_attr
+              service_setting = getattr(
+                  floor_setting_updated,
+                  setting_attr,
               )
-          )
-          # if no enforcement type is specified, set it to INSPECT_ONLY.
-          if (
-              arg_service
-              == messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.AI_PLATFORM
-              and not args.IsSpecified('vertex_ai_enforcement_type')
-          ):
-            vertex_ai_enforcement_defaulted = True
-            update_mask.append('ai_platform_floor_setting.inspect_only')
-            if floor_setting_updated.aiPlatformFloorSetting is None:
-              floor_setting_updated.aiPlatformFloorSetting = (
-                  messages.AiPlatformFloorSetting()
+              if service_setting is None:
+                service_setting = found_config.setting_message()
+                setattr(
+                    floor_setting_updated,
+                    setting_attr,
+                    service_setting,
+                )
+              self._handleEnforcementType('INSPECT_ONLY', service_setting)
+              self._updateMaskForEnforcementType(
+                  service_floor_setting_arg=found_config.service_floor_setting_arg,
+                  arg_enforcement_type='INSPECT_ONLY',
+                  update_mask=update_mask,
               )
-            floor_setting_updated.aiPlatformFloorSetting.inspectOnly = True
-
-          if arg_service not in integrated_services:
-            integrated_services.append(arg_service)
+              setattr(
+                  floor_setting_updated,
+                  setting_attr,
+                  service_setting,
+              )
+              if found_config.name == 'VERTEX_AI':
+                vertex_ai_enforcement_defaulted = True
+              elif found_config.name == 'GOOGLE_MCP_SERVER':
+                google_mcp_server_enforcement_defaulted = True
+            if found_config.enum not in integrated_services:
+              integrated_services.append(found_config.enum)
 
       if args.IsSpecified('remove_integrated_services'):
         for service in args.remove_integrated_services:
-          if service == 'VERTEX_AI':
-            service = 'AI_PLATFORM'
-          arg_service = (
-              messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum(
-                  self._GetEnumValue(service)
+          arg_service = self._GetEnumValue(service)
+          if arg_service in services_config_by_name:
+            found_config = services_config_by_name[arg_service]
+            if found_config.enum in integrated_services:
+              integrated_services.remove(found_config.enum)
+              setattr(
+                  floor_setting_updated,
+                  found_config.service_floor_setting_attr,
+                  None,
               )
-          )
-          if arg_service in integrated_services:
-            integrated_services.remove(arg_service)
-            if (
-                arg_service
-                == messages.FloorSetting.IntegratedServicesValueListEntryValuesEnum.AI_PLATFORM
-            ):
-              floor_setting_updated.aiPlatformFloorSetting = None
-              update_mask.append('ai_platform_floor_setting')
+              update_mask.append(found_config.service_floor_setting_arg)
+
       floor_setting_updated.integratedServices = integrated_services
 
-    if args.IsSpecified('enable_vertex_ai_cloud_logging') or args.IsSpecified(
-        'vertex_ai_enforcement_type'
-    ):
-      if floor_setting_updated.aiPlatformFloorSetting is None:
-        floor_setting_updated.aiPlatformFloorSetting = (
-            messages.AiPlatformFloorSetting()
+    # Handling Cloud Logging and Enforcement Type for Integrated Services
+    for service_config in services_config:
+      service_attr = service_config.service_floor_setting_attr
+      service_setting = getattr(floor_setting_updated, service_attr)
+      is_cloud_logging_specified = args.IsSpecified(
+          service_config.cloud_logging_arg
+      )
+      is_enforcement_type_specified = args.IsSpecified(
+          service_config.enforcement_type_arg
+      )
+      if is_cloud_logging_specified or is_enforcement_type_specified:
+        if service_setting is None:
+          service_setting = service_config.setting_message()
+          setattr(floor_setting_updated, service_attr, service_setting)
+
+      if is_cloud_logging_specified:
+        service_setting = getattr(floor_setting_updated, service_attr)
+        service_setting.enableCloudLogging = getattr(
+            args, service_config.cloud_logging_arg
         )
-      if args.IsSpecified('enable_vertex_ai_cloud_logging'):
-        floor_setting_updated.aiPlatformFloorSetting.enableCloudLogging = (
-            args.enable_vertex_ai_cloud_logging
-        )
-      if args.IsSpecified('vertex_ai_enforcement_type'):
+
+      if is_enforcement_type_specified:
         arg_enforcement_type = self._GetEnumValue(
-            args.vertex_ai_enforcement_type
+            getattr(args, service_config.enforcement_type_arg)
         )
-        self._handleEnforcementType(
-            arg_enforcement_type, floor_setting_updated.aiPlatformFloorSetting
-        )
+        self._handleEnforcementType(arg_enforcement_type, service_setting)
+
     if args.IsSpecified('enable_multi_language_detection'):
       if floor_setting_updated.floorSettingMetadata is None:
         floor_setting_updated.floorSettingMetadata = (
@@ -891,6 +1013,7 @@ class UpdateAlphaBeta(Update):
             update_mask=update_mask,
         ),
         vertex_ai_enforcement_defaulted,
+        google_mcp_server_enforcement_defaulted,
     )
 
   def Run(self, args):
@@ -899,12 +1022,31 @@ class UpdateAlphaBeta(Update):
     original = model_armor_api.FloorSettings(api_version=api_version).Get(
         full_uri
     )
-    res, vertex_ai_enforcement_defaulted = self._RunUpdate(original, args)
-    if vertex_ai_enforcement_defaulted:
-      print(
-          'Vertex AI enforcement type defaulted to INSPECT_ONLY. This means '
-          'that malicious traffic will be inspected but not blocked. To block '
-          'malicious traffic, please specify '
-          '"--vertex-ai-enforcement-type=INSPECT_AND_BLOCK".'
+    (
+        res,
+        vertex_ai_enforcement_defaulted,
+        google_mcp_server_enforcement_defaulted,
+    ) = self._RunUpdate(original, args)
+    if (
+        vertex_ai_enforcement_defaulted
+        or google_mcp_server_enforcement_defaulted
+    ):
+      defaulted_services = []
+      if vertex_ai_enforcement_defaulted:
+        defaulted_services.append(
+            '--vertex-ai-enforcement-type=INSPECT_AND_BLOCK'
+        )
+      if google_mcp_server_enforcement_defaulted:
+        defaulted_services.append(
+            '--google-mcp-server-enforcement-type=INSPECT_AND_BLOCK'
+        )
+
+      defaulted_services_str = ' and '.join(defaulted_services)
+      message = (
+          'Enforcement type defaulted to INSPECT_ONLY. This means that traffic'
+          ' violating Model Armor settings will be inspected but not blocked.'
+          ' To block such traffic, please specify'
+          f' "{defaulted_services_str}".'
       )
+      log.status.Print(message)
     return res

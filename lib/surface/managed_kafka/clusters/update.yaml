@@ -36,6 +36,8 @@ arguments:
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:auto-rebalance
         default: null
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:ssl-principal-mapping-rules
+      - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:broker-disk-size-gb
+        release_tracks: [ALPHA]
       - group:
           mutex: true
           params:

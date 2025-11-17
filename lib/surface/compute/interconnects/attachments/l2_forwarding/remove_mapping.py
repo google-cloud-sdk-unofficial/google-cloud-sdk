@@ -28,7 +28,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class RemoveMapping(base.UpdateCommand):
   """Remove vlan to ip mapping rule to an L2-forwarding attachment.
 
@@ -44,7 +46,7 @@ class RemoveMapping(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='create')
     attachment_flags.AddVlanKey(parser, required=True)
 
-  def _Run(self, args):
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
         args,
@@ -64,7 +66,3 @@ class RemoveMapping(base.UpdateCommand):
     return interconnect_attachment.RemoveMapping(
         vlan_key=args.vlan_key,
     )
-
-  def Run(self, args):
-    """See base.UpdateCommand."""
-    return self._Run(args)

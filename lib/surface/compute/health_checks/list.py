@@ -44,7 +44,7 @@ class List(base.ListCommand):
         """)
 
   def _ConvertProtocolArgsToProtocolEnumName(self, args):
-    return args.protocol.upper()
+    return args.protocol.upper().replace('-', '_')
 
   def _ConvertProtocolArgToValue(self, args):
     # Get the dictionary that maps strings to numbers, e.g. "HTTP" to 0.
@@ -55,11 +55,12 @@ class List(base.ListCommand):
     # Returns a list of allowlisted protocols.
     return [
         self.messages.HealthCheck.TypeValueValuesEnum.GRPC.number,
+        self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number,
         self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number,
         self.messages.HealthCheck.TypeValueValuesEnum.HTTPS.number,
         self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number,
         self.messages.HealthCheck.TypeValueValuesEnum.TCP.number,
-        self.messages.HealthCheck.TypeValueValuesEnum.SSL.number
+        self.messages.HealthCheck.TypeValueValuesEnum.SSL.number,
     ]
 
   def _GetValidColumns(self, args):
@@ -79,6 +80,14 @@ class List(base.ListCommand):
         columns.extend([
             'grpcHealthCheck.port:label=PORT',
             'grpcHealthCheck.grpcServiceName:label=GRPC_SERVICE_NAME'
+        ])
+      elif (
+          protocol_value
+          == self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number
+      ):
+        columns.extend([
+            'grpcTlsHealthCheck.port:label=PORT',
+            'grpcTlsHealthCheck.grpcServiceName:label=GRPC_SERVICE_NAME',
         ])
       elif (protocol_value ==
             self.messages.HealthCheck.TypeValueValuesEnum.HTTP.number):
@@ -209,17 +218,6 @@ class List(base.ListCommand):
 class ListAlpha(List):
   """List health checks in Alpha."""
 
-  def _ProtocolAllowlist(self):
-    # Returns a list of Allowlisted protocols.
-    allowlist = super(ListAlpha, self)._ProtocolAllowlist()
-    allowlist.append(
-        self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number
-    )
-    return allowlist
-
-  def _ConvertProtocolArgsToProtocolEnumName(self, args):
-    return args.protocol.upper().replace('-', '_')
-
   def _Format(self, args):
     columns = super(ListAlpha, self)._GetValidColumns(args)
     if args.protocol is not None:
@@ -230,14 +228,6 @@ class ListAlpha(List):
             'udpHealthCheck.port:label=PORT',
             'udpHealthCheck.request:label=REQUEST',
             'udpHealthCheck.response:label=RESPONSE'
-        ])
-      elif (
-          protocol_value
-          == self.messages.HealthCheck.TypeValueValuesEnum.GRPC_WITH_TLS.number
-      ):
-        columns.extend([
-            'grpcTlsHealthCheck.port:label=PORT',
-            'grpcTlsHealthCheck.grpcServiceName:label=GRPC_SERVICE_NAME',
         ])
 
     return 'table[]({columns})'.format(columns=','.join(columns))

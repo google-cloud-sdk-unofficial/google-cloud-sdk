@@ -61,8 +61,7 @@ class Describe(base.DescribeCommand):
     flags.AddPositionalTypeArg(parser)
     resource_printer.RegisterFormatter(
         types_describe_printer.PRINTER_FORMAT,
-        types_describe_printer.TypesDescribePrinter,
-        hidden=True)
+        types_describe_printer.TypesDescribePrinter)
     parser.display_info.AddFormat(
         types_describe_printer.PRINTER_FORMAT)
 

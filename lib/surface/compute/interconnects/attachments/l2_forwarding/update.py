@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.util.args import labels_util
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine L2 forwarding interconnect attachment.
 
@@ -56,7 +56,6 @@ class Update(base.UpdateCommand):
     attachment_flags.AddMtu(parser)
     attachment_flags.AddGeneveVni(parser, required=False)
     attachment_flags.AddDefaultApplianceIpAddress(parser)
-    labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -85,3 +84,34 @@ class Update(base.UpdateCommand):
             args, 'default_appliance_ip_address', None
         ),
     )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine L2 forwarding interconnect attachment.
+
+  *{command}* is used to update interconnect attachments. An interconnect
+  attachment is what binds the underlying connectivity of an interconnect to a
+  path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)
+    labels_util.AddUpdateLabelsFlags(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateBeta):
+  """Update a Compute Engine L2 forwarding interconnect attachment.
+
+  *{command}* is used to update interconnect attachments. An interconnect
+  attachment is what binds the underlying connectivity of an interconnect to a
+  path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)

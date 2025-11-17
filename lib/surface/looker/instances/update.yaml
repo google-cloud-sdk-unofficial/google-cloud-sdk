@@ -305,6 +305,32 @@
           action: 'store_true'
           help_text: |
             Clears all periodic export configuration from the instance.
+    # Group for Controlled Egress
+    - group:
+        required: false
+        release_tracks: [ALPHA, GA]
+        help_text: |
+          Controlled Egress - Controlled egress allows you to egress data from a Looker (Google Cloud core) instance to a third party service provider.
+        params:
+        - arg_name: egress-enabled
+          api_field: instance.controlledEgressEnabled
+          type: bool
+          required: false
+          help_text: |
+                This specifies whether controlled egress is enabled on the Looker instance. To disable controlled egress,
+                use the `--no-egress-enabled` flag.
+        - arg_name: marketplace-enabled
+          api_field: instance.controlledEgressConfig.marketplaceEnabled
+          type: bool
+          required: false
+          help_text: |
+                This specifies whether marketplace is enabled for controlled egress on the Looker instance. To disable marketplace for controlled egress,
+                use the `--no-marketplace-enabled` flag.
+        - arg_name: egress-fqdns
+          api_field: instance.controlledEgressConfig.egressFqdns
+          required: false
+          help_text: |
+                List of FQDNs that are allowed to egress from the Looker instance. Example: `--egress-fqdns="github.com,my.salesforce.com"`. To clear all egress FQDNs, use `--egress-fqdns=""`.
 
   request:
     ALPHA:
@@ -321,6 +347,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateGeminiAiConfig
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePeriodicExportConfig
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateControlledEgressConfig
     GA:
       api_version: v1
       modify_request_hooks:
@@ -333,6 +360,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdateControlledEgressConfig
     collection: looker.projects.locations.instances
 
   update:

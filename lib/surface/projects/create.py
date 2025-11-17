@@ -30,7 +30,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.projects import flags as project_flags
-from googlecloudsdk.command_lib.projects import util as command_lib_util
+from googlecloudsdk.command_lib.projects import util as command_lib_projects_util
 from googlecloudsdk.command_lib.resource_manager import flags
 
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -136,7 +136,7 @@ class Create(base.CreateCommand):
     flags.CheckParentFlags(args, parent_required=False)
     project_id = args.id
     if not project_id and args.name:
-      candidate = command_lib_util.IdFromName(args.name)
+      candidate = command_lib_projects_util.IdFromName(args.name)
       if candidate and console_io.PromptContinue(
           'No project ID provided.',
           'Use [{}] as project ID'.format(candidate),
@@ -145,7 +145,7 @@ class Create(base.CreateCommand):
     if not project_id:
       raise exceptions.RequiredArgumentException(
           'PROJECT_ID', 'an ID or a name must be provided for the new project')
-    project_ref = command_lib_util.ParseProject(project_id)
+    project_ref = command_lib_projects_util.ParseProject(project_id)
     labels = labels_util.ParseCreateArgs(
         args, projects_util.GetMessages().Project.LabelsValue)
     tags = flags.GetTagsFromFlags(
@@ -181,6 +181,8 @@ class Create(base.CreateCommand):
           'Updated property [core/project] to [{0}].'.format(project_id)
       )
 
-    command_lib_util.CheckAndPrintEnvironmentTagMessage(project)
+    command_lib_projects_util.CheckAndPrintEnvironmentTagMessageWithProject(
+        project
+    )
 
     return project

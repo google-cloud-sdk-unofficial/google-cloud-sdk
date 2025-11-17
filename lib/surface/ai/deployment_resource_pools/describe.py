@@ -50,6 +50,7 @@ def _RunBeta(args):
 
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DescribeV1Beta1(base.DescribeCommand):
   """Describe a Vertex AI deployment resource pool.
 

@@ -48,7 +48,7 @@ class Resume(base.UpdateCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     """Registers flags for the resume command."""
     flags = rollout_flags.RolloutFlags(parser)
     flags.AddRolloutResourceArg()

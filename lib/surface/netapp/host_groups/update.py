@@ -24,7 +24,6 @@ from googlecloudsdk.core import log
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Cloud NetApp Host Group."""
 
@@ -97,7 +96,6 @@ class Update(base.UpdateCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class UpdateBeta(Update):
   """Update a Cloud NetApp Host Group."""
 
@@ -106,7 +104,6 @@ class UpdateBeta(Update):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class UpdateAlpha(UpdateBeta):
   """Update a Cloud NetApp Host Group."""
 

@@ -52,7 +52,6 @@ class Update(base.UpdateCommand):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = False
-  _include_internal_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = False
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _update_purpose_to_private = True
@@ -73,7 +72,6 @@ class Update(base.UpdateCommand):
     flags.AddUpdateArgs(
         parser,
         cls._include_alpha_logging,
-        cls._include_internal_ipv6_prefix,
         cls._include_allow_cidr_routes_overlap,
         cls._api_version,
         cls._update_purpose_to_private,
@@ -159,7 +157,6 @@ class Update(base.UpdateCommand):
 class UpdateBeta(Update):
   """Updates properties of an existing Compute Engine subnetwork."""
 
-  _include_internal_ipv6_prefix = False
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
 
@@ -169,7 +166,6 @@ class UpdateAlpha(UpdateBeta):
   """Updates properties of an existing Compute Engine subnetwork."""
 
   _include_alpha_logging = True
-  _include_internal_ipv6_prefix = True
   _include_allow_cidr_routes_overlap = True
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _update_purpose_to_private = True

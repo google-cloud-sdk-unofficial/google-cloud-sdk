@@ -75,7 +75,7 @@ def _Run(args, version):
         )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class StreamRawPredict(base.Command):
   """Run Vertex AI online stream raw prediction.
@@ -113,7 +113,7 @@ class StreamRawPredict(base.Command):
     return _Run(args, constants.GA_VERSION)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class StreamRawPredictBeta(StreamRawPredict):
   """Run Vertex AI online stream raw prediction.

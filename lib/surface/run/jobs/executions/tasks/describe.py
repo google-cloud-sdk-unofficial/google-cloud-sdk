@@ -59,8 +59,7 @@ class Describe(base.DescribeCommand):
 
     resource_printer.RegisterFormatter(
         job_printer.TASK_PRINTER_FORMAT,
-        job_printer.TaskPrinter,
-        hidden=True)
+        job_printer.TaskPrinter)
     parser.display_info.AddFormat(job_printer.TASK_PRINTER_FORMAT)
 
   @staticmethod

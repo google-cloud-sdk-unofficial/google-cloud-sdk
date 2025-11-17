@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Alerts(base.Group):
   """Manage Cloud Monitoring alerts."""
 

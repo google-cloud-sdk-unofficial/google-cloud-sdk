@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.monitoring import resource_args
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List alerts."""
 

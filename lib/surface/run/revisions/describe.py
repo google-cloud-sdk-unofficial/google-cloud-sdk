@@ -59,11 +59,11 @@ class Describe(base.DescribeCommand):
 
     resource_printer.RegisterFormatter(
         revision_printer.REVISION_PRINTER_FORMAT,
-        revision_printer.RevisionPrinter, hidden=True)
+        revision_printer.RevisionPrinter)
     parser.display_info.AddFormat(revision_printer.REVISION_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter, hidden=True)
+        export_printer.ExportPrinter)
 
   @staticmethod
   def Args(parser):

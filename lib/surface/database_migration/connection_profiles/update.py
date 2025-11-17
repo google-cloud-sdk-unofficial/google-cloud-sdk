@@ -139,3 +139,4 @@ class UpdateGA(_Update, base.Command):
     sqlserver_flags.AddCloudSqlProjectIdFlag(parser)
     cp_flags.AddDatabaseFlag(parser)
     oracle_flags.AddDatabaseServiceFlag(parser, required=False)
+    cp_flags.AddEnableIamAuthenticationFlag(parser)

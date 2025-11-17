@@ -26,7 +26,7 @@ from googlecloudsdk.core import log
 _DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/l2-forwarding/creating-l2-attachments'
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Compute Engine L2 forwarding interconnect attachment.
@@ -62,10 +62,9 @@ class Create(base.CreateCommand):
     attachment_flags.AddDefaultApplianceIpAddress(parser)
     attachment_flags.AddTunnelEndpointIpAddress(parser)
     attachment_flags.AddZ2zVlan(parser)
-    attachment_flags.AddDryRun(parser)
     attachment_flags.AddResourceManagerTags(parser)
 
-  def _Run(self, args):
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
         args,
@@ -102,7 +101,7 @@ class Create(base.CreateCommand):
             args, 'tunnel_endpoint_ip_address', None
         ),
         vlan_tag_802_1q=getattr(args, 'z2z_vlan', None),
-        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
+        resource_manager_tags=args.resource_manager_tags,
     )
 
   def Epilog(self, resources_were_displayed):
@@ -114,6 +113,33 @@ class Create(base.CreateCommand):
     )
     log.status.Print(message)
 
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args)
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class CreateBeta(Create):
+  """Create a Compute Engine L2 forwarding interconnect attachment.
+
+  *{command}* is used to create a L2 forwarding interconnect attachments. An
+  interconnect attachment is what binds the underlying connectivity of an
+  interconnect to a path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class CreateAlpha(CreateBeta):
+  """Create a Compute Engine L2 forwarding interconnect attachment.
+
+  *{command}* is used to create a L2 forwarding interconnect attachments. An
+  interconnect attachment is what binds the underlying connectivity of an
+  interconnect to a path into and out of the customer's cloud network.
+  """
+
+  @classmethod
+  def Args(cls, parser):
+    super().Args(parser)
+    attachment_flags.AddDryRun(parser)

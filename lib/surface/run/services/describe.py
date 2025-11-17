@@ -79,13 +79,12 @@ class Describe(base.Command):
 
     formatter = _GetFormatter(is_multi_region, is_alpha)
     resource_printer.RegisterFormatter(
-        service_printer.SERVICE_PRINTER_FORMAT, formatter, hidden=True
+        service_printer.SERVICE_PRINTER_FORMAT, formatter
     )
     parser.display_info.AddFormat(service_printer.SERVICE_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
         export_printer.ExportPrinter,
-        hidden=True,
     )
 
   @staticmethod

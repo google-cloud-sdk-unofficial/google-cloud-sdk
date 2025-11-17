@@ -60,12 +60,12 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         job_printer.EXECUTION_PRINTER_FORMAT,
         job_printer.ExecutionPrinter,
-        hidden=True)
+    )
     parser.display_info.AddFormat(job_printer.EXECUTION_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
         export_printer.ExportPrinter,
-        hidden=True)
+    )
 
   @staticmethod
   def Args(parser):

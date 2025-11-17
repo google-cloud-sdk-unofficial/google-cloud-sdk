@@ -68,8 +68,7 @@ class List(base.ListCommand):
 
     resource_printer.RegisterFormatter(
         sbom_printer.SBOM_PRINTER_FORMAT,
-        sbom_printer.SbomPrinter,
-        hidden=True)
+        sbom_printer.SbomPrinter)
     parser.display_info.AddFormat(sbom_printer.SBOM_PRINTER_FORMAT)
 
     base.SORT_BY_FLAG.SetDefault(parser, 'occ.create_time')

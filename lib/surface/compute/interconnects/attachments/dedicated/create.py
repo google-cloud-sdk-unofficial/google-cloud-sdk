@@ -68,6 +68,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
     attachment_flags.AddSubnetLength(parser)
+    attachment_flags.AddResourceManagerTags(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -143,7 +144,7 @@ class Create(base.CreateCommand):
             args, 'candidate_customer_router_ipv6_address', None
         ),
         supports_400g=self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
-        resource_manager_tags=getattr(args, 'resource_manager_tags', None),
+        resource_manager_tags=args.resource_manager_tags,
     )
 
   def Epilog(self, resources_were_displayed):
@@ -170,7 +171,6 @@ class CreateBeta(Create):
     attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
     attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
-    attachment_flags.AddResourceManagerTags(parser)
 
 
 @base.UniverseCompatible

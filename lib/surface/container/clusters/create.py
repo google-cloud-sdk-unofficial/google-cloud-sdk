@@ -574,6 +574,7 @@ def ParseCreateOptionsBase(
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
+      enable_lustre_multi_nic=get_default('enable_lustre_multi_nic'),
       enable_pod_snapshots=enable_pod_snapshots,
       enable_default_compute_class=get_default('enable_default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
@@ -839,6 +840,11 @@ flags_to_add = {
         'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'enableLustreMultiNic': (
+            lambda p: flags.AddEnableLustreMultiRailFlag(
+                p, hidden=True
+            )
+        ),
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
@@ -1067,6 +1073,11 @@ flags_to_add = {
                 p, hidden=True
             )
         ),
+        'enableLustreMultiNic': (
+            lambda p: flags.AddEnableLustreMultiRailFlag(
+                p, hidden=True
+            )
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1286,6 +1297,11 @@ flags_to_add = {
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
             lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
+                p, hidden=True
+            )
+        ),
+        'enableLustreMultiNic': (
+            lambda p: flags.AddEnableLustreMultiRailFlag(
                 p, hidden=True
             )
         ),

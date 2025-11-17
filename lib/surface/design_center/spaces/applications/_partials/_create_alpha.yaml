@@ -271,7 +271,7 @@
                 URI of the channel.
     - group:
         api_field: application.scope
-        required: false
+        required: true
         help_text: |-
           Scope of an application.
         params:

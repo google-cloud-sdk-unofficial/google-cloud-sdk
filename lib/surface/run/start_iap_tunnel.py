@@ -65,6 +65,14 @@ class StartIapTunnel(base.Command):
         required=True,
         help="The name of the deployment to connect to.",
     )
+    parser.add_argument(
+        "--iap-tunnel-url-override",
+        hidden=True,
+        help=(
+            "Allows for overriding the connection endpoint for integration "
+            "testing."
+        ),
+    )
     flags.AddContainerArg(parser)
     flags.AddInstanceArg(parser)
     flags.AddRegionArg(parser)

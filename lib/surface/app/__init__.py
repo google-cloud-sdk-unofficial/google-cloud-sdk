@@ -76,6 +76,5 @@ class AppengineGA(base.Group):
     base.RequireProjectID(args)
     del context, args
     base.DisableUserProjectQuota()
-    base.OptOutRequests()  # TODO(b/168048260): Remove to migrate to requests.
 
 AppengineGA.detailed_help = DETAILED_HELP

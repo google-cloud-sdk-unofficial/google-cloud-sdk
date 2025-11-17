@@ -56,6 +56,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class PredictGa(base.Command):
   """Run Vertex AI online prediction.
 
@@ -82,6 +83,7 @@ class PredictGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class PredictBeta(PredictGa):
   """Run Vertex AI online prediction.
 

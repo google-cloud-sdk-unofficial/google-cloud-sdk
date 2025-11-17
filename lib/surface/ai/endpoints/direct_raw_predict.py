@@ -67,7 +67,7 @@ def _Run(args, version):
     return results
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class DirectRawPredictGa(base.Command):
   """Run Vertex AI online direct raw prediction.
@@ -92,7 +92,7 @@ class DirectRawPredictGa(base.Command):
     return _Run(args, constants.GA_VERSION)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DirectRawPredictBeta(DirectRawPredictGa):
   """Run Vertex AI online direct raw prediction.

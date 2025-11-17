@@ -1,5 +1,4 @@
-- release_tracks: [ALPHA]
-  hidden: true
+- release_tracks: [ALPHA, GA]
   help_text:
     brief: List Backup and DR data source references.
     description: List Backup and DR data source references.

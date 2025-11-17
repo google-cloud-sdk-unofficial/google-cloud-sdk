@@ -1,4 +1,4 @@
-release_tracks: [BETA]
+release_tracks: [GA, BETA]
 help_text:
   brief: |
     Import an `LbEdgeExtension` resource.
@@ -14,6 +14,8 @@ request:
   collection: networkservices.projects.locations.lbEdgeExtensions
   BETA:
     api_version: v1beta1
+  GA:
+    api_version: v1
 
 
 arguments:
@@ -32,4 +34,6 @@ import:
     collection: networkservices.projects.locations.lbEdgeExtensions
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     method: create

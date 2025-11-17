@@ -55,15 +55,19 @@
       - arg_value: component-template
         enum_value: COMPONENT_TEMPLATE
         help_text: |-
-          ADC component.
+          ADC component template.
       - arg_value: application-template
         enum_value: APPLICATION_TEMPLATE
         help_text: |-
-          ADC application.
+          ADC application template.
       - arg_value: composite-solution-template
         enum_value: COMPOSITE_SOLUTION_TEMPLATE
         help_text: |-
           Imported as a single, complex unit without disassembling into components.
+      - arg_value: instance-template
+        enum_value: INSTANCE_TEMPLATE
+        help_text: |-
+          ADC application instance.
     - arg_name: type
       api_field: catalogTemplate.type
       required: false
@@ -98,6 +102,18 @@
           A service data source template.
       - arg_value: helm-application
         enum_value: HELM_APPLICATION
+        help_text: |-
+          A helm chart based template.
+      - arg_value: standard-application-template
+        enum_value: STANDARD_APPLICATION_TEMPLATE
+        help_text: |-
+          A standard application template.
+      - arg_value: composite-application-template
+        enum_value: COMPOSITE_APPLICATION_TEMPLATE
+        help_text: |-
+          A composite application template.
+      - arg_value: helm-chart
+        enum_value: HELM_CHART
         help_text: |-
           A helm chart based template.
   request:

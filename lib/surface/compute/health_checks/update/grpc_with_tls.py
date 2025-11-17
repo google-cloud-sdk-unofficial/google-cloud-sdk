@@ -209,5 +209,48 @@ class UpdateAlpha(base.UpdateCommand):
     _Args(parser, cls._include_log_config)
 
   def Run(self, args):
-    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return _Run(args, holder, self._include_log_config)
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(base.UpdateCommand):
+  """Update a gRPC with TLS health check."""
+
+  _include_log_config = True
+  detailed_help = _DetailedHelp()
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_log_config)
+
+  def Run(self, args):
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGa(base.UpdateCommand):
+  """Update a gRPC with TLS health check."""
+
+  _include_log_config = True
+  detailed_help = _DetailedHelp()
+
+  @classmethod
+  def Args(cls, parser):
+    _Args(parser, cls._include_log_config)
+
+  def Run(self, args):
+    return _Run(
+        args,
+        base_classes.ComputeApiHolder(self.ReleaseTrack()),
+        self._include_log_config,
+    )

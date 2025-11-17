@@ -90,6 +90,7 @@ class Update(base.UpdateCommand):
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddDisableLocalhostReplacementToggleFlag(parser)
       workstations_flags.AddReservationAffinity(parser)
+      workstations_flags.AddStartUpScriptUri(parser)
 
   def Collection(self):
     return (

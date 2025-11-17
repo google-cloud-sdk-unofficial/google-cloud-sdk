@@ -89,7 +89,6 @@ class AdjustInstanceSplit(base.Command):
     resource_printer.RegisterFormatter(
         instance_split_printer.INSTANCE_SPLIT_PRINTER_FORMAT,
         instance_split_printer.InstanceSplitPrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(
         instance_split_printer.INSTANCE_SPLIT_PRINTER_FORMAT

@@ -91,7 +91,7 @@ def _CommonArgs(parser):
   flags.AddKubectlVersion(parser)
   flags.AddKustomizeVersion(parser)
   flags.AddSkaffoldVersion(parser)
-  flags.AddConfigSourcesGroup(parser)
+  flags.AddSkaffoldSources(parser)
   flags.AddInitialRolloutGroup(parser)
   flags.AddDeployParametersFlag(parser)
   flags.AddOverrideDeployPolicies(parser)
@@ -255,26 +255,6 @@ class Create(base.CreateCommand):
           os.path.abspath(args.skaffold_file), os.path.abspath(source)
       )
 
-    # Only when the deploy config is an absolute path needs to be handled
-    # here.
-    if args.deploy_config_file and os.path.isabs(args.deploy_config_file):
-      if args.source == '.':
-        source = os.getcwd()
-        source_description = 'current working directory'
-      else:
-        source = args.source
-        source_description = 'source'
-      if not files.IsDirAncestorOf(source, args.deploy_config_file):
-        raise core_exceptions.Error(
-            'The deploy config file {} could not be found in the {}. Please'
-            ' enter a valid deploy config file path.'.format(
-                args.deploy_config_file, source_description
-            )
-        )
-      args.deploy_config_file = os.path.relpath(
-          os.path.abspath(args.deploy_config_file), os.path.abspath(source)
-      )
-
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
@@ -291,7 +271,6 @@ class Create(base.CreateCommand):
         args.kustomize_version,
         args.skaffold_version,
         args.skaffold_file,
-        args.deploy_config_file,
         release_ref.AsDict()['locationsId'],
         pipeline_obj.uid,
         args.from_k8s_manifest,

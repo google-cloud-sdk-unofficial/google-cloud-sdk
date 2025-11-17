@@ -22,6 +22,7 @@ import functools
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
+from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.instance_groups.managed import stateful_policy_utils as policy_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
@@ -31,6 +32,7 @@ from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as 
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
 import six
+
 
 # Flags valid only for regional MIGs.
 REGIONAL_FLAGS = [
@@ -47,6 +49,7 @@ class UpdateGA(base.UpdateCommand):
   r"""Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = False
+  support_multi_mig_flag = False
 
   @classmethod
   def Args(cls, parser):
@@ -80,6 +83,8 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlags(parser)
+    if cls.support_multi_mig_flag:
+      managed_flags.AddMultiMigFlags(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
 
   def _GetUpdatedStatefulPolicyForDisks(
@@ -329,12 +334,19 @@ class UpdateGA(base.UpdateCommand):
       )
     return client.MakeRequests([(service, 'Patch', request)])
 
+  def _GetRegionForGroup(self, igm_ref):
+    if igm_ref.Collection() == 'compute.instanceGroupManagers':
+      return utils.ZoneNameToRegionName(igm_ref.zone)
+    else:
+      return igm_ref.region
+
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder
   ):
     """Create IGM resource patch."""
     managed_flags.ValidateRegionalMigFlagsUsage(args, REGIONAL_FLAGS, igm_ref)
     patch_instance_group_manager = client.messages.InstanceGroupManager()
+    include_fields = []
     auto_healing_policies = self._GetValidatedAutohealingPolicies(
         holder, client, args, igm_resource
     )
@@ -395,7 +407,20 @@ class UpdateGA(base.UpdateCommand):
     )
     patch_instance_group_manager.resourcePolicies = resource_policies
 
-    return patch_instance_group_manager
+    if args.IsKnownAndSpecified('multi_mig'):
+      if args.multi_mig:
+        multi_mig_region = self._GetRegionForGroup(igm_ref)
+        multi_mig_ref = holder.resources.Parse(
+            args.multi_mig,
+            params={'region': multi_mig_region, 'project': igm_ref.project},
+            collection='compute.regionMultiMigs',
+        )
+        patch_instance_group_manager.multiMig = multi_mig_ref.SelfLink()
+    elif args.IsKnownAndSpecified('clear_multi_mig'):
+      patch_instance_group_manager.multiMig = None
+      include_fields.append('multiMig')
+
+    return patch_instance_group_manager, include_fields
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -421,10 +446,16 @@ class UpdateGA(base.UpdateCommand):
         igm_ref, client
     )
 
-    patch_instance_group_manager = self._CreateInstanceGroupManagerPatch(
-        args, igm_ref, igm_resource, client, holder
+    patch_instance_group_manager, include_fields = (
+        self._CreateInstanceGroupManagerPatch(
+            args, igm_ref, igm_resource, client, holder
+        )
     )
-    return self._MakePatchRequest(client, igm_ref, patch_instance_group_manager)
+
+    with client.apitools_client.IncludeFields(include_fields):
+      return self._MakePatchRequest(
+          client, igm_ref, patch_instance_group_manager
+      )
 
 
 UpdateGA.detailed_help = {
@@ -464,6 +495,7 @@ class UpdateBeta(UpdateGA):
   """Update a Compute Engine managed instance group."""
 
   support_update_policy_min_ready_flag = True
+  support_multi_mig_flag = True
 
   @classmethod
   def Args(cls, parser):
@@ -474,12 +506,12 @@ class UpdateBeta(UpdateGA):
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder
   ):
-    patch_instance_group_manager = super(
+    patch_instance_group_manager, include_fields = super(
         UpdateBeta, self
     )._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder
     )
-    return patch_instance_group_manager
+    return patch_instance_group_manager, include_fields
 
 
 UpdateBeta.detailed_help = UpdateGA.detailed_help
@@ -489,6 +521,8 @@ UpdateBeta.detailed_help = UpdateGA.detailed_help
 class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine managed instance group."""
 
+  support_multi_mig_flag = True
+
   @classmethod
   def Args(cls, parser):
     super(UpdateAlpha, cls).Args(parser)
@@ -496,11 +530,13 @@ class UpdateAlpha(UpdateBeta):
   def _CreateInstanceGroupManagerPatch(
       self, args, igm_ref, igm_resource, client, holder
   ):
-    igm_patch = super(UpdateAlpha, self)._CreateInstanceGroupManagerPatch(
+    igm_patch, include_fields = super(
+        UpdateAlpha, self
+    )._CreateInstanceGroupManagerPatch(
         args, igm_ref, igm_resource, client, holder
     )
 
-    return igm_patch
+    return igm_patch, include_fields
 
 
 UpdateAlpha.detailed_help = UpdateBeta.detailed_help

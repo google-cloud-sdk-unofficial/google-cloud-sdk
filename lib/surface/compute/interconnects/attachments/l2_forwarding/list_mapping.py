@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class List(base.ListCommand):
   """List InterconnectAttachments."""

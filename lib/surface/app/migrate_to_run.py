@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The gcloud app migrate appengine-to-cloudrun command."""
+"""The gcloud app migrate-to-run command."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,10 +35,11 @@ from googlecloudsdk.core import properties
 from surface.run import deploy
 
 
+@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AppEngineToCloudRun(deploy.AlphaDeploy):
-  """Migrate the second-generation App Engine app to Cloud Run."""
+  """Migrate a second-generation App Engine app to Cloud Run."""
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -47,10 +48,10 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
       'EXAMPLES': """\
           To migrate an App Engine app to Cloud Run:\n
           through app.yaml\n
-          gcloud app migrate appengine-to-cloudrun --appyaml=path/to/app.yaml --entrypoint=main\n
+          gcloud app migrate-to-run --appyaml=path/to/app.yaml --entrypoint=main\n
           OR\n
           through service and version\n
-          gcloud app migrate appengine-to-cloudrun --service=default --version=v1 --entrypoint=main\n
+          gcloud app migrate-to-run --service=default --version=v1 --entrypoint=main\n
           """,
   }
 
@@ -77,15 +78,10 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         help='entrypoint required for some runtimes',
     )
 
-  @base.DefaultUniverseOnly
-  @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
   def Run(self, args):
-    """Overrides the Deploy.Run method, applying the wrapper logic for FlagIsExplicitlySet.
-    """
+    """Overrides the Deploy.Run method, applying the wrapper logic for FlagIsExplicitlySet."""
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
-    gae_to_cr_migration_util.GAEToCRMigrationUtil(
-        api_client, args
-    )
+    gae_to_cr_migration_util.GAEToCRMigrationUtil(api_client, args)
     self.release_track = self.ReleaseTrack()
     original_flag_is_explicitly_set = flags.FlagIsExplicitlySet
     try:
@@ -111,9 +107,7 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     Returns:
       bool: True if the flag is explicitly set, False otherwise.
     """
-    return (
-        hasattr(self, '_migration_flags') and flag in self._migration_flags
-    )
+    return hasattr(self, '_migration_flags') and flag in self._migration_flags
 
   def _GetBaseChanges(self, args):
     """Returns the service config changes with some default settings."""
@@ -212,9 +206,10 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
 
     log.status.Print(
         'View and edit in Cloud Run console:'
-        f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\n'
-        'Deploy new versions of your code with the same configuration using'
-        f' "gcloud run deploy {service} --source=. --region={region} --project={project}"\n'
+        f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
+        ' new versions of your code with the same configuration using "gcloud'
+        f' run deploy {service} --source=.'
+        f' --region={region} --project={project}"\n'
     )
 
   def ParseSetEnvVars(
@@ -242,4 +237,3 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         pair.split('=', 1) for pair in vars_string.split(',')
     )
     return env_vars
-

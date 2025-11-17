@@ -135,6 +135,7 @@ for examples.
   flags.AddEnableKernelModuleSignatureEnforcementFlag(
       parser, for_node_pool=True, hidden=True
   )
+  flags.AddEnableLustreMultiRailFlag(parser, hidden=True)
 
 
 def ParseCreateNodePoolOptionsBase(args):
@@ -236,6 +237,7 @@ def ParseCreateNodePoolOptionsBase(args):
       boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
       accelerator_network_profile=args.accelerator_network_profile,
       enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+      enable_lustre_multi_nic=args.enable_lustre_multi_nic,
   )
 
 

@@ -58,12 +58,11 @@ class Describe(base.DescribeCommand):
     concept_parsers.ConceptParser([job_presentation]).AddToParser(parser)
 
     resource_printer.RegisterFormatter(
-        job_printer.JOB_PRINTER_FORMAT, job_printer.JobPrinter, hidden=True)
+        job_printer.JOB_PRINTER_FORMAT, job_printer.JobPrinter)
     parser.display_info.AddFormat(job_printer.JOB_PRINTER_FORMAT)
     resource_printer.RegisterFormatter(
         export_printer.EXPORT_PRINTER_FORMAT,
-        export_printer.ExportPrinter,
-        hidden=True)
+        export_printer.ExportPrinter)
 
   @staticmethod
   def Args(parser):

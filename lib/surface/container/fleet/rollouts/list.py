@@ -37,6 +37,7 @@ $ {command}
 """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List all fleet rollouts."""

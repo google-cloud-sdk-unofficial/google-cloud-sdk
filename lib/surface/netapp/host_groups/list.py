@@ -24,7 +24,6 @@ from googlecloudsdk.core import properties
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class List(base.ListCommand):
   """List Cloud NetApp Host Groups."""
 
@@ -63,7 +62,6 @@ class List(base.ListCommand):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.Hidden
 class ListBeta(List):
   """List Cloud NetApp Host Groups."""
 
@@ -72,7 +70,6 @@ class ListBeta(List):
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class ListAlpha(ListBeta):
   """List Cloud NetApp Host Groups."""
 

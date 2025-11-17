@@ -42,15 +42,16 @@ Update a Google Cloud Storage object's custom-metadata:
 
   $ {command} gs://bucket/my-object --custom-metadata=key1=value1,key2=value2
 
-One can use [wildcards](https://cloud.google.com/storage/docs/wildcards)
-to update multiple objects in a single command. for instance to update
+You can use [wildcards](https://cloud.google.com/storage/docs/wildcards)
+to update multiple objects in a single command. For instance to update
 all objects to have a custom-metadata key:
 
   $ {command} gs://bucket/** --custom-metadata=key1=value1,key2=value2
 
-Rewrite all JPEG images to the NEARLINE storage class:
+Rewrite all JPEG images to the NEARLINE storage class, including objects across
+nested directories:
 
-  $ {command} gs://bucket/*.jpg --storage-class=NEARLINE
+  $ {command} gs://bucket/**/*.jpg --storage-class=NEARLINE
 
 You can also provide a precondition on an object's metageneration in
 order to avoid potential race conditions:

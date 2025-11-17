@@ -169,12 +169,10 @@ class List(commands.List):
     resource_printer.RegisterFormatter(
         profiles_printer.PROFILES_PRINTER_FORMAT,
         profiles_printer.ProfilePrinter,
-        hidden=True,
     )
     resource_printer.RegisterFormatter(
         profiles_csv_printer.PROFILES_PRINTER_FORMAT,
         profiles_csv_printer.ProfileCSVPrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(profiles_printer.PROFILES_PRINTER_FORMAT)
 

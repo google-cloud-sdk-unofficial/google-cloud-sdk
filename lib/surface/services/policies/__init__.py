@@ -17,7 +17,6 @@
 from googlecloudsdk.calliope import base
 
 
-# TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Policies(base.Group):

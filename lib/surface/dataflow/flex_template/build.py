@@ -297,21 +297,21 @@ def _CommonArgs(parser):
       '--flex-template-base-image',
       help=(
           'Flex template base image to be used while building the container'
-          ' image. Allowed choices are allowed labels (JAVA11, JAVA17, JAVA21,'
-          ' PYTHON3, GO), supported distroless images (JAVA11_DISTROLESS,'
-          ' JAVA17_DISTROLESS, JAVA21_DISTROLESS, GO_DISTROLESS), or full'
-          ' gcr.io path of the specific version of the base image. For labels,'
-          ' we use the latest base image version to build the container. You'
-          ' can also provide a specific version from this link '
+          ' image. Allowed choices are allowed labels (JAVA11/17/21/25,'
+          ' PYTHON3, GO), supported distroless images'
+          ' (JAVA11/17/21/25_DISTROLESS, GO_DISTROLESS), or full gcr.io path of'
+          ' the specific version of the base image. For labels, we use the'
+          ' latest base image version to build the container. You can also'
+          ' provide a specific version from this link '
           ' https://gcr.io/dataflow-templates-base/'
       ),
       # JAVA8 is deprecated and removed from help text. Allow it until Beam 3
       # release.
       type=arg_parsers.RegexpValidator(
-          r'^(JAVA11|JAVA17|JAVA21|GO)(_DISTROLESS)?$|^JAVA8$|^PYTHON3$|^gcr.io/.*',
-          'Must be JAVA11, JAVA17, JAVA21, PYTHON3, GO, (or with `_DISTROLESS` '
-          'suffix for supported distroless variants), or begin with'
-          " 'gcr.io/'",
+          r'^(JAVA11|JAVA17|JAVA21|JAVA25|GO)(_DISTROLESS)?$|^JAVA8$|^PYTHON3$|^gcr.io/.*',
+          'Must be JAVA11, JAVA17, JAVA21, JAVA25, PYTHON3, GO, (or with'
+          ' `_DISTROLESS` suffix for supported distroless variants), or begin'
+          " with 'gcr.io/'",
       ),
       required=True,
   )

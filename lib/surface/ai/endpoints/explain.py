@@ -54,6 +54,7 @@ def _Run(args, version):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class ExplainGa(base.Command):
   """Request an online explanation from an Vertex AI endpoint.
 
@@ -84,6 +85,7 @@ class ExplainGa(base.Command):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class ExplainBeta(ExplainGa):
   """Request an online explanation from an Vertex AI endpoint.
 

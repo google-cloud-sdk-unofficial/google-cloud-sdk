@@ -146,8 +146,16 @@ class Execute(base.Command):
                         operations, container_args, container_name
                     )
                 )
+          tier = (
+              args.priority_tier
+              if flags.FlagIsExplicitlySet(args, 'priority_tier')
+              else 'PRIORITY_TIER_UNSPECIFIED'
+          )
           overrides = operations.GetExecutionOverrides(
-              args.tasks, args.task_timeout, container_overrides
+              args.tasks,
+              args.task_timeout,
+              tier,
+              container_overrides,
           )
         e = operations.RunJob(
             job_ref,
@@ -199,6 +207,7 @@ class AlphaExecute(BetaExecute):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
+    flags.AddPriorityFlag(parser)
     container_args = ContainerOverridesGroup()
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

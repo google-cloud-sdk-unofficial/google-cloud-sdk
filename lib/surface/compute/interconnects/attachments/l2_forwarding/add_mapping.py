@@ -28,7 +28,9 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class AddMapping(base.UpdateCommand):
   """Add new vlan to ip mapping rule to an L2-forwarding attachment.
 
@@ -47,7 +49,7 @@ class AddMapping(base.UpdateCommand):
     attachment_flags.AddApplianceName(parser)
     attachment_flags.AddInnerVlanToApplianceMappings(parser)
 
-  def _Run(self, args):
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
         args,
@@ -72,7 +74,3 @@ class AddMapping(base.UpdateCommand):
             args, 'inner_vlan_to_appliance_mappings', None
         ),
     )
-
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args)

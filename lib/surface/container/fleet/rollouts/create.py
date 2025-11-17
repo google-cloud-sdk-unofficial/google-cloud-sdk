@@ -43,7 +43,7 @@ class Create(base.CreateCommand):
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
   @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     """Registers flags for this command."""
     flags = rollout_flags.RolloutFlags(parser)
     flags.AddRolloutResourceArg()

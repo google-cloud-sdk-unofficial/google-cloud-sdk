@@ -799,9 +799,9 @@ class Deploy(base.Command):
         suppress_output=args.async_,
     )
 
-  def _GetRequiredApis(self, build_from_source):
+  def _GetRequiredApis(self, deploy_from_source, is_no_build_from_source):
     apis = [api_enabler.get_run_api()]
-    if build_from_source:
+    if deploy_from_source and not is_no_build_from_source:
       apis.append('artifactregistry.googleapis.com')
       apis.append('cloudbuild.googleapis.com')
     return apis
@@ -840,11 +840,16 @@ class Deploy(base.Command):
 
     containers = self._ValidateAndGetContainers(args)
     deploy_from_source = self._ValidateAndGeDeployFromSource(containers)
+    is_no_build_from_source = _IsNoBuildFromSource(
+        self.ReleaseTrack(), deploy_from_source
+    )
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
 
-    required_apis = self._GetRequiredApis(deploy_from_source)
+    required_apis = self._GetRequiredApis(
+        deploy_from_source, is_no_build_from_source
+    )
 
     already_activated_services = False
     if platform == platforms.PLATFORM_MANAGED:
@@ -876,7 +881,7 @@ class Deploy(base.Command):
     ) as operations:
       service = operations.GetService(service_ref)
       # Build an image from source if source specified
-      if _IsNoBuildFromSource(self.ReleaseTrack(), deploy_from_source):
+      if is_no_build_from_source:
         image = 'scratch'
         skip_build = True
         deploy_from_source_container_name, container_args = next(

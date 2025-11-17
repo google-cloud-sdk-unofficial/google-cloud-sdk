@@ -64,7 +64,6 @@ class Describe(base.DescribeCommand):
     resource_printer.RegisterFormatter(
         types_describe_printer.PRINTER_FORMAT,
         types_describe_printer.TypesDescribePrinter,
-        hidden=True,
     )
     parser.display_info.AddFormat(types_describe_printer.PRINTER_FORMAT)
 
