@@ -872,6 +872,7 @@ class Make(bigquery_command.BigqueryCmd):
         'Path to file with JSON payload for an update',
         flag_values=fv,
     )
+
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
     self.null_markers_flag = frontend_flags.define_null_markers(flag_values=fv)
     self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
@@ -882,6 +883,9 @@ class Make(bigquery_command.BigqueryCmd):
     self.time_format_flag = frontend_flags.define_time_format(flag_values=fv)
     self.timestamp_format_flag = frontend_flags.define_timestamp_format(
         flag_values=fv
+    )
+    self.timestamp_target_precision_flag = (
+        frontend_flags.define_timestamp_target_precision(flag_values=fv)
     )
     self.source_column_match_flag = frontend_flags.define_source_column_match(
         flag_values=fv
@@ -1481,6 +1485,7 @@ class Make(bigquery_command.BigqueryCmd):
             self.timestamp_format_flag.value,
             self.source_column_match_flag.value,
             parquet_map_target_type=self.parquet_map_target_type_flag.value,
+            timestamp_target_precision=self.timestamp_target_precision_flag.value,
         )
         if (self.require_partition_filter is not None) and (
             'hivePartitioningOptions' in external_data_config

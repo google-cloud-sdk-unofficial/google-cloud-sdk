@@ -33,4 +33,4 @@
     - !REF googlecloudsdk.command_lib.dlp.flags:max_findings
     resource:
       help_text: Project to use to inspect text.
-      spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:content

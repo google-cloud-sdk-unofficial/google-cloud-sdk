@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove an IAM policy binding from a Compute Engine backend bucket."""
@@ -51,6 +51,12 @@ class RemoveIamPolicyBinding(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBinding):
+  """Remove an IAM policy binding from a Compute Engine backend bucket."""
+
+
 RemoveIamPolicyBinding.detailed_help = {
     'brief': (
         'Remove an IAM policy binding from a Compute Engine backend bucket.'
@@ -67,6 +73,10 @@ Remove an IAM policy binding from a Compute Engine backend bucket.  """,
         --member='user:test-user@gmail.com' \
         --role='roles/compute.loadBalancerServiceUser'
 
+  To remove an IAM policy binding for the role of
+  'roles/compute.loadBalancerServiceUser' for the user 'test-user@gmail.com'
+  with globalbackend bucket 'my-backend-bucket', run either of the following:
+
       $ {command} my-backend-bucket --global \
         --member='user:test-user@gmail.com' \
         --role='roles/compute.loadBalancerServiceUser'
@@ -79,6 +89,6 @@ Remove an IAM policy binding from a Compute Engine backend bucket.  """,
   policy role and member types.
 """,
     'API REFERENCE': """\
-    This command uses the compute/alpha API. The full documentation for this
+    This command uses the compute API. The full documentation for this
     API can be found at: https://cloud.google.com/compute/""",
 }

@@ -533,10 +533,7 @@ class Deploy(base.Command):
     docker_file = source + '/Dockerfile'
     base_image = self._GetBaseImageForSourceContainer(container_args, service)
     automatic_updates = self._GetAutomaticUpdates(container_args, service)
-
-    build_machine_type = None
-    if self.ReleaseTrack() != base.ReleaseTrack.GA:
-      build_machine_type = self._GetMachineType(container_args, service)
+    build_machine_type = self._GetMachineType(container_args, service)
 
     if os.path.exists(docker_file):
       build_type = BuildType.DOCKERFILE
@@ -763,14 +760,11 @@ class Deploy(base.Command):
       skip_build,
   ):
     requires_build = bool(build_from_source) and not skip_build
-    include_validate_service = requires_build and self.ReleaseTrack() in [
-        base.ReleaseTrack.ALPHA,
-        base.ReleaseTrack.BETA,
-    ]
+
     deployment_stages = stages.ServiceStages(
         include_iam_policy_set=allow_unauth is not None,
         include_route=has_latest,
-        include_validate_service=include_validate_service,
+        include_validate_service=requires_build,
         include_upload_source=bool(build_from_source),
         include_build=requires_build,
         include_create_repo=repo_to_create is not None,

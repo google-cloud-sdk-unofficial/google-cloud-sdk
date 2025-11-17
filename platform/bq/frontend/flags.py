@@ -121,6 +121,31 @@ def define_parquet_map_target_type(
   )
 
 
+def define_timestamp_target_precision(
+    flag_values: flags.FlagValues,
+) -> flags.FlagHolder[Optional[List[str]]]:
+  return flags.DEFINE_list(
+      'timestamp_target_precision',
+      [],
+      'Precisions (maximum number of total digits in base 10) for second of'
+      ' TIMESTAMP types that are allowed to the destination table for'
+      ' autodetection mode.'
+      '\n'
+      '\n Available for the formats: CSV.'
+      '\n'
+      '\n For the CSV Format, Possible values include:'
+      '\n Not Specified, [], or [6]: timestamp(6) for all auto detected'
+      ' TIMESTAMP columns.'
+      '\n [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that'
+      ' have less than 6 digits of subseconds. timestamp(12) for all auto'
+      ' detected TIMESTAMP columns that have more than 6 digits of subseconds.'
+      '\n [12]: timestamp(12) for all auto detected TIMESTAMP columns.'
+      '\n'
+      '\n The order of the elements in this array is ignored.'
+      '\n Inputs that have higher precision than the highest target precision'
+      ' will be truncated.',
+      flag_values=flag_values,
+  )
 
 
 def define_reservation_id_for_a_job(

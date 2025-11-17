@@ -36,8 +36,110 @@ _INVALID_TIMESTAMP = (
 
 # TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class GetAlpha(base.Command):
+  """Get consumer policy for a project, folder or organization.
+
+  Get consumer policy for a project, folder or
+  organization.
+
+  ## EXAMPLES
+
+   Get consumer policy for default policy on current project:
+
+   $ {command}
+      OR
+   $ {command} --policy-name=default
+
+   Get consumer policy for default policy on current project and save the
+   content in an output file:
+
+   $ {command} --output-file=/path/to/the/file.yaml
+       OR
+   $ {command} --output-file=/path/to/the/file.json
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        '--policy-name',
+        help=(
+            'Name of the consumer policy. Currently only "default" is'
+            ' supported.'
+        ),
+        default='default',
+    )
+    common_flags.add_resource_args(parser)
+
+    parser.add_argument(
+        '--output-file',
+        help=(
+            'Path to the file to write policy contents to. Supported format:'
+            '.yaml or .json.'
+        ),
+    )
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Resource name and its parent name.
+    """
+    if args.IsSpecified('folder'):
+      resource_name = _FOLDER_RESOURCE.format(args.folder)
+    elif args.IsSpecified('organization'):
+      resource_name = _ORGANIZATION_RESOURCE.format(args.organization)
+    elif args.IsSpecified('project'):
+      resource_name = _PROJECT_RESOURCE.format(args.project)
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+      resource_name = _PROJECT_RESOURCE.format(project)
+
+    policy = serviceusage.GetConsumerPolicyV2Beta(
+        resource_name + _CONSUMER_POLICY_DEFAULT.format(args.policy_name),
+    )
+
+    if args.IsSpecified('output_file'):
+      if not (
+          args.output_file.endswith('.json')
+          or args.output_file.endswith('.yaml')
+      ):
+        log.error(
+            'Invalid output-file format. Please provide path to a yaml or json'
+            ' file.'
+        )
+      else:
+        if args.output_file.endswith('.json'):
+          data = json.dumps(_ConvertToDict(policy), sort_keys=False)
+        else:
+          data = yaml.dump(_ConvertToDict(policy), round_trip=True)
+        files.WriteFileContents(args.output_file, data)
+
+        log.status.Print(
+            'Policy written to the output file %s ' % args.output_file
+        )
+    elif args.IsSpecified('format'):
+      return policy
+    else:
+      result = _ConvertToDict(policy)
+      for k, v in result.items():
+        if k != 'enableRules' and v:
+          log.status.Print(k + ': ' + v)
+        elif k == 'enableRules':
+          log.status.Print(k + ':')
+          for enable_rule in v:
+            _PrintRules(enable_rule)
+      return
+
+
+# TODO(b/321801975) make command public after suv2 launch.
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Get(base.Command):
   """Get consumer policy for a project, folder or organization.
 

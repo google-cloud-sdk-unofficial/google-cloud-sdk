@@ -43,6 +43,7 @@
             A textual description of this resource.
 
         - arg_name: health-sources
+          type: googlecloudsdk.command_lib.compute.common:ArgList:min_length=1
           api_field: compositeHealthCheckResource.healthSources
           help_text: |
             URLs to the HealthSource resources whose results are AND'ed. I.e. the aggregated result is

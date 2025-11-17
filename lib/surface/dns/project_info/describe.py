@@ -21,9 +21,11 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import util
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """View Cloud DNS related information for a project.
@@ -54,6 +56,7 @@ class Describe(base.DescribeCommand):
             project=project_ref.project))
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class DescribeBeta(base.DescribeCommand):
   """View Cloud DNS related information for a project.
@@ -66,20 +69,32 @@ class DescribeBeta(base.DescribeCommand):
   To display Cloud DNS related information for your project, run:
 
     $ {command} my_project_id
+
+  To display Cloud DNS related information for your project in us-east1-c, run:
+
+    $ {command} my_project_id --location=us-east1-c
   """
 
   @staticmethod
   def Args(parser):
     parser.add_argument(
-        'dns_project', metavar='PROJECT_ID',
-        help='The identifier for the project you want DNS related info for.')
+        'dns_project',
+        metavar='PROJECT_ID',
+        help='The identifier for the project you want DNS related info for.',
+    )
+    flags.GetLocationArg().AddToParser(parser)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
+    api_version = util.GetApiFromTrackAndArgs(self.ReleaseTrack(), args)
     dns = util.GetApiClient(api_version)
     project_ref = util.GetRegistry(api_version).Parse(
-        args.dns_project, collection='dns.projects')
+        args.dns_project, collection='dns.projects'
+    )
+
+    request_kwargs = {'project': project_ref.project}
+    if api_version.startswith('v2'):
+      request_kwargs['location'] = args.location
 
     return dns.projects.Get(
-        dns.MESSAGES_MODULE.DnsProjectsGetRequest(
-            project=project_ref.project))
+        dns.MESSAGES_MODULE.DnsProjectsGetRequest(**request_kwargs)
+    )

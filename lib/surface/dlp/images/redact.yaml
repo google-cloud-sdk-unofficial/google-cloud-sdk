@@ -60,7 +60,7 @@
       api_field: googlePrivacyDlpV2RedactImageRequest.inspectConfig.includeQuote
     resource:
       help_text: Project to use to redact images.
-      spec: !REF googlecloudsdk.command_lib.dlp.resources:project_image
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:image
 
   response:
     modify_response_hooks:

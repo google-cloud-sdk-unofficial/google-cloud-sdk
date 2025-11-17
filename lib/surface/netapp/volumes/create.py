@@ -106,12 +106,7 @@ class Create(base.CreateCommand):
     throughput_mibps = args.throughput_mibps
     multiple_endpoints = args.multiple_endpoints
     cache_parameters = args.cache_parameters
-    block_devices = []
-    if (
-        self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
-        or self._RELEASE_TRACK == base.ReleaseTrack.BETA
-    ):
-      block_devices = args.block_devices
+    block_devices = args.block_devices
     if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
         self._RELEASE_TRACK == base.ReleaseTrack.GA):
       backup_config = args.backup_config

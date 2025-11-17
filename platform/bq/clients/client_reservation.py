@@ -85,6 +85,7 @@ def GetBodyForCreateReservation(
   if reservation_group_name is not None:
     reservation['reservation_group'] = reservation_group_name
 
+
   return reservation
 
 
@@ -410,6 +411,7 @@ def GetParamsForUpdateReservation(
   if reservation_group_name is not None:
     reservation['reservation_group'] = reservation_group_name
     update_mask += 'reservation_group,'
+
 
   return reservation, update_mask
 
@@ -990,6 +992,37 @@ def DeleteReservationGroup(
   ).execute()
 
 
+def SetReservationIAMPolicy(
+    apiclient: discovery.Resource,
+    reference: bq_id_utils.ApiClientHelper.ReservationReference,
+    policy: str,
+) -> ...:
+  """Sets IAM policy for the given reservation resource.
+
+  Arguments:
+    apiclient: the apiclient used to make the request.
+    reference: the ReservationReference for the reservation resource.
+    policy: The policy string in JSON format.
+
+  Returns:
+    The updated IAM policy attached to the given reservation resource.
+
+  Raises:
+    BigqueryTypeError: if reference is not a ReservationReference.
+  """
+  bq_id_utils.typecheck(
+      reference,
+      bq_id_utils.ApiClientHelper.ReservationReference,
+      method='SetReservationIAMPolicy',
+  )
+  request = {'policy': policy}
+  return (
+      apiclient.projects()
+      .locations()
+      .reservations()
+      .setIamPolicy(body=request, resource=reference.path())
+      .execute()
+  )
 
 
 def GetReservationIAMPolicy(

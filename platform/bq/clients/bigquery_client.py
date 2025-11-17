@@ -197,10 +197,10 @@ class BigqueryClient:
     if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
       try:
         port = int(flags.FLAGS.proxy_port)
-      except ValueError:
+      except ValueError as e:
         raise ValueError(
             'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
-        )
+        ) from e
       proxy_info = httplib2.ProxyInfo(
           proxy_type=3,
           proxy_host=flags.FLAGS.proxy_address,
@@ -260,7 +260,8 @@ class BigqueryClient:
       if not isinstance(credentials, google_credentials.Credentials):
         logging.error(
             'The system is using `google.auth` but the parsed credentials are'
-            ' of an incorrect type.'
+            ' of an incorrect type: %s',
+            type(credentials),
         )
     else:
       logging.debug('System is set to not use `google.auth`.')
@@ -315,7 +316,8 @@ class BigqueryClient:
           service,
           discovery_document,
       )
-    elif discovery_url is not None:
+      return discovery_document
+    if discovery_url is not None:
       logging.info(
           'Skipping the local "%s" discovery document load since discovery_url'
           ' has a value',
@@ -472,7 +474,6 @@ class BigqueryClient:
     )
     bq_request_builder = bigquery_http.BigqueryHttp.Factory(
         bigquery_model,
-        self.use_google_auth,
     )
     # Clean up quota project ID from Google Auth credentials.
     # This is specifically needed to construct a http object used for discovery
@@ -515,7 +516,9 @@ class BigqueryClient:
       )
 
     discovery_document_to_build_client = self.OverrideEndpoint(
-        discovery_document=discovery_document, service=service
+        discovery_document=discovery_document,
+        service=service,
+        discovery_root_url=discovery_root_url,
     )
 
     bq_logging.SaveStringToLogDirectoryIfAvailable(
@@ -587,8 +590,12 @@ class BigqueryClient:
 
   def GetInsertApiClient(self) -> discovery.Resource:
     """Return the apiclient that supports insert operation."""
-    insert_client = self.apiclient
-    return insert_client
+    discovery_url = None  # pylint: disable=unused-variable
+    if discovery_url:
+      return self.BuildApiClient(
+          discovery_url=discovery_url, service=Service.BIGQUERY
+      )
+    return self.apiclient
 
   def GetTransferV1ApiClient(
       self, transferserver_address: Optional[str] = None
@@ -631,6 +638,7 @@ class BigqueryClient:
       self._op_reservation_client = self.BuildApiClient(
           service=Service.RESERVATIONS,
           domain_root=path,
+          discovery_root_url=path,
           api_version=reservation_version,
           labels=labels,
       )
@@ -660,18 +668,24 @@ class BigqueryClient:
       )
       self._op_connection_service_client = self.BuildApiClient(
           discovery_url=discovery_url,
+          discovery_root_url=path,
           service=Service.CONNECTIONS,
+          api_version='v1',
       )
     return self._op_connection_service_client
 
   def OverrideEndpoint(
-      self, discovery_document: Union[str, bytes], service: Service
+      self,
+      discovery_document: Union[str, bytes],
+      service: Service,
+      discovery_root_url: Optional[str] = None,
   ) -> Optional[str]:
     """Override rootUrl for regional endpoints.
 
     Args:
       discovery_document: BigQuery discovery document.
       service: The BigQuery service being used.
+      discovery_root_url: The root URL to use for the discovery document.
 
     Returns:
       discovery_document updated discovery document.
@@ -695,10 +709,13 @@ class BigqueryClient:
 
     is_prod = True
 
+    original_root_url = discovery_document['rootUrl']
+
     if is_prod:
       discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(
           service=service, inputted_flags=bq_flags
       )
+
 
 
     discovery_document['baseUrl'] = urllib.parse.urljoin(

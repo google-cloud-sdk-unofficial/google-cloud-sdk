@@ -1327,6 +1327,7 @@ def Load(
     reservation_id: Optional[str] = None,
     copy_files_only: Optional[bool] = None,
     source_column_match: Optional[str] = None,
+    timestamp_target_precision: Optional[list[int]] = None,
     **kwds,
 ):
   """Load the given data into BigQuery.
@@ -1437,6 +1438,9 @@ def Load(
       content and writing them to new files.
     source_column_match: Optional. Controls the strategy used to match loaded
       columns to the schema.
+    timestamp_target_precision: Precision (maximum number of total
+      digits in base 10) for second of TIMESTAMP type.
+      Available for the formats: CSV.
     **kwds: Passed on to ExecuteJob.
 
   Returns:
@@ -1485,6 +1489,8 @@ def Load(
 
   if source_column_match is not None:
     load_config['sourceColumnMatch'] = source_column_match
+  if timestamp_target_precision is not None:
+    load_config['timestampTargetPrecision'] = timestamp_target_precision
 
   bq_processor_utils.ApplyParameters(
       load_config,

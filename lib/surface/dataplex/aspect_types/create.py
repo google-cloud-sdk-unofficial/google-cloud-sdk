@@ -14,10 +14,6 @@
 # limitations under the License.
 """`gcloud dataplex aspect-types create` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.dataplex import aspect_type
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
@@ -65,6 +61,11 @@ class Create(base.Command):
         '--metadata-template-file-name',
         required=True,
         help='The name of the JSON or YAML file to define Metadata Template.')
+    parser.add_argument(
+        '--data-classification',
+        help='Data classification of the Aspect Type.',
+        choices=['METADATA_AND_DATA'],
+    )
 
     async_type = parser.add_group(
         mutex=True,

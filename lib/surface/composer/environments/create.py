@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create an environment."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util
@@ -705,7 +702,8 @@ class Create(base.Command):
         services_ipv4_cidr_block=args.services_ipv4_cidr,
         enable_ip_masq_agent=args.enable_ip_masq_agent,
         kms_key=self.kms_key,
-        private_environment=args.enable_private_environment,
+        enable_private_environment=args.enable_private_environment,
+        disable_private_environment=args.disable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         privately_used_public_ips=args.enable_privately_used_public_ips,
         master_ipv4_cidr=args.master_ipv4_cidr,
@@ -830,7 +828,8 @@ class CreateBeta(Create):
         services_ipv4_cidr_block=args.services_ipv4_cidr,
         max_pods_per_node=args.max_pods_per_node,
         kms_key=self.kms_key,
-        private_environment=args.enable_private_environment,
+        enable_private_environment=args.enable_private_environment,
+        disable_private_environment=args.disable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         privately_used_public_ips=args.enable_privately_used_public_ips,
         connection_subnetwork=args.connection_subnetwork,
@@ -1027,7 +1026,8 @@ class CreateAlpha(CreateBeta):
         max_pods_per_node=args.max_pods_per_node,
         enable_ip_masq_agent=args.enable_ip_masq_agent,
         kms_key=self.kms_key,
-        private_environment=args.enable_private_environment,
+        enable_private_environment=args.enable_private_environment,
+        disable_private_environment=args.disable_private_environment,
         private_endpoint=args.enable_private_endpoint,
         web_server_ipv4_cidr=args.web_server_ipv4_cidr,
         cloud_sql_ipv4_cidr=args.cloud_sql_ipv4_cidr,

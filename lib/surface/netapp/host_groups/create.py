@@ -23,12 +23,12 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class Create(base.CreateCommand):
   """Create a Cloud NetApp Host Group."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -89,3 +89,12 @@ class CreateBeta(Create):
   """Create a Cloud NetApp Host Group."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class CreateAlpha(CreateBeta):
+  """Create a Cloud NetApp Host Group."""
+
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA

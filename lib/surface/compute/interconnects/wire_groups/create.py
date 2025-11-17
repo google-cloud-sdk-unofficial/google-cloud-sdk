@@ -115,7 +115,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
+    super().Args(parser)
     flags.AddType(parser)
 
 
@@ -131,6 +131,6 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    super().Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)

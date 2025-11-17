@@ -32,10 +32,21 @@ class DescribeMaterializedView(base.DescribeCommand):
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-          To view a materialized view's description, run:
+          To get back information related to a view's schema (for example, description), run:
+
+            $ {command} my-materialized-view-id --instance=my-instance-id --view=schema
+
+          or (because schema is the default view) simply:
 
             $ {command} my-materialized-view-id --instance=my-instance-id
 
+          To get back information related to the view's replication state, run:
+
+            $ {command} my-materialized-view-id --instance=my-instance-id --view=replication
+
+          To get back all information for the view, run:
+
+            $ {command} my-materialized-view-id --instance=my-instance-id --view=full
           """),
   }
 
@@ -43,6 +54,7 @@ class DescribeMaterializedView(base.DescribeCommand):
   def Args(parser) -> None:
     """Register flags for this command."""
     arguments.AddMaterializedViewResourceArg(parser, 'to describe')
+    arguments.AddViewOverMaterializedView(parser)
 
   def Run(
       self, args: parser_extensions.Namespace
@@ -57,4 +69,4 @@ class DescribeMaterializedView(base.DescribeCommand):
       Some value that we want to have printed later.
     """
     materialized_view_ref = args.CONCEPTS.materialized_view.Parse()
-    return materialized_views.Describe(materialized_view_ref)
+    return materialized_views.Describe(materialized_view_ref, view=args.view)

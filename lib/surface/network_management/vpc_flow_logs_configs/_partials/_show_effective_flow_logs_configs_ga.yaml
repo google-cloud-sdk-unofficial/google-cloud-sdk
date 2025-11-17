@@ -20,15 +20,13 @@
   auto_generated: true
   help_text:
     brief: Show all effective VPC Flow Logs configurations for a resource.
-    description: Shows all effective VPC Flow Logs configurations for a resource.
-      The effective configurations include all configurations that apply to the resource,
-      including inherited ones from parent resources.
+    description: Shows all effective VPC Flow Logs configurations for a resource. The effective configurations include all configurations that apply to the resource, including inherited ones from parent resources.
     examples: |-
       To show all effective VPC Flow Logs configurations for a network `my-network` in project `my-project`, run:
 
-          $ {command} \
-            --location=global \
-            --resource="projects/my-project/global/networks/my-network"
+        $ {command} \
+          --location=global \
+          --resource="projects/my-project/global/networks/my-network"
   arguments:
     params:
     - help_text: |-

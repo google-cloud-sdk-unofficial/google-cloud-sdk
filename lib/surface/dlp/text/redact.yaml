@@ -69,7 +69,7 @@
             Text to replace each sensitive data finding with.
     resource:
       help_text: Project to use to redact images.
-      spec: !REF googlecloudsdk.command_lib.dlp.resources:project_content
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:content
 
   response:
     modify_response_hooks:

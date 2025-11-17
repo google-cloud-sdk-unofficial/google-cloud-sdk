@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.Hidden
 class HostGroups(base.Group):
   """Create and manage Cloud NetApp Host Groups."""
@@ -29,4 +29,11 @@ class HostGroups(base.Group):
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.Hidden
 class HostGroupsBeta(HostGroups):
+  """Create and manage Cloud NetApp Host Groups."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.Hidden
+class HostGroupsAlpha(HostGroupsBeta):
   """Create and manage Cloud NetApp Host Groups."""

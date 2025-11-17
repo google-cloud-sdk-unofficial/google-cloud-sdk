@@ -491,6 +491,7 @@ def CreateExternalTableDefinition(
     timestamp_format=None,
     source_column_match=None,
     parquet_map_target_type=None,
+    timestamp_target_precision=None,
 ):
   """Creates an external table definition with the given URIs and the schema.
 
@@ -563,6 +564,8 @@ def CreateExternalTableDefinition(
       unspecified, we represent parquet maps as map {repeated key_value {key,
       value}}. This option can simplify this by omiting the key_value record if
       it's equal to ARRAY_OF_STRUCT.
+    timestamp_target_precision: Precision (maximum number of total digits in
+      base 10) for seconds of TIMESTAMP type.
 
   Returns:
     A python dictionary that contains a external table definition for the given
@@ -609,6 +612,8 @@ def CreateExternalTableDefinition(
 
       external_table_def['sourceFormat'] = None
       external_table_def['objectMetadata'] = object_metadata
+    if timestamp_target_precision is not None:
+      external_table_def['timestampTargetPrecision'] = timestamp_target_precision
 
     if external_table_def['sourceFormat'] == 'CSV':
       if autodetect:
@@ -746,6 +751,7 @@ def GetExternalDataConfig(
     timestamp_format=None,
     source_column_match=None,
     parquet_map_target_type=None,
+    timestamp_target_precision=None,
 ):
   """Returns a ExternalDataConfiguration from the file or specification string.
 
@@ -843,6 +849,7 @@ def GetExternalDataConfig(
         timestamp_format=timestamp_format,
         source_column_match=source_column_match,
         parquet_map_target_type=parquet_map_target_type,
+        timestamp_target_precision=timestamp_target_precision,
     )
 
 

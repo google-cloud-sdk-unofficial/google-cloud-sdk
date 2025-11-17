@@ -46,6 +46,7 @@
             A textual description of the health source.
 
         - arg_name: sources
+          type: googlecloudsdk.command_lib.compute.common:ArgList:min_length=1
           api_field: healthSourceResource.sources
           help_text: |
             URLs to the source resources. Must be size 1. Must be a BackendService

@@ -103,7 +103,6 @@ _DETAILED_HELP = {
 
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EnableAlpha(base.SilentCommand):
   """Enables a service for consumption for a project, folder or organization."""
@@ -142,7 +141,7 @@ class EnableAlpha(base.SilentCommand):
         args.organization if args.IsSpecified('organization') else None
     )
 
-    op = serviceusage.AddEnableRule(
+    update_consumer_policy_op, services_enabled = serviceusage.AddEnableRule(
         args.service,
         project,
         folder=folder,
@@ -152,18 +151,33 @@ class EnableAlpha(base.SilentCommand):
     )
 
     if args.async_:
-      cmd = _OP_WAIT_CMD.format(op.name)
+      cmd = _OP_WAIT_CMD.format(update_consumer_policy_op.name)
       log.status.Print(
           'Asynchronous operation is in progress... '
           'Use the following command to wait for its '
           f'completion:\n {cmd}'
       )
+      if not folder and not organization:
+        serviceusage.GenerateServiceIdentityForEnabledService(
+            project, services_enabled
+        )
       return
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+    update_consumer_policy_op = services_util.WaitOperation(
+        update_consumer_policy_op.name, serviceusage.GetOperationV2Beta
+    )
     if args.validate_only:
-      services_util.PrintOperation(op)
+      services_util.PrintOperation(update_consumer_policy_op)
     else:
-      services_util.PrintOperationWithResponse(op)
+      services_util.PrintOperationWithResponse(update_consumer_policy_op)
+      if (
+          not update_consumer_policy_op.error
+          and not folder
+          and not organization
+      ):
+        serviceusage.GenerateServiceIdentityForEnabledService(
+            project, services_enabled
+        )
+
 
 EnableAlpha.detailed_help = _DETAILED_HELP_ALPHA
 

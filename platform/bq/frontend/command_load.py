@@ -455,6 +455,9 @@ class Load(bigquery_command.BigqueryCmd):
         ' names and reorders columns to match the field names in the schema.',
         flag_values=fv,
     )
+    self.timestamp_target_precision_flag = (
+        frontend_flags.define_timestamp_target_precision(flag_values=fv)
+    )
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
@@ -619,6 +622,10 @@ class Load(bigquery_command.BigqueryCmd):
       opts['timestamp_format'] = self.timestamp_format
     if self.source_column_match is not None:
       opts['source_column_match'] = self.source_column_match
+    if self.timestamp_target_precision_flag.value is not None:
+      opts['timestamp_target_precision'] = (
+          self.timestamp_target_precision_flag.value
+      )
     if opts['source_format'] == 'THRIFT':
       thrift_options = {}
       if self.thrift_schema_idl_root_dir is not None:

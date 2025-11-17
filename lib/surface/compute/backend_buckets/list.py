@@ -77,7 +77,7 @@ List.detailed_help = base_classes.GetGlobalListerHelp('backend buckets')
 class ListBeta(List):
   """List backend buckets."""
 
-  _support_regional_global_flags = False
+  _support_regional_global_flags = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

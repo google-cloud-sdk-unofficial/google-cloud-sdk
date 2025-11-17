@@ -23,6 +23,9 @@ from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
+from googlecloudsdk.command_lib.ai.region_util import (
+    _IsDefaultUniverse,
+)
 
 _SHORT_NAME_FORMAT = (
     'format("{0:s}@{1:s}/{2:s}", name, versionId,'
@@ -135,9 +138,8 @@ class List(base.ListCommand):
       if args.page_size is None:
         args.page_size = 100
 
-    with endpoint_util.AiplatformEndpointOverrides(
-        version, region='us-central1'
-    ):
+    region = 'us-central1' if _IsDefaultUniverse() else None
+    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       mg_client = client_mg.ModelGardenClient(version)
       return mg_client.ListPublisherModels(
           limit=args.limit,

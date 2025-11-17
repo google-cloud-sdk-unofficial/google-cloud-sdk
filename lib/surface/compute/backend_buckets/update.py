@@ -262,9 +262,23 @@ class UpdateBeta(Update):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
+
+    To delete a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --no-enable-cdn
+        --global
+
+      $ {command} my-backend-bucket
+        --no-enable-cdn
+
+  To delete a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket --region=us-central1
+        --no-enable-cdn
   """
 
-  support_regional_global_flags = False
+  support_regional_global_flags = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -273,6 +287,20 @@ class UpdateAlpha(UpdateBeta):
   """Update a backend bucket.
 
   *{command}* is used to update backend buckets.
+
+      To delete a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --no-enable-cdn
+        --global
+
+      $ {command} my-backend-bucket
+        --no-enable-cdn
+
+  To delete a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket --region=us-central1
+        --no-enable-cdn
   """
 
   support_regional_global_flags = True

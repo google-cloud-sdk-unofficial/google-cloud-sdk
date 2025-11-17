@@ -22,6 +22,9 @@
   request:
     collection: iam.projects.serviceAccounts.keys
     method: enable
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:EraseProjectHook
+
 
   response:
     modify_response_hooks:

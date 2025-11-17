@@ -35,7 +35,7 @@ _CONSUMER_POLICY_DEFAULT = '/consumerPolicies/{}'
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Enable(base.SilentCommand):
   """Enables a service for MCP on a project, folder or organization.
 
@@ -77,6 +77,8 @@ class Enable(base.SilentCommand):
     """
     common_flags.service_flag(suffix='to enable MCP').AddToParser(parser)
     common_flags.add_resource_args(parser)
+    common_flags.skip_mcp_endpoint_check_flag(parser)
+
     base.ASYNC_FLAG.AddToParser(parser)
 
   def Run(self, args):
@@ -113,11 +115,14 @@ class Enable(base.SilentCommand):
     service_metadata = serviceusage.GetServiceV2Beta(
         f'{resource_name}/services/{args.service}'
     )
-    if (
+    if not args.skip_mcp_endpoint_check and (
         not service_metadata.service.mcpServer
         or not service_metadata.service.mcpServer.urls
     ):
-      log.error(f'The {args.service} does not have MCP endpoint.')
+      log.error(
+          f'The {args.service} does not have MCP endpoint. You can use'
+          ' --skip-mcp-endpoint-check to bypass this check.'
+      )
       return
 
     if not service_metadata.state.enableRules:

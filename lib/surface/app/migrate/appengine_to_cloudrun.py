@@ -30,6 +30,8 @@ from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import list_incompa
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import translate
 from googlecloudsdk.command_lib.run import config_changes
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from surface.run import deploy
 
 
@@ -89,7 +91,10 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     try:
       flags.FlagIsExplicitlySet = self._flag_is_explicitly_set_wrapper
       self.StartMigration(args)
+      # Execute the gcloud run deploy command using the arguments prepared in
+      # StartMigration.
       super().Run(args)
+      self.PrintMigrationSummary(args)
     finally:
       flags.FlagIsExplicitlySet = original_flag_is_explicitly_set
 
@@ -151,8 +156,8 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
           ' --set-build-env-vars GOOGLE_ENTRYPOINT=' + args.entrypoint
       )
 
-    # Run gcloud run deploy command.
-    print('Command to run:', print_deploy_command, '\n')
+    # Update args with the translated gcloud run deploy flags
+    log.status.Print('Command to run:', print_deploy_command, '\n')
     setattr(args, 'SERVICE', cloud_run_deploy_command[3])
     self._migration_flags = []
     for command_str in cloud_run_deploy_command:
@@ -192,6 +197,25 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         else:
           args.__setattr__(command_args[0], True)
     return
+
+  def PrintMigrationSummary(self, args):
+    """Prints the migration summary."""
+    log.status.Print(
+        '\n'
+        'The code and configuration of your App Engine service has been copied'
+        ' to Cloud Run.'
+        '\n'
+    )
+    region = properties.VALUES.run.region.Get()
+    service = args.SERVICE or 'default'
+    project = properties.VALUES.core.project.Get()
+
+    log.status.Print(
+        'View and edit in Cloud Run console:'
+        f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\n'
+        'Deploy new versions of your code with the same configuration using'
+        f' "gcloud run deploy {service} --source=. --region={region} --project={project}"\n'
+    )
 
   def ParseSetEnvVars(
       self, input_str: str

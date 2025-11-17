@@ -28,9 +28,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
-)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class CreateFirestoreAPI(base.Command):
   """Create a Google Cloud Firestore database via Firestore API.
 
@@ -139,7 +137,10 @@ class CreateFirestoreAPI(base.Command):
         self.DatabaseDeleteProtectionState(args.delete_protection),
         self.DatabasePitrState(args.enable_pitr),
         self.DatabaseCmekConfig(args),
-        args.tags,
+        mongodb_compatible_data_access_mode=None,
+        firestore_data_access_mode=None,
+        realtime_updates_mode=None,
+        tags=args.tags,
     )
 
   @classmethod
@@ -200,3 +201,156 @@ class CreateFirestoreAPI(base.Command):
     )
     flags.AddKmsKeyNameFlag(parser)
     flags.AddTags(parser, 'database')
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateFirestoreAPIAlpha(CreateFirestoreAPI):
+  """Create a Google Cloud Firestore database via Firestore API.
+
+  ## EXAMPLES
+
+  To create a Firestore Enterprise database named `foo` in `nam5` for use with
+  MongoDB Compatibility.
+
+      $ {command} --database=foo --edition=enterprise --location=nam5
+
+  To create a Firestore Native database in `nam5`.
+
+      $ {command} --location=nam5
+
+  To create a Firestore Native database in `us-central1` with tags.
+
+      $ {command} --location=us-central1 --tags=key1=value1,key2=value2
+
+  To create a Datastore Mode database in `us-east1`.
+
+      $ {command} --location=us-east1 --type=datastore-mode
+
+  To create a Datastore Mode database in `us-east1` with a databaseId `foo`.
+
+      $ {command} --database=foo --location=us-east1 --type=datastore-mode
+
+  To create a Firestore Native database in `nam5` with delete protection
+  enabled.
+
+      $ {command} --location=nam5 --delete-protection
+
+  To create a Firestore Native database in `nam5` with Point In Time Recovery
+  (PITR) enabled.
+
+      $ {command} --location=nam5 --enable-pitr
+
+  To create a Firestore Native database in `nam5` encrypted by a
+  Customer-managed encryption key (CMEK).
+
+      $ {command}
+      --location=nam5
+      --kms-key-name=projects/PROJECT_ID/locations/us/keyRings/KEY_RING_ID/cryptoKeys/CRYPTO_KEY_ID
+  """
+
+  def MongodbCompatibleDataAccessMode(self, enable):
+    if enable is None:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.MongodbCompatibleDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_UNSPECIFIED
+      )
+    if enable:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.MongodbCompatibleDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_ENABLED
+      )
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.MongodbCompatibleDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_DISABLED
+    )
+
+  def FirestoreDataAccessMode(self, enable):
+    if enable is None:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.FirestoreDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_UNSPECIFIED
+      )
+    if enable:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.FirestoreDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_ENABLED
+      )
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.FirestoreDataAccessModeValueValuesEnum.DATA_ACCESS_MODE_DISABLED
+    )
+
+  def RealtimeUpdatesMode(self, enable):
+    if enable is None:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.RealtimeUpdatesModeValueValuesEnum.REALTIME_UPDATES_MODE_UNSPECIFIED
+      )
+    if enable:
+      return (
+          api_utils.GetMessages().GoogleFirestoreAdminV1Database.RealtimeUpdatesModeValueValuesEnum.REALTIME_UPDATES_MODE_ENABLED
+      )
+    return (
+        api_utils.GetMessages().GoogleFirestoreAdminV1Database.RealtimeUpdatesModeValueValuesEnum.REALTIME_UPDATES_MODE_DISABLED
+    )
+
+  def Run(self, args):
+    project = properties.VALUES.core.project.Get(required=True)
+    return databases.CreateDatabase(
+        project,
+        args.location,
+        args.database,
+        self.DatabaseType(args.type),
+        self.DatabaseEdition(args.edition),
+        self.DatabaseDeleteProtectionState(args.delete_protection),
+        self.DatabasePitrState(args.enable_pitr),
+        self.DatabaseCmekConfig(args),
+        self.MongodbCompatibleDataAccessMode(
+            args.enable_mongodb_compatible_data_access
+        ),
+        self.FirestoreDataAccessMode(args.enable_firestore_data_access),
+        self.RealtimeUpdatesMode(args.enable_realtime_updates),
+        args.tags,
+    )
+
+  @classmethod
+  def Args(cls, parser):
+    CreateFirestoreAPI.Args(parser)
+    parser.add_argument(
+        '--enable-mongodb-compatible-data-access',
+        help=textwrap.dedent("""\
+            Whether to enable MongoDB Compatible API Data Access on the
+            created database.
+
+            If set to true, MongoDB Compatible API Data Access on the new
+            database will be enabled. By default, this feature is enabled for
+            Enterprise edition databases.
+            To disable, use --no-enable-mongodb-compatible-data-access.
+            """),
+        action='store_true',
+        default=None,
+        hidden=True,
+    )
+    parser.add_argument(
+        '--enable-firestore-data-access',
+        help=textwrap.dedent("""\
+            Whether to enable Firestore API Data Access on the created
+            database.
+
+            If set to true, Firestore API Data Access on the new database will
+            be enabled. By default, this feature is disabled for Enterprise
+            edition databases. To explicitly disable,
+            use --no-enable-firestore-data-access.
+            """),
+        action='store_true',
+        default=None,
+        hidden=True,
+    )
+    parser.add_argument(
+        '--enable-realtime-updates',
+        help=textwrap.dedent("""\
+            Whether to enable Realtime Updates feature on the created database.
+
+            If set to true, Realtime Updates feature on the new database will
+            be enabled. By default, this feature is disabled for Enterprise
+            edition databases. To explicitly disable,
+            use --no-enable-realtime-updates.
+            """),
+        action='store_true',
+        default=None,
+        hidden=True,
+    )

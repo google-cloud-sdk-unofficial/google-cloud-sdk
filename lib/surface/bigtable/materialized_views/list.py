@@ -39,6 +39,11 @@ class ListMaterializedViews(base.ListCommand):
 
             $ {command} --instance=my-instance-id
 
+          You may also specify what information to return by supplying the `--view` flag, such as:
+
+            $ {command} --instance=my-instance-id --view=schema
+
+          Currently, only the schema view is supported for this command. This is the default view, and it returns information about the schemas of your materialized views.
           """),
   }
 
@@ -46,6 +51,7 @@ class ListMaterializedViews(base.ListCommand):
   def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
     """Register flags for this command."""
     arguments.AddInstanceResourceArg(parser, 'to list materialized views for')
+    arguments.AddViewOverMaterializedView(parser)
 
   def Run(
       self, args: parser_extensions.Namespace
@@ -60,4 +66,4 @@ class ListMaterializedViews(base.ListCommand):
       Some value that we want to have printed later.
     """
     instance_ref = args.CONCEPTS.instance.Parse()
-    return materialized_views.List(instance_ref)
+    return materialized_views.List(instance_ref, view=args.view)

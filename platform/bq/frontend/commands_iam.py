@@ -152,8 +152,8 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     """Get the IAM policy for a table, dataset, routine or reservation.
 
     Args:
-      reference: A DatasetReference, TableReference, RoutineReference, or
-        ReservationReference.
+      reference: A DatasetReference, TableReference, ConnectionReference,
+        RoutineReference, or ReservationReference.
 
     Returns:
       The policy object, composed of dictionaries, lists, and primitive types.
@@ -188,10 +188,11 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     )
 
   def SetPolicyForReference(self, client, reference, policy):
-    """Set the IAM policy for a table, dataset or routine.
+    """Set the IAM policy for a table, dataset, connection, routine, or reservation.
 
     Args:
-      reference: A DatasetReference, TableReference or RoutineReference.
+      reference: A DatasetReference, TableReference, ConnectionReference,
+        RoutineReference, or ReservationReference.
       policy: The policy object, composed of dictionaries, lists, and primitive
         types.
 
@@ -219,6 +220,14 @@ class _IamPolicyCmd(bigquery_command.BigqueryCmd):
     elif isinstance(reference, bq_id_utils.ApiClientHelper.RoutineReference):
       return client_routine.SetRoutineIAMPolicy(
           apiclient=client.GetIAMPolicyApiClient(),
+          reference=reference,
+          policy=policy,
+      )
+    elif isinstance(
+        reference, bq_id_utils.ApiClientHelper.ReservationReference
+    ):
+      return client_reservation.SetReservationIAMPolicy(
+          apiclient=client.GetReservationApiClient(),
           reference=reference,
           policy=policy,
       )

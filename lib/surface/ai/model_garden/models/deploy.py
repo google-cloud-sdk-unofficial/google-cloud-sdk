@@ -33,6 +33,9 @@ from googlecloudsdk.command_lib.ai import flags
 from googlecloudsdk.command_lib.ai import model_garden_utils
 from googlecloudsdk.command_lib.ai import region_util
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.region_util import (
+    _IsDefaultUniverse,
+)
 from googlecloudsdk.core import properties
 
 
@@ -334,9 +337,8 @@ class Deploy(base.Command):
     version = constants.BETA_VERSION
     is_hf_model = '@' not in args.model
 
-    with endpoint_util.AiplatformEndpointOverrides(
-        version, region='us-central1'
-    ):
+    region = 'us-central1' if _IsDefaultUniverse() else None
+    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       # Custom weights model deployment.
       if is_custom_weights_model:
 

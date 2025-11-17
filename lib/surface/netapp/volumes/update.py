@@ -114,9 +114,7 @@ class Update(base.UpdateCommand):
       backup_config = None
       source_backup = None
     cache_parameters = args.cache_parameters
-    block_devices = []
-    if self._RELEASE_TRACK in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
-      block_devices = args.block_devices
+    block_devices = args.block_devices
     throughput_mibps = args.throughput_mibps
 
     volume = client.ParseUpdatedVolumeConfig(
@@ -226,12 +224,8 @@ class Update(base.UpdateCommand):
               'cacheParameters.cacheConfig.cifsChangeNotifyEnabled'
           )
 
-    if (
-        self._RELEASE_TRACK == base.ReleaseTrack.ALPHA
-        or self._RELEASE_TRACK == base.ReleaseTrack.BETA
-    ):
-      if args.IsSpecified('block_devices'):
-        updated_fields.append('blockDevices')
+    if args.IsSpecified('block_devices'):
+      updated_fields.append('blockDevices')
     update_mask = ','.join(updated_fields)
 
     result = client.UpdateVolume(volume_ref, volume, update_mask, args.async_)

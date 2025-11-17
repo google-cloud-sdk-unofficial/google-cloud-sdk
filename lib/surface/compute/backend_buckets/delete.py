@@ -102,9 +102,24 @@ class DeleteBeta(Delete):
   """Delete backend buckets.
 
   *{command}* deletes one or more backend buckets.
+
+  To delete a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To delete a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
   """
 
-  _support_regional_global_flags = False
+  _support_regional_global_flags = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -113,6 +128,21 @@ class DeleteAlpha(DeleteBeta):
   """Delete backend buckets.
 
   *{command}* deletes one or more backend buckets.
+
+  To delete a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To delete a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
   """
 
   _support_regional_global_flags = True

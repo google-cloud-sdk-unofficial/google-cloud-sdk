@@ -31,23 +31,23 @@
     examples: |-
       To create a new VPC Flow Logs configuration `my-config` in organization `my-org-number`, run:
 
-      $ {command} my-config --location=global --organization=<my-org-number>
+        $ {command} my-config --location=global --organization=<my-org-number>
 
       To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a VLAN attachment for Cloud Interconnect, run:
 
-      $ {command} my-config --location=global --interconnect-attachment="projects/{project_id}/regions/{region}/interconnectAttachments/{interconnect_attachment_id}"
+        $ {command} my-config --location=global --interconnect-attachment="projects/{project_id}/regions/{region}/interconnectAttachments/{interconnect_attachment_id}"
 
       To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a Cloud VPN tunnel, run:
 
-      $ {command} my-config --location=global --subnet="projects/{project_id}/regions/{region}/vpnTunnels/{vpn_tunnel_id}"
+        $ {command} my-config --location=global --subnet="projects/{project_id}/regions/{region}/vpnTunnels/{vpn_tunnel_id}"
 
       To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a subnet, run:
 
-      $ {command} my-config --location=global --subnet="projects/{project_id}/regions/{region}/subnets/{subnet_id}"
+        $ {command} my-config --location=global --subnet="projects/{project_id}/regions/{region}/subnets/{subnet_id}"
 
       To create a new VPC Flow Logs configuration `my-config` in project `my-project` for a VPC network, run:
 
-      $ {command} my-config --location=global --network="projects/{project_id}/global/networks/{network_id}"
+        $ {command} my-config --location=global --network="projects/{project_id}/global/networks/{network_id}"
   arguments:
     params:
     - group:

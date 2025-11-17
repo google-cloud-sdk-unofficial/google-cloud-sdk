@@ -117,6 +117,10 @@ class BigqueryModel(model.JsonModel):
   ) -> Tuple[Dict[str, str], Dict[str, str], str, str]:
     """Updates outgoing request.
 
+    Headers updated here will be applied to only requests of API methods having
+    JSON-type responses. For API methods with non-JSON-type responses, headers
+    need to be set in BigqueryHttp.Factory._Construct.
+
 
     Args:
       headers: dict, request headers
@@ -135,6 +139,11 @@ class BigqueryModel(model.JsonModel):
     """
     if 'trace' not in query_params and self.trace:
       headers['cookie'] = self.trace
+
+    if 'user-agent' not in headers:
+      headers['user-agent'] = ''
+    user_agent = ' '.join([bq_utils.GetUserAgent(), headers['user-agent']])
+    headers['user-agent'] = user_agent.strip()
 
     if self.quota_project_id:
       headers['x-goog-user-project'] = self.quota_project_id
@@ -185,21 +194,43 @@ class BigqueryHttp(http_request.HttpRequest):
   @staticmethod
   def Factory(
       bigquery_model: BigqueryModel,
-      use_google_auth: bool,
   ) -> Callable[..., 'BigqueryHttp']:
     """Returns a function that creates a BigqueryHttp with the given model."""
 
     def _Construct(*args, **kwds):
-      if use_google_auth:
-        user_agent = bq_utils.GetUserAgent()
-        if 'headers' not in kwds:
-          kwds['headers'] = {}
-        elif (
-            'User-Agent' in kwds['headers']
-            and user_agent not in kwds['headers']['User-Agent']
-        ):
-          user_agent = ' '.join([user_agent, kwds['headers']['User-Agent']])
-        kwds['headers']['User-Agent'] = user_agent
+      # Headers set here will be applied to all requests made through this
+      # BigqueryHttp object. Headers set in BigqueryModel.request will be
+      # applied to only methods that expect a JSON-type response.
+      if 'headers' not in kwds:
+        kwds['headers'] = {}
+
+      # Set user-agent if not already set in BigqueryModel.request, e.g. for
+      # DELETE requests.
+      user_agent = kwds['headers'].get('user-agent', '')
+      bq_user_agent = bq_utils.GetUserAgent()
+      if str.lower(bq_user_agent) not in str.lower(user_agent):
+        user_agent = ' '.join([bq_user_agent, user_agent])
+        kwds['headers']['user-agent'] = user_agent.strip()
+
+      if (
+          'x-goog-user-project' not in kwds['headers']
+          and bigquery_model.quota_project_id
+      ):
+        logging.info(
+            'Setting x-goog-user-project header to: %s',
+            bigquery_model.quota_project_id,
+        )
+        kwds['headers']['x-goog-user-project'] = bigquery_model.quota_project_id
+
+      if (
+          'x-goog-request-reason' not in kwds['headers']
+          and bq_flags.REQUEST_REASON.value
+      ):
+        logging.info(
+            'Setting x-goog-request-reason header to: %s',
+            bq_flags.REQUEST_REASON.value,
+        )
+        kwds['headers']['x-goog-request-reason'] = bq_flags.REQUEST_REASON.value
 
       captured_model = bigquery_model
       return BigqueryHttp(

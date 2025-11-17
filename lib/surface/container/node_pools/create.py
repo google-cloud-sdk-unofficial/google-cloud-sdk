@@ -464,7 +464,7 @@ class CreateBeta(Create):
     flags.AddOpportunisticMaintenanceFlag(parser)
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
-    flags.AddAcceleratorNetworkProfileFlag(parser)
+    flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -571,6 +571,23 @@ class CreateAlpha(Create):
     ops.storage_pools = args.storage_pools
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     ops.data_cache_count = args.data_cache_count
+
+    if args.enable_attestation and not args.tee_policy:
+      raise exceptions.InvalidArgumentException(
+          '--enable-attestation',
+          'The --tee-policy flag must be provided when --enable-attestation is'
+          ' specified.',
+      )
+    if args.tee_policy and not args.enable_attestation:
+      raise exceptions.InvalidArgumentException(
+          '--tee-policy',
+          'The --enable-attestation flag must be provided when --tee-policy is'
+          ' specified.',
+      )
+    ops.runner_pool_control_mode = args.runner_pool_control_mode
+    ops.control_node_pool = args.control_node_pool
+    ops.enable_attestation = args.enable_attestation
+    ops.tee_policy = args.tee_policy
     return ops
 
   @staticmethod
@@ -643,5 +660,13 @@ class CreateAlpha(Create):
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
+    linked_runner_group = parser.add_group(mutex=True, hidden=True)
+    flags.AddRunnerPoolControlModeFlag(linked_runner_group, hidden=True)
+    runner_pool_group = linked_runner_group.add_group()
+    flags.AddControlNodePoolFlag(runner_pool_group, hidden=True)
+    attestation_group = runner_pool_group.add_group(
+        help='Settings for attestation.')
+    flags.AddEnableAttestationFlag(attestation_group, hidden=True)
+    flags.AddTeePolicyFlag(attestation_group, hidden=True)
 
 Create.detailed_help = DETAILED_HELP

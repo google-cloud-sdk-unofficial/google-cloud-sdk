@@ -15,6 +15,8 @@
 
 """services list command."""
 
+import sys
+
 from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
@@ -23,7 +25,6 @@ from googlecloudsdk.command_lib.services import common_flags
 
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListAlpha(base.ListCommand):
   """List services for a project, folder or organization.
@@ -117,23 +118,20 @@ class ListAlpha(base.ListCommand):
       organization = args.organization
     else:
       organization = None
+
     if args.IsSpecified('limit'):
-      return serviceusage.ListServicesV2Beta(
-          project,
-          args.enabled,
-          args.page_size,
-          args.limit,
-          folder=folder,
-          organization=organization,
-      )
+      limit = args.limit
     else:
-      return serviceusage.ListServicesV2Beta(
-          project,
-          args.enabled,
-          args.page_size,
-          folder=folder,
-          organization=organization,
-      )
+      limit = sys.maxsize
+
+    return serviceusage.ListServicesV2Beta(
+        project,
+        args.enabled,
+        args.page_size,
+        limit,
+        folder=folder,
+        organization=organization,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)

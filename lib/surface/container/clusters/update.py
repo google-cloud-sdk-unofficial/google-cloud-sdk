@@ -428,6 +428,9 @@ class Update(base.UpdateCommand):
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    group_add_drain_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddDrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
+    flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
@@ -539,6 +542,8 @@ class Update(base.UpdateCommand):
     )
     opts.additional_ip_ranges = args.additional_ip_ranges
     opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
+    opts.drain_additional_ip_ranges = args.drain_additional_ip_ranges
+    opts.undrain_additional_ip_ranges = args.undrain_additional_ip_ranges
     opts.stack_type = args.stack_type
     opts.enable_cost_allocation = args.enable_cost_allocation
     opts.gateway_api = args.gateway_api
@@ -874,6 +879,20 @@ to completion."""
             args.add_maintenance_exclusion_start,
             args.add_maintenance_exclusion_end,
             args.add_maintenance_exclusion_scope,
+            args.add_maintenance_exclusion_until_end_of_support,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif args.add_maintenance_exclusion_until_end_of_support is not None:
+      try:
+        op_ref = adapter.AddMaintenanceExclusion(
+            cluster_ref,
+            cluster.maintenancePolicy,
+            args.add_maintenance_exclusion_name,
+            args.add_maintenance_exclusion_start,
+            None,
+            args.add_maintenance_exclusion_scope,
+            args.add_maintenance_exclusion_until_end_of_support,
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
@@ -1245,6 +1264,9 @@ class UpdateBeta(Update):
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    group_add_drain_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddDrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
+    flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
@@ -1408,6 +1430,8 @@ class UpdateBeta(Update):
     )
     opts.additional_ip_ranges = args.additional_ip_ranges
     opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
+    opts.drain_additional_ip_ranges = args.drain_additional_ip_ranges
+    opts.undrain_additional_ip_ranges = args.undrain_additional_ip_ranges
     opts.gateway_api = args.gateway_api
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
@@ -1620,6 +1644,9 @@ class UpdateAlpha(Update):
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
     flags.AddRemoveAdditionalIpRangesFlag(group_add_additional_ip_ranges)
+    group_add_drain_additional_ip_ranges = group.add_group(hidden=True)
+    flags.AddDrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
+    flags.AddUndrainAdditionalIpRangesFlag(group_add_drain_additional_ip_ranges)
     flags.AddClusterEnablePrivateNodesFlag(group)
     flags.AddDisableL4LbFirewallReconciliationFlag(group, is_update=True)
     flags.AddClusterTierFlag(group)
@@ -1780,6 +1807,8 @@ class UpdateAlpha(Update):
     )
     opts.additional_ip_ranges = args.additional_ip_ranges
     opts.remove_additional_ip_ranges = args.remove_additional_ip_ranges
+    opts.drain_additional_ip_ranges = args.drain_additional_ip_ranges
+    opts.undrain_additional_ip_ranges = args.undrain_additional_ip_ranges
     opts.fleet_project = args.fleet_project
     opts.enable_fleet = args.enable_fleet
     opts.membership_type = args.membership_type

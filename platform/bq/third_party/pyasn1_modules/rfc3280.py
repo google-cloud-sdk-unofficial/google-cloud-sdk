@@ -4,7 +4,7 @@
 # This file is part of pyasn1-modules software.
 #
 # Created by Stanisław Pitucha with asn1ate tool.
-# Copyright (c) 2005-2018, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pyasn1/license.html
 #
 # Internet X.509 Public Key Infrastructure Certificate and Certificate
@@ -54,7 +54,7 @@ class OrganizationalUnitNames(univ.SequenceOf):
 
 
 OrganizationalUnitNames.componentType = OrganizationalUnitName()
-OrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
+OrganizationalUnitNames.sizeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
 
 
 class AttributeType(univ.ObjectIdentifier):
@@ -153,7 +153,7 @@ class Extensions(univ.SequenceOf):
 
 
 Extensions.componentType = Extension()
-Extensions.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+Extensions.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class CertificateSerialNumber(univ.Integer):
@@ -220,7 +220,7 @@ class RelativeDistinguishedName(univ.SetOf):
 
 
 RelativeDistinguishedName.componentType = AttributeTypeAndValue()
-RelativeDistinguishedName.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+RelativeDistinguishedName.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class RDNSequence(univ.SequenceOf):
@@ -520,7 +520,7 @@ class BuiltInDomainDefinedAttributes(univ.SequenceOf):
 
 
 BuiltInDomainDefinedAttributes.componentType = BuiltInDomainDefinedAttribute()
-BuiltInDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+BuiltInDomainDefinedAttributes.sizeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
 
 ub_extension_attributes = univ.Integer(256)
 
@@ -543,7 +543,7 @@ class ExtensionAttributes(univ.SetOf):
 
 
 ExtensionAttributes.componentType = ExtensionAttribute()
-ExtensionAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_extension_attributes)
+ExtensionAttributes.sizeSpec = constraint.ValueSizeConstraint(1, ub_extension_attributes)
 
 
 class ORAddress(univ.Sequence):
@@ -707,7 +707,7 @@ class TeletexDomainDefinedAttributes(univ.SequenceOf):
 
 
 TeletexDomainDefinedAttributes.componentType = TeletexDomainDefinedAttribute()
-TeletexDomainDefinedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+TeletexDomainDefinedAttributes.sizeSpec = constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
 
 
 class TBSCertList(univ.Sequence):
@@ -906,7 +906,7 @@ class TeletexOrganizationalUnitNames(univ.SequenceOf):
 
 
 TeletexOrganizationalUnitNames.componentType = TeletexOrganizationalUnitName()
-TeletexOrganizationalUnitNames.subtypeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
+TeletexOrganizationalUnitNames.sizeSpec = constraint.ValueSizeConstraint(1, ub_organizational_units)
 
 physical_delivery_office_name = univ.Integer(10)
 
@@ -1078,7 +1078,7 @@ class GeneralNames(univ.SequenceOf):
 
 
 GeneralNames.componentType = GeneralName()
-GeneralNames.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+GeneralNames.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class IssuerAltName(GeneralNames):
@@ -1101,7 +1101,7 @@ PolicyMappings.componentType = univ.Sequence(componentType=namedtype.NamedTypes(
     namedtype.NamedType('subjectDomainPolicy', CertPolicyId())
 ))
 
-PolicyMappings.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+PolicyMappings.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class PolicyQualifierId(univ.ObjectIdentifier):
@@ -1120,7 +1120,7 @@ class SubjectDirectoryAttributes(univ.SequenceOf):
 
 
 SubjectDirectoryAttributes.componentType = Attribute()
-SubjectDirectoryAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+SubjectDirectoryAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 anyPolicy = _OID(id_ce_certificatePolicies, 0)
 
@@ -1199,7 +1199,7 @@ class CertificatePolicies(univ.SequenceOf):
 
 
 CertificatePolicies.componentType = PolicyInformation()
-CertificatePolicies.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+CertificatePolicies.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 id_ce_basicConstraints = _OID(id_ce, 19)
 
@@ -1217,7 +1217,7 @@ class ExtKeyUsageSyntax(univ.SequenceOf):
 
 
 ExtKeyUsageSyntax.componentType = KeyPurposeId()
-ExtKeyUsageSyntax.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+ExtKeyUsageSyntax.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class SubjectAltName(GeneralNames):
@@ -1288,7 +1288,7 @@ class CRLDistributionPoints(univ.SequenceOf):
 
 
 CRLDistributionPoints.componentType = DistributionPoint()
-CRLDistributionPoints.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+CRLDistributionPoints.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class FreshestCRL(CRLDistributionPoints):
@@ -1341,7 +1341,7 @@ class GeneralSubtrees(univ.SequenceOf):
 
 
 GeneralSubtrees.componentType = GeneralSubtree()
-GeneralSubtrees.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+GeneralSubtrees.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class NameConstraints(univ.Sequence):
@@ -1390,7 +1390,7 @@ class AuthorityInfoAccessSyntax(univ.SequenceOf):
 
 
 AuthorityInfoAccessSyntax.componentType = AccessDescription()
-AuthorityInfoAccessSyntax.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+AuthorityInfoAccessSyntax.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 id_ce_issuingDistributionPoint = _OID(id_ce, 28)
 
@@ -1459,7 +1459,7 @@ class SubjectInfoAccessSyntax(univ.SequenceOf):
 
 
 SubjectInfoAccessSyntax.componentType = AccessDescription()
-SubjectInfoAccessSyntax.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+SubjectInfoAccessSyntax.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class KeyUsage(univ.BitString):

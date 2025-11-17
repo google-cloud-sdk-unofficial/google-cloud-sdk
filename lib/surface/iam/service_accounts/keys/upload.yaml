@@ -29,5 +29,6 @@
   request:
     collection: iam.projects.serviceAccounts.keys
     modify_request_hooks:
+    - googlecloudsdk.command_lib.iam.hooks:EraseProjectHook
     - googlecloudsdk.command_lib.iam.hooks:SetServiceAccountResource
     method: upload

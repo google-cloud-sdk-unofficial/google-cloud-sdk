@@ -27,19 +27,19 @@ _CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/default'
 # TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Get(base.Command):
-  """Get content security providers from MCP policy of a project.
+  """Get MCP content security providers for a project.
 
-  Get content security providers from MCP policy of a project.
+  Get MCP content security providers for a project.
 
   ## EXAMPLES
 
-  Get content security providers from MCP policy of a project:
+  Get MCP content security providers for a project:
 
     $ {command}
 
-  Get content security providers from MCP policy of a project `my-project`:
+  Get MCP content security providers for a project `my-project`:
 
     $ {command} --project=my-project
   """

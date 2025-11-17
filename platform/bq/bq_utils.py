@@ -388,7 +388,7 @@ def ParseTagKeys(tag_keys: str) -> List[str]:
 
 def GetUserAgent() -> str:
   """Returns the user agent for BigQuery API requests based on environment and version."""
-  google_python_client_name = 'google-api-python-client (gzip)'
+  google_python_client_name = 'google-api-python-client'
   if os.environ.get('CLOUDSDK_WRAPPER') == '1':
     return (
         'google-cloud-sdk'

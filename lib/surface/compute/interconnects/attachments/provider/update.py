@@ -115,7 +115,7 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateBeta, cls).Args(parser)
+    super().Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
     attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
@@ -136,7 +136,7 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
+    super().Args(parser)
     attachment_flags.AddCandidateIpv6Subnets(parser)
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)

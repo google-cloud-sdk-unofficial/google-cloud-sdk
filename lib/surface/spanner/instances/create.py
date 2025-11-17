@@ -195,6 +195,7 @@ class BetaCreate(base.CreateCommand):
         autoscaling_cpu_target_group=True,
         add_asymmetric_total_cpu_target_flag=True,
         add_asymmetric_disable_autoscaling_flags=True,
+        add_disable_downscaling_flag=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)
     parser.display_info.AddCacheUpdater(flags.InstanceCompleter)
@@ -227,6 +228,7 @@ class BetaCreate(base.CreateCommand):
         autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
         asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        disable_downscaling=args.disable_downscaling,
         instance_type=instance_type,
         expire_behavior=expire_behavior,
         edition=args.edition,

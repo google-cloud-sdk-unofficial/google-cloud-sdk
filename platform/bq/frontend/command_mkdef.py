@@ -193,6 +193,9 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
     self.parquet_map_target_type_flag = (
         frontend_flags.define_parquet_map_target_type(flag_values=fv)
     )
+    self.timestamp_target_precision_flag = (
+        frontend_flags.define_timestamp_target_precision(flag_values=fv)
+    )
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(
@@ -264,6 +267,7 @@ class MakeExternalTableDefinition(bigquery_command.BigqueryCmd):
             timestamp_format=self.timestamp_format_flag.value,
             source_column_match=self.source_column_match_flag.value,
             parquet_map_target_type=self.parquet_map_target_type_flag.value,
+            timestamp_target_precision=self.timestamp_target_precision_flag.value,
         ),
         sys.stdout,
         sort_keys=True,

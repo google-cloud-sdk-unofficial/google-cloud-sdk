@@ -46,7 +46,7 @@
       required: false
 
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider_scim_tenant.claim_mapping
-      required: false
+      required: true
 
   output:
     format: yaml

@@ -60,17 +60,21 @@ _PACKET_BROKER_SUPPORTED = (base.ReleaseTrack.ALPHA,)
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class Create(base.CreateCommand):
   """Create a Mirroring Endpoint Group."""
 
   @classmethod
   def Args(cls, parser):
     endpoint_group_flags.AddEndpointGroupResource(cls.ReleaseTrack(), parser)
-    endpoint_group_flags.AddMirroringDeploymentGroupResource(
+
+    # Create the mutually exclusive group
+    endpoint_group_flags.AddDeploymentGroupMutexGroup(
         cls.ReleaseTrack(), parser
     )
+
     endpoint_group_flags.AddMaxWait(
         parser,
         '20m',  # default to 20 minutes wait.
@@ -84,11 +88,17 @@ class Create(base.CreateCommand):
 
   def Run(self, args):
     client = api.Client(self.ReleaseTrack())
-
     endpoint_group = args.CONCEPTS.mirroring_endpoint_group.Parse()
-    mirroring_deployment_group = (
-        args.CONCEPTS.mirroring_deployment_group.Parse()
-    )
+
+    deployment_groups = None
+    if args.IsSpecified('mirroring_deployment_group'):
+      deployment_groups = (
+          args.CONCEPTS.mirroring_deployment_group.Parse().RelativeName()
+      )
+    # Use getattr for safe access, as the flag only exists in ALPHA.
+    elif getattr(args, 'mirroring_deployment_groups', None):
+      deployment_groups = args.mirroring_deployment_groups
+
     labels = labels_util.ParseCreateArgs(
         args, client.messages.MirroringEndpointGroup.LabelsValue
     )
@@ -101,7 +111,7 @@ class Create(base.CreateCommand):
     operation = client.CreateEndpointGroup(
         endpoint_group_id=endpoint_group.Name(),
         parent=endpoint_group.Parent().RelativeName(),
-        mirroring_deployment_group=mirroring_deployment_group.RelativeName(),
+        deployment_groups=deployment_groups,
         description=getattr(args, 'description', None),
         endpoint_group_type=getattr(args, 'type', None),
         labels=labels,

@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class AddIamPolicyBinding(base.Command):
   """Add an IAM policy binding to a Compute Engine backend bucket."""
@@ -57,6 +57,11 @@ class AddIamPolicyBinding(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class AddIamPolicyBindingAlpha(AddIamPolicyBinding):
+  """Add an IAM policy binding to a Compute Engine backend bucket."""
+
 AddIamPolicyBinding.detailed_help = {
     'brief':
         'Add an IAM policy binding to a Compute Engine backend bucket.',
@@ -68,11 +73,15 @@ AddIamPolicyBinding.detailed_help = {
         """\
   To add an IAM policy binding for the role of
   'compute.loadBalancerServiceUser' for the user 'test-user@gmail.com' with
-  backend service 'my-backend-bucket' and region 'REGION', run:
+  backend bucket 'my-backend-bucket' and region 'REGION', run:
 
       $ {command} my-backend-bucket --region=REGION \
         --member='user:test-user@gmail.com' \
         --role='roles/compute.loadBalancerServiceUser'
+
+  To add an IAM policy binding for the role of
+  'compute.loadBalancerServiceUser' for the user 'test-user@gmail.com' with
+  global backend bucket 'my-backend-bucket', run either of the following:
 
       $ {command} my-backend-bucket --global \
         --member='user:test-user@gmail.com' \
@@ -86,6 +95,6 @@ AddIamPolicyBinding.detailed_help = {
   policy role and member types.
   """,
     'API REFERENCE': """\
-   This command uses the compute/alpha API. The full documentation for this
+   This command uses the compute API. The full documentation for this
     API can be found at: https://cloud.google.com/compute/""",
 }

@@ -131,7 +131,7 @@ class UpdateBeta(Update):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateBeta, cls).Args(parser)
+    super().Args(parser)
     flags.AddType(parser)
 
 
@@ -146,6 +146,6 @@ class UpdateAlpha(UpdateBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(UpdateAlpha, cls).Args(parser)
+    super().Args(parser)
     flags.AddBandwidthMetered(parser)
     flags.AddNetworkServiceClass(parser)

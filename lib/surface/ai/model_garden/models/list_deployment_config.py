@@ -26,6 +26,9 @@ from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai import validation
+from googlecloudsdk.command_lib.ai.region_util import (
+    _IsDefaultUniverse,
+)
 from googlecloudsdk.core import exceptions as core_exceptions
 
 
@@ -141,7 +144,6 @@ class ListDeployMentConfig(base.ListCommand):
     validation.ValidateModelGardenModelArgs(args)
     version = constants.BETA_VERSION
 
-    with endpoint_util.AiplatformEndpointOverrides(
-        version, region='us-central1'
-    ):
+    region = 'us-central1' if _IsDefaultUniverse() else None
+    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       return self._GetMultiDeploy(args, version)

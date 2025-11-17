@@ -81,9 +81,24 @@ class DescribeBeta(Describe):
 
   *{command}* displays all data associated with a backend bucket in a
   project.
+
+  To describe a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To describe a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
   """
 
-  _support_regional_global_flags = False
+  _support_regional_global_flags = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -93,6 +108,21 @@ class DescribeAlpha(DescribeBeta):
 
   *{command}* displays all data associated with a backend bucket in a
   project.
+
+  To describe a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To describe a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
   """
 
   _support_regional_global_flags = True

@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20250924",
+  "revision": "20251022",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -3385,7 +3385,7 @@
           "format": "int64"
         },
         "maxSlots": {
-          "description": "Optional. INTERNAL: DO NOT USE. The maximum rate of slot consumption to allow for this job. If set, the number of slots used to execute the job will be throttled to try and keep its slot consumption below the requested rate.",
+          "description": "Optional. A target limit on the rate of slot consumption by this job. If set to a value > 0, BigQuery will attempt to limit the rate of slot consumption by this job to keep it below the configured limit, even if the job is eligible for more slots based on fair scheduling. The unused slots will be available for other jobs and queries to use. Note: This feature is not yet generally available.",
           "type": "integer",
           "format": "int32"
         },
@@ -3706,6 +3706,14 @@
         "timestampFormat": {
           "description": "Optional. Format used to parse TIMESTAMP values. Supports C-style and SQL-style values.",
           "type": "string"
+        },
+        "timestampTargetPrecision": {
+          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV. For the CSV Format, Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       }
     },
@@ -3986,6 +3994,10 @@
         "onlyReadLatest": {
           "description": "Optional. If this is set only the latest version of value are exposed for all columns in this column family. This can be overridden for a specific column by listing that column in 'columns' and specifying a different setting for that column.",
           "type": "boolean"
+        },
+        "protoConfig": {
+          "description": "Optional. Protobuf-specific configurations, only takes effect when the encoding is PROTO_BINARY.",
+          "$ref": "BigtableProtoConfig"
         }
       }
     },
@@ -4018,6 +4030,25 @@
         "onlyReadLatest": {
           "description": "Optional. If this is set, only the latest version of value in this column are exposed. 'onlyReadLatest' can also be set at the column family level. However, the setting at this level takes precedence if 'onlyReadLatest' is set at both levels.",
           "type": "boolean"
+        },
+        "protoConfig": {
+          "description": "Optional. Protobuf-specific configurations, only takes effect when the encoding is PROTO_BINARY.",
+          "$ref": "BigtableProtoConfig"
+        }
+      }
+    },
+    "BigtableProtoConfig": {
+      "id": "BigtableProtoConfig",
+      "description": "Information related to a Bigtable protobuf column.",
+      "type": "object",
+      "properties": {
+        "schemaBundleId": {
+          "description": "Optional. The ID of the Bigtable SchemaBundle resource associated with this protobuf. The ID should be referred to within the parent table, e.g., `foo` rather than `projects\/{project}\/instances\/{instance}\/tables\/{table}\/schemaBundles\/foo`.",
+          "type": "string"
+        },
+        "protoMessageName": {
+          "description": "Optional. The fully qualified proto message name of the protobuf. In the format of \"foo.bar.Message\".",
+          "type": "string"
         }
       }
     },
@@ -4624,6 +4655,14 @@
             "POSITION",
             "NAME"
           ]
+        },
+        "timestampTargetPrecision": {
+          "description": "Precisions (maximum number of total digits in base 10) for seconds of TIMESTAMP types that are allowed to the destination table for autodetection mode. Available for the formats: CSV. For the CSV Format, Possible values include: Not Specified, [], or [6]: timestamp(6) for all auto detected TIMESTAMP columns [6, 12]: timestamp(6) for all auto detected TIMESTAMP columns that have less than 6 digits of subseconds. timestamp(12) for all auto detected TIMESTAMP columns that have more than 6 digits of subseconds. [12]: timestamp(12) for all auto detected TIMESTAMP columns. The order of the elements in this array is ignored. Inputs that have higher precision than the highest target precision in this array will be truncated.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       }
     },
@@ -4993,6 +5032,14 @@
             "ENTERPRISE",
             "ENTERPRISE_PLUS"
           ]
+        },
+        "reservationGroupPath": {
+          "description": "Output only. The reservation group path of the reservation assigned to this job. This field has a limit of 10 nested reservation groups. This is to maintain consistency between reservatins info schema and jobs info schema. The first reservation group is the root reservation group and the last is the leaf or lowest level reservation group.",
+          "readOnly": true,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -5946,6 +5993,10 @@
         "baseTable": {
           "description": "The base table reference.",
           "$ref": "TableReference"
+        },
+        "indexId": {
+          "description": "The index id.",
+          "type": "string"
         },
         "preIndexPruningParallelInputCount": {
           "description": "The number of parallel inputs before index pruning.",
@@ -6930,7 +6981,7 @@
           "format": "int64"
         },
         "maxSlots": {
-          "description": "Optional. INTERNAL: DO NOT USE. The maximum rate of slot consumption to allow for this job. If set, the number of slots used to execute the job will be throttled to try and keep its slot consumption below the requested rate. This limit is best effort.",
+          "description": "Optional. A target limit on the rate of slot consumption by this query. If set to a value > 0, BigQuery will attempt to limit the rate of slot consumption by this query to keep it below the configured limit, even if the query is eligible for more slots based on fair scheduling. The unused slots will be available for other jobs and queries to use. Note: This feature is not yet generally available.",
           "type": "integer",
           "format": "int32"
         },

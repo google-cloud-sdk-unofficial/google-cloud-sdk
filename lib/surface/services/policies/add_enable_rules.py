@@ -116,7 +116,7 @@ class AddEnableRules(base.SilentCommand):
         args.organization if args.IsSpecified('organization') else None
     )
 
-    op = serviceusage.AddEnableRule(
+    op, _ = serviceusage.AddEnableRule(
         args.service,
         project,
         args.policy_name,

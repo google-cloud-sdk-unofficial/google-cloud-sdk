@@ -31,7 +31,6 @@ OP_WAIT_CMD = OP_BASE_CMD + 'wait {0}'
 
 # TODO(b/321801975) make command public after preview.
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DisableAlpha(base.SilentCommand):
   """Disable a service for consumption for a project, folder or organization.

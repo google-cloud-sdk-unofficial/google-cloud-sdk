@@ -265,7 +265,7 @@ class UpdateHelper(object):
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
   _support_target_service_arg = False
@@ -290,9 +290,15 @@ class Update(base.UpdateCommand):
     ).Run(args)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Google Compute Engine service attachment."""
+  _support_endpoint_based_security_arg = True
+  detailed_help = _DetailedHelp()
+
+
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class UpdateAlpha(Update):
+class UpdateAlpha(UpdateBeta):
   """Update a Google Compute Engine service attachment."""
   _support_target_service_arg = True
-  _support_endpoint_based_security_arg = True
   detailed_help = _DetailedHelp()

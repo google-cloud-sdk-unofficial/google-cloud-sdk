@@ -19,7 +19,6 @@ from googlecloudsdk.calliope import base
 
 # TODO(b/274633761) make command public after suv2 launch.
 @base.UniverseCompatible
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Groups(base.Group):
   """View service group information."""

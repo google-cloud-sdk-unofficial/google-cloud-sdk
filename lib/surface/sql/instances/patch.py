@@ -377,7 +377,6 @@ def AddBetaArgs(parser):
   labels_util.AddUpdateLabelsFlags(parser, enable_clear=True)
   flags.AddReplicationLagMaxSecondsForRecreate(parser)
   flags.AddReconcilePsaNetworking(parser)
-  flags.AddEnableAcceleratedReplicaMode(parser)
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
@@ -515,14 +514,6 @@ def RunBasePatchCommand(args, release_track):
             'argument --reconcile-psa-networking cannot be specified with other'
             ' arguments excluding gcloud wide flags'
         )
-
-  if args.IsKnownAndSpecified('enable_accelerated_replica_mode'):
-    if not api_util.InstancesV1Beta4.IsMysqlDatabaseVersion(
-        original_instance_resource.databaseVersion
-    ):
-      raise exceptions.ArgumentError(
-          '--enable-accelerated-replica-mode is only supported for MySQL.'
-      )
 
   patch_instance = command_util.InstancesV1Beta4.ConstructPatchInstanceFromArgs(
       sql_messages,

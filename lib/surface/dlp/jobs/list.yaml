@@ -18,7 +18,7 @@
       List Cloud DLP jobs.
 
   request:
-    collection: dlp.projects.dlpJobs
+    collection: dlp.projects.locations.dlpJobs
     api_version: v2
 
   response:
@@ -39,9 +39,9 @@
       - arg_value: risk-analysis
         enum_value: RISK_ANALYSIS_JOB
 
-    resource:  # TODO: Remove when (b/79129961) is resolved.
-      help_text: The project to list jobs for.
-      spec: !REF googlecloudsdk.command_lib.dlp.resources:project
+    resource:
+      help_text: The location to list jobs for.
+      spec: !REF googlecloudsdk.command_lib.dlp.resources:location
 
 
   output:

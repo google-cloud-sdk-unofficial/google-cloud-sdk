@@ -4,7 +4,7 @@
 # This file is part of pyasn1-modules software.
 #
 # Created by Stanisław Pitucha with asn1ate tool.
-# Copyright (c) 2005-2018, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pyasn1/license.html
 #
 # Cryptographic Message Syntax (CMS)
@@ -55,7 +55,7 @@ class SignedAttributes(univ.SetOf):
 
 
 SignedAttributes.componentType = Attribute()
-SignedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+SignedAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class OtherRevocationInfoFormat(univ.Sequence):
@@ -310,7 +310,7 @@ class RecipientInfos(univ.SetOf):
 
 
 RecipientInfos.componentType = RecipientInfo()
-RecipientInfos.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+RecipientInfos.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class DigestAlgorithmIdentifier(rfc3280.AlgorithmIdentifier):
@@ -337,7 +337,7 @@ class UnprotectedAttributes(univ.SetOf):
 
 
 UnprotectedAttributes.componentType = Attribute()
-UnprotectedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+UnprotectedAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class ContentType(univ.ObjectIdentifier):
@@ -431,7 +431,7 @@ class UnauthAttributes(univ.SetOf):
 
 
 UnauthAttributes.componentType = Attribute()
-UnauthAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+UnauthAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class ExtendedCertificateInfo(univ.Sequence):
@@ -551,7 +551,7 @@ class UnsignedAttributes(univ.SetOf):
 
 
 UnsignedAttributes.componentType = Attribute()
-UnsignedAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+UnsignedAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class SignatureValue(univ.OctetString):
@@ -633,7 +633,7 @@ class AuthAttributes(univ.SetOf):
 
 
 AuthAttributes.componentType = Attribute()
-AuthAttributes.subtypeSpec = constraint.ValueSizeConstraint(1, MAX)
+AuthAttributes.sizeSpec = constraint.ValueSizeConstraint(1, MAX)
 
 
 class AuthenticatedData(univ.Sequence):

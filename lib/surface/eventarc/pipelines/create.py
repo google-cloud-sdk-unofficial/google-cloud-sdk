@@ -27,13 +27,13 @@ from googlecloudsdk.core import log
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
     'EXAMPLES': """ \
-        To create a new pipeline `my-pipeline` in location `us-central1` with its destination targeting HTTP endpoint URI 'https://example-endpoint.com' and network attachment 'my-network-attachment', run:
+        To create a new pipeline `my-pipeline` in location `us-central1` with its destination targeting HTTP endpoint URI 'https://example-endpoint.com', run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination and a message binding template, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',http_endpoint_message_binding_template='{"headers": {"new-header-key": "new-header-value"}}',network_attachment=my-network-attachment
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',http_endpoint_message_binding_template='{"headers": {"new-header-key": "new-header-value"}}'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with a Cloud Workflow destination `my-workflow`, run:
 
@@ -53,47 +53,47 @@ _DETAILED_HELP = {
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a service account `example-service-account@example-project.gserviceaccount.iam.com` for OIDC authentication, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,google_oidc_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',google_oidc_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a service account `example-service-account@example-project.gserviceaccount.iam.com` for OIDC authentication with audience `https://example.com`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,google_oidc_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com,google_oidc_authentication_audience='https://example.com'
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',google_oidc_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com,google_oidc_authentication_audience='https://example.com'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a service account `example-service-account@example-project.gserviceaccount.iam.com` for OAuth token authentication, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,oauth_token_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',oauth_token_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a service account `example-service-account@example-project.gserviceaccount.iam.com` for OAuth token authentication with scope `https://www.googleapis.com/auth/cloud-platform`, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,oauth_token_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com,oauth_token_authentication_scope='https://www.googleapis.com/auth/cloud-platform'
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',oauth_token_authentication_service_account=example-service-account@example-project.gserviceaccount.iam.com,oauth_token_authentication_scope='https://www.googleapis.com/auth/cloud-platform'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and the JSON input and output payload formats, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,output_payload_format_json= --input-payload-format-json=
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',output_payload_format_json= --input-payload-format-json=
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and the Avro input and output payload formats, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,output_payload_format_avro_schema_definition='{"type": "record", "name": "my_record", "fields": [{"name": "my_field", "type": "string"}]}' --input-payload-format-avro-schema-definition='{"type": "record", "name": "my_record", "fields": [{"name": "my_field", "type": "string"}]}'
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',output_payload_format_avro_schema_definition='{"type": "record", "name": "my_record", "fields": [{"name": "my_field", "type": "string"}]}' --input-payload-format-avro-schema-definition='{"type": "record", "name": "my_record", "fields": [{"name": "my_field", "type": "string"}]}'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and the Protobuf input and output payload formats, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment,output_payload_format_protobuf_schema_definition='syntax = "proto3"; message Location { string home_address = 1; }' --input-payload-format-protobuf-schema-definition='syntax = "proto3"; message Location { string home_address = 1; }'
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',output_payload_format_protobuf_schema_definition='syntax = "proto3"; message Location { string home_address = 1; }' --input-payload-format-protobuf-schema-definition='syntax = "proto3"; message Location { string home_address = 1; }'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a transformation mediation, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment --mediations=transformation_template='message.removeFields(["data.credit_card_number","data.ssn"])'
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com'--mediations=transformation_template='message.removeFields(["data.credit_card_number","data.ssn"])'
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a INFO level logging configuration, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment --logging_config=INFO
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com'--logging_config=INFO
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a custom retry policy, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment --max-retry-attempts=10 --min-retry-delay=2s --max-retry-delay=64s
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com' --max-retry-attempts=10 --min-retry-delay=2s --max-retry-delay=64s
 
         To create a new pipeline `my-pipeline` in location `us-central1` with an HTTP endpoint URI destination `https://example-endpoint.com` and a Cloud KMS CryptoKey, run:
 
-          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com',network_attachment=my-network-attachment --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
+          $ {command} my-pipeline --location=us-central1 --destinations=http_endpoint_uri='https://example-endpoint.com'  --crypto-key=projects/PROJECT_ID/locations/KMS_LOCATION/keyRings/KEYRING/cryptoKeys/KEY
         """,
 }
 

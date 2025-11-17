@@ -2,7 +2,7 @@
 #
 # This file is part of pyasn1-modules software.
 #
-# Copyright (c) 2005-2018, Ilya Etingof <etingof@gmail.com>
+# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pyasn1/license.html
 #
 # Certificate Management Protocol structures as per RFC4210
@@ -45,7 +45,7 @@ class PKIFreeText(univ.SequenceOf):
     PKIFreeText ::= SEQUENCE SIZE (1..MAX) OF UTF8String
     """
     componentType = char.UTF8String()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class PollRepContent(univ.SequenceOf):
@@ -355,16 +355,21 @@ class RevRepContent(univ.Sequence):
                                              OPTIONAL
     """
     componentType = namedtype.NamedTypes(
-        namedtype.NamedType('status', PKIStatusInfo()),
+        namedtype.NamedType(
+            'status', univ.SequenceOf(
+                componentType=PKIStatusInfo(),
+                sizeSpec=constraint.ValueSizeConstraint(1, MAX)
+            )
+        ),
         namedtype.OptionalNamedType(
             'revCerts', univ.SequenceOf(componentType=rfc2511.CertId()).subtype(
-                subtypeSpec=constraint.ValueSizeConstraint(1, MAX),
+                sizeSpec=constraint.ValueSizeConstraint(1, MAX),
                 explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 0)
             )
         ),
         namedtype.OptionalNamedType(
             'crls', univ.SequenceOf(componentType=rfc2459.CertificateList()).subtype(
-                subtypeSpec=constraint.ValueSizeConstraint(1, MAX),
+                sizeSpec=constraint.ValueSizeConstraint(1, MAX),
                 explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
             )
         )
@@ -392,12 +397,12 @@ class KeyRecRepContent(univ.Sequence):
         namedtype.OptionalNamedType(
             'caCerts', univ.SequenceOf(componentType=CMPCertificate()).subtype(
                 explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1),
-                subtypeSpec=constraint.ValueSizeConstraint(1, MAX)
+                sizeSpec=constraint.ValueSizeConstraint(1, MAX)
             )
         ),
         namedtype.OptionalNamedType('keyPairHist', univ.SequenceOf(componentType=CertifiedKeyPair()).subtype(
             explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 2),
-            subtypeSpec=constraint.ValueSizeConstraint(1, MAX))
+            sizeSpec=constraint.ValueSizeConstraint(1, MAX))
         )
     )
 
@@ -431,7 +436,8 @@ class CertRepMessage(univ.Sequence):
         namedtype.OptionalNamedType(
             'caPubs', univ.SequenceOf(
                 componentType=CMPCertificate()
-            ).subtype(subtypeSpec=constraint.ValueSizeConstraint(1, MAX), explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))
+            ).subtype(sizeSpec=constraint.ValueSizeConstraint(1, MAX),
+                      explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1))
         ),
         namedtype.NamedType('response', univ.SequenceOf(componentType=CertResponse()))
     )
@@ -738,11 +744,11 @@ class PKIHeader(univ.Sequence):
         namedtype.OptionalNamedType('generalInfo',
                                     univ.SequenceOf(
                                         componentType=InfoTypeAndValue().subtype(
-                                            subtypeSpec=constraint.ValueSizeConstraint(1, MAX),
-                                            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 8)
+                                            sizeSpec=constraint.ValueSizeConstraint(1, MAX)
                                         )
-                                    )
-                                    )
+                                    ).subtype(
+            explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 8))
+        )
     )
 
 
@@ -777,7 +783,7 @@ class PKIMessage(univ.Sequence):
                                     univ.SequenceOf(
                                         componentType=CMPCertificate()
                                     ).subtype(
-                                        subtypeSpec=constraint.ValueSizeConstraint(1, MAX),
+                                        sizeSpec=constraint.ValueSizeConstraint(1, MAX),
                                         explicitTag=tag.Tag(tag.tagClassContext, tag.tagFormatConstructed, 1)
                                     )
                                     )
@@ -789,7 +795,7 @@ class PKIMessages(univ.SequenceOf):
     PKIMessages ::= SEQUENCE SIZE (1..MAX) OF PKIMessage
     """
     componentType = PKIMessage()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 # pyasn1 does not naturally handle recursive definitions, thus this hack:

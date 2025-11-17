@@ -196,7 +196,7 @@
           "type": "boolean"
         },
         "externallyUsedSlots": {
-          "description": "Output only.",
+          "description": "Output only. ",
           "readOnly": true,
           "type": "string",
           "format": "int64"
@@ -280,12 +280,8 @@
           "readOnly": true,
           "$ref": "ReplicationStatus"
         },
-        "projectScheduling": {
-          "description": "Optional. Distribute resources fairly across projects, possibly subject to per-project caps.",
-          "$ref": "ProjectScheduling"
-        },
         "schedulingPolicy": {
-          "description": "Optional. The default scheduling policy to use for jobs running under this reservation.",
+          "description": "Optional. The scheduling policy to use for jobs and queries running under this reservation. The scheduling policy controls how the reservation's resources are distributed. This feature is not yet generally available.",
           "$ref": "SchedulingPolicy"
         }
       }
@@ -371,35 +367,18 @@
         }
       }
     },
-    "ProjectScheduling": {
-      "id": "ProjectScheduling",
-      "description": "Configures project fair scheduling within the reservation.",
-      "type": "object",
-      "properties": {
-        "concurrency": {
-          "description": "Optional. If present, the reservation will attempt to limit the per-project concurrency of jobs running under the reservation to the specified number of jobs.",
-          "type": "string",
-          "format": "int64"
-        },
-        "maxSlots": {
-          "description": "Optional. If present, the reservation will attempt to limit the average slot usage of any project running within it to the specified rate.",
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "SchedulingPolicy": {
       "id": "SchedulingPolicy",
-      "description": "Configures scheduling policy for SubReservation Controls.",
+      "description": "The scheduling policy controls how a reservation's resources are distributed.",
       "type": "object",
       "properties": {
         "concurrency": {
-          "description": "Optional. If present, the reservation will attempt to limit the per-key concurrency of jobs running under the reservation to the specified number of jobs.",
+          "description": "Optional. If present and > 0, the reservation will attempt to limit the concurrency of jobs running for any particular project within it to the given value. This feature is not yet generally available.",
           "type": "string",
           "format": "int64"
         },
         "maxSlots": {
-          "description": "Optional. If present, the reservation will attempt to limit the average slot usage of any key running within it to the specified rate.",
+          "description": "Optional. If present and > 0, the reservation will attempt to limit the slot consumption of queries running for any particular project within it to the given value. This feature is not yet generally available.",
           "type": "string",
           "format": "int64"
         }
@@ -645,11 +624,6 @@
             "MISSION_CRITICAL"
           ]
         },
-        "neededAutoscaleSlotCount": {
-          "description": "The number of autoscale slots initially requested (needed), but could be subject to squeezing. This field was added for the convenience of coding, but shouldn't be exposed to any customers.",
-          "type": "string",
-          "format": "int64"
-        },
         "isFlatRate": {
           "description": "Output only. If true, the commitment is a flat-rate commitment, otherwise, it's an edition commitment.",
           "readOnly": true,
@@ -810,7 +784,7 @@
           "type": "boolean"
         },
         "schedulingPolicy": {
-          "description": "Optional. The scheduling policy to use for jobs running under this reservation assignment.",
+          "description": "Optional. The scheduling policy to use for jobs and queries of this assignee when running under the associated reservation. The scheduling policy controls how the reservation's resources are distributed. This overrides the default scheduling policy specified on the reservation. This feature is not yet generally available.",
           "$ref": "SchedulingPolicy"
         }
       }

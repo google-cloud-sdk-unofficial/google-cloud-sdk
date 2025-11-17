@@ -196,9 +196,25 @@ class CreateBeta(Create):
   *{command}* is used to create backend buckets. Backend buckets
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
+
+  To create a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To create a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
+
   """
 
-  _support_regional_statera_load_balancers = False
+  _support_regional_statera_load_balancers = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -209,5 +225,20 @@ class CreateAlpha(CreateBeta):
   *{command}* is used to create backend buckets. Backend buckets
   define Google Cloud Storage buckets that can serve content. URL
   maps define which requests are sent to which backend buckets.
+
+  To create a global backend bucket, run either of the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --global
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+
+  To create a regional backend bucket, run the following:
+
+      $ {command} my-backend-bucket
+        --gcs-bucket-name gcs-bucket-1
+        --region=us-central1
   """
   _support_regional_statera_load_balancers = True

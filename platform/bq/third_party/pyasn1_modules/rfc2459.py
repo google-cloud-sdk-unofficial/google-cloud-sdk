@@ -2,7 +2,10 @@
 #
 # This file is part of pyasn1-modules software.
 #
-# Copyright (c) 2005-2018, Ilya Etingof <etingof@gmail.com>
+# Updated by Russ Housley to resolve the TODO regarding the Certificate
+#   Policies Certificate Extension.
+#
+# Copyright (c) 2005-2019, Ilya Etingof <etingof@gmail.com>
 # License: http://snmplabs.com/pyasn1/license.html
 #
 # X.509 message syntax
@@ -355,7 +358,7 @@ class TeletexDomainDefinedAttribute(univ.Sequence):
 
 class TeletexDomainDefinedAttributes(univ.SequenceOf):
     componentType = TeletexDomainDefinedAttribute()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
 
 
 terminal_type = univ.Integer(23)
@@ -546,7 +549,7 @@ teletex_organizational_unit_names = univ.Integer(5)
 
 class TeletexOrganizationalUnitNames(univ.SequenceOf):
     componentType = TeletexOrganizationalUnitName()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_organizational_units)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, ub_organizational_units)
 
 
 teletex_personal_name = univ.Integer(4)
@@ -602,7 +605,7 @@ class ExtensionAttribute(univ.Sequence):
 
 class ExtensionAttributes(univ.SetOf):
     componentType = ExtensionAttribute()
-    subtypeSpec = univ.SetOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_extension_attributes)
+    sizeSpec = univ.SetOf.sizeSpec + constraint.ValueSizeConstraint(1, ub_extension_attributes)
 
 
 class BuiltInDomainDefinedAttribute(univ.Sequence):
@@ -616,16 +619,16 @@ class BuiltInDomainDefinedAttribute(univ.Sequence):
 
 class BuiltInDomainDefinedAttributes(univ.SequenceOf):
     componentType = BuiltInDomainDefinedAttribute()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, ub_domain_defined_attributes)
 
 
 class OrganizationalUnitName(char.PrintableString):
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_organizational_unit_name_length)
+    subtypeSpec = char.PrintableString.subtypeSpec + constraint.ValueSizeConstraint(1, ub_organizational_unit_name_length)
 
 
 class OrganizationalUnitNames(univ.SequenceOf):
     componentType = OrganizationalUnitName()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, ub_organizational_units)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, ub_organizational_units)
 
 
 class PersonalName(univ.Set):
@@ -772,7 +775,7 @@ id_ce_cRLNumber = univ.ObjectIdentifier('2.5.29.20')
 
 
 class CRLNumber(univ.Integer):
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(0, MAX)
+    subtypeSpec = univ.Integer.subtypeSpec + constraint.ValueSizeConstraint(0, MAX)
 
 
 class BaseCRLNumber(CRLNumber):
@@ -797,7 +800,7 @@ class KeyPurposeId(univ.ObjectIdentifier):
 
 class ExtKeyUsageSyntax(univ.SequenceOf):
     componentType = KeyPurposeId()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class ReasonFlags(univ.BitString):
@@ -926,7 +929,7 @@ class PolicyInformation(univ.Sequence):
 
 class CertificatePolicies(univ.SequenceOf):
     componentType = PolicyInformation()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 id_ce_policyMappings = univ.ObjectIdentifier('2.5.29.33')
@@ -941,7 +944,7 @@ class PolicyMapping(univ.Sequence):
 
 class PolicyMappings(univ.SequenceOf):
     componentType = PolicyMapping()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 id_ce_privateKeyUsagePeriod = univ.ObjectIdentifier('2.5.29.16')
@@ -1025,7 +1028,7 @@ class Attribute(univ.Sequence):
 
 class SubjectDirectoryAttributes(univ.SequenceOf):
     componentType = Attribute()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class RelativeDistinguishedName(univ.SetOf):
@@ -1078,7 +1081,7 @@ class GeneralName(univ.Choice):
 
 class GeneralNames(univ.SequenceOf):
     componentType = GeneralName()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class AccessDescription(univ.Sequence):
@@ -1090,7 +1093,7 @@ class AccessDescription(univ.Sequence):
 
 class AuthorityInfoAccessSyntax(univ.SequenceOf):
     componentType = AccessDescription()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class AuthorityKeyIdentifier(univ.Sequence):
@@ -1126,7 +1129,7 @@ class DistributionPoint(univ.Sequence):
 
 class CRLDistPointsSyntax(univ.SequenceOf):
     componentType = DistributionPoint()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class IssuingDistributionPoint(univ.Sequence):
@@ -1156,7 +1159,7 @@ class GeneralSubtree(univ.Sequence):
 
 class GeneralSubtrees(univ.SequenceOf):
     componentType = GeneralSubtree()
-    subtypeSpec = univ.SequenceOf.subtypeSpec + constraint.ValueSizeConstraint(1, MAX)
+    sizeSpec = univ.SequenceOf.sizeSpec + constraint.ValueSizeConstraint(1, MAX)
 
 
 class NameConstraints(univ.Sequence):
@@ -1313,8 +1316,7 @@ _certificateExtensionsMapUpdate = {
     id_ce_subjectKeyIdentifier: SubjectKeyIdentifier(),
     id_ce_keyUsage: KeyUsage(),
     id_ce_privateKeyUsagePeriod: PrivateKeyUsagePeriod(),
-# TODO
-#    id_ce_certificatePolicies: PolicyInformation(),  # could be a sequence of concat'ed objects?
+    id_ce_certificatePolicies: CertificatePolicies(),
     id_ce_policyMappings: PolicyMappings(),
     id_ce_subjectAltName: SubjectAltName(),
     id_ce_issuerAltName: IssuerAltName(),

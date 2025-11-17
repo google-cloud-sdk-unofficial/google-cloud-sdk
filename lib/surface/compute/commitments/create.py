@@ -53,6 +53,7 @@ class Create(base.Command):
   _support_existing_reservation = True
   _support_reservation_sharing_policy = False
   _support_60_month_plan = False
+  _support_24_month_plan = False
 
   detailed_help = {'EXAMPLES': """
         To create a commitment called ``commitment-1'' in the ``us-central1''
@@ -72,6 +73,7 @@ class Create(base.Command):
         support_existing_reservation=cls._support_existing_reservation,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
+        support_24_month_plan=cls._support_24_month_plan,
     )
 
   def _MakeCreateRequest(
@@ -185,6 +187,7 @@ class CreateBeta(Create):
   _support_existing_reservation = True
   _support_reservation_sharing_policy = True
   _support_60_month_plan = False
+  _support_24_month_plan = False
 
   @classmethod
   def Args(cls, parser):
@@ -196,6 +199,7 @@ class CreateBeta(Create):
         support_existing_reservation=cls._support_existing_reservation,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
+        support_24_month_plan=cls._support_24_month_plan,
     )
 
 
@@ -209,6 +213,7 @@ class CreateAlpha(CreateBeta):
   _support_existing_reservation = True
   _support_reservation_sharing_policy = True
   _support_60_month_plan = True
+  _support_24_month_plan = True
 
   @classmethod
   def Args(cls, parser):
@@ -220,6 +225,7 @@ class CreateAlpha(CreateBeta):
         support_existing_reservation=cls._support_existing_reservation,
         support_reservation_sharing_policy=cls._support_reservation_sharing_policy,
         support_60_month_plan=cls._support_60_month_plan,
+        support_24_month_plan=cls._support_24_month_plan,
     )
 
   def _MakeCreateRequest(

@@ -51,7 +51,7 @@ class List(base.ListCommand):
             'The location in which to list Storage Pools.')
     ]).AddToParser(parser)
     parser.display_info.AddFormat(
-        storagepools_flags.STORAGE_POOLS_LIST_FORMAT_GA
+        storagepools_flags.STORAGE_POOLS_LIST_FORMAT
     )
 
   def Run(self, args):
@@ -74,13 +74,6 @@ class ListBeta(List):
   """List Cloud NetApp Storage Pools."""
 
   _RELEASE_TRACK = base.ReleaseTrack.BETA
-
-  @staticmethod
-  def Args(parser):
-    List.Args(parser)
-    parser.display_info.AddFormat(
-        storagepools_flags.STORAGE_POOLS_LIST_FORMAT
-    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

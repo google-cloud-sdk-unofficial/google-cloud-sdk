@@ -29,8 +29,79 @@ _GROUP_RESOURCE = 'groups/%s'
 
 # TODO(b/321801975) make command public after suv2 launch.
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ListExpandedMembersAlpha(base.ListCommand):
+  """List expanded members of a specific service and group.
+
+  List expanded members of a specific service and group.
+
+  ## EXAMPLES
+
+   List expanded members of service my-service and group my-group:
+
+   $ {command} my-service my-group
+
+   List expanded members of service my-service and group my-group
+   for a specific project '12345678':
+
+    $ {command} my-service my-group --project=12345678
+  """
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument('service', help='Name of the service.')
+    parser.add_argument(
+        'group', help='Service group name, for example "dependencies".'
+    )
+    common_flags.add_resource_args(parser)
+
+    base.PAGE_SIZE_FLAG.SetDefault(parser, 50)
+
+    # Remove unneeded list-related flags from parser
+    base.URI_FLAG.RemoveFromParser(parser)
+
+    parser.display_info.AddFormat("""
+          table(
+            Name:label=''
+          )
+        """)
+
+  def Run(self, args):
+    """Run command.
+
+    Args:
+      args: an argparse namespace. All the arguments that were provided to this
+        command invocation.
+
+    Returns:
+      Resource name and its parent name.
+    """
+    if args.IsSpecified('folder'):
+      resource_name = _FOLDER_RESOURCE % args.folder
+    elif args.IsSpecified('organization'):
+      resource_name = _ORGANIZATION_RESOURCE % args.organization
+    elif args.IsSpecified('project'):
+      resource_name = _PROJECT_RESOURCE % args.project
+    else:
+      project = properties.VALUES.core.project.Get(required=True)
+      resource_name = _PROJECT_RESOURCE % project
+    response = serviceusage.ListExpandedMembers(
+        resource_name,
+        '{}/{}'.format(
+            _SERVICE_RESOURCE % args.service, _GROUP_RESOURCE % args.group
+        ),
+        page_size=args.page_size,
+    )
+    service_names = []
+    results = collections.namedtuple('Service', ['name'])
+    for service in response:
+      service_names.append(results(name=service))
+    return service_names
+
+
+@base.UniverseCompatible
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class ListExpandedMembers(base.ListCommand):
   """List expanded members of a specific service and group.
 

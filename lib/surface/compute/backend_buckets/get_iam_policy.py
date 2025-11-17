@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import backend_buckets_u
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Compute Engine backend bucket."""
@@ -48,6 +48,11 @@ class GetIamPolicy(base.ListCommand):
     return backend_buckets_utils.GetIamPolicy(backend_bucket_ref, client)
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class GetIamPolicyAlpha(GetIamPolicy):
+  """Get the IAM policy for a Compute Engine backend bucket."""
+
 GetIamPolicy.detailed_help = {
     'brief': 'Get the IAM policy for a Compute Engine backend bucket.',
     'DESCRIPTION': """\
@@ -61,9 +66,12 @@ GetIamPolicy.detailed_help = {
     $ {parent} set-iam-policy for additional details.  """,
     'EXAMPLES':
         """\
-    To print the IAM policy for a given backend bucket, run:
+    To print the IAM policy for a given regional backend bucket, run:
 
       $ {command} my-backend-bucket --region=REGION
+
+    To print the IAM policy for a given global backend bucket, run either of
+    the following:
 
       $ {command} my-backend-bucket --global
 
@@ -71,6 +79,6 @@ GetIamPolicy.detailed_help = {
       """,
     'API REFERENCE':
     """\
-        This command uses the compute/alpha API. The full documentation for this
+        This command uses the compute API. The full documentation for this
     API can be found at: https://cloud.google.com/compute/""",
 }

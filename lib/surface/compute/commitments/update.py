@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
       """}
 
   _support_60_month_plan = False
+  _support_24_month_plan = False
 
   @classmethod
   def Args(cls, parser):
@@ -60,7 +61,8 @@ class Update(base.UpdateCommand):
         parser, operation_type='update'
     )
     flags.AddUpdateFlags(
-        parser, support_60_month_plan=cls._support_60_month_plan
+        parser, support_60_month_plan=cls._support_60_month_plan,
+        support_24_month_plan=cls._support_24_month_plan,
     )
     flags.AddCustomEndTime(parser)
 
@@ -152,6 +154,7 @@ class UpdateBeta(Update):
   """Update Compute Engine commitments."""
 
   _support_60_month_plan = False
+  _support_24_month_plan = False
 
 
 @base.UniverseCompatible
@@ -160,3 +163,4 @@ class UpdateAlpha(UpdateBeta):
   """Update Compute Engine commitments."""
 
   _support_60_month_plan = True
+  _support_24_month_plan = True

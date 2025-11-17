@@ -263,7 +263,10 @@ def format_acl(acl: DatasetAccess) -> str:
       routine_reference = str(
           bq_id_utils.ApiClientHelper.RoutineReference(**routine)
       )
-      acl_entries['ROUTINE', ()].append(routine_reference)
+      if role:
+        acl_entries[role, ()].append('ROUTINE: %s' % routine_reference)
+      else:
+        acl_entries['ROUTINE', ()].append(routine_reference)
     else:
       condition = cast(Dict[str, str], entry.pop('condition', None))
       if not role or len(list(entry.values())) != 1:

@@ -166,6 +166,9 @@ class DeployAlpha(DeployBeta):
     # Flags specific to the Alpha track
     flags.AddBuildpackStackFlag(parser)
 
+    # Flags specific to the Direct VPC
+    flags.AddAllDirectVpcFlags(parser)
+
 
 DETAILED_HELP = {
     'EXAMPLES': """\

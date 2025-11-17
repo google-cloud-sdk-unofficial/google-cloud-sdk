@@ -69,7 +69,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
     attachment_flags.AddSubnetLength(parser)
 
-  def _Run(self, args):
+  def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     attachment_ref = self.INTERCONNECT_ATTACHMENT_ARG.ResolveAsResource(
         args,
@@ -152,10 +152,6 @@ class Create(base.CreateCommand):
                'more detailed help.'.format(_DOCUMENTATION_LINK))
     log.status.Print(message)
 
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args)
-
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -169,16 +165,12 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateBeta, cls).Args(parser)
+    super().Args(parser)
     attachment_flags.AddCandidateCloudRouterIpAddress(parser)
     attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
     attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
     attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
     attachment_flags.AddResourceManagerTags(parser)
-
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args)
 
 
 @base.UniverseCompatible
@@ -193,10 +185,6 @@ class CreateAlpha(CreateBeta):
 
   @classmethod
   def Args(cls, parser):
-    super(CreateAlpha, cls).Args(parser)
+    super().Args(parser)
     attachment_flags.AddEnableMulticast(parser)
     attachment_flags.AddDryRun(parser)
-
-  def Run(self, args):
-    """See base.CreateCommand."""
-    return self._Run(args)

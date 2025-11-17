@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.compute.backend_buckets import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class SetIamPolicy(base.Command):
   """Set the IAM policy binding for a Compute Engine backend bucket."""
@@ -56,6 +56,12 @@ class SetIamPolicy(base.Command):
     )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class SetIamPolicyAlpha(SetIamPolicy):
+  """Set the IAM policy binding for a Compute Engine backend bucket."""
+
+
 SetIamPolicy.detailed_help = {
     'brief': 'Set the IAM policy binding for a Compute Engine backend bucket.',
     'DESCRIPTION': """\
@@ -64,9 +70,12 @@ SetIamPolicy.detailed_help = {
     JSON or YAML file.  """,
     'EXAMPLES': """\
     The following command will read an IAM policy defined in a JSON file
-    'policy.json' and set it for the backend bucket `my-backend-bucket`:
+    'policy.json' and set it for the regionalbackend bucket `my-backend-bucket`:
 
       $ {command} my-backend-bucket policy.json --region=REGION
+
+    The following commands will read an IAM policy defined in a JSON file
+    'policy.json' and set it for the global backend bucket `my-backend-bucket`:
 
       $ {command} my-backend-bucket policy.json --global
 
@@ -76,6 +85,6 @@ SetIamPolicy.detailed_help = {
     policy file format and contents.
     """,
     'API REFERENCE': """\
-    This command uses the compute/alpha API. The full documentation for this
+    This command uses the compute API. The full documentation for this
     API can be found at: https://cloud.google.com/compute/""",
 }

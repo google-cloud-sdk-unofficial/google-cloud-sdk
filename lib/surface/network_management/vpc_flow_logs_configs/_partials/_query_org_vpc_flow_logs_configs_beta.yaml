@@ -19,15 +19,14 @@
   - BETA
   auto_generated: true
   help_text:
-    brief: Fetch all organization-level VPC Flow Logs configurations associated with
-      the project.
+    brief: Fetch all organization-level VPC Flow Logs configurations associated with the project.
     description: |-
       Fetch all organization-level VPC Flow Logs configurations that the project is associated with.
       This method allows you to retrieve which organization-level configurations are applied to the current project.
     examples: |-
       To fetch all the organization-level VPC Flow Logs configurations associated with the project, run:
 
-      $ {command} --location=global
+        $ {command} --location=global
   arguments:
     params:
     - help_text: |-
