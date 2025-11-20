@@ -43,7 +43,13 @@
         required: false
         mutex: true
         params:
-        - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:skip_os_adaptation
+        - group:
+            params:
+            - group:
+                required: true
+                params:
+                - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:skip_os_adaptation
+            - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:guest_os_features
         - group:
             params:
             - _REF_: googlecloudsdk.command_lib.migration.vms.image_import.disk_image_import.flags:generalize

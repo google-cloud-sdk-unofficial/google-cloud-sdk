@@ -1,0 +1,35 @@
+release_tracks: [ALPHA]
+help_text:
+  brief: |
+    Import an `SwpSecurityExtension` resource.
+  description: |
+    Import an `SwpSecurityExtension` resource defined in a YAML file.
+  examples: |
+    To import an `SwpSecurityExtension` resource named
+    `my-swp-security-extension` from a YAML file in `us-central1`, run:
+
+        $ {command} my-swp-security-extension --source=my-swp-security-extension.yaml --location=us-central1
+
+request:
+  collection: networkservices.projects.locations.swpSecurityExtensions
+  ALPHA:
+    api_version: v1alpha1
+
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:swpSecurityExtension
+    help_text: |
+      The ID of the new or updated `SwpSecurityExtension` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+import:
+  abort_if_equivalent: true
+  create_if_not_exists: true
+  create_request:
+    collection: networkservices.projects.locations.swpSecurityExtensions
+    ALPHA:
+      api_version: v1alpha1
+    method: create

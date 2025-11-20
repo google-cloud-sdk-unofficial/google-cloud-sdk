@@ -460,9 +460,8 @@ class Update(base.UpdateCommand):
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
-    flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=False, hidden=True
-    )
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
+    flags.AddEnableSliceControllerFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -632,6 +631,7 @@ class Update(base.UpdateCommand):
     opts.enable_kernel_module_signature_enforcement = (
         args.enable_kernel_module_signature_enforcement
     )
+    opts.enable_slice_controller = args.enable_slice_controller
     return opts
 
   def Run(self, args):
@@ -1300,9 +1300,8 @@ class UpdateBeta(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
-    flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=True, hidden=True
-    )
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
+    flags.AddEnableSliceControllerFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1680,9 +1679,8 @@ class UpdateAlpha(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
-    flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=True, hidden=True
-    )
+    flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
+    flags.AddEnableSliceControllerFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)

@@ -36,7 +36,6 @@ _TRANSFORMS = {'location_transform': _transform_location}
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
   """List returns all the Insights dataset configs for given location."""
 

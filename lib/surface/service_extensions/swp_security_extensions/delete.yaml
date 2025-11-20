@@ -1,0 +1,27 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Delete an `SwpSecurityExtension` resource.
+  description: |
+    Delete the specified `SwpSecurityExtension` resource.
+  examples: |
+      To delete an `SwpSecurityExtension` resource named
+      `my-swp-security-extension` in `us-central1`, run:
+
+        $ {command} my-swp-security-extension --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:swpSecurityExtension
+    help_text: |
+      The ID of the deleted `SwpSecurityExtension` resource.
+
+async:
+  collection: networkservices.projects.locations.operations
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+
+  collection: networkservices.projects.locations.swpSecurityExtensions

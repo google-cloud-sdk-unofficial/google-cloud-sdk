@@ -168,6 +168,8 @@ class CreateBeta(Create):
         parser, show_negated_in_help=True
     )
 
+    flags.AddAutoscalerCreateFlags(parser)
+
   def ConstructCreateRequestFromArgs(
       self, client, alloydb_messages, cluster_ref, args
   ):

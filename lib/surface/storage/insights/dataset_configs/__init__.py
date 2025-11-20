@@ -23,6 +23,5 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DatasetConfigs(base.Group):
   """Manage Cloud Storage Insights dataset configurations."""

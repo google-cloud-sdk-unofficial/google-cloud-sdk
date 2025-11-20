@@ -133,7 +133,7 @@ for examples.
   flags.AddEnableKubeletReadonlyPortFlag(parser)
   flags.AddGpuDirectStrategyFlag(parser)
   flags.AddEnableKernelModuleSignatureEnforcementFlag(
-      parser, for_node_pool=True, hidden=True
+      parser, for_node_pool=True
   )
   flags.AddEnableLustreMultiRailFlag(parser, hidden=True)
 

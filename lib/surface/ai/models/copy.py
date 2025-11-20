@@ -46,12 +46,7 @@ class CopyV1(base.CreateCommand):
 
   def __init__(self, *args, **kwargs):
     super(CopyV1, self).__init__(*args, **kwargs)
-    client_instance = apis.GetClientInstance(
-        constants.AI_PLATFORM_API_NAME,
-        constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
-    self.messages = client.ModelsClient(
-        client=client_instance,
-        messages=client_instance.MESSAGES_MODULE).messages
+    self.messages = None
 
   @staticmethod
   def Args(parser):
@@ -65,6 +60,7 @@ class CopyV1(base.CreateCommand):
       client_instance = apis.GetClientInstance(
           constants.AI_PLATFORM_API_NAME,
           constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      self.messages = client_instance.MESSAGES_MODULE
       operation = client.ModelsClient(
           client=client_instance,
           messages=client_instance.MESSAGES_MODULE).CopyV1(
@@ -93,7 +89,7 @@ class CopyV1Beta1(CopyV1):
 
   def __init__(self, *args, **kwargs):
     super(CopyV1Beta1, self).__init__(*args, **kwargs)
-    self.messages = client.ModelsClient().messages
+    self.messages = None
 
   @staticmethod
   def Args(parser):
@@ -107,6 +103,7 @@ class CopyV1Beta1(CopyV1):
       client_instance = apis.GetClientInstance(
           constants.AI_PLATFORM_API_NAME,
           constants.AI_PLATFORM_API_VERSION[constants.BETA_VERSION])
+      self.messages = client_instance.MESSAGES_MODULE
       operation = client.ModelsClient(
           client=client_instance,
           messages=client_instance.MESSAGES_MODULE).CopyV1Beta1(

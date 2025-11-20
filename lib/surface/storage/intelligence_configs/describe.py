@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.storage import flags
 # TODO: b/369949089 - Remove default universe flag after checking the
 # availability of storage intelligence in different universes.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describes storage intelligence configuration."""
 

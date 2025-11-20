@@ -134,7 +134,7 @@ class Update(base.UpdateCommand):
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=True, hidden=True
+        group, for_node_pool=True
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
@@ -341,7 +341,7 @@ class UpdateBeta(Update):
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
 
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=True, hidden=True
+        group, for_node_pool=True
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
@@ -480,7 +480,7 @@ class UpdateAlpha(Update):
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
 
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
-        group, for_node_pool=True, hidden=True
+        group, for_node_pool=True
     )
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 

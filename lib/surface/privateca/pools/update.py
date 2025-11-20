@@ -53,6 +53,7 @@ class Update(base.UpdateCommand):
         parser, 'to update')
     flags.AddPublishingOptionsFlags(parser, use_update_help_text=True)
     flags.AddCaPoolIssuancePolicyFlag(parser)
+    flags.AddEncryptionKeyFlag(parser)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):

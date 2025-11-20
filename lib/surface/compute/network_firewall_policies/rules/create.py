@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for creating network firewall policy rules."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_utils
 from googlecloudsdk.api_lib.compute.network_firewall_policies import client
@@ -39,6 +35,7 @@ class Create(base.CreateCommand):
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
   support_target_type = False
+  support_network_context = False
 
   @classmethod
   def Args(cls, parser):
@@ -89,6 +86,9 @@ class Create(base.CreateCommand):
     if cls.support_target_type:
       flags.AddTargetType(parser)
       flags.AddTargetForwardingRules(parser)
+    if cls.support_network_context:
+      flags.AddSrcNetworkContext(parser)
+      flags.AddDestNetworkContext(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
@@ -120,6 +120,8 @@ class Create(base.CreateCommand):
     src_network_scope = None
     src_networks = []
     dest_network_scope = None
+    src_network_context = None
+    dest_network_context = None
     target_type = None
     target_forwarding_rules = []
 
@@ -207,6 +209,25 @@ class Create(base.CreateCommand):
           dest_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkScopeValueValuesEnum(
               args.dest_network_type
           )
+    if self.support_network_context:
+      if args.IsSpecified('src_network_context'):
+        if not args.src_network_context:
+          src_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
+              args.src_network_context
+          )
+      if args.IsSpecified('dest_network_context'):
+        if not args.dest_network_context:
+          dest_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
+              args.dest_network_context
+          )
 
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
@@ -229,6 +250,9 @@ class Create(base.CreateCommand):
           srcSecureTags=src_secure_tags,
       )
 
+    if self.support_network_context:
+      matcher.srcNetworkContext = src_network_context
+      matcher.destNetworkContext = dest_network_context
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
     if args.IsSpecified('dest_address_groups'):
@@ -298,7 +322,8 @@ class CreateBeta(Create):
   """
 
   support_network_scopes = True
-  support_target_type = False
+  support_target_type = True
+  support_network_context = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -310,6 +335,7 @@ class CreateAlpha(Create):
 
   support_network_scopes = True
   support_target_type = True
+  support_network_context = True
 
 
 Create.detailed_help = {

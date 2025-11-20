@@ -170,6 +170,8 @@ class UpdateBeta(Update):
         parser, show_negated_in_help=True
     )
 
+    flags.AddAutoscalerUpdateFlags(parser)
+
   def ConstructPatchRequestFromArgs(self, alloydb_messages, instance_ref, args):
     return instance_helper.ConstructPatchRequestFromArgsBeta(
         alloydb_messages, instance_ref, args

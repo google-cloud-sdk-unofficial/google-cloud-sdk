@@ -428,6 +428,94 @@
                   resource_method_params:
                     connection.bitbucketCloudConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: true
+        - group:
+            api_field: connection.httpConfig
+            required: false
+            hidden: true
+            help_text: |-
+              Configuration for connections to an HTTP service provider.
+            params:
+            - group:
+                mutex: true
+                help_text: |-
+                  Arguments for the authentication.
+                params:
+                - group:
+                    api_field: connection.httpConfig.basicAuthentication
+                    required: false
+                    help_text: |-
+                      Basic authentication with username and password.
+                    params:
+                    - group:
+                        mutex: true
+                        help_text: |-
+                          Arguments for the password.
+                        params:
+                        - arg_name: http-config-basic-authentication-password-secret-version
+                          help_text: |-
+                            The password SecretManager secret version to authenticate as.
+                          is_positional: false
+                          is_primary_resource: false
+                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                          resource_method_params:
+                            connection.httpConfig.basicAuthentication.passwordSecretVersion: '{__relative_name__}'
+                          required: false
+                    - arg_name: http-config-basic-authentication-username
+                      api_field: connection.httpConfig.basicAuthentication.username
+                      required: true
+                      repeated: false
+                      help_text: |-
+                        The username to authenticate as.
+                - group:
+                    api_field: connection.httpConfig.bearerTokenAuthentication
+                    required: false
+                    help_text: |-
+                      Bearer token authentication with a token.
+                    params:
+                    - group:
+                        mutex: true
+                        help_text: |-
+                          Arguments for the token.
+                        params:
+                        - arg_name: http-config-bearer-token-authentication-secret-version
+                          help_text: |-
+                            The token SecretManager secret version to authenticate as.
+                          is_positional: false
+                          is_primary_resource: false
+                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                          resource_method_params:
+                            connection.httpConfig.bearerTokenAuthentication.tokenSecretVersion: '{__relative_name__}'
+                          required: false
+            - arg_name: http-config-host-uri
+              api_field: connection.httpConfig.hostUri
+              required: true
+              repeated: false
+              help_text: |-
+                The service provider's https endpoint.
+            - group:
+                api_field: connection.httpConfig.serviceDirectoryConfig
+                required: false
+                help_text: |-
+                  ServiceDirectoryConfig represents Service Directory configuration for a
+                  connection.
+                params:
+                - arg_name: http-config-service-directory
+                  help_text: |-
+                    The Service Directory service name.
+                    Format:
+                    projects/{project}/locations/{location}/namespaces/{namespace}/services/{service}.
+                  is_positional: false
+                  is_primary_resource: false
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_namespaces_services
+                  resource_method_params:
+                    connection.httpConfig.serviceDirectoryConfig.service: '{__relative_name__}'
+                  required: true
+            - arg_name: http-config-ssl-ca-certificate
+              api_field: connection.httpConfig.sslCaCertificate
+              required: false
+              repeated: false
+              help_text: |-
+                The SSL certificate to use for requests to the HTTP service provider.
     - help_text: |-
         Identifier. The resource name of the connection, in the format
         `projects/{project}/locations/{location}/connections/{connection_id}`.

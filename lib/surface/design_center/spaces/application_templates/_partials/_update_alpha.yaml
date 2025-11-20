@@ -77,6 +77,26 @@
         type: arg_json
         help_text: |-
           The value of the parameter.
+    - arg_name: composition-type
+      api_field: applicationTemplate.compositionType
+      required: false
+      help_text: |-
+        The composition type of the applicationTemplate: STANDARD OR COMPOSITE.
+        This is a create time only param. In future, we may support conversion from
+        STANDARD to COMPOSITE.
+      choices:
+      - arg_value: standard
+        enum_value: STANDARD
+        help_text: |-
+          ApplicationCompositionType is STANDARD. The applicationTemplate or
+          application is composed of components only of type service/workload/asset
+          and has a single root module in terraform code.
+      - arg_value: composite
+        enum_value: COMPOSITE
+        help_text: |-
+          ApplicationCompositionType is COMPOSITE. The template is composed of
+          STANDARD applicationTemplate(s) and might be having multiple root modules
+          in terraform code.
   request:
     api_version: v1alpha
     collection:

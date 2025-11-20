@@ -1023,7 +1023,7 @@ class Deploy(base.Command):
 
 def _IsNoBuildFromSource(release_track, build_from_source):
   """Checks if this is a source deployment that should skip the Cloud Build step."""
-  if release_track != base.ReleaseTrack.ALPHA:
+  if release_track == base.ReleaseTrack.GA:
     return False
 
   if not build_from_source or len(build_from_source) != 1:
@@ -1192,23 +1192,6 @@ def _ShouldClearBuildServiceAccount(args, build_service_account):
 class BetaDeploy(Deploy):
   """Create or update a Cloud Run service."""
 
-  @classmethod
-  def Args(cls, parser):
-    cls.CommonArgs(parser)
-
-    # Flags specific to managed CR
-    flags.SERVICE_MESH_FLAG.AddToParser(parser)
-    flags.AddIapFlag(parser)
-    container_args = ContainerArgGroup(cls.ReleaseTrack())
-    container_parser.AddContainerFlags(
-        parser, container_args, cls.ReleaseTrack()
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaDeploy(BetaDeploy):
-  """Create or update a Cloud Run service."""
-
   def _ValidateNoAutomaticUpdatesForContainers(
       self, deploy_from_source, containers
   ):
@@ -1221,6 +1204,24 @@ class AlphaDeploy(BetaDeploy):
             '--automatic-updates can only be specified in the container that'
             ' builds from source.',
         )
+
+  @classmethod
+  def Args(cls, parser):
+    cls.CommonArgs(parser)
+
+    # Flags specific to managed CR
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.AddIapFlag(parser)
+    container_args = ContainerArgGroup(cls.ReleaseTrack())
+    container_args.AddArgument(flags.ReadinessProbeFlag())
+    container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AlphaDeploy(BetaDeploy):
+  """Create or update a Cloud Run service."""
 
   @classmethod
   def Args(cls, parser):

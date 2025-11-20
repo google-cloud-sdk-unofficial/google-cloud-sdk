@@ -53,7 +53,6 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class SetIamPolicyGA(base.Command):
   """Set the IAM policy for a Design Center space as defined in a JSON/YAML file.
 

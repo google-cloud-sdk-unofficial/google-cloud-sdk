@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.run import up
 from googlecloudsdk.command_lib.run.compose import compose_resource
 from googlecloudsdk.command_lib.run.compose import tracker as stages
 from googlecloudsdk.core import log
+from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import progress_tracker
 
@@ -35,7 +36,6 @@ from googlecloudsdk.core.console import progress_tracker
 DEFAULT_REPO_NAME = 'cloud-run-source-deploy'
 
 
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Up(base.BinaryBackedCommand):
@@ -92,6 +92,11 @@ class Up(base.BinaryBackedCommand):
           resource_response.stderr, list
       ):
         error_message = resource_response.stderr[-1]
+      metrics.CustomKeyValue(
+          properties.VALUES.metrics.command_name.Get(),
+          'resource_error',
+          error_message,
+      )
       raise exceptions.ConfigurationError(error_message)
     try:
       config = compose_resource.ResourcesConfig.from_json(
@@ -156,6 +161,11 @@ class Up(base.BinaryBackedCommand):
       else:
         if response.stderr and isinstance(response.stderr, list):
           error_message = response.stderr[-1]
+        metrics.CustomKeyValue(
+            properties.VALUES.metrics.command_name.Get(),
+            'translate_error',
+            error_message,
+        )
         raise exceptions.ConfigurationError(error_message)
 
       return response

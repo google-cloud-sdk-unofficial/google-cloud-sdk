@@ -227,3 +227,107 @@ class DescribeAlpha(base.DescribeCommand):
     )
 
     return client.Describe(name=shared_template_name)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class DescribeGa(base.DescribeCommand):
+  """Describe a shared template."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    # Positional argument for shared_template
+    parser.add_argument(
+        'shared_template',
+        metavar='SHARED_TEMPLATE',
+        help=_SHARED_TEMPLATE_HELP_TEXT,
+    )
+    # Location flag
+    parser.add_argument(
+        '--location',
+        required=False,
+        help=_LOCATION_HELP_TEXT,
+    )
+
+    # Argument group for --project/--space or --google-catalog
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--google-catalog',
+        action='store_true',
+        help=_GOOGLE_CATALOG_HELP_TEXT,
+    )
+    # Nested group for --project and --space
+    project_space_group = group.add_argument_group(
+        'Specify --project and --space for custom shared templates.'
+    )
+    project_space_group.add_argument(
+        '--project',
+        required=False,
+        help=_PROJECT_HELP_TEXT,
+    )
+    project_space_group.add_argument(
+        '--space',
+        required=False,
+        help=_SPACE_HELP_TEXT,
+    )
+
+  @staticmethod
+  def ValidSharedTemplateName(name):
+    """Validates the shared template name."""
+    pattern = re.compile(
+        r'^projects/[^/]+/locations/[^/]+/spaces/[^/]+/sharedTemplates(/[^/]+)?$'
+    )
+    return pattern.match(name) is not None
+
+  def Run(self, args):
+    """Run the describe command."""
+    client = apis.SharedTemplatesClient(release_track=base.ReleaseTrack.GA)
+
+    # If the full resource name is provided, use it directly.
+    if self.ValidSharedTemplateName(args.shared_template):
+      if (
+          args.IsSpecified('location')
+          or args.IsSpecified('project')
+          or args.IsSpecified('space')
+          or args.google_catalog
+      ):
+        raise exceptions.ConflictingArgumentsException(
+            '--location, --project, --space, and --google-catalog cannot be'
+            ' used when a full resource name is provided.'
+        )
+      return client.Describe(name=args.shared_template)
+
+    # Otherwise, build the resource name from flags.
+    if not args.IsSpecified('location'):
+      raise exceptions.ToolException(
+          f'{_BASE_ERROR_MESSAGE}\n{_LOCATION_NOT_SPECIFIED_MESSAGE}'
+      )
+
+    location_id = args.location
+
+    if args.google_catalog:
+      project_id = api_lib_utils.GetGoogleCatalogProjectId()
+      space_id = 'googlespace'
+    else:
+      project_id = args.project or properties.VALUES.core.project.Get()
+      if not project_id:
+        raise exceptions.ToolException(
+            f'{_BASE_ERROR_MESSAGE}\n{_PROJECT_NOT_SPECIFIED_MESSAGE}'
+        )
+      if not args.IsSpecified('space'):
+        raise exceptions.ToolException(
+            f'{_BASE_ERROR_MESSAGE}\n{_SPACE_NOT_SPECIFIED_MESSAGE}'
+        )
+      space_id = args.space
+
+    # Construct the resource name:
+    # projects/{p}/locations/{l}/spaces/{s}/sharedTemplates/{st}
+    shared_template_name = (
+        'projects/{}/locations/{}/spaces/{}/sharedTemplates/{}'.format(
+            project_id, location_id, space_id, args.shared_template
+        )
+    )
+
+    return client.Describe(name=shared_template_name)

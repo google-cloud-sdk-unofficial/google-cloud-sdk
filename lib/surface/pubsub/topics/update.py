@@ -139,12 +139,13 @@ def _Args(
   flags.AddMessageTransformsFlags(parser, is_update=True)
 
 
-def _Run(args):
+def _Run(args, /, *, enable_vertex_ai_smt=False):
   """This is what gets called when the user runs this command.
 
   Args:
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
+    enable_vertex_ai_smt: Whether to enable Vertex AI SMTs.
 
   Returns:
     A serialized object (dict) describing the results of the operation.
@@ -320,6 +321,7 @@ def _Run(args):
         ingestion_log_severity=ingestion_log_severity,
         message_transforms_file=message_transforms_file,
         clear_message_transforms=clear_message_transforms,
+        enable_vertex_ai_smt=enable_vertex_ai_smt,
     )
   except topics.NoFieldsSpecifiedError:
     operations = [
@@ -378,3 +380,6 @@ class UpdateAlpha(UpdateBeta):
     _Args(
         parser,
     )
+
+  def Run(self, args):
+    return _Run(args, enable_vertex_ai_smt=True)

@@ -51,12 +51,7 @@ class UploadV1(base.CreateCommand):
 
   def __init__(self, *args, **kwargs):
     super(UploadV1, self).__init__(*args, **kwargs)
-    client_instance = apis.GetClientInstance(
-        constants.AI_PLATFORM_API_NAME,
-        constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
-    self.messages = client.ModelsClient(
-        client=client_instance,
-        messages=client_instance.MESSAGES_MODULE).messages
+    self.messages = None
 
   @staticmethod
   def Args(parser):
@@ -70,6 +65,7 @@ class UploadV1(base.CreateCommand):
       client_instance = apis.GetClientInstance(
           constants.AI_PLATFORM_API_NAME,
           constants.AI_PLATFORM_API_VERSION[constants.GA_VERSION])
+      self.messages = client_instance.MESSAGES_MODULE
       operation = client.ModelsClient(
           client=client_instance,
           messages=client_instance.MESSAGES_MODULE).UploadV1(
@@ -229,7 +225,7 @@ class UploadV1Beta1(UploadV1):
 
   def __init__(self, *args, **kwargs):
     super(UploadV1Beta1, self).__init__(*args, **kwargs)
-    self.messages = client.ModelsClient().messages
+    self.messages = None
 
   @staticmethod
   def Args(parser):
@@ -241,6 +237,7 @@ class UploadV1Beta1(UploadV1):
     region = region_ref.AsDict()['locationsId']
     with endpoint_util.AiplatformEndpointOverrides(
         version=constants.BETA_VERSION, region=region):
+      self.messages = client.ModelsClient().messages
       operation = client.ModelsClient().UploadV1Beta1(
           region_ref,
           args.display_name,

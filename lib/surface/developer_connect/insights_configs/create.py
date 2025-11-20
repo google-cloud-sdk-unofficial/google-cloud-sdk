@@ -28,7 +28,7 @@ DETAILED_HELP = {
           Create an insights config.
           """,
     'EXAMPLES': """
-          To create an insights config, run:
+          To create an insights config with an apphub application, run:
 
             $ {command} insights-config-name --app-hub-application=projects/my-project/locations/us-central1/applications/my-app-hub-application
           """,
@@ -52,7 +52,9 @@ class Create(base.CreateCommand):
       raise e
 
     # Relevant argument.
-    flags.AddAppHubApplicationArgument(parser)
+    source_group = parser.add_mutually_exclusive_group(required=True)
+    flags.AddAppHubApplicationArgument(source_group)
+    flags.AddTargetProjectsArgument(source_group)
     flags.AddArtifactConfigsArgument(parser)
 
   def Run(self, args):
@@ -63,6 +65,7 @@ class Create(base.CreateCommand):
       operation = client.create(
           insight_config_ref=insights_config_ref,
           app_hub=args.app_hub_application,
+          target_projects=args.target_projects,
           user_artifact_configs=args.artifact_configs,
       )
     except exceptions.HttpException as e:

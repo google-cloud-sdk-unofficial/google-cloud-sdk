@@ -53,7 +53,6 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class TestIamPermissionsGA(base.Command):
   """Test IAM permissions for a Design Center space."""
   detailed_help = _DETAILED_HELP

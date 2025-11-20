@@ -14,7 +14,6 @@
 # limitations under the License.
 """Rollback a Cloud Deploy target to a prior rollout."""
 
-
 import copy
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -34,6 +33,7 @@ from googlecloudsdk.command_lib.deploy import resource_args
 from googlecloudsdk.command_lib.deploy import rollout_util
 from googlecloudsdk.command_lib.deploy import target_util
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
 
@@ -133,7 +133,7 @@ class Rollback(base.CreateCommand):
     policies = deploy_policy_util.CreateDeployPolicyNamesFromIDs(
         pipeline_ref, args.override_deploy_policies
     )
-    return promote_util.Promote(
+    rollout_resource = promote_util.Promote(
         rollback_release_ref,
         release_obj,
         target_ref.Name(),
@@ -146,6 +146,25 @@ class Rollback(base.CreateCommand):
         starting_phase_id=args.starting_phase_id or 'stable',
         override_deploy_policies=policies,
     )
+
+    if rollout_resource:
+      try:
+        # Any 403 errors should indicate to the user that they may need to
+        # add the new permission.
+        delivery_pipeline_util.CreateRollbackTarget(
+            pipeline_ref.RelativeName(),
+            target_ref.Name(),
+            validate_only=True,
+        )
+      except apitools_exceptions.HttpError as e:
+        if e.status_code == 403:
+          log.status.Print(
+              'Starting on September 14, 2026, the rollback feature will'
+              ' require a new permission: clouddeploy.rollouts.rollback. For'
+              ' more information, see'
+              ' https://docs.cloud.google.com/deploy/docs/rollout-perms-notice'
+          )
+    return rollout_resource
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

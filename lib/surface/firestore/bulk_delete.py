@@ -46,7 +46,7 @@ class BulkDelete(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddCollectionIdsFlag(parser)
+    flags.AddCollectionGroupIdsFlag(parser)
     flags.AddNamespaceIdsFlag(parser)
     flags.AddDatabaseIdFlag(parser)
     base.ASYNC_FLAG.AddToParser(parser)

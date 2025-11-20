@@ -23,7 +23,6 @@ from googlecloudsdk.calliope import base
 # to this group's children.
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class LocationsGA(base.Group):
   """Manage Design Center Locations.
 

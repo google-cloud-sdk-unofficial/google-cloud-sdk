@@ -29,7 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataDocumentation(base.UpdateCommand):
   """Update a Dataplex data documentation scan job.
   """

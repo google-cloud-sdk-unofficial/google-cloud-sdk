@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 class Import(base.Command):
   """import Cloud Firestore documents from Google Cloud Storage."""
 
@@ -49,7 +50,7 @@ class Import(base.Command):
   @staticmethod
   def Args(parser):
     """Register flags for this command."""
-    flags.AddCollectionIdsFlag(parser)
+    flags.AddCollectionGroupIdsFlag(parser)
     flags.AddNamespaceIdsFlag(parser)
     flags.AddDatabaseIdFlag(parser)
     parser.add_argument(

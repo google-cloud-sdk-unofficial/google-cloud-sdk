@@ -22,7 +22,6 @@ from googlecloudsdk.command_lib.storage.insights.dataset_configs import resource
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateLink(base.Command):
   """Create a link to a BigQuery instance."""
 

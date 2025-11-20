@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for creating organization firewall policy rules."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_utils
 from googlecloudsdk.api_lib.compute.firewall_policies import client
@@ -81,6 +77,9 @@ class Create(base.CreateCommand):
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.AddSrcNetworkContext(parser)
+      flags.AddDestNetworkContext(parser)
 
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
 
@@ -123,6 +122,8 @@ class Create(base.CreateCommand):
     src_network_scope = None
     src_networks = []
     dest_network_scope = None
+    src_network_context = None
+    dest_network_context = None
 
     if args.IsSpecified('src_ip_ranges'):
       src_ip_ranges = args.src_ip_ranges
@@ -249,6 +250,26 @@ class Create(base.CreateCommand):
               args.dest_network_type
           )
 
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      if args.IsSpecified('src_network_context'):
+        if not args.src_network_context:
+          src_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
+              args.src_network_context
+          )
+      if args.IsSpecified('dest_network_context'):
+        if not args.dest_network_context:
+          dest_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
+              args.dest_network_context
+          )
+
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
     )
@@ -301,6 +322,9 @@ class Create(base.CreateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      matcher.srcNetworkContext = src_network_context
+      matcher.destNetworkContext = dest_network_context
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),

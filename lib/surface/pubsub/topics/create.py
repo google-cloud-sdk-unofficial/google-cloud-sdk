@@ -61,7 +61,7 @@ def _GetTopicPresentationSpec():
   )
 
 
-def _Run(args, legacy_output=False):
+def _Run(args, /, *, legacy_output=False, enable_vertex_ai_smt=False):
   """Creates one or more topics."""
   client = topics.TopicsClient()
 
@@ -241,6 +241,7 @@ def _Run(args, legacy_output=False):
           ingestion_log_severity=ingestion_log_severity,
           message_transforms_file=message_transforms_file,
           tags=tags,
+          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -320,7 +321,7 @@ class CreateBeta(Create):
 
   def Run(self, args):
     legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
-    return _Run(args, legacy_output=legacy_output)
+    return _Run(args, legacy_output=legacy_output, enable_vertex_ai_smt=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -330,3 +331,7 @@ class CreateAlpha(CreateBeta):
   @staticmethod
   def Args(parser):
     super(CreateAlpha, CreateAlpha).Args(parser)
+
+  def Run(self, args):
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(args, legacy_output=legacy_output, enable_vertex_ai_smt=True)

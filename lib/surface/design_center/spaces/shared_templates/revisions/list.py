@@ -240,3 +240,109 @@ class List(base.ListCommand):
     return client.List(
         parent=parent, limit=args.limit, page_size=args.page_size
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class ListGa(base.ListCommand):
+  """List shared template revisions."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    parser.add_argument(
+        '--shared-template',
+        required=True,
+        help=_SHARED_TEMPLATE_HELP_TEXT,
+    )
+    parser.add_argument(
+        '--location',
+        required=False,
+        help=_LOCATION_HELP_TEXT,
+    )
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '--google-catalog',
+        action='store_true',
+        help=_GOOGLE_CATALOG_HELP_TEXT,
+    )
+    project_space_group = group.add_argument_group(
+        'Specify --project and --space for custom shared templates.'
+    )
+    project_space_group.add_argument(
+        '--project',
+        required=False,
+        help=_PROJECT_HELP_TEXT,
+    )
+    project_space_group.add_argument(
+        '--space',
+        required=False,
+        help=_SPACE_HELP_TEXT,
+    )
+
+    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'designcenter.projects.locations.spaces.sharedTemplates.revisions',
+            release_track=base.ReleaseTrack.GA,
+        )
+    )
+
+  @staticmethod
+  def ValidSharedTemplateName(name):
+    """Validates the shared template name."""
+    pattern = re.compile(
+        r'^projects/[^/]+/locations/[^/]+/spaces/[^/]+/sharedTemplates/[^/]+$'
+    )
+    return bool(pattern.match(name))
+
+  def Run(self, args):
+    """Run the list command."""
+    client = apis.SharedTemplateRevisionsClient(
+        release_track=base.ReleaseTrack.GA
+    )
+
+    if self.ValidSharedTemplateName(args.shared_template):
+      if (
+          args.IsSpecified('location')
+          or args.IsSpecified('project')
+          or args.IsSpecified('space')
+          or args.google_catalog
+      ):
+        raise exceptions.ConflictingArgumentsException(
+            '--location, --project, --space, and --google-catalog cannot be'
+            ' used when a full resource name is provided for --shared-template.'
+        )
+      parent = args.shared_template
+    else:
+      if not args.IsSpecified('location'):
+        raise SharedTemplateResourceError(
+            f'{_BASE_ERROR_MESSAGE}\n{_LOCATION_NOT_SPECIFIED_MESSAGE}'
+        )
+      location_id = args.location
+
+      if args.google_catalog:
+        project_id = api_lib_utils.GetGoogleCatalogProjectId()
+        space_id = 'googlespace'
+      else:
+        project_id = args.project or properties.VALUES.core.project.Get()
+        if not project_id:
+          raise SharedTemplateResourceError(
+              f'{_BASE_ERROR_MESSAGE}\n{_PROJECT_NOT_SPECIFIED_MESSAGE}'
+          )
+        if not args.IsSpecified('space'):
+          raise SharedTemplateResourceError(
+              f'{_BASE_ERROR_MESSAGE}\n{_SPACE_NOT_SPECIFIED_MESSAGE}'
+          )
+        space_id = args.space
+
+      parent = 'projects/{}/locations/{}/spaces/{}/sharedTemplates/{}'.format(
+          project_id, location_id, space_id, args.shared_template
+      )
+
+    return client.List(
+        parent=parent, limit=args.limit, page_size=args.page_size
+    )

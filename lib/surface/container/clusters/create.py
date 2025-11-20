@@ -584,6 +584,7 @@ def ParseCreateOptionsBase(
       ),
       network_tier=get_default('network_tier'),
       control_plane_egress_mode=get_default('control_plane_egress'),
+      enable_slice_controller=get_default('enable_slice_controller'),
   )
 
 GA = 'ga'
@@ -853,9 +854,10 @@ flags_to_add = {
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
         ),
         'enableKernelModuleSignatureEnforcement': (
-            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
-                p, hidden=True
-            )
+            flags.AddEnableKernelModuleSignatureEnforcementFlag
+        ),
+        'enableSliceController': (
+            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
         ),
     },
     BETA: {
@@ -1069,14 +1071,15 @@ flags_to_add = {
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
-            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
-                p, hidden=True
-            )
+            flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
         'enableLustreMultiNic': (
             lambda p: flags.AddEnableLustreMultiRailFlag(
                 p, hidden=True
             )
+        ),
+        'enableSliceController': (
+            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
         ),
     },
     ALPHA: {
@@ -1296,14 +1299,15 @@ flags_to_add = {
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
-            lambda p: flags.AddEnableKernelModuleSignatureEnforcementFlag(
-                p, hidden=True
-            )
+            flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
         'enableLustreMultiNic': (
             lambda p: flags.AddEnableLustreMultiRailFlag(
                 p, hidden=True
             )
+        ),
+        'enableSliceController': (
+            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
         ),
     },
 }

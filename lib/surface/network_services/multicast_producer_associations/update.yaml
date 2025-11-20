@@ -1,0 +1,34 @@
+release_tracks: [GA, ALPHA, BETA]
+help_text:
+  brief: Update a multicast producer association.
+  description: |
+    Update a multicast producer association in the specified location of the current project.
+  examples: |
+    Update a multicast producer association with the name `my-multicast-producer-association`
+    and location `zone`.
+
+      $ {command} my-multicast-producer-association --description="new description" --location=zone
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.network_services.resources:multicastProducerAssociation
+    help_text: |
+      Name of the multicast producer association to be updated.
+  params:
+  - arg_name: description
+    api_field: multicastProducerAssociation.description
+    help_text: The description for the multicast producer association.
+  labels:
+    api_field: multicastProducerAssociation.labels
+update:
+  read_modify_update: true
+async:
+  collection: networkservices.projects.locations.operations
+request: &request
+  GA:
+    api_version: v1
+  ALPHA:
+    api_version: v1alpha1
+  BETA:
+    api_version: v1beta1
+  collection: networkservices.projects.locations.multicastProducerAssociations
+  method: patch

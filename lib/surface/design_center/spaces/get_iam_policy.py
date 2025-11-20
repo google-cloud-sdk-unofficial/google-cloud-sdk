@@ -47,7 +47,6 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class GetIamPolicyGA(base.ListCommand):
   """Get the IAM policy for a Design Center space.
 

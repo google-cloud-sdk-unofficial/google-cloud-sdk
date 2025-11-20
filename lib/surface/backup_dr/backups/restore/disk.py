@@ -78,6 +78,7 @@ class Disk(base.Command):
     disk_flags.AddConfidentialComputeArg(parser, False)
     disk_flags.AddResourcePoliciesArg(parser, False)
     disk_flags.AddKmsKeyArg(parser, False)
+    disk_flags.AddClearEncryptionKeyArg(parser)
 
   def _ParseResourcePolicies(self, resource_policies, project, zone):
     """Parses the resource policies flag."""
@@ -142,6 +143,13 @@ class Disk(base.Command):
     if args.resource_policies:
       restore_config['ResourcePolicies'] = self._ParseResourcePolicies(
           args.resource_policies, args.target_project, args.target_zone
+      )
+    if (
+        hasattr(args, 'clear_encryption_key')
+        and args.clear_encryption_key
+    ):
+      restore_config['ClearOverridesFieldMask'] = (
+          'disk_restore_properties.disk_encryption_key'
       )
     try:
       operation = client.RestoreDisk(backup, restore_config)

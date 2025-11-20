@@ -23,7 +23,6 @@ from googlecloudsdk.core import log
 # TODO: b/369949089 - Remove default universe flag after checking the
 # availability of storage intelligence in different universes.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Disable(base.Command):
   """Disables storage intelligence."""
 

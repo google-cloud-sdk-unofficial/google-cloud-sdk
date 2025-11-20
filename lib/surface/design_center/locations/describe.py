@@ -39,7 +39,6 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class DescribeGA(base.DescribeCommand):
   """Describe a Design Center location."""
 

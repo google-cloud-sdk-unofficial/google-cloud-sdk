@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.Command):
   """Create a new dataset config for Insights."""
 
@@ -51,8 +51,8 @@ class Create(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         'DATASET_CONFIG_NAME',
         type=str,
@@ -84,7 +84,9 @@ class Create(base.Command):
     )
 
     flags.add_dataset_config_location_flag(parser)
-    flags.add_dataset_config_create_update_flags(parser)
+    flags.add_dataset_config_create_update_flags(
+        parser, release_track=cls.ReleaseTrack()
+    )
 
   def Run(self, args):
 
@@ -123,7 +125,9 @@ class Create(base.Command):
           exclude_source_locations=args.exclude_source_locations,
           auto_add_new_buckets=args.auto_add_new_buckets,
           retention_period=args.retention_period_days,
-          activity_data_retention_period=args.activity_data_retention_period_days,
+          activity_data_retention_period=getattr(
+              args, 'activity_data_retention_period_days', None
+          ),
           identity_type=args.identity,
           description=args.description,
       )
@@ -138,3 +142,9 @@ class Create(base.Command):
           " alphanumeric value and only contain '_' as a special character"
       )
       raise
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a new dataset config for Insights."""

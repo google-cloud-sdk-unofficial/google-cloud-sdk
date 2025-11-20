@@ -26,7 +26,6 @@ from googlecloudsdk.core import log
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Enable(base.Command):
   """Enables storage intelligence."""
   detailed_help = {

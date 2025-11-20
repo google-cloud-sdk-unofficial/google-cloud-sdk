@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.global_vm_extension_policies import flag
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine global VM extension policy."""
 

@@ -59,6 +59,7 @@ class Create(base.CreateCommand):
     flags.AddTierFlag(parser)
     flags.AddPublishingOptionsFlags(parser, use_update_help_text=False)
     flags.AddCaPoolIssuancePolicyFlag(parser)
+    flags.AddEncryptionKeyFlag(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
@@ -70,11 +71,13 @@ class Create(base.CreateCommand):
     publishing_options = flags.ParsePublishingOptions(args)
     tier = flags.ParseTierFlag(args)
     labels = labels_util.ParseCreateArgs(args, messages.CaPool.LabelsValue)
+    encryption_spec = flags.ParseEncryptionSpec(args)
     new_ca_pool = messages.CaPool(
         issuancePolicy=issuance_policy,
         publishingOptions=publishing_options,
         tier=tier,
-        labels=labels)
+        labels=labels,
+        encryptionSpec=encryption_spec)
     operation = client.projects_locations_caPools.Create(
         messages.PrivatecaProjectsLocationsCaPoolsCreateRequest(
             caPool=new_ca_pool,

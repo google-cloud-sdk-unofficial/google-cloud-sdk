@@ -79,6 +79,12 @@ class Create(base.CreateCommand):
       operation = client.Create(
           backup_plan_association, backup_plan, resource, resource_type
       )
+      if resource_type.endswith('Disk'):
+        log.warning(
+            'In the event of a source region outage, backups in multi-region'
+            ' vault remain accessible, but the restore will fail if your disk'
+            ' is protected with a regional CMEK.'
+        )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
     if is_async:

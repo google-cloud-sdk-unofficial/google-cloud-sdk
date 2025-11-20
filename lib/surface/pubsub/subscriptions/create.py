@@ -32,9 +32,12 @@ from googlecloudsdk.core import properties
 
 def _Run(
     args,
+    /,
+    *,
     enable_labels=False,
     legacy_output=False,
     enable_push_to_cps=False,
+    enable_vertex_ai_smt=False,
 ):
   """Creates one or more subscriptions."""
   flags.ValidateDeadLetterPolicy(args)
@@ -164,6 +167,7 @@ def _Run(
           pubsub_export_topic_region=pubsub_export_topic_region,
           message_transforms_file=message_transforms_file,
           tags=tags,
+          enable_vertex_ai_smt=enable_vertex_ai_smt,
       )
     except api_ex.HttpError as error:
       exc = exceptions.HttpException(error)
@@ -252,3 +256,14 @@ class CreateAlpha(CreateBeta):
   @classmethod
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
+
+  def Run(self, args):
+    flags.ValidateFilterString(args)
+    legacy_output = properties.VALUES.pubsub.legacy_output.GetBool()
+    return _Run(
+        args,
+        enable_labels=True,
+        legacy_output=legacy_output,
+        enable_push_to_cps=True,
+        enable_vertex_ai_smt=True,
+    )

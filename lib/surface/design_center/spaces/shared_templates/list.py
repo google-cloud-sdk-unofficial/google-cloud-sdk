@@ -208,3 +208,92 @@ class List(base.ListCommand):
     return client.List(
         parent=parent, limit=args.limit, page_size=args.page_size
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class ListGa(base.ListCommand):
+  """List shared templates."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    group = parser.add_mutually_exclusive_group(
+        required=True,
+        help=_REQUIRED_FLAGS_BASE_TEXT,
+    )
+    group.add_argument(
+        '--google-catalog',
+        action='store_true',
+        help=_GOOGLE_CATALOG_HELP_TEXT,
+    )
+    project_space_group = group.add_argument_group(
+        'Specify --project and/or --space for custom shared templates.'
+    )
+    project_space_group.add_argument(
+        '--project',
+        help=_PROJECT_HELP_TEXT,
+    )
+    project_space_group.add_argument(
+        '--space',
+        required=True,
+        help=_SPACE_HELP_TEXT,
+    )
+    parser.add_argument(
+        '--location',
+        required=False,
+        help=_LOCATION_HELP_TEXT,
+    )
+    parser.display_info.AddFormat('yaml')
+    parser.display_info.AddUriFunc(
+        api_lib_utils.MakeGetUriFunc(
+            'designcenter.projects.locations.spaces.sharedTemplates',
+            release_track=base.ReleaseTrack.GA,
+        )
+    )
+
+  @staticmethod
+  def ValidSpaceName(name):
+    """Validates the space name."""
+    pattern = re.compile(r'^projects/[^/]+/locations/[^/]+/spaces/[^/]+')
+    return bool(pattern.match(name))
+
+  def Run(self, args):
+    """Run the list command."""
+    client = apis.SharedTemplatesClient(release_track=base.ReleaseTrack.GA)
+    if args.google_catalog:
+      if not args.IsSpecified('location'):
+        raise SpaceResourceError(
+            f'{_BASE_ERROR_MESSAGE}\n{_LOCATION_NOT_SPECIFIED_MESSAGE}'
+        )
+      project_id = api_lib_utils.GetGoogleCatalogProjectId()
+      space_id = 'googlespace'
+      parent = 'projects/{}/locations/{}/spaces/{}'.format(
+          project_id, args.location, space_id
+      )
+    elif self.ValidSpaceName(args.space):
+      if args.IsSpecified('location') or args.IsSpecified('project'):
+        raise exceptions.ConflictingArgumentsException(
+            '--location and --project cannot be used when a full resource name'
+            ' is provided for --space.'
+        )
+      parent = args.space
+    else:
+      if not args.IsSpecified('location'):
+        raise SpaceResourceError(
+            f'{_BASE_ERROR_MESSAGE}\n{_LOCATION_NOT_SPECIFIED_MESSAGE}'
+        )
+      project_id = args.project or properties.VALUES.core.project.Get()
+      if not project_id:
+        raise SpaceResourceError(
+            f'{_BASE_ERROR_MESSAGE}\n{_PROJECT_NOT_SPECIFIED_MESSAGE}'
+        )
+      space_id = args.space
+      parent = 'projects/{}/locations/{}/spaces/{}'.format(
+          project_id, args.location, space_id
+      )
+    return client.List(
+        parent=parent, limit=args.limit, page_size=args.page_size
+    )

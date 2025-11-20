@@ -14,22 +14,18 @@
 # limitations under the License.
 """Commands for reading ZoneVmExtensionPolicies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.calliope import base
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-class ZoneVmExtensionPolicies(base.Group):
-  """Compute Engine zone VM extension policies."""
+class GlobalVmExtensionPolicies(base.Group):
+  """Compute Engine global VM extension policies."""
 
 
-ZoneVmExtensionPolicies.category = base.INFO_CATEGORY
+GlobalVmExtensionPolicies.category = base.INFO_CATEGORY
 
-ZoneVmExtensionPolicies.detailed_help = {
+GlobalVmExtensionPolicies.detailed_help = {
     'DESCRIPTION': """
-        Compute Engine zone VM extension policies.
+        Compute Engine global VM extension policies.
     """,
 }

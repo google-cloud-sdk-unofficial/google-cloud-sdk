@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.firestore import flags
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 class Export(base.Command):
   """export Cloud Firestore documents to Google Cloud Storage."""
 
@@ -50,7 +51,7 @@ class Export(base.Command):
   @classmethod
   def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddCollectionIdsFlag(parser)
+    flags.AddCollectionGroupIdsFlag(parser)
     flags.AddNamespaceIdsFlag(parser)
     flags.AddSnapshotTimeFlag(parser)
     flags.AddDatabaseIdFlag(parser)

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for updating network firewall policy rules."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import firewall_policy_rule_utils as rule_utils
@@ -39,6 +36,7 @@ class Update(base.UpdateCommand):
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
   support_target_type = False
+  support_network_context = False
 
   @classmethod
   def Args(cls, parser):
@@ -90,6 +88,9 @@ class Update(base.UpdateCommand):
     if cls.support_target_type:
       flags.AddTargetType(parser)
       flags.AddTargetForwardingRules(parser)
+    if cls.support_network_context:
+      flags.AddSrcNetworkContext(parser)
+      flags.AddDestNetworkContext(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -140,6 +141,8 @@ class Update(base.UpdateCommand):
     src_network_scope = None
     src_networks = []
     dest_network_scope = None
+    src_network_context = None
+    dest_network_context = None
     target_type = None
     target_forwarding_rules = []
     cleared_fields = []
@@ -249,6 +252,34 @@ class Update(base.UpdateCommand):
       ):
         cleared_fields.append('match.srcNetworks')
 
+    if self.support_network_context:
+      if args.IsSpecified('src_network_context'):
+        if not args.src_network_context:
+          src_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
+              args.src_network_context
+          )
+        should_setup_match = True
+      if args.IsSpecified('dest_network_context'):
+        if not args.dest_network_context:
+          dest_network_context = (
+              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
+          )
+        else:
+          dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
+              args.dest_network_context
+          )
+        should_setup_match = True
+      if (
+          src_network_context is not None
+          and src_network_context
+          != holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.VPC_NETWORKS
+      ):
+        cleared_fields.append('match.srcNetworks')
+
     if self.support_network_scopes:
       matcher = holder.client.messages.FirewallPolicyRuleMatcher(
           srcIpRanges=src_ip_ranges,
@@ -266,6 +297,9 @@ class Update(base.UpdateCommand):
           layer4Configs=layer4_config_list,
           srcSecureTags=src_secure_tags,
       )
+    if self.support_network_context:
+      matcher.srcNetworkContext = src_network_context
+      matcher.destNetworkContext = dest_network_context
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
       should_setup_match = True
@@ -356,7 +390,8 @@ class UpdateBeta(Update):
   """
 
   support_network_scopes = True
-  support_target_type = False
+  support_target_type = True
+  support_network_context = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -368,6 +403,7 @@ class UpdateAlpha(Update):
 
   support_network_scopes = True
   support_target_type = True
+  support_network_context = True
 
 
 Update.detailed_help = {

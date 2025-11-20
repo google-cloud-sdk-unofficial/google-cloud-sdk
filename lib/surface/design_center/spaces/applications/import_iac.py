@@ -100,3 +100,36 @@ class ImportIac(base.Command):
         validate_iac=args.validate_iac)
     return response
 
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class ImportIacGa(base.Command):
+  """Import Infrastructure as Code (IaC) for an Application."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    flags.AddApplicationResourceArg(parser, verb='to import IaC into')
+    flags.AddImportIacFlags(parser)
+
+  def Run(self, args):
+    client = apis.ApplicationsClient(self.ReleaseTrack())
+    app_ref = args.CONCEPTS.application.Parse()
+
+    iac_module_msg = None
+    if args.iac_module_from_file:
+      iac_module_data = flags.ParseIacModuleFile(args.iac_module_from_file)
+      try:
+        iac_module_msg = utils.ParseIaCModuleData(client, iac_module_data)
+      except ValueError as e:
+        raise flags.arg_parsers.ArgumentTypeError(
+            'Invalid format for --iac-module-from-file: {}'.format(e))
+
+    response = client.ImportIac(
+        name=app_ref.RelativeName(),
+        gcs_uri=args.gcs_uri,
+        iac_module=iac_module_msg,
+        allow_partial_import=args.allow_partial_import,
+        validate_iac=args.validate_iac)
+    return response

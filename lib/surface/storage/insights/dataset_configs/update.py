@@ -25,7 +25,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Updates a dataset config for Insights."""
 
@@ -52,8 +52,8 @@ class Update(base.Command):
       """,
   }
 
-  @staticmethod
-  def Args(parser):
+  @classmethod
+  def Args(cls, parser):
     parser.add_argument(
         '--auto-add-new-buckets',
         choices=['true', 'false'],
@@ -64,7 +64,9 @@ class Update(base.Command):
     )
 
     resource_args.add_dataset_config_resource_arg(parser, 'to update')
-    flags.add_dataset_config_create_update_flags(parser, is_update=True)
+    flags.add_dataset_config_create_update_flags(
+        parser, is_update=True, release_track=cls.ReleaseTrack()
+    )
 
   def _get_source_projects_list(self, args):
     if args.source_projects is not None:
@@ -148,7 +150,9 @@ class Update(base.Command):
         exclude_source_locations=args.exclude_source_locations,
         auto_add_new_buckets=auto_add_new_buckets,
         retention_period=args.retention_period_days,
-        activity_data_retention_period=args.activity_data_retention_period_days,
+        activity_data_retention_period=getattr(
+            args, 'activity_data_retention_period_days', None
+        ),
         description=args.description,
     )
 
@@ -159,3 +163,10 @@ class Update(base.Command):
     )
 
     return update_dataset_config_operation
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Updates a dataset config for Insights."""
+

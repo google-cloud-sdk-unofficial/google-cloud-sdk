@@ -15,6 +15,7 @@
 """Command for creating disks."""
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 
@@ -389,7 +390,12 @@ class Create(base.Command):
   def GetFromSourceInstantSnapshot(self, args):
     return args.source_instant_snapshot
 
-  def GetDiskSizeGb(self, args, from_image):
+  def GetFromSourceMachineImage(self, args, support_gmi_restore):
+    if support_gmi_restore:
+      return getattr(args, 'source_machine_image', None)
+    return None
+
+  def GetDiskSizeGb(self, args, from_image, support_gmi_restore):
     size_gb = utils.BytesToGb(args.size)
 
     if size_gb:
@@ -408,6 +414,7 @@ class Create(base.Command):
         or from_image
         or args.source_disk
         or self.GetFromSourceInstantSnapshot(args)
+        or self.GetFromSourceMachineImage(args, support_gmi_restore)
     ):
       # if source is a snapshot/image/disk/instant-snapshot, it is ok not to
       # set size_gb since disk size can be obtained from the source.
@@ -567,19 +574,23 @@ class Create(base.Command):
     compute_holder = self._GetApiHolder()
     client = compute_holder.client
 
-    self.show_unformated_message = not (args.IsSpecified('image') or
-                                        args.IsSpecified('image_family') or
-                                        args.IsSpecified('source_snapshot') or
-                                        args.IsSpecified('source_disk'))
+    self.show_unformated_message = not (
+        args.IsSpecified('image')
+        or args.IsSpecified('image_family')
+        or args.IsSpecified('source_snapshot')
+        or args.IsSpecified('source_disk')
+    )
     self.show_unformated_message = self.show_unformated_message and not (
-        args.IsSpecified('source_instant_snapshot'))
+        args.IsSpecified('source_instant_snapshot')
+    )
 
     disk_refs = self.ValidateAndParseDiskRefs(args, compute_holder)
     from_image = self.GetFromImage(args)
-    size_gb = self.GetDiskSizeGb(args, from_image)
+    size_gb = self.GetDiskSizeGb(args, from_image, support_gmi_restore)
     self.WarnAboutScopeDeprecationsAndMaintenance(disk_refs, client)
     project_to_source_image = self.GetProjectToSourceImageDict(
-        args, disk_refs, compute_holder, from_image)
+        args, disk_refs, compute_holder, from_image
+    )
     snapshot_uri = self.GetSnapshotUri(
         args, compute_holder, support_source_snapshot_region
     )

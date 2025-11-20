@@ -1,0 +1,23 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: |
+    Describe an `SwpSecurityExtension` resource.
+  description: |
+    Show details about an `SwpSecurityExtension` resource.
+  examples: |
+    To show details about the `SwpSecurityExtension` resource named
+    `my-swp-security-extension` located in `us-central1`.
+
+      $ {command} my-swp-security-extension --location=us-central1
+
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.service_extensions.resources:swpSecurityExtension
+    help_text: The ID of the `SwpSecurityExtension` resource.
+
+request: &request
+  ALPHA:
+    api_version: v1alpha1
+
+  collection: networkservices.projects.locations.swpSecurityExtensions

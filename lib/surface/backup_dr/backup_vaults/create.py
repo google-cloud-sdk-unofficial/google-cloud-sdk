@@ -46,19 +46,17 @@ def _add_common_args(parser: argparse.ArgumentParser):
   flags.AddLabels(parser)
   flags.AddBackupVaultAccessRestrictionEnumFlag(parser, 'create')
   flags.AddBackupRetentionInheritance(parser)
+  flags.AddKmsKey(parser)
 
 
 def _run(
     args: argparse.Namespace,
-    support_kms_key: bool,
 ):
   """Constructs and sends request.
 
   Args:
     args: argparse.Namespace, An object that contains the values for the
       arguments specified in the .Args() method.
-    support_kms_key: bool, A boolean that indicates if the backup vault
-      supports setting the kms_key field.
 
   Returns:
     ProcessHttpResponse of the request made.
@@ -81,8 +79,6 @@ def _run(
 
   encryption_config = (
       client.messages.EncryptionConfig(kmsKeyName=args.kms_key)
-      if support_kms_key and args.kms_key
-      else None
   )
   try:
     operation = client.Create(
@@ -182,8 +178,7 @@ class Create(base.CreateCommand):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args,
-        support_kms_key=False,
+        args
     )
 
 
@@ -199,7 +194,6 @@ class CreateAlpha(Create):
       parser: argparse.Parser: Parser object for command line inputs.
     """
     _add_common_args(parser)
-    flags.AddKmsKey(parser)
 
   def Run(self, args: argparse.Namespace):
     """Constructs and sends request.
@@ -212,5 +206,5 @@ class CreateAlpha(Create):
       ProcessHttpResponse of the request made.
     """
     return _run(
-        args, support_kms_key=True
+        args
     )

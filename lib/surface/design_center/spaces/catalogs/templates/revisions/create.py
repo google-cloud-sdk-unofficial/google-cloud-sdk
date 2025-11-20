@@ -259,3 +259,118 @@ class Create(base.CreateCommand):
     )
     log.status.Print('Created revision [{0}].'.format(revision_ref.Name()))
     return response
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
+class CreateGa(base.CreateCommand):
+  """Create a new catalog template revision."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    base.ASYNC_FLAG.AddToParser(parser)
+    flags.AddCreateCatalogTemplateRevisionFlags(parser)
+
+  def Run(self, args):
+    """This is what gets called when the user runs this command."""
+
+    client = utils.GetClientInstance(self.ReleaseTrack())
+    messages = utils.GetMessagesModule(self.ReleaseTrack())
+    catalog_template_revision = messages.CatalogTemplateRevision()
+
+    revision_ref = args.CONCEPTS.revision.Parse()
+    parent = revision_ref.Parent().RelativeName()
+    revision_id = revision_ref.Name()
+
+    if (
+        args.IsSpecified('git_source_repo')
+        or args.IsSpecified('git_source_ref_tag')
+        or args.IsSpecified('git_source_dir')
+    ):
+      catalog_template_revision.gitSource = messages.GitSource(
+          repo=args.git_source_repo,
+          refTag=args.git_source_ref_tag,
+          dir=args.git_source_dir,
+      )
+    elif (
+        args.IsSpecified('developer_connect_repo')
+        or args.IsSpecified('developer_connect_repo_ref')
+        or args.IsSpecified('developer_connect_repo_dir')
+    ):
+      git_reference = messages.GitReference()
+      # Determine which 'oneof' field to set based on the reference string.
+      _set_git_reference(git_reference, args.developer_connect_repo_ref)
+
+      catalog_template_revision.developerConnectSourceConfig = (
+          messages.DeveloperConnectSourceConfig(
+              developerConnectRepoUri=args.developer_connect_repo,
+              reference=git_reference,
+              dir=args.developer_connect_repo_dir,
+          )
+      )
+    elif args.application_template_revision_source:
+      catalog_template_revision.applicationTemplateRevisionSource = (
+          args.application_template_revision_source
+      )
+    elif args.gcs_source_uri:
+      catalog_template_revision.gcsSourceUri = args.gcs_source_uri
+    elif args.IsSpecified('oci_repo_uri') or args.IsSpecified(
+        'oci_repo_version'
+    ):
+      catalog_template_revision.ociRepo = messages.OciRepo(
+          uri=args.oci_repo_uri,
+          version=args.oci_repo_version,
+      )
+
+    if args.description:
+      catalog_template_revision.description = args.description
+
+    if args.metadata:
+      try:
+        # The arg type YAMLFileContents() already loads the file.
+        metadata_dict = args.metadata
+        if 'spec' in metadata_dict:
+          catalog_template_revision.metadataInput = messages.MetadataInput(
+              spec=metadata_dict['spec']
+          )
+        else:
+          raise exceptions.InvalidArgumentException(
+              '--metadata',
+              'The metadata file must contain a top-level "spec" key.',
+          )
+      except yaml.YAMLParseError as e:
+        raise exceptions.InvalidArgumentException(
+            '--metadata', f'Error parsing YAML file: {e}'
+        )
+
+    request = messages.DesigncenterProjectsLocationsSpacesCatalogsTemplatesRevisionsCreateRequest(
+        parent=parent,
+        catalogTemplateRevisionId=revision_id,
+        catalogTemplateRevision=catalog_template_revision,
+    )
+
+    operation = (
+        client.projects_locations_spaces_catalogs_templates_revisions.Create(
+            request
+        )
+    )
+    log.status.Print(
+        'Create request issued for: [{0}]'.format(revision_ref.Name())
+    )
+    if args.async_:
+      return operation
+
+    response = utils.WaitForOperation(
+        client=client,
+        operation=operation,
+        message='Waiting for operation [{0}] to complete'.format(
+            operation.name
+        ),
+        max_wait_sec=7200,
+    )
+    log.status.Print('Created revision [{0}].'.format(revision_ref.Name()))
+    return response
+

@@ -40,6 +40,9 @@ class Create(base.CreateCommand):
           The following command creates a Backup Vault named BACKUP_VAULT asynchronously using the specified arguments:
 
               $ {command} BACKUP_VAULT --location=LOCATION --async --description="test"
+          The following command creates a Backup Vault named CMEK_BACKUP_VAULT with a KMS config:
+
+              $ {command} CMEK_BACKUP_VAULT --location=LOCATION --kms-config=projects/PROJECT/locations/LOCATION/kmsConfigs/KMS_CONFIG
           """,
   }
 
@@ -56,6 +59,9 @@ class Create(base.CreateCommand):
     )
     backup_vault_type = None
     backup_region = None
+
+    kms_config = args.kms_config
+
     if self._RELEASE_TRACK == base.ReleaseTrack.BETA:
       backup_vault_type = backupvaults_flags.GetBackupVaultTypeEnumFromArg(
           args.backup_vault_type, client.messages
@@ -69,13 +75,14 @@ class Create(base.CreateCommand):
         backup_retention_policy=args.backup_retention_policy,
         backup_vault_type=backup_vault_type,
         backup_region=backup_region,
+        kms_config=kms_config,
     )
     result = client.CreateBackupVault(
         backupvault_ref, args.async_, backup_vault
     )
     if args.async_:
       command = 'gcloud {} netapp backup-vaults list'.format(
-          self.ReleaseTrack().prefix
+          ' ' + self.ReleaseTrack().prefix if self.ReleaseTrack().prefix else ''
       )
       log.status.Print(
           'Check the status of the new backup vault by listing all backup'
