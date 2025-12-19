@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List networkMonitoringProviders
-    description: List networkMonitoringProviders
-    examples: |-
-      To list all networkMonitoringProviders, run:
+    brief: List Network Monitoring Providers.
+    description: |-
+      List all Network Monitoring Providers for a given project.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To list all Network Monitoring Providers, run:
+
+        $ {command} --location=global
   arguments:
     params:
     - help_text: |-

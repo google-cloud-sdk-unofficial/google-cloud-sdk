@@ -136,7 +136,6 @@ You can find the list of allowed versions for upgrades by running:
   flags.AddImageTypeFlag(parser, 'cluster/node pool')
   flags.AddImageFlag(parser, hidden=True)
   flags.AddImageProjectFlag(parser, hidden=True)
-  flags.AddControlPlaneSoakDurationFlag(parser, hidden=True)
 
 
 def MaybeLog122UpgradeWarning(cluster):
@@ -163,6 +162,7 @@ class Upgrade(base.Command):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddControlPlaneSoakDurationFlag(parser, hidden=True)
 
   def ParseUpgradeOptions(self, args):
     return ParseUpgradeOptionsBase(args)
@@ -300,6 +300,7 @@ class UpgradeBeta(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddControlPlaneSoakDurationFlag(parser, hidden=False)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -309,6 +310,7 @@ class UpgradeAlpha(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddControlPlaneSoakDurationFlag(parser, hidden=False)
     flags.AddSecurityProfileForUpgradeFlags(parser)
 
   def ParseUpgradeOptions(self, args):

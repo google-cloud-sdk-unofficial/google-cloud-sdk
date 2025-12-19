@@ -63,6 +63,55 @@
         help_text: |-
           The Git branch pattern used for indexing in RE2 syntax.
           See https://github.com/google/re2/wiki/syntax for syntax.
+    - arg_name: resources
+      api_field: repositoryGroup.resources
+      required: false
+      repeated: true
+      help_text: |-
+        List of third party connection resources
+      clearable: true
+      spec:
+      - api_field: connection
+        help_text: |-
+          The DeveloperConnect connection full resource name, relative resource name
+          or resource URL to be indexed.
+      - api_field: type
+        help_text: |-
+          The type of the 3p resource.
+      - api_field: authConfig
+        help_text: |-
+          The authentication configuration for the resource.
+        spec:
+        - api_field: apiToken
+          one_of_index: 0
+          help_text: |-
+            API Token based authentication.
+          spec:
+          - api_field: username
+            help_text: |-
+              The username for the API token.
+          - api_field: tokenSecretResource
+            help_text: |-
+              The secret key for the API token. Example:
+              projects/<project>/secrets/<secret>/versions/<version>
+      - api_field: sourceConfig
+        help_text: |-
+          The source configuration for the resource.
+        spec:
+        - api_field: confluenceConfig
+          one_of_index: 0
+          help_text: |-
+            Confluence source configuration.
+          spec:
+          - api_field: uri
+            help_text: |-
+              The host address of the Confluence instance.
+          - api_field: spaceKey
+            help_text: |-
+              The space key of the Confluence space.
+          - api_field: pageId
+            help_text: |-
+              The optional page ID of the Confluence page.
     - arg_name: request-id
       api_field: requestId
       required: false

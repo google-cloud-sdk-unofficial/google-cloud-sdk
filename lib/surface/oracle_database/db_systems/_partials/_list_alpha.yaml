@@ -26,7 +26,7 @@
       To list all DbSystems in the location `us-east4` for a given
       DbSystem with id `my-db-system`, run:
 
-      $ {command} --db-system=my-db-system --location=us-east4
+        $ {command} --db-system=my-db-system --location=us-east4
   arguments:
     params:
     - help_text: |-

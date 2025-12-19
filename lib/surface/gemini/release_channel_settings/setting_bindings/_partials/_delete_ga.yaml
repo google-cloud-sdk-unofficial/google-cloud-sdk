@@ -24,7 +24,7 @@
     examples: |-
       To delete the settingBinding, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

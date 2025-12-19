@@ -64,7 +64,11 @@ class _BaseRotateCert(object):
 
     if not next_server_ca:
       raise exceptions.ResourceNotFoundError(
-          'No upcoming Server CA Certificate exists.')
+          'No upcoming Server CA Certificate exists. To create a new one, run '
+          '`gcloud sql ssl server-ca-certs create`.\n\nNote: For '
+          'instances using Certificate Authority Service (CAS), '
+          'instead, create or rotate the server certificate '
+          'using `gcloud sql ssl server-certs create`.')
 
     result_operation = sql_client.instances.RotateServerCa(
         sql_messages.SqlInstancesRotateServerCaRequest(

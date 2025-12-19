@@ -50,16 +50,14 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a workbench instance."""
-
-  _support_managed_euc = False
 
   @classmethod
   def Args(cls, parser):
     """Register flags for this command."""
-    flags.AddCreateInstanceFlags(cls._support_managed_euc, parser)
+    flags.AddCreateInstanceFlags(parser)
 
   def Run(self, args):
     """This is what gets called when the user runs this command."""
@@ -68,9 +66,7 @@ class Create(base.CreateCommand):
     messages = util.GetMessages(release_track)
     instance_service = client.projects_locations_instances
     operation = instance_service.Create(
-        instance_util.CreateInstanceCreateRequest(
-            args, messages, self._support_managed_euc
-        )
+        instance_util.CreateInstanceCreateRequest(args, messages)
     )
     return instance_util.HandleLRO(
         operation,
@@ -79,13 +75,6 @@ class Create(base.CreateCommand):
         release_track,
         operation_type=instance_util.OperationType.CREATE,
     )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class CreateBeta(Create):
-  """Creates a workbench instance."""
-
-  _support_managed_euc = True
 
 
 Create.detailed_help = DETAILED_HELP

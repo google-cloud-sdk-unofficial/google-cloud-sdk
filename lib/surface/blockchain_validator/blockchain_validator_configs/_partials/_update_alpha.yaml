@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,6 +51,9 @@
           Arguments for the blockchain type details.
         params:
         - group:
+            api_field: blockchainValidatorConfig.ethereumProtocolDetails
+            arg_name: ethereum-protocol-details
+            clearable: true
             required: false
             help_text: |-
               Blockchain validator configuration unique to Ethereum blockchains.
@@ -79,6 +82,9 @@
           Arguments for the key source config.
         params:
         - group:
+            api_field: blockchainValidatorConfig.remoteWeb3Signer
+            arg_name: remote-web3-signer
+            clearable: true
             required: false
             help_text: |-
               Configuration to use an external key signing service, such as the service
@@ -100,7 +106,8 @@
                   type: googlecloudsdk.core.util.times:ParseDuration
                   processor: googlecloudsdk.core.util.times:FormatDurationForJson
                   help_text: |-
-                    Timeout for requests to the Web3Signer service.
+                    Timeout for requests to the Web3Signer service. If not set, a default
+                    timeout of 12 seconds is used.
             - arg_name: remote-web3-signer-web3signer-uri
               api_field: blockchainValidatorConfig.remoteWeb3Signer.web3signerUri
               required: false
@@ -109,11 +116,15 @@
                 URI of the Web3Signer service the validator client connects to, to
                 request signing of attestations, blocks, etc.
     - help_text: |-
-        Blockchain Validator Config Name
-        The name of the Blockchain Validator Config. The fully specified name must have the format
-        projects/{project}/locations/{location}/blockchainValidatorConfigs/{validator}.
+        Identifier. The name of the validator. It must have the format
+        `"projects/{project}/locations/{location}/blockchainValidatorConfigs/{validator}"`.
+        `{validator}` must contain only letters (`[A-Za-z]`), numbers (`[0-9]`),
+        dashes (`-`), underscores (`_`), periods (`.`), tildes (`~`), plus (`+`) or
+        percent signs (`%`). It must be between 3 and 255 characters in length, and
+        it must not start with `"goog"`.
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_blockchain_validator_config
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:projects_locations_blockchain_validator_configs
       required: true
     - arg_name: labels
       api_field: blockchainValidatorConfig.labels

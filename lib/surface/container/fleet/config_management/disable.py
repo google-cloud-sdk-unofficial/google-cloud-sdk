@@ -20,10 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.container.fleet import flags
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as features_base
+from googlecloudsdk.command_lib.container.fleet.features import flags
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as membershipfeatures_base
 from googlecloudsdk.core.console import console_io
 

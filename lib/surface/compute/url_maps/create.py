@@ -160,7 +160,7 @@ def _Run(
     return _MakeRegionalRequest(args, url_map_ref, default_backend_uri, client)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a URL map."""
@@ -201,6 +201,14 @@ class Create(base.CreateCommand):
         self.URL_MAP_ARG,
         self._supports_regional_backend_bucket,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class CreateBeta(Create):
+  """Create a URL map."""
+
+  _supports_regional_backend_bucket = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -25,58 +25,7 @@ _CONTENT_SECURITY_POLICY_DEFAULT = '/contentSecurityPolicies/%s'
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class RemoveAlpha(base.Command):
-  """Remove MCP content security provider of a project.
-
-  Remove MCP content security provider of a project.
-
-  ## EXAMPLES
-
-  Remove MCP content security provider of a project:
-
-    $ {command} my-mcp-content-security-provider
-
-  Remove MCP content security provider of a project `my-project`:
-
-    $ {command} my-mcp-content-security-provider --project=my-project
-  """
-
-  @staticmethod
-  def Args(parser):
-    common_flags.mcp_content_security_provider_flag(
-        suffix='to remove'
-    ).AddToParser(parser)
-
-  def Run(self, args):
-    """Run command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      The content security providers for a project.
-    """
-
-    if args.IsSpecified('project'):
-      resource_name = _PROJECT_RESOURCE % args.project
-    else:
-      project = properties.VALUES.core.project.Get(required=True)
-      resource_name = _PROJECT_RESOURCE % project
-
-    op = serviceusage.RemoveContentSecurityProvider(
-        args.mcp_content_security_provider,
-        resource_name + _CONTENT_SECURITY_POLICY_DEFAULT % 'default',
-    )
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
-    services_util.PrintOperation(op)
-
-
-# TODO(b/321801975) make command public after suv2 launch.
-@base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Remove(base.Command):
   """Remove MCP content security provider of a project.
 
@@ -120,5 +69,9 @@ class Remove(base.Command):
         args.mcp_content_security_provider,
         resource_name + _CONTENT_SECURITY_POLICY_DEFAULT % 'default',
     )
+
+    if op is None:
+      return None
+
     op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
     services_util.PrintOperation(op)

@@ -28,6 +28,27 @@
       $ {command} my-instance --capacity-gib=18000 --location=us-central1-a --network=projects/my-project/global/networks/default --filesystem=lustrefs --per-unit-storage-throughput=1000
   arguments:
     params:
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  audit log level.
+        params:
+        - arg_name: audit-log-level
+          api_field: instance.auditLogLevel
+          required: false
+          hidden: true
+          help_text: |-
+            The file system audit log level for the instance.
+          choices:
+          - arg_value: disabled
+            enum_value: DISABLED
+            help_text: |-
+              File system audit logs are explicitly disabled.
+          - arg_value: basic
+            enum_value: BASIC
+            help_text: |-
+              File system basic audit logs are enabled.
     - help_text: |-
         Identifier.
         The name of the instance.
@@ -87,7 +108,7 @@
       repeated: false
       type: long
       help_text: |-
-        The throughput of the instance in MB/s/TiB. Valid values are 125, 250,
+        The throughput of the instance in MBps per TiB. Valid values are 125, 250,
         500, 1000.
         See [Performance tiers and maximum storage
         capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)

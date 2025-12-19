@@ -19,6 +19,7 @@ from googlecloudsdk.api_lib.services import services_util
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
 
 
@@ -97,9 +98,8 @@ class Update(base.Command):
     # the operation name is empty.
     # temporary fix till the backend returns name for no-op operations.
     if op.done and not op.name:
-      raise exceptions.ConfigError(
-          'No change required for the current consumer policy.'
-      )
+      log.warning('No change required for the current consumer policy.')
+      return None
 
     op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
     if args.validate_only:

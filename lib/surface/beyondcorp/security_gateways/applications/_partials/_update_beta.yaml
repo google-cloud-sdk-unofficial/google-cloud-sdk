@@ -38,18 +38,19 @@
       required: false
       repeated: true
       help_text: |-
-        Endpoint matchers associated with an application.
-        A combination of hostname and ports as endpoint matchers is used to match
-        the application.
-        Match conditions for OR logic.
-        An array of match conditions to allow for multiple matching criteria.
-        The rule is considered a match if one of the conditions is met.
-        The conditions should be the following combination:
-        (Hostname & Ports)
+        An array of conditions to match the application's network endpoint.
+        Each element in the array is an EndpointMatcher object, which defines a
+        specific combination of a hostname pattern and one or more ports. The
+        application is considered matched if at least one of the EndpointMatcher
+        conditions in this array is met (the conditions are combined using OR
+        logic). Each EndpointMatcher must contain a hostname pattern, such as
+        "example.com", and one or more port numbers specified as a string, such as
+        "443".
 
-        EXAMPLES:
-        Hostname and Ports - ("*.example.com", "443"), ("example.com" and "22"),
-        ("example.com" and "22,33") etc
+        Hostname and port number examples:
+        "*.example.com", "443"
+        "example.com" and "22"
+        "example.com" and "22,33"
       clearable: true
       spec:
       - api_field: hostname
@@ -57,7 +58,7 @@
           Hostname of the application.
       - api_field: ports
         help_text: |-
-          Ports of the application.
+          The ports of the application.
     - arg_name: display-name
       api_field: googleCloudBeyondcorpSecuritygatewaysV1Application.displayName
       required: false
@@ -110,25 +111,25 @@
           spec:
           - api_field: userInfo
             help_text: |-
-              User info configuration.
+              User details.
             spec:
             - api_field: outputType
               help_text: |-
-                The output type of the delegated user info.
+                The delegated user's information.
           - api_field: groupInfo
             help_text: |-
-              Group info configuration.
+              Group details.
             spec:
             - api_field: outputType
               help_text: |-
-                The output type of the delegated group info.
+                The output type of the delegated group information.
           - api_field: deviceInfo
             help_text: |-
-              Device info configuration.
+              The device information configuration.
             spec:
             - api_field: outputType
               help_text: |-
-                The output type of the delegated device info.
+                The output type details for the delegated device.
           - api_field: outputType
             help_text: |-
               Default output type for all enabled headers.
@@ -136,15 +137,15 @@
           help_text: |-
             Custom resource specific headers along with the values.
             The names should conform to RFC 9110:
-            > Field names SHOULD constrain themselves to alphanumeric characters, "-",
-            and ".", and SHOULD begin with a letter.
-            Field values SHOULD contain only ASCII printable characters and tab.
+            >Field names can contain alphanumeric characters, hyphens, and periods, can
+            contain only ASCII-printable characters and tabs, and must start with a
+            letter.
           spec:
           - api_field: key
           - api_field: value
         - api_field: gatewayIdentity
           help_text: |-
-            Gateway identity configuration.
+            The security gateway identity configuration.
         - api_field: clientIp
           help_text: |-
             Client IP configuration. The client IP address is included if true.

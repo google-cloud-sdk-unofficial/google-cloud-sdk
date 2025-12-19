@@ -27,7 +27,5 @@ output:
       capacityConfig.vcpuCount:label=VCPU,
       capacityConfig.memoryBytes:label=MEMORY_BYTES,
       state:label=STATE,
-      gcpConfig.accessConfig.networkConfigs.primarySubnet,
-      gcpConfig.accessConfig.networkConfigs.additionalSubnets.list(separator="
-    "):label=NETWORK
+      gcpConfig.accessConfig.networkConfigs.primarySubnet:label=PRIMARY_SUBNET
     )

@@ -28,7 +28,7 @@
   arguments:
     params:
     - help_text: |-
-        Name of the DnsThreatDetector resource
+        Name of the DnsThreatDetector resource.
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_security.v1alpha1_resources:projects_locations_dns_threat_detectors

@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List monitoringPoints
-    description: List monitoringPoints
-    examples: |-
-      To list all monitoringPoints, run:
+    brief: List Monitoring Points.
+    description: |-
+      List all Monitoring Points for a given Network Monitoring Provider.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To list all Monitoring Points for the provider `my-provider-id`, run:
+
+        $ {command} --network-monitoring-provider=my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Cancel a running experiment
+    brief: cancel a running experiment
     description: |
       Cancel a running experiment.
     examples: |-

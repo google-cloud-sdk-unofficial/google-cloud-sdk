@@ -24,7 +24,6 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
 
 
-@base.Hidden
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )

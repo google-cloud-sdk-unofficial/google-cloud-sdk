@@ -29,8 +29,8 @@ from googlecloudsdk.core import resources
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
 class Activate(base.Command):
   """Activate a spoke.
 

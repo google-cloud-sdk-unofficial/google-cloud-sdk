@@ -203,6 +203,11 @@ class PointInTimeRestore(base.Command):
         for key in specified_args_dict
         if key in constants.TARGET_INSTANCE_OVERRIDE_FLAGS
     ]
+    clears = [
+        key
+        for key in specified_args_dict
+        if key in constants.TARGET_INSTANCE_CLEAR_FLAGS
+    ]
 
     request = sql_messages.SqlInstancesPointInTimeRestoreRequest(
         parent=f'projects/{properties.VALUES.core.project.GetOrFail()}',
@@ -229,6 +234,11 @@ class PointInTimeRestore(base.Command):
       )
       request.pointInTimeRestoreContext.targetInstanceSettings = (
           instance_resource
+      )
+
+    if clears:
+      request.pointInTimeRestoreContext.targetInstanceClearSettingsFieldNames = (
+          flags.GetInstanceClearOverrides(args)
       )
 
     response = sql_client.instances.PointInTimeRestore(request)

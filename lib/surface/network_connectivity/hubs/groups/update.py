@@ -30,7 +30,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a group.

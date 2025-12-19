@@ -35,7 +35,7 @@
 
       ODBNetwork based configuration(This is the recommended way):
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
        --properties-license-type=LICENSE_INCLUDED --properties-db-workload=DW \
@@ -44,7 +44,7 @@
 
       Network and CIDR based configuration:
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --network=projects/my-project/locations/global/networks/default --cidr=12.2.0.0/24 \
        --location=us-east4 --database=testadb --admin-password=123Abpassdord \
        --properties-compute-count=2 --properties-db-version=19c \
@@ -392,6 +392,41 @@
             This field specifies if the replication of automatic backups is enabled
             when creating a Data Guard.
           default: null
+        - arg_name: source-config-type
+          api_field: autonomousDatabase.sourceConfig.sourceType
+          required: false
+          help_text: |-
+            The source type of the Autonomous Database.
+          choices:
+          - arg_value: clone-database
+            enum_value: CLONE_DATABASE
+            help_text: |-
+              Clone database from an existing database specified in
+              autonomous_database field.
+            hidden: true
+          - arg_value: cross-region-disaster-recovery
+            enum_value: CROSS_REGION_DISASTER_RECOVERY
+            help_text: |-
+              Create a cross-region disaster recovery peer adb from an existing adb.
+            hidden: true
+        - arg_name: source-config-clone-type
+          api_field: autonomousDatabase.sourceConfig.cloneType
+          required: false
+          help_text: |-
+            The clone type of the Autonomous Database. This field is only applicable
+            in case of cloning
+          choices:
+          - arg_value: full
+            enum_value: FULL
+            help_text: |-
+              Creates a new database with the source database's data and metadata.
+            hidden: true
+          - arg_value: metadata
+            enum_value: METADATA
+            help_text: |-
+              Creates a new database that includes all the source database schema
+              metadata, but none of the source database data.
+            hidden: true
     - arg_name: request-id
       api_field: requestId
       required: false

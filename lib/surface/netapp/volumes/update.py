@@ -114,6 +114,7 @@ class Update(base.UpdateCommand):
       backup_config = None
       source_backup = None
     cache_parameters = args.cache_parameters
+    cache_pre_populate = args.cache_pre_populate
     block_devices = args.block_devices
     throughput_mibps = args.throughput_mibps
 
@@ -139,6 +140,7 @@ class Update(base.UpdateCommand):
         backup_config=backup_config,
         tiering_policy=args.tiering_policy,
         cache_parameters=cache_parameters,
+        cache_pre_populate=cache_pre_populate,
         throughput_mibps=throughput_mibps,
         block_devices=block_devices,
     )
@@ -213,16 +215,16 @@ class Update(base.UpdateCommand):
         and args.cache_parameters.get('cache-config') is not None
     ):
       for config in args.cache_parameters.get('cache-config'):
-        # TODO(b/433897931): Add atime-scrub-enabled and atime-scrub-days
-        # back for AGA
-        # if 'atime-scrub-enabled' in config:
-        #   updated_fields.append('cacheParameters.cacheConfig.atimeScrubEnabled')
-        # if 'atime-scrub-minutes' in config:
-        #   updated_fields.append('cacheParameters.cacheConfig.atimeScrubMinutes')
         if 'cifs-change-notify-enabled' in config:
           updated_fields.append(
               'cacheParameters.cacheConfig.cifsChangeNotifyEnabled'
           )
+        if 'write-back-enabled' in config:
+          updated_fields.append(
+              'cacheParameters.cacheConfig.writebackEnabled'
+          )
+    if args.IsSpecified('cache_pre_populate'):
+      updated_fields.append('cacheParameters.cacheConfig.cachePrePopulate')
 
     if args.IsSpecified('block_devices'):
       updated_fields.append('blockDevices')

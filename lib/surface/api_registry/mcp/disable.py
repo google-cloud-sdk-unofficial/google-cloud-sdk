@@ -23,11 +23,10 @@ from googlecloudsdk.core import log
 
 
 # TODO(b/321801975) make command public after preview.
-@base.UniverseCompatible
-@base.Hidden
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Disable(base.SilentCommand):
-  """Disables MCP Server for a given service in the current project."""
+class DisableAlpha(base.SilentCommand):
+  """Disables MCP server for a given service in the current project."""
 
   @staticmethod
   def Args(parser):
@@ -37,13 +36,44 @@ class Disable(base.SilentCommand):
     )
 
   def Run(self, args):
-    """Disables MCP Server for a given service in the current project."""
+    """Disables MCP server for a given service in the current project."""
     op = serviceusage.RemoveMcpEnableRule(
         resources.GetProjectId(),
         args.service,
     )
 
-    op = services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+    if op is None:
+      return None
 
-    services_util.PrintOperation(op)
+    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+
+    # services_util.PrintOperation(op)
+    log.status.Print('MCP Server disabled for service:', args.service)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class DisableBeta(base.SilentCommand):
+  """Disables MCP server for a given service in the current project."""
+
+  @staticmethod
+  def Args(parser):
+    parser.add_argument(
+        'service',
+        help='The MCP server to disable.',
+    )
+
+  def Run(self, args):
+    """Disables MCP server for a given service in the current project."""
+    op = serviceusage.RemoveMcpEnableRule(
+        resources.GetProjectId(),
+        args.service,
+    )
+
+    if op is None:
+      return None
+
+    services_util.WaitOperation(op.name, serviceusage.GetOperationV2Beta)
+
+    # services_util.PrintOperation(op)
     log.status.Print('MCP Server disabled for service:', args.service)

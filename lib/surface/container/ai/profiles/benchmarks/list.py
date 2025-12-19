@@ -102,13 +102,40 @@ class List(commands.List):
             "cost conversions."
         ),
     )
-
     parser.add_argument(
         "--pricing-model",
         required=False,
         help=(
             "The pricing model to use to calculate token cost. Currently, this"
             " supports on-demand, spot, 3-years-cud, 1-year-cud"
+        ),
+    )
+    parser.add_argument(
+        "--use-case",
+        required=False,
+        help=(
+            "If specified, results will only show profiles that match the"
+            " provided use case. Options are: Advanced Customer Support, Code"
+            " Completion, Text Summarization, Chatbot (ShareGPT), Code"
+            " Generation, Deep Research."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack",
+        required=False,
+        help=(
+            "The serving stack to filter benchmarking data by. If not"
+            " provided, benchmarking data for all serving stacks that support"
+            " the given model and model server will be returned."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack-version",
+        required=False,
+        help=(
+            "The serving stack version to filter benchmarking data by. If not"
+            " provided, benchmarking data for all versions that support"
+            " the given model and model server will be returned."
         ),
     )
 
@@ -128,10 +155,20 @@ class List(commands.List):
           modelServer=args.model_server,
           modelServerVersion=args.model_server_version,
       )
+      serving_stack = None
+      if args.serving_stack:
+        serving_stack = messages.ServingStack(
+            name=args.serving_stack,
+        )
+        if args.serving_stack_version:
+          serving_stack.version = args.serving_stack_version
+
       request = messages.FetchBenchmarkingDataRequest(
           modelServerInfo=model_server_info,
           instanceType=args.instance_type,
           pricingModel=args.pricing_model,
+          useCase=args.use_case,
+          servingStack=serving_stack,
       )
       response = client.benchmarkingData.Fetch(request)
       if not response.profile:

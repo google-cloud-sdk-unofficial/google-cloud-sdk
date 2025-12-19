@@ -24,7 +24,7 @@
     examples: |-
       To create the loggingSetting, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

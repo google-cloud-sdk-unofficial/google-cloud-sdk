@@ -19,6 +19,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+import time
+
 from google.auth import credentials
 from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
@@ -36,6 +39,8 @@ from oauth2client import client
 
 # bq needs this as part of its auth flow to support the Drive scope.
 _TRUSTED_SCOPES = list(config.CLOUDSDK_SCOPES) + [auth_util.GOOGLE_DRIVE_SCOPE]
+_MTLS_WARNING_INTERVAL_SECONDS = 24 * 60 * 60  # Seconds in a day
+_MTLS_WARNING_LAST_SHOWN_CONFIG_KEY = 'mtls_warning_last_shown'
 
 
 class FakeCredentials(object):
@@ -49,6 +54,55 @@ class FakeCredentials(object):
 
   def __init__(self, token):
     self.token = token
+
+
+def _ShowMTLSWarningOnceDaily():
+  """Checks if mTLS warning should be shown and shows it if needed.
+
+  The warning is shown at most once per day.
+  """
+  current_time = time.time()
+
+  should_show_warning = True
+  active_config_store = config.GetConfigStore()
+
+  if active_config_store:
+    last_shown_str = active_config_store.Get(
+        _MTLS_WARNING_LAST_SHOWN_CONFIG_KEY
+    )
+    if last_shown_str:
+      try:
+        last_shown = float(last_shown_str)
+        if (current_time - last_shown) < _MTLS_WARNING_INTERVAL_SECONDS:
+          should_show_warning = False
+      except ValueError:
+        # If the stored value is not a valid float,
+        # treat it as if the warning has never been shown.
+        log.debug(
+            'Could not parse float from [%s] for %s.',
+            last_shown_str,
+            _MTLS_WARNING_LAST_SHOWN_CONFIG_KEY,
+        )
+
+  if should_show_warning:
+    log.warning(textwrap.dedent("""\
+        Warning: This access token is for the gcloud CLI tool itself and is \
+bound to its specific client ID, which requires Certificate Based Access (CBA). \
+This means it can only be used with CBA-enabled API endpoints.
+
+        If you need a token for your own application code or scripts, you \
+should use Application Default Credentials (ADC). Obtain an ADC \
+token by running:
+          1.  gcloud auth application-default login (if you haven't already)
+          2.  gcloud auth application-default print-access-token
+
+        ADC tokens are intended for local development and do not have the \
+same CBA restrictions."""))
+    # Update the config store with the current timestamp
+    if active_config_store:
+      active_config_store.Set(
+          _MTLS_WARNING_LAST_SHOWN_CONFIG_KEY, str(current_time)
+      )
 
 
 @base.UniverseCompatible
@@ -135,17 +189,7 @@ class AccessToken(base.Command):
         properties.VALUES.context_aware.use_client_certificate.GetBool()
         and properties.IsInternalUserCheck()
     ):
-      log.warning(
-          'Warning: This access token is for the gcloud CLI tool itself and is'
-          ' bound to its specific client ID, which requires mTLS. This means it'
-          ' can only be used with mTLS-enabled API endpoints.\n\nIf you need a'
-          ' token for your own application code or scripts, you should use'
-          ' Application Default Credentials (ADC). Obtain an ADC token by'
-          ' running:\n  1.  gcloud auth application-default login (if you'
-          " haven't already)\n  2.  gcloud auth application-default"
-          ' print-access-token\n\nADC tokens are intended for local development'
-          ' and does not have the same mTLS restrictions.'
-      )
+      _ShowMTLSWarningOnceDaily()
 
     if args.lifetime and not args.impersonate_service_account:
       raise c_exc.InvalidArgumentException(

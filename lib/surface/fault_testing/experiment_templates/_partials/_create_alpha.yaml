@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create an experiment template
+    brief: create an experiment template
     description: |
       Create an experiment template.
     examples: |-
@@ -50,12 +50,6 @@
       repeated: false
       help_text: |-
         Optional user-provided description or notes. Min length 0. Max length 2000.
-    - arg_name: tags
-      api_field: experimentTemplate.tags
-      required: false
-      repeated: true
-      help_text: |-
-        Optional user-provided tags. Min length 0, max combined length 1000.
     - arg_name: duration
       api_field: experimentTemplate.duration
       required: true

@@ -42,6 +42,8 @@ class Update(base.UpdateCommand):
     attachment_flags.AddBandwidth(parser, required=False)
     attachment_flags.AddPartnerMetadata(parser, required=False)
     attachment_flags.AddDescription(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -117,8 +119,6 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     super().Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
 
 @base.UniverseCompatible

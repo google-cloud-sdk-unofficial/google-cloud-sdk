@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@
     - help_text: |-
         Identifier. name of resource
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:project_location_registry_book
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
       required: true
     - arg_name: labels
       api_field: registryBook.labels
@@ -44,6 +45,33 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: claimed-scopes
+      api_field: registryBook.claimedScopes
+      required: false
+      repeated: true
+      help_text: |-
+        List of scopes claimed by the RegistryBook. In Preview, Only project scope
+        is supported. Each scope is in the format of projects/{project}. Each scope
+        can only be claimed once.
+      clearable: true
+    - arg_name: request-id
+      api_field: requestId
+      required: false
+      repeated: false
+      help_text: |-
+        An optional request ID to identify requests. Specify a unique request ID
+        so that if you must retry your request, the server will know to ignore
+        the request if it has already been completed. The server will guarantee
+        that for at least 60 minutes since the first request.
+
+        For example, consider a situation where you make an initial request and the
+        request times out. If you make the request again with the same request
+        ID, the server can check if original operation with the same request ID
+        was received, and if so, will ignore the second request. This prevents
+        clients from accidentally creating duplicate commitments.
+
+        The request ID must be a valid UUID with the exception that zero UUID is
+        not supported (00000000-0000-0000-0000-000000000000).
   request:
     api_version: v1alpha
     collection:

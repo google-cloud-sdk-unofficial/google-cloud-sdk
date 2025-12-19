@@ -28,7 +28,7 @@
   arguments:
     params:
     - help_text: |-
-        Parent value for ListDnsThreatDetectorsRequest
+        The parent value for `ListDnsThreatDetectorsRequest`.
       is_positional: false
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.network_security.v1beta1_resources:projects_locations

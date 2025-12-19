@@ -26,7 +26,7 @@ from googlecloudsdk.core import properties
 
 @base.UniverseCompatible
 @base.ReleaseTracks(
-    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
 class Logs(base.Group):
   """Read logs for Cloud Run jobs."""
@@ -37,6 +37,21 @@ class Logs(base.Group):
 
           $ {command} tail my-job
 
+        To read logs executions for a job, run:
+
+          $ {command} read my-job
+
+    """,
+  }
+
+
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class GaLogs(base.Group):
+  """Read logs for Cloud Run jobs."""
+
+  detailed_help = {
+      'EXAMPLES': """
         To read logs executions for a job, run:
 
           $ {command} read my-job

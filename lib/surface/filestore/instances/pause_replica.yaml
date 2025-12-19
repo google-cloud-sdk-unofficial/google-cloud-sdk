@@ -1,0 +1,42 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Pause a Filestore replica instance.
+    description: |
+      Pause a Filestore replica instance. This command can be called only on a standby instance.
+      After calling the command, the NFS file system of the standby instance becomes writeable. Any
+      data changed on the standby instance while it is paused will be lost when the replica is
+      resumed or promoted.
+    examples: |
+      To pause a replica instance with the name ``my-replica-instance'' located in``us-central1-c'',
+      run:
+
+      $ {command} my-replica-instance --zone=us-central1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:instance
+      help_text: |
+        Arguments and flags that specify the Filestore instance to pause.
+      command_level_fallthroughs:
+        zone:
+        - arg_name: location
+          release_tracks: [BETA]
+    params:
+    - arg_name: location
+      release_tracks: [BETA]
+      help_text: |
+        Location of the Filestore instance to pause.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    collection: file.projects.locations.instances
+    method: pauseReplica
+
+  async:
+    collection: file.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      Warning: You are about to pause a standby replica instance, this action makes the standby
+      instance's NFS filesystem writeable.

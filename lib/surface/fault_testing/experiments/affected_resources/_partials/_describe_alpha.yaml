@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe an affected resource
+    brief: describe an affected resource
     description: |
       Describe an affected resource.
     examples: |-

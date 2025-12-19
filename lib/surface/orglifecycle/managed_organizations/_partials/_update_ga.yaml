@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@
   hidden: true
   help_text:
     brief: Update a ManagedOrganization resource.
-    description: Update a ManagedOrganization resource and corresponding Cloud Resource
-      Manager organization resource. Only updating admins are supported.
+    description: Update a ManagedOrganization resource and corresponding Cloud Resource Manager organization resource. Only updating admins are supported.
     examples: |-
       To replace Organization Admins(IAM role grantings) of the managed organiztion named `foo` in location `global` and organization `my-org` run:
 
@@ -34,7 +33,8 @@
         Format:
         organizations/{organization_id}/locations/{location}/managedOrganizations/{managed_organization_id}
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.orglifecycle.v1_resources:organization_location_managed_organization
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.orglifecycle.v1_resources:organizations_locations_managed_organizations
       required: true
     - arg_name: admins
       api_field: managedOrganization.admins

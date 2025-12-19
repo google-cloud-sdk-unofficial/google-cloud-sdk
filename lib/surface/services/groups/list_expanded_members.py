@@ -15,16 +15,16 @@
 """services groups list expanded members command."""
 import collections
 
+from googlecloudsdk.api_lib.services import exceptions
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+from googlecloudsdk.command_lib.services import util
 from googlecloudsdk.core import properties
 
 _PROJECT_RESOURCE = 'projects/%s'
 _FOLDER_RESOURCE = 'folders/%s'
 _ORGANIZATION_RESOURCE = 'organizations/%s'
-_SERVICE_RESOURCE = 'services/%s'
-_GROUP_RESOURCE = 'groups/%s'
 
 
 @base.UniverseCompatible
@@ -84,15 +84,25 @@ class ListExpandedMembers(base.ListCommand):
     else:
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE % project
+
+    if not util.IsValidGroupName(args.service, args.group):
+      raise exceptions.InvalidGroupNameError(
+          util.GetGroupName(args.service, args.group)
+      )
+
     response = serviceusage.ListExpandedMembers(
         resource_name,
-        '{}/{}'.format(
-            _SERVICE_RESOURCE % args.service, _GROUP_RESOURCE % args.group
-        ),
+        util.GetGroupName(args.service, args.group),
         page_size=args.page_size,
     )
     service_names = []
     results = collections.namedtuple('Service', ['name'])
     for service in response:
       service_names.append(results(name=service))
+
+    if not service_names:
+      raise exceptions.EmptyMembersError(
+          util.GetGroupName(args.service, args.group)
+      )
+
     return service_names

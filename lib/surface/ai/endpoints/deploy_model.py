@@ -59,6 +59,7 @@ def _Run(args, version):
   validation.ValidateAutoscalingMetricSpecs(args.autoscaling_metric_specs)
   validation.ValidateRequiredReplicaCount(args.required_replica_count,
                                           args.min_replica_count)
+  validation.ValidateGpuPartitionSize(args.gpu_partition_size)
   endpoint_ref = args.CONCEPTS.endpoint.Parse()
   args.region = endpoint_ref.AsDict()['locationsId']
   with endpoint_util.AiplatformEndpointOverrides(version, region=args.region):
@@ -82,7 +83,9 @@ def _Run(args, version):
           disable_container_logging=args.disable_container_logging,
           service_account=args.service_account,
           traffic_split=args.traffic_split,
-          deployed_model_id=args.deployed_model_id)
+          deployed_model_id=args.deployed_model_id,
+          gpu_partition_size=args.gpu_partition_size,
+      )
     else:
       shared_resources_ref = args.CONCEPTS.shared_resources.Parse()
       validation.ValidateSharedResourceArgs(

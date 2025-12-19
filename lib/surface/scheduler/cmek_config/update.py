@@ -35,7 +35,7 @@ class UpdateCmekConfig(base.Command):
           """,
       'EXAMPLES': """\
           To update a CMEK config:
-              $ {command} --location=my-location --kms-location=europe-southwest1 --kms-project=new-kms-project --kms-keyring=kms-keyring2 --kms-key=crypto-key2
+              $ {command} --location=my-location --kms-project=new-kms-project --kms-keyring=kms-keyring2 --kms-key-name=crypto-key2
          """,
   }
 
@@ -63,10 +63,10 @@ class UpdateCmekConfig(base.Command):
       # key name is provided, or all of the flags are provided.
       if full_kms_key_name is None or location_id is None or project_id is None:
         raise cmek_config.RequiredFieldsMissingError(
-            'One or more of the --kms-key-name, --kms-keyring, --location, or'
-            ' --project are invalid. Please set these flags properly or make'
-            ' sure the full KMS key name is valid. (args: kms_key={},'
-            ' location={}, project={})'.format(
+            'One or more of the --kms-key-name, --kms-keyring, --kms-project,'
+            ' or --location are invalid. Please set these flags properly or'
+            ' make sure the full KMS key name is valid. (args:'
+            ' full_kms_key_name={}, location={}, kms_project={})'.format(
                 full_kms_key_name, location_id, project_id
             )
         )

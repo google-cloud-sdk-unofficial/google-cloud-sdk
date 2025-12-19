@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2025 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Lists supported serving stack versions for GKE Inference Quickstart."""
+
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.ai.recommender import util
+from googlecloudsdk.api_lib.util import exceptions as api_lib_exceptions
+from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import commands
+
+
+_EXAMPLES = """
+To list all supported serving stack versions, run:
+
+$ {command} --serving-stack=llm-d
+"""
+
+
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class List(commands.List):
+  """List supported serving stack versions that were used to generate the inference profiles."""
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat("table(version)")
+    parser.add_argument(
+        "--model",
+        help="The model to filter serving stack versions by.",
+    )
+    parser.add_argument(
+        "--model-server",
+        help="The model server to filter serving stack versions by.",
+    )
+    parser.add_argument(
+        "--serving-stack",
+        required=True,
+        help="The serving stack to filter serving stack versions by.",
+    )
+
+  def Run(self, args):
+    client = util.GetClientInstance(base.ReleaseTrack.GA)
+    messages = util.GetMessagesModule(base.ReleaseTrack.GA)
+
+    try:
+      response = client.servingStackVersions.Fetch(
+          messages.GkerecommenderServingStackVersionsFetchRequest(
+              model=args.model,
+              modelServer=args.model_server,
+              servingStack=args.serving_stack,
+          )
+      )
+      if response.servingStackVersions:
+        return [{"version": v} for v in response.servingStackVersions]
+      else:
+        return []
+    except apitools_exceptions.HttpError as error:
+      raise api_lib_exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)

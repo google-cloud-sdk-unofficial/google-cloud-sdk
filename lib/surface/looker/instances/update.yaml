@@ -274,7 +274,6 @@
     # Group for Periodic Export Config
     - group:
         required: false
-        release_tracks: [ALPHA]
         mutex: true
         params:
         - group:
@@ -296,6 +295,8 @@
             - arg_name: periodic-export-start-time
               api_field: instance.periodicExportConfig.startTime
               required: false
+              GA:
+                processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayPeriodicExportStartTimeV1
               ALPHA:
                 processor: googlecloudsdk.command_lib.looker.instances_util:ParseTimeOfDayPeriodicExportStartTimeV1Alpha
               help_text: |
@@ -360,6 +361,7 @@
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateCustomDomain
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscAllowedVpcs
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePscServiceAttachments
+      - googlecloudsdk.command_lib.looker.instances_update_util:UpdatePeriodicExportConfig
       - googlecloudsdk.command_lib.looker.instances_update_util:UpdateControlledEgressConfig
     collection: looker.projects.locations.instances
 

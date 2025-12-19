@@ -27,7 +27,7 @@
       `projects/my-project/locations/global/networks/default` in the location `us-east4`.
       run:
 
-      $ {command} my-odbnetwork --location=us-east4 --network=projects/my-project/locations/global/networks/default
+        $ {command} my-odbnetwork --location=us-east4 --network=projects/my-project/locations/global/networks/default
   arguments:
     params:
     - help_text: |-

@@ -60,6 +60,7 @@ EXAMPLES_BETA = """\
    """
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Updates a Datastream stream."""
@@ -82,6 +83,7 @@ class Update(base.Command):
     streams_flags.AddBackfillStrategyGroup(parser, required=False)
     streams_flags.AddValidationGroup(parser, 'Update')
     streams_flags.AddStateFlag(parser)
+    streams_flags.AddRuleSetsFlag(parser)
     flags.AddLabelsUpdateFlags(parser)
 
   @staticmethod

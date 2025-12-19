@@ -15,16 +15,16 @@
 """services groups list members command."""
 import collections
 
+from googlecloudsdk.api_lib.services import exceptions
 from googlecloudsdk.api_lib.services import serviceusage
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.services import common_flags
+from googlecloudsdk.command_lib.services import util
 from googlecloudsdk.core import properties
 
 _PROJECT_RESOURCE = 'projects/{}'
 _FOLDER_RESOURCE = 'folders/{}'
 _ORGANIZATION_RESOURCE = 'organizations/{}'
-_SERVICE_RESOURCE = 'services/{}'
-_GROUP_RESOURCE = 'groups/{}'
 
 
 @base.UniverseCompatible
@@ -85,12 +85,15 @@ class ListGroupMembers(base.ListCommand):
     else:
       project = properties.VALUES.core.project.Get(required=True)
       resource_name = _PROJECT_RESOURCE.format(project)
+
+    if not util.IsValidGroupName(args.service, args.group):
+      raise exceptions.InvalidGroupNameError(
+          util.GetGroupName(args.service, args.group)
+      )
+
     member_states = serviceusage.ListGroupMembers(
         resource_name,
-        '{}/{}'.format(
-            _SERVICE_RESOURCE.format(args.service),
-            _GROUP_RESOURCE.format(args.group),
-        ),
+        util.GetGroupName(args.service, args.group),
         args.page_size,
     )
 
@@ -103,5 +106,10 @@ class ListGroupMembers(base.ListCommand):
         members.append(results(member.groupName, member.reason))
       else:
         members.append(results(member.serviceName, member.reason))
+
+    if not members:
+      raise exceptions.EmptyMembersError(
+          util.GetGroupName(args.service, args.group)
+      )
 
     return members

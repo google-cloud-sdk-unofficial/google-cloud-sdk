@@ -574,6 +574,7 @@ def ParseCreateOptionsBase(
       enable_auto_ipam=get_default('enable_auto_ipam'),
       enable_k8s_tokens_via_dns=get_default('enable_k8s_tokens_via_dns'),
       enable_legacy_lustre_port=get_default('enable_legacy_lustre_port'),
+      disable_multi_nic_lustre=get_default('disable_multi_nic_lustre'),
       enable_lustre_multi_nic=get_default('enable_lustre_multi_nic'),
       enable_pod_snapshots=enable_pod_snapshots,
       enable_default_compute_class=get_default('enable_default_compute_class'),
@@ -585,6 +586,7 @@ def ParseCreateOptionsBase(
       network_tier=get_default('network_tier'),
       control_plane_egress_mode=get_default('control_plane_egress'),
       enable_slice_controller=get_default('enable_slice_controller'),
+      autopilot_general_profile=get_default('autopilot_general_profile'),
   )
 
 GA = 'ga'
@@ -841,10 +843,9 @@ flags_to_add = {
         'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
-        'enableLustreMultiNic': (
-            lambda p: flags.AddEnableLustreMultiRailFlag(
-                p, hidden=True
-            )
+        'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
+        'enableLustreMultiNic': lambda p: flags.AddEnableLustreMultiRailFlag(
+            p, hidden=True
         ),
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
@@ -856,8 +857,8 @@ flags_to_add = {
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
-        'enableSliceController': (
-            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
+        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
+            p, hidden=True
         ),
     },
     BETA: {
@@ -1059,6 +1060,7 @@ flags_to_add = {
         'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
@@ -1073,14 +1075,13 @@ flags_to_add = {
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
-        'enableLustreMultiNic': (
-            lambda p: flags.AddEnableLustreMultiRailFlag(
-                p, hidden=True
-            )
+        'enableLustreMultiNic': lambda p: flags.AddEnableLustreMultiRailFlag(
+            p, hidden=True
         ),
-        'enableSliceController': (
-            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
+        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
+            p, hidden=True
         ),
+        'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1287,6 +1288,7 @@ flags_to_add = {
         'enableAutoIpam': flags.AddAutoIpamFlag,
         'enableK8sTokensViaDns': flags.AddEnableK8sTokensViaDnsFlag,
         'enableLegacyLustrePort': flags.AddEnableLegacyLustrePortFlag,
+        'disableMultiNicLustre': flags.AddDisableMultiNicLustreFlag,
         'enableDefaultComputeClass': flags.AddEnableDefaultComputeClassFlag,
         'enableK8sCertsViaDns': flags.AddEnableK8sCertsViaDnsFlag,
         'networkTier': flags.AddNetworkTierFlag,
@@ -1301,14 +1303,13 @@ flags_to_add = {
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
-        'enableLustreMultiNic': (
-            lambda p: flags.AddEnableLustreMultiRailFlag(
-                p, hidden=True
-            )
+        'enableLustreMultiNic': lambda p: flags.AddEnableLustreMultiRailFlag(
+            p, hidden=True
         ),
-        'enableSliceController': (
-            lambda p: flags.AddEnableSliceControllerFlag(p, hidden=True)
+        'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
+            p, hidden=True
         ),
+        'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1673,6 +1674,7 @@ class CreateBeta(Create):
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
+    ops.disable_multi_nic_lustre = get_default('disable_multi_nic_lustre')
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
@@ -1836,6 +1838,7 @@ class CreateAlpha(Create):
     ops.enable_auto_ipam = get_default('enable_auto_ipam')
     ops.enable_k8s_tokens_via_dns = get_default('enable_k8s_tokens_via_dns')
     ops.enable_legacy_lustre_port = get_default('enable_legacy_lustre_port')
+    ops.disable_multi_nic_lustre = get_default('disable_multi_nic_lustre')
     ops.enable_default_compute_class = get_default(
         'enable_default_compute_class'
     )
@@ -1843,4 +1846,5 @@ class CreateAlpha(Create):
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')
     ops.managed_otel_scope = get_default('managed_otel_scope')
+    ops.autopilot_general_profile = get_default('autopilot_general_profile')
     return ops

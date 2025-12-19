@@ -117,7 +117,8 @@
               required: false
               repeated: false
               help_text: |-
-                The full resource name that's used for access policy bindings
+                The full resource name that's used for access policy bindings.
+
                 Examples:
 
                 * Organization:
@@ -143,8 +144,7 @@
       - arg_value: access
         enum_value: ACCESS
         help_text: |-
-          Access policy kind. Keep behind visibility label until Access Policy
-          launch.
+          Access policy kind.
     - arg_name: policy
       api_field: googleIamV3betaPolicyBinding.policy
       required: true

@@ -26,7 +26,7 @@
       To list all Databases in the location `us-east4` for a given
       DbSystem with id `my-db-system`, run:
 
-      $ {command} --location=us-east4 --filter="dbSystem=projects/project-id/locations/us-east4/dbSystems/my-db-system"
+        $ {command} --location=us-east4 --filter="dbSystem=projects/project-id/locations/us-east4/dbSystems/my-db-system"
   arguments:
     params:
     - help_text: |-

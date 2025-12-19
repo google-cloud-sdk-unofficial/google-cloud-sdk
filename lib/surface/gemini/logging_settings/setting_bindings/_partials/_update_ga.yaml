@@ -24,7 +24,7 @@
     examples: |-
       To update the settingBinding, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -68,6 +68,10 @@
         enum_value: GEMINI_IN_BIGQUERY
         help_text: |-
           Gemini in BigQuery.
+      - arg_value: gemini-in-looker
+        enum_value: GEMINI_IN_LOOKER
+        help_text: |-
+          Gemini in Looker.
     - arg_name: request-id
       api_field: requestId
       required: false

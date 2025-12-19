@@ -24,9 +24,28 @@ from googlecloudsdk.command_lib.apphub import flags
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class UpdateGA(base.UpdateCommand):
+  """Update an App Hub boundary."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddUpdateBoundaryFlags(parser)
+
+  def Run(self, args):
+    """Run the update command."""
+    client = boundary_api.BoundaryClient(self.ReleaseTrack())
+    # Parse the location reference from the --location flag
+    location_ref = args.CONCEPTS.location.Parse()
+    # Manually construct the full boundary resource name string
+    boundary_name = location_ref.RelativeName() + '/boundary'
+    return client.Update(boundary_name, args)
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Update(base.UpdateCommand):
+class UpdateAlpha(base.UpdateCommand):
   """Update an App Hub boundary."""
 
   @staticmethod

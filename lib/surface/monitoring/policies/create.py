@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a new alerting policy."""
 
@@ -64,10 +65,13 @@ class Create(base.CreateCommand):
             * Channel Relative Name:
                 `projects/my-project/notificationChannels/channel-id0`
             * Channel URI:
-                https://monitoring.googleapis.com/v3/projects/my-project/notificationChannels/channel-id0
-            """,
+                https://monitoring.{universe_domain}/v3/projects/my-project/notificationChannels/channel-id0
+            """.format(
+            universe_domain=properties.VALUES.core.universe_domain.Get()
+        ),
         required=False,
-        plural=True)
+        plural=True,
+    )
     resource_args.AddResourceArgs(parser, [channels_resource_arg])
 
   def Run(self, args):

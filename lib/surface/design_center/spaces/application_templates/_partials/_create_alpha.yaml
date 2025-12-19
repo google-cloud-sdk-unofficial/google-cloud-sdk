@@ -101,6 +101,32 @@
           ApplicationCompositionType is COMPOSITE. The template is composed of
           STANDARD applicationTemplate(s) and might be having multiple root modules
           in terraform code.
+    - arg_name: root-input-variables
+      api_field: applicationTemplate.rootInputVariables
+      required: false
+      repeated: true
+      help_text: |-
+        Root level input variables of the application template.
+      spec:
+      - api_field: variable
+        help_text: |-
+          Name of the variable.
+      - api_field: componentUri
+        help_text: |-
+          Component to which this variable belongs.
+    - arg_name: root-output-variables
+      api_field: applicationTemplate.rootOutputVariables
+      required: false
+      repeated: true
+      help_text: |-
+        Root level output variables of the application template.
+      spec:
+      - api_field: variable
+        help_text: |-
+          Name of the variable.
+      - api_field: componentUri
+        help_text: |-
+          Component to which this variable belongs.
   request:
     api_version: v1alpha
     collection:

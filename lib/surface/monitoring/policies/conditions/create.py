@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.monitoring import resource_args
 from googlecloudsdk.command_lib.monitoring import util
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a condition in an alerting policy."""
 

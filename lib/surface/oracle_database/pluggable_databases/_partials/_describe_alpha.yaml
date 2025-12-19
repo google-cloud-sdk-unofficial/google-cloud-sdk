@@ -26,7 +26,7 @@
       To get a PluggableDatabase with id `my-pluggable-database` in the location `us-east4`
       for a given DbSystem with id `my-db-system`, run:
 
-      $ {command} my-pluggable-database --location=us-east4
+        $ {command} my-pluggable-database --location=us-east4
   arguments:
     params:
     - help_text: |-

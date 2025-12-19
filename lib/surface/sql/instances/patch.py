@@ -384,9 +384,9 @@ def AddBetaArgs(parser):
   flags.AddClearUncMappings(unc_mappings_group)
   flags.AddDataApiAccess(parser)
   flags.AddServerCertificateRotationMode(parser)
-  flags.AddPerformanceCaptureConfig(parser, hidden=True)
-  flags.AddSqlServerEntraId(parser, hidden=True)
-  flags.AddClearEntraIdConfig(parser, hidden=True)
+  flags.AddPerformanceCaptureConfig(parser, hidden=False)
+  flags.AddSqlServerEntraId(parser)
+  flags.AddClearEntraIdConfig(parser)
 
 
 def AddAlphaArgs(unused_parser):

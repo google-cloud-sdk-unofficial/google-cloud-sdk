@@ -20,12 +20,17 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create networkMonitoringProviders
-    description: Create a networkMonitoringProvider
-    examples: |-
-      To create the networkMonitoringProvider, run:
+    brief: Create a Network Monitoring Provider.
+    description: |-
+      Create a new Network Monitoring Provider.
 
-          $ {command}
+      To create this resource for the first time in a Google Cloud project, you must use the Cloud Console to accept the Broadcom Terms of Service (TOS).
+
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To create a Network Monitoring Provider `my-provider-id` of type `EXTERNAL`, run:
+
+        $ {command} my-provider-id --location=global --provider-type=EXTERNAL
   arguments:
     params:
     - help_text: |-

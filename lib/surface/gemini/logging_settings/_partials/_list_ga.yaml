@@ -24,7 +24,7 @@
     examples: |-
       To list all loggingSettings, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

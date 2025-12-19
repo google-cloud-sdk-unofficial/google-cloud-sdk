@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@
     - help_text: |-
         Name of the resource
       is_positional: true
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:project_location_registry_book
+      is_primary_resource: true
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
       required: true
     - arg_name: request-id
       api_field: requestId
@@ -52,6 +53,14 @@
 
         The request ID must be a valid UUID with the exception that zero UUID is
         not supported (00000000-0000-0000-0000-000000000000).
+    - arg_name: force
+      api_field: force
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        If set to true, all associated resources will be deleted.
+      default: null
   request:
     api_version: v1alpha
     collection:

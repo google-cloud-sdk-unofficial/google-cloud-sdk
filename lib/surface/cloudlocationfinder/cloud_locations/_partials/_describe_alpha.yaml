@@ -24,7 +24,7 @@
     examples: |-
       To describe the cloudLocation, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

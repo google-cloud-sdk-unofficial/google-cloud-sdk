@@ -29,7 +29,7 @@
 
     params:
     - arg_name: failover-to-zone
-      api_field: haControllersFailoverRequest.primaryZone
+      api_field: haControllersFailoverRequest.failoverToZone
       required: true
       help_text: |
         The destination zone for the failover. This must be the pre-configured secondary zone for the HA Controller.

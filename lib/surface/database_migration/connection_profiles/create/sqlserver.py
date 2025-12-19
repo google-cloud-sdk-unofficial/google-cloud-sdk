@@ -124,7 +124,9 @@ class _SQLServer(base.Command):
             '--password',
             'Password must be specified with --host.',
         )
-      if args.IsKnownAndSpecified('cloudsql_instance'):
+      if not self._IsDestinationRole(args) and args.IsKnownAndSpecified(
+          'cloudsql_instance'
+      ):
         raise exceptions.BadArgumentException(
             '--cloudsql-instance',
             'Cloud SQL instance can not be used with --host.',
@@ -134,6 +136,9 @@ class _SQLServer(base.Command):
             '--cloudsql-project-id',
             'Cloud SQL project ID can not be used with --host.',
         )
+
+  def _IsDestinationRole(self, args):
+    return args.IsKnownAndSpecified('role') and args.role == 'DESTINATION'
 
   def _ValidateDagArgs(self, args):
     """Validates the arguments for DAG HMM source/destination connection profiles."""

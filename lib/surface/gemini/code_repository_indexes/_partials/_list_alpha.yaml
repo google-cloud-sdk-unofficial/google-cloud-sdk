@@ -21,8 +21,7 @@
   hidden: true
   help_text:
     brief: List all code repository index instances in a specified project and location.
-    description: List all code repository index instances in a specified project and
-      location.
+    description: List all code repository index instances in a specified project and location.
     examples: |-
       To list all code repository index instances in project `my-project` and location `us-central`, run:
 

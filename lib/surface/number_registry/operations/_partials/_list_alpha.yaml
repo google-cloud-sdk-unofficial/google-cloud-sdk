@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@
     examples: |-
       To list all operations, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
         The name of the operation's parent resource.
       is_positional: false
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:project_location
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.default_resources:projects_locations
       required: true
   request:
     api_version: v1alpha

@@ -89,7 +89,7 @@ def UpdatedPscFields(args, export_psc_config):
   return updated_export_psc, export_psc_config
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Update(base.Command):
   """Update a hub.

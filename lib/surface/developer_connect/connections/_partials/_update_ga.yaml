@@ -51,10 +51,12 @@
                 - arg_name: github-config-authorizer-credential-oauth-token-secret-version
                   help_text: |-
                     A SecretManager resource containing the OAuth token that authorizes
-                    the connection. Format: `projects/*/secrets/*/versions/*`.
+                    the connection. Format: `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.githubConfig.authorizerCredential.oauthTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -89,10 +91,12 @@
             - arg_name: github-enterprise-config-private-key-secret-version
               help_text: |-
                 SecretManager resource containing the private key of the GitHub App,
-                formatted as `projects/*/secrets/*/versions/*`.
+                formatted as `projects/*/secrets/*/versions/*` or
+                `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                supported in that location).
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
               resource_method_params:
                 connection.githubEnterpriseConfig.privateKeySecretVersion: '{__relative_name__}'
               required: false
@@ -100,10 +104,12 @@
             - arg_name: github-enterprise-config-webhook-secret-version
               help_text: |-
                 SecretManager resource containing the webhook secret of the GitHub App,
-                formatted as `projects/*/secrets/*/versions/*`.
+                formatted as `projects/*/secrets/*/versions/*` or
+                `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                supported in that location).
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
               resource_method_params:
                 connection.githubEnterpriseConfig.webhookSecretSecretVersion: '{__relative_name__}'
               required: false
@@ -158,10 +164,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.gitlabConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -176,10 +184,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.gitlabConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -208,10 +218,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.gitlabEnterpriseConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -226,10 +238,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.gitlabEnterpriseConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -283,10 +297,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketDataCenterConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -301,10 +317,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketDataCenterConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -358,10 +376,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketCloudConfig.readAuthorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -376,10 +396,12 @@
                   help_text: |-
                     A SecretManager resource containing the user token that authorizes
                     the Developer Connect connection. Format:
-                    `projects/*/secrets/*/versions/*`.
+                    `projects/*/secrets/*/versions/*` or
+                    `projects/*/locations/*/secrets/*/versions/*` (if regional secrets are
+                    supported in that location).
                   is_positional: false
                   is_primary_resource: false
-                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                  resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                   resource_method_params:
                     connection.bitbucketCloudConfig.authorizerCredential.userTokenSecretVersion: '{__relative_name__}'
                   required: false
@@ -413,7 +435,7 @@
                             The password SecretManager secret version to authenticate as.
                           is_positional: false
                           is_primary_resource: false
-                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                           resource_method_params:
                             connection.httpConfig.basicAuthentication.passwordSecretVersion: '{__relative_name__}'
                           required: false
@@ -440,7 +462,7 @@
                             The token SecretManager secret version to authenticate as.
                           is_positional: false
                           is_primary_resource: false
-                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_secrets_versions
+                          resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_or_projects_secrets_versions
                           resource_method_params:
                             connection.httpConfig.bearerTokenAuthentication.tokenSecretVersion: '{__relative_name__}'
                           required: false

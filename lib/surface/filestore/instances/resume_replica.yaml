@@ -1,0 +1,43 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Resume a Filestore replica instance.
+    description: |
+      Resume a Filestore replica instance. This command can be called only on a paused standby
+      instance.
+      Any data written to the standby instance while being paused will be lost when the replica is
+      resumed. The NFS file system of the standby instance becomes inaccessible and replication is
+      resumed.
+    examples: |
+      To resume a replica instance with the name ``my-replica-instance'' located in``us-central1-c''
+      , run:
+
+      $ {command} my-replica-instance --zone=us-central1-c
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.filestore.resources:instance
+      help_text: |
+        Arguments and flags that specify the Filestore instance to resume.
+      command_level_fallthroughs:
+        zone:
+        - arg_name: location
+          release_tracks: [BETA]
+    params:
+    - arg_name: location
+      release_tracks: [BETA]
+      help_text: |
+        Location of the Filestore instance to resume.
+
+  request:
+    BETA:
+      api_version: v1beta1
+    collection: file.projects.locations.instances
+    method: resumeReplica
+
+  async:
+    collection: file.projects.locations.operations
+
+  input:
+    confirmation_prompt: |
+      Warning: You are about to resume a standby replica instance, any data written to the
+      standby instance while paused will be lost.

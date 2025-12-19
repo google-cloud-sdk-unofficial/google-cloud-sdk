@@ -87,7 +87,9 @@ they will apply to the primary ingress container.
   group.AddArgument(flags.BuildWorkerPoolMutexGroup())
   group.AddArgument(flags.MutexBuildEnvVarsFlags())
   group.AddArgument(
-      flags.SourceAndImageFlags(mutex=False, release_track=release_track)
+      flags.SourceAndImageFlags(
+          mutex=False, no_build_enabled=True, release_track=release_track
+      )
   )
   group.AddArgument(flags.StartupProbeFlag())
   group.AddArgument(flags.LivenessProbeFlag())

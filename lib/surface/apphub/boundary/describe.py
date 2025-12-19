@@ -24,9 +24,28 @@ from googlecloudsdk.command_lib.apphub import flags
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class DescribeGA(base.DescribeCommand):
+  """Show metadata for an App Hub boundary."""
+
+  @staticmethod
+  def Args(parser):
+    """Register flags for this command."""
+    flags.AddDescribeBoundaryFlags(parser)
+
+  def Run(self, args):
+    """Run the describe command."""
+    client = boundary_api.BoundaryClient(self.ReleaseTrack())
+    # Parse the location reference from the --location flag
+    location_ref = args.CONCEPTS.location.Parse()
+    # Manually construct the full boundary resource name string
+    boundary_name = location_ref.RelativeName() + '/boundary'
+    return client.Describe(boundary_name)
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Describe(base.DescribeCommand):
+class DescribeAlpha(base.DescribeCommand):
   """Show metadata for an App Hub boundary."""
 
   @staticmethod

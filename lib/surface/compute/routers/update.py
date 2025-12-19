@@ -27,9 +27,11 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine router."""
 
@@ -136,6 +138,19 @@ class Update(base.UpdateCommand):
             resource=replacement.bgp,
             ip_ranges=args.remove_advertisement_ranges,
         )
+
+    if router_utils.HasUpdateAdvertisementRangesFlags(args):
+      console_io.PromptContinue(
+          message=(
+              'Caution: You can specify custom advertised routes on a Cloud'
+              ' Router and on a BGP session. Custom advertised routes on the'
+              ' Cloud Router apply to all of its BGP sessions. However, if you'
+              ' specify any custom advertised route on a BGP session, all of'
+              " the Cloud Router's advertised routes are ignored and overridden"
+              " by the BGP session's custom advertised route."
+          ),
+          cancel_on_no=True,
+      )
 
     # Cleared list fields need to be explicitly identified for Patch API.
     cleared_fields = []

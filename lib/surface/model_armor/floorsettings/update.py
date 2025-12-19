@@ -101,7 +101,6 @@ class Update(base.Command):
         parser,
         positional=False,
         required=False,
-        help_text='Enable or disable the floor setting enforcement',
     )
     model_armor_args.AddMaliciousUriFilterSettingsEnforcement(parser)
     model_armor_args.AddPIJBFilterSettingsGroup(parser)

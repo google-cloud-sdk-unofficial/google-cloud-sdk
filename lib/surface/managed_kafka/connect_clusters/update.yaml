@@ -15,7 +15,6 @@ help_text:
           --cpu=3 \
           --memory=3GiB \
           --primary-subnet=projects/my-project/regions/us-central1/subnetworks/default/1 \
-          --additional-subnet=projects/my-project/regions/us-central1/subnetworks/default/2 \
           --dns-name=bootstrap.myconnectorCluster.us-central1.managedkafka.my-project.cloud.goog:9092 \
           --secret=projects/my-project/secrets/my-secret/versions/1 \
           --labels=KEY1=VALUE1,KEY2=VALUE2...

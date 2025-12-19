@@ -32,7 +32,7 @@
       To create DbSystem with id `my-db-system` in the location `us-east4` with
       display-name `my db system`, run:
 
-      $ {command} my-db-system --location=us-east4 --display-name="my db system" --properties-db-home-db-version=xx.0.0.0 --properties-db-system-initial-storage-size=1000 --properties-shape=VM.FOO
+        $ {command} my-db-system --location=us-east4 --display-name="my db system" --properties-db-home-db-version=xx.0.0.0 --properties-db-system-initial-storage-size=1000 --properties-shape=VM.FOO
   arguments:
     params:
     - help_text: |-

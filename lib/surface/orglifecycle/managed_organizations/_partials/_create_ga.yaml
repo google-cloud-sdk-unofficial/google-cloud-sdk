@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@
   hidden: true
   help_text:
     brief: Create a ManagedOrganization resource.
-    description: Create a ManagedOrganization resource and a corresponding Cloud Resource
-      Manager organization resource.
+    description: Create a ManagedOrganization resource and a corresponding Cloud Resource Manager organization resource.
     examples: |-
       To create the managed organiztion named `foo` in location `global` and organization `my-org` run:
 
@@ -34,8 +33,9 @@
         Format:
         organizations/{organization_id}/locations/{location}/managedOrganizations/{managed_organization_id}
       is_positional: true
+      is_primary_resource: true
       request_id_field: managedOrganizationId
-      resource_spec: !REF googlecloudsdk.command_lib.orglifecycle.v1_resources:organization_location_managed_organization
+      resource_spec: !REF googlecloudsdk.command_lib.orglifecycle.v1_resources:organizations_locations_managed_organizations
       required: true
     - arg_name: organization-display-name
       api_field: managedOrganization.organizationDisplayName

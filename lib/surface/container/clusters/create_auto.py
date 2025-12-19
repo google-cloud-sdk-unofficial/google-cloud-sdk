@@ -79,6 +79,8 @@ auto_flags = [
     'disablePodSnapshots',
     'enableKernelModuleSignatureEnforcement',
     'enableLustreMultiNic',
+    'autopilotGeneralProfile',
+    'disableMultiNicLustre',
 ]
 # LINT.ThenChange()
 

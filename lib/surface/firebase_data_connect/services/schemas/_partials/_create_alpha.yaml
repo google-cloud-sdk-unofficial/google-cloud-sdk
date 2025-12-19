@@ -156,6 +156,26 @@
                   repeated: false
                   help_text: |-
                     Name of the PostgreSQL database.
+            - group:
+                api_field: schema.primaryDatasource.httpGraphql
+                required: false
+                help_text: |-
+                  Settings for HTTP GraphQL server webhook.
+                params:
+                - arg_name: http-graphql-uri
+                  api_field: schema.primaryDatasource.httpGraphql.uri
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The endpoint of the HTTP GraphQL server.
+                - arg_name: http-graphql-timeout
+                  api_field: schema.primaryDatasource.httpGraphql.timeout
+                  required: false
+                  repeated: false
+                  type: googlecloudsdk.core.util.times:ParseDuration
+                  processor: googlecloudsdk.core.util.times:FormatDurationForJson
+                  help_text: |-
+                    Timeout duration for the HTTP request.
     - arg_name: datasources
       api_field: schema.datasources
       required: true
@@ -192,6 +212,31 @@
         - api_field: database
           help_text: |-
             Name of the PostgreSQL database.
+      - api_field: httpGraphql
+        one_of_index: 0
+        help_text: |-
+          HTTP GraphQL server webhook configurations.
+        spec:
+        - api_field: uri
+          help_text: |-
+            The endpoint of the HTTP GraphQL server.
+        - api_field: timeout
+          help_text: |-
+            Timeout duration for the HTTP request.
+          spec:
+          - api_field: seconds
+            help_text: |-
+              Signed seconds of the span of time. Must be from -315,576,000,000
+              to +315,576,000,000 inclusive. Note: these bounds are computed from:
+              60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years
+          - api_field: nanos
+            help_text: |-
+              Signed fractions of a second at nanosecond resolution of the span
+              of time. Durations less than one second are represented with a 0
+              `seconds` field and a positive or negative `nanos` field. For durations
+              of one second or more, a non-zero value for the `nanos` field must be
+              of the same sign as the `seconds` field. Must be from -999,999,999
+              to +999,999,999 inclusive.
     - group:
         api_field: schema.source
         required: true

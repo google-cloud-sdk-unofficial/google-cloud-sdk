@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@
           Arguments for the blockchain type details.
         params:
         - group:
+            api_field: blockchainValidatorConfig.ethereumProtocolDetails
             required: false
             help_text: |-
               Blockchain validator configuration unique to Ethereum blockchains.
@@ -108,9 +109,34 @@
                      the service. This field is only read if the field
                      use_block_builder_proposals is set to true. If not specified, the
                      validator client will use a default value.
+            - group:
+                mutex: true
+                help_text: |-
+                  Arguments for the  deposit gwei.
+                params:
+                - arg_name: ethereum-protocol-details-deposit-gwei
+                  api_field: blockchainValidatorConfig.ethereumProtocolDetails.depositGwei
+                  required: false
+                  repeated: false
+                  type: long
+                  help_text: |-
+                    The number of Gwei (Ethereum currency unit) initially deposited for the
+                    validator. This is set when the deposit is made and cannot be changed.
+            - group:
+                mutex: true
+                help_text: |-
+                  Arguments for the  eth1 withdrawal address.
+                params:
+                - arg_name: ethereum-protocol-details-eth1-withdrawal-address
+                  api_field: blockchainValidatorConfig.ethereumProtocolDetails.eth1WithdrawalAddress
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The Ethereum wallet address to which withdrawals are sent. Once set
+                    this cannot be changed.
             - arg_name: ethereum-protocol-details-suggested-fee-recipient
               api_field: blockchainValidatorConfig.ethereumProtocolDetails.suggestedFeeRecipient
-              required: false
+              required: true
               repeated: false
               help_text: |-
                 The Ethereum address to which fee rewards should be sent. This can only
@@ -126,6 +152,7 @@
           Arguments for the key source config.
         params:
         - group:
+            api_field: blockchainValidatorConfig.remoteWeb3Signer
             required: false
             help_text: |-
               Configuration to use an external key signing service, such as the service
@@ -147,7 +174,8 @@
                   type: googlecloudsdk.core.util.times:ParseDuration
                   processor: googlecloudsdk.core.util.times:FormatDurationForJson
                   help_text: |-
-                    Timeout for requests to the Web3Signer service.
+                    Timeout for requests to the Web3Signer service. If not set, a default
+                    timeout of 12 seconds is used.
             - arg_name: remote-web3-signer-voting-public-key
               api_field: blockchainValidatorConfig.remoteWeb3Signer.votingPublicKey
               required: true
@@ -164,6 +192,7 @@
                 URI of the Web3Signer service the validator client connects to, to
                 request signing of attestations, blocks, etc.
         - group:
+            api_field: blockchainValidatorConfig.seedPhraseReference
             required: false
             help_text: |-
               Derivation path used to generate the voting key, and optionally Secret
@@ -174,7 +203,7 @@
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_or_project_secret
+              resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:projects_locations_or_projects_secrets
               resource_method_params:
                 blockchainValidatorConfig.seedPhraseReference.seedPhraseSecret: '{__relative_name__}'
               required: true
@@ -187,6 +216,7 @@
                 True to export the seed phrase to Secret Manager.
               default: null
         - group:
+            api_field: blockchainValidatorConfig.existingSeedPhraseReference
             required: false
             help_text: |-
               Location of existing seed material, and derivation path used to generate
@@ -197,7 +227,7 @@
                 Reference into Secret Manager for where the seed phrase is stored.
               is_positional: false
               is_primary_resource: false
-              resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_or_project_secret
+              resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:projects_locations_or_projects_secrets
               resource_method_params:
                 blockchainValidatorConfig.existingSeedPhraseReference.seedPhraseSecret: '{__relative_name__}'
               required: true
@@ -212,12 +242,16 @@
                 "m/12381/3600/<derivation_index>/0/0"
                 See also https://eips.ethereum.org/EIPS/eip-2334#eth2-specific-parameters
     - help_text: |-
-        Blockchain Validator Config Name
-        The name of the Blockchain Validator Config. The fully specified name must have the format
-        projects/{project}/locations/{location}/blockchainValidatorConfigs/{validator}.
+        Identifier. The name of the validator. It must have the format
+        `"projects/{project}/locations/{location}/blockchainValidatorConfigs/{validator}"`.
+        `{validator}` must contain only letters (`[A-Za-z]`), numbers (`[0-9]`),
+        dashes (`-`), underscores (`_`), periods (`.`), tildes (`~`), plus (`+`) or
+        percent signs (`%`). It must be between 3 and 255 characters in length, and
+        it must not start with `"goog"`.
       is_positional: true
+      is_primary_resource: true
       request_id_field: blockchainValidatorConfigId
-      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:project_location_blockchain_validator_config
+      resource_spec: !REF googlecloudsdk.command_lib.blockchain_validator.v1_resources:projects_locations_blockchain_validator_configs
       required: true
     - arg_name: labels
       api_field: blockchainValidatorConfig.labels

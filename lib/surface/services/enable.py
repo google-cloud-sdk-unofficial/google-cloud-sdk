@@ -150,6 +150,9 @@ class EnableAlpha(base.SilentCommand):
         skip_dependency=args.skip_dependency,
     )
 
+    if update_consumer_policy_op is None:
+      return None
+
     if args.async_:
       cmd = _OP_WAIT_CMD.format(update_consumer_policy_op.name)
       log.status.Print(

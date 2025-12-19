@@ -54,17 +54,26 @@ class Gcloud(base.Group):
         hidden=True,
         action=actions.StoreProperty(properties.VALUES.core.universe_domain))
 
-    parser.add_argument(
-        '--force-endpoint-mode',
-        metavar='ENDPOINT_MODE',
-        choices=[
-            properties.VALUES.regional.LEGACY,
-            properties.VALUES.regional.AUTO,
-            properties.VALUES.regional.REGIONAL_ONLY,
-        ],
-        help='Regional endpoint mode to use.',
-        hidden=True,
-        action=actions.StoreProperty(properties.VALUES.regional.endpoint_mode))
+    # TODO(b/459796385): Clean up hasattr check a suitable period after bug has
+    # been fixed. Due to a latent bug introduced in gcloud version 524.0.0,
+    # updates on macOS will fail when surface code in latest version references
+    # new functions/attributes not present in cached modules from previous
+    # version. In this case, when updating from any version between 524.0.0 and
+    # 546.0.0, attempting to access properties.VALUES.regional here will result
+    # in a crash.
+    if hasattr(properties.VALUES, 'regional'):
+      parser.add_argument(
+          '--force-endpoint-mode',
+          metavar='ENDPOINT_MODE',
+          choices=[
+              properties.VALUES.regional.GLOBAL,
+              properties.VALUES.regional.REGIONAL,
+              properties.VALUES.regional.REGIONAL_PREFERRED,
+          ],
+          help='Regional endpoint mode to use.',
+          hidden=True,
+          action=actions.StoreProperty(
+              properties.VALUES.regional.endpoint_mode))
 
     # Ideally this would be on the alpha group (since it's alpha) but there are
     # a bunch of problems with doing that. Global flags are treated differently

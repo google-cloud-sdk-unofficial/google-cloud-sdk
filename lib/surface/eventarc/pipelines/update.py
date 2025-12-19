@@ -43,7 +43,9 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    flags.AddUpdatePipelineResourceArgs(parser)
+    flags.AddPipelineResourceArg(
+        parser, group_help_text='The pipeline to update.', required=True
+    )
     flags.AddPipelineDestinationsArg(parser, required=False)
     flags.AddInputPayloadFormatArgs(parser)
     flags.AddMediationsArg(parser)
@@ -58,7 +60,6 @@ class Update(base.UpdateCommand):
     """Run the update command."""
     client = pipelines.PipelineClientV1()
     pipeline_ref = args.CONCEPTS.pipeline.Parse()
-    error_message_bus_ref = args.CONCEPTS.error_message_bus.Parse()
 
     log.debug(
         'Updating pipeline {} for project {} in location {}'.format(
@@ -90,8 +91,6 @@ class Update(base.UpdateCommand):
         crypto_key=args.IsSpecified('crypto_key'),
         clear_crypto_key=args.clear_crypto_key,
         labels=labels_update_result.needs_update,
-        error_message_bus=args.IsSpecified('error_message_bus'),
-        clear_error_message_bus=args.clear_error_message_bus,
     )
 
     operation = client.Patch(
@@ -109,7 +108,6 @@ class Update(base.UpdateCommand):
             max_retry_delay=args.max_retry_delay,
             crypto_key_name=args.crypto_key,
             labels=labels_update_result.GetOrNone(),
-            error_message_bus_ref=error_message_bus_ref,
         ),
         update_mask,
     )

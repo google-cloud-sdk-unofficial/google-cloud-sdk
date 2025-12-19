@@ -25,7 +25,7 @@
     examples: |-
       To list all DbVersions for a given DbSystemShape and StorageManagement with `db-system-shape` and `storage-management` in the location `us-east4`, run:
 
-      $ {command} --location=us-east4 --filter="db-system-shape=db-system-shape AND storage-management=storage-management"
+        $ {command} --location=us-east4 --filter="db-system-shape=db-system-shape AND storage-management=storage-management"
   arguments:
     params:
     - help_text: |-

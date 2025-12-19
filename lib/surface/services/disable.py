@@ -161,7 +161,7 @@ class DisableAlpha(base.SilentCommand):
       service_names.append(service_name)
 
     if not service_names:
-      return
+      return None
 
     op = serviceusage.RemoveEnableRule(
         project,
@@ -173,6 +173,9 @@ class DisableAlpha(base.SilentCommand):
         skip_dependency_check=skip_dependency_check,
         disable_dependency_services=disable_dependency_services,
     )
+
+    if op is None:
+      return None
 
     if args.async_:
       cmd = OP_WAIT_CMD.format(op.name)

@@ -33,10 +33,11 @@
         Identifier. The resource name of the access policy.
 
         The following formats are supported:
-          `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
-          `projects/{project_number}/locations/{location}/accessPolicies/{policy_id}`
-          `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}`
-          `organizations/{organization_id}/locations/{location}/accessPolicies/{policy_id}`
+
+        * `projects/{project_id}/locations/{location}/accessPolicies/{policy_id}`
+        * `projects/{project_number}/locations/{location}/accessPolicies/{policy_id}`
+        * `folders/{folder_id}/locations/{location}/accessPolicies/{policy_id}`
+        * `organizations/{organization_id}/locations/{location}/accessPolicies/{policy_id}`
       is_positional: true
       is_primary_resource: true
       resource_spec: !REF googlecloudsdk.command_lib.iam.v3alpha_resources:folders_or_organizations_or_projects_locations_access_policies
@@ -90,38 +91,39 @@
           - api_field: effect
             one_of_index: 1
             help_text: |-
-              The effect of the rule (deny)
+              The effect of the rule.
           - api_field: principals
             help_text: |-
               The identities for which this rule's effect governs using one or more
-               permissions on Google Cloud resources. This field can contain the
-               following values:
+              permissions on Google Cloud resources. This field can contain the
+              following values:
 
-               * `principal://goog/subject/{email_id}`: A specific Google Account.
-                 Includes Gmail, Cloud Identity, and Google Workspace user accounts. For
-                 example, `principal://goog/subject/alice@example.com`.
+              * `principal://goog/subject/{email_id}`: A specific Google Account.
+              Includes Gmail, Cloud Identity, and Google Workspace user accounts. For
+              example, `principal://goog/subject/alice@example.com`.
 
 
-               If an identifier that was previously set on a policy is soft deleted, then
-               calls to read that policy will return the identifier with a deleted
-               prefix. Users cannot set identifiers with this syntax.
-               * `deleted:principal://goog/subject/{email_id}?uid={uid}`: A specific
-                 Google Account that was deleted recently. For example,
-                 `deleted:principal://goog/subject/alice@example.com?uid=1234567890`. If
-                 the Google Account is recovered, this identifier reverts to the standard
-                 identifier for a Google Account.
+              If an identifier that was previously set on a policy is soft deleted, then
+              calls to read that policy will return the identifier with a deleted
+              prefix. Users cannot set identifiers with this syntax.
 
-               * `deleted:principalSet://goog/group/{group_id}?uid={uid}`: A Google group
-                 that was deleted recently. For example,
-                 `deleted:principalSet://goog/group/admins@example.com?uid=1234567890`.
-                 If the Google group is restored, this identifier reverts to the standard
-                 identifier for a Google group.
+              * `deleted:principal://goog/subject/{email_id}?uid={uid}`: A specific
+              Google Account that was deleted recently. For example,
+              `deleted:principal://goog/subject/alice@example.com?uid=1234567890`. If
+              the Google Account is recovered, this identifier reverts to the standard
+              identifier for a Google Account.
 
-               * `deleted:principal://iam.googleapis.com/projects/-/serviceAccounts/{service_account_id}?uid={uid}`:
-                 A Google Cloud service account that was deleted recently. For example,
-                 `deleted:principal://iam.googleapis.com/projects/-/serviceAccounts/my-service-account@iam.gserviceaccount.com?uid=1234567890`.
-                 If the service account is undeleted, this identifier reverts to the
-                 standard identifier for a service account.
+              * `deleted:principalSet://goog/group/{group_id}?uid={uid}`: A Google group
+              that was deleted recently. For example,
+              `deleted:principalSet://goog/group/admins@example.com?uid=1234567890`.
+              If the Google group is restored, this identifier reverts to the standard
+              identifier for a Google group.
+
+              * `deleted:principal://iam.googleapis.com/projects/-/serviceAccounts/{service_account_id}?uid={uid}`:
+              A Google Cloud service account that was deleted recently. For example,
+              `deleted:principal://iam.googleapis.com/projects/-/serviceAccounts/my-service-account@iam.gserviceaccount.com?uid=1234567890`.
+              If the service account is undeleted, this identifier reverts to the
+              standard identifier for a service account.
           - api_field: excludedPrincipals
             help_text: |-
               The identities that are excluded from the access policy rule, even if they
@@ -133,7 +135,7 @@
               The permissions that are explicitly affected by this rule. Each permission
               uses the format `{service_fqdn}/{resource}.{verb}`, where `{service_fqdn}`
               is the fully qualified domain name for the service.
-              Currently supported permissions are:
+              Currently supported permissions are as follows:
 
               * `eventarc.googleapis.com/messageBuses.publish`.
           - api_field: excludedPermissions
@@ -149,17 +151,13 @@
             help_text: |-
               The conditions that determine whether this rule applies to a request.
               Conditions are identified by their key, which is the FQDN of the service
-              that they are relevant to, e.g.:
-
-              "activationConditions": {
-                "iam.googleapis.com": {
-                 "cel_condition": <cel expression>
-                }
-              }
-
-              Each rule is evaluated independently. If this rule does not apply
+              that they are relevant to. For example: `"activationConditions": {
+               "iam.googleapis.com": {
+                "cel_condition": <cel expression>
+               }
+              }`. Each rule is evaluated independently. If this rule does not apply
               to a request, other rules might still apply.
-              Currently supported keys are:
+              Currently supported keys are as follows:
 
               * `eventarc.googleapis.com`
             spec:

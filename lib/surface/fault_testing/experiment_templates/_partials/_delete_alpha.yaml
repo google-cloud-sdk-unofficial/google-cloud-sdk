@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete an experiment template
+    brief: delete an experiment template
     description: |
       Delete an experiment template.
     examples: |-

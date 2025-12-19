@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 @base.Hidden
 class CompleteControlPlaneUpgrade(base.Command):
@@ -62,3 +63,10 @@ class CompleteControlPlaneUpgrade(base.Command):
     return adapter.CompleteControlPlaneUpgrade(
         adapter.ParseCluster(args.name, location)
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.Visible
+class CompleteControlPlaneUpgradeAlphaBeta(CompleteControlPlaneUpgrade):
+  """Complete the control plane upgrade for an existing cluster."""

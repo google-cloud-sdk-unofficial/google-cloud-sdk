@@ -77,13 +77,13 @@
                 api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.userInfo
                 required: false
                 help_text: |-
-                  Delegated user info configuration.
+                  The configuration information for the delegated user.
                 params:
                 - arg_name: user-info-output-type
                   api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.userInfo.outputType
                   required: false
                   help_text: |-
-                    The output type of the delegated user info.
+                    The delegated user's information.
                   choices:
                   - arg_value: protobuf
                     enum_value: PROTOBUF
@@ -101,13 +101,13 @@
                 api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.groupInfo
                 required: false
                 help_text: |-
-                  Delegated group info configuration.
+                  The delegated group configuration details.
                 params:
                 - arg_name: group-info-output-type
                   api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.groupInfo.outputType
                   required: false
                   help_text: |-
-                    The output type of the delegated group info.
+                    The output type of the delegated group information.
                   choices:
                   - arg_value: protobuf
                     enum_value: PROTOBUF
@@ -125,13 +125,13 @@
                 api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.deviceInfo
                 required: false
                 help_text: |-
-                  Delegated device info configuration.
+                  The delegated device information configuration.
                 params:
                 - arg_name: device-info-output-type
                   api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.contextualHeaders.deviceInfo.outputType
                   required: false
                   help_text: |-
-                    The output type of the delegated device info.
+                    The output type details for the delegated device.
                   choices:
                   - arg_value: protobuf
                     enum_value: PROTOBUF
@@ -170,9 +170,9 @@
           help_text: |-
             Custom resource specific headers along with the values.
             The names should conform to RFC 9110:
-            > Field names SHOULD constrain themselves to alphanumeric characters, "-",
-            and ".", and SHOULD begin with a letter.
-            Field values SHOULD contain only ASCII printable characters and tab.
+            >Field names can contain alphanumeric characters, hyphens, and periods, can
+            contain only ASCII-printable characters and tabs, and must start with a
+            letter.
           clearable: true
           spec:
           - api_field: key
@@ -181,7 +181,7 @@
           api_field: googleCloudBeyondcorpSecuritygatewaysV1SecurityGateway.proxyProtocolConfig.gatewayIdentity
           required: false
           help_text: |-
-            Gateway identity configuration.
+            The security gateway identity configuration.
           choices:
           - arg_value: resource-name
             enum_value: RESOURCE_NAME
@@ -220,7 +220,7 @@
                   required: false
                   repeated: false
                   help_text: |-
-                    Contains uri path fragment where HTTP request is sent.
+                    Contains the URI path fragment where HTTP request is sent.
     - arg_name: request-id
       api_field: requestId
       required: false

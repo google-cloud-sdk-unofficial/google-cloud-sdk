@@ -24,7 +24,7 @@
     examples: |-
       To update the codeToolsSetting, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

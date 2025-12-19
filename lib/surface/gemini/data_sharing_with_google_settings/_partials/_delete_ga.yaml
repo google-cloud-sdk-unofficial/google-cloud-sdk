@@ -24,7 +24,7 @@
     examples: |-
       To delete the dataSharingWithGoogleSetting, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

@@ -18,13 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class MCPAlpha(base.Group):
-  """List, enable and disable MCP endpoints."""
-
-
-@base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class MCP(base.Group):
   """List, enable and disable MCP endpoints."""

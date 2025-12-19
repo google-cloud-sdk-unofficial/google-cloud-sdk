@@ -166,6 +166,8 @@ class Create(base.Command):
 
     parser.add_argument('--lifecycle-file', help=_LIFECYCLE_HELP_TEXT)
     flags.add_ip_filter_file_flag(parser)
+    if cls.ReleaseTrack() is base.ReleaseTrack.ALPHA:
+      flags.add_encryption_enforcement_file_flag(parser)
 
   def Run(self, args):
     for url_string in args.url:

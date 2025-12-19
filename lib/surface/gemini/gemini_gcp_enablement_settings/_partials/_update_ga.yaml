@@ -24,7 +24,7 @@
     examples: |-
       To update the geminiGcpEnablementSetting, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-
@@ -50,7 +50,7 @@
       required: false
       type: bool
       help_text: |-
-        Whether customer data sharing should be enabled.
+        Not implemented.
     - arg_name: disable-web-grounding
       api_field: geminiGcpEnablementSetting.disableWebGrounding
       action: store_true_false
@@ -58,6 +58,21 @@
       type: bool
       help_text: |-
         Whether web grounding should be disabled.
+        DEPRECATED: Use web_grounding_type instead.
+    - arg_name: web-grounding-type
+      api_field: geminiGcpEnablementSetting.webGroundingType
+      required: false
+      help_text: |-
+        Web grounding type.
+      choices:
+      - arg_value: grounding-with-google-search
+        enum_value: GROUNDING_WITH_GOOGLE_SEARCH
+        help_text: |-
+          Grounding with Google Search.
+      - arg_value: web-grounding-for-enterprise
+        enum_value: WEB_GROUNDING_FOR_ENTERPRISE
+        help_text: |-
+          Grounding with Google Search for Enterprise.
     - arg_name: request-id
       api_field: requestId
       required: false

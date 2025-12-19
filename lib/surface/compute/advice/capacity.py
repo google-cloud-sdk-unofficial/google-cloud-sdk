@@ -135,6 +135,7 @@ class Capacity(base.Command):
         metavar="MACHINE_TYPE",
         help="Specifies a comma-separated list of preferred machine types for "
         "creating virtual machines.",
+        action="append",
     )
     instance_selection_group.add_argument(
         "--instance-selection",
@@ -143,6 +144,7 @@ class Capacity(base.Command):
         'machine-type=e2-standard-8,machine-type=t2d-standard-8".',
         metavar="INSTANCE_SELECTION",
         type=ArgMultiValueDict(),
+        action="append",
     )
 
     flags.AddTargetDistributionShapeFlag(parser)
@@ -166,19 +168,38 @@ class Capacity(base.Command):
     client = holder.client
     messages = client.messages
     flags.ValidateZonesAndRegionFlags(args, holder.resources)
+
     if args.IsSpecified("instance_selection") and args.IsSpecified(
         "instance_selection_machine_types"
     ):
       raise exceptions.ConflictingArgumentsException(
           "Exactly one 'instance-selection' must be specified."
       )
-    if args.instance_selection and not args.instance_selection.get(
-        "machine-type"
-    ):
+
+    if args.instance_selection and len(args.instance_selection) > 1:
       raise exceptions.InvalidArgumentException(
           "--instance-selection",
-          "At least one 'machine-type' must be specified.",
+          "Multiple instance selections are not supported. Please provide only"
+          " one --instance-selection flag.",
       )
+    if (
+        args.instance_selection_machine_types
+        and len(args.instance_selection_machine_types) > 1
+    ):
+      raise exceptions.InvalidArgumentException(
+          "--instance-selection-machine-types",
+          "Multiple instance selections are not supported. Please provide only"
+          " one --instance-selection-machine-types flag.",
+      )
+
+    if args.instance_selection:
+      for selection in args.instance_selection:
+        if not selection.get("machine-type"):
+          raise exceptions.InvalidArgumentException(
+              "--instance-selection",
+              "At least one 'machine-type' must be specified in each"
+              " --instance-selection flag.",
+          )
 
     project = properties.VALUES.core.project.GetOrFail()
     region = args.region
@@ -224,25 +245,36 @@ class Capacity(base.Command):
     if zone_configs:
       distribution_policy.zones = zone_configs
     selections_map = {}
-    default_instance_selection_name = "instance-selection-1"
     if args.instance_selection:
-      selection_name_list = args.instance_selection.get("name")
-      selection_name = (
-          selection_name_list[0]
-          if selection_name_list
-          else default_instance_selection_name
-      )
-      selections_map[selection_name] = (
-          messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
-              machineTypes=args.instance_selection.get("machine-type"),
+      for i, selection in enumerate(args.instance_selection):
+        selection_name_list = selection.get("name")
+        selection_name = (
+            selection_name_list[0]
+            if selection_name_list
+            else "instance-selection-{}".format(i + 1)
+        )
+        if selection_name in selections_map:
+          raise exceptions.InvalidArgumentException(
+              "--instance-selection",
+              "Duplicate instance selection name [{}] specified.".format(
+                  selection_name
+              ),
           )
-      )
+        selections_map[selection_name] = (
+            messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
+                machineTypes=selection.get("machine-type"),
+            )
+        )
     if args.instance_selection_machine_types:
-      selections_map[default_instance_selection_name] = (
-          messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
-              machineTypes=args.instance_selection_machine_types,
-          )
-      )
+      for i, machine_types_list in enumerate(
+          args.instance_selection_machine_types
+      ):
+        selection_name = "instance-selection-{}".format(i + 1)
+        selections_map[selection_name] = (
+            messages.CapacityAdviceRequestInstanceFlexibilityPolicyInstanceSelection(
+                machineTypes=machine_types_list,
+            )
+        )
 
     additional_properties = []
     for key, value in selections_map.items():

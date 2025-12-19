@@ -22,7 +22,15 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.GA)
+class BoundaryGA(base.Group):
+  """Manage App Hub boundaries.
+
+  Commands for managing App Hub Boundaries.
+  """
+
+
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class Boundary(base.Group):
+class BoundaryAlpha(base.Group):
   """Manage App Hub boundaries."""

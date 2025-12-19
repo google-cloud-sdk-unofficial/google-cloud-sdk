@@ -249,7 +249,7 @@ class Create(base.CreateCommand):
     if args.async_:
       return operation
 
-    response = utils.WaitForOperation(
+    response = utils.WaitForOperationWithEmbeddedResult(
         client=client,
         operation=operation,
         message='Waiting for operation [{0}] to complete'.format(
@@ -363,7 +363,7 @@ class CreateGa(base.CreateCommand):
     if args.async_:
       return operation
 
-    response = utils.WaitForOperation(
+    response = utils.WaitForOperationWithEmbeddedResult(
         client=client,
         operation=operation,
         message='Waiting for operation [{0}] to complete'.format(

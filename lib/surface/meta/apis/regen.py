@@ -159,13 +159,17 @@ class Regen(base.Command):
           api_config.get('resources', {}),
       )
 
-    apis_map_file = os.path.join(base_dir, root_dir, 'apis_map.py')
-    package_map = collections.defaultdict(dict)
+    client_output_dir = os.path.join(base_dir, root_dir)
+    apis_config_map = collections.defaultdict(dict)
     for api_name, versions_config in config['apis'].items():
-      for version in versions_config:
-        # Generated APIs all reside under same folder.
-        package_map[api_name][version] = root_dir.replace('/', '.')
-    generate.GenerateApiMap(apis_map_file, package_map, config['apis'])
+      for version, version_config in versions_config.items():
+        apis_config_map[api_name][version] = generate.ApiConfig.FromData(
+            data=version_config,
+            root_dir=root_dir,
+            discovery_doc_dir=client_output_dir,
+        )
+    generate.GenerateApiMap(
+        os.path.join(client_output_dir, 'apis_map.py'), apis_config_map)
 
     # Now that everything passed, config can be updated if needed.
     if changed_config:

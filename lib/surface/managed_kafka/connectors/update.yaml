@@ -14,14 +14,16 @@ help_text:
           --configs=KEY1=VALUE1,KEY2=VALUE2... \
           --connect-cluster=mycluster \
           [--task-restart-min-backoff=60s] \
-          [--task-restart-max-backoff=30m]
+          [--task-restart-max-backoff=30m] \
+          [--task-retry-disabled=true]
       OR
       $ {command} myconnector \
           --location=us-central1 \
           --config-file=my-config-file.yaml \
           --connect-cluster=mycluster \
           [--task-restart-min-backoff=60s] \
-          [--task-restart-max-backoff=30m]
+          [--task-restart-max-backoff=30m] \
+          [--task-retry-disabled=true]
 
 request:
   collection: managedkafka.projects.locations.connectClusters.connectors
@@ -47,3 +49,5 @@ arguments:
         required: true
       - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:task-restart-max-backoff
         required: true
+  - _REF_: googlecloudsdk.command_lib.managed_kafka.flags:task-retry-disabled
+    required: false

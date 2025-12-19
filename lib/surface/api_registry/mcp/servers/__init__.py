@@ -21,7 +21,6 @@ from googlecloudsdk.calliope import base
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Servers(base.Group):
-  """Manage API Registry MCP Servers."""
+  """Manage Cloud API Registry MCP servers."""

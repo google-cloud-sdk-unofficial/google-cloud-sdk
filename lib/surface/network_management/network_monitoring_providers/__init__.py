@@ -27,4 +27,7 @@ from surface.network_management.network_monitoring_providers import _init_extens
 class NetworkMonitoringProvidersAlpha(
     extensions.NetworkMonitoringProvidersAlpha
 ):
-  """Manage Network Monitoring Provider resources."""
+  """A Network Monitoring Provider manages the enablement state of the Network Insights service.
+
+  The service is considered enabled when provider resource is in 'ACTIVE' state.
+  """

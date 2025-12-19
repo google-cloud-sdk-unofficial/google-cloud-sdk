@@ -111,6 +111,46 @@ class Create(base.CreateCommand):
             " loading the model from Hugging Face."
         ),
     )
+    parser.add_argument(
+        "--target-itl-milliseconds",
+        type=int,
+        help=(
+            "The target inter-token latency (ITL) in milliseconds. If this is"
+            " set, the manifest will include Horizontal Pod Autoscaler (HPA)"
+            " resources which automatically adjust the model server replica"
+            " count in response to changes in model server load to keep p50 ITL"
+            " below the specified threshold. If the provided"
+            " target-itl-milliseconds is too low to achieve, the HPA manifest"
+            " will not be generated."
+        ),
+    )
+    parser.add_argument(
+        "--use-case",
+        help=(
+            "The manifest will be optimized for this use case. Options are:"
+            " Advanced Customer Support, Code Completion, Text Summarization,"
+            " Chatbot (ShareGPT), Code Generation, Deep Research. Will default"
+            " to Chatbot if not specified."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack",
+        required=False,
+        help=(
+            "The serving stack to filter manifests by. If not"
+            " provided, manifests for all serving stacks that support"
+            " the given model and model server will be considered."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack-version",
+        required=False,
+        help=(
+            "The serving stack version to filter manifests by. If not"
+            " provided, manifests for all versions that support"
+            " the given model and model server will be considered."
+        ),
+    )
 
   def Run(self, args):
     client = util.GetClientInstance(base.ReleaseTrack.GA)
@@ -131,23 +171,38 @@ class Create(base.CreateCommand):
         performance_requirements.targetTtftMilliseconds = (
             args.target_ttft_milliseconds
         )
+      if args.target_itl_milliseconds:
+        performance_requirements.targetItlMilliseconds = (
+            args.target_itl_milliseconds
+        )
       storage_config = messages.StorageConfig()
       if args.model_bucket_uri:
         storage_config.modelBucketUri = args.model_bucket_uri
+
+      serving_stack = None
+      if args.serving_stack:
+        serving_stack = messages.ServingStack(
+            name=args.serving_stack,
+        )
+        if args.serving_stack_version:
+          serving_stack.version = args.serving_stack_version
 
       request = messages.GenerateOptimizedManifestRequest(
           modelServerInfo=model_server_info,
           acceleratorType=args.accelerator_type,
           kubernetesNamespace=args.namespace,
+          servingStack=serving_stack,
       )
       if (
           performance_requirements.targetNtpotMilliseconds is not None
           or performance_requirements.targetTtftMilliseconds is not None
+          or performance_requirements.targetItlMilliseconds is not None
       ):
         request.performanceRequirements = performance_requirements
       if storage_config.modelBucketUri is not None:
         request.storageConfig = storage_config
-
+      if args.use_case:
+        request.useCase = args.use_case
       response = client.optimizedManifest.Generate(request)
       return response
     except apitools_exceptions.HttpError as error:

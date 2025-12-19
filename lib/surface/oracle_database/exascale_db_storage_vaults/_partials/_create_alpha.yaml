@@ -98,6 +98,18 @@
       spec:
       - api_field: key
       - api_field: value
+    - arg_name: exadata-infrastructure
+      help_text: |-
+        The Exadata Infrastructure resource on which
+        ExascaleDbStorageVault
+        resource is created, in the following format:
+        projects/{project}/locations/{region}/cloudExadataInfrastuctures/{cloud_extradata_infrastructure}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_cloud_exadata_infrastructures
+      resource_method_params:
+        exascaleDbStorageVault.exadataInfrastructure: '{__relative_name__}'
+      required: false
     - arg_name: request-id
       api_field: requestId
       required: false

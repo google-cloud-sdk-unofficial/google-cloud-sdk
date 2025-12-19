@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to List MCP Servers."""
+"""Command to List MCP servers."""
 
 from googlecloudsdk.api_lib.api_registry import utils
 from googlecloudsdk.api_lib.api_registry.mcp import servers
@@ -25,7 +25,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To list all MCP Servers in a project, run:
+        To list all MCP servers in a project, run:
 
           $ {command}
         """,
@@ -34,9 +34,8 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-@base.Hidden
-class List(base.ListCommand):
-  """List MCP Servers."""
+class ListAlpha(base.ListCommand):
+  """List MCP servers."""
 
   detailed_help = _DETAILED_HELP
 
@@ -47,15 +46,43 @@ class List(base.ListCommand):
         '--all',
         action='store_true',
         help='If provided, list all the available (both enabled and'
-        ' non-enabled) MCP Servers for the project.',
+        ' non-enabled) MCP servers for the project.',
     )
 
   def Run(self, args):
     """Run the list command."""
-    client = servers.McpServersClient()
+    client = servers.McpServersClient(version='v1alpha')
     project = utils.GetProject()
     location = utils.GetLocation()
     parent = (
         f'projects/{project}/locations/{location}'
     )
-    return client.List(parent, args)
+    return client.ListAlpha(parent, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class ListBeta(base.ListCommand):
+  """List MCP servers."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('json')
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='If provided, list all the available (both enabled and'
+        ' non-enabled) MCP servers for the project.',
+    )
+
+  def Run(self, args):
+    """Run the list command."""
+    client = servers.McpServersClient(version='v1beta')
+    project = utils.GetProject()
+    location = utils.GetLocation()
+    parent = (
+        f'projects/{project}/locations/{location}'
+    )
+    return client.ListBeta(parent, args)

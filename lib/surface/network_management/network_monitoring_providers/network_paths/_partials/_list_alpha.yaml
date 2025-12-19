@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List networkPaths
-    description: List networkPaths
-    examples: |-
-      To list all networkPaths, run:
+    brief: List Network Paths.
+    description: |-
+      List all Network Paths for a given Network Monitoring Provider.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To list all Network Paths for the provider `my-provider-id`, run:
+
+        $ {command} --network-monitoring-provider=my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

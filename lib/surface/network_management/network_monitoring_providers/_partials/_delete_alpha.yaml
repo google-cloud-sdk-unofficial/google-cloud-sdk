@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete networkMonitoringProviders
-    description: Delete a networkMonitoringProvider
-    examples: |-
-      To delete the networkMonitoringProvider, run:
+    brief: Delete a Network Monitoring Provider.
+    description: |-
+      Delete a specific Network Monitoring Provider.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To delete the Network Monitoring Provider `my-provider-id`, run:
+
+        $ {command} my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

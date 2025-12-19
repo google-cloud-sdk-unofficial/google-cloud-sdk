@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe a single experiment template
+    brief: describe a single experiment template
     description: |
       Describe a single experiment template.
     examples: |-

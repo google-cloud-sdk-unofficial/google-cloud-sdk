@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create validations
-    description: Create a validation
+    brief: create a validation
+    description: |
+      Create a new validation.
     examples: |-
-      To create the validation, run:
+      To create a validation `test-validation-id` in location `asia-east1` using Cloud SQL failover instance `test-cloud-sql-instance` in project `test-project` run:
 
-          $ {command}
+      $ {command} test-validation-id  --location=asia-east1 --cloud-sql-failover-instance="projects/test-project/instances/test-cloud-sql-instance"
   arguments:
     params:
     - help_text: |-

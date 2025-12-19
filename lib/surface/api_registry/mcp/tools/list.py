@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Command to List MCP Tools."""
+"""Command to List MCP tools."""
 
 from googlecloudsdk.api_lib.api_registry import utils
 from googlecloudsdk.api_lib.api_registry.mcp import tools
@@ -25,7 +25,7 @@ _DETAILED_HELP = {
         '{description}',
     'EXAMPLES':
         """ \
-        To list MCP Tools, run:
+        To list MCP tools, run:
 
           $ {command}
         """,
@@ -34,9 +34,8 @@ _DETAILED_HELP = {
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-@base.Hidden
-class List(base.ListCommand):
-  """List MCP Tools."""
+class ListAlpha(base.ListCommand):
+  """List MCP tools."""
 
   detailed_help = _DETAILED_HELP
 
@@ -52,10 +51,38 @@ class List(base.ListCommand):
 
   def Run(self, args):
     """Run the list command."""
-    client = tools.McpToolsClient()
+    client = tools.McpToolsClient('v1alpha')
     project = utils.GetProject()
     location = utils.GetLocation()
     # As per AIP-159, the wildcard '-' matches all MCP Servers.
     mcp_server = '-'
     parent = f'projects/{project}/locations/{location}/mcpServers/{mcp_server}'
-    return client.List(parent, args)
+    return client.ListAlpha(parent, args)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.DefaultUniverseOnly
+class ListBeta(base.ListCommand):
+  """List MCP tools."""
+
+  detailed_help = _DETAILED_HELP
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddFormat('json')
+    parser.add_argument(
+        '--all',
+        action='store_true',
+        help='If provided, list all the available MCP tools for all (both'
+        ' enabled and non-enabled) the MCP Servers for the project.',
+    )
+
+  def Run(self, args):
+    """Run the list command."""
+    client = tools.McpToolsClient('v1beta')
+    project = utils.GetProject()
+    location = utils.GetLocation()
+    # As per AIP-159, the wildcard '-' matches all MCP Servers.
+    mcp_server = '-'
+    parent = f'projects/{project}/locations/{location}/mcpServers/{mcp_server}'
+    return client.ListBeta(parent, args)

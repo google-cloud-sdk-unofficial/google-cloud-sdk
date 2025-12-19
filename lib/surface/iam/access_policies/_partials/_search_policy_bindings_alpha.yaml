@@ -25,7 +25,7 @@
     examples: |-
       To search all accessPolicies, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - help_text: |-

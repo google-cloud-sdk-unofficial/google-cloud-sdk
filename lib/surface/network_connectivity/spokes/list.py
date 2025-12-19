@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.network_connectivity import flags
 from googlecloudsdk.command_lib.network_connectivity import util
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List spokes.

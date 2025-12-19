@@ -22,3 +22,4 @@
     resource:
       help_text: The security gateway application for which to set the IAM policy.
       spec: !REF googlecloudsdk.command_lib.beyondcorp.v1_resources:projects_locations_security_gateways_applications
+      is_positional: true

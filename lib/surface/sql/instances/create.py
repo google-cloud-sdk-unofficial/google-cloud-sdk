@@ -187,9 +187,9 @@ def AddBetaArgs(parser):
   flags.AddEnableAcceleratedReplicaMode(parser)
   flags.AddDataApiAccess(parser)
   flags.AddServerCertificateRotationMode(parser)
-  flags.AddPerformanceCaptureConfig(parser, hidden=True)
+  flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddUncMappings(parser)
-  flags.AddSqlServerEntraId(parser, hidden=True)
+  flags.AddSqlServerEntraId(parser)
 
 
 def AddAlphaArgs(unused_parser):

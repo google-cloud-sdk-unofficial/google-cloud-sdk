@@ -53,6 +53,7 @@ class DeployIndexV1(base.Command):
     flags.GetDisplayNameArg('deployed index').AddToParser(parser)
     flags.AddDeploymentResourcesArgs(parser, 'deployed index')
     flags.AddReservedIpRangesArgs(parser, 'deployed index')
+    flags.AddDeploymentTierArgs(parser, 'deployed index')
     flags.AddDeploymentGroupArg(parser)
     flags.AddAuthConfigArgs(parser, 'deployed index')
     flags.GetEnableAccessLoggingArg().AddToParser(parser)

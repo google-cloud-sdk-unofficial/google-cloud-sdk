@@ -60,6 +60,8 @@ class Update(base.UpdateCommand):
     attachment_flags.AddCandidateIpv6Subnets(parser)
     attachment_flags.AddCloudRouterIpv6InterfaceId(parser)
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     interconnect_attachment = self._get_attachment(args)
@@ -78,6 +80,12 @@ class Update(base.UpdateCommand):
             args, 'customer_router_ipv6_interface_id', None
         ),
         multicast_enabled=getattr(args, 'enable_multicast', None),
+        candidate_cloud_router_ipv6_address=getattr(
+            args, 'candidate_cloud_router_ipv6_address', None
+        ),
+        candidate_customer_router_ipv6_address=getattr(
+            args, 'candidate_customer_router_ipv6_address', None
+        ),
     )
 
 
@@ -95,8 +103,6 @@ class UpdateBeta(Update):
   def Args(cls, parser):
     super().Args(parser)
     labels_util.AddUpdateLabelsFlags(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())

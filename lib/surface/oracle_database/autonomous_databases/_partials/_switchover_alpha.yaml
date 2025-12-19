@@ -27,7 +27,7 @@
       primary database name as 'projects/project-id/locations/us-west3/autonomousDatabases/my-instance'
       run:
 
-      $ {command} my-instance --location=us-east4 --peer-autonomous-database=projects/project-id/locations/us-west3/autonomousDatabases/my-instance
+        $ {command} my-instance --location=us-east4 --peer-autonomous-database=projects/project-id/locations/us-west3/autonomousDatabases/my-instance
   arguments:
     params:
     - help_text: |-

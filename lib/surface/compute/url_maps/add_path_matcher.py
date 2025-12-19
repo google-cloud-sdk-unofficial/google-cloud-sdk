@@ -447,7 +447,7 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class AddPathMatcher(base.UpdateCommand):
   """Add a path matcher to a URL map."""
@@ -488,6 +488,14 @@ class AddPathMatcher(base.UpdateCommand):
         self.BACKEND_BUCKET_ARG,
         self._supports_regional_backend_bucket,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class AddPathMatcherBeta(AddPathMatcher):
+  """Add a path matcher to a URL map."""
+
+  _supports_regional_backend_bucket = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

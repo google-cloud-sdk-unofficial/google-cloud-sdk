@@ -87,7 +87,7 @@
       repeated: false
       type: long
       help_text: |-
-        The throughput of the instance in MB/s/TiB. Valid values are 125, 250,
+        The throughput of the instance in MBps per TiB. Valid values are 125, 250,
         500, 1000.
         See [Performance tiers and maximum storage
         capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)

@@ -69,6 +69,10 @@ class Create(base.CreateCommand):
     attachment_flags.AddCustomerRouterIpv6InterfaceId(parser)
     attachment_flags.AddSubnetLength(parser)
     attachment_flags.AddResourceManagerTags(parser)
+    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
+    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
+    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
+    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -167,10 +171,6 @@ class CreateBeta(Create):
   @classmethod
   def Args(cls, parser):
     super().Args(parser)
-    attachment_flags.AddCandidateCloudRouterIpAddress(parser)
-    attachment_flags.AddCandidateCustomerRouterIpAddress(parser)
-    attachment_flags.AddCandidateCloudRouterIpv6Address(parser)
-    attachment_flags.AddCandidateCustomerRouterIpv6Address(parser)
 
 
 @base.UniverseCompatible

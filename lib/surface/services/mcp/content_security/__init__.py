@@ -18,13 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ContentSecurityAlpha(base.Group):
-  """Get/add/remove MCP content security."""
-
-
-@base.UniverseCompatible
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ContentSecurity(base.Group):
   """Get/add/remove MCP content security."""

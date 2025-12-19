@@ -21,12 +21,11 @@ from googlecloudsdk.calliope import base
 # NOTE: Release track decorators can be used here as well, and would propagate
 # to this group's children.
 @base.DefaultUniverseOnly
-@base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ApiRegistry(base.Group):
-  """Manage API Registry Command Group.
+  """Manage Cloud API Registry Command Group.
 
-  Commands for managing API Registry.
+  Commands for managing Cloud API Registry.
   """
   category = base.API_PLATFORM_AND_ECOSYSTEMS_CATEGORY
 

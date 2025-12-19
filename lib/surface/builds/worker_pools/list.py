@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 from googlecloudsdk.api_lib.cloudbuild.v2 import client_util as cloudbuild_v2_util
 from googlecloudsdk.calliope import base
@@ -107,7 +108,7 @@ class List(base.ListCommand):
         locationsId=wp_region)
 
     return _ListWorkerPoolFirstGen(
-        parent_resource, wp_page_size, self.ReleaseTrack()
+        parent_resource, wp_page_size, args.limit, self.ReleaseTrack()
     )
 
 
@@ -166,7 +167,7 @@ class ListBeta(List):
     if args.generation == 1:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolURI)
       return _ListWorkerPoolFirstGen(
-          parent_resource, wp_page_size, self.ReleaseTrack()
+          parent_resource, wp_page_size, args.limit, self.ReleaseTrack()
       )
     if args.generation == 2:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolSecondGenURI)
@@ -235,7 +236,7 @@ class ListAlpha(List):
     if args.generation == 1:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolURI)
       return _ListWorkerPoolFirstGen(
-          parent_resource, wp_page_size, self.ReleaseTrack()
+          parent_resource, wp_page_size, args.limit, self.ReleaseTrack()
       )
     if args.generation == 2:
       args.GetDisplayInfo().AddUriFunc(_GetWorkerPoolSecondGenURI)
@@ -267,12 +268,13 @@ def _ListWorkerPoolSecondGen(parent_resource):
   return wp_list
 
 
-def _ListWorkerPoolFirstGen(parent_resource, page_size, release_track):
+def _ListWorkerPoolFirstGen(parent_resource, page_size, limit, release_track):
   """List Worker Pool First Generation.
 
   Args:
     parent_resource: The parent resource for Worker Pool First Generation.
     page_size: The number of elements to return in each page.
+    limit: The total number of items to return (from --limit flag)
     release_track: The desired value of the enum
       googlecloudsdk.calliope.base.ReleaseTrack.
 
@@ -283,10 +285,13 @@ def _ListWorkerPoolFirstGen(parent_resource, page_size, release_track):
   messages = cloudbuild_util.GetMessagesModule(release_track)
 
   # Send the List request
-  wp_list = client.projects_locations_workerPools.List(
-      messages.CloudbuildProjectsLocationsWorkerPoolsListRequest(
-          parent=parent_resource.RelativeName(), pageSize=page_size
-      )
-  ).workerPools
+  request = messages.CloudbuildProjectsLocationsWorkerPoolsListRequest(
+      parent=parent_resource.RelativeName())
 
-  return wp_list
+  return list_pager.YieldFromList(
+      client.projects_locations_workerPools,
+      request,
+      field='workerPools',
+      limit=limit,
+      batch_size=page_size,
+      batch_size_attribute='pageSize')

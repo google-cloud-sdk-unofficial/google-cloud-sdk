@@ -20,12 +20,17 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: generate networkMonitoringProviders
-    description: generate networkMonitoringProviders
-    examples: |-
-      To generate all networkMonitoringProviders, run:
+    brief: Generate a provider access token.
+    description: |-
+      Exchanges a valid Google Cloud access token for a temporary access token that can be used to authenticate requests to the partner's platform API.
 
-          $ {command}
+      The generated partner's access token's lifetime is tied to the input Google Cloud access token; it will expire when the Google Cloud token expires. This token is necessary for any direct API interactions with partner's resources.
+
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To generate a provider access token for the Network Monitoring Provider `my-provider-id`, run:
+
+        $ {command} my-provider-id --location=global --gcp-access-token=<GCP_ACCESS_TOKEN>
   arguments:
     params:
     - help_text: |-

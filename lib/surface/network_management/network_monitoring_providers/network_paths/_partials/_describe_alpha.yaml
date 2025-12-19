@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe networkPaths
-    description: Describe a networkPath
-    examples: |-
-      To describe the networkPath, run:
+    brief: Describe a Network Path.
+    description: |-
+      Get details about a specific Network Path.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To describe the Network Path `my-path-id` under provider `my-provider-id`, run:
+
+        $ {command} my-path-id --network-monitoring-provider=my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

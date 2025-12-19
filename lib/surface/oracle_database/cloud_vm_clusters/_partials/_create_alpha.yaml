@@ -37,7 +37,7 @@
 
       ODBNetwork based configuration(This is the recommended way):
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --odb-network=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork \
        --odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-odbsubnet \
        --backup-odb-subnet=projects/network-project/locations/us-east4/odbNetworks/my-odbnetwork/odbSubnets/my-backup-odbsubnet \
@@ -48,7 +48,7 @@
 
       Network and CIDR based configuration:
 
-      $ {command} my-instance --location=us-east4 --display-name="my instance" \
+        $ {command} my-instance --location=us-east4 --display-name="my instance" \
        --cidr=10.1.0.0/24 --network=projects/my-project/locations/global/networks/default \
        --backup-subnet-cidr=10.2.0.0/24  --properties-license-type=LICENSE_INCLUDED \
        --properties-ssh-public-keys="VtTxzlPJtIivthmLOmWdRDFy5l27pKUTwLp02" \
@@ -328,6 +328,17 @@
       resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_odb_networks_odb_subnets
       resource_method_params:
         cloudVmCluster.backupOdbSubnet: '{__relative_name__}'
+      required: false
+    - arg_name: exascale-db-storage-vault
+      help_text: |-
+        The name of ExascaleDbStorageVault associated with the VM Cluster.
+        Format:
+        projects/{project}/locations/{location}/exascaleDbStorageVaults/{exascale_db_storage_vault}
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.oracle_database.v1alpha_resources:projects_locations_exascale_db_storage_vaults
+      resource_method_params:
+        cloudVmCluster.exascaleDbStorageVault: '{__relative_name__}'
       required: false
     - arg_name: request-id
       api_field: requestId

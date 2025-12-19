@@ -20,12 +20,15 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe networkMonitoringProviders
-    description: Describe a networkMonitoringProvider
-    examples: |-
-      To describe the networkMonitoringProvider, run:
+    brief: Describe a Network Monitoring Provider.
+    description: |-
+      Get details about a specific Network Monitoring Provider.
 
-          $ {command}
+      Note: The only supported location for these resources is `global`.
+    examples: |-
+      To describe the Network Monitoring Provider `my-provider-id`, run:
+
+        $ {command} my-provider-id --location=global
   arguments:
     params:
     - help_text: |-

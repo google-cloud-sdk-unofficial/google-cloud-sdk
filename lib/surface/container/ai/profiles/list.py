@@ -130,6 +130,15 @@ class List(commands.List):
         ),
     )
     parser.add_argument(
+        "--target-itl-milliseconds",
+        type=int,
+        help=(
+            "If specified, results will only show profiles with instance types"
+            " that can meet the latency target and will show their throughput"
+            " performances at the target inter-token latency (ITL)."
+        ),
+    )
+    parser.add_argument(
         "--target-cost-per-million-output-tokens",
         type=float,
         required=False,
@@ -165,7 +174,55 @@ class List(commands.List):
             " format.Options include csvprofile, profile, and yaml. "
         ),
     )
-
+    parser.add_argument(
+        "--use-case",
+        required=False,
+        type=str,
+        help=(
+            " If specified, results will only show profiles that match the"
+            " provided use case. Options are: Advanced Customer Support, Code"
+            " Completion, Text Summarization, Chatbot (ShareGPT), Text"
+            " Generation, Deep Research"
+        ),
+    )
+    parser.add_argument(
+        "--target-input-length",
+        required=False,
+        type=int,
+        help=(
+            " If specified, results will only show profiles that have an input"
+            " length within 20% of the specified one. Only works alongside"
+            " output length."
+        ),
+    )
+    parser.add_argument(
+        "--target-output-length",
+        required=False,
+        type=int,
+        help=(
+            "If specified, results will only show profiles that have an output"
+            " length within 20% of the specified one. Only works alongside"
+            " input length."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack",
+        required=False,
+        help=(
+            "The serving stack to filter profiles by. If not"
+            " provided, profiles for all serving stacks that support"
+            " the given model and model server will be returned."
+        ),
+    )
+    parser.add_argument(
+        "--serving-stack-version",
+        required=False,
+        help=(
+            "The serving stack version to filter profiles by. If not"
+            " provided, profiles for all versions that support"
+            " the given model and model server will be returned."
+        ),
+    )
     resource_printer.RegisterFormatter(
         profiles_printer.PROFILES_PRINTER_FORMAT,
         profiles_printer.ProfilePrinter,
@@ -181,6 +238,7 @@ class List(commands.List):
     messages = util.GetMessagesModule(base.ReleaseTrack.GA)
 
     performance_requirements = messages.PerformanceRequirements()
+    workload_spec = messages.WorkloadSpec()
     if args.target_ntpot_milliseconds:
       performance_requirements.targetNtpotMilliseconds = (
           args.target_ntpot_milliseconds
@@ -189,7 +247,22 @@ class List(commands.List):
       performance_requirements.targetTtftMilliseconds = (
           args.target_ttft_milliseconds
       )
-
+    if args.target_itl_milliseconds:
+      performance_requirements.targetItlMilliseconds = (
+          args.target_itl_milliseconds
+      )
+    if args.use_case:
+      workload_spec.useCase = (
+          args.use_case
+      )
+    if args.target_input_length:
+      workload_spec.averageInputLength = (
+          args.target_input_length
+      )
+    if args.target_output_length:
+      workload_spec.averageOutputLength = (
+          args.target_output_length
+      )
     if (
         args.target_cost_per_million_output_tokens
         or args.target_cost_per_million_input_tokens
@@ -213,11 +286,21 @@ class List(commands.List):
       if args.pricing_model:
         cost.pricingModel = args.pricing_model
       performance_requirements.targetCost = cost
+
+    serving_stack = None
+    if args.serving_stack:
+      serving_stack = messages.ServingStack(
+          name=args.serving_stack,
+      )
+      if args.serving_stack_version:
+        serving_stack.version = args.serving_stack_version
+
     try:
       request = messages.FetchProfilesRequest(
           model=args.model,
           modelServer=args.model_server,
           modelServerVersion=args.model_server_version,
+          servingStack=serving_stack,
       )
       if (
           performance_requirements.targetNtpotMilliseconds is not None
@@ -225,7 +308,12 @@ class List(commands.List):
           or performance_requirements.targetCost is not None
       ):
         request.performanceRequirements = performance_requirements
-
+      if (
+          workload_spec.useCase is not None
+          or workload_spec.averageInputLength is not None
+          or workload_spec.averageOutputLength is not None
+      ):
+        request.workloadSpec = workload_spec
       response = client.profiles.Fetch(request)
       if response.profile:
         return response.profile

@@ -98,7 +98,7 @@ class TriggerBackup(base.Command):
           details=util.ASYNC_OPERATION_MESSAGE.format(operation.name),
           failed=None,
       )
-      return
+      return operation
 
     client.WaitForOperation(
         operation_ref=client.GetOperationRef(operation),

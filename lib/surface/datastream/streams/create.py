@@ -85,6 +85,7 @@ class Create(base.Command):
     streams_flags.AddDisplayNameFlag(parser)
     streams_flags.AddBackfillStrategyGroup(parser)
     streams_flags.AddValidationGroup(parser, 'Create')
+    streams_flags.AddRuleSetsFlag(parser)
 
     flags.AddLabelsCreateFlags(parser)
 

@@ -456,6 +456,7 @@ class Update(base.UpdateCommand):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
+    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
     flags.AddEnableDefaultComputeClassFlag(group)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
@@ -621,6 +622,7 @@ class Update(base.UpdateCommand):
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
@@ -1005,6 +1007,14 @@ to completion."""
         )
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif getattr(args, 'disable_multi_nic_lustre', None) is not None:
+      try:
+        op_ref = adapter.ModifyMultiNicLustreDisabled(
+            cluster_ref,
+            args.disable_multi_nic_lustre,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif (
         getattr(args, 'enable_insecure_binding_system_authenticated', None)
         is not None
@@ -1292,6 +1302,7 @@ class UpdateBeta(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
+    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
@@ -1302,6 +1313,7 @@ class UpdateBeta(Update):
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddAutopilotGeneralProfileFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1511,6 +1523,7 @@ class UpdateBeta(Update):
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
@@ -1521,6 +1534,7 @@ class UpdateBeta(Update):
     opts.enable_kernel_module_signature_enforcement = (
         args.enable_kernel_module_signature_enforcement
     )
+    opts.autopilot_general_profile = args.autopilot_general_profile
     return opts
 
 
@@ -1671,6 +1685,7 @@ class UpdateAlpha(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
+    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
@@ -1681,6 +1696,7 @@ class UpdateAlpha(Update):
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddAutopilotGeneralProfileFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1886,6 +1902,7 @@ class UpdateAlpha(Update):
     opts.enable_k8s_tokens_via_dns = args.enable_k8s_tokens_via_dns
     opts.enable_k8s_certs_via_dns = args.enable_k8s_certs_via_dns
     opts.enable_legacy_lustre_port = args.enable_legacy_lustre_port
+    opts.disable_multi_nic_lustre = args.disable_multi_nic_lustre
     opts.enable_default_compute_class = args.enable_default_compute_class
     opts.network_tier = args.network_tier
     opts.control_plane_egress_mode = args.control_plane_egress
@@ -1896,4 +1913,5 @@ class UpdateAlpha(Update):
     opts.enable_kernel_module_signature_enforcement = (
         args.enable_kernel_module_signature_enforcement
     )
+    opts.autopilot_general_profile = args.autopilot_general_profile
     return opts

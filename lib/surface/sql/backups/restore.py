@@ -91,32 +91,6 @@ def _GetRestoreBackupRequest(args, sql_messages, instance_ref):
     )
 
 
-def _GetRestoreInstanceClearOverrides(args):
-  """Get the database instance clear overrides.
-
-  Args:
-    args: argparse.Namespace, The arguments that this command was invoked with.
-
-  Returns:
-    An array with the database instance fields that should be cleared.
-  """
-  cleared_fields = []
-
-  if args.IsKnownAndSpecified('clear_network'):
-    cleared_fields.append('settings.ip_configuration.private_network')
-
-  if args.clear_active_directory_dns_servers:
-    cleared_fields.append('settings.active_directory_config.dns_servers')
-
-  if args.IsKnownAndSpecified('clear_disk_encryption'):
-    cleared_fields.append('disk_encryption_config')
-
-  if args.clear_active_directory:
-    cleared_fields.append('settings.active_directory_config')
-
-  return cleared_fields
-
-
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
@@ -205,6 +179,11 @@ class RestoreBackup(base.RestoreCommand):
         for key in specified_args_dict
         if key in constants.TARGET_INSTANCE_OVERRIDE_FLAGS
     ]
+    clears = [
+        key
+        for key in specified_args_dict
+        if key in constants.TARGET_INSTANCE_CLEAR_FLAGS
+    ]
 
     is_project_backup = command_validate.IsProjectLevelBackupRequest(args.id)
     _ValidateBackupRequest(is_project_backup, args, overrides)
@@ -234,8 +213,9 @@ class RestoreBackup(base.RestoreCommand):
         restore_backup_request.instancesRestoreBackupRequest.restoreInstanceSettings = (
             instance_resource
         )
+      if clears:
         restore_backup_request.instancesRestoreBackupRequest.restoreInstanceClearOverridesFieldNames = (
-            _GetRestoreInstanceClearOverrides(args)
+            flags.GetInstanceClearOverrides(args)
         )
       result_operation = sql_client.instances.RestoreBackup(
           restore_backup_request

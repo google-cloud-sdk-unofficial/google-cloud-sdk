@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete validations
-    description: Delete a validation
+    brief: delete a validation
+    description: |
+      Delete a validation.
     examples: |-
-      To delete the validation, run:
+      To delete a validation `test-validation-id` in location `asia-east1` run:
 
-          $ {command}
+      $ {command} test-validation-id  --location=asia-east1 --force
   arguments:
     params:
     - help_text: |-

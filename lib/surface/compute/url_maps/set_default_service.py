@@ -191,7 +191,7 @@ def _Run(
   return client.MakeRequests([set_request])
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class SetDefaultService(base.UpdateCommand):
   """Change the default service or default bucket of a URL map."""
@@ -232,6 +232,14 @@ class SetDefaultService(base.UpdateCommand):
         self.URL_MAP_ARG,
         self._supports_regional_backend_bucket,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
+class SetDefaultServiceBeta(SetDefaultService):
+  """Change the default service or default bucket of a URL map."""
+
+  _supports_regional_backend_bucket = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

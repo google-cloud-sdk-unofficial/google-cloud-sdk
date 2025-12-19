@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@
     - help_text: |-
         Identifier. The name of the policy binding, in the format
         `{binding_parent/locations/{location}/policyBindings/{policy_binding_id}`.
-        The binding parent is the closest Resource Manager resource (i.e., Project,
-        Folder or Organization) to the binding target.
+        The binding parent is the closest Resource Manager resource (project,
+        folder, or organization) to the binding target.
 
         Format:
 
@@ -42,7 +42,7 @@
         * `organizations/{organization_id}/locations/{location}/policyBindings/{policy_binding_id}`
       is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:folder_or_organization_or_project_location_policy_binding
+      resource_spec: !REF googlecloudsdk.command_lib.iam.v3_resources:folders_or_organizations_or_projects_locations_policy_bindings
       required: true
     - arg_name: etag
       api_field: googleIamV3PolicyBinding.etag
@@ -63,13 +63,16 @@
       required: false
       repeated: true
       help_text: |-
-        User defined annotations. See https://google.aip.dev/148#annotations for
+        User-defined annotations. See https://google.aip.dev/148#annotations for
         more details such as format and size limitations
       clearable: true
       spec:
       - api_field: key
       - api_field: value
     - group:
+        api_field: googleIamV3PolicyBinding.condition
+        arg_name: condition
+        clearable: true
         required: false
         help_text: |-
           Represents a textual expression in the Common Expression Language (CEL)
@@ -136,9 +139,9 @@
   request:
     api_version: v3
     collection:
-    - iam.projects.locations.policyBindings
     - iam.folders.locations.policyBindings
     - iam.organizations.locations.policyBindings
+    - iam.projects.locations.policyBindings
   async:
     collection:
     - iam.folders.locations.operations
