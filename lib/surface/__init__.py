@@ -61,7 +61,13 @@ class Gcloud(base.Group):
     # version. In this case, when updating from any version between 524.0.0 and
     # 546.0.0, attempting to access properties.VALUES.regional here will result
     # in a crash.
-    if hasattr(properties.VALUES, 'regional'):
+    if (
+        hasattr(properties.VALUES, 'regional')
+        and hasattr(properties.VALUES.regional, 'GLOBAL')
+        and hasattr(properties.VALUES.regional, 'REGIONAL')
+        and hasattr(properties.VALUES.regional, 'REGIONAL_PREFERRED')
+        and hasattr(properties.VALUES.regional, 'endpoint_mode')
+    ):
       parser.add_argument(
           '--force-endpoint-mode',
           metavar='ENDPOINT_MODE',
