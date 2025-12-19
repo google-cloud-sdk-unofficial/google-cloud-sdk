@@ -26,6 +26,8 @@ def GetBodyForCreateReservation(
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
     reservation_group_name: Optional[str] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
 ) -> Dict[str, Any]:
   """Return the request body for CreateReservation.
 
@@ -43,6 +45,10 @@ def GetBodyForCreateReservation(
     scaling_mode: The scaling mode for the reservation.
     reservation_group_name: The reservation group name which the reservation
       belongs to.
+    scheduling_policy_concurrency: Soft cap on project concurrency within the
+      reservation.
+    scheduling_policy_max_slots: Soft cap on project max slots within the
+      reservation.
 
   Returns:
     Reservation object that was created.
@@ -85,8 +91,85 @@ def GetBodyForCreateReservation(
   if reservation_group_name is not None:
     reservation['reservation_group'] = reservation_group_name
 
+  if scheduling_policy_concurrency is not None:
+    reservation['scheduling_policy'] = {}
+    reservation['scheduling_policy'][
+        'concurrency'
+    ] = scheduling_policy_concurrency
+  if scheduling_policy_max_slots is not None:
+    if 'scheduling_policy' not in reservation:
+      reservation['scheduling_policy'] = {}
+    reservation['scheduling_policy']['max_slots'] = scheduling_policy_max_slots
 
   return reservation
+
+
+def GetBodyForCreateReservationAssignment(
+    reference: str,  # pylint: disable=unused-argument Cleanup is error prone.
+    job_type: Optional[str],
+    priority: Optional[str],
+    assignee_type: str,
+    assignee_id: str,
+    scheduling_policy_max_slots: Optional[int] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+) -> Dict[str, Any]:
+  """Creates a reservation assignment for a given project/folder/organization.
+
+  Arguments:
+    reference: Reference to the project reservation is assigned. Location must
+      be the same location as the reservation.
+    job_type: Type of jobs for this assignment.
+    priority: Default job priority for this assignment.
+    assignee_type: Type of assignees for the reservation assignment.
+    assignee_id: Project/folder/organization ID, to which the reservation is
+      assigned.
+    scheduling_policy_max_slots: Max slots for the scheduling policy.
+    scheduling_policy_concurrency: Concurrency for the scheduling policy.
+
+  Returns:
+    ReservationAssignment object that was created.
+
+  Raises:
+    bq_error.BigqueryError: if assignment cannot be created.
+  """
+  reservation_assignment = {}
+  if not job_type:
+    raise_job_type_unspecified_error = True
+    if (
+        scheduling_policy_max_slots is not None
+        or scheduling_policy_concurrency is not None
+    ):
+      raise_job_type_unspecified_error = False
+    if raise_job_type_unspecified_error:
+      raise bq_error.BigqueryError('job_type not specified.')
+  else:
+    reservation_assignment['job_type'] = job_type
+  if priority:
+    reservation_assignment['priority'] = priority
+  if not assignee_type:
+    raise bq_error.BigqueryError('assignee_type not specified.')
+  if not assignee_id:
+    raise bq_error.BigqueryError('assignee_id not specified.')
+  # assignee_type is singular, that's why we need additional 's' inside
+  # format string for assignee below.
+  reservation_assignment['assignee'] = '%ss/%s' % (
+      assignee_type.lower(),
+      assignee_id,
+  )
+  if scheduling_policy_max_slots is not None:
+    if 'scheduling_policy' not in reservation_assignment:
+      reservation_assignment['scheduling_policy'] = {}
+    reservation_assignment['scheduling_policy'][
+        'max_slots'
+    ] = scheduling_policy_max_slots
+  if scheduling_policy_concurrency is not None:
+    if 'scheduling_policy' not in reservation_assignment:
+      reservation_assignment['scheduling_policy'] = {}
+    reservation_assignment['scheduling_policy'][
+        'concurrency'
+    ] = scheduling_policy_concurrency
+
+  return reservation_assignment
 
 
 def CreateReservation(
@@ -102,6 +185,8 @@ def CreateReservation(
     max_slots: Optional[int] = None,
     scaling_mode: Optional[str] = None,
     reservation_group_name: Optional[str] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
 ) -> Dict[str, Any]:
   """Create a reservation with the given reservation reference.
 
@@ -140,6 +225,8 @@ def CreateReservation(
       max_slots,
       scaling_mode,
       reservation_group_name,
+      scheduling_policy_concurrency,
+      scheduling_policy_max_slots,
   )
   parent = 'projects/%s/locations/%s' % (
       reference.projectId,
@@ -318,6 +405,8 @@ def GetParamsForUpdateReservation(
     labels_to_set: Optional[Dict[str, str]] = None,
     label_keys_to_remove: Optional[Set[str]] = None,
     reservation_group_name: Optional[str] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
 ) -> Tuple[Dict[str, Any], str]:
   """Return the request body and update mask for UpdateReservation.
 
@@ -332,6 +421,10 @@ def GetParamsForUpdateReservation(
     scaling_mode: The scaling mode for the reservation.
     reservation_group_name: The reservation group name that the reservation
       belongs to.
+    scheduling_policy_concurrency: Soft cap on project concurrency within the
+      reservation.
+    scheduling_policy_max_slots: Soft cap on project max slots within the
+      reservation.
 
   Returns:
     Reservation object that was updated.
@@ -412,6 +505,18 @@ def GetParamsForUpdateReservation(
     reservation['reservation_group'] = reservation_group_name
     update_mask += 'reservation_group,'
 
+  if scheduling_policy_concurrency is not None:
+    reservation['scheduling_policy'] = {}
+    reservation['scheduling_policy'][
+        'concurrency'
+    ] = scheduling_policy_concurrency
+    update_mask += 'scheduling_policy.concurrency,'
+
+  if scheduling_policy_max_slots is not None:
+    if 'scheduling_policy' not in reservation:
+      reservation['scheduling_policy'] = {}
+    reservation['scheduling_policy']['max_slots'] = scheduling_policy_max_slots
+    update_mask += 'scheduling_policy.max_slots,'
 
   return reservation, update_mask
 
@@ -429,6 +534,8 @@ def UpdateReservation(
     labels_to_set: Optional[Dict[str, str]] = None,
     label_keys_to_remove: Optional[Set[str]] = None,
     reservation_group_name: Optional[str] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
 ):
   """Updates a reservation with the given reservation reference.
 
@@ -445,6 +552,10 @@ def UpdateReservation(
     scaling_mode: The scaling mode for the reservation.
     reservation_group_name: The reservation group name that the reservation
       belongs to.
+    scheduling_policy_concurrency: Soft cap on project concurrency within the
+      reservation.
+    scheduling_policy_max_slots: Soft cap on project max slots within the
+      reservation.
 
   Returns:
     Reservation object that was updated.
@@ -466,6 +577,8 @@ def UpdateReservation(
       labels_to_set,
       label_keys_to_remove,
       reservation_group_name,
+      scheduling_policy_concurrency,
+      scheduling_policy_max_slots,
   )
   return (
       client.projects()
@@ -693,7 +806,14 @@ def MergeCapacityCommitments(
 
 
 def CreateReservationAssignment(
-    client, reference, job_type, priority, assignee_type, assignee_id
+    client,
+    reference,
+    assignee_type: Optional[str] = None,
+    assignee_id: Optional[str] = None,
+    job_type: Optional[str] = None,
+    priority: Optional[str] = None,
+    scheduling_policy_max_slots: Optional[int] = None,
+    scheduling_policy_concurrency: Optional[int] = None,
 ):
   """Creates a reservation assignment for a given project/folder/organization.
 
@@ -701,11 +821,15 @@ def CreateReservationAssignment(
     client: The client used to make the request.
     reference: Reference to the project reservation is assigned. Location must
       be the same location as the reservation.
-    job_type: Type of jobs for this assignment.
-    priority: Default job priority for this assignment.
     assignee_type: Type of assignees for the reservation assignment.
     assignee_id: Project/folder/organization ID, to which the reservation is
       assigned.
+    job_type: Type of jobs for this assignment.
+    priority: Default job priority for this assignment.
+    scheduling_policy_max_slots: Soft cap on max slots for a specific project
+      within the reservation.
+    scheduling_policy_concurrency: Soft cap on job concurrency for a specific
+      project within the reservation.
 
   Returns:
     ReservationAssignment object that was created.
@@ -713,22 +837,16 @@ def CreateReservationAssignment(
   Raises:
     bq_error.BigqueryError: if assignment cannot be created.
   """
-  reservation_assignment = {}
-  if not job_type:
-    raise bq_error.BigqueryError('job_type not specified.')
-  reservation_assignment['job_type'] = job_type
-  if priority:
-    reservation_assignment['priority'] = priority
-  if not assignee_type:
-    raise bq_error.BigqueryError('assignee_type not specified.')
-  if not assignee_id:
-    raise bq_error.BigqueryError('assignee_id not specified.')
-  # assignee_type is singular, that's why we need additional 's' inside
-  # format string for assignee below.
-  reservation_assignment['assignee'] = '%ss/%s' % (
-      assignee_type.lower(),
+  reservation_assignment = GetBodyForCreateReservationAssignment(
+      reference,
+      job_type,
+      priority,
+      assignee_type,
       assignee_id,
+      scheduling_policy_max_slots,
+      scheduling_policy_concurrency,
   )
+
   return (
       client.projects()
       .locations()
@@ -783,13 +901,21 @@ def MoveReservationAssignment(
   )
 
 
-def UpdateReservationAssignment(client, reference, priority):
+def UpdateReservationAssignment(
+    client,
+    reference,
+    priority,
+    scheduling_policy_max_slots,
+    scheduling_policy_concurrency,
+):
   """Updates reservation assignment.
 
   Arguments:
     client: The client used to make the request.
     reference: Reference to the reservation assignment.
     priority: Default job priority for this assignment.
+    scheduling_policy_max_slots: Max slots for the scheduling policy.
+    scheduling_policy_concurrency: Concurrency for the scheduling policy.
 
   Returns:
     Reservation assignment object that was updated.
@@ -804,7 +930,19 @@ def UpdateReservationAssignment(client, reference, priority):
       priority = 'JOB_PRIORITY_UNSPECIFIED'
     reservation_assignment['priority'] = priority
     update_mask += 'priority,'
-
+  if scheduling_policy_max_slots is not None:
+    reservation_assignment['scheduling_policy'] = {}
+    reservation_assignment['scheduling_policy'][
+        'max_slots'
+    ] = scheduling_policy_max_slots
+    update_mask += 'scheduling_policy.max_slots,'
+  if scheduling_policy_concurrency is not None:
+    if 'scheduling_policy' not in reservation_assignment:
+      reservation_assignment['scheduling_policy'] = {}
+    reservation_assignment['scheduling_policy'][
+        'concurrency'
+    ] = scheduling_policy_concurrency
+    update_mask += 'scheduling_policy.concurrency,'
   return (
       client.projects()
       .locations()

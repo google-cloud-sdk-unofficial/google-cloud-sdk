@@ -19,7 +19,7 @@
   - ALPHA
   auto_generated: true
   help_text:
-    brief: Lists DnsThreatDetector resources
+    brief: List DnsThreatDetector resources
     description: Lists all DnsThreatDetector resources.
     examples: |-
       To list all `DnsThreatDetector` resources, run:

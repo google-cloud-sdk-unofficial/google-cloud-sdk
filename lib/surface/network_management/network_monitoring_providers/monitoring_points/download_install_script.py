@@ -16,11 +16,14 @@
 """Command to download an installation script for a Monitoring Point."""
 
 from urllib import parse
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.credentials import transports
+from googlecloudsdk.core.util import files
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -34,6 +37,10 @@ class DownloadInstallScript(base.Command):
       'DESCRIPTION': """\
           Downloads an installation script for a Monitoring Point for a given
           Network Monitoring Provider.
+
+          The command downloads a tarball for `--monitoring-point-type=container`,
+          or a zip file for `--monitoring-point-type=kvm` or
+          `--monitoring-point-type=vmware`.
 
           The `--network-monitoring-provider`, `--location`, `--monitoring-point-type`,
           and `--hostname` arguments are required for all Monitoring Points.
@@ -53,15 +60,15 @@ class DownloadInstallScript(base.Command):
       'EXAMPLES': """\
           To download the install script for a Monitoring Point of type `container`, run:
 
-            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=container --hostname=test-container
+            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=container --hostname=container-hostname --output-file=compose.container-hostname.tar.gz
 
           To download the install script for a Monitoring Point of type `kvm` using DHCP, run:
 
-            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=kvm --hostname=test-kvm --password=my-password --time-zone=America/Los_Angeles --use-dhcp
+            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=kvm --hostname=kvm-hostname --password=my-password --time-zone=America/Los_Angeles --use-dhcp --output-file=kvm.kvm-hostname.zip
 
           To download the install script for a Monitoring Point of type `vmware` using a static IP, run:
 
-            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=vmware --hostname=test-vmware --password=my-password --time-zone=America/Los_Angeles --static-ip-address=192.168.1.100 --netmask=255.255.255.0 --gateway-address=192.168.1.1 --dns-server-address=8.8.8.8
+            $ {command} --network-monitoring-provider=my-provider --location=global --monitoring-point-type=vmware --hostname=vmware-hostname --password=my-password --time-zone=America/Los_Angeles --static-ip-address=192.168.1.100 --netmask=255.255.255.0 --gateway-address=192.168.1.1 --dns-server-address=8.8.8.8 --output-file=vmwareApplianceConfig.zip
           """,
   }
 
@@ -90,6 +97,11 @@ class DownloadInstallScript(base.Command):
         '--hostname',
         required=True,
         help='The hostname of the Monitoring Point (example: `test-vm`).',
+    )
+    parser.add_argument(
+        '--output-file',
+        required=True,
+        help='The path to save the downloaded install script.',
     )
     parser.add_argument(
         '--password',
@@ -299,10 +311,9 @@ class DownloadInstallScript(base.Command):
       )
 
     encoded_params = parse.urlencode(query_params)
-    client = apis.GetClientInstance('networkmanagement', api_version)
     base_uri = apis.GetEffectiveApiEndpoint('networkmanagement', api_version)
     uri = f'{base_uri}{request_path}?{encoded_params}'
-    http = client.http
+    http = transports.GetApitoolsTransport(response_encoding=None)
 
     response, body = http.request(
         uri,
@@ -312,8 +323,25 @@ class DownloadInstallScript(base.Command):
 
     if response.status != 200:
       raise exceptions.HttpException(
-          f'API request failed with status {response.status}: {body}'
+          f'API request failed with status {response.status}:'
+          f' {body.decode("utf-8")}'
       )
 
-    log.out.write(body)
+    content_type = (
+        response['content-type']
+        if 'content-type' in response
+        else 'unknown'
+    )
+
+    try:
+      with files.BinaryFileWriter(args.output_file) as f:
+        f.write(body)
+      log.status.Print(
+          f'Downloaded {content_type} install script to [{args.output_file}]'
+      )
+    except Exception as e:
+      raise exceptions.BadFileException(
+          f'Failed to write file [{args.output_file}]: {e}'
+      )
+
     return None

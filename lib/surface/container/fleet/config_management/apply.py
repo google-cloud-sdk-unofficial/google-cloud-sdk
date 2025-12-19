@@ -44,6 +44,7 @@ EXAMPLES = r"""
 """
 
 
+# TODO(b/433355766): Add disclaimer once update command is in beta.
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
@@ -162,7 +163,7 @@ class Apply(fleet_base.UpdateCommand, mf_base.UpdateCommand, command.Common):
     Raises: Error, if retrieving FeatureSpec of FeatureState fails
     """
     f = self._get_feature_cache()
-    return utils.get_backfill_version_from_feature(f, membership)
+    return utils.get_backfill_versions_from_feature(f, [membership])[0]
 
   def _update_membership(self, feature_spec):
     """Update the spec of the target membership to feature_spec.

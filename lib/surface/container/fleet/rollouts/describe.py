@@ -26,7 +26,6 @@ from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.command_lib.container.fleet.rollouts import flags as rollout_flags
 from googlecloudsdk.command_lib.container.fleet.rollouts import rollout_printer
 from googlecloudsdk.core.resource import resource_printer
-from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
 
 _EXAMPLES = """
 To describe a rollout named `my-rollout`,
@@ -36,16 +35,17 @@ $ {command} my-rollout
 """
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
   """Describe a fleet rollout."""
 
+  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor) -> None:
-    flags = rollout_flags.RolloutFlags(parser)
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor) -> None:
+    flags = rollout_flags.RolloutFlags(parser, cls._release_track)
     flags.AddRolloutResourceArg()
     resource_printer.RegisterFormatter(
         rollout_printer.ROLLOUT_PRINTER_FORMAT,
@@ -54,8 +54,15 @@ class Describe(base.DescribeCommand):
     parser.display_info.AddFormat(rollout_printer.ROLLOUT_PRINTER_FORMAT)
 
   def Run(self, args):
-    req = alpha_messages.GkehubProjectsLocationsRolloutsGetRequest(
+    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    req = fleet_client.messages.GkehubProjectsLocationsRolloutsGetRequest(
         name=util.RolloutName(args)
     )
-    fleet_client = client.FleetClient(release_track=base.ReleaseTrack.ALPHA)
     return fleet_client.DescribeRollout(req)
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DescribeAlpha(Describe):
+  """Describe a fleet rollout."""
+
+  _release_track = base.ReleaseTrack.ALPHA

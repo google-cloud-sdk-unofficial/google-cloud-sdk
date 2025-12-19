@@ -24,7 +24,6 @@
     - arg_name: show-package-vulnerability
       type: bool
       default: false
-      hidden: true
       help_text: |
         Include vulnerability metadata in the output.
 

@@ -2,10 +2,10 @@
   - ALPHA
   hidden: true
   help_text:
-    brief: Create Flag Revision
-    description: Create a Flag Revision.
+    brief: Update Flag Revision
+    description: Update a Flag Revision.
     examples: |-
-      To create Flag Revision, run:
+      To update Flag Revision, run:
 
           $ {command}
   arguments:

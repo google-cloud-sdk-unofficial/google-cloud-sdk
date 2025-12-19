@@ -61,6 +61,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
     flags.AddTransportTopicResourceArg(parser)
+    flags.AddTriggerRetryPolicyArgs(parser)
     labels_util.AddCreateLabelsFlags(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)
@@ -171,6 +172,7 @@ class Create(base.CreateCommand):
         destination_message,
         transport_topic_ref,
         channel_ref,
+        args.max_retry_attempts,
         labels_util.ParseCreateArgs(args, client.LabelsValueClass()),
     )
     operation = client.Create(trigger_ref, trigger_message)

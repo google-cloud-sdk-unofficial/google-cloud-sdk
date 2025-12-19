@@ -21,6 +21,7 @@
       help_text: |-
         If true, shows the diff between this deployment and the previous one.
       action: store_true
+      hidden: true
   request:
     api_version: v1
     collection: developerconnect.projects.locations.insightsConfigs.deploymentEvents

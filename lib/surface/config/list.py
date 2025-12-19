@@ -120,7 +120,7 @@ class List(base.ListCommand):
 
     project_id = properties.VALUES.core.project.Get()
     if project_id:
-      projects_util.CheckAndPrintEnvironmentTagMessageWithProjectID(
+      projects_util.PrintEnvironmentTagMessage(
           project_id
       )
 

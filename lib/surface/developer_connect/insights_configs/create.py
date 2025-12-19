@@ -31,6 +31,10 @@ DETAILED_HELP = {
           To create an insights config with an apphub application, run:
 
             $ {command} insights-config-name --app-hub-application=projects/my-project/locations/us-central1/applications/my-app-hub-application
+
+          To create an insights config with projects, run:
+
+            $ {command} insights-config-name --target-projects=project1,project2
           """,
 }
 

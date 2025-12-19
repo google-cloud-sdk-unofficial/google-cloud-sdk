@@ -6,6 +6,7 @@ import os
 import pkgutil
 import platform
 import re
+import ssl
 import sys
 import textwrap
 from typing import Dict, List, Literal, Optional, TextIO
@@ -261,6 +262,7 @@ def GetInfoString() -> str:
       Platform: [{platform_str}] {uname}
       Python Version: [{python_version}]
 
+      OpenSSL Version: [{openssl_version}]
       Requests Version: [{requests_version}]
       Urllib3 Version: [{urllib3_version}]
       Httplib2: [{httplib2_version}]
@@ -275,6 +277,7 @@ def GetInfoString() -> str:
           platform_str=platform_str,
           uname=platform.uname(),
           python_version=sys.version.replace('\n', ' '),
+          openssl_version=ssl.OPENSSL_VERSION,
           httplib2_version=httplib2_version,
           google_auth_version=google_auth_version.__version__,
           requests_version=requests.__version__,

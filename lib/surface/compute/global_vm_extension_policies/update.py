@@ -38,6 +38,7 @@ class Update(base.UpdateCommand):
         --config=extension1="config1",extension2="config2" \
         --inclusion-labels=env=prod \
         --inclusion-labels=env=preprod,workload=load-test \
+        --rollout-predefined-plan=slow_rollout \
         --priority=1000
    """,
   }
@@ -49,6 +50,7 @@ class Update(base.UpdateCommand):
         parser, operation_type='update'
     )
     flags.AddExtensionPolicyArgs(parser)
+    flags.AddRolloutConflictBehavior(parser)
     flags.AddRolloutRetryUUID(parser)
 
   def Run(self, args):

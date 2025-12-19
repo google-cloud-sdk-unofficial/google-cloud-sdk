@@ -25,6 +25,7 @@ from googlecloudsdk.command_lib.kms import flags
 from googlecloudsdk.command_lib.kms import maps
 
 
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   r"""Create a new import job.
 
@@ -32,18 +33,26 @@ class Create(base.CreateCommand):
 
   ## EXAMPLES
 
-  The following command creates a new import job named 'strider' within the
-  'fellowship' keyring, and 'us-central1' location:
+  The following command creates a new import job named `strider` within the
+  `fellowship` keyring, and `us-central1` location:
 
     $ {command} strider --location=us-central1 \
         --keyring=fellowship --import-method=rsa-oaep-3072-sha256-aes-256 \
         --protection-level=hsm
+
+  The following command creates a new import job named `strider` within the
+  `fellowship` keyring, and `us-central1` location:
+
+    $ {command} strider --location=us-central1 \
+        --keyring=fellowship --import-method=rsa-oaep-3072-sha256-aes-256 \
+        --protection-level=hsm-single-tenant --single-tenant-hsm-instance=my_sthi
   """
 
   @staticmethod
   def Args(parser):
-    flags.AddKeyRingFlag(parser, 'import job')
+    flags.AddSingleTenantHsmInstanceFlag(parser)
     flags.AddLocationFlag(parser, 'import job')
+    flags.AddKeyRingFlag(parser, 'import job')
     flags.AddRequiredProtectionLevelFlag(parser)
     flags.AddRequiredImportMethodFlag(parser)
     flags.AddPositionalImportJobArgument(parser, 'to create')
@@ -64,15 +73,40 @@ class Create(base.CreateCommand):
 
     import_job_ref = flags.ParseImportJobName(args)
     parent_ref = flags.ParseParentFromResource(import_job_ref)
+    if args.protection_level == 'hsm-single-tenant':
+      if not args.single_tenant_hsm_instance:
+        raise exceptions.BadArgumentException(
+            '--single-tenant-hsm-instance',
+            'Single tenant HSM instance must be specified when protection level'
+            ' is hsm-single-tenant',
+        )
+    if args.single_tenant_hsm_instance:
+      single_tenant_hsm_instance_ref = flags.ParseSingleTenantHsmInstanceName(
+          args
+      )
+      if (
+          single_tenant_hsm_instance_ref.Parent().RelativeName()
+          != import_job_ref.Parent().Parent().RelativeName()
+      ):
+        raise exceptions.BadArgumentException(
+            '--single-tenant-hsm-instance',
+            'Single tenant HSM instance must be in the same location as the'
+            ' import job',
+        )
 
     return messages.CloudkmsProjectsLocationsKeyRingsImportJobsCreateRequest(
         parent=parent_ref.RelativeName(),
         importJobId=import_job_ref.Name(),
         importJob=messages.ImportJob(
-            protectionLevel=maps.IMPORT_PROTECTION_LEVEL_MAPPER
-            .GetEnumForChoice(args.protection_level),
+            protectionLevel=maps.IMPORT_PROTECTION_LEVEL_MAPPER.GetEnumForChoice(
+                args.protection_level
+            ),
             importMethod=maps.IMPORT_METHOD_MAPPER.GetEnumForChoice(
-                args.import_method)))
+                args.import_method
+            ),
+            cryptoKeyBackend=args.single_tenant_hsm_instance,
+        ),
+    )
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

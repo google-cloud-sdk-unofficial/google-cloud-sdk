@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: list experiment templates
+    brief: List experiment templates
     description: |
       List experiment templates.
     examples: |-

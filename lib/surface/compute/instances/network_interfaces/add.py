@@ -42,6 +42,7 @@ class Add(base.UpdateCommand):
 
   enable_ipv6_assignment = False
   support_igmp_query = False
+  support_service_class_id = False
 
   @classmethod
   def Args(cls, parser):
@@ -67,6 +68,8 @@ class Add(base.UpdateCommand):
     if cls.enable_ipv6_assignment:
       network_interfaces_flags.AddIpv6AddressArg(parser)
       network_interfaces_flags.AddIpv6PrefixLengthArg(parser)
+    if cls.support_service_class_id:
+      network_interfaces_flags.AddServiceClassIdArg(parser)
 
     if cls.support_igmp_query:
       network_interfaces_flags.AddIgmpQueryArg(parser)
@@ -113,6 +116,7 @@ class Add(base.UpdateCommand):
         ipv6_address=getattr(args, 'ipv6_address', None),
         ipv6_prefix_length=getattr(args, 'ipv6_prefix_length', None),
         igmp_query=getattr(args, 'igmp_query', None),
+        service_class_id=getattr(args, 'service_class_id', None),
     )
 
     request = messages.ComputeInstancesAddNetworkInterfaceRequest(
@@ -148,6 +152,7 @@ class AddBeta(Add):
 
   enable_ipv6_assignment = False
   support_igmp_query = False
+  support_service_class_id = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -163,6 +168,7 @@ class AddAlpha(AddBeta):
 
   enable_ipv6_assignment = True
   support_igmp_query = True
+  support_service_class_id = True
 
 
 Add.detailed_help = {

@@ -57,6 +57,8 @@ def AddBaseArgs(parser):
   flags.GetSpannerCliTableFlag().AddToParser(parser)
   flags.GetSpannerCliTeeFlag().AddToParser(parser)
   flags.GetSpannerCliXmlFlag().AddToParser(parser)
+  flags.GetSpannerCliDirectedReadCommandFlag().AddToParser(parser)
+  flags.GetSpannerCliProtoDescriptorFileCommandFlag().AddToParser(parser)
 
 
 @base.DefaultUniverseOnly
@@ -103,6 +105,8 @@ class Cli(base.BinaryBackedCommand):
         tee=args.tee,
         init_command=args.init_command,
         init_command_add=args.init_command_add,
+        directed_read=args.directed_read,
+        proto_descriptor_file=args.proto_descriptor_file,
         env=env_vars,
     )
     pass

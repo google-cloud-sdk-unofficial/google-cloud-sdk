@@ -1,0 +1,23 @@
+- release_tracks: [GA]
+  hidden: true
+  help_text:
+    brief: |
+      Describe an AutoMigrationConfig.
+    description: |
+      Describe an AutoMigrationConfig.
+    examples: |
+      To describe an AutoMigrationConfig for location `us-central1`:
+         $ {command} --location=us-central1
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.infra_manager.resources:location
+      is_positional: false
+      help_text: |
+        The location to read the AutoMigrationConfig from.
+  request:
+    api_version: v1
+    disable_resource_check: true
+    collection: config.projects.locations
+    method: getAutoMigrationConfig
+    modify_request_hooks:
+    - googlecloudsdk.api_lib.infra_manager.configmanager_util:SetGetAutoMigrationInRequest

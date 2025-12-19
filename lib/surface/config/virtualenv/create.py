@@ -24,10 +24,12 @@ from googlecloudsdk.command_lib.config.virtualenv import util
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a virtualenv environment.
 
@@ -88,7 +90,7 @@ class Create(base.Command):
       log.status.Print('Installing modules...')
       install_modules = [
           '{}/bin/pip3'.format(ve_dir), 'install', '--log',
-          '{}/install_module.log'.format(ve_dir), '-q',
+          '{}/install_module.log'.format(ve_dir),
           '--disable-pip-version-check'
       ]
       install_modules.extend(util.MODULES)
@@ -98,6 +100,11 @@ class Create(base.Command):
         succeeded_making_venv = True
       else:
         log.error('Virtual env setup failed.')
+        if properties.IsInternalUserCheck():
+          log.error(
+              'You might need further authentication. See more at '
+              'go/gcloud-internal-auth.'
+          )
         raise exceptions.ExitCodeNoError(exit_code=ec)
     finally:
       # If something went wrong we clean up any partial created ve_dir

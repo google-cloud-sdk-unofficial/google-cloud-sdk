@@ -482,8 +482,11 @@ class BigqueryClient:
     # permission error seen in b/321286043.
     if self.use_google_auth and hasattr(self.credentials, '_quota_project_id'):
       self.credentials._quota_project_id = None  # pylint: disable=protected-access
-    http_client = self.GetHttp()
-    http = self.GetAuthorizedHttp(self.credentials, http_client)
+
+    http = None
+    if not http:
+      http_client = self.GetHttp()
+      http = self.GetAuthorizedHttp(self.credentials, http_client)
 
     discovery_document = None
     # First, trying to load the discovery document from the local package.
@@ -614,6 +617,7 @@ class BigqueryClient:
       )
       self._op_transfer_client = self.BuildApiClient(
           domain_root=path,
+          discovery_root_url=path,
           api_version='v1',
           service=Service.DTS,
       )

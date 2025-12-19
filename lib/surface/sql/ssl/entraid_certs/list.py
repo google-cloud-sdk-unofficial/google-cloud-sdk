@@ -59,6 +59,8 @@ class _BaseList(object):
     resp = entraid_certs.ListEntraIdCertificates(
         sql_client, sql_messages, instance_ref
     )
+    if not resp.certs:
+      return iter([flags.EntraIdCertForPrint(None, None)])
     entraid_cert_types = entraid_certs.GetEntraIdCertificateTypeDict(resp)
     hash2status = {
         cert.sha1Fingerprint: status

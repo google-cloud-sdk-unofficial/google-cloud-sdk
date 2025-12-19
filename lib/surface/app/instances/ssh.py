@@ -158,6 +158,7 @@ class SshGa(base.Command):
     region = '-'.join(instance_resource.vmZoneName.split('-')[:-1])
     user = ssh.GetDefaultSshUsername()
     project = ssh_common.GetComputeProject(self.ReleaseTrack())
+
     oslogin_state = ssh.GetOsloginState(
         None,
         project,
@@ -289,7 +290,8 @@ class SshBeta(SshGa):
             'instancesId': instance,
             'servicesId': service,
         },
-        collection='appengine.apps.services.versions.instances')
+        collection='appengine.apps.services.versions.instances'
+    )
     try:
       instance_resource = api_client.GetInstanceResource(res)
     except apitools_exceptions.HttpNotFoundError:
@@ -326,11 +328,13 @@ class SshBeta(SshGa):
             self.ReleaseTrack()
         ).client.messages,
     )
+
     cert_file = None
     if oslogin_state.third_party_user or oslogin_state.require_certificates:
       cert_file = ssh.CertFileFromAppEngineInstance(
           project.name, service, version, instance
       )
+
     connection_details = ssh_common.PopulatePublicKey(
         api_client,
         service,

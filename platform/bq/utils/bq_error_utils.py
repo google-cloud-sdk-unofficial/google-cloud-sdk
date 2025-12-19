@@ -96,6 +96,17 @@ def process_error(
     response.append(_BIGQUERY_TOS_MESSAGE)
   elif isinstance(err, bq_error.BigqueryInvalidQueryError):
     response.append('Error in query string: %s' % (message,))
+  elif (
+      isinstance(err, bq_error.BigqueryServiceError)
+      and 'API requires a quota project, which is not set by default' in message
+  ):
+    response.append(
+        'Bigquery service returned an error in %s operation: %s.'
+        '\n\n'
+        'Please make sure you have the correct quota project ID set through '
+        '--quota_project_id or gcloud config set billing/quota_project. '
+        % (name, message)
+    )
   elif isinstance(err, bq_error.BigqueryError) and not isinstance(
       err, bq_error.BigqueryInterfaceError
   ):

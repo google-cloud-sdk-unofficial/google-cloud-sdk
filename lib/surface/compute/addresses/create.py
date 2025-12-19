@@ -29,7 +29,7 @@ import ipaddr
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_psc_google_apis, include_ip_collection):
+def _Args(cls, parser, support_psc_google_apis):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -48,8 +48,7 @@ def _Args(cls, parser, support_psc_google_apis, include_ip_collection):
 
   cls.NETWORK_ARG = flags.NetworkArgument()
   cls.NETWORK_ARG.AddArgument(parser)
-  if include_ip_collection:
-    flags.IpCollectionArgument().AddArgument(parser)
+  flags.IpCollectionArgument().AddArgument(parser)
 
 
 @base.UniverseCompatible
@@ -105,15 +104,13 @@ class Create(base.CreateCommand):
   NETWORK_ARG = None
 
   _support_psc_google_apis = True
-  _include_ip_collection = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         cls,
         parser,
-        support_psc_google_apis=cls._support_psc_google_apis,
-        include_ip_collection=cls._include_ip_collection)
+        support_psc_google_apis=cls._support_psc_google_apis)
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -345,7 +342,7 @@ class Create(base.CreateCommand):
         network=network_url,
         ipv6EndpointType=ipv6_endpoint_type)
 
-    if self._include_ip_collection and args.ip_collection:
+    if args.ip_collection:
       address_msg.ipCollection = flags.IpCollectionArgument().ResolveAsResource(
           args, resource_parser).SelfLink()
 
@@ -405,7 +402,6 @@ class CreateBeta(Create):
   """
 
   _support_psc_google_apis = True
-  _include_ip_collection = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

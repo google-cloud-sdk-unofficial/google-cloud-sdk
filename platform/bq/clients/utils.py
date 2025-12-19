@@ -728,11 +728,12 @@ def GetProjectReference(
       )
   except ValueError:
     pass
-  if project_id == '':
+  if not project_id:
     raise bq_error.BigqueryClientError('Please provide a project ID.')
   else:
+    project_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryClientError(
-        'Cannot determine project described by %s' % (identifier,)
+        'Cannot determine project described by %s' % (project_identifier,)
     )
 
 
@@ -760,8 +761,9 @@ def GetDatasetReference(
     # identifier is 'foo:bar'
     pass
   else:
+    dataset_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryError(
-        'Cannot determine dataset described by %s' % (identifier,)
+        'Cannot determine dataset described by %s' % (dataset_identifier,)
     )
 
   try:
@@ -769,8 +771,9 @@ def GetDatasetReference(
         projectId=project_id, datasetId=dataset_id
     )
   except ValueError as e:
+    dataset_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryError(
-        'Cannot determine dataset described by %s' % (identifier,)
+        'Cannot determine dataset described by %s' % (dataset_identifier,)
     ) from e
 
 
@@ -798,8 +801,9 @@ def GetTableReference(
         tableId=table_id,
     )
   except ValueError as e:
+    table_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryError(
-        'Cannot determine table described by %s' % (identifier,)
+        'Cannot determine table described by %s' % (table_identifier,)
     ) from e
 
 
@@ -851,8 +855,9 @@ def GetModelReference(
         modelId=table_id,
     )
   except ValueError as e:
+    model_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryError(
-        'Cannot determine model described by %s' % identifier
+        'Cannot determine model described by %s' % (model_identifier,)
     ) from e
 
 
@@ -877,8 +882,9 @@ def GetRoutineReference(
         routineId=table_id,
     )
   except ValueError as e:
+    routine_identifier = identifier if identifier else 'the given arguments'
     raise bq_error.BigqueryError(
-        'Cannot determine routine described by %s' % identifier
+        'Cannot determine routine described by %s' % (routine_identifier,)
     ) from e
 
 

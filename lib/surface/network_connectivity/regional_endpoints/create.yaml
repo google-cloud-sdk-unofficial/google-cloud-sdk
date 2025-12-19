@@ -1,4 +1,5 @@
 - release_tracks: [BETA]
+  universe_compatible: false
 
   help_text:
     brief: Create a new regional endpoint.

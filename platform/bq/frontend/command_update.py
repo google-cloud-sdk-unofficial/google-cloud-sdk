@@ -43,10 +43,37 @@ from utils import bq_processor_utils
 
 class Update(bigquery_command.BigqueryCmd):
   """The BigQuery CLI update command."""
+
   usage = """update [-d] [-t] <identifier> [<schema>]"""
+
+  # May be extended to more resource types and commands.
+  INCOMPATIBLE_FLAGS = {
+      bq_id_utils.ApiClientHelper.DatasetReference: {
+          'schema',
+          'expiration',
+          'external_catalog_table_options',
+          'external_table_definition',
+          'time_partitioning_type',
+          'time_partitioning_expiration',
+          'time_partitioning_field',
+          'clustering_fields',
+          'require_partition_filter',
+          'range_partitioning',
+          'autodetect_schema',
+      },
+      bq_id_utils.ApiClientHelper.TableReference: {
+          'default_table_expiration',
+          'default_partition_expiration',
+          'default_kms_key',
+          'external_catalog_dataset_options',
+          'max_time_travel_hours',
+          'source',
+      },
+  }
 
   def __init__(self, name: str, fv: flags.FlagValues):
     super(Update, self).__init__(name, fv)
+    self.fv = fv
     flags.DEFINE_boolean(
         'dataset',
         False,
@@ -286,6 +313,20 @@ class Update(bigquery_command.BigqueryCmd):
         'Reservation group name used to create reservation for, it can be full'
         ' path or just the reservation group name. Used in conjunction with'
         ' --reservation.',
+        flag_values=fv,
+    )
+    flags.DEFINE_integer(
+        'scheduling_policy_concurrency',
+        None,
+        'Cap on target per-project concurrency of jobs running within the'
+        ' reservation.',
+        flag_values=fv,
+    )
+    flags.DEFINE_integer(
+        'scheduling_policy_max_slots',
+        None,
+        'Cap on target rate of slot consumption per-project within the'
+        ' reservation.',
         flag_values=fv,
     )
     flags.DEFINE_boolean(
@@ -875,6 +916,8 @@ class Update(bigquery_command.BigqueryCmd):
               labels_to_set=labels_to_set,
               label_keys_to_remove=label_keys_to_remove,
               reservation_group_name=self.reservation_group_name,
+              scheduling_policy_concurrency=self.scheduling_policy_concurrency,
+              scheduling_policy_max_slots=self.scheduling_policy_max_slots,
           )
           frontend_utils.PrintObjectInfo(
               object_info, reference, custom_format='show'
@@ -953,6 +996,14 @@ class Update(bigquery_command.BigqueryCmd):
               'Cannot specify both --destination_reservation_id and --priority.'
           )
         if self.destination_reservation_id:
+          if (
+              self.scheduling_policy_max_slots is not None
+              or self.scheduling_policy_concurrency is not None
+          ):
+            raise bq_error.BigqueryError(
+                'Cannot specify scheduling_policy flags if'
+                ' --destination_reservation_id is specified.'
+            )
           object_info = client_reservation.MoveReservationAssignment(
               client=client.GetReservationApiClient(),
               id_fallbacks=client,
@@ -968,6 +1019,19 @@ class Update(bigquery_command.BigqueryCmd):
               client=client.GetReservationApiClient(),
               reference=reference,
               priority=self.priority,
+              scheduling_policy_max_slots=self.scheduling_policy_max_slots,
+              scheduling_policy_concurrency=self.scheduling_policy_concurrency,
+          )
+        elif (
+            self.scheduling_policy_max_slots is not None
+            or self.scheduling_policy_concurrency is not None
+        ):
+          object_info = client_reservation.UpdateReservationAssignment(
+              client=client.GetReservationApiClient(),
+              reference=reference,
+              priority=self.priority,
+              scheduling_policy_max_slots=self.scheduling_policy_max_slots,
+              scheduling_policy_concurrency=self.scheduling_policy_concurrency,
           )
         else:
           raise bq_error.BigqueryError(
@@ -1044,7 +1108,6 @@ class Update(bigquery_command.BigqueryCmd):
         utils_formatting.maybe_print_manual_instructions_for_connection(
             updated_connection
         )
-
     else:
       reference = bq_client_utils.GetReference(
           id_fallbacks=client, identifier=identifier
@@ -1066,25 +1129,21 @@ class Update(bigquery_command.BigqueryCmd):
     if self.clear_label is not None:
       label_keys_to_remove = set(self.clear_label)
 
-    if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
-      if self.schema:
-        raise app.UsageError('Cannot specify schema with a dataset.')
-      if self.view:
-        raise app.UsageError('Cannot specify view with a dataset.')
-      if self.materialized_view:
-        raise app.UsageError('Cannot specify materialized view with a dataset.')
-      if self.expiration:
-        raise app.UsageError('Cannot specify an expiration for a dataset.')
-      if self.external_table_definition is not None:
+    # Check for incompatible flags.
+    reference_type = type(reference)
+    for flag_name in self.INCOMPATIBLE_FLAGS.get(reference_type, []):
+      if self.fv[flag_name].present:
         raise app.UsageError(
-            'Cannot specify an external_table_definition for a dataset.'
+            'Cannot specify --%s with a %s.'
+            % (
+                flag_name,
+                reference_type.typename.lower(),
+            )
         )
+
+    if isinstance(reference, bq_id_utils.ApiClientHelper.DatasetReference):
       if self.source and self.description:
         raise app.UsageError('Cannot specify description with a source.')
-      if self.external_catalog_table_options is not None:
-        raise app.UsageError(
-            'Cannot specify external_catalog_table_options for a dataset.'
-        )
       default_table_exp_ms = None
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
@@ -1123,10 +1182,6 @@ class Update(bigquery_command.BigqueryCmd):
         object_name = 'View'
       if self.materialized_view:
         object_name = 'Materialized View'
-      if self.source:
-        raise app.UsageError(
-            '%s update does not support --source.' % object_name
-        )
       if schema:
         schema = bq_client_utils.ReadSchema(schema)
       else:
@@ -1137,12 +1192,6 @@ class Update(bigquery_command.BigqueryCmd):
           expiration = 0
         else:
           expiration = int(self.expiration + time.time()) * 1000
-      if self.default_table_expiration:
-        raise app.UsageError('Cannot specify default expiration for a table.')
-      if self.external_catalog_dataset_options is not None:
-        raise app.UsageError(
-            'Cannot specify external_catalog_dataset_options for a table.'
-        )
       external_data_config = None
       if self.external_table_definition is not None:
         external_data_config = frontend_utils.GetExternalDataConfig(

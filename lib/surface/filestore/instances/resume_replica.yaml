@@ -1,4 +1,4 @@
-- release_tracks: [BETA]
+- release_tracks: [BETA, GA]
   help_text:
     brief: Resume a Filestore replica instance.
     description: |
@@ -8,7 +8,7 @@
       resumed. The NFS file system of the standby instance becomes inaccessible and replication is
       resumed.
     examples: |
-      To resume a replica instance with the name ``my-replica-instance'' located in``us-central1-c''
+      To resume a replica instance with the name ``my-replica-instance'' located in ``us-central1-c''
       , run:
 
       $ {command} my-replica-instance --zone=us-central1-c
@@ -21,16 +21,18 @@
       command_level_fallthroughs:
         zone:
         - arg_name: location
-          release_tracks: [BETA]
+          release_tracks: [BETA, GA]
     params:
     - arg_name: location
-      release_tracks: [BETA]
+      release_tracks: [BETA, GA]
       help_text: |
         Location of the Filestore instance to resume.
 
   request:
     BETA:
       api_version: v1beta1
+    GA:
+      api_version: v1
     collection: file.projects.locations.instances
     method: resumeReplica
 

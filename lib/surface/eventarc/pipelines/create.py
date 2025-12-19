@@ -114,7 +114,7 @@ class Create(base.CreateCommand):
     flags.AddInputPayloadFormatArgs(parser)
     flags.AddMediationsArg(parser)
     flags.AddLoggingConfigArg(parser, 'The logging config of the pipeline.')
-    flags.AddRetryPolicyArgs(parser)
+    flags.AddPipelineRetryPolicyArgs(parser)
     flags.AddCryptoKeyArg(parser, with_clear=False, hidden=False)
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)

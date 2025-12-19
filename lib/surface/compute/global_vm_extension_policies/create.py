@@ -37,6 +37,7 @@ class Create(base.CreateCommand):
         --config=extension1="config1",extension2="config2" \
         --inclusion-labels=env=prod \
         --inclusion-labels=env=preprod,workload=load-test \
+        --rollout-predefined-plan=slow_rollout \
         --priority=1000
    """,
   }
@@ -48,6 +49,7 @@ class Create(base.CreateCommand):
         parser, operation_type='create'
     )
     flags.AddExtensionPolicyArgs(parser)
+    flags.AddRolloutConflictBehavior(parser)
 
   def Run(self, args):
     r"""Run the create command.

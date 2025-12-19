@@ -88,6 +88,12 @@ REQUEST_REASON: flags.FlagHolder[Optional[str]] = flags.DEFINE_string(
     'A reason for making the request intended to be recorded in audit logging.',
 )
 
+USE_GCLOUD_CONFIG = flags.DEFINE_boolean(
+    'use_gcloud_config',
+    True,
+    'If true, use gcloud config to override default flag values.',
+)
+
 API_VERSION = flags.DEFINE_string('api_version', 'v2', 'API version to use.')
 DEBUG_MODE = flags.DEFINE_boolean(
     'debug_mode', False, 'Show tracebacks on Python exceptions.'

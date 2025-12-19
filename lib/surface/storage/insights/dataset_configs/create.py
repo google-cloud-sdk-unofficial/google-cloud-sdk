@@ -84,9 +84,7 @@ class Create(base.Command):
     )
 
     flags.add_dataset_config_location_flag(parser)
-    flags.add_dataset_config_create_update_flags(
-        parser, release_track=cls.ReleaseTrack()
-    )
+    flags.add_dataset_config_create_update_flags(parser)
 
   def Run(self, args):
 

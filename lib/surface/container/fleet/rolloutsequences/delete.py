@@ -16,6 +16,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
@@ -26,7 +27,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as rolloutsequence_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
-
+from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 _EXAMPLES = """
 To delete a rollout sequence, run:
@@ -36,28 +37,35 @@ $ {command} ROLLOUTSEQUENCE
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Delete(base.DeleteCommand):
   """Delete a rollout sequence resource."""
 
+  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for the delete command."""
-    flags = rolloutsequence_flags.RolloutSequenceFlags(parser)
+    flags = rolloutsequence_flags.RolloutSequenceFlags(
+        parser, release_track=cls._release_track
+    )
     flags.AddRolloutSequenceResourceArg()
     flags.AddAsync()
 
-  def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
+  def Run(
+      self, args: parser_extensions.Namespace
+  ) -> alpha_messages.Operation | beta_messages.Operation:
     """Runs the delete command."""
     flag_parser = rolloutsequence_flags.RolloutSequenceFlagParser(
-        args, release_track=base.ReleaseTrack.ALPHA
+        args, release_track=self.ReleaseTrack()
     )
-    req = alpha_messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest()
+    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    req = (
+        fleet_client.messages.GkehubProjectsLocationsRolloutSequencesDeleteRequest()
+    )
     req.name = util.RolloutSequenceName(args)
 
-    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation = fleet_client.DeleteRolloutSequence(req)
     rolloutsequence_ref = util.RolloutSequenceRef(args)
 
@@ -70,7 +78,7 @@ class Delete(base.DeleteCommand):
       return operation
 
     operation_client = client.OperationClient(
-        release_track=base.ReleaseTrack.ALPHA
+        release_track=self.ReleaseTrack()
     )
     completed_operation = operation_client.Wait(util.OperationRef(operation))
     log.Print(
@@ -80,3 +88,10 @@ class Delete(base.DeleteCommand):
     )
 
     return completed_operation
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class DeleteAlpha(Delete):
+  """Delete a rollout sequence resource."""
+
+  _release_track = base.ReleaseTrack.ALPHA

@@ -19,7 +19,7 @@
   - BETA
   auto_generated: true
   help_text:
-    brief: Describes a DnsThreatDetector resource
+    brief: Describe a DnsThreatDetector resource
     description: Gets details of a DnsThreatDetector resource.
     examples: |-
       To get details of `DnsThreatDetector` resource `my-dns-threat-detector`, run:

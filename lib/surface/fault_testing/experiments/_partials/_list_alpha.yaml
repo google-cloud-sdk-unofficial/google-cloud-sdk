@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: list current or past experiments
+    brief: List current or past experiments
     description: |
       List current or past experiments.
     examples: |-

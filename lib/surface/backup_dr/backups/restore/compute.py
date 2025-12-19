@@ -98,6 +98,7 @@ class Compute(base.Command):
     compute_flags.AddResourcePoliciesArg(parser, False)
     compute_flags.AddKeyRevocationActionTypeArg(parser, False)
     compute_flags.AddInstanceKmsKeyArg(parser, False)
+    compute_flags.AddClearEncryptionKeyArg(parser)
 
   def _ParseResourcePolicies(self, resource_policies, project, zone):
     """Parses the resource policies flag."""
@@ -224,6 +225,10 @@ class Compute(base.Command):
       )
     if args.instance_kms_key:
       restore_config['InstanceKmsKey'] = args.instance_kms_key
+    if args.clear_encryption_key:
+      restore_config['ClearOverridesFieldMask'] = (
+          'compute_instance_restore_properties.disks.*.disk_encryption_key'
+      )
     try:
       operation = client.RestoreCompute(backup, restore_config)
     except apitools_exceptions.HttpError as e:

@@ -98,8 +98,7 @@ class Update(base.Command):
     flags.AddCloudDataLineageIntegrationUpdateFlagsToGroup(
         Update.update_type_group)
 
-    # Environment upgrade arguments
-    flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group, release_track)
+    flags.AddEnvUpgradeFlagsToGroup(Update.update_type_group)
 
     flags.AddComposer3FlagsToGroup(Update.update_type_group)
 
@@ -347,32 +346,31 @@ class Update(base.Command):
     return patch_util.ConstructPatch(**params)
 
   def _getImageVersion(self, args, env_ref, env_obj, release_track):
-    if release_track != base.ReleaseTrack.GA:
-      is_composer_3 = image_versions_command_util.IsVersionComposer3Compatible(
-          env_obj.config.softwareConfig.imageVersion
-      )
+    is_composer_3 = image_versions_command_util.IsVersionComposer3Compatible(
+        env_obj.config.softwareConfig.imageVersion
+    )
 
-      if (
-          (args.image_version or (args.airflow_version and not is_composer_3))
-          and (
-              image_versions_command_util.IsDefaultImageVersion(
-                  args.image_version
-              )
+    if (
+        (args.image_version or (args.airflow_version and not is_composer_3))
+        and (
+            image_versions_command_util.IsDefaultImageVersion(
+                args.image_version
+            )
+        )
+    ):
+      message = (
+          image_versions_command_util.BuildDefaultComposerVersionWarning(
+              args.image_version, args.airflow_version
           )
-      ):
-        message = (
-            image_versions_command_util.BuildDefaultComposerVersionWarning(
-                args.image_version, args.airflow_version
-            )
-        )
-        log.warning(message)
+      )
+      log.warning(message)
 
-      if args.airflow_version:
-        args.image_version = (
-            image_versions_command_util.ImageVersionFromAirflowVersion(
-                args.airflow_version, env_obj.config.softwareConfig.imageVersion
-            )
-        )
+    if args.airflow_version:
+      args.image_version = (
+          image_versions_command_util.ImageVersionFromAirflowVersion(
+              args.airflow_version, env_obj.config.softwareConfig.imageVersion
+          )
+      )
     # Checks validity of image_version upgrade request.
     if args.image_version:
       upgrade_validation = (

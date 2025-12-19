@@ -28,6 +28,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DataProfile(base.Command):
   """Create a Dataplex data profile scan job.
 
@@ -170,6 +171,31 @@ class DataProfile(base.Command):
             ' string from IANA time zone database. For example,'
             ' `CRON_TZ=America/New_York 1 * * * *` or `TZ=America/New_York 1 *'
             ' * * *`. This field is required for RECURRING scans.'
+        ),
+    )
+    one_time_trigger = trigger.add_group(
+        help='Data profile scan one-time trigger settings.',
+    )
+    one_time_trigger.add_argument(
+        '--one-time',
+        action='store_true',
+        default=False,
+        help=(
+            'If set, the data profile scan runs once, and auto'
+            ' deleted once the ttl_after_scan_completion expires.'
+        ),
+    )
+    one_time_trigger.add_argument(
+        '--ttl-after-scan-completion',
+        help=(
+            'The time to live for one-time scans. Default value is 24 hours,'
+            ' minimum value is 0 seconds, and maximum value is 365 days. The'
+            ' time is calculated from the data scan job completion time. If'
+            ' value is set as 0 seconds, the scan will be immediately deleted'
+            ' upon job completion, regardless of whether the job succeeded or'
+            ' failed. The value should be a number followed by a unit suffix'
+            ' "s". Example: "100s" for 100 seconds.'
+            'The argument is only valid when --one-time is set.'
         ),
     )
     async_group = parser.add_group(

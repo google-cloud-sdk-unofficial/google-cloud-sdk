@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: start a new experiment run
+    brief: Start a new experiment run
     description: |
       Start a new experiment run.
     examples: |-

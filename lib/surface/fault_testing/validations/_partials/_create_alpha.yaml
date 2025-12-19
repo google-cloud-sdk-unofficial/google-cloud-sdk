@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: create a validation
+    brief: Create a validation
     description: |
       Create a new validation.
     examples: |-

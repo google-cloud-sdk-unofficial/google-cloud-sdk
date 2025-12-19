@@ -786,6 +786,10 @@
         "schedulingPolicy": {
           "description": "Optional. The scheduling policy to use for jobs and queries of this assignee when running under the associated reservation. The scheduling policy controls how the reservation's resources are distributed. This overrides the default scheduling policy specified on the reservation. This feature is not yet generally available.",
           "$ref": "SchedulingPolicy"
+        },
+        "principal": {
+          "description": "Optional. The optional principal for this assignment. If not empty, jobs run by this principal will utilize the associated reservation. Otherwise, jobs will fall back to using the reservation assigned to the project, folder, or organization (in that order). If no reservation is assigned at any of these levels, on-demand capacity will be used. The supported formats are `principal:\/\/goog\/subject\/USER_EMAIL_ADDRESS` or `principal:\/\/iam.googleapis.com\/projects\/-\/serviceAccounts\/SA_EMAIL_ADDRESS`",
+          "type": "string"
         }
       }
     },
@@ -2644,6 +2648,11 @@
       "description": "Regional Endpoint"
     },
     {
+      "endpointUrl": "https://bigqueryreservation.europe-west4.rep.googleapis.com/",
+      "location": "europe-west4",
+      "description": "Regional Endpoint"
+    },
+    {
       "endpointUrl": "https://bigqueryreservation.europe-west6.rep.googleapis.com/",
       "location": "europe-west6",
       "description": "Regional Endpoint"
@@ -2661,6 +2670,16 @@
     {
       "endpointUrl": "https://bigqueryreservation.me-central2.rep.googleapis.com/",
       "location": "me-central2",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.northamerica-northeast1.rep.googleapis.com/",
+      "location": "northamerica-northeast1",
+      "description": "Regional Endpoint"
+    },
+    {
+      "endpointUrl": "https://bigqueryreservation.northamerica-northeast2.rep.googleapis.com/",
+      "location": "northamerica-northeast2",
       "description": "Regional Endpoint"
     },
     {

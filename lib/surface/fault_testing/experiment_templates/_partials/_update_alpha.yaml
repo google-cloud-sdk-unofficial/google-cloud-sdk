@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: update an existing experiment template.
+    brief: Update an existing experiment template.
     description: |
       Update an existing experiment template.
     examples: |-

@@ -28,6 +28,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute.images import flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -43,6 +44,7 @@ def _Args(
     supports_force_create=False,
     support_user_licenses=False,
     supports_rollout_override=False,
+    support_tags=False,
 ):
   """Set Args based on Release Track."""
   # GA Args
@@ -66,6 +68,16 @@ def _Args(
   image_utils.AddArchitectureArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
   flags.AddSourceDiskProjectFlag(parser)
+  if support_tags:
+    parser.add_argument(
+        '--resource-manager-tags',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help=(
+            'A comma-separated list of Resource Manager tags to apply to the'
+            ' image.'
+        ),
+    )
 
   # Alpha and Beta Args
   if supports_force_create:
@@ -134,6 +146,23 @@ def _Args(
   compute_flags.AddShieldedInstanceInitialStateKeyArg(parser)
 
 
+def _CreateImageParams(messages, resource_manager_tags):
+  """Creates a disk params object for resource manager tags."""
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.ImageParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
@@ -142,7 +171,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _Args(parser, messages)
+    _Args(parser, messages, support_tags=False)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   @classmethod
@@ -150,10 +179,14 @@ class Create(base.CreateCommand):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args)
+    return self._Run(args, support_tags=False)
 
   def _Run(
-      self, args, support_user_licenses=False, supports_rollout_override=False
+      self,
+      args,
+      support_user_licenses=False,
+      supports_rollout_override=False,
+      support_tags=False,
   ):
     """Returns a list of requests necessary for adding images."""
     holder = self._GetApiHolder()
@@ -174,6 +207,8 @@ class Create(base.CreateCommand):
 
     if support_user_licenses and args.IsSpecified('user_licenses'):
       image.userLicenses = args.user_licenses
+    if support_tags and args.IsSpecified('resource_manager_tags'):
+      image.params = _CreateImageParams(messages, args.resource_manager_tags)
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, True)
     if csek_keys:
       image.imageEncryptionKey = csek_utils.MaybeToMessage(
@@ -324,11 +359,12 @@ class CreateBeta(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=False,
+        support_tags=False,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True)
+    return self._Run(args, support_user_licenses=True, support_tags=False)
 
 
 @base.DefaultUniverseOnly
@@ -345,12 +381,16 @@ class CreateAlpha(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=True,
+        support_tags=True,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
     return self._Run(
-        args, support_user_licenses=True, supports_rollout_override=True
+        args,
+        support_user_licenses=True,
+        supports_rollout_override=True,
+        support_tags=True,
     )
 
 

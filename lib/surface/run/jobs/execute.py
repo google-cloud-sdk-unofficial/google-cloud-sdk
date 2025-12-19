@@ -151,10 +151,16 @@ class Execute(base.Command):
               if flags.FlagIsExplicitlySet(args, 'priority_tier')
               else 'PRIORITY_TIER_UNSPECIFIED'
           )
+          delay_execution = (
+              args.delay_execution
+              if flags.FlagIsExplicitlySet(args, 'delay_execution')
+              else False
+          )
           overrides = operations.GetExecutionOverrides(
               args.tasks,
               args.task_timeout,
               tier,
+              delay_execution,
               container_overrides,
           )
         e = operations.RunJob(
@@ -208,6 +214,7 @@ class AlphaExecute(BetaExecute):
   def Args(cls, parser):
     cls.CommonArgs(parser)
     flags.AddPriorityFlag(parser)
+    flags.AddDelayExecutionFlag(parser)
     container_args = ContainerOverridesGroup()
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

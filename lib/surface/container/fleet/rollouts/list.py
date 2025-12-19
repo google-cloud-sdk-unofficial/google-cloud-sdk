@@ -15,6 +15,7 @@
 """Command to list fleet rollouts."""
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 
@@ -28,6 +29,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet import flags as fleet_flags
 from googlecloudsdk.command_lib.container.fleet import util as fleet_util
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
+from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 
 _EXAMPLES = """
@@ -38,7 +40,7 @@ $ {command}
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class List(base.ListCommand):
   """List all fleet rollouts."""
 
@@ -54,8 +56,12 @@ class List(base.ListCommand):
 
   def Run(
       self, args: parser_extensions.Namespace
-  ) -> Generator[alpha_messages.Operation, None, None]:
+  ) -> Generator[
+      alpha_messages.Operation | beta_messages.Operation, None, None
+  ]:
     """Runs the rollout list command.
+
+    Args:
 
     Args:
       args: Flag arguments received from command line.
@@ -71,7 +77,7 @@ class List(base.ListCommand):
     )
     fleet_client = client.FleetClient(self.ReleaseTrack())
 
-    req = alpha_messages.GkehubProjectsLocationsRolloutsListRequest(
+    req = fleet_client.messages.GkehubProjectsLocationsRolloutsListRequest(
         parent=util.LocationResourceName(flag_parser.Project())
     )
     return fleet_client.ListRollouts(

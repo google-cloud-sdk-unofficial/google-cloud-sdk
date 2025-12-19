@@ -62,8 +62,9 @@ class Upgrade(features_base.UpdateCommand, mf_base.UpdateCommand):
     membership = features_base.ParseMembership(
         args, prompt=True, autoselect=True, search=True
     )
-    _, cluster_v = utils.versions_for_member(f, membership)
-
+    _, [cluster_v] = utils.extract_membership_versions_from_feature(
+        f, [membership]
+    )
     if not self._validate_versions(membership, cluster_v, new_version):
       return
     console_io.PromptContinue(

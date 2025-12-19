@@ -64,9 +64,7 @@ class Update(base.Command):
     )
 
     resource_args.add_dataset_config_resource_arg(parser, 'to update')
-    flags.add_dataset_config_create_update_flags(
-        parser, is_update=True, release_track=cls.ReleaseTrack()
-    )
+    flags.add_dataset_config_create_update_flags(parser, is_update=True)
 
   def _get_source_projects_list(self, args):
     if args.source_projects is not None:

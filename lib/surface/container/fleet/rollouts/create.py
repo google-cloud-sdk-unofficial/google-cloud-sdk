@@ -53,6 +53,8 @@ class Create(base.CreateCommand):
     flags.AddAsync()
     flags.AddRolloutTypeConfig()
     flags.AddScheduledStartTime()
+    flags.AddExcludeMembershipNames()
+    flags.AddIncludeMembershipNames()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
     """Runs the describe command."""

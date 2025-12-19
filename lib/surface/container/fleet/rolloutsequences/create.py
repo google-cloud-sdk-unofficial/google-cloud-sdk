@@ -15,6 +15,7 @@
 """Command to create a rollout sequence."""
 
 from __future__ import absolute_import
+from __future__ import annotations
 from __future__ import division
 from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container.fleet import client
@@ -25,6 +26,7 @@ from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.container.fleet.rolloutsequences import flags as rolloutsequence_flags
 from googlecloudsdk.core import log
 from googlecloudsdk.generated_clients.apis.gkehub.v1alpha import gkehub_v1alpha_messages as alpha_messages
+from googlecloudsdk.generated_clients.apis.gkehub.v1beta import gkehub_v1beta_messages as beta_messages
 
 
 _EXAMPLES = """
@@ -35,34 +37,38 @@ $ {command} ROLLOUTSEQUENCE --stage-config=path/to/config.yaml
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Create a rollout sequence resource."""
 
+  _release_track = base.ReleaseTrack.BETA
   detailed_help = {'EXAMPLES': _EXAMPLES}
 
-  @staticmethod
-  def Args(parser: parser_arguments.ArgumentInterceptor):
+  @classmethod
+  def Args(cls, parser: parser_arguments.ArgumentInterceptor):
     """Registers flags for this command."""
-    flags = rolloutsequence_flags.RolloutSequenceFlags(parser)
+    flags = rolloutsequence_flags.RolloutSequenceFlags(
+        parser, release_track=cls._release_track
+    )
     flags.AddRolloutSequenceResourceArg()
     flags.AddDisplayName()
     flags.AddLabels()
     flags.AddStageConfig()
     flags.AddAsync()
 
-  def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
+  def Run(
+      self, args: parser_extensions.Namespace
+  ) -> alpha_messages.Operation | beta_messages.Operation:
     """Runs the create command."""
     flag_parser = rolloutsequence_flags.RolloutSequenceFlagParser(
         args, release_track=self.ReleaseTrack()
     )
-
-    req = alpha_messages.GkehubProjectsLocationsRolloutSequencesCreateRequest(
+    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
+    req = fleet_client.messages.GkehubProjectsLocationsRolloutSequencesCreateRequest(
         parent=util.RolloutSequenceParentName(args),
         rolloutSequence=flag_parser.RolloutSequence(),
         rolloutSequenceId=util.RolloutSequenceId(args),
     )
-    fleet_client = client.FleetClient(release_track=self.ReleaseTrack())
     operation = fleet_client.CreateRolloutSequence(req)
     rolloutsequence_ref = util.RolloutSequenceRef(args)
 
@@ -80,3 +86,9 @@ class Create(base.CreateCommand):
     completed_operation = operation_client.Wait(util.OperationRef(operation))
     log.CreatedResource(rolloutsequence_ref, kind='Rollout sequence')
     return completed_operation
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CreateAlpha(Create):
+  """Create a rollout sequence resource."""
+  _release_track = base.ReleaseTrack.ALPHA

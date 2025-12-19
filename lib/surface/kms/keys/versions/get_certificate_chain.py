@@ -56,14 +56,21 @@ def _GetCertificateChainPem(chains, chain_type):
   elif chain_type == 'google-partition':
     return ''.join(chains.googlePartitionCerts)
   elif chain_type == 'all':
-    return ''.join(chains.caviumCerts + chains.googlePartitionCerts +
-                   chains.googleCardCerts)
+    return ''.join(
+        chains.caviumCerts
+        + chains.googlePartitionCerts
+        + chains.googleCardCerts
+    )
   raise exceptions.InvalidArgumentException(
-      '{} is not a valid chain type.'.format(chain_type))
+      'certificate_chain_type',
+      '{} is not a valid chain type.'.format(chain_type),
+  )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class GetCertificateChain(base.DescribeCommand):
   r"""Get a certificate chain for a given version.
 
@@ -93,10 +100,15 @@ class GetCertificateChain(base.DescribeCommand):
         messages
         .CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsGetRequest(
             name=version_ref.RelativeName()))
-    if (version.protectionLevel !=
-        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM):
+    hsm = messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM
+    hsm_st = (
+        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM_SINGLE_TENANT
+    )
+    if version.protectionLevel not in [hsm, hsm_st]:
       raise kms_exceptions.ArgumentError(
-          'Certificate chains are only available for HSM key versions.')
+          'Certificate chains are only available for HSM and HSM_SINGLE_TENANT '
+          'key versions.'
+      )
     if (version.state ==
         messages.CryptoKeyVersion.StateValueValuesEnum.PENDING_GENERATION):
       raise kms_exceptions.ArgumentError(

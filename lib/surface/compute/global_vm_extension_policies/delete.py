@@ -41,7 +41,7 @@ class Delete(base.DeleteCommand):
     Delete.GlobalVmExtensionPoliciesArg.AddArgument(
         parser, operation_type='delete'
     )
-    flags.AddRolloutInputArgs(parser)
+    flags.AddRolloutPlanArgs(parser)
     flags.AddRolloutRetryUUID(parser)
 
   def Run(self, args):

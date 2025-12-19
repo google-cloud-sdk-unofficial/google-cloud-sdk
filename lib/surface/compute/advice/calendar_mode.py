@@ -25,11 +25,21 @@ from googlecloudsdk.command_lib.compute.advice import flags
 from googlecloudsdk.command_lib.compute.advice import util
 
 
-DETAILED_HELP = {
-    'DESCRIPTION': """
+def detailed_help(track):
+  """Returns the detailed help for the calendar-mode command."""
+  if track != base.ReleaseTrack.GA:
+    end_time_range_gpu_example = """--end-time-range=from=2025-02-20,to=2025-03-25
+    """
+    end_time_range_tpu_example = '--end-time-range=from=2025-02-25,to=2025-06-25'
+  else:
+    end_time_range_gpu_example = ''
+    end_time_range_tpu_example = ''
+
+  return {
+      'DESCRIPTION': """
       Recommends the optimal time window and zone for Future Reservations.
     """,
-    'EXAMPLES': """
+      'EXAMPLES': """
       To request an advice for a future reservation of 8 a3-highgpu-8g VMs, run:
 
       $ {command}
@@ -38,8 +48,7 @@ DETAILED_HELP = {
         --vm-count=8
         --duration-range=min=7d,max=14d
         --start-time-range=from=2025-02-20,to=2025-03-25
-        --end-time-range=from=2025-02-20,to=2025-03-25
-
+        %s
       To request advice for a future reservation of 512 v5e TPUs, run:
 
         $ {command}
@@ -50,17 +59,17 @@ DETAILED_HELP = {
           --workload-type=BATCH
           --duration-range=min=30d,max=90d
           --start-time-range=from=2025-02-25,to=2025-06-25
-          --end-time-range=from=2025-02-25,to=2025-06-25
-    """,
-}
+          %s
+    """ % (end_time_range_gpu_example, end_time_range_tpu_example),
+  }
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class CalendarMode(base_classes.BaseCommand):
   """Recommends the optimal time window and zone for Future Reservations."""
 
-  detailed_help = DETAILED_HELP
+  detailed_help = detailed_help(base.ReleaseTrack.GA)
 
   @classmethod
   def Args(cls, parser):
@@ -68,7 +77,6 @@ class CalendarMode(base_classes.BaseCommand):
     flags.AddRegionFlag(parser)
     flags.AddLocationPolicyFlag(parser)
     flags.AddStartTimeRangeFlag(parser)
-    flags.AddEndTimeRangeFlag(parser)
     flags.AddDurationRangeFlag(parser)
     flags.AddAcceleratorPropertiesFlags(parser)
     flags.AddDeploymentTypeFlag(parser)
@@ -90,9 +98,27 @@ class CalendarMode(base_classes.BaseCommand):
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CalendarModeAlpha(CalendarMode):
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class CalendarModeBeta(CalendarMode):
   """Recommends the optimal time window and zone for Future Reservations."""
 
-  detailed_help = DETAILED_HELP
+  detailed_help = detailed_help(base.ReleaseTrack.BETA)
 
+  @classmethod
+  def Args(cls, parser):
+    """Adds arguments for the calendar-mode command to a parser."""
+    flags.AddRegionFlag(parser)
+    flags.AddLocationPolicyFlag(parser)
+    flags.AddStartTimeRangeFlag(parser)
+    flags.AddEndTimeRangeFlag(parser)
+    flags.AddDurationRangeFlag(parser)
+    flags.AddAcceleratorPropertiesFlags(parser)
+    flags.AddDeploymentTypeFlag(parser)
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class CalendarModeAlpha(CalendarModeBeta):
+  """Recommends the optimal time window and zone for Future Reservations."""
+
+  detailed_help = detailed_help(base.ReleaseTrack.ALPHA)

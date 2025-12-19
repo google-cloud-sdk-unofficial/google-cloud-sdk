@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: describe a validation
+    brief: Describe a validation
     description: |
       Describe a single validation.
     examples: |-

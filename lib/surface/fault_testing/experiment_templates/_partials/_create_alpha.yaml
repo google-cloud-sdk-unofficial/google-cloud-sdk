@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: create an experiment template
+    brief: Create an experiment template
     description: |
       Create an experiment template.
     examples: |-

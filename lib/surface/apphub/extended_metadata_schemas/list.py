@@ -24,7 +24,6 @@ from googlecloudsdk.command_lib.apphub import flags
 
 
 @base.DefaultUniverseOnly
-@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.Command):
   """List App Hub extended metadata schemas."""

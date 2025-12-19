@@ -39,6 +39,18 @@ class Detach(base.Command):
     )
 
   def Run(self, args):
+    """Detach a Cloud Functions v2 function from its existing environment.
+
+      Detach a Cloud Functions v2 function from its existing environment and
+      make it a native Cloud Run function.
+
+    Args:
+      args: The arguments of the command.
+
+    Raises:
+      FunctionsError: If the function does not exist or the Cloud Run service is
+      not found.
+    """
     client = client_v2.FunctionsClient(self.ReleaseTrack())
     function_ref = args.CONCEPTS.name.Parse()
     function_name = function_ref.RelativeName()
@@ -55,7 +67,7 @@ class Detach(base.Command):
       console_io.PromptContinue(message, default=True, cancel_on_no=True)
 
     function = client.GetFunction(function_name)
-    if not function:
+    if function is None:
       raise exceptions.FunctionsError(
           'Function [{}] does not exist.'.format(function_name)
       )
@@ -71,6 +83,11 @@ class Detach(base.Command):
 
     # After detach, the function is a native Cloud Run service.
     service = run_util.GetService(function)
+    if not service:
+      raise exceptions.FunctionsError(
+          'Failed to get the Cloud Run service for the function'
+          f' [{function_name}].'
+      )
     self._PrintSuccessMessage(function_name, service.urls)
 
   def _PrintSuccessMessage(self, function_name, urls):

@@ -33,6 +33,7 @@ import six.moves.http_client
 
 
 # TODO(b/265881192): remove Hidden label once we are ready to launch.
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class PerformStorageShrink(base.Command):
@@ -48,6 +49,9 @@ class PerformStorageShrink(base.Command):
           allowed.
     """
     base.ASYNC_FLAG.AddToParser(parser)
+    # Perform storage shrink runs for a long time, it is better to default to
+    # async mode to prevent the gcloud client from timing out.
+    base.ASYNC_FLAG.SetDefault(parser, True)
     parser.add_argument(
         'instance',
         completer=flags.InstanceCompleter,
@@ -92,26 +96,36 @@ class PerformStorageShrink(base.Command):
       return None
 
     try:
-      request = sql_messages.SqlProjectsInstancesPerformDiskShrinkRequest(
-          instance=instance_ref.instance,
-          project=instance_ref.project,
-          performDiskShrinkContext=sql_messages.PerformDiskShrinkContext(
-              targetSizeGb=int(args.storage_size / constants.BYTES_TO_GB),
-          ),
-      )
+      if args.storage_size:
+        request = sql_messages.SqlProjectsInstancesPerformDiskShrinkRequest(
+            instance=instance_ref.instance,
+            project=instance_ref.project,
+            performDiskShrinkContext=sql_messages.PerformDiskShrinkContext(
+                targetSizeGb=int(args.storage_size / constants.BYTES_TO_GB),
+            ),
+        )
+      else:
+        request = sql_messages.SqlProjectsInstancesPerformDiskShrinkRequest(
+            instance=instance_ref.instance,
+            project=instance_ref.project,
+        )
 
       result_operation = sql_client.projects_instances.PerformDiskShrink(
-          request)
+          request
+      )
 
       operation_ref = client.resource_parser.Create(
           'sql.operations',
           operation=result_operation.name,
-          project=instance_ref.project)
+          project=instance_ref.project,
+      )
 
       if args.async_:
-        return {'Name': instance_ref.instance, 'Project': instance_ref.project,
-                'OperationId': result_operation.name,
-                'Status': result_operation.status}
+        return sql_client.operations.Get(
+            sql_messages.SqlOperationsGetRequest(
+                project=operation_ref.project, operation=operation_ref.operation
+            )
+        )
 
       operations.OperationsV1Beta4.WaitForOperation(
           sql_client,

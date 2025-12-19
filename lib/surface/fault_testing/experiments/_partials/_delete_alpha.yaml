@@ -20,7 +20,7 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: delete an experiment
+    brief: Delete an experiment
     description: |
       Delete an experiment
     examples: |-

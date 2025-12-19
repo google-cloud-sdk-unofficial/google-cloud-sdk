@@ -1,4 +1,4 @@
-- release_tracks: [ALPHA]
+- release_tracks: [ALPHA, BETA]
 
   help_text:
     brief: Set the IAM policy for a worker pool.
@@ -31,6 +31,10 @@
       spec: !REF googlecloudsdk.command_lib.run.resources:workerpool
 
   ALPHA:
+    iam:
+      policy_version: 3
+      get_iam_policy_version_path: options_requestedPolicyVersion
+  BETA:
     iam:
       policy_version: 3
       get_iam_policy_version_path: options_requestedPolicyVersion

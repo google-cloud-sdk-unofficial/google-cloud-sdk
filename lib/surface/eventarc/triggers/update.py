@@ -57,6 +57,9 @@ class Update(base.UpdateCommand):
     service_account_group = parser.add_mutually_exclusive_group()
     flags.AddServiceAccountArg(service_account_group)
     flags.AddClearServiceAccountArg(service_account_group)
+
+    flags.AddTriggerRetryPolicyArgs(parser)
+
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
@@ -98,6 +101,7 @@ class Update(base.UpdateCommand):
         destination_function_location=args.IsSpecified(
             'destination_function_location'
         ),
+        max_retry_attempts=args.IsSpecified('max_retry_attempts'),
         labels=labels_update_result.needs_update,
     )
     # The type can't be updated, so it's safe to use the original trigger's
@@ -141,6 +145,7 @@ class Update(base.UpdateCommand):
         destination_message,
         None,
         None,
+        args.max_retry_attempts,
         labels_update_result.GetOrNone(),
     )
     operation = client.Patch(trigger_ref, trigger_message, update_mask)

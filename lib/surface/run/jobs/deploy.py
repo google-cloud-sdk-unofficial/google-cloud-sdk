@@ -399,3 +399,4 @@ class AlphaDeploy(BetaDeploy):
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddPriorityFlag(parser)
+    flags.AddDelayExecutionFlag(parser)

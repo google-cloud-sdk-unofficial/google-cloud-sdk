@@ -1,5 +1,5 @@
 {
-  "CLI_VERSION": "2.1.25",
+  "CLI_VERSION": "2.1.26",
   "VERSION": "1",
   "capsule": "",
   "commands": {
@@ -915,6 +915,20 @@
       "nargs": "1",
       "type": "string",
       "value": "VALUE"
+    },
+    "--use_gcloud_config": {
+      "attr": {},
+      "category": "",
+      "default": "'true'",
+      "description": "If true, use gcloud config to override default flag values.",
+      "group": "",
+      "is_global": true,
+      "is_hidden": false,
+      "is_required": false,
+      "name": "--use_gcloud_config",
+      "nargs": "0",
+      "type": "bool",
+      "value": ""
     },
     "--use_lep": {
       "attr": {},

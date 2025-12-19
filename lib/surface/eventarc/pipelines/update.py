@@ -50,7 +50,7 @@ class Update(base.UpdateCommand):
     flags.AddInputPayloadFormatArgs(parser)
     flags.AddMediationsArg(parser)
     flags.AddLoggingConfigArg(parser, 'The logging config of the pipeline.')
-    flags.AddRetryPolicyArgs(parser)
+    flags.AddPipelineRetryPolicyArgs(parser)
     flags.AddCryptoKeyArg(parser, with_clear=True, hidden=False)
     labels_util.AddUpdateLabelsFlags(parser)
 

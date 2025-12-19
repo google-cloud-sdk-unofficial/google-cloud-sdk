@@ -52,10 +52,17 @@ def _use_gcloud_value_if_exists_and_flag_is_default_value(
 
 def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
   """Processes the user configs from gcloud and sets flag values accordingly."""
+  if not flag_values.use_gcloud_config:
+    logging.info(
+        "'use_gcloud_config' is false, skipping gcloud config processing."
+    )
+    return
+
   configs = load_config()
 
   core_config = configs.get('core', {})
   billing_config = configs.get('billing', {})
+  context_aware = configs.get('context_aware', {})
   auth_config = configs.get('auth', {})
   api_endpoint_overrides = configs.get('api_endpoint_overrides', {})
 
@@ -99,6 +106,13 @@ def process_config(flag_values: flags._flagvalues.FlagValues) -> None:
       flag_name='bigquery_discovery_api_key',
       gcloud_config_section=core_config,
       gcloud_property_name='api_key',
+  )
+
+  _use_gcloud_value_if_exists_and_flag_is_default_value(
+      flag_values=flag_values,
+      flag_name='mtls',
+      gcloud_config_section=context_aware,
+      gcloud_property_name='use_client_certificate',
   )
 
   if not auth_config or not core_config:

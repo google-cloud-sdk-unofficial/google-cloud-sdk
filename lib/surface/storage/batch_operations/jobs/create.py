@@ -15,16 +15,16 @@
 """Implementation of create command for batch actions."""
 
 from googlecloudsdk.api_lib.storage import storage_batch_operations_api
-from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.command_lib.storage import flags
 from googlecloudsdk.command_lib.storage.batch_operations.jobs import resource_args
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
-class Create(base.Command):
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.GA)
+@calliope_base.DefaultUniverseOnly
+class Create(calliope_base.Command):
   """Create a new batch operation job."""
 
   detailed_help = {
@@ -34,23 +34,25 @@ class Create(base.Command):
       serverless manner.
       """,
       "EXAMPLES": """
-      To create a batch job with the name `my-job` to perform object deletion
-      on bucket `my-bucket` and the manifest file
-      `gs://my-bucket/manifest.csv` specifies the objects to be transformed:
+      The following example command creates a batch job, named `my-job`,
+      that performs object deletion on bucket `my-bucket` for objects
+      specified in the manifest file `gs://my-bucket/manifest.csv`:
 
           $ {command} my-job --bucket=my-bucket --manifest-location=gs://my-bucket/manifest.csv
           --delete-object
 
-      To create a batch job with the name `my-job` to update object metadata
-      `Content-Disposition` to `inline`, `Content-Language` to `en`, and
-      set object retention mode to `locked` on bucket `my-bucket` where you want to match
-      objects with prefixes `prefix1` or `prefix2`:
+      The following example command creates a batch job, named `my-job`,
+      that updates object metadata `Content-Disposition` to `inline`,
+      `Content-Language` to `en`, and sets object retention mode to `locked`
+      on bucket `my-bucket` for objects with prefixes `prefix1` or `prefix2`:
 
           $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
           --put-metadata=Content-Disposition=inline,Content-Language=en,Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
 
-      To create a batch job with the name `my-job` to put object event based hold on objects in bucket `my-bucket` with
-      logging config enabled for corresponding transform action and succeeded and failed action states:
+      The following example command creates a batch job, named `my-job`,
+      that puts object event based hold on objects in bucket `my-bucket`
+      with logging config enabled for corresponding transform action and
+      succeeded and failed action states:
 
           $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
           --put-metadata=Content-Disposition=inline,Content-Language=en
@@ -83,12 +85,52 @@ class Create(base.Command):
     log.status.Print("Created batch job: {}".format(job_ref.RelativeName()))
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@calliope_base.ReleaseTracks(calliope_base.ReleaseTrack.ALPHA)
 class CreateAlpha(Create):
   """Create a new batch operation job."""
+  detailed_help = {
+      "DESCRIPTION": """
+      Create a batch operation job, allowing you to perform operations
+      such as deletion, updating metadata, and more on objects in a
+      serverless manner.
+      """,
+      "EXAMPLES": """
+      The following example command creates a batch job, named `my-job`,
+      that performs object deletion on bucket `my-bucket` for objects
+      specified in the manifest file `gs://my-bucket/manifest.csv`:
+
+          $ {command} my-job --bucket=my-bucket --manifest-location=gs://my-bucket/manifest.csv
+          --delete-object
+
+      The following example command creates a batch job, named `my-job`,
+      that performs object deletion on buckets `my-bucket-1` and
+      `my-bucket-2` for all objects in them:
+
+          $ {command} my-job \
+          --bucket-list=my-bucket-1,my-bucket-2 \
+          --included-object-prefixes='' --delete-object
+
+      The following example command creates a batch job, named `my-job`,
+      that updates object metadata `Content-Disposition` to `inline`,
+      `Content-Language` to `en`, and sets object retention mode to `locked`
+      on bucket `my-bucket` for objects with prefixes `prefix1` or `prefix2`:
+
+          $ {command} my-job --bucket=my-bucket --included-object-prefixes=prefix1,prefix2
+          --put-metadata=Content-Disposition=inline,Content-Language=en,Retain-Until=2025-01-01T00:00:00Z,Retention-Mode=locked
+
+      The following example command creates a batch job, named `my-job`,
+      that puts object event based hold on objects in bucket `my-bucket`
+      with logging config enabled for corresponding transform action and
+      succeeded and failed action states:
+
+          $ {command} my-job --bucket=my-bucket --put-object-event-based-hold
+          --put-metadata=Content-Disposition=inline,Content-Language=en
+          --log-actions=transform --log-action-states=succeeded,failed
+      """,
+  }
 
   @staticmethod
   def Args(parser):
     resource_args.add_batch_job_resource_arg(parser, "to create")
-    flags.add_batch_jobs_flags(parser)
+    flags.add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.ALPHA)
     flags.add_batch_jobs_dry_run_flag(parser)

@@ -45,15 +45,19 @@
       - api_field: key
       - api_field: value
     - arg_name: excluded-networks
-      api_field: dnsThreatDetector.excludedNetworks
-      required: false
-      repeated: true
       help_text: |-
         A list of network resource names which aren't monitored by this
         DnsThreatDetector.
 
         Example:
         `projects/PROJECT_ID/global/networks/NETWORK_NAME`.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.network_security.v1alpha1_resources:projects_none_networks
+      resource_method_params:
+        dnsThreatDetector.excludedNetworks: '{__relative_name__}'
+      required: false
+      repeated: true
     - arg_name: provider
       api_field: dnsThreatDetector.provider
       required: true

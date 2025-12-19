@@ -873,6 +873,20 @@ class Make(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
 
+    flags.DEFINE_integer(
+        'scheduling_policy_concurrency',
+        None,
+        'Cap on target per-project concurrency of jobs running within the'
+        ' reservation.',
+        flag_values=fv,
+    )
+    flags.DEFINE_integer(
+        'scheduling_policy_max_slots',
+        None,
+        'Cap on target rate of slot consumption per-project within the'
+        ' reservation.',
+        flag_values=fv,
+    )
     self.null_marker_flag = frontend_flags.define_null_marker(flag_values=fv)
     self.null_markers_flag = frontend_flags.define_null_markers(flag_values=fv)
     self.time_zone_flag = frontend_flags.define_time_zone(flag_values=fv)
@@ -1047,6 +1061,8 @@ class Make(bigquery_command.BigqueryCmd):
             max_slots=self.max_slots,
             scaling_mode=self.scaling_mode,
             reservation_group_name=self.reservation_group_name,
+            scheduling_policy_concurrency=self.scheduling_policy_concurrency,
+            scheduling_policy_max_slots=self.scheduling_policy_max_slots,
         )
       except BaseException as e:
         raise bq_error.BigqueryError(
@@ -1095,6 +1111,8 @@ class Make(bigquery_command.BigqueryCmd):
             priority=self.priority,
             assignee_type=self.assignee_type,
             assignee_id=self.assignee_id,
+            scheduling_policy_max_slots=self.scheduling_policy_max_slots,
+            scheduling_policy_concurrency=self.scheduling_policy_concurrency,
         )
         reference = bq_client_utils.GetReservationAssignmentReference(
             id_fallbacks=client, path=object_info['name']

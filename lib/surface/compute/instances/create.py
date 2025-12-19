@@ -124,6 +124,7 @@ def _CommonArgs(
     support_skip_guest_os_shutdown=False,
     support_preemption_notice_duration=False,
     support_enable_vpc_scoped_dns=False,
+    support_service_class_id=False,
     support_workload_identity_config=False,
 ):
   """Register parser args common to all tracks."""
@@ -154,6 +155,7 @@ def _CommonArgs(
       support_ipv6_only=support_ipv6_only,
       support_igmp_query=support_igmp_query,
       support_enable_vpc_scoped_dns=support_enable_vpc_scoped_dns,
+      support_service_class_id=support_service_class_id,
   )
   instances_flags.AddAcceleratorArgs(parser)
   instances_flags.AddMachineTypeArgs(parser)
@@ -335,6 +337,7 @@ class Create(base.CreateCommand):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_service_class_id = False
   _support_workload_identity_config = False
 
   @classmethod
@@ -366,6 +369,7 @@ class Create(base.CreateCommand):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_service_class_id=cls._support_service_class_id,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
         instances_flags.MakeSourceInstanceTemplateArg()
@@ -460,6 +464,7 @@ class Create(base.CreateCommand):
         support_ipv6_assignment=self._support_ipv6_assignment,
         support_internal_ipv6_reservation=self._support_internal_ipv6_reservation,
         support_enable_vpc_scoped_dns=self._support_enable_vpc_scoped_dns,
+        support_service_class_id=self._support_service_class_id,
     )
 
     confidential_vm_type = instance_utils.GetConfidentialVmType(
@@ -868,6 +873,7 @@ class CreateBeta(Create):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
   _support_enable_vpc_scoped_dns = False
+  _support_service_class_id = False
   _support_workload_identity_config = False
 
   def GetSourceMachineImage(self, args, resources):
@@ -915,6 +921,7 @@ class CreateBeta(Create):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_service_class_id=cls._support_service_class_id,
         support_workload_identity_config=cls._support_workload_identity_config,
     )
     cls.SOURCE_INSTANCE_TEMPLATE = (
@@ -996,6 +1003,7 @@ class CreateAlpha(CreateBeta):
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
   _support_enable_vpc_scoped_dns = True
+  _support_service_class_id = True
   _support_workload_identity_config = True
 
   @classmethod
@@ -1031,6 +1039,7 @@ class CreateAlpha(CreateBeta):
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
         support_enable_vpc_scoped_dns=cls._support_enable_vpc_scoped_dns,
+        support_service_class_id=cls._support_service_class_id,
         support_workload_identity_config=cls._support_workload_identity_config,
     )
 

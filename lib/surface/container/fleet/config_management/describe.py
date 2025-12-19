@@ -15,6 +15,7 @@
 """The command to view the Config Management Feature."""
 
 import copy
+import textwrap
 
 from googlecloudsdk.api_lib.container.fleet import transforms
 from googlecloudsdk.api_lib.container.fleet import util
@@ -88,6 +89,21 @@ memberships, run:
 
   $ {command} --view=list --format=yaml --memberships=example-membership-1,example-membership-2
             """,
+            'config': textwrap.dedent(
+                # TODO(b/461540636): Need newline at end of example to ensure
+                # formatting of subsequent choices.
+                """\
+                Membership configuration in a format that is passable to the
+                `--config` flag on the `update` command. Note that the
+                configuration includes any deprecated fields that are set.
+                Errors if `--memberships` does not specify exactly one
+                membership.
+
+                To describe the configuration for a given membership, run:
+
+                  $ {command} --view=config --memberships=example-membership-1
+                """
+            ),
         },
         default='full',
         required=True,
@@ -161,14 +177,44 @@ Config Sync repo, and print its values in a table, run:
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException('{message}')
   def Run(self, args):
+    # Defensive programming to protect against command instance reuse in tests.
+    self.parser.display_info.AddFormat('default')
     self.args = args
     self.enforce_flag_combinations(args)
+    # Feature must exist for any invocation of this command.
     feature = self.GetFeature()
-    if args.memberships:
-      # Verify the specified Memberships exist to distinguish them from
-      # Memberships that have no specs in error messages.
-      memberships = features_base.ParseMembershipsPlural(args, search=True)
+    memberships = []
+    if args.memberships or args.view == 'config':
+      memberships = features_base.ParseMembershipsPlural(
+          args,
+          prompt=True,
+          # Verify the specified Memberships exist to distinguish them from
+          # Memberships that have no specs in error messages.
+          # Because search raises an internal error if the Membership location
+          # is unreachable, the command does not need to log the Feature's
+          # unreachable field.
+          search=True,
+      )
       self.filter_feature_for_memberships(feature, memberships)
+    if args.view == 'config':
+      if len(memberships) != 1:
+        raise exceptions.Error(
+            'Specify exactly one membership when --view=config.'
+        )
+      target_membership = memberships[0]
+      # Call v2 API to prevent v1 vs. v2 misalignment with --config on update.
+      membership_feature = self.GetMembershipFeature(target_membership)
+      # Unlikely given Membership path exists in Feature.
+      # Defensive programming for readable error msg and because update command
+      # does not accept empty config in the case of None.
+      if (not membership_feature.spec or
+          not membership_feature.spec.configmanagement):
+        raise exceptions.Error(
+            'MembershipFeature'
+            f" '{self.MembershipFeatureResourceName(target_membership)}'"
+            ' missing expected configuration.'
+        )
+      return membership_feature.spec.configmanagement
     if args.view == 'list':
       # Limit transforms to --view=list for simplicity; relax if necessary.
       self.parser.display_info.AddTransforms(transforms.get_transforms(

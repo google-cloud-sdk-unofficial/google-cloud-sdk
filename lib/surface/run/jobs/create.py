@@ -271,6 +271,7 @@ class AlphaCreate(BetaCreate):
     cls.CommonArgs(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddPriorityFlag(parser)
+    flags.AddDelayExecutionFlag(parser)
     container_args = ContainerArgGroup(release_track=base.ReleaseTrack.ALPHA)
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

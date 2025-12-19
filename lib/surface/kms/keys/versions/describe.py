@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import files
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   r"""Get metadata for a given version.
 
@@ -71,10 +72,15 @@ class Describe(base.DescribeCommand):
 
     # Raise exception if --attestation-file is provided for software
     # key versions.
-    if (args.attestation_file and version.protectionLevel !=
-        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM):
+    hsm = messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM
+    hsm_st = (
+        messages.CryptoKeyVersion.ProtectionLevelValueValuesEnum.HSM_SINGLE_TENANT
+    )
+    if version.protectionLevel not in [hsm, hsm_st] and args.attestation_file:
       raise kms_exceptions.ArgumentError(
-          'Attestations are only available for HSM key versions.')
+          'Attestations are only available for HSM or HSM_SINGLE_TENANT key '
+          'versions.'
+      )
 
     if (args.attestation_file and version.state ==
         messages.CryptoKeyVersion.StateValueValuesEnum.PENDING_GENERATION):
