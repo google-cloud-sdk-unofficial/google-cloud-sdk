@@ -32,6 +32,8 @@ from googlecloudsdk import gcloud_main
 
 _CLI = gcloud_main.CreateCLI([])
 
+REMOVED_COMPONENTS = frozenset(['powershell'])
+
 
 def ParseArgs():
   """Parse args for the installer, so interactive prompts can be avoided."""
@@ -246,7 +248,8 @@ def Install(
     to_install.extend(installed_components)
 
   if additional_components:
-    to_install.extend(additional_components)
+    to_install.extend(
+        [c for c in additional_components if c not in REMOVED_COMPONENTS])
 
   InstallOrUpdateComponents(to_install, compile_python, update=update)
 

@@ -33,6 +33,7 @@ from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.resource import resource_printer
 
 
+@base.DefaultUniverseOnly
 class Revoke(base.Command):
   """Revoke access credentials for an account.
 
@@ -110,7 +111,7 @@ class Revoke(base.Command):
       # handled the same way service account credentials are handled.
       try:
         creds = c_store.Load(
-            account, prevent_refresh=True, use_google_auth=True)
+            account, prevent_refresh=True)
       except creds_exceptions.Error:
         # Ignore all errors. These will be properly handled in the subsequent
         # Revoke call.

@@ -81,6 +81,7 @@ auto_flags = [
     'enableLustreMultiNic',
     'autopilotGeneralProfile',
     'disableMultiNicLustre',
+    'maintenancedisruptionbudget',
 ]
 # LINT.ThenChange()
 
@@ -113,6 +114,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableConfidentialNodesFlag(parser)
   flags.AddEnableLustreCSIDriverFlag(parser, hidden=False)
   flags.AddEnableRayOperatorFlag(parser, hidden=False)
+  flags.AddEnableSlurmOperatorFlag(parser)
   flags.AddEnableRayClusterMonitoring(parser, hidden=False)
   flags.AddEnableRayClusterLogging(parser, hidden=False)
   flags.AddInsecureRBACBindingFlags(parser, hidden=False)

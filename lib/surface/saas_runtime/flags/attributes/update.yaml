@@ -1,0 +1,51 @@
+- release_tracks:
+  - ALPHA
+  hidden: true
+  help_text:
+    brief: Update Flag Attribute
+    description: Update a Flag Attribute.
+    examples: |-
+      To update Flag Attribute, run:
+
+          $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Flag Attribute ID. Flag Attribute ID. Google Cloud resource name (full URI of the resource) following the standard naming scheme:
+
+          "projects/{project}/locations/{location}/flagAttributes/{flag_attribute_id}"
+      is_positional: true
+      request_id_field: flagAttributeId
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_attribute
+      required: true
+
+    - arg_name: labels
+      api_field: flagAttribute.labels
+      clearable: true
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+      spec:
+      - api_field: key
+      - api_field: value
+
+    - arg_name: annotations
+      api_field: flagAttribute.annotations
+      clearable: true
+      required: false
+      repeated: true
+      help_text: |-
+        Annotations is an unstructured key-value map stored with a resource that
+        may be set by external tools to store and retrieve arbitrary metadata.
+        They are not queryable and should be preserved when modifying objects.
+      spec:
+      - api_field: key
+      - api_field: value
+
+  request:
+    api_version: v1beta1
+    collection:
+    - saasservicemgmt.projects.locations.flagAttributes
+  update:
+    read_modify_update: true

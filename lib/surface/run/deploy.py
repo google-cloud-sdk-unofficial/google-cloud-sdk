@@ -865,6 +865,8 @@ class Deploy(base.Command):
     pack = None
     source = None
     operation_message = 'Deploying container to'
+    if is_no_build_from_source:
+      operation_message = 'Deploying sources to'
     repo_to_create = None
     is_function = False
     base_image = None

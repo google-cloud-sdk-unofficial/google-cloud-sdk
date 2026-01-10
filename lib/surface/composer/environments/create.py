@@ -68,9 +68,11 @@ def _CommonArgs(parser, support_max_pods_per_node, release_track):
       'be created. For example `--zone=us-central1-a`.')
   parser.add_argument(
       '--machine-type',
-      help='The Compute Engine machine type '
-      '(https://cloud.google.com/compute/docs/machine-types) to use for '
-      'nodes. For example `--machine-type=n1-standard-1`.')
+      help="""\
+      The Compute Engine
+      link:https://cloud.google.com/compute/docs/machine-types[machine type]
+      to use for nodes.
+      For example `--machine-type=n1-standard-1`.""")
   parser.add_argument(
       '--disk-size',
       type=arg_parsers.BinarySize(

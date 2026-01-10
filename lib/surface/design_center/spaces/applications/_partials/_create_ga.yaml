@@ -392,6 +392,17 @@
                     The kubernetes service account that is created within the namespace
                     provided above.
                     Example: default or node-sa
+                - arg_name: gke-deployment-target-kubernetes-service-account-creation
+                  api_field: application.deploymentTarget.gkeDeploymentTarget.kubernetesServiceAccountCreation
+                  action: store_true
+                  required: false
+                  type: bool
+                  help_text: |-
+                    Whether to create the provided KSA.
+                    If true, the KSA will be created in the namespace provided above.
+                    If false, the KSA is expected to already exist in the namespace provided
+                    above.
+                  default: null
   request:
     api_version: v1
     collection:

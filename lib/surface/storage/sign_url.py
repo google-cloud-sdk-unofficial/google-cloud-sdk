@@ -294,7 +294,7 @@ class SignUrl(base.Command):
       client_id = impersonated_account
     else:
       try:
-        creds = c_store.Load(prevent_refresh=True, use_google_auth=True)
+        creds = c_store.Load(prevent_refresh=True)
         if c_creds.IsServiceAccountCredentials(creds):
           try:
             client_id, key = sign_url_util.get_signing_information_from_json(

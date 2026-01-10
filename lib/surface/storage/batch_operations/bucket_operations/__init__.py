@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2024 Google LLC. All Rights Reserved.
+# Copyright 2025 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,22 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Cloud Storage management hubs commands."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+"""The command group for storage batch-operations bucket-operations."""
 
 from googlecloudsdk.calliope import base
 
 
-@base.Deprecate(is_removed=False, warning='This command group is deprecated. '
-                'Use `gcloud alpha storage intelligence-configs` command group '
-                'instead.')
-# TODO: b/369949089 - Remove default universe flag after checking the
-# availability of management hub in different universes.
-@base.DefaultUniverseOnly
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ManagementHub(base.Group):
-  """Manage Cloud Storage Management Hub."""
+@base.DefaultUniverseOnly
+class BucketOperations(base.Group):
+  """Manage Cloud Storage batch operations bucket operations."""

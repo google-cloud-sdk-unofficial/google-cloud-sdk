@@ -38,7 +38,7 @@ CHECKSUM_VERIFICATION_FAILURE_MESSAGE = (
 )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Access(base.DescribeCommand):
   # pylint: disable=line-too-long

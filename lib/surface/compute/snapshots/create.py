@@ -23,8 +23,10 @@ from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.snapshots import flags as snap_flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -32,6 +34,23 @@ from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+
+
+def _CreateSnapshotParams(messages, resource_manager_tags):
+  """Creates a snapshot params object for resource manager tags."""
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.SnapshotParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
 
 
 def _GAArgs(parser):
@@ -78,6 +97,15 @@ def _AlphaArgs(parser):
   snap_flags.AddScopeArg(parser)
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'snapshot', region_fallthrough=True
+  )
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help=(
+          'A comma-separated list of Resource Manager tags to apply to the'
+          ' snapshot.'
+      ),
   )
 
 
@@ -209,6 +237,13 @@ class Create(base.CreateCommand):
 
     if support_max_retention_days and args.IsSpecified('max_retention_days'):
       snapshot_message.maxRetentionDays = int(args.max_retention_days)
+
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.IsSpecified(
+        'resource_manager_tags'
+    ):
+      snapshot_message.params = _CreateSnapshotParams(
+          messages, args.resource_manager_tags
+      )
 
     if support_scope_arg and args.region:
       request = messages.ComputeRegionSnapshotsInsertRequest(

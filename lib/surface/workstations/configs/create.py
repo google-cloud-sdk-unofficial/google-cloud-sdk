@@ -90,10 +90,7 @@ class Create(base.CreateCommand):
     workstations_flags.AddShieldedVtpm(parser)
     workstations_flags.AddStartupScriptUri(parser)
     workstations_flags.AddVmTags(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.GA:
-      workstations_flags.AddNoPersistentStorageOrPd(parser)
-    else:
-      workstations_flags.AddNoPersistentStorageOrPdOrDisk(parser)
+    workstations_flags.AddNoPersistentStorageOrPdOrDisk(parser)
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddAllowUnauthenticatedCorsPreflightRequestsFlag(
           parser

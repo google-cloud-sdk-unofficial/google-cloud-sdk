@@ -105,14 +105,14 @@ class Resume(base.UpdateCommand):
       completed_operation = utils.resume_rollout_sync(
           flag_parser.ScheduleOffset(), False
       )
-      core.log.Print(
+      core.log.status.Print(
           'Resumed Fleet rollout [{}].'.format(rollout_ref.SelfLink())
       )
     else:
       completed_operation = utils.resume_rollout_sync(
           flag_parser.ScheduleOffset(), flag_parser.ValidateOnly()
       )
-      core.log.Print(
+      core.log.status.Print(
           'Resumed Fleet rollout [{}].'.format(rollout_ref.SelfLink())
       )
 

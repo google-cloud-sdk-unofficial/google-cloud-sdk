@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.secrets import util as secrets_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Set(base.UpdateCommand):
   r"""Set a secret's replication.
 

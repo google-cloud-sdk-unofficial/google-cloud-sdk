@@ -136,6 +136,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True
     )
+    flags.AddNodeDrainSettingsFlag(group)
     flags.AddEnableLustreMultiRailFlag(group, for_node_pool=True, hidden=True)
 
   def ParseUpdateNodePoolOptions(self, args):
@@ -192,6 +193,9 @@ class Update(base.UpdateCommand):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        node_drain_grace_period=args.node_drain_grace_period_seconds,
+        node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
+        respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
 
@@ -339,6 +343,7 @@ class UpdateBeta(Update):
     flags.AddDiskSizeFlag(node_config_group)
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
+    flags.AddNodeDrainSettingsFlag(group)
 
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True
@@ -400,6 +405,9 @@ class UpdateBeta(Update):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        node_drain_grace_period=args.node_drain_grace_period_seconds,
+        node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
+        respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
     return ops
@@ -478,6 +486,7 @@ class UpdateAlpha(Update):
     flags.AddDiskSizeFlag(node_config_group)
     flags.AddBootDiskProvisionedThroughputFlag(node_config_group)
     flags.AddBootDiskProvisionedIopsFlag(node_config_group)
+    flags.AddNodeDrainSettingsFlag(group)
 
     flags.AddEnableKernelModuleSignatureEnforcementFlag(
         group, for_node_pool=True
@@ -539,6 +548,9 @@ class UpdateAlpha(Update):
         boot_disk_provisioned_iops=args.boot_disk_provisioned_iops,
         boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
         enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+        node_drain_grace_period=args.node_drain_grace_period_seconds,
+        node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
+        respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
     )
     return ops

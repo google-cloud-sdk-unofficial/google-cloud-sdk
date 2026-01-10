@@ -73,4 +73,4 @@ class CheckAutopilotCompatibility(base.ListCommand):
 
   def Epilog(self, results_were_displayed):
     if self._summary:
-      log.out.Print('\nSummary:\n' + self._summary)
+      log.status.Print('\nSummary:\n' + self._summary)

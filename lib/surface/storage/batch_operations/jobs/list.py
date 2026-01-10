@@ -101,7 +101,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     return storage_batch_operations_api.StorageBatchOperationsApi().list_batch_jobs(
-        _SBO_CLH_LOCATION_GLOBAL, args.limit, args.page_size
+        _SBO_CLH_LOCATION_GLOBAL, args.page_size
     )
 
 

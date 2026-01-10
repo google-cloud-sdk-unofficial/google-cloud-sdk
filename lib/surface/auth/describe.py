@@ -27,6 +27,7 @@ from googlecloudsdk.core.credentials import creds
 from googlecloudsdk.core.credentials import store
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
 class Describe(base.DescribeCommand):
   """Describes credentials.
@@ -48,7 +49,7 @@ class Describe(base.DescribeCommand):
         help='Name of the account to describe')
 
   def Run(self, args):
-    credential = store.Load(args.account_name, use_google_auth=True)
+    credential = store.Load(args.account_name)
     if not credential:
       raise exceptions.CredentialsNotFound(
           'The credentials for account [{0}] do not exist.'

@@ -83,12 +83,9 @@ class Update(base.UpdateCommand):
     workstations_flags.AddShieldedVtpm(parser, use_default=False)
     workstations_flags.AddStartupScriptUri(parser)
     workstations_flags.AddVmTags(parser)
-    if cls.ReleaseTrack() != base.ReleaseTrack.GA:
-      workstations_flags.AddPersistentDirectoriesOrHyperdisks(
-          parser, use_default=False
-      )
-    else:
-      workstations_flags.AddPersistentDirectories(parser, use_default=False)
+    workstations_flags.AddPersistentDirectoriesOrHyperdisks(
+        parser, use_default=False
+    )
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddDisallowUnauthenticatedCorsPreflightRequestsToggleFlag(
           parser

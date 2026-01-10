@@ -79,7 +79,8 @@ class Update(base.UpdateCommand):
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA or cls.ReleaseTrack(
+    ) == base.ReleaseTrack.BETA:
       flags.AddSrcNetworkContext(parser)
       flags.AddDestNetworkContext(parser)
 
@@ -311,7 +312,8 @@ class Update(base.UpdateCommand):
       ):
         cleared_fields.append('match.srcNetworks')
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
+    ) == base.ReleaseTrack.BETA:
       if args.IsSpecified('src_network_context'):
         if not args.src_network_context:
           src_network_context = (
@@ -387,7 +389,8 @@ class Update(base.UpdateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
+    ) == base.ReleaseTrack.BETA:
       matcher.srcNetworkContext = src_network_context
       matcher.destNetworkContext = dest_network_context
 

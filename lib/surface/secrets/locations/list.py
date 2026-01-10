@@ -58,6 +58,7 @@ class ListBeta(base.ListCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class List(base.ListCommand):
   r"""List all available locations.
 

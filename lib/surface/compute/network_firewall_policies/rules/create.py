@@ -323,7 +323,7 @@ class CreateBeta(Create):
 
   support_network_scopes = True
   support_target_type = True
-  support_network_context = False
+  support_network_context = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

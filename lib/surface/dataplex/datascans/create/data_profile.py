@@ -138,6 +138,12 @@ class DataProfile(base.Command):
             ' The table will be created if not present.'
         ),
     )
+    data_spec_arg.add_argument(
+        '--enable-catalog-publishing',
+        action='store_true',
+        help='Publish data profile results to Dataplex catalog.',
+        default=False,
+    )
     execution_spec = parser.add_group(
         help=(
             'Data profile scan execution settings.'

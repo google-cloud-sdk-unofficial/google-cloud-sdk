@@ -205,7 +205,6 @@ class AccessToken(base.Command):
     cred = c_store.Load(
         args.account,
         allow_account_impersonation=True,
-        use_google_auth=True,
         cache_only_rapt=cache_only_rapt,
     )
 
@@ -252,10 +251,7 @@ class AccessToken(base.Command):
     if should_refresh_again:
       c_store.Refresh(cred)
 
-    if c_creds.IsOauth2ClientCredentials(cred):
-      token = cred.access_token
-    else:
-      token = cred.token
+    token = cred.token
     if not token:
       raise auth_exceptions.InvalidCredentialsError(
           'No access token could be obtained from the current credentials.'

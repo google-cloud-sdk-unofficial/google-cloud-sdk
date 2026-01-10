@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 from googlecloudsdk.core.console import console_io
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Delete(base.DeleteCommand):
   r"""Delete a secret.

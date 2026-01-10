@@ -22,13 +22,14 @@ from googlecloudsdk.api_lib.dataplex import datascan
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.dataplex import resource_args
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class DataDocumentation(base.Command):
   """Create a Dataplex data documentation scan job.
@@ -89,8 +90,7 @@ class DataDocumentation(base.Command):
         help='Data documentation scan execution settings.'
     )
     trigger = execution_spec.add_group(
-        mutex=True, help='Data documentation scan scheduling and trigger'
-        ' settings.'
+        mutex=True, help='Data documentation scan trigger settings.'
     )
     trigger.add_argument(
         '--on-demand',
@@ -109,7 +109,33 @@ class DataDocumentation(base.Command):
             ' "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a valid'
             ' string from IANA time zone database. For example,'
             ' `CRON_TZ=America/New_York 1 * * * *` or `TZ=America/New_York 1 *'
-            ' * * *`. This field is required for RECURRING scans.'
+            ' * * *`. This field is required for RECURRING scans. The argument'
+            ' is only valid when --on-demand is not set.'
+        ),
+    )
+    one_time_trigger = trigger.add_group(
+        help='Data documentation scan one-time trigger settings.',
+    )
+    one_time_trigger.add_argument(
+        '--one-time',
+        action='store_true',
+        default=False,
+        help=(
+            'If set, the data documentation scan runs once, and is auto-deleted'
+            ' once the ttl_after_scan_completion expires.'
+        ),
+    )
+    one_time_trigger.add_argument(
+        '--ttl-after-scan-completion',
+        help=(
+            'The time to live for one-time scans. Default value is 24 hours,'
+            ' minimum value is 0 seconds, and maximum value is 365 days. The'
+            ' time is calculated from the data scan job completion time. If'
+            ' value is set as 0 seconds, the scan will be immediately deleted'
+            ' upon job completion, regardless of whether the job succeeded or'
+            ' failed. The value should be a number followed by a unit suffix'
+            ' "s". Example: "100s" for 100 seconds. The argument is only valid '
+            'when --one-time is set.'
         ),
     )
     async_group = parser.add_group(
@@ -143,6 +169,11 @@ class DataDocumentation(base.Command):
         )
     )
 
+    if (args.IsSpecified('ttl_after_scan_completion')
+        and not args.IsSpecified('one_time')):
+      raise exceptions.InvalidArgumentException(
+          '--ttl-after-scan-completion',
+          'can only be specified when --one-time is set.')
     if getattr(args, 'validate_only', False):
       log.status.Print('Validation completed. Skipping resource creation.')
       return

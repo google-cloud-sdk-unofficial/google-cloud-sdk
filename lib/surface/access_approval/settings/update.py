@@ -257,7 +257,7 @@ class Update(base.Command):
       update_mask.append('require_customer_visible_justification')
 
     if args.approval_policy is not None:
-      update_mask.append('approval_policy')
+      update_mask.append('customer_approval_approval_policy')
 
       approval_policy_arg = args.approval_policy
       if approval_policy_arg == 'transparency':

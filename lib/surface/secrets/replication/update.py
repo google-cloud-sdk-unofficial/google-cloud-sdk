@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.secrets import log as secrets_log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a secret replica's metadata.
 
@@ -48,13 +49,13 @@ class Update(base.UpdateCommand):
       To set the CMEK key on an automatic secret called my-secret to a specified
       KMS key, run:
 
-        ${command} my-secret
+        $ {command} my-secret
         --set-kms-key=projects/my-project/locations/global/keyRings/my-keyring/cryptoKeys/my-key
 
       To set the CMEK key on a secret called my-secret to a specified KMS key in
       a specified location in its replication, run:
 
-        ${command} my-secret
+        $ {command} my-secret
         --set-kms-key=projects/my-project/locations/us-central1/keyRings/my-keyring/cryptoKeys/my-key
         --location=us-central1
 
@@ -103,7 +104,10 @@ class Update(base.UpdateCommand):
       ).SetReplication(secret_ref, 'automatic', [], [])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
-    if secret.replication.userManaged and secret.replication.userManaged.replicas:
+    if (
+        secret.replication.userManaged
+        and secret.replication.userManaged.replicas
+    ):
       locations = []
       for replica in secret.replication.userManaged.replicas:
         if not replica.location:
@@ -129,7 +133,10 @@ class Update(base.UpdateCommand):
       ).SetReplication(secret_ref, 'automatic', [], [kms_key])
       secrets_log.Secrets().UpdatedReplication(secret_ref)
       return updated_secret
-    if secret.replication.userManaged and secret.replication.userManaged.replicas:
+    if (
+        secret.replication.userManaged
+        and secret.replication.userManaged.replicas
+    ):
       if not location:
         raise calliope_exceptions.RequiredArgumentException(
             'location', self.LOCATION_REQUIRED_MESSAGE)

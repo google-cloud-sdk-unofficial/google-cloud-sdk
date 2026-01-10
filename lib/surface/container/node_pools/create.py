@@ -237,6 +237,9 @@ def ParseCreateNodePoolOptionsBase(args):
       boot_disk_provisioned_throughput=args.boot_disk_provisioned_throughput,
       accelerator_network_profile=args.accelerator_network_profile,
       enable_kernel_module_signature_enforcement=args.enable_kernel_module_signature_enforcement,
+      node_drain_grace_period=args.node_drain_grace_period_seconds,
+      node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
+      respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
       enable_lustre_multi_nic=args.enable_lustre_multi_nic,
   )
 
@@ -309,6 +312,7 @@ class Create(base.CreateCommand):
     flags.AddEnableConfidentialStorageFlag(parser, for_node_pool=True)
     flags.AddDataCacheCountFlag(parser, for_node_pool=True)
     flags.AddAcceleratorNetworkProfileFlag(parser)
+    flags.AddNodeDrainSettingsFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -467,6 +471,7 @@ class CreateBeta(Create):
     flags.AddResourceManagerTagsCreate(parser, for_node_pool=True)
     flags.AddSecondaryBootDisksArgs(parser)
     flags.AddAcceleratorNetworkProfileFlag(parser, hidden=False)
+    flags.AddNodeDrainSettingsFlag(parser)
 
   def ParseCreateNodePoolOptions(self, args):
     ops = ParseCreateNodePoolOptionsBase(args)
@@ -670,5 +675,6 @@ class CreateAlpha(Create):
         help='Settings for attestation.')
     flags.AddEnableAttestationFlag(attestation_group, hidden=True)
     flags.AddTeePolicyFlag(attestation_group, hidden=True)
+    flags.AddNodeDrainSettingsFlag(parser)
 
 Create.detailed_help = DETAILED_HELP

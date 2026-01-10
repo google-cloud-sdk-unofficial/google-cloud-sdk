@@ -26,12 +26,12 @@ from googlecloudsdk.command_lib.bigtable import arguments
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class UpdateInstance(base.UpdateCommand):
   """Modify an existing Bigtable instance."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To update the display name for an instance, run:
 
             $ {command} my-instance-id --display-name="Updated Instance Name"
@@ -58,13 +58,22 @@ class UpdateInstance(base.UpdateCommand):
     cli = bigtable_util.GetAdminClient()
     ref = bigtable_util.GetInstanceRef(args.instance)
     msgs = bigtable_util.GetAdminMessages()
-    instance = cli.projects_instances.Get(
-        msgs.BigtableadminProjectsInstancesGetRequest(name=ref.RelativeName()))
-    instance.state = None  # must be unset when calling Update
 
-    if args.display_name:
+    instance = msgs.Instance(name=ref.RelativeName())
+    update_mask = []
+    if args.display_name is not None:
       instance.displayName = args.display_name
+      update_mask.append('display_name')
 
-    instance = cli.projects_instances.Update(instance)
+    if not update_mask:
+      log.status.Print('No updates specified.')
+      return None
+
+    req = msgs.BigtableadminProjectsInstancesPartialUpdateInstanceRequest(
+        instance=instance,
+        name=ref.RelativeName(),
+        updateMask=','.join(update_mask),
+    )
+    instance = cli.projects_instances.PartialUpdateInstance(req)
     log.UpdatedResource(instance.name, kind='instance')
     return instance

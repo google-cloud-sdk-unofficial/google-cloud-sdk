@@ -1,4 +1,4 @@
-release_tracks: [ALPHA]
+release_tracks: [ALPHA, BETA]
 help_text:
   brief: List Gemini Cloud Assist Investigations.
   description: List Gemini Cloud Assist Investigations.

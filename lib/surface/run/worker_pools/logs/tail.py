@@ -27,7 +27,7 @@ from googlecloudsdk.core.credentials import store
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Tail(base.BinaryBackedCommand):
   """Tail logs for a Cloud Run worker pool."""
 

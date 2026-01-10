@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   r"""Update a secret's metadata.
 

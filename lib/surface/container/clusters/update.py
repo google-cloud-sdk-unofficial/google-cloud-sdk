@@ -110,6 +110,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
+                    api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -169,6 +170,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.CONFIGCONNECTOR: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
+                    api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -224,6 +226,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
                     api_adapter.HIGHSCALECHECKPOINTING: _ParseAddonDisabled,
                     api_adapter.LUSTRECSIDRIVER: _ParseAddonDisabled,
                     api_adapter.RAYOPERATOR: _ParseAddonDisabled,
+                    api_adapter.SLURMOPERATOR: _ParseAddonDisabled,
                 },
                 **{k: _ParseAddonDisabled for k in api_adapter.CLOUDRUN_ADDONS}
             ),
@@ -241,8 +244,7 @@ def _AddMutuallyExclusiveArgs(mutex_group, release_track):
 {nodelocaldns}=ENABLED|DISABLED
 {gcepdcsidriver}=ENABLED|DISABLED
 {gcpfilestoredriver}=ENABLED|DISABLED
-{gcsfusecsidriver}=ENABLED|DISABLED
-""".format(
+{gcsfusecsidriver}=ENABLED|DISABLED""".format(
             hpa=api_adapter.HPA,
             ingress=api_adapter.INGRESS,
             dashboard=api_adapter.DASHBOARD,
@@ -365,6 +367,8 @@ class Update(base.UpdateCommand):
     )
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)
+    flags.AddMaintenanceDisruptionBudgetFlagGroup(
+        group, hidden=True, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
@@ -847,6 +851,22 @@ to completion."""
         op_ref = adapter.SetLoggingService(cluster_ref, args.logging_service)
       except apitools_exceptions.HttpError as error:
         raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
+    elif (args.maintenance_minor_version_disruption_interval is not None or
+          args.maintenance_patch_version_disruption_interval is not None or
+          args.clear_maintenance_minor_version_disruption_interval is not None
+          or args.clear_maintenance_patch_version_disruption_interval is not
+          None):
+      try:
+        op_ref = adapter.SetMaintenanceDisruptionBudget(
+            cluster_ref,
+            cluster.maintenancePolicy,
+            args.maintenance_minor_version_disruption_interval,
+            args.maintenance_patch_version_disruption_interval,
+            args.clear_maintenance_minor_version_disruption_interval,
+            args.clear_maintenance_patch_version_disruption_interval,
+        )
+      except apitools_exceptions.HttpError as error:
+        raise exceptions.HttpException(error, util.HTTP_ERROR_FORMAT)
     elif args.maintenance_window is not None:
       try:
         op_ref = adapter.SetDailyMaintenanceWindow(
@@ -1179,7 +1199,9 @@ class UpdateBeta(Update):
     flags.AddAutoMonitoringScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
-    flags.AddManagedOTelScopeFlags(group_logging_monitoring_config, hidden=True)
+    flags.AddManagedOTelScopeFlags(
+        group_logging_monitoring_config, hidden=False
+    )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1192,6 +1214,8 @@ class UpdateBeta(Update):
     flags.AddUpdateLabelsFlag(group)
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
+    flags.AddMaintenanceDisruptionBudgetFlagGroup(
+        group, hidden=True, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -1561,7 +1585,9 @@ class UpdateAlpha(Update):
     flags.AddAutoMonitoringScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
-    flags.AddManagedOTelScopeFlags(group_logging_monitoring_config, hidden=True)
+    flags.AddManagedOTelScopeFlags(
+        group_logging_monitoring_config, hidden=False
+    )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1576,6 +1602,8 @@ class UpdateAlpha(Update):
     flags.AddNetworkPolicyFlags(group)
     flags.AddAutoprovisioningFlags(group, hidden=False, napless=True)
     flags.AddAutoscalingProfilesFlag(group)
+    flags.AddMaintenanceDisruptionBudgetFlagGroup(
+        group, hidden=True, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)

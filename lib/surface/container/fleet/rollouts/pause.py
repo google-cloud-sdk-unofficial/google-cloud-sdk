@@ -75,6 +75,8 @@ class Pause(base.UpdateCommand):
         release_track=base.ReleaseTrack.ALPHA
     )
     completed_operation = operation_client.Wait(util.OperationRef(operation))
-    log.Print('Paused Fleet rollout [{}].'.format(rollout_ref.SelfLink()))
+    log.status.Print(
+        'Paused Fleet rollout [{}].'.format(rollout_ref.SelfLink())
+    )
 
     return completed_operation

@@ -26,7 +26,7 @@ from googlecloudsdk.core.resource import resource_projection_spec
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """Show backup configuration metadata associated with specified resources in a particular location for the project."""
   detailed_help = {

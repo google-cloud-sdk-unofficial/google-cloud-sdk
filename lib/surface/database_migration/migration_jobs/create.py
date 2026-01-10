@@ -216,6 +216,7 @@ class CreateGA(_Create, base.Command):
     mj_flags.AddDumpTypeFlag(parser)
     mj_flags.AddMigrationJobObjectsConfigFlagForCreateAndUpdate(parser)
     mj_flags.AddHeterogeneousMigrationConfigFlag(parser)
+    mj_flags.AddPostgresHomogeneousConfigFlag(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

@@ -23,6 +23,7 @@ import textwrap
 from googlecloudsdk.api_lib.service_extensions import wasm_plugin_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.service_extensions import flags
 from googlecloudsdk.command_lib.service_extensions import util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -93,6 +94,21 @@ class Create(base.CreateCommand):
             'main version.'
         ),
     )
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      kms_flag_overrides = {
+          'kms-key': '--kms-key-name',
+      }
+      kms_resource_args.AddKmsKeyResourceArg(
+          parser,
+          'WasmPlugin',
+          permission_info=(
+              "The 'Network Actions Service Agent' service account must hold"
+              " permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+          ),
+          name='--kms-key-name',
+          flag_overrides=kms_flag_overrides,
+          hidden=True,
+      )
 
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
@@ -123,6 +139,18 @@ class Create(base.CreateCommand):
         GetPluginConfigData(args),
         args.plugin_config_uri,
     )
+    kms_key_name = None
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      if args.kms_key_name is not None:
+        if kms_ref := args.CONCEPTS.kms_key_name.Parse():
+          kms_key_name = kms_ref.RelativeName()
+        else:
+          raise calliope_exceptions.InvalidArgumentException(
+              '--kms-key-name',
+              'Flag --kms-key-name must be a fully qualified resource'
+              ' name, or all of --kms-location, --kms-keyring, --kms-project'
+              ' must be specified.'
+          )
 
     op_ref = wp_client.CreateWasmPlugin(
         parent=wasm_plugin_ref.Parent().RelativeName(),
@@ -132,6 +160,7 @@ class Create(base.CreateCommand):
         log_config=log_config,
         main_version=args.main_version,
         versions=versions,
+        kms_key_name=kms_key_name,
     )
     log.status.Print(
         'Create request issued for: [{}]'.format(wasm_plugin_ref.Name())

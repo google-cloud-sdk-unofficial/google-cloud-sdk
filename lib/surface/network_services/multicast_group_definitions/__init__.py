@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*- #
 # Copyright 2024 Google LLC. All Rights Reserved.
 #
@@ -20,6 +19,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=("""Multicast Group Definition is deprecated.
+        Please use the Multicast Group Range resource instead."""),
+    error=("""Multicast Group Definition has been removed.
+        Please use the Multicast Group Range resource instead."""),
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class MulticastGroupDefinitions(base.Group):

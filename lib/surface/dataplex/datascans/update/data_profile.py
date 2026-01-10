@@ -29,6 +29,7 @@ from googlecloudsdk.core import log
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DataProfile(base.Command):
   """Update a Dataplex data profile scan job.
 
@@ -106,6 +107,12 @@ class DataProfile(base.Command):
             ' profile, regardless of the fields specified in the'
             ' `--include-field-names` flag.'
         ),
+    )
+    data_spec_arg.add_argument(
+        '--enable-catalog-publishing',
+        action='store_true',
+        help='Publish data profile results to Dataplex catalog.',
+        default=False,
     )
     execution_spec = parser.add_group(
         help='Data profile scan execution settings.'

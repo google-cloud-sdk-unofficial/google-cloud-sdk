@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
 class Create(base.CreateCommand):
   """Create a Spanner instance partition."""
@@ -67,69 +67,7 @@ class Create(base.CreateCommand):
     flags.AddCapacityArgsForInstancePartition(
         parser=parser,
         add_autoscaling_args=True,
-        autoscaling_args_hidden=True,
-        require_all_autoscaling_args=True,
-    )
-    base.ASYNC_FLAG.AddToParser(parser)
-    parser.display_info.AddCacheUpdater(flags.InstancePartitionCompleter)
-
-  def Run(self, args):
-    """This is what gets called when the user runs this command.
-
-    Args:
-      args: an argparse namespace. All the arguments that were provided to this
-        command invocation.
-
-    Returns:
-      Some value that we want to have printed later.
-    """
-    instance_partition_ref = args.CONCEPTS.instance_partition.Parse()
-    instance_ref = instance_partition_ref.Parent()
-    op = instance_partitions.Create(
-        instance_ref,
-        args.instance_partition,
-        args.config,
-        args.description,
-        nodes=args.nodes,
-        processing_units=args.processing_units,
-        autoscaling_min_nodes=args.autoscaling_min_nodes,
-        autoscaling_max_nodes=args.autoscaling_max_nodes,
-        autoscaling_min_processing_units=args.autoscaling_min_processing_units,
-        autoscaling_max_processing_units=args.autoscaling_max_processing_units,
-        autoscaling_high_priority_cpu_target=args.autoscaling_high_priority_cpu_target,
-        autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
-        autoscaling_storage_target=args.autoscaling_storage_target,
-    )
-    if args.async_:
-      return op
-    instance_partition_operations.Await(op, 'Creating instance partition')
-
-
-@base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AlphaCreate(Create):
-  """Create a Spanner instance partition with ALPHA features."""
-  __doc__ = Create.__doc__
-
-  @staticmethod
-  def Args(parser):
-    """See base class."""
-    resource_args.AddInstancePartitionResourceArg(parser, 'to create')
-    flags.Config(
-        text=(
-            'Instance configuration defines the geographic placement and'
-            ' replication used by the instance partition. Available'
-            ' configurations can be found by running "gcloud spanner'
-            ' instance-configs list"'
-        )
-    ).AddToParser(parser)
-    flags.Description(
-        text='Description of the instance partition.'
-    ).AddToParser(parser)
-    flags.AddCapacityArgsForInstancePartition(
-        parser=parser,
-        add_autoscaling_args=True,
-        autoscaling_args_hidden=True,
+        autoscaling_args_hidden=False,
         require_all_autoscaling_args=True,
     )
     base.ASYNC_FLAG.AddToParser(parser)

@@ -36,8 +36,7 @@ def _Run(args):
   do_impersonation = args.IsSpecified('impersonate_service_account')
   cred = c_store.Load(
       args.account,
-      allow_account_impersonation=do_impersonation,
-      use_google_auth=True)
+      allow_account_impersonation=do_impersonation)
   is_impersonated_account = auth_util.IsImpersonationCredential(cred)
   if args.audiences:
     if not auth_util.ValidIdTokenCredential(cred):

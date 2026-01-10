@@ -63,13 +63,28 @@ class Copy(base.Command):
         required=True,
         help='The source repository path to copy artifacts from.',
     )
+    parser.add_argument(
+        '--continue-on-skipped-version',
+        action='store_true',
+        default=False,
+        help=(
+            'If true, the repo copy operation will continue when a'
+            ' non-transient version copy error occurs, rather than failing the'
+            ' entire copy operation. The skipped version name and error will be'
+            ' stored in the lro metadata and response.'
+        ),
+    )
 
   def Run(self, args):
     """Run the repository copy command."""
     # Call CopyRepository API.
     client = requests.GetClient()
     repo_ref = args.CONCEPTS.repository.Parse()
-    op = requests.CopyRepository(args.source_repo, repo_ref.RelativeName())
+    op = requests.CopyRepository(
+        args.source_repo,
+        repo_ref.RelativeName(),
+        args.continue_on_skipped_version,
+    )
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations'
     )
@@ -86,7 +101,7 @@ class Copy(base.Command):
 
     # Progress tracker for polling loop.
     spinner_message = 'Copying artifacts'
-    progress_info = {'copied': 0, 'total': 0}
+    progress_info = {'copied': 0, 'total': 0, 'skipped': 0}
     with progress_tracker.ProgressTracker(
         spinner_message,
         detail_message_callback=lambda: self._DetailMessage(progress_info),
@@ -125,12 +140,19 @@ class Copy(base.Command):
     """Callback to update the progress tracker message."""
     copied = progress_info['copied']
     total = progress_info['total']
+    skipped = progress_info['skipped']
 
     if total == 0:
       return ' operation metadata not yet available'
 
-    progress = copied / total * 100
-    return ' {:.1f}% copied ({} of {} versions)'.format(progress, copied, total)
+    progress = (copied + skipped) / total * 100
+    msg = ' {:.1f}% complete ({} of {} versions copied'.format(
+        progress, copied, total
+    )
+    if skipped > 0:
+      msg += ', {} skipped'.format(skipped)
+    msg += ')'
+    return msg
 
   def _PollOperation(self, poller, op_ref, progress_info):
     """Polls the operation and updates progress_info from metadata."""
@@ -151,5 +173,9 @@ class Copy(base.Command):
         progress_info['copied'] = props['versionsCopiedCount'].integer_value
       if 'totalVersionsCount' in props:
         progress_info['total'] = props['totalVersionsCount'].integer_value
+      if 'skippedVersionErrorCount' in props:
+        progress_info['skipped'] = props[
+            'skippedVersionErrorCount'
+        ].integer_value
 
     return operation

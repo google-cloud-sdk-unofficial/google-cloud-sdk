@@ -1,0 +1,80 @@
+- release_tracks:
+  - ALPHA
+  hidden: true
+  help_text:
+    brief: Create a Flag Attribute
+    description: Create a Flag Attribute
+    examples: |-
+      To create a Flag Attribute, run:
+
+        $ {command}
+  arguments:
+    params:
+    - help_text: |-
+        Flag Attribute ID. Google Cloud resource name (full URI of the resource) following the standard naming scheme:
+
+          "project/{project}/locations/{location}/flagAttributes/{flag_attribute_id}"
+      is_positional: true
+      request_id_field: flagAttributeId
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_attribute
+      required: true
+
+    - arg_name: key
+      api_field: flagAttribute.key
+      help_text: |-
+        The key of the flag attribute used in the evaluation context. It must start with a letter and contain only lowercase letters, digits or underscores. It must end with a letter or digit. It must not be a cel reserved key word, nor targetingKey.
+      is_positional: false
+      required: true
+      repeated: false
+
+    - arg_name: value-type
+      api_field: flagAttribute.valueType
+      help_text: |-
+        The type of the flag attribute's value, e.g. STRING (required).
+      is_positional: false
+      required: true
+      repeated: false
+      choices:
+      - arg_value: bool
+        enum_value: BOOLEAN
+        help_text: |-
+          The flag attribute's value is a boolean.
+      - arg_value: int
+        enum_value: INTEGER
+        help_text: |-
+          The flag attribute's value is an integer.
+      - arg_value: string
+        enum_value: STRING
+        help_text: |-
+          The flag attribute's value is a string.
+      - arg_value: double
+        enum_value: DOUBLE
+        help_text: |-
+          The flag attribute's value is a double.
+
+    - arg_name: labels
+      api_field: flagAttribute.labels
+      required: false
+      repeated: true
+      help_text: |-
+        The labels on the resource, which can be used for categorization.
+      spec:
+      - api_field: key
+      - api_field: value
+
+    - arg_name: annotations
+      api_field: flagAttribute.annotations
+      required: false
+      repeated: true
+      help_text: |-
+        Unstructured key-value map stored with a resource that may be set by
+        external tools to store and retrieve arbitrary metadata. Annotations
+        are not queryable and should be preserved when modifying objects.
+      spec:
+      - api_field: key
+      - api_field: value
+
+  request:
+    api_version: v1beta1
+    collection:
+    - saasservicemgmt.projects.locations.flagAttributes

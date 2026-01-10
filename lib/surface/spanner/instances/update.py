@@ -67,6 +67,7 @@ class Update(base.Command):
         add_asymmetric_total_cpu_target_flag=True,
         add_asymmetric_disable_autoscaling_flags=True,
         autoscaling_cpu_target_group=True,
+        add_disable_downscaling_flag=True,
     )
     flags.Edition(None, True).AddToParser(parser)
     flags.DefaultBackupScheduleType(
@@ -112,6 +113,7 @@ class Update(base.Command):
         autoscaling_total_cpu_target=args.autoscaling_total_cpu_target,
         autoscaling_storage_target=args.autoscaling_storage_target,
         asymmetric_autoscaling_options=args.asymmetric_autoscaling_option,
+        disable_downscaling=args.disable_downscaling,
         clear_asymmetric_autoscaling_options=args.clear_asymmetric_autoscaling_option,
         instance_type=instance_type,
         expire_behavior=expire_behavior,

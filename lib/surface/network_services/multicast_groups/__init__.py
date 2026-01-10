@@ -19,6 +19,13 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=("""Multicast Group is deprecated.
+        Please use the Multicast Group Range Activation resource instead."""),
+    error=("""Multicast Group has been removed.
+        Please use the Multicast Group Range Activation resource instead."""),
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class MulticastGroups(base.Group):

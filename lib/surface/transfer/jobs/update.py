@@ -70,6 +70,8 @@ def _clear_fields(args, messages, job):
       object_conditions.includePrefixes = []
     if args.clear_exclude_prefixes:
       object_conditions.excludePrefixes = []
+    if args.clear_match_glob:
+      object_conditions.matchGlob = None
     if args.clear_include_modified_before_absolute:
       object_conditions.lastModifiedBefore = None
     if args.clear_include_modified_after_absolute:

@@ -374,15 +374,19 @@ class Deploy(base.Command):
       )
     else:
       response.result()  # Wait for the operation to complete.
-      msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
-          worker_pool=worker_pool_ref.workerPoolsId
-      )
+      worker_pool_name = worker_pool_ref.workerPoolsId
+      revision_name = None
       if response.metadata and response.metadata.latest_created_revision:
-        rev = resource_name_conversion.GetNameFromFullChildName(
+        revision_name = resource_name_conversion.GetNameFromFullChildName(
             response.metadata.latest_created_revision
         )
-        msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-      pretty_print.Success(msg + ' has been deployed.')
+      pretty_print.Success(
+          messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
+              worker_pool_name, self.ReleaseTrack(),
+              args.CONCEPTS.worker_pool.Parse().locationsId,
+              revision_name,
+          )
+      )
 
 
 def _CreateBuildPack(container, release_track=base.ReleaseTrack.GA):

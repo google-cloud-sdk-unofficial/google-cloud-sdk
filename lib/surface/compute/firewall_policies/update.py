@@ -27,6 +27,7 @@ import six
 
 
 @base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine organization firewall policy.
 
@@ -35,40 +36,90 @@ class Update(base.UpdateCommand):
   """
 
   FIREWALL_POLICY_ARG = None
+  support_rollout_plan = False
 
   @classmethod
   def Args(cls, parser):
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyArgument(
-        required=True, operation='update')
+        required=True, operation='update'
+    )
     cls.FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='update')
     flags.AddArgsUpdateFirewallPolicy(parser)
+    if cls.support_rollout_plan:
+      flags.AddRolloutPlan(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, with_project=False)
+        args, holder.resources, with_project=False
+    )
     org_firewall_policy = client.OrgFirewallPolicy(
         ref=ref,
         compute_client=holder.client,
         resources=holder.resources,
-        version=six.text_type(self.ReleaseTrack()).lower())
+        version=six.text_type(self.ReleaseTrack()).lower(),
+    )
     fp_id = firewall_policies_utils.GetFirewallPolicyId(
-        org_firewall_policy, ref.Name(), organization=args.organization)
+        org_firewall_policy, ref.Name(), organization=args.organization
+    )
     existing_firewall_policy = org_firewall_policy.Describe(
-        fp_id=fp_id, only_generate_request=False)[0]
+        fp_id=fp_id, only_generate_request=False
+    )[0]
+
+    rollout_plan = None
+    if self.support_rollout_plan and args.IsSpecified('rollout_plan'):
+      rollout_plan = args.rollout_plan
+
+    rollout_operation = None
+    if rollout_plan:
+      rollout_operation = holder.client.messages.FirewallPolicyRolloutOperation(
+          rolloutInput=(
+              holder.client.messages.FirewallPolicyRolloutOperationRolloutInput(
+                  name=rollout_plan,
+              )
+          )
+      )
+
     firewall_policy = holder.client.messages.FirewallPolicy(
         description=args.description,
-        fingerprint=existing_firewall_policy.fingerprint)
+        fingerprint=existing_firewall_policy.fingerprint,
+    )
+    if self.support_rollout_plan:
+      firewall_policy.rolloutOperation = rollout_operation
 
     return org_firewall_policy.Update(
         fp_id=fp_id,
         only_generate_request=False,
-        firewall_policy=firewall_policy)
+        firewall_policy=firewall_policy,
+    )
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class UpdateBeta(Update):
+  """Update a Compute Engine organization firewall policy.
+
+  *{command}* is used to update organization firewall policies. An organization
+  firewall policy is a set of rules that controls access to various resources.
+  """
+
+  support_rollout_plan = False
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(Update):
+  """Update a Compute Engine organization firewall policy.
+
+  *{command}* is used to update organization firewall policies. An organization
+  firewall policy is a set of rules that controls access to various resources.
+  """
+
+  support_rollout_plan = True
 
 
 Update.detailed_help = {
-    'EXAMPLES':
-        """\
+    'EXAMPLES': """\
     To update an organization firewall policy with ID ``123456789" to change the
     description to ``New description", run:
 
@@ -80,5 +131,5 @@ Update.detailed_help = {
 
     To find predefined roles that contain those permissions, see the [Compute
     Engine IAM roles](https://cloud.google.com/compute/docs/access/iam).
-    """
+    """,
 }

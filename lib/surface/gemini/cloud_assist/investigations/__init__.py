@@ -21,7 +21,7 @@ from googlecloudsdk.command_lib.gemini import cloud_assist
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InvestigationsAlpha(base.Group):
   """Create and manage Gemini Cloud Assist investigations."""
 

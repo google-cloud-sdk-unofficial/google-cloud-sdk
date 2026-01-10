@@ -207,28 +207,37 @@ class Update(base.Command):
             )
         )
 
-      if args.async_:
+    if args.async_:
+      pretty_print.Success(
+          'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
+          'asynchronously.'.format(
+              worker_pool=worker_pool_ref.workerPoolsId,
+              result_message=result_message,
+          )
+      )
+    else:
+      response.result()  # Wait for the operation to complete.
+      worker_pool_name = worker_pool_ref.workerPoolsId
+
+      if creates_revision:
+        revision_name = None
+        if response.metadata and response.metadata.latest_created_revision:
+          revision_name = resource_name_conversion.GetNameFromFullChildName(
+              response.metadata.latest_created_revision
+          )
         pretty_print.Success(
-            'Worker pool [{{bold}}{worker_pool}{{reset}}] is {result_message} '
-            'asynchronously.'.format(
-                worker_pool=worker_pool_ref.workerPoolsId,
-                result_message=result_message,
+            messages_util.GetSuccessMessageForSynchronousWorkerPoolDeploy(
+                worker_pool_name,
+                self.ReleaseTrack(),
+                args.CONCEPTS.worker_pool.Parse().locationsId,
+                revision_name,
             )
         )
       else:
-        response.result()  # Wait for the operation to complete.
-        msg = 'Worker pool [{{bold}}{worker_pool}{{reset}}]'.format(
-            worker_pool=worker_pool_ref.workerPoolsId
+        pretty_print.Success(
+            'Worker pool [{{bold}}{worker_pool}{{reset}}] has been updated.'
+            .format(worker_pool=worker_pool_name)
         )
-        if response.metadata and response.metadata.latest_created_revision:
-          rev = resource_name_conversion.GetNameFromFullChildName(
-              response.metadata.latest_created_revision
-          )
-          msg += ' revision [{{bold}}{rev}{{reset}}]'.format(rev=rev)
-        if worker_pool and not creates_revision:
-          pretty_print.Success(msg + ' has been updated.')
-        else:
-          pretty_print.Success(msg + ' has been deployed.')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

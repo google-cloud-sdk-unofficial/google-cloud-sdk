@@ -85,12 +85,19 @@ class List(base.ListCommand):
     request_data = lister.ParseMultiScopeFlags(args, holder.resources)
 
     if self._include_view:
+      if args.regions:
+        request_message = client.messages.ComputeSubnetworksListRequest
+      else:
+        request_message = (
+            client.messages.ComputeSubnetworksAggregatedListRequest
+        )
+
       list_implementation = lister.MultiScopeLister(
           client=client,
           regional_service=client.apitools_client.subnetworks,
           aggregation_service=client.apitools_client.subnetworks,
           subnetwork_views_flag=self._GetSubnetworkViews(
-              args.view, client.messages.ComputeSubnetworksListRequest
+              args.view, request_message
           ),
       )
     else:

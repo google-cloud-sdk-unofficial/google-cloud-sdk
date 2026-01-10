@@ -19,10 +19,26 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+# pylint:disable=g-bad-import-order
+# pylint:disable=g-import-not-at-top
+# See b/468088880#comment2 - this hacky logic is to work around a latent bug
+# that causes `gcloud components update` invocations on macOS to crash when
+# updating from older gcloud versions (524.0.0 - 551.0.0). The code here needs
+# to be at the very top of the module.
+from googlecloudsdk.core import properties
+if not hasattr(properties, '_B_468088880_FIXED'):
+  import sys
+  if 'darwin' in sys.platform and 'components' in sys.argv and 'update' in sys.argv:  # pylint:disable=line-too-long
+    print(
+        'WARNING: Known issue encountered updating Python modules. Please run'
+        ' `gcloud components update-macos-python` to retry this step. This'
+        ' issue will be fixed upon next update to a new version.')
+    print('\nUpdate done!\n')
+    sys.exit(0)
+
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.args import common_args
-from googlecloudsdk.core import properties
 
 
 class Gcloud(base.Group):
@@ -54,32 +70,18 @@ class Gcloud(base.Group):
         hidden=True,
         action=actions.StoreProperty(properties.VALUES.core.universe_domain))
 
-    # TODO(b/459796385): Clean up hasattr check a suitable period after bug has
-    # been fixed. Due to a latent bug introduced in gcloud version 524.0.0,
-    # updates on macOS will fail when surface code in latest version references
-    # new functions/attributes not present in cached modules from previous
-    # version. In this case, when updating from any version between 524.0.0 and
-    # 546.0.0, attempting to access properties.VALUES.regional here will result
-    # in a crash.
-    if (
-        hasattr(properties.VALUES, 'regional')
-        and hasattr(properties.VALUES.regional, 'GLOBAL')
-        and hasattr(properties.VALUES.regional, 'REGIONAL')
-        and hasattr(properties.VALUES.regional, 'REGIONAL_PREFERRED')
-        and hasattr(properties.VALUES.regional, 'endpoint_mode')
-    ):
-      parser.add_argument(
-          '--force-endpoint-mode',
-          metavar='ENDPOINT_MODE',
-          choices=[
-              properties.VALUES.regional.GLOBAL,
-              properties.VALUES.regional.REGIONAL,
-              properties.VALUES.regional.REGIONAL_PREFERRED,
-          ],
-          help='Regional endpoint mode to use.',
-          hidden=True,
-          action=actions.StoreProperty(
-              properties.VALUES.regional.endpoint_mode))
+    parser.add_argument(
+        '--force-endpoint-mode',
+        metavar='ENDPOINT_MODE',
+        choices=[
+            properties.VALUES.regional.GLOBAL,
+            properties.VALUES.regional.REGIONAL,
+            properties.VALUES.regional.REGIONAL_PREFERRED,
+        ],
+        help='Regional endpoint mode to use.',
+        hidden=True,
+        action=actions.StoreProperty(
+            properties.VALUES.regional.endpoint_mode))
 
     # Ideally this would be on the alpha group (since it's alpha) but there are
     # a bunch of problems with doing that. Global flags are treated differently

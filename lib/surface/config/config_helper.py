@@ -27,6 +27,7 @@ from googlecloudsdk.core.configurations import named_configs
 from googlecloudsdk.core.credentials import store
 
 
+@base.DefaultUniverseOnly
 @base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class ConfigurationHelper(base.Command):
@@ -96,7 +97,7 @@ class ConfigurationHelper(base.Command):
         default='0s')
 
   def Run(self, args):
-    cred = store.Load(use_google_auth=True)
+    cred = store.Load()
 
     if args.force_auth_refresh:
       store.Refresh(cred)

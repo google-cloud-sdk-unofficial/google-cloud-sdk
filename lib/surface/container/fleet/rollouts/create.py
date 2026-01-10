@@ -55,6 +55,7 @@ class Create(base.CreateCommand):
     flags.AddScheduledStartTime()
     flags.AddExcludeMembershipNames()
     flags.AddIncludeMembershipNames()
+    flags.AddCustomWaves()
 
   def Run(self, args: parser_extensions.Namespace) -> alpha_messages.Operation:
     """Runs the describe command."""

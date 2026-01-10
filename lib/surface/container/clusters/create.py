@@ -242,6 +242,11 @@ def ParseCreateOptionsBase(
       addons = {api_adapter.RAYOPERATOR: True}
     else:
       addons[api_adapter.RAYOPERATOR] = True
+  if getattr(args, 'enable_slurm_operator', None):
+    if addons is None:
+      addons = {api_adapter.SLURMOPERATOR: True}
+    else:
+      addons[api_adapter.SLURMOPERATOR] = True
   if getattr(args, 'enable_lustre_csi_driver', None):
     if addons is None:
       addons = {api_adapter.LUSTRECSIDRIVER: True}
@@ -340,6 +345,12 @@ def ParseCreateOptionsBase(
       labels=get_default('labels'),
       local_nvme_ssd_block=(local_nvme_ssd_block),
       local_ssd_count=get_default('local_ssd_count'),
+      maintenance_minor_version_disruption_interval=get_default(
+          'maintenance_minor_version_disruption_interval'
+          ),
+      maintenance_patch_version_disruption_interval=get_default(
+          'maintenance_patch_version_disruption_interval'
+          ),
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
       maintenance_window_end=get_default('maintenance_window_end'),
@@ -727,6 +738,9 @@ flags_to_add = {
         'logging': flags.AddLoggingFlag,
         'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
+        'maintenancedisruptionbudget': lambda p: (
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+        ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
         ),
@@ -927,6 +941,9 @@ flags_to_add = {
         'legacyauth': flags.AddEnableLegacyAuthorizationFlag,
         'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
+        'maintenancedisruptionbudget': lambda p: (
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+        ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
         ),
@@ -1066,7 +1083,7 @@ flags_to_add = {
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
@@ -1161,6 +1178,9 @@ flags_to_add = {
         'maxnodes': flags.AddMaxNodesPerPool,
         'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
+        'maintenancedisruptionbudget': lambda p: (
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+        ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
         ),
@@ -1294,7 +1314,7 @@ flags_to_add = {
         'networkTier': flags.AddNetworkTierFlag,
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
-            p, hidden=True
+            p, hidden=False
         ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)

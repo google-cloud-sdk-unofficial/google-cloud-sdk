@@ -125,7 +125,8 @@ def _Run(args, version):
           min_scaleup_period=args.min_scaleup_period,
           idle_scaledown_period=args.idle_scaledown_period,
           initial_replica_count=args.initial_replica_count,
-          gpu_partition_size=args.gpu_partition_size)
+          gpu_partition_size=args.gpu_partition_size,
+          min_gpu_driver_version=args.min_gpu_driver_version)
     response_msg = operations_util.WaitForOpMaybe(
         operation_client, op, endpoints_util.ParseOperation(op.name))
     if response_msg is not None:

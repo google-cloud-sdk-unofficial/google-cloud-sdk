@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   r"""Describe a location.
 

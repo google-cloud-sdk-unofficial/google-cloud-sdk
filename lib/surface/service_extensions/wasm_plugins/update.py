@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.service_extensions import wasm_plugin_api
 from googlecloudsdk.api_lib.service_extensions import wasm_plugin_version_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
+from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 from googlecloudsdk.command_lib.service_extensions import flags
 from googlecloudsdk.command_lib.service_extensions import util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -125,6 +126,22 @@ class Update(base.UpdateCommand):
     # Changes the default output format.
     parser.display_info.AddFormat('yaml')
 
+    if cls.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      kms_flag_overrides = {
+          'kms-key': '--kms-key-name',
+      }
+      kms_resource_args.AddKmsKeyResourceArg(
+          parser,
+          'WasmPlugin',
+          permission_info=(
+              "The 'Network Actions Service Agent' service account must hold"
+              " permission 'Cloud KMS CryptoKey Encrypter/Decrypter'"
+          ),
+          name='--kms-key-name',
+          flag_overrides=kms_flag_overrides,
+          hidden=True,
+      )
+
   def Run(self, args):
     api_version = util.GetApiVersion(self.ReleaseTrack())
     update_wasm_plugin_and_create_version = None
@@ -200,6 +217,21 @@ class Update(base.UpdateCommand):
     if args.IsSpecified('main_version'):
       update_mask.append('mainVersionId')
 
+    kms_key_name = None
+    if self.ReleaseTrack() in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA]:
+      if args.IsSpecified('kms_key_name'):
+        update_mask.append('kmsKeyName')
+        if args.kms_key_name is not None:
+          if kms_ref := args.CONCEPTS.kms_key_name.Parse():
+            kms_key_name = kms_ref.RelativeName()
+          else:
+            raise calliope_exceptions.InvalidArgumentException(
+                '--kms-key-name',
+                'Flag --kms-key-name must be a fully qualified resource'
+                ' name, or all of --kms-location, --kms-keyring, --kms-project'
+                ' must be specified.'
+            )
+
     op_ref = wp_client.UpdateWasmPlugin(
         name=wasm_plugin_ref.RelativeName(),
         main_version=main_version,
@@ -207,6 +239,7 @@ class Update(base.UpdateCommand):
         description=args.description,
         labels=labels,
         log_config=log_config,
+        kms_key_name=kms_key_name,
     )
 
     log.status.Print(

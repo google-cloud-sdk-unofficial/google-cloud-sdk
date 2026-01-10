@@ -175,6 +175,8 @@
         Trigger a simulation for maintenance event.
       type: bool
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
+    labels:
+      api_field: cluster.labels
 
   async:
     collection: redis.projects.locations.operations

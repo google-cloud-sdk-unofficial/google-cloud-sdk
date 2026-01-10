@@ -65,7 +65,7 @@ class DockerHelper(base.Command):
       # docker credential helper protocol expects that error is printed to
       # stdout.
       try:
-        cred = c_store.Load(use_google_auth=True)
+        cred = c_store.Load()
       except creds_exceptions.NoActiveAccountException:
         log.Print('You do not currently have an active account selected. '
                   'See https://cloud.google.com/sdk/docs/authorizing for more '

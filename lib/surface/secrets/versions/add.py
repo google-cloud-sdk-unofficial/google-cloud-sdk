@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.secrets import util as secrets_util
 from googlecloudsdk.command_lib.util import crc32c
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   r"""Create a new version of an existing secret.

@@ -125,6 +125,10 @@ def _CommonArgs(parser, track):
   # Add flag for Binary Authorization Policy (2nd Gen only)
   flags.AddBinaryAuthorizationMutexGroup(parser)
 
+  # Add flags for Direct VPC (2nd Gen only)
+  if track != base.ReleaseTrack.GA:
+    flags.AddAllDirectVpcFlags(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Deploy(util.FunctionResourceCommand, base.Command):
@@ -165,9 +169,6 @@ class DeployAlpha(DeployBeta):
 
     # Flags specific to the Alpha track
     flags.AddBuildpackStackFlag(parser)
-
-    # Flags specific to the Direct VPC
-    flags.AddAllDirectVpcFlags(parser)
 
 
 DETAILED_HELP = {

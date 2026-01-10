@@ -32,7 +32,7 @@ from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   # pylint: disable=line-too-long
   r"""Create a new secret.

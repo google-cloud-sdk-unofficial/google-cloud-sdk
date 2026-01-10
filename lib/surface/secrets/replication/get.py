@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.secrets import args as secrets_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class Get(base.DescribeCommand):
   r"""Describe a secret's replication.
 

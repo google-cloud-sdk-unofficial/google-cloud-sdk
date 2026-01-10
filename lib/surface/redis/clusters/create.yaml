@@ -267,7 +267,8 @@
         It must use this format:
         projects/PROJECT_ID/locations/LOCATION/keyRings/KEY_RING/cryptoKeys/CRYPTO_KEY.
         The key must be in the same region as the cluster. Otherwise, the create operation fails.
-
+    labels:
+      api_field: cluster.labels
 
   async:
     collection: redis.projects.locations.operations
