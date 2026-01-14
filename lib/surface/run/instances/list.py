@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing Instances."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -20,7 +21,6 @@ from __future__ import unicode_literals
 from googlecloudsdk.command_lib.run import commands
 from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import flags
-from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
 from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run.printers import instance_printer
@@ -56,14 +56,11 @@ class List(commands.List):
     concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         'table('
-        '{ready_column},'
+        f'{instance_printer.status_color_format()},'
         'name:label=INSTANCE,'
         'region:label=REGION,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label="CREATED AT",'
-        'author:label="CREATED BY"):({alias})'.format(
-            ready_column=pretty_print.READY_COLUMN,
-            alias=commands.SATISFIES_PZS_ALIAS,
-        )
+        f'author:label="CREATED BY"):({commands.SATISFIES_PZS_ALIAS})'
     )
     parser.display_info.AddUriFunc(cls._GetResourceUri)
     resource_printer.RegisterFormatter(

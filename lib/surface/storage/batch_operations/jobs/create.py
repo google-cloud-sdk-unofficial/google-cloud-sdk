@@ -34,6 +34,13 @@ class Create(calliope_base.Command):
       serverless manner.
       """,
       "EXAMPLES": """
+      The following example command creates a batch job, named  `my-dry-run`,
+      that performs a dry run of object deletion on bucket `my-bucket` for
+      objects specified in the manifest file `gs://my-bucket/manifest.csv`:
+
+          $ {command} my-dry-run-job --bucket=my-bucket --manifest-location=gs://my-bucket/manifest.csv
+          --delete-object --dry-run
+
       The following example command creates a batch job, named `my-job`,
       that performs object deletion on bucket `my-bucket` for objects
       specified in the manifest file `gs://my-bucket/manifest.csv`:
@@ -95,6 +102,13 @@ class CreateAlpha(Create):
       serverless manner.
       """,
       "EXAMPLES": """
+      The following example command creates a batch job, named  `my-dry-run`,
+      that performs a dry run of object deletion on bucket `my-bucket` for
+      objects specified in the manifest file `gs://my-bucket/manifest.csv`:
+
+          $ {command} my-dry-run-job --bucket=my-bucket --manifest-location=gs://my-bucket/manifest.csv
+          --delete-object --dry-run
+
       The following example command creates a batch job, named `my-job`,
       that performs object deletion on bucket `my-bucket` for objects
       specified in the manifest file `gs://my-bucket/manifest.csv`:
@@ -133,4 +147,3 @@ class CreateAlpha(Create):
   def Args(parser):
     resource_args.add_batch_job_resource_arg(parser, "to create")
     flags.add_batch_jobs_flags(parser, track=calliope_base.ReleaseTrack.ALPHA)
-    flags.add_batch_jobs_dry_run_flag(parser)

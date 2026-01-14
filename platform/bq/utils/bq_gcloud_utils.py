@@ -161,7 +161,7 @@ def load_config() -> Dict[str, Dict[str, str]]:
 
   try:
     process = gcloud_runner.run_gcloud_command(
-        ['config', 'list', '--format=json'], stderr=subprocess.STDOUT
+        ['config', 'list', '--format=json', '--quiet'], stderr=subprocess.STDOUT
     )
     out, err = process.communicate()
   except FileNotFoundError as e:

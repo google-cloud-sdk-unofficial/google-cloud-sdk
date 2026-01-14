@@ -34,19 +34,8 @@ def _UpdateMemoryLayer(cluster_ref, args):
   Returns:
     Long running operation.
   """
-  if args.disable:
-    return memory_layers.Disable(cluster_ref)
-  else:  # args.fixed_capacity must be true due to mutually exclusive group
-    storage_size_gib = args.fixed_capacity.get('storage-size-gib')
-    max_request_units_per_second = args.fixed_capacity.get(
-        'max-request-units-per-second'
-    )
-
-    return memory_layers.Update(
-        cluster_ref,
-        storage_size_gib=storage_size_gib,
-        max_request_units_per_second=max_request_units_per_second,
-    )
+  # args.enable and args.disable are mutually exclusive group
+  return memory_layers.Update(cluster_ref, args.enable)
 
 
 @base.UniverseCompatible
@@ -56,9 +45,9 @@ class UpdateMemoryLayer(base.UpdateCommand):
 
   detailed_help = {
       'EXAMPLES': textwrap.dedent("""\
-          To enable or resize a memory layer, run:
+          To enable a memory layer, run:
 
-            $ {command} my-cluster-id --instance=my-instance-id --fixed-capacity=storage-size-gib=16,max-request-units-per-second=200000
+            $ {command} my-cluster-id --instance=my-instance-id --enable
 
           To disable a memory layer, run:
 
@@ -72,10 +61,10 @@ class UpdateMemoryLayer(base.UpdateCommand):
     """Register flags for this command."""
     arguments.AddClusterResourceArg(parser, 'of the memory layer to update')
     # We need one of these two mutually exclusive groups:
+    #   --enable
     #   --disable
-    #   --fixed-capacity
     update_group = parser.add_mutually_exclusive_group(required=True)
-    arguments.ArgAdder(update_group).AddMemoryLayerFixedCapacity()
+    arguments.ArgAdder(update_group).AddMemoryLayerEnable()
     arguments.ArgAdder(update_group).AddMemoryLayerDisable()
     arguments.ArgAdder(parser).AddAsync()
 

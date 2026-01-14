@@ -147,7 +147,10 @@ class Create(base.CreateCommand):
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
-        supports_400g=self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+        supports_400g=(
+            self.ReleaseTrack()
+            in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+        ),
         resource_manager_tags=args.resource_manager_tags,
     )
 

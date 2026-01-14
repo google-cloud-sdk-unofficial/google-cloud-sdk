@@ -24,15 +24,15 @@ from googlecloudsdk.core import properties
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class CancelRequestDelete(base.Command):
   r"""Cancel deletion request of a Compute Engine network peering.
 
-  *{command}* is used to cancel a request to delete a consensus network peering
-  connection between two networks.
+  *{command}* is used to cancel a pending request to delete a consensus peering
+  between two networks.
 
   ## EXAMPLES
-    To cancel a deletion request of a consensus peering with the name
+    To cancel a request to delete a consensus peering with the name
     'peering-name' between the network 'local-network' and the network
     'peer-network', run:
 

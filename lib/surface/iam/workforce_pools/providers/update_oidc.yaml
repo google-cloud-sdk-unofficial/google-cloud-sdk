@@ -68,8 +68,7 @@
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_web_sso_additional_scopes
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.oidc_jwks_json_path
     - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.scim_usage
-    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.attribute_sync_interval
-      hidden: true
+    - _REF_: googlecloudsdk.command_lib.iam.flags:workforce_pool_provider.clearable_attribute_sync_interval
     additional_arguments_hook: googlecloudsdk.command_lib.iam.workforce_pools.flags:AddClearableExtraAndExtendedAttributesOAuth2Client
 
   async:

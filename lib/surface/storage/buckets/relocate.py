@@ -29,8 +29,7 @@ from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 
-
-_BUCKET_RELCOCATION_WRITE_DOWNTIME_WARNING = textwrap.dedent("""
+_BUCKET_RELOCATION_WRITE_DOWNTIME_WARNING = textwrap.dedent("""
 1. This move will involve write downtime.
 2. In-flight resumable uploads not finished before the write downtime will be \
 lost.
@@ -71,7 +70,7 @@ def _prompt_user_to_confirm_the_relocation(bucket_resource, args):
   if bucket_resource.location.casefold() == args.location.casefold():
     warning_message = _BUCKET_RELOCATION_WITHOUT_WRITE_DOWNTIME_WARNING
   else:
-    warning_message = _BUCKET_RELCOCATION_WRITE_DOWNTIME_WARNING
+    warning_message = _BUCKET_RELOCATION_WRITE_DOWNTIME_WARNING
 
   log.warning(f'The bucket {args.url} is in {source_location}.')
   log.warning(warning_message)
@@ -169,6 +168,18 @@ class Relocate(base.Command):
             ' without actually performing relocation. This is helpful to'
             ' identify any issues that need to be detected asynchronously.'
         ),
+    )
+    bucket_relocate_group.add_argument(
+        '--destination-kms-key-name',
+        type=str,
+        help=textwrap.dedent("""\
+            The full resource name of the Cloud KMS key to use for encrypting
+            objects in the destination bucket. This key will be set as the
+            default bucket encryption key. The key must exist in the
+            destination location. Format:
+            projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
+        """),
+        hidden=True,
     )
 
     advance_relocate_operation_group = relocate_arguments_group.add_group(

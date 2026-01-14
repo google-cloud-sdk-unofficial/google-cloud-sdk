@@ -142,6 +142,23 @@ _COMMIT_ACTION = UpgradeAction(
     ),
 )
 
+_COMMIT_AS_GEN2_ACTION = UpgradeAction(
+    target_state='COMMIT_FUNCTION_UPGRADE_AS_GEN2_SUCCESSFUL',
+    prompt_msg=(
+        'This will complete the upgrade process for function [{}] and delete'
+        ' the 1st gen copy.\n\nThis action cannot be undone.'
+    ),
+    op_description=(
+        'Completing the upgrade and deleting the 1st gen copy for function.'
+    ),
+    success_msg=(
+        'Upgrade completed and the 1st gen copy was successfully'
+        ' deleted.\n\nYour function will continue to be available at the'
+        ' following endpoints:\n{}\nReminder, your function can now be managed'
+        ' through the Cloud Run API.'
+    ),
+)
+
 # Source: http://cs/f:UpgradeStateMachine.java
 _VALID_TRANSITION_ACTIONS = {
     'ELIGIBLE_FOR_2ND_GEN_UPGRADE': [_SETUP_CONFIG_ACTION],
@@ -157,6 +174,7 @@ _VALID_TRANSITION_ACTIONS = {
     'ABORT_FUNCTION_UPGRADE_ERROR': [_ABORT_ACTION],
     'REDIRECT_FUNCTION_UPGRADE_TRAFFIC_SUCCESSFUL': [
         _COMMIT_ACTION,
+        _COMMIT_AS_GEN2_ACTION,
         _ROLLBACK_TRAFFIC_ACTION,
         _ABORT_ACTION,
     ],
@@ -175,6 +193,8 @@ _VALID_TRANSITION_ACTIONS = {
         _ABORT_ACTION,
     ],
     'COMMIT_FUNCTION_UPGRADE_ERROR': [_COMMIT_ACTION],
+    'COMMIT_FUNCTION_UPGRADE_AS_GEN2_SUCCESSFUL': [],
+    'COMMIT_FUNCTION_UPGRADE_AS_GEN2_ERROR': [_COMMIT_AS_GEN2_ACTION],
 }  # type: dict[str, list[UpgradeAction]]
 
 
@@ -270,7 +290,7 @@ class UpgradeBeta(base.Command):
   @staticmethod
   def Args(parser):
     flags.AddFunctionResourceArg(parser, 'to upgrade')
-    flags.AddUpgradeFlags(parser)
+    flags.AddUpgradeFlags(parser, release_track=base.ReleaseTrack.BETA)
 
   def Run(self, args):
     client = client_v2.FunctionsClient(self.ReleaseTrack())
@@ -310,8 +330,12 @@ class UpgradeBeta(base.Command):
       action = _ROLLBACK_TRAFFIC_ACTION
       action_fn = client.RollbackFunctionUpgradeTraffic
     elif args.commit:
-      action = _COMMIT_ACTION
-      action_fn = client.CommitFunctionUpgrade
+      if getattr(args, 'skip_detach', False):
+        action = _COMMIT_AS_GEN2_ACTION
+        action_fn = client.CommitFunctionUpgradeAsGen2
+      else:
+        action = _COMMIT_ACTION
+        action_fn = client.CommitFunctionUpgrade
     elif args.abort:
       action = _ABORT_ACTION
       action_fn = client.AbortFunctionUpgrade
@@ -354,7 +378,12 @@ class UpgradeBeta(base.Command):
         deploy_util.ensure_pubsub_sa_has_token_creator_role()
       if trigger and trigger_types.IsAuditLogType(trigger.eventType):
         deploy_util.ensure_data_access_logs_are_enabled(trigger.eventFilters)
-      operation = action_fn(function_name, args.trigger_service_account)
+      operation = action_fn(
+          function_name,
+          trigger_service_account=args.trigger_service_account,
+          runtime=getattr(args, 'runtime', None),
+          max_instances=getattr(args, 'max_instances', None),
+      )
     else:
       operation = action_fn(function_name)
 
@@ -379,7 +408,7 @@ class UpgradeBeta(base.Command):
       log.status.Print(
           action.success_msg.format(function.upgradeInfo.serviceConfig.uri)
       )
-    elif action == _COMMIT_ACTION:
+    elif action in (_COMMIT_ACTION, _COMMIT_AS_GEN2_ACTION):
       service = run_util.GetService(function)
       urls_strings = ''.join(f'* {url}\n' for url in service.urls)
       log.status.Print(action.success_msg.format(urls_strings))
@@ -391,3 +420,8 @@ class UpgradeBeta(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpgradeAlpha(UpgradeBeta):
   """Upgrade a 1st gen Cloud Function to the Cloud Run function."""
+
+  @staticmethod
+  def Args(parser):
+    flags.AddFunctionResourceArg(parser, 'to upgrade')
+    flags.AddUpgradeFlags(parser, release_track=base.ReleaseTrack.ALPHA)

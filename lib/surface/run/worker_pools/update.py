@@ -98,8 +98,9 @@ class Update(base.Command):
     flags.AddRuntimeFlag(parser)
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddScalingFlag(
-        parser, release_track=cls.ReleaseTrack(), resource_kind='worker'
+        parser, resource_kind='worker'
     )
+    flags.AddInstancesFlag(parser)
     flags.AddVpcNetworkGroupFlagsForUpdate(parser, resource_kind='worker')
     flags.RemoveContainersFlag().AddToParser(parser)
     flags.AddAsyncFlag(parser)
@@ -247,8 +248,6 @@ class AlphaUpdate(Update):
   @classmethod
   def Args(cls, parser):
     cls.CommonArgs(parser)
-    flags.AddWorkerPoolMinInstancesFlag(parser)
-    flags.AddWorkerPoolMaxInstancesFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_parser.AddContainerFlags(
         parser, container_args, cls.ReleaseTrack()

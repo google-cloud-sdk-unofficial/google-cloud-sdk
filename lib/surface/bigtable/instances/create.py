@@ -106,6 +106,10 @@ class CreateInstance(base.CreateCommand):
           msgs.CreateInstanceRequest.ClustersValue.AdditionalProperty(
               key=cluster_id, value=cluster))
 
+    edition = None
+    if hasattr(args, 'edition') and args.edition:
+      edition = msgs.Instance.EditionValueValuesEnum(args.edition)
+
     msg = msgs.CreateInstanceRequest(
         instanceId=ref.Name(),
         parent=parent_ref.RelativeName(),
@@ -113,6 +117,7 @@ class CreateInstance(base.CreateCommand):
             displayName=args.display_name,
             type=instance_type,
             tags=self._Tags(args),
+            edition=edition,
         ),
         clusters=msgs.CreateInstanceRequest.ClustersValue(
             additionalProperties=clusters_properties
@@ -277,3 +282,8 @@ class CreateInstanceAlpha(CreateInstance):
   """Create a new Bigtable instance."""
 
   _support_tags = True
+
+  @classmethod
+  def Args(cls, parser):
+    super(CreateInstanceAlpha, cls).Args(parser)
+    arguments.ArgAdder(parser).AddInstanceEdition()

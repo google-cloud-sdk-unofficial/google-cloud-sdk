@@ -40,7 +40,7 @@ class AddBgpPeer(base.UpdateCommand):
   INSTANCE_ARG = None
 
   @classmethod
-  def _Args(cls, parser):
+  def _Args(cls, parser, support_linked_custom_hardware=False):
     cls.ROUTER_ARG = flags.RouterArgument()
     cls.ROUTER_ARG.AddArgument(parser)
     cls.INSTANCE_ARG = instance_flags.InstanceArgumentForRouter()
@@ -49,21 +49,26 @@ class AddBgpPeer(base.UpdateCommand):
     flags.AddBgpPeerArgs(parser, for_add_bgp_peer=True)
     flags.AddReplaceCustomAdvertisementArgs(parser, 'peer')
     flags.AddReplaceCustomLearnedRoutesArgs(parser)
+    if support_linked_custom_hardware:
+      flags.AddLinkedCustomHardwareArg(parser)
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, support_linked_custom_hardware=False)
 
   def _Run(
       self,
       args,
       support_bfd_mode=False,
+      support_linked_custom_hardware=False,
   ):
     """Runs the command.
 
     Args:
       args: contains arguments passed to the command
       support_bfd_mode: The flag to indicate whether bfd mode is supported.
+      support_linked_custom_hardware: The flag to indicate whether linked custom
+        hardware is supported.
 
     Returns:
       The result of patching the router adding the bgp peer with the
@@ -96,6 +101,7 @@ class AddBgpPeer(base.UpdateCommand):
         md5_authentication_key_name=md5_authentication_key_name,
         support_bfd_mode=support_bfd_mode,
         instance_ref=instance_ref,
+        support_linked_custom_hardware=support_linked_custom_hardware,
     )
 
     if router_utils.HasReplaceAdvertisementFlags(args):
@@ -190,11 +196,15 @@ class AddBgpPeerBeta(AddBgpPeer):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, support_linked_custom_hardware=False)
 
   def Run(self, args):
     """See base.UpdateCommand."""
-    return self._Run(args, support_bfd_mode=False)
+    return self._Run(
+        args,
+        support_bfd_mode=False,
+        support_linked_custom_hardware=False,
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -206,13 +216,14 @@ class AddBgpPeerAlpha(AddBgpPeerBeta):
 
   @classmethod
   def Args(cls, parser):
-    cls._Args(parser)
+    cls._Args(parser, support_linked_custom_hardware=True)
 
   def Run(self, args):
     """See base.UpdateCommand."""
     return self._Run(
         args,
         support_bfd_mode=True,
+        support_linked_custom_hardware=True,
     )
 
 
@@ -222,6 +233,7 @@ def _CreateBgpPeerMessage(
     md5_authentication_key_name,
     support_bfd_mode=False,
     instance_ref=None,
+    support_linked_custom_hardware=False,
 ):
   """Creates a BGP peer with base attributes based on flag arguments.
 
@@ -231,6 +243,8 @@ def _CreateBgpPeerMessage(
     md5_authentication_key_name: The md5 authentication key name.
     support_bfd_mode: The flag to indicate whether bfd mode is supported.
     instance_ref: An instance reference.
+    support_linked_custom_hardware: The flag to indicate whether linked custom
+      hardware is supported.
 
   Returns:
     the RouterBgpPeer
@@ -271,6 +285,8 @@ def _CreateBgpPeerMessage(
     result.exportPolicies = args.export_policies
   if args.import_policies is not None:
     result.importPolicies = args.import_policies
+  if support_linked_custom_hardware and args.linked_custom_hardware is not None:
+    result.linkedCustomHardware = args.linked_custom_hardware
 
   return result
 

@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.run import flags
 
 
 @base.UniverseCompatible
@@ -38,3 +39,8 @@ class Logs(base.Group):
 
       """,
   }
+
+  @staticmethod
+  def Args(parser):
+    """Adds --region arg."""
+    flags.AddRegionArg(parser)

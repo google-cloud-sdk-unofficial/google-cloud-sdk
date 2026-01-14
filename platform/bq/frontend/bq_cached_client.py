@@ -59,6 +59,8 @@ class Client(object):
     # Note that we need to handle possible initialization tasks
     # for the case of being loaded as a library.
     bq_utils.ProcessBigqueryrc()
+
+
     if config_logging:
       bq_logging.ConfigureLogging(bq_flags.APILOG.value)
     # Gcloud config currently gets processed twice.
@@ -92,6 +94,7 @@ class Client(object):
         'api_version',
         'quota_project_id',
         'request_reason',
+        'location',
     )
     for name in global_args:
       client_args[name] = KwdsOrFlags(name)
@@ -118,19 +121,21 @@ class Client(object):
 
   @staticmethod
   def GetCredentials(
-      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType = None,
+      credentials: bigquery_client.LegacyAndGoogleAuthCredentialsUnionType,
+      client_args: Dict[str, Any],
   ) -> bigquery_client.LegacyAndGoogleAuthCredentialsUnionType:
     """A function to lookup the credentials to use for this BQ CLI invocation.
 
     Args:
       credentials: bypass the credential lookup and use these instead.
+      client_args: the client args collected from flags, kwds and bigqueryrc.
 
     Returns:
       The credentials ot use for this BQ CLI invocation.
     """
     if credentials is not None:
       logging.info('Credentials passed in directly')
-    elif bq_auth_flags.USE_GOOGLE_AUTH.value:
+    elif client_args.get('use_google_auth', False):
       logging.info('Credentials loaded using Google Auth')
       credentials = main_credential_loader.GetCredentialsFromFlags()
     else:
@@ -161,7 +166,8 @@ class Client(object):
 
     bigquery_client_factory = Factory.GetBigqueryClientFactory()
     return bigquery_client_factory(
-        credentials=Client.GetCredentials(credentials), **client_args
+        credentials=Client.GetCredentials(credentials, client_args),
+        **client_args,
     )
 
 

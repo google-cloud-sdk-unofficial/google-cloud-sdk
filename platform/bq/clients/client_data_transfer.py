@@ -602,6 +602,7 @@ def create_transfer_config(
     notification_pubsub_topic: Optional[str] = None,
     schedule_args: Optional[TransferScheduleArgs] = None,
     destination_kms_key: Optional[str] = None,
+    managed_table_type: Optional[str] = None,
     location: Optional[str] = None,
 ):
   """Create a transfer config corresponding to TransferConfigReference.
@@ -626,6 +627,7 @@ def create_transfer_config(
       sent after transfer runs associated with this transfer config finish.
     schedule_args: Optional parameters to customize data transfer schedule.
     destination_kms_key: Optional KMS key for encryption.
+    managed_table_type: Optional destination table type for the transfer config.
     location: The location where the new transfer config will run.
 
   Raises:
@@ -683,6 +685,9 @@ def create_transfer_config(
     create_items['encryption_configuration'] = {
         'kms_key_name': {'value': destination_kms_key}
     }
+
+  if managed_table_type:
+    create_items['managed_table_type'] = managed_table_type
 
   new_transfer_config = (
       transfer_client.projects()

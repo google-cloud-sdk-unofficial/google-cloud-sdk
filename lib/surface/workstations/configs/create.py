@@ -76,10 +76,12 @@ class Create(base.CreateCommand):
     workstations_flags.AddEphemeralDirectory(parser)
     workstations_flags.AddGrantWorkstationAdminRoleOnCreate(parser)
     workstations_flags.AddIdleTimeoutFlag(parser)
+    workstations_flags.AddInstanceMetadata(parser)
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddMachineTypeFlag(parser)
     workstations_flags.AddMaxUsableWorkstationsCount(parser)
     workstations_flags.AddNetworkTags(parser)
+    workstations_flags.AddNoPersistentStorageOrPdOrDisk(parser)
     workstations_flags.AddPoolSize(parser)
     workstations_flags.AddReplicaZones(parser)
     workstations_flags.AddRunningTimeoutFlag(parser)
@@ -90,7 +92,6 @@ class Create(base.CreateCommand):
     workstations_flags.AddShieldedVtpm(parser)
     workstations_flags.AddStartupScriptUri(parser)
     workstations_flags.AddVmTags(parser)
-    workstations_flags.AddNoPersistentStorageOrPdOrDisk(parser)
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddAllowUnauthenticatedCorsPreflightRequestsFlag(
           parser
@@ -98,7 +99,6 @@ class Create(base.CreateCommand):
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddDisableLocalhostReplacementFlag(parser)
       workstations_flags.AddReservationAffinity(parser)
-      workstations_flags.AddInstanceMetadata(parser)
 
   def Collection(self):
     return (

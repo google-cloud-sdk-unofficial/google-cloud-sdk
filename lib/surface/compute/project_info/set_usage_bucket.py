@@ -26,6 +26,20 @@ from googlecloudsdk.core import resources
 import six
 
 
+@base.Deprecate(
+    is_removed=False,
+    warning=(
+        'This command is deprecated. '
+        'Please onboard with BigQuery Export instead. '
+        'https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery'
+    ),
+    error=(
+        'This command has been removed. '
+        'Please onboard with BigQuery Export instead. '
+        'https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery'
+    ),
+)
+@base.DefaultUniverseOnly
 class SetUsageBucket(base.SilentCommand):
   """Set usage reporting bucket for a project.
 

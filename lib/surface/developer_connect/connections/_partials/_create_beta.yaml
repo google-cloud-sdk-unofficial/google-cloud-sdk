@@ -474,7 +474,6 @@
         - group:
             api_field: connection.httpConfig
             required: false
-            hidden: true
             help_text: |-
               Configuration for connections to an HTTP service provider.
             params:

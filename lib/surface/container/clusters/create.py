@@ -516,6 +516,7 @@ def ParseCreateOptionsBase(
           'enable_runtime_vulnerability_insight'
       ),
       workload_policies=get_default('workload_policies'),
+      autopilot_cluster_policies=get_default('autopilot_cluster_policies'),
       in_transit_encryption=get_default('in_transit_encryption'),
       enable_kernel_module_signature_enforcement=get_default(
           'enable_kernel_module_signature_enforcement'
@@ -690,6 +691,9 @@ flags_to_add = {
         'hpaprofile': flags.AddHPAProfilesFlag,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
+        'autopilotclusterpolicies': (
+            lambda p: flags.AddAutopilotClusterPoliciesFlag(p, hidden=True)
+        ),
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'args': _Args,
         'basicauth': flags.AddBasicAuthFlags,
@@ -874,6 +878,7 @@ flags_to_add = {
         'enableSliceController': lambda p: flags.AddEnableSliceControllerFlag(
             p, hidden=True
         ),
+        'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
     },
     BETA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -887,6 +892,9 @@ flags_to_add = {
         'authenticatorsecurity': flags.AddAuthenticatorSecurityGroupFlags,
         'autoupgrade': AddEnableAutoUpgradeWithDefault,
         'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
+        'autopilotclusterpolicies': (
+            lambda p: flags.AddAutopilotClusterPoliciesFlag(p, hidden=True)
+        ),
         'basicauth': flags.AddBasicAuthFlags,
         'binauthz': lambda p: flags.AddBinauthzFlags(
             p, release_track=base.ReleaseTrack.BETA
@@ -1111,6 +1119,9 @@ flags_to_add = {
         'autorepair': AddAutoRepair,
         'autoscalingprofiles': flags.AddAutoscalingProfilesFlag,
         'autopilotworkloadpolicies': flags.AddAutopilotWorkloadPoliciesFlag,
+        'autopilotclusterpolicies': (
+            lambda p: flags.AddAutopilotClusterPoliciesFlag(p, hidden=True)
+        ),
         'hpaprofile': flags.AddHPAProfilesFlag,
         'basicauth': flags.AddBasicAuthFlags,
         'cloudlogging': flags.AddEnableCloudLogging,

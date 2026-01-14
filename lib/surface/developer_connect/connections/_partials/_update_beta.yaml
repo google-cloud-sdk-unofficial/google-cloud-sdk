@@ -410,7 +410,6 @@
             arg_name: http-config
             clearable: true
             required: false
-            hidden: true
             help_text: |-
               Configuration for connections to an HTTP service provider.
             params:

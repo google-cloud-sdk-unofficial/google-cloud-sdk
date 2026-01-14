@@ -81,6 +81,16 @@ class Make(bigquery_command.BigqueryCmd):
         'Display name for the created transfer configuration or connection.',
         flag_values=fv,
     )
+    flags.DEFINE_enum(
+        'managed_table_type',
+        None,
+        [
+            'NATIVE',
+            'BIGLAKE',
+        ],
+        'Destination table type for the created transfer configuration.',
+        flag_values=fv,
+    )
     flags.DEFINE_string(
         'data_source',
         '',
@@ -1190,6 +1200,7 @@ class Make(bigquery_command.BigqueryCmd):
           auth_info=auth_info,
           service_account_name=self.service_account_name,
           destination_kms_key=self.destination_kms_key,
+          managed_table_type=self.managed_table_type,
           notification_pubsub_topic=self.notification_pubsub_topic,
           schedule_args=schedule_args,
           location=location,

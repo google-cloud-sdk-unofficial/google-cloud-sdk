@@ -372,6 +372,17 @@ class Load(bigquery_command.BigqueryCmd):
         flag_values=fv,
     )
     flags.DEFINE_enum(
+        'numeric_type_conversion_mode',
+        None,
+        ['ROUND'],
+        'Allowed values: '
+        'ROUND: round the numeric values if the value has higher precision in '
+        'the fractional part than the supported scale of 9. Default behavior '
+        '(i.e., missing of this property): the numbers with scale larger than '
+        '9 will cause the load job to fail.',
+        flag_values=fv,
+    )
+    flags.DEFINE_enum(
         'json_extension',
         None,
         ['GEOJSON'],
@@ -601,6 +612,12 @@ class Load(bigquery_command.BigqueryCmd):
             self.hive_partitioning_source_uri_prefix
         )
       opts['hive_partitioning_options'] = hive_partitioning_options
+    if self.numeric_type_conversion_mode:
+      opts['numeric_type_conversion_mode'] = (
+          frontend_utils.ParseNumericTypeConversionMode(
+              self.numeric_type_conversion_mode
+          )
+      )
     if self.json_extension is not None:
       opts['json_extension'] = self.json_extension
     if self.column_name_character_map is not None:

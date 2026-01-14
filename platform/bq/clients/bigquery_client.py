@@ -711,15 +711,9 @@ class BigqueryClient:
         discovery_document['baseUrl'],
     )
 
-    is_prod = True
-
-    original_root_url = discovery_document['rootUrl']
-
-    if is_prod:
-      discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(
-          service=service, inputted_flags=bq_flags
-      )
-
+    discovery_document['rootUrl'] = bq_api_utils.get_tpc_root_url_from_flags(
+        service=service, inputted_flags=bq_flags
+    )
 
 
     discovery_document['baseUrl'] = urllib.parse.urljoin(

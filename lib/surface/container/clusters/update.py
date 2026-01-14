@@ -414,6 +414,8 @@ class Update(base.UpdateCommand):
     flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
+    flags.AddAutopilotClusterPoliciesFlag(group, hidden=True)
+    flags.AddRemoveAutopilotClusterPoliciesFlag(group, hidden=True)
     flags.AddEnableMultiNetworkingFlag(group)
     flags.AddContainerdConfigFlag(group)
     flags.AddAutoprovisioningResourceManagerTagsUpdate(group)
@@ -467,6 +469,7 @@ class Update(base.UpdateCommand):
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
+    flags.AddAutopilotGeneralProfileFlag(group)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -566,6 +569,10 @@ class Update(base.UpdateCommand):
     )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
+    opts.autopilot_cluster_policies = args.autopilot_cluster_policies
+    opts.remove_autopilot_cluster_policies = (
+        args.remove_autopilot_cluster_policies
+    )
     opts.enable_multi_networking = args.enable_multi_networking
     opts.containerd_config_from_file = args.containerd_config_from_file
     opts.fleet_project = args.fleet_project
@@ -638,6 +645,7 @@ class Update(base.UpdateCommand):
         args.enable_kernel_module_signature_enforcement
     )
     opts.enable_slice_controller = args.enable_slice_controller
+    opts.autopilot_general_profile = args.autopilot_general_profile
     return opts
 
   def Run(self, args):
@@ -1278,6 +1286,8 @@ class UpdateBeta(Update):
     flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
+    flags.AddAutopilotClusterPoliciesFlag(group, hidden=True)
+    flags.AddRemoveAutopilotClusterPoliciesFlag(group, hidden=True)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
@@ -1485,6 +1495,10 @@ class UpdateBeta(Update):
     )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
+    opts.autopilot_cluster_policies = args.autopilot_cluster_policies
+    opts.remove_autopilot_cluster_policies = (
+        args.remove_autopilot_cluster_policies
+    )
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking
@@ -1665,6 +1679,8 @@ class UpdateAlpha(Update):
     flags.AddAutopilotWorkloadPoliciesFlag(group)
     flags.AddRemoveWorkloadPoliciesFlag(group)
     flags.AddRemoveAutopilotWorkloadPoliciesFlag(group)
+    flags.AddAutopilotClusterPoliciesFlag(group, hidden=True)
+    flags.AddRemoveAutopilotClusterPoliciesFlag(group, hidden=True)
     flags.AddEnableFqdnNetworkPolicyFlag(group)
     flags.AddHostMaintenanceIntervalFlag(group)
     flags.AddInTransitEncryptionFlag(group)
@@ -1868,6 +1884,10 @@ class UpdateAlpha(Update):
     )
     opts.workload_policies = args.workload_policies
     opts.remove_workload_policies = args.remove_workload_policies
+    opts.autopilot_cluster_policies = args.autopilot_cluster_policies
+    opts.remove_autopilot_cluster_policies = (
+        args.remove_autopilot_cluster_policies
+    )
     opts.enable_fqdn_network_policy = args.enable_fqdn_network_policy
     opts.host_maintenance_interval = args.host_maintenance_interval
     opts.enable_multi_networking = args.enable_multi_networking

@@ -79,7 +79,6 @@ class Update(base.UpdateCommand):
         customer_router_ipv6_interface_id=getattr(
             args, 'customer_router_ipv6_interface_id', None
         ),
-        multicast_enabled=getattr(args, 'enable_multicast', None),
         candidate_cloud_router_ipv6_address=getattr(
             args, 'candidate_cloud_router_ipv6_address', None
         ),
@@ -135,14 +134,16 @@ class UpdateBeta(Update):
         customer_router_ipv6_interface_id=getattr(
             args, 'customer_router_ipv6_interface_id', None
         ),
-        multicast_enabled=getattr(args, 'enable_multicast', None),
         candidate_cloud_router_ipv6_address=getattr(
             args, 'candidate_cloud_router_ipv6_address', None
         ),
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
-        supports_400g=self.ReleaseTrack() == base.ReleaseTrack.ALPHA,
+        supports_400g=(
+            self.ReleaseTrack()
+            in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+        ),
     )
 
 
@@ -159,4 +160,3 @@ class UpdateAlpha(UpdateBeta):
   @classmethod
   def Args(cls, parser):
     super().Args(parser)
-    attachment_flags.AddEnableMulticast(parser, update=True)

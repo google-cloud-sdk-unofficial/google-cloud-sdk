@@ -27,8 +27,7 @@ from googlecloudsdk.command_lib.compute.resource_policies import util
 
 
 def _CommonArgs(parser):
-  """A helper function."""
-
+  """A helper function to build args based on different API version."""
   flags.MakeResourcePolicyArg().AddArgument(parser)
   flags.AddCommonArgs(parser)
   flags.AddTypeArgsForWorkloadPolicy(parser)
@@ -86,10 +85,20 @@ class CreateWorkloadPolicyGa(base.CreateCommand):
 class CreateWorkloadPolicyBeta(CreateWorkloadPolicyGa):
   """Create a Compute Engine workload resource policy."""
 
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddAcceleratorTopologyModeArgs(parser)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateWorkloadPolicyAlpha(CreateWorkloadPolicyGa):
   """Create a Compute Engine workload resource policy."""
+
+  @staticmethod
+  def Args(parser):
+    _CommonArgs(parser)
+    flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 CreateWorkloadPolicyGa.detailed_help = {

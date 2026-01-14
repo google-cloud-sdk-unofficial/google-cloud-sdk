@@ -27,6 +27,7 @@ from googlecloudsdk.core import log
 
 
 @base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class UpdateInstance(base.UpdateCommand):
   """Modify an existing Bigtable instance."""
 
@@ -65,6 +66,10 @@ class UpdateInstance(base.UpdateCommand):
       instance.displayName = args.display_name
       update_mask.append('display_name')
 
+    if hasattr(args, 'edition') and args.edition:
+      instance.edition = msgs.Instance.EditionValueValuesEnum(args.edition)
+      update_mask.append('edition')
+
     if not update_mask:
       log.status.Print('No updates specified.')
       return None
@@ -77,3 +82,13 @@ class UpdateInstance(base.UpdateCommand):
     instance = cli.projects_instances.PartialUpdateInstance(req)
     log.UpdatedResource(instance.name, kind='instance')
     return instance
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateInstanceAlpha(UpdateInstance):
+  """Modify an existing Bigtable instance."""
+
+  @staticmethod
+  def Args(parser):
+    super(UpdateInstanceAlpha, UpdateInstanceAlpha).Args(parser)
+    arguments.ArgAdder(parser).AddInstanceEdition()

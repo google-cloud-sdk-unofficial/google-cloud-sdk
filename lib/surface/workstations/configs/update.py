@@ -70,10 +70,14 @@ class Update(base.UpdateCommand):
         parser, use_default=False
     )
     workstations_flags.AddIdleTimeoutFlag(parser, use_default=False)
+    workstations_flags.AddInstanceMetadata(parser)
     workstations_flags.AddLabelsField(parser)
     workstations_flags.AddMachineTypeFlag(parser, use_default=False)
     workstations_flags.AddMaxUsableWorkstationsCount(parser)
     workstations_flags.AddNetworkTags(parser)
+    workstations_flags.AddPersistentDirectoriesOrHyperdisks(
+        parser, use_default=False
+    )
     workstations_flags.AddPoolSize(parser, use_default=False)
     workstations_flags.AddRunningTimeoutFlag(parser, use_default=False)
     workstations_flags.AddServiceAccountFlag(parser)
@@ -83,9 +87,6 @@ class Update(base.UpdateCommand):
     workstations_flags.AddShieldedVtpm(parser, use_default=False)
     workstations_flags.AddStartupScriptUri(parser)
     workstations_flags.AddVmTags(parser)
-    workstations_flags.AddPersistentDirectoriesOrHyperdisks(
-        parser, use_default=False
-    )
     if cls.ReleaseTrack() != base.ReleaseTrack.GA:
       workstations_flags.AddDisallowUnauthenticatedCorsPreflightRequestsToggleFlag(
           parser
@@ -93,7 +94,6 @@ class Update(base.UpdateCommand):
       workstations_flags.AddBoostConfigs(parser)
       workstations_flags.AddDisableLocalhostReplacementToggleFlag(parser)
       workstations_flags.AddReservationAffinity(parser)
-      workstations_flags.AddInstanceMetadata(parser)
 
   def Collection(self):
     return (

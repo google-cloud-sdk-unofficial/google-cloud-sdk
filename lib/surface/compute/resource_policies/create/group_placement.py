@@ -36,6 +36,7 @@ def _CommonArgs(parser, api_version, track):
   parser.display_info.AddCacheUpdater(None)
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class CreateGroupPlacement(base.CreateCommand):
   """Create a Compute Engine group placement resource policy."""
@@ -44,6 +45,7 @@ class CreateGroupPlacement(base.CreateCommand):
   def Args(parser):
     _CommonArgs(parser, compute_api.COMPUTE_ALPHA_API_VERSION,
                 base.ReleaseTrack.ALPHA)
+    flags.AddAcceleratorTopologyModeArgs(parser)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -66,6 +68,7 @@ class CreateGroupPlacement(base.CreateCommand):
     return client.MakeRequests([(service, 'Insert', create_request)])[0]
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class CreateGroupPlacementBeta(CreateGroupPlacement):
   """Create a Compute Engine group placement resource policy."""
@@ -74,6 +77,7 @@ class CreateGroupPlacementBeta(CreateGroupPlacement):
   def Args(parser):
     _CommonArgs(parser, compute_api.COMPUTE_BETA_API_VERSION,
                 base.ReleaseTrack.BETA)
+    flags.AddAcceleratorTopologyModeArgs(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
