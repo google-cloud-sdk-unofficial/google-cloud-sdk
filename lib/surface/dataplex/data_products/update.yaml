@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Update a Dataplex data product resource.
+    description: |
+      Update a Dataplex data product resource.
+    examples: |
+      To update display name of data product `test-dp` in location `us-central1`, run:
+
+          $ {command} test-dp --location=us-central1 --display-name="new dp name"
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts
+    method: patch
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataplex Data Product you want to update.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product
+    params:
+    - arg_name: display-name
+      api_field: googleCloudDataplexV1DataProduct.displayName
+      help_text: |
+        New display name of the Dataplex data product.
+    - arg_name: description
+      api_field: googleCloudDataplexV1DataProduct.description
+      help_text: |
+        New description of the Dataplex data product.
+    - arg_name: owner-emails
+      api_field: googleCloudDataplexV1DataProduct.ownerEmails
+      repeated: true
+      help_text: |
+        New emails of the data product owners.
+    labels:
+      api_field: googleCloudDataplexV1DataProduct.labels
+  async:
+    collection: dataplex.projects.locations.operations

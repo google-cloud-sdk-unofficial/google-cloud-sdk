@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Get a Dataplex data asset resource.
+    description: |
+      Get a Dataplex data asset resource.
+    examples: |
+      To get a Dataplex data asset `test-da` in data product `test-dp` in location `us-central1`, run:
+
+          $ {command} test-da --data-product=test-dp --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts.dataAssets
+    method: get
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataplex Data Asset you want to get.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_asset

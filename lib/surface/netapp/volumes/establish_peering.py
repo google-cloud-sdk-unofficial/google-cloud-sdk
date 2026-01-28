@@ -24,13 +24,12 @@ from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 
 
-@base.Hidden  # TODO(b/423515496): Remove hidden flag once the feature is ready.
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.GA)
 class EstablishPeering(base.Command):
   """Establish peering for Cache Volumes."""
 
-  _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+  _RELEASE_TRACK = base.ReleaseTrack.GA
 
   detailed_help = {
       'DESCRIPTION': """\
@@ -82,7 +81,6 @@ class EstablishPeering(base.Command):
     return volume
 
 
-@base.Hidden  # TODO(b/423515496): Remove hidden flag once the feature is ready.
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class EstablishPeeringBeta(EstablishPeering):
   """Establish peering for Cache Volumes."""
@@ -90,11 +88,9 @@ class EstablishPeeringBeta(EstablishPeering):
   _RELEASE_TRACK = base.ReleaseTrack.BETA
 
 
-# @base.Hidden  # TODO(b/423515496): Uncomment this and make EstablishPeering
-# point to GA release track for GA launch.
-# @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-# class EstablishPeeringAlpha(EstablishPeeringBeta):
-#   """Establish peering for Cache Volumes."""
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class EstablishPeeringAlpha(EstablishPeeringBeta):
+  """Establish peering for Cache Volumes."""
 
-#   _RELEASE_TRACK = base.ReleaseTrack.ALPHA
+  _RELEASE_TRACK = base.ReleaseTrack.ALPHA
 

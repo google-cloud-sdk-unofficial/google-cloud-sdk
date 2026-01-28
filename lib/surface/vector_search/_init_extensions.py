@@ -19,19 +19,22 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class VectorSearchAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.VECTOR_SEARCH_CATEGORY
 
 
+@base.DefaultUniverseOnly
 class VectorSearchBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.VECTOR_SEARCH_CATEGORY
 
 
+@base.DefaultUniverseOnly
 class VectorSearchGa(base.Group):
   """Optional no-auto-generated code for GA."""
 
-  category = base.UNCATEGORIZED_CATEGORY
+  category = base.VECTOR_SEARCH_CATEGORY

@@ -23,13 +23,10 @@ import textwrap
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ha_controllers import utils as api_utils
-from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.ha_controllers import utils
 from googlecloudsdk.command_lib.util.apis import arg_utils
-from googlecloudsdk.core import exceptions as core_exceptions
-from googlecloudsdk.core import log
 
 
 _NODE_AFFINITY_FILE_HELP_TEXT = textwrap.dedent("""\
@@ -98,18 +95,18 @@ class Create(base.CreateCommand):
         ),
     )
     parser.add_argument(
-        '--secondary-zone-capacity',
+        '--failover-capacity',
         required=True,
         type=lambda x: arg_utils.ChoiceToEnum(
             x,
-            messages.HaController.SecondaryZoneCapacityValueValuesEnum,
+            messages.HaController.FailoverCapacityValueValuesEnum,
         ),
         help=(
             'Determines the capacity guarantee in the secondary zone. Use'
-            ' BEST_EFFORT to create a VM based on capacity availability at the'
-            ' time of failover, suitable for workloads that can tolerate longer'
-            ' recovery times. Must be one of:'
-            f' {utils.EnumTypeToChoices(messages.HaController.SecondaryZoneCapacityValueValuesEnum)}'
+            ' BEST_EFFORT_CAPACITY to create a VM based on capacity'
+            ' availability at the time of failover, suitable for workloads that'
+            ' can tolerate longer recovery times. Must be one of:'
+            f' {utils.EnumTypeToChoices(messages.HaController.FailoverCapacityValueValuesEnum)}'
         ),
     )
     parser.add_argument(
@@ -231,7 +228,7 @@ class Create(base.CreateCommand):
         description=args.description,
         instanceName=args.instance_name,
         failoverInitiation=args.failover_initiation,
-        secondaryZoneCapacity=args.secondary_zone_capacity,
+        failoverCapacity=args.failover_capacity,
         zoneConfigurations=utils.MakeZoneConfiguration(args.zone_configuration),
         networkingAutoConfiguration=utils.MakeNetworkConfiguration(
             args.network_auto_configuration

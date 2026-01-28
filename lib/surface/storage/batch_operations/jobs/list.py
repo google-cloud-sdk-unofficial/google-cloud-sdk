@@ -53,67 +53,18 @@ def _TransformDryRun(job):
   return job.get("dry_run", False)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List batch-operations jobs."""
 
   detailed_help = {
-      "DESCRIPTION": """
+      "DESCRIPTION": (
+          """
       List batch operation jobs.
-      """,
-      "EXAMPLES": """
-      To list all batch jobs:
-
-          $ {command}
-
-      To list all batch jobs with a page size of `10`:
-
-          $ {command} --page-size=10
-
-      To list a limit of `20` batch jobs:
-
-          $ {command} --limit=20
-
-      To list all batch jobs in `JSON` format:
-
-          $ {command} --format=json
-      """,
-  }
-
-  @staticmethod
-  def Args(parser):
-    base.URI_FLAG.RemoveFromParser(parser)
-    parser.display_info.AddFormat("""
-      table(
-        name.basename():wrap=20:label=BATCH_JOB_ID,
-        bucketList.buckets:wrap=20:label=SOURCE,
-        transformation():wrap=20:label=TRANSFORMATION,
-        createTime:wrap=20:label=CREATE_TIME,
-        counters:wrap=20:label=COUNTERS,
-        errorSummaries:wrap=20:label=ERROR_SUMMARIES,
-        state:wrap=20:label=STATE
-      )
-    """)
-    parser.display_info.AddTransforms({
-        "transformation": _TransformTransformation,
-    })
-
-  def Run(self, args):
-    return storage_batch_operations_api.StorageBatchOperationsApi().list_batch_jobs(
-        _SBO_CLH_LOCATION_GLOBAL, args.page_size
-    )
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class ListAlpha(List):
-  """List batch-operations jobs."""
-
-  detailed_help = {
-      "DESCRIPTION": """
-      List batch operation jobs.
-      """,
-      "EXAMPLES": """
+      """
+      ),
+      "EXAMPLES": (
+          """
       To list all batch jobs:
 
           $ {command}
@@ -133,7 +84,8 @@ class ListAlpha(List):
       To list all batch jobs in `JSON` format:
 
           $ {command} --format=json
-      """,
+      """
+      ),
   }
 
   @staticmethod
@@ -142,16 +94,21 @@ class ListAlpha(List):
     parser.display_info.AddFormat("""
       table(
         name.basename():wrap=20:label=BATCH_JOB_ID,
-        dryrun():wrap=20:label=DRY_RUN,
         bucketList.buckets:wrap=20:label=SOURCE,
         transformation():wrap=20:label=TRANSFORMATION,
         createTime:wrap=20:label=CREATE_TIME,
         counters:wrap=20:label=COUNTERS,
         errorSummaries:wrap=20:label=ERROR_SUMMARIES,
-        state:wrap=20:label=STATE
+        state:wrap=20:label=STATE,
+        dryrun():wrap=20:label=DRY_RUN
       )
     """)
     parser.display_info.AddTransforms({
         "transformation": _TransformTransformation,
         "dryrun": _TransformDryRun,
     })
+
+  def Run(self, args):
+    return storage_batch_operations_api.StorageBatchOperationsApi().list_batch_jobs(
+        _SBO_CLH_LOCATION_GLOBAL, args.page_size
+    )

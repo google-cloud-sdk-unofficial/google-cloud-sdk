@@ -338,6 +338,15 @@ def _AddArgs(
       """,
   )
 
+  parser.add_argument(
+      '--allow-cidr-routes-overlap',
+      action=arg_parsers.StoreTrueFalseAction,
+      help=(
+          "Allow/disallow this subnetwork's IP address ranges to conflict "
+          'with existing custom routes.'
+      ),
+  )
+
   if include_resolve_subnet_mask:
     resolve_subnet_mask_choices = {
         'ARP_ALL_RANGES': """
@@ -507,6 +516,9 @@ def _CreateSubnetwork(
 
   if args.internal_ipv6_prefix:
     subnetwork.internalIpv6Prefix = args.internal_ipv6_prefix
+
+  if args.allow_cidr_routes_overlap is not None:
+    subnetwork.allowSubnetCidrRoutesOverlap = args.allow_cidr_routes_overlap
 
   if ip_collection_ref:
     subnetwork.ipCollection = ip_collection_ref.SelfLink()

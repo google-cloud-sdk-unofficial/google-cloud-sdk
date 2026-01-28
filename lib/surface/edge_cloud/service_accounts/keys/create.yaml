@@ -1,0 +1,38 @@
+- release_tracks: [ALPHA]
+  command_type: GENERIC
+  help_text:
+    brief: Create service account key for a service account on a Google Distributed Cloud zone.
+    description: Create service account key for a service account on a Google Distributed Cloud zone.
+    examples: |
+      To create service account key for a service account called `sample-service-account` in project `sample-project` and location `us-central1`, run:
+
+      $ {command} OUTPUT_FILE --service-account=sample-service-account --location=us-central1 --project=sample-project
+
+  request:
+    collection: edgecontainer.projects.locations.serviceAccounts
+    api_version: v1alpha
+    method: generateKey
+
+  arguments:
+    resource:
+      help_text: Google Distributed Cloud service account.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service_account.resources:serviceAccount
+      is_positional: false
+      arg_name: service-account
+    params:
+    - arg_name: ca-cert-path
+      api_field: generateServiceAccountKeyRequest.caCertPath
+      help_text: File that contains the CA certificate of the Google Distributed Cloud zone.
+    - arg_name: output_file
+      is_positional: true
+      required: true
+      help_text: Output file to write the service account key.
+    - arg_name: validity
+      api_field: generateServiceAccountKeyRequest.validity
+      help_text: Validity of the service account key.
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+
+  response:
+    modify_response_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.service_account.hooks:PossiblyWritePrivateKeyToOutputFile

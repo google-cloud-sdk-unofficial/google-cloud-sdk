@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List the Google Cloud Platform projects enabled on Google Distributed Cloud zone.
+    description: List the Google Cloud Platform projects enabled on Google Distributed Cloud zone.
+    examples: |
+      To list Google Cloud Platform projects enabled on Google Distributed Cloud zone `sample-zone` in organization `sample-org` and location `us-central1`, run:
+
+      $ {command} --location=us-central1 --zone=sample-zone --organization=sample-org
+
+  request:
+    collection: edgecontainer.organizations.locations.zones.zonalProjects
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Google Distributed Cloud zone
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:zone

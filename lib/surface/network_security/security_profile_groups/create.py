@@ -43,11 +43,17 @@ _URL_FILTERING_SUPPORTED = (
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
 
+_WILDFIRE_ANALYSIS_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+)
+
 _INCOMPATIBLE_PAIRS = (
     ('threat-prevention-profile', 'custom-mirroring-profile'),
     ('threat-prevention-profile', 'custom-intercept-profile'),
     ('url-filtering-profile', 'custom-mirroring-profile'),
     ('url-filtering-profile', 'custom-intercept-profile'),
+    ('wildfire-analysis-profile', 'custom-mirroring-profile'),
+    ('wildfire-analysis-profile', 'custom-intercept-profile'),
     ('custom-mirroring-profile', 'custom-intercept-profile'),
 )
 
@@ -70,6 +76,15 @@ class CreateProfileGroup(base.CreateCommand):
           parser,
           cls.ReleaseTrack(),
           'url-filtering-profile',
+          group=required_group,
+          required=False,
+      )
+    # TODO: b/399684751 - Remove this conditional once the group is released.
+    if cls.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED:
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'wildfire-analysis-profile',
           group=required_group,
           required=False,
       )
@@ -109,6 +124,11 @@ class CreateProfileGroup(base.CreateCommand):
         if hasattr(args.CONCEPTS, 'url_filtering_profile')
         else None
     )
+    wildfire_analysis_profile = (
+        args.CONCEPTS.wildfire_analysis_profile.Parse()
+        if hasattr(args.CONCEPTS, 'wildfire_analysis_profile')
+        else None
+    )
     custom_mirroring_profile = (
         args.CONCEPTS.custom_mirroring_profile.Parse()
         if hasattr(args.CONCEPTS, 'custom_mirroring_profile')
@@ -143,6 +163,9 @@ class CreateProfileGroup(base.CreateCommand):
         url_filtering_profile=url_filtering_profile.RelativeName()
         if url_filtering_profile is not None
         else None,
+        wildfire_analysis_profile=wildfire_analysis_profile.RelativeName()
+        if wildfire_analysis_profile is not None
+        else None,
         custom_mirroring_profile=custom_mirroring_profile.RelativeName()
         if custom_mirroring_profile is not None
         else None,
@@ -176,6 +199,7 @@ class CreateProfileGroup(base.CreateCommand):
     profiles = {
         'threat-prevention-profile': False,
         'url-filtering-profile': False,
+        'wildfire-analysis-profile': False,
         'custom-mirroring-profile': False,
         'custom-intercept-profile': False,
     }
@@ -186,6 +210,11 @@ class CreateProfileGroup(base.CreateCommand):
         and args.CONCEPTS.url_filtering_profile.Parse() is not None
     ):
       profiles['url-filtering-profile'] = True
+    if (
+        hasattr(args.CONCEPTS, 'wildfire_analysis_profile')
+        and args.CONCEPTS.wildfire_analysis_profile.Parse() is not None
+    ):
+      profiles['wildfire-analysis-profile'] = True
     if (
         hasattr(args.CONCEPTS, 'custom_mirroring_profile')
         and args.CONCEPTS.custom_mirroring_profile.Parse() is not None

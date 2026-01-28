@@ -159,6 +159,8 @@ class List(_List, base.ListCommand):
       return "SQL Server"
     elif profile.salesforceProfile:
       return "Salesforce"
+    elif profile.spannerProfile:
+      return "Spanner"
     elif profile.bigqueryProfile:
       return "BigQuery"
     elif profile.mongodbProfile:

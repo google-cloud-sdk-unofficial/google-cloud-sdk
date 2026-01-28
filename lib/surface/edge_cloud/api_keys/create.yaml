@@ -1,0 +1,68 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Create a Google Distributed Cloud API key.
+    description: Creates a Google Distributed Cloud API key.
+    examples: |
+      # To create a service-account-bound API key in a specific Google Distributed Cloud zone
+      # that is valid for two hours and restricted to specific API methods, run:
+      $ {command} my-api-key --location=us-central1 --project=my-project \
+        --zone=us-central1-edge-zone1 \
+        --service-account-name=projects/my-project/locations/us-central1/serviceAccounts/my-sa \
+        --validity=7200s \
+        --api-target service="compute.test-api.com",methods="*" \
+        --api-target service="storage.test-api.com",methods="GET|LIST"
+
+  request:
+    collection: edgecontainer.projects.locations.apiKeys
+    api_version: v1alpha
+    method: create
+
+  arguments:
+    resource:
+      help_text: The API key to be created.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.api_key.resources:apiKey
+
+    params:
+    - arg_name: zone
+      api_field: apiKey.zone
+      help_text: The Google Distributed Cloud zone ID where the API key will be created.
+      required: true
+    - arg_name: service-account-name
+      api_field: apiKey.serviceAccountName
+      help_text: The name of the service account to bind the API key to.
+      required: true
+    - arg_name: validity
+      api_field: apiKey.validity
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+      help_text: The validity duration for the key (e.g., 3600s, 1h, 1d). Default and maximum allowed is 366d.
+      required: false
+    - arg_name: api-target
+      api_field: apiKey.apiTargets
+      help_text: |-
+        API target restriction. Can be specified multiple times.
+        Each instance is a comma-separated list of key=value pairs.
+         - Required keys: 'service'.
+         - Optional keys: 'methods'. 'methods' should be a pipe-separated string.
+        Omit the 'methods' key to allow all methods.
+
+        Examples:
+          * `--api-target service="compute.test-api.com",methods="*"`
+          * `--api-target service="storage.test-api.com",methods="GET|LIST"`
+          * `--api-target service="pubsub.test-api.com"`
+      metavar: KEY=VALUE
+      type:
+        arg_dict:
+          flatten: false
+          spec:
+          - arg_name: service
+            api_field: service
+            required: true
+          - arg_name: methods
+            api_field: methods
+            type: 'googlecloudsdk.calliope.arg_parsers:ArgList:custom_delim_char=|'
+            required: false
+
+  async:
+    collection: edgecontainer.projects.locations.operations

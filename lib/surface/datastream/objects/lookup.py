@@ -72,6 +72,7 @@ class Lookup(base.Command):
     so_flags.AddPostgresqlObjectIdentifier(object_identifier_parser)
     so_flags.AddSqlServerObjectIdentifier(object_identifier_parser)
     so_flags.AddSalesforceObjectIdentifier(object_identifier_parser)
+    so_flags.AddSpannerObjectIdentifier(object_identifier_parser)
 
   def Run(self, args):
     """Lookup a Datastream stream object.

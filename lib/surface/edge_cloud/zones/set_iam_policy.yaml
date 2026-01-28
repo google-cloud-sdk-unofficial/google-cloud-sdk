@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Set IAM policy for a project on the Google Distributed Cloud zone
+    description: Sets the IAM policy for a project on the Google Distributed Cloud zone.
+    examples: |
+      To set the IAM policy for a project called `sample-project` in Google Distributed Cloud zone `sample-zone` in location `us-central1` from a local file `sample-policy.json`, run:
+
+      $ {command} --project=sample-project --location=us-central1 --zone=sample-zone sample-policy.json
+
+  request:
+    collection: edgecontainer.projects.locations.zones
+    api_version: v1alpha
+
+  arguments:
+    resource:
+      help_text: |
+        Google Distributed Cloud zone
+      is_positional: false
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.zone.resources:projzone
+
+  iam:
+    set_iam_policy_request_path: setIamPolicyRequest
+    message_type_overrides:
+      policy: IamPolicy
+      set_iam_policy_request: EdgecontainerProjectsLocationsZonesSetIamPolicyRequest

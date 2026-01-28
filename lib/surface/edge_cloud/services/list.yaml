@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Google Cloud Platform services enabled on a Google Distributed Cloud zone.
+    description: List Google Cloud Platform services enabled on a Google Distributed Cloud zone.
+    examples: |
+      To list Google Cloud Platform services enabled on a Google Distributed Cloud zone, run:
+
+      $ {command} --location=us-central1 --project=sample-project
+
+  request:
+    collection: edgecontainer.projects.locations.zonalServices
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Google Cloud Platform region
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service.resources:location

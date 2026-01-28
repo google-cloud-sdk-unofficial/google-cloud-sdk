@@ -158,6 +158,12 @@
               repeated: false
               help_text: |-
                 SSL certificate to use for requests to GitHub Enterprise.
+            - arg_name: github-enterprise-config-organization
+              api_field: connection.githubEnterpriseConfig.organization
+              required: false
+              repeated: false
+              help_text: |-
+                GitHub Enterprise organization in which the GitHub App is created.
         - group:
             api_field: connection.gitlabConfig
             required: false

@@ -122,6 +122,7 @@ for examples.
   flags.AddMetadataFlags(parser)
   flags.AddShieldedInstanceFlags(parser)
   flags.AddNetworkConfigFlags(parser)
+  flags.AddSubnetworkFlag(parser, hidden=True)
   flags.AddThreadsPerCore(parser)
   flags.AddPerformanceMonitoringUnit(parser)
   flags.AddAdditionalNodeNetworkFlag(parser)
@@ -241,6 +242,7 @@ def ParseCreateNodePoolOptionsBase(args):
       node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
       respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
       enable_lustre_multi_nic=args.enable_lustre_multi_nic,
+      subnetwork=args.subnetwork,
   )
 
 
@@ -521,6 +523,7 @@ class CreateBeta(Create):
     ops.storage_pools = args.storage_pools
     ops.local_ssd_encryption_mode = args.local_ssd_encryption_mode
     ops.data_cache_count = args.data_cache_count
+    ops.subnetwork = args.subnetwork
     return ops
 
 
@@ -595,6 +598,7 @@ class CreateAlpha(Create):
     ops.control_node_pool = args.control_node_pool
     ops.enable_attestation = args.enable_attestation
     ops.tee_policy = args.tee_policy
+    ops.subnetwork = args.subnetwork
     return ops
 
   @staticmethod

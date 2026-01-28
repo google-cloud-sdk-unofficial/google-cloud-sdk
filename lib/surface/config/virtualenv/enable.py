@@ -21,10 +21,8 @@ from __future__ import unicode_literals
 
 
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.config.virtualenv import util
 from googlecloudsdk.core import config
-from googlecloudsdk.core import log
 
 
 @base.Hidden
@@ -33,12 +31,6 @@ class Enable(base.Command):
 
   def Run(self, args):
     ve_dir = config.Paths().virtualenv_dir
-    if util.VirtualEnvExists(ve_dir):
-      if not util.EnableFileExists(ve_dir):
-        util.CreateEnableFile(ve_dir)
-      log.status.Print('Virtual env enabled.')
-    else:
-      log.error('Virtual env does not exist at {}.'.format(ve_dir))
-      raise exceptions.ExitCodeNoError(exit_code=1)
+    util.EnableVirtualEnv(ve_dir)
 
 

@@ -1,0 +1,27 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Creates a Service Account on a Google Distributed Cloud zone.
+    description: Creates a Service Account on a Google Distributed Cloud zone.
+    examples: |
+      To create a Service Account called `sample-service-account` in project `sample-project` and location `us-central1` and zone `sample-zone`, run:
+
+      $ {command} sample-service-account --location=us-central1 --project=sample-project --zone=sample-zone
+
+  request:
+    collection: edgecontainer.projects.locations.serviceAccounts
+    api_version: v1alpha
+    method: create
+
+  arguments:
+    resource:
+      help_text: Google Distributed Cloud Service Account
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service_account.resources:serviceAccount
+    params:
+    - arg_name: zone
+      api_field: serviceAccount.zone
+      required: true
+      help_text: Google Distributed Cloud zone name.
+
+  async:
+    collection: edgecontainer.projects.locations.operations

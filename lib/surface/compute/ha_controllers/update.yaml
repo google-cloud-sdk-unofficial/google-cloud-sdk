@@ -42,7 +42,7 @@
           api_field: haControllerResource.failoverInitiation
           help_text: |
             Changes the failover trigger between AUTOMATIC and MANUAL_ONLY.
-        - arg_name: secondary-zone-capacity
-          api_field: haControllerResource.secondaryZoneCapacity
+        - arg_name: failover-capacity
+          api_field: haControllerResource.failoverCapacity
           help_text: |
             Changes the capacity guarantee in the secondary zone between GUARANTEED_STOPPED and BEST_EFFORT.

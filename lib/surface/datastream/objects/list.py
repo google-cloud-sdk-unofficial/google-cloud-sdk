@@ -116,5 +116,10 @@ class List(base.ListCommand):
     elif stream_object.sourceObject.salesforceIdentifier:
       identifier = stream_object.sourceObject.salesforceIdentifier
       return identifier.objectName
+    elif stream_object.sourceObject.spannerIdentifier:
+      identifier = stream_object.sourceObject.spannerIdentifier
+      if identifier.schema:
+        return "%s.%s" % (identifier.schema, identifier.table)
+      return identifier.table
     else:
       return None

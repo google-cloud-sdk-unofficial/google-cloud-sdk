@@ -1,0 +1,42 @@
+- release_tracks: [ALPHA]
+  command_type: CREATE
+
+  help_text:
+    brief: Enables a Google Cloud Platform service on a Google Distributed Cloud zone.
+    description: Enables a Google Cloud Platform service on a Google Distributed Cloud zone.
+    examples: |
+      To enable `sample-service` service in location `us-central1` in `sample-project` project and `sample-zone` zone, run:
+
+      $ {command} sample-service --location=us-central1 --project=sample-project --zone=sample-zone
+
+  request:
+    collection: edgecontainer.projects.locations.zonalServices
+    api_version: v1alpha
+    method: enable
+    display_resource_type: service on Google Cloud Platform region
+
+  arguments:
+    resource:
+      help_text: Google Cloud Platform region
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service.resources:location
+      is_parent_resource: true
+      is_positional: false
+    params:
+    - arg_name: id
+      api_field: enableZonalServiceRequest.zonalServiceId
+      required: false
+      help_text: Service ID.
+    - arg_name: zone
+      api_field: enableZonalServiceRequest.zonalService.zone
+      required: true
+      help_text: |
+        Google Distributed Cloud zone.
+    - arg_name: service_name
+      api_field: enableZonalServiceRequest.zonalService.serviceName
+      required: true
+      is_positional: true
+      help_text: |
+        Google Cloud Platform service name.
+
+  async:
+    collection: edgecontainer.projects.locations.operations

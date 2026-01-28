@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Dataplex Data Product resources.
+    description: |
+      List Dataplex Data Product resources under a project and location.
+
+      {command} --project=test-project --location=us-central1
+    examples: |
+      $ {command} --project=test-project --location=us-central1
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts
+    method: list
+  arguments:
+    resource:
+      help_text: |
+        The location to list Dataplex Data Products in.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:location

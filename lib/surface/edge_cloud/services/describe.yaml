@@ -1,0 +1,19 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Describe a Google Cloud Platform service enabled on a Google Distributed Cloud zone.
+  description: Describe a Google Cloud Platform service enabled on a Google Distributed Cloud zone.
+  examples: |
+    To describe a service with id `service-id` in project `sample-project` and location `us-central1`, run:
+
+    $ {command} service-id --location=us-central1 --project=sample-project
+
+request:
+  collection: edgecontainer.projects.locations.zonalServices
+  api_version: v1alpha
+  method: get
+
+arguments:
+  resource:
+    help_text: Service ID to describe which is enabled on a Google Distributed Cloud zone.
+    spec: !REF googlecloudsdk.command_lib.edge_cloud.service.resources:zonalService

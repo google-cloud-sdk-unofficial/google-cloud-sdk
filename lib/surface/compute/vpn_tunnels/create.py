@@ -519,7 +519,7 @@ class CreateBeta(CreateGA):
   """
 
   _support_tagging_at_creation = False
-  _support_capacity_tier = False
+  _support_capacity_tier = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

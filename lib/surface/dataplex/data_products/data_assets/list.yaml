@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      List Dataplex data asset resources.
+    description: |
+      List Dataplex data asset resources.
+    examples: |
+      To list Dataplex data assets in data product `test-dp` in location `us-central1`, run:
+
+          $ {command} --data-product=test-dp --location=us-central1
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts.dataAssets
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the parent Dataplex Data Product to list Data Assets under.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product
+  response:
+    id_field: name

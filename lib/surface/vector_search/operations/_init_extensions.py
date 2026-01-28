@@ -19,13 +19,16 @@
 from googlecloudsdk.calliope import base
 
 
+@base.DefaultUniverseOnly
 class OperationsAlpha(base.Group):
   """Optional no-auto-generated code for ALPHA."""
 
 
+@base.DefaultUniverseOnly
 class OperationsBeta(base.Group):
   """Optional no-auto-generated code for BETA."""
 
 
+@base.DefaultUniverseOnly
 class OperationsGa(base.Group):
   """Optional no-auto-generated code for GA."""

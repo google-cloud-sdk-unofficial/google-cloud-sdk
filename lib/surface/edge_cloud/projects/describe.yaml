@@ -1,0 +1,19 @@
+release_tracks: [ALPHA]
+
+help_text:
+  brief: Describe a Google Cloud Platform project enabled on Google Distributed Cloud zone.
+  description: Describe a Google Cloud Platform project enabled on Google Distributed Cloud Connected zone.
+  examples: |
+    To describe a Google Cloud Platform project `sample-project` in Google Distributed Cloud zone `sample-zone` in organization `sample-org` and location `us-central1`, run:
+
+    $ {command} sample-project --location=us-central1 --zone=sample-zone --organization=sample-org
+
+request:
+  collection: edgecontainer.organizations.locations.zones.zonalProjects
+  api_version: v1alpha
+  method: get
+
+arguments:
+  resource:
+    help_text: Google Cloud Platform project enabled on Google Distributed Cloud Connected zone.
+    spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:zonalProject

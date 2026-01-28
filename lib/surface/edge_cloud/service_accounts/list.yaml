@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List Service Accounts in a given project and location on a Google Distributed Cloud zone.
+    description: List Service Accounts in a given project and location on a Google Distributed Cloud zone.
+    examples: |
+      To list service accounts in project `sample-project` and location `us-central1`, run:
+
+      $ {command} --location=us-central1 --project=sample-project
+
+  request:
+    collection: edgecontainer.projects.locations.serviceAccounts
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Google Cloud Platform location.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service_account.resources:location

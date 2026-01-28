@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import up
 from googlecloudsdk.command_lib.run.compose import compose_resource
 from googlecloudsdk.command_lib.run.compose import tracker as stages
+from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core import properties
@@ -77,12 +78,18 @@ class Up(base.BinaryBackedCommand):
   ):
     """Handles the resource and translate run logic."""
     release_track = self.ReleaseTrack()
+    cfg_dir = config.Paths().global_config_dir
+    # We construct out_dir within the gcloud config directory to avoid
+    # polluting the user's source codebase with generated files.
+    # cfg_dir ensures the path is platform-specific.
+    out_dir = os.path.join(cfg_dir, 'surface', 'run', 'compose')
     resource_response = command_executor(
         command='resource',
         compose_file=compose_file,
         debug=log.GetVerbosity() <= log.logging.DEBUG,
         dry_run=args.dry_run,
         region=region,
+        out=out_dir,
     )
     error_message = 'Failed to process compose file.'
     if not resource_response.stdout:
@@ -99,28 +106,34 @@ class Up(base.BinaryBackedCommand):
       )
       raise exceptions.ConfigurationError(error_message)
     try:
-      config = compose_resource.ResourcesConfig.from_json(
+      config_obj = compose_resource.ResourcesConfig.from_json(
           resource_response.stdout[0]
       )
       log.debug('Successfully parsed resources config proto.')
-      log.debug(f'ResourcesConfig:\n{config}')
+      log.debug(f'ResourcesConfig:\n{config_obj}')
+
+      if not config_obj.project:
+      # TODO: b/474246517 - Fix error message type.
+        raise exceptions.ConfigurationError(
+            'Ccompose_ould not determine project name from compose file.'
+        )
 
       project_id = properties.VALUES.core.project.Get(required=True)
-      required_apis = config.get_required_apis(args.no_build)
+      required_apis = config_obj.get_required_apis(args.no_build)
       if required_apis:
         api_enabler.check_and_enable_apis(project_id, required_apis)
 
       with progress_tracker.StagedProgressTracker(
           'Setting up resources...',
-          self._AddTrackerStages(config),
+          self._AddTrackerStages(config_obj),
           failure_message='Setup failed',
           suppress_output=False,
           success_message='Resource setup complete.',
       ) as tracker:
-        resources_config = config.handle_resources(
+        resources_config = config_obj.handle_resources(
             region, repo, tracker, args.no_build
         )
-        log.debug(f'Handled ResourcesConfig:\n{resources_config}')
+        log.debug('Handled ResourcesConfig:\n%s', resources_config)
 
       # Serialize the handled config to JSON
       resources_config_json = resources_config.to_json()
@@ -133,6 +146,7 @@ class Up(base.BinaryBackedCommand):
           dry_run=args.dry_run,
           project_number=project_number,
           region=region,
+          out=out_dir,
       )
 
       if response.stdout:
@@ -242,11 +256,11 @@ class Up(base.BinaryBackedCommand):
     )
     artifact_registry.CreateRepository(docker_repo, skip_activation_prompt=True)
 
-  def _AddTrackerStages(self, config):
+  def _AddTrackerStages(self, cfg):
     """Add a tracker to the progress tracker."""
     staged_operations = []
-    if config.source_builds:
-      for container_name in config.source_builds:
+    if cfg.source_builds:
+      for container_name in cfg.source_builds:
         staged_operations.append(
             progress_tracker.Stage(
                 f'Building container {container_name} from source...',
@@ -255,21 +269,21 @@ class Up(base.BinaryBackedCommand):
                 ),
             )
         )
-    if config.secrets:
+    if cfg.secrets:
       staged_operations.append(
           progress_tracker.Stage(
               'Creating secrets...',
               key=stages.StagedProgressTrackerStage.SECRETS.get_key(),
           )
       )
-    if config.volumes.bind_mount or config.volumes.named_volume:
+    if cfg.volumes.bind_mount or cfg.volumes.named_volume:
       staged_operations.append(
           progress_tracker.Stage(
               'Creating volumes...',
               key=stages.StagedProgressTrackerStage.VOLUMES.get_key(),
           )
       )
-    if config.configs:
+    if cfg.configs:
       staged_operations.append(
           progress_tracker.Stage(
               'Creating configs...',

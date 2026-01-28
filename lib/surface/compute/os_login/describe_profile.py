@@ -22,8 +22,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
+from six.moves.urllib.parse import quote
 
 
+@base.UniverseCompatible
 class DescribeProfile(base.Command):
   """Describe the OS Login profile for the current user."""
 
@@ -35,7 +37,8 @@ class DescribeProfile(base.Command):
     oslogin_client = client.OsloginClient(self.ReleaseTrack())
     user_email = (properties.VALUES.auth.impersonate_service_account.Get()
                   or properties.VALUES.core.account.Get())
-    return oslogin_client.GetLoginProfile(user_email)
+    url_encoded_user_email = quote(user_email, safe=':@')
+    return oslogin_client.GetLoginProfile(url_encoded_user_email)
 
 
 DescribeProfile.detailed_help = {

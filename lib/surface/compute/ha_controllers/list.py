@@ -78,7 +78,7 @@ class List(base.ListCommand):
         instanceName,
         status.ongoingFailover,
         failoverInitiation,
-        secondaryZoneCapacity
+        failoverCapacity
       )""")
     parser.display_info.AddUriFunc(utils.MakeGetUriFunc())
     parser.display_info.AddTransforms({

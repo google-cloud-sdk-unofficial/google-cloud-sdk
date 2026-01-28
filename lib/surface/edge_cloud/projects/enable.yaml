@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Enables a Google Cloud Platform project on Google Distributed Cloud zone.
+    description: Enables a Google Cloud Platform project on Google Distributed Cloud zone.
+    examples: |
+      To enable a Google Cloud Platform project called `sample-project` in Google Distributed Cloud zone `sample-zone` in organization `sample-org` and location `us-central1`, run:
+
+      $ {command} sample-project --location=us-central1 --zone=sample-zone --organization=sample-org
+
+  request:
+    collection: edgecontainer.organizations.locations.zones.zonalProjects
+    api_version: v1alpha
+    method: enable
+
+  arguments:
+    resource:
+      help_text: Google Cloud Platform project
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:zonalProject
+    params:
+    - arg_name: organization
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:organization
+      required: true
+      help_text: |
+        Google Cloud Platform organization
+    - arg_name: location
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:location
+      required: true
+      help_text: |
+        Google Cloud Platform region
+    - arg_name: zone
+      resource_spec: !REF googlecloudsdk.command_lib.edge_cloud.project.resources:zone
+      is_parent_resource: true
+      is_primary_resource: false
+      required: true
+      help_text: |
+        Google Distributed Cloud zone
+
+  async:
+    collection: edgecontainer.organizations.locations.operations

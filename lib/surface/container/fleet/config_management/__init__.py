@@ -31,7 +31,7 @@ class Configmanagement(calliope_base.Group):
   detailed_help = {
       'DESCRIPTION': """
 Manage
-[Config Sync](https://cloud.google.com/kubernetes-engine/config-sync/gcloud-help/manage)
+[Config Sync](https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/how-to/installing-config-sync)
 using the Config Management feature.
 
 To manage Policy Controller, use `gcloud container fleet policycontroller`
@@ -40,6 +40,6 @@ instead.
 Hierarchy Controller is no longer available to install. If Hierarchy Controller
 is still configured, Config Sync upgrades are blocked. To upgrade Config Sync,
 disable Hierarchy Controller following
-https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/how-to/migrate-hierarchy-controller.
+https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/how-to/migrate-hierarchy-controller.
 """
   }

@@ -24,6 +24,7 @@ from googlecloudsdk.core import properties
 
 
 @base.Hidden
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class VirtualEnv(base.Group):
   """Manage Cloud SDK virtual env setup."""

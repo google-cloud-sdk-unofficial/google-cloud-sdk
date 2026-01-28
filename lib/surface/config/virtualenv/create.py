@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
+
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.config.virtualenv import util
@@ -29,7 +31,6 @@ from googlecloudsdk.core.util import files
 
 
 @base.Hidden
-@base.DefaultUniverseOnly
 class Create(base.Command):
   """Create a virtualenv environment.
 
@@ -46,6 +47,24 @@ class Create(base.Command):
     parser.add_argument(
         '--python-to-use',
         help='Absolute path to python to use to create virtual env.')
+    parser.add_argument(
+        '--enable-virtualenv',
+        action='store_true',
+        help='Enable gcloud virtualenv after creation.')
+
+  def _GetAndValidatePythonToUse(self, python):
+    if not os.path.exists(python):
+      log.error(
+          f'Provided python path `{python}` does not exist. '
+          'Stop creating gcloud virtualenv.'
+      )
+      if properties.IsInternalUserCheck():
+        log.error(
+            'You may need Santa exception to install python. '
+            'See go/gcloud-python-santa-exception.'
+        )
+      raise exceptions.ExitCodeNoError(exit_code=5)
+    return python
 
   def Run(self, args):
     if util.IsPy2() and not args.IsSpecified('python_to_use'):
@@ -55,14 +74,13 @@ class Create(base.Command):
       log.error('Virtual env support not enabled on Windows.')
       raise exceptions.ExitCodeNoError(exit_code=4)
     if args.IsSpecified('python_to_use'):
-      python = args.python_to_use
+      python = self._GetAndValidatePythonToUse(args.python_to_use)
     else:
       try:
         python = execution_utils.GetPythonExecutable()
       except ValueError:
         log.error('Failed to resolve python to use for virtual env.')
         raise exceptions.ExitCodeNoError(exit_code=5)
-
     ve_dir = config.Paths().virtualenv_dir
     if util.VirtualEnvExists(ve_dir):
       log.error('Virtual env setup {} already exists.'.format(ve_dir))
@@ -105,7 +123,16 @@ class Create(base.Command):
               'You might need further authentication. See more at '
               'go/gcloud-internal-auth.'
           )
+
+        log.error(
+            'Certain gcloud commands require extension binary modules. '
+            'To install the modules manually, run: \n'
+            '  $ gcloud config virtualenv create --enable-virtualenv'
+        )
         raise exceptions.ExitCodeNoError(exit_code=ec)
+      if args.enable_virtualenv:
+        log.status.Print('Enabling virtualenv...')
+        util.EnableVirtualEnv(ve_dir)
     finally:
       # If something went wrong we clean up any partial created ve_dir
       if not succeeded_making_venv:

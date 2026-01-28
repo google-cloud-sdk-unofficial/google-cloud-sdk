@@ -253,9 +253,18 @@ class Init(base.Command):
       return False
     else:
       # Must sign in with new credentials.
+      if console_only or no_browser:
+        sign_in_details = (
+            'selecting "Y" will display a link that can be opened in your'
+            ' browser to complete authentication')
+      else:
+        sign_in_details = (
+            'selecting "Y" will open your browser to the sign-in page'
+            ' where you complete authentication')
       answer = console_io.PromptContinue(
           prompt_string=(
               'You must sign in to continue. Would you like to sign in'
+              ' ({})'.format(sign_in_details)
           )
       )
       if not answer:

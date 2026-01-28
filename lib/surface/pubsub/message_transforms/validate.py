@@ -21,9 +21,23 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core import log
 
 
+def _Run(args, enable_vertex_ai_smt=False):
+  """Runs the message transforms validate command."""
+  client = message_transforms.MessageTransformsClient()
+
+  message_transform_file = getattr(args, 'message_transform_file', None)
+
+  client.Validate(
+      util.ParseProject(),
+      message_transform_file,
+      enable_vertex_ai_smt=enable_vertex_ai_smt,
+  )
+  log.status.Print('Message transform is valid.')
+
+
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
+    base.ReleaseTrack.GA, base.ReleaseTrack.BETA
 )
 class Validate(base.Command):
   """Validates a message transform."""
@@ -33,9 +47,16 @@ class Validate(base.Command):
     flags.AddValidateMessageTransformFlags(parser)
 
   def Run(self, args):
-    client = message_transforms.MessageTransformsClient()
+    return _Run(args)
 
-    message_transform_file = getattr(args, 'message_transform_file', None)
 
-    client.Validate(util.ParseProject(), message_transform_file)
-    log.status.Print('Message transform is valid.')
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class ValidateAlpha(Validate):
+  """Validates a message transform."""
+
+  @staticmethod
+  def Args(parser):
+    super(ValidateAlpha, ValidateAlpha).Args(parser)
+
+  def Run(self, args):
+    return _Run(args, enable_vertex_ai_smt=True)

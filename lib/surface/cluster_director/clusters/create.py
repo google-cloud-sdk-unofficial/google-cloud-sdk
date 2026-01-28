@@ -35,9 +35,9 @@ DETAILED_HELP = {
         Please refer to the examples below for more details.
         """),
     "EXAMPLES": textwrap.dedent("""
-        To create a cluster `my-cluster` in location `us-central1-a` with granular flags, run the following example:
+        To create a cluster `my-cluster` in location `us-central1` with granular flags, run the following example:
 
-        $ {command} my-cluster --location us-central1-a \
+        $ {command} my-cluster --location us-central1 \
         --description "My cluster description" \
         --labels env=prod,client=gcloud-cli \
         --create-network name=network0 \
@@ -54,13 +54,13 @@ DETAILED_HELP = {
         --slurm-default-partition partition0 \
         --format json
 
-        To create a cluster `my-cluster` in location `us-central1-a` with config in JSON string format run the following example:
+        To create a cluster `my-cluster` in location `us-central1` with config in JSON string format run the following example:
 
-        $ {command} my-cluster --location=us-central1-a --config='{"key": "value"}'
+        $ {command} my-cluster --location=us-central1 --config='{"key": "value"}'
 
         Or create a JSON file `my-cluster-config.json` with the cluster specs and run the following file example:
 
-        $ {command} my-cluster --location=us-central1-a --config=my-cluster-config.json
+        $ {command} my-cluster --location=us-central1 --config=my-cluster-config.json
         """),
 }
 
@@ -115,7 +115,7 @@ class Create(base.CreateCommand):
     flags.AddOnDemandInstances(parser=flag_group, api_version=api_version)
     flags.AddSpotInstances(parser=flag_group, api_version=api_version)
     flags.AddReservedInstances(parser=flag_group, api_version=api_version)
-    flags.AddDwsFlexInstances(parser=flag_group, api_version=api_version)
+    flags.AddFlexStartInstances(parser=flag_group, api_version=api_version)
     flags.AddSlurmLoginNode(
         parser=flag_group, api_version=api_version, required=True
     )

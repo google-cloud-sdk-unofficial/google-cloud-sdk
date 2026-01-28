@@ -94,7 +94,7 @@ class Disable(
         help="""\
 Uninstall any previously-installed and managed Config Sync on the specified
 memberships by setting the `enabled`
-[field](https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/reference/gcloud-apply-fields)
+[field](https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-apply-fields)
 to false. Clears all other configuration for each membership. Does not wait for
 the uninstallation to complete. To bypass the confirmation prompt, use
 `--force`. Requires the feature to be enabled.

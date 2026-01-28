@@ -49,6 +49,10 @@ EXAMPLES = """\
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-client-secret=fakesecret --salesforce-client-id=fake-client-id --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
 
+        To create a connection profile for Spanner:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=spanner --spanner-database=projects/fake-project/instances/fake-instance/databases/fake-database --display-name=my-profile
+
     To create a connection profile for Google Cloud Storage:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket=fake-bucket --root-path=/root/path --display-name=my-profile
@@ -107,6 +111,7 @@ class Create(base.Command):
     cp_flags.AddPostgresqlProfileGroup(profile_flags)
     cp_flags.AddSqlServerProfileGroup(profile_flags)
     cp_flags.AddSalesforceProfileGroup(profile_flags)
+    cp_flags.AddSpannerProfileCreateGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track)
     cp_flags.AddMongodbProfileGroup(profile_flags)
     flags.AddLabelsCreateFlags(parser)

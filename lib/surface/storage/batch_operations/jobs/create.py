@@ -85,6 +85,21 @@ class Create(calliope_base.Command):
           message=delete_prompt,
           cancel_on_no=True,
       )
+    # Prompts to confirm deletion if --clear-all-object-custom-contexts
+    # is specified.
+    clear_all_object_custom_contexts = getattr(
+        args, "clear_all_object_custom_contexts", False
+    )
+    if clear_all_object_custom_contexts:
+      clear_all_object_custom_contexts_prompt = (
+          "This command will clear all object custom contexts for the objects"
+          " specified in the batch operation job."
+      )
+      console_io.PromptContinue(
+          message=clear_all_object_custom_contexts_prompt,
+          cancel_on_no=True,
+      )
+
     job_ref = args.CONCEPTS.batch_job.Parse()
     storage_batch_operations_api.StorageBatchOperationsApi().create_batch_job(
         args, job_ref.RelativeName()

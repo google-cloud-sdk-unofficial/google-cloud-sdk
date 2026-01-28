@@ -27,7 +27,7 @@ from googlecloudsdk.core import log
 
 
 DETAILED_HELP = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """\
           To create a custom role ``ProjectUpdater'' from a YAML file, run:
 
@@ -37,6 +37,7 @@ DETAILED_HELP = {
 
             $ {command} ProjectUpdater --project=myproject --title=ProjectUpdater --description="Have access to get and update the project" --permissions=resourcemanager.projects.get,resourcemanager.projects.update
         """
+    )
 }
 
 
@@ -54,21 +55,33 @@ class Create(base.Command):
     roles_group = parser.add_group(mutex=True)
     settings_flags_group = roles_group.add_group('Roles Settings')
     settings_flags_group.add_argument(
-        '--title', help='The title of the role you want to create.')
+        '--title', help='The title of the role you want to create.'
+    )
     settings_flags_group.add_argument(
-        '--description', help='The description of the role you want to create.')
+        '--description', help='The description of the role you want to create.'
+    )
     settings_flags_group.add_argument(
-        '--stage', help='The state of the role you want to create. '
-        'This represents a role\'s lifecycle phase: `ALPHA`, `BETA`, `GA`, '
-        '`DEPRECATED`, `DISABLED`, `EAP`.')
+        '--stage',
+        help=(
+            'The state of the role you want to create. '
+            "This represents a role's lifecycle phase: `ALPHA`, `BETA`, `GA`, "
+            '`DEPRECATED`, `DISABLED`, `EAP`.'
+        ),
+    )
     settings_flags_group.add_argument(
         '--permissions',
-        help='The permissions of the role you want to create. '
-        'Use commas to separate them.')
+        help=(
+            'The permissions of the role you want to create. '
+            'Use commas to separate them.'
+        ),
+    )
     roles_group.add_argument(
         '--file',
-        help='The JSON or YAML file with the IAM Role to create. See '
-             'https://cloud.google.com/iam/reference/rest/v1/projects.roles.')
+        help=(
+            'The JSON or YAML file with the IAM Role to create. See '
+            'https://docs.cloud.google.com/iam/docs/reference/rest/v1/projects.roles.'
+        ),
+    )
     flags.AddParentFlags(parser, 'create')
     flags.GetCustomRoleFlag('create').AddToParser(parser)
 
@@ -90,11 +103,12 @@ class Create(base.Command):
       role.title = args.role
 
     if not args.quiet:
-      permissions_helper = util.PermissionsHelper(client, messages,
-                                                  iam_util.GetResourceReference(
-                                                      args.project,
-                                                      args.organization),
-                                                  role.includedPermissions)
+      permissions_helper = util.PermissionsHelper(
+          client,
+          messages,
+          iam_util.GetResourceReference(args.project, args.organization),
+          role.includedPermissions,
+      )
       api_diabled_permissions = permissions_helper.GetApiDisabledPermissons()
       iam_util.ApiDisabledPermissionsWarning(api_diabled_permissions)
       testing_permissions = permissions_helper.GetTestingPermissions()
@@ -103,8 +117,11 @@ class Create(base.Command):
     result = client.organizations_roles.Create(
         messages.IamOrganizationsRolesCreateRequest(
             createRoleRequest=messages.CreateRoleRequest(
-                role=role, roleId=args.role),
-            parent=parent_name))
+                role=role, roleId=args.role
+            ),
+            parent=parent_name,
+        )
+    )
     log.CreatedResource(args.role, kind='role')
     iam_util.SetRoleStageIfAlpha(result)
     return result

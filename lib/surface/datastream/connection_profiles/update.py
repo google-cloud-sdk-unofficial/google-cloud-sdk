@@ -45,6 +45,10 @@ EXAMPLES = """\
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=salesforce --salesforce-password=fakepassword --salesforce-username=fakeuser --display-name=my-profile --salesforce-domain=fakecompany.my.salesforce.com --static-ip-connectivity
 
+    To update a connection profile for Spanner:
+
+        $ {command} CONNECTION_PROFILE --location=us-central1 --type=spanner --spanner-host=https://spanner.us-central1.rep.googleapis.com --display-name=my-profile
+
     To update a connection profile for Google Cloud Storage:
 
         $ {command} CONNECTION_PROFILE --location=us-central1 --type=google-cloud-storage --bucket=fake-bucket --root-path=/root/path --display-name=my-profile
@@ -104,6 +108,7 @@ class Update(base.Command):
     cp_flags.AddPostgresqlProfileGroup(profile_flags, required=False)
     cp_flags.AddSqlServerProfileGroup(profile_flags, required=False)
     cp_flags.AddSalesforceProfileGroup(profile_flags, required=False)
+    cp_flags.AddSpannerProfileUpdateGroup(profile_flags)
     cp_flags.AddGcsProfileGroup(profile_flags, release_track, required=False)
     cp_flags.AddMongodbProfileGroup(profile_flags, required=False)
     flags.AddLabelsUpdateFlags(parser)

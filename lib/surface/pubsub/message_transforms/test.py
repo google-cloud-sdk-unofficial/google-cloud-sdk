@@ -21,10 +21,49 @@ from googlecloudsdk.command_lib.pubsub import util
 from googlecloudsdk.core.util import http_encoding
 
 
+def _Run(args, enable_vertex_ai_smt=False):
+  """Runs the message transforms test command."""
+  client = message_transforms.MessageTransformsClient()
+
+  message_body = getattr(args, 'message', None)
+  attributes = util.ParseAttributes(
+      getattr(args, 'attribute', None), client.messages
+  )
+  message_transforms_file = getattr(args, 'message_transforms_file', None)
+  topic = getattr(args, 'topic', None)
+  if topic:
+    topic = args.CONCEPTS.topic.Parse()
+  subscription = getattr(args, 'subscription', None)
+  if subscription:
+    subscription = args.CONCEPTS.subscription.Parse()
+
+  result = client.Test(
+      project_ref=util.ParseProject(),
+      message_body=http_encoding.Encode(message_body),
+      attributes=attributes,
+      message_transforms_file=message_transforms_file,
+      topic_ref=topic,
+      subscription_ref=subscription,
+      enable_vertex_ai_smt=enable_vertex_ai_smt,
+  )
+  output = []
+  for transformed_message in result.transformedMessages:
+    if message := transformed_message.transformedMessage:
+      message_copy = {}
+      for field in message.all_fields():
+        value = getattr(message, field.name)
+        if value:
+          if field.name == 'data':
+            value = message.data.decode()
+          message_copy[field.name] = value
+      output.append(message_copy)
+    else:
+      output.append(transformed_message)
+  return output
+
+
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(
-    base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
-)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Test(base.Command):
   """Tests message transforms against a given message."""
 
@@ -33,39 +72,16 @@ class Test(base.Command):
     flags.AddTestMessageTransformFlags(parser)
 
   def Run(self, args):
-    client = message_transforms.MessageTransformsClient()
+    return _Run(args)
 
-    message_body = getattr(args, 'message', None)
-    attributes = util.ParseAttributes(
-        getattr(args, 'attribute', None), client.messages
-    )
-    message_transforms_file = getattr(args, 'message_transforms_file', None)
-    topic = getattr(args, 'topic', None)
-    if topic:
-      topic = args.CONCEPTS.topic.Parse()
-    subscription = getattr(args, 'subscription', None)
-    if subscription:
-      subscription = args.CONCEPTS.subscription.Parse()
 
-    result = client.Test(
-        project_ref=util.ParseProject(),
-        message_body=http_encoding.Encode(message_body),
-        attributes=attributes,
-        message_transforms_file=message_transforms_file,
-        topic_ref=topic,
-        subscription_ref=subscription,
-    )
-    output = []
-    for transformed_message in result.transformedMessages:
-      if message := transformed_message.transformedMessage:
-        message_copy = {}
-        for field in message.all_fields():
-          value = getattr(message, field.name)
-          if value:
-            if field.name == 'data':
-              value = message.data.decode()
-            message_copy[field.name] = value
-        output.append(message_copy)
-      else:
-        output.append(transformed_message)
-    return output
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class TestAlpha(Test):
+  """Tests message transforms against a given message."""
+
+  @staticmethod
+  def Args(parser):
+    super(TestAlpha, TestAlpha).Args(parser)
+
+  def Run(self, args):
+    return _Run(args, enable_vertex_ai_smt=True)

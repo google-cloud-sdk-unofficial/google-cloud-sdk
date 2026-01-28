@@ -63,7 +63,7 @@ class Enable(features_base.EnableCommand,
               '/manage-features) to enable with a new feature.'
               ' This file shares the syntax of the `--config` flag on the'
               ' `apply` command: see recognized fields [here]('
-              'https://cloud.google.com/kubernetes-engine/enterprise/config-sync/docs/reference/gcloud-apply-fields).'
+              'https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-apply-fields).'
               ' Errors if the Policy Controller or Hierarchy Controller field'
               ' is set.'
               ' This flag will also enable or update the fleet-default'

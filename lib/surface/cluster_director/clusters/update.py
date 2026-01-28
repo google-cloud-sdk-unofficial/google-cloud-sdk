@@ -160,7 +160,7 @@ class Update(base.UpdateCommand):
     flags.AddReservedInstances(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
-    flags.AddDwsFlexInstances(
+    flags.AddFlexStartInstances(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
     flags.AddSlurmNodeSets(

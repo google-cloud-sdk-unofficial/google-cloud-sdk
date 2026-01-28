@@ -39,6 +39,36 @@ from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 
 
+_DEPRECATED_SCOPES = frozenset([  # gcloud-disable-gdu-domain
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.readonly',
+    'https://www.googleapis.com/auth/analytics.readonly',
+    'https://www.googleapis.com/auth/spreadsheets.readonly',
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/adwords',
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/analytics.edit',
+    'https://www.googleapis.com/auth/drive.metadata.readonly',
+    'https://www.googleapis.com/auth/content',
+    'https://www.googleapis.com/auth/analytics',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    'https://www.googleapis.com/auth/drive.metadata',
+    'https://www.googleapis.com/auth/contacts',
+    'https://www.googleapis.com/auth/youtube',
+    'https://www.googleapis.com/auth/calendar.events.readonly',
+    'https://www.googleapis.com/auth/drive.scripts',
+    'https://www.googleapis.com/auth/docs',
+    'https://www.googleapis.com/auth/drive.photos.readonly',
+])
+
+
+_TROUBLESHOOT_ADC_URL = (
+    'https://docs.cloud.google.com/docs/authentication/'
+    'troubleshoot-adc#access_blocked_when_using_scopes'
+)
+
+
 @base.UniverseCompatible
 class Login(base.Command):
   r"""Acquire new user credentials to use for Application Default Credentials.
@@ -182,6 +212,21 @@ class Login(base.Command):
       # Source credential just needs the scope needed to call the IAM API for
       # impersonation. Asking user to consent any other scope is unnecessary.
       scopes = [auth_util.CLOUD_PLATFORM_SCOPE]
+
+    # Check for deprecated scopes
+    deprecated_scopes_found = _DEPRECATED_SCOPES.intersection(scopes)
+    if deprecated_scopes_found and not args.client_id_file:
+      log.warning(
+          '\nThe following scopes will be blocked soon for'
+          ' the default client ID:'
+          ' {}.\n'
+          'To use these scopes, you must provide your own client ID or use '
+          'service account impersonation.\n'
+          'Please refer to the documentation for more information: '
+          '{}'.format(
+              ', '.join(sorted(deprecated_scopes_found)), _TROUBLESHOOT_ADC_URL
+          )
+      )
 
     flow_params = dict(
         no_launch_browser=not args.launch_browser,

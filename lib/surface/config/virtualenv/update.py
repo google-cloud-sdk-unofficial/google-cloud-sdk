@@ -18,16 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.config.virtualenv import util
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
 from googlecloudsdk.core import log
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
+@base.DefaultUniverseOnly
 class Update(base.Command):
   """Update modules installed in a virtualenv environment."""
 
@@ -40,12 +41,17 @@ class Update(base.Command):
     log.status.Print('Updating modules...')
     update_modules = [
         '{}/bin/pip3'.format(ve_dir), 'install', '--log',
-        '{}/update_module.log'.format(ve_dir), '-q',
+        '{}/update_module.log'.format(ve_dir),
         '--disable-pip-version-check'
     ]
     update_modules.extend(util.MODULES)
     ec = execution_utils.Exec(update_modules, no_exit=True)
     if ec != 0:
       log.error('Failed to update modules.')
+      if properties.IsInternalUserCheck():
+        log.error(
+            'You might need further authentication. See more at '
+            'go/gcloud-internal-auth.'
+        )
       raise exceptions.ExitCodeNoError(exit_code=1)
     log.status.Print('Modules updated.')

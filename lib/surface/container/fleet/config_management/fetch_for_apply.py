@@ -28,13 +28,22 @@ from googlecloudsdk.core import yaml
 from googlecloudsdk.core.util import semver
 
 
+@base.Deprecate(
+    is_removed=False,
+    # TODO(b/435530306): Include beta release track in warning message.
+    warning=(
+        'This command is deprecated and will be removed in an upcoming release.'
+        " Please use the new `describe` command's `--view=config` flag in the"
+        " alpha release track instead."
+    )
+)
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Fetch(features_base.DescribeCommand):
   """Prints the Config Management configuration applied to the given membership.
 
-  The output is in the format that is used by the apply subcommand. The fields
-  that have not been configured will be shown with default values.
+  The `fetch-for-apply` output uses the format of the apply command. Any fields
+  not configured display default values.
 
   ## EXAMPLES
 

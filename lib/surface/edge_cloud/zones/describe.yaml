@@ -1,0 +1,15 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a Google Distributed Cloud zone
+    description: Describes a Google Distributed Cloud zone.
+    examples: |
+      To describe a Google Distributed Cloud zone called `sample-zone` in organization `sample-org` and location `us-central1`, run:
+      $ {command} sample-zone --location=us-central1 --organization=test-org
+  request:
+    collection: edgecontainer.organizations.locations.zones
+    api_version: v1alpha
+    method: get
+  arguments:
+    resource:
+      help_text: Google Distributed Cloud zone to describe.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.zone.resources:zone

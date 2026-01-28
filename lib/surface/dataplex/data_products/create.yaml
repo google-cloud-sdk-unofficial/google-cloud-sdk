@@ -1,0 +1,45 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Create a Dataplex data product resource.
+    description: |
+      Create a Dataplex data product resource.
+
+      The data product ID must conform to RFC-1034 and contain only lower-case letters (a-z),
+      numbers (0-9), or hyphens, with the first character a letter, the last a
+      letter or a number, and a 63 character maximum. If not provided, a system generated ID will be used.
+    examples: |
+      To create a Dataplex data product `test-dp` in location `us-central1` with display name "test dp" and owner "test@google.com", run:
+
+          $ {command} test-dp --location=us-central1 --display-name="test dp" --owner-emails="test@google.com"
+
+  request:
+    ALPHA:
+      api_version: v1
+    collection: dataplex.projects.locations.dataProducts
+  arguments:
+    resource:
+      help_text: |
+        Arguments and flags that specify the Dataplex Data Product you want to create.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_product
+    params:
+    - arg_name: display-name
+      api_field: googleCloudDataplexV1DataProduct.displayName
+      required: true
+      help_text: |
+        Display name of the Dataplex data product.
+    - arg_name: description
+      api_field: googleCloudDataplexV1DataProduct.description
+      help_text: |
+        Description of the Dataplex data product.
+    - arg_name: owner-emails
+      api_field: googleCloudDataplexV1DataProduct.ownerEmails
+      required: true
+      repeated: true
+      help_text: |
+        Emails of the data product owners.
+    labels:
+      api_field: googleCloudDataplexV1DataProduct.labels
+  async:
+    collection: dataplex.projects.locations.operations
