@@ -17,6 +17,7 @@
 import copy
 import textwrap
 
+from googlecloudsdk.api_lib.container.fleet import util
 from googlecloudsdk.api_lib.util import exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
@@ -31,16 +32,17 @@ from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base a
 class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
   """Update the Config Management feature."""
   detailed_help = {
-      # TODO(b/433355766): Update introduction of
-      # update compared to apply command with new flags.
+      # TODO(b/433355766): Update introduction of update compared to apply
+      # command with new flags.
       'DESCRIPTION': textwrap.dedent(
           """\
           {description}
 
           `{command}` replaces the `apply` command. It accepts the `describe`
-          command output as input to ease configuration updates and supports
-          updates to multiple memberships. This command will gradually introduce
-          all the `apply` command flags and graduate to `GA`."""
+          command output as input to ease configuration updates, supports a
+          `--fleet-default-member-config` flag, and can update multiple
+          `--memberships`. This command will gradually introduce all the `apply`
+          command flags and graduate to `GA`."""
       ),
       # TODO(b/435530306): Use GA describe command in example instead.
       'EXAMPLES': textwrap.dedent(
@@ -48,8 +50,7 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
           To update only the Config Sync sync directory on an existing
           membership configuration, run:
 
-            $ gcloud alpha container fleet config-management describe
-                --view=config --memberships=example-membership-1 > config.yaml
+            $ gcloud alpha container fleet config-management describe --view=config --memberships=example-membership-1 > config.yaml
 
             $ sed -i "s/policyDir: foo/policyDir: bar/g" config.yaml
 
@@ -66,6 +67,34 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
         mutex=True,
         # TODO(b/440401143): Add help text.
     )
+    v1_api_version = util.VERSION_MAP[cls.ReleaseTrack()]
+    all_flags_group.add_argument(
+        '--fleet-default-member-config',
+        # TODO(b/435530306): Use GA describe command in example instead.
+        help=textwrap.dedent(
+            f"""\
+            Path to YAML file, or `-` to read from stdin, that specifies the
+            [fleet-default membership configuration](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
+            to update the feature to. Accepts the same schema as the
+            `MembershipSpec`
+            [API field](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rpc/google.cloud.gkehub.configmanagement.{v1_api_version}#google.cloud.gkehub.configmanagement.{v1_api_version}.MembershipSpec).
+            Provides the additional field-handling documented at
+            https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior.
+
+            To update only the Config Sync sync directory on the existing
+            fleet-default membership configuration, run:
+
+              $ gcloud alpha container fleet config-management describe --view=fleet-default-member-config > config.yaml
+
+              $ sed -i "s/policyDir: foo/policyDir: bar/g" config.yaml
+
+              $ {{command}} --fleet-default-member-config=config.yaml
+
+            To achieve the same result in a single invocation, run:
+
+              $ gcloud alpha container fleet config-management describe --view=fleet-default-member-config | sed "s/policyDir: foo/policyDir: bar/g" | {{command}} --fleet-default-member-config="-\""""
+        ),
+    )
     membership_specific_group = all_flags_group.add_group(
         # TODO(b/440401143): Add help text.
     )
@@ -75,11 +104,7 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
         # TODO(b/440401143): Add help text. Can reference --source help text.
         # Explain .yaml files in error msg.
     )
-    api_reference_by_release_track = {
-        base.ReleaseTrack.ALPHA: (
-            'https://cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rpc/google.cloud.gkehub.configmanagement.v2alpha#google.cloud.gkehub.configmanagement.v2alpha.Spec'
-        )
-    }
+    v2_api_version = util.V2_VERSION_MAP[cls.ReleaseTrack()]
     # TODO(b/435530306): Use GA describe command in example instead.
     configuration_group.add_argument(
         '--config',
@@ -88,15 +113,14 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
             Path to YAML file, or `-` to read from stdin, that specifies the
             configuration to update the target membership(s) to. Accepts the
             same schema as the `Spec`
-            [API field]({api_reference_by_release_track[cls.ReleaseTrack()]}).
-            Provides the additional field-handling documented in
-            ["gcloud configuration field behavior"](https://cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior).
+            [API field](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/reference/rpc/google.cloud.gkehub.configmanagement.{v2_api_version}#google.cloud.gkehub.configmanagement.{v2_api_version}.Spec).
+            Provides the additional field-handling documented at
+            https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior.
 
             To update the entire configuration for select memberships to that
             specified in a `config.yaml`, run:
 
-              $ {{command}} --config=path/to/config.yaml
-                  --memberships=example-membership-1,example-membership-2
+              $ {{command}} --config=path/to/config.yaml --memberships=example-membership-1,example-membership-2
 
             To update only the Config Sync sync directory on an existing
             membership configuration in a single invocation, making sure to
@@ -113,11 +137,24 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
 
   @exceptions.CatchHTTPErrorRaiseHTTPException('{message}')
   def Run(self, args):
+    flag_parser = flags.Parser(self)
+    # Empty string counts as specifying the --fleet-default-member-config flag.
+    if args.fleet_default_member_config is not None:
+      self.Update(['fleet_default_member_config'], self.messages.Feature(
+          fleetDefaultMemberConfig=(
+              self.messages.CommonFleetDefaultMemberConfigSpec(
+                  configmanagement=flag_parser.parse_config(
+                      args.fleet_default_member_config, is_fleet_default=True
+                  )
+              )
+          )
+      ))
+      return
     # Do not search or auto-select.
     memberships = features_base.ParseMembershipsPlural(args, prompt=True)
-    # Feature must exist to reconcile configuration changes.
+    # Feature must exist to reconcile v2 configuration changes.
     feature = self.GetFeature()
-    cm_spec = flags.Parser(self).parse_config(args.config)
+    cm_spec = flag_parser.parse_config(args.config, is_fleet_default=False)
     cm_specs_to_update = [copy.deepcopy(cm_spec) for _ in memberships]
     # Backfill even if user mapped version to empty string to avoid edge case
     # behavior and because version preservation is much safer. Backfill will

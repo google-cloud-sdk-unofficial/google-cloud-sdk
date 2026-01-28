@@ -23,7 +23,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.util import times
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class Failover(base.Command):
   """Failover a BigLake Iceberg REST catalog."""

@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe discoveredRanges
-    description: Describe a discoveredRange
+    brief: Gets details of a single discovered range resource
+    description: |
+      Gets details of a single discovered range resource.
     examples: |-
-      To describe the discoveredRange, run:
+      To get the details of a single discovered range `my-discovered-range` run:
 
-          $ {command}
+      $ {command} my-discovered-range --location=global
   arguments:
     params:
     - help_text: |-

@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: cleanup ipamAdminScopes
-    description: cleanup ipamAdminScopes
+    brief: Clean up a single IPAM admin scope resource
+    description: |
+      Clean up a single IPAM admin scope.
     examples: |-
-      To cleanup all ipamAdminScopes, run:
+      To clean up an IPAM admin scope `my-ipam-admin-scope` run:
 
-          $ {command}
+      $ {command} my-ipam-admin-scope --location=global
   arguments:
     params:
     - help_text: |-

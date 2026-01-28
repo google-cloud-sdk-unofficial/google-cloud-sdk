@@ -89,3 +89,11 @@
         enum_value: standard
       - arg_value: advanced
         enum_value: advanced
+
+    - arg_name: resource-manager-tags
+      api_field: storagePool.params.resourceManagerTags
+      release_tracks: [ALPHA]
+      help_text: |
+        Resource manager tags to be bound to the storage pool.
+      metavar: KEY=VALUE
+      type: 'googlecloudsdk.calliope.arg_parsers:ArgDict:'

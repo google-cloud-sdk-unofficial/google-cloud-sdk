@@ -24,6 +24,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet import resources
 from googlecloudsdk.command_lib.container.fleet.config_management import utils
 from googlecloudsdk.command_lib.container.fleet.features import base as features_base
+from googlecloudsdk.command_lib.container.fleet.features import flags
 from googlecloudsdk.command_lib.container.fleet.membershipfeatures import base as membershipfeatures_base
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
@@ -81,7 +82,7 @@ List of membership configurations. Default format is a table summary.
 
 The `SYNCED_TO_FLEET_DEFAULT` column may display `UNKNOWN` for any membership
 whose configuration has not been updated since the
-[fleet-default membership configuration](https://cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
+[fleet-default membership configuration](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
 enablement.
 
 To view the underlying configurations instead of the table summary for select
@@ -103,6 +104,19 @@ memberships, run:
 
                   $ {command} --view=config --memberships=example-membership-1
                 """
+            ),
+            'fleet-default-member-config': (
+                '[Fleet-default membership configuration]('
+                'https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)'
+                ' in a format that is passable to the'
+                ' `--fleet-default-member-config` flag on the `enable` and'
+                ' `update` commands.'
+                ' Note that the configuration includes any deprecated fields'
+                ' that are set.'
+                ' Errors if the fleet-default membership configuration is not'
+                ' set on the feature.'
+                ' Errors if specified with the `--memberships` flag.'
+                ' Tab to auto-complete this flag value.'
             ),
         },
         default='full',
@@ -160,6 +174,7 @@ Config Sync repo, and print its values in a table, run:
     )
     sort_by_with_examples.AddToParser(list_group)
     memberships_group = parser.add_group(
+        category=flags.MEMBERSHIP_CATEGORY,
         help=(
             'Memberships to print configurations for.'
             ' Errors if a specified membership does not have a configuration'
@@ -174,6 +189,11 @@ Config Sync repo, and print its values in a table, run:
       raise exceptions.Error(
           '--filter and --sort-by can only be specified when --view=list.'
       )
+    if args.view == 'fleet-default-member-config' and args.memberships:
+      raise exceptions.Error(
+          '--fleet-default-member-config cannot be specified with'
+          ' --memberships.'
+      )
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException('{message}')
   def Run(self, args):
@@ -183,6 +203,16 @@ Config Sync repo, and print its values in a table, run:
     self.enforce_flag_combinations(args)
     # Feature must exist for any invocation of this command.
     feature = self.GetFeature()
+    fdc_exists = feature.fleetDefaultMemberConfig is not None
+    if args.view == 'fleet-default-member-config':
+      # configmanagement None is not readable input to
+      # --fleet-default-member-config on the enable and update commands.
+      if fdc_exists and feature.fleetDefaultMemberConfig.configmanagement:
+        return feature.fleetDefaultMemberConfig.configmanagement
+      raise exceptions.Error(
+          'Fleet-default membership configuration is not set'
+          f' on the {self.feature.display_name} feature.'
+      )
     memberships = []
     if args.memberships or args.view == 'config':
       memberships = features_base.ParseMembershipsPlural(
@@ -211,14 +241,14 @@ Config Sync repo, and print its values in a table, run:
           not membership_feature.spec.configmanagement):
         raise exceptions.Error(
             'MembershipFeature'
-            f" '{self.MembershipFeatureResourceName(target_membership)}'"
+            f' [{self.MembershipFeatureResourceName(target_membership)}]'
             ' missing expected configuration.'
         )
       return membership_feature.spec.configmanagement
     if args.view == 'list':
       # Limit transforms to --view=list for simplicity; relax if necessary.
       self.parser.display_info.AddTransforms(transforms.get_transforms(
-          self.hubclient, feature.fleetDefaultMemberConfig is not None,
+          self.hubclient, fdc_exists,
       ))
       self.parser.display_info.AddFormat("""table(
           name.segment(-3):label=MEMBERSHIP:sort=2,

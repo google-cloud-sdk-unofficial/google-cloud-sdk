@@ -44,15 +44,25 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
+
+@base.DefaultUniverseOnly
 class Create(base.CreateCommand):
   """Create a Firewall Plus endpoint association."""
 
   @classmethod
   def Args(cls, parser):
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
     association_flags.AddAssociationIDArg(parser)
     association_flags.AddZoneArg(parser)
-    association_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
+    association_flags.AddEndpointResource(
+        cls.ReleaseTrack(), parser, project_scope_supported
+    )
     association_flags.AddNetworkResource(parser)
     association_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     association_flags.AddTLSInspectionPolicy(cls.ReleaseTrack(), parser)
@@ -75,7 +85,8 @@ class Create(base.CreateCommand):
     max_wait = datetime.timedelta(seconds=args.max_wait)
 
     network = args.CONCEPTS.network.Parse()
-    endpoint = args.CONCEPTS.endpoint.Parse()
+    result = args.CONCEPTS.endpoint.Parse()
+    endpoint = result.result
     tls_inspection_policy = None
 
     if args.IsSpecified('tls_inspection_policy'):

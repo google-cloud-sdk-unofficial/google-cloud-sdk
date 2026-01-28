@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Wait operations
-    description: Wait an operation
+    brief: Wait for an operation to complete
+    description: Wait for an operation to complete
     examples: |-
-      To wait the operation, run:
+      To wait for the operation `operation-1234567890` to complete in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} operation-1234567890 --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: find discoveredRanges
-    description: find discoveredRanges
+    brief: Find free IP ranges in a discovered range
+    description: |
+      Find free IP ranges in a discovered range.
     examples: |-
-      To find all discoveredRanges, run:
+      To find free IP ranges in a discovered range `my-discovered-range` run:
 
-          $ {command}
+      $ {command} my-discovered-range --location=global --cidr_prefix_length=24 --range-count=1
   arguments:
     params:
     - help_text: |-
@@ -70,5 +71,5 @@
     api_version: v1alpha
     collection:
     - cloudnumberregistry.projects.locations.discoveredRanges
-    method: findFreeIpRange
+    method: findFreeIpRanges
   command_type: GENERIC

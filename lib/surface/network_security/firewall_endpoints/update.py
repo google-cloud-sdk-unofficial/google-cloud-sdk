@@ -48,7 +48,12 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
+
+@base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Firewall Plus endpoint.
 
@@ -57,7 +62,14 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    activation_flags.AddEndpointResource(
+        cls.ReleaseTrack(),
+        parser,
+        project_scope_supported,
+    )
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
     activation_flags.AddUpdateBillingProjectArg(parser)
@@ -66,9 +78,16 @@ class Update(base.UpdateCommand):
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
-    client = activation_api.Client(self.ReleaseTrack())
+    result = args.CONCEPTS.firewall_endpoint.Parse()
+    endpoint = result.result
 
-    endpoint = args.CONCEPTS.firewall_endpoint.Parse()
+    project_scoped = (
+        result.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+
+    client = activation_api.Client(self.ReleaseTrack(), project_scoped)
+
     original = client.DescribeEndpoint(endpoint.RelativeName())
     if original is None:
       raise exceptions.InvalidArgumentException(

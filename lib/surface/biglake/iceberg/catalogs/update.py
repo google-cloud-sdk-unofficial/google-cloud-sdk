@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class UpdateCatalog(base.UpdateCommand):
   """Update a BigLake Iceberg REST catalog."""
@@ -29,7 +29,7 @@ class UpdateCatalog(base.UpdateCommand):
   def Args(parser):
     flags.AddCatalogResourceArg(parser, 'to update')
     util.GetCredentialModeEnumMapper(
-        base.ReleaseTrack.ALPHA
+        base.ReleaseTrack.BETA
     ).choice_arg.AddToParser(parser)
 
   def Run(self, args):

@@ -24,7 +24,7 @@
     description: |
       Update a registry book resource.
     examples: |-
-      To update the name of a registry book `my-registry-book` in location `global` run:
+      To update the name of a registry book `my-registry-book` run:
 
       $ {command} my-registry-book --location=global --name="updated-registry-book"
   arguments:

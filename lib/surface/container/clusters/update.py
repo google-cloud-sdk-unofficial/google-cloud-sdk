@@ -1210,6 +1210,9 @@ class UpdateBeta(Update):
     flags.AddManagedOTelScopeFlags(
         group_logging_monitoring_config, hidden=False
     )
+    flags.AddManagedMLDiagnosticsFlags(
+        group_logging_monitoring_config, hidden=True
+    )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
     flags.AddEnableWorkloadMonitoringEapFlag(group)
@@ -1424,6 +1427,7 @@ class UpdateBeta(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
+    opts.enable_managed_mldiagnostics = args.enable_managed_mldiagnostics
     opts.auto_monitoring_scope = args.auto_monitoring_scope
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting
@@ -1601,6 +1605,9 @@ class UpdateAlpha(Update):
     )
     flags.AddManagedOTelScopeFlags(
         group_logging_monitoring_config, hidden=False
+    )
+    flags.AddManagedMLDiagnosticsFlags(
+        group_logging_monitoring_config, hidden=True
     )
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddEnableLoggingMonitoringSystemOnlyFlag(group)
@@ -1814,6 +1821,7 @@ class UpdateAlpha(Update):
     opts.enable_workload_monitoring_eap = args.enable_workload_monitoring_eap
     opts.enable_managed_prometheus = args.enable_managed_prometheus
     opts.disable_managed_prometheus = args.disable_managed_prometheus
+    opts.enable_managed_mldiagnostics = args.enable_managed_mldiagnostics
     opts.auto_monitoring_scope = args.auto_monitoring_scope
     opts.disable_autopilot = args.disable_autopilot
     opts.enable_l4_ilb_subsetting = args.enable_l4_ilb_subsetting

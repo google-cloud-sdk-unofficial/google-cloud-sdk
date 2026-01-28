@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create realms
-    description: Create a realm
+    brief: Create a realm resource
+    description: |
+      Create a realm resource.
     examples: |-
-      To create the realm, run:
+      To create a realm `my-realm` run:
 
-          $ {command}
+      $ {command} my-realm --location=global
   arguments:
     params:
     - help_text: |-
@@ -98,11 +99,11 @@
       - arg_value: ipv4
         enum_value: IPV4
         help_text: |-
-          IPv4.
+          IPv4 IP version.
       - arg_value: ipv6
         enum_value: IPV6
         help_text: |-
-          IPv6.
+          IPv6 IP version.
     - arg_name: request-id
       api_field: requestId
       required: false

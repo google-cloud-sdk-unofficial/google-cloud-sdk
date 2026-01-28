@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: disable ipamAdminScopes
-    description: disable ipamAdminScopes
+    brief: Disable a single IPAM admin scope resource
+    description: |
+      Disable a single IPAM admin scope.
     examples: |-
-      To disable all ipamAdminScopes, run:
+      To disable an IPAM admin scope `my-ipam-admin-scope` run:
 
-          $ {command}
+      $ {command} my-ipam-admin-scope --location=global
   arguments:
     params:
     - help_text: |-

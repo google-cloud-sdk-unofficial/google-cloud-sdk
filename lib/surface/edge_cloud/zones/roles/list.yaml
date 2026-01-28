@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Lists the roles for a project on the Google Distributed Cloud zone
+    description: Lists the roles for a project on the Google Distributed Cloud zone.
+    examples: |
+      To list the roles for a project called `sample-project` on the Google Distributed Cloud zone `sample-zone` in location `us-central1`, run:
+
+      $ {command} --zone=sample-zone --project=sample-project --location=us-central1
+
+  request:
+    collection: edgecontainer.projects.locations.zones
+    api_version: v1alpha
+    method: listRoles
+
+  response:
+    id_field: gdcRole
+
+  arguments:
+    resource:
+      is_positional: false
+      arg_name: zone
+      help_text: |
+        Google Distributed Cloud zone.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.zone.resources:projzone
+
+  output:
+    format: |
+      table(
+        gdcRole:label=GDC_ROLE,
+        displayName:label=DISPLAY_NAME,
+        state:label=STATE
+      )

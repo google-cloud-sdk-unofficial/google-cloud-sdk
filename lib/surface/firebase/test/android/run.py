@@ -36,7 +36,6 @@ import six
 _APK_MIME_TYPE = 'application/vnd.android.package-archive'
 
 
-@base.UnicodeIsSupported
 class _BaseRun(object):
   """Invoke a test in Firebase Test Lab for Android and view test results."""
 

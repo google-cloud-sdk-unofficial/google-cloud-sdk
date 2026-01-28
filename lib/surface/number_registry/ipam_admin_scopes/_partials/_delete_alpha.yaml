@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete ipamAdminScopes
-    description: Delete an ipamAdminScope
+    brief: Delete a single IPAM admin scope resource
+    description: |
+      Deletes a single IPAM admin scope.
     examples: |-
-      To delete the ipamAdminScope, run:
+      To delete an IPAM admin scope `my-ipam-admin-scope` run:
 
-          $ {command}
+      $ {command} my-ipam-admin-scope --location=global
   arguments:
     params:
     - help_text: |-

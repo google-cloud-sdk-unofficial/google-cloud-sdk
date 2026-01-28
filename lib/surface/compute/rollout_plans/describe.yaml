@@ -1,0 +1,19 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "Describe a rollout plan."
+    description: "Describe a rollout plan."
+    examples: |
+      To retrieve a single rollout plan and print its properties, run the following command:
+
+      $ {command} my-rollout-plan
+
+  request:
+    ALPHA:
+      api_version: alpha
+
+    collection: compute.rolloutPlans
+
+  arguments:
+    resource:
+      help_text: Name of the rollout plan you want to inspect.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:rollout_plan

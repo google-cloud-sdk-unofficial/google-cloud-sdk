@@ -324,6 +324,7 @@ def ParseCreateOptionsBase(
       ),
       enable_legacy_authorization=get_default('enable_legacy_authorization'),
       enable_managed_prometheus=get_default('enable_managed_prometheus'),
+      enable_managed_mldiagnostics=get_default('enable_managed_mldiagnostics'),
       auto_monitoring_scope=get_default('auto_monitoring_scope'),
       enable_master_authorized_networks=get_default(
           'enable_master_authorized_networks'
@@ -347,10 +348,10 @@ def ParseCreateOptionsBase(
       local_ssd_count=get_default('local_ssd_count'),
       maintenance_minor_version_disruption_interval=get_default(
           'maintenance_minor_version_disruption_interval'
-          ),
+      ),
       maintenance_patch_version_disruption_interval=get_default(
           'maintenance_patch_version_disruption_interval'
-          ),
+      ),
       maintenance_window=get_default('maintenance_window'),
       maintenance_window_start=get_default('maintenance_window_start'),
       maintenance_window_end=get_default('maintenance_window_end'),
@@ -1093,6 +1094,9 @@ flags_to_add = {
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
             p, hidden=False
         ),
+        'managedMLDiagnostics': lambda p: flags.AddManagedMLDiagnosticsFlags(
+            p, hidden=True
+        ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
         ),
@@ -1326,6 +1330,9 @@ flags_to_add = {
         'controlPlaneEgress': flags.AddControlPlaneEgressFlag,
         'managedOTelScope': lambda p: flags.AddManagedOTelScopeFlags(
             p, hidden=False
+        ),
+        'managedMLDiagnostics': lambda p: flags.AddManagedMLDiagnosticsFlags(
+            p, hidden=True
         ),
         'autopilotPrivilegedAdmission': (
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
@@ -1632,6 +1639,9 @@ class CreateBeta(Create):
         get_default('cross_connect_subnetworks'))
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.enable_managed_mldiagnostics = get_default(
+        'enable_managed_mldiagnostics'
+    )
     ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')
@@ -1713,6 +1723,9 @@ class CreateBeta(Create):
     ops.control_plane_egress_mode = get_default('control_plane_egress')
     ops.gpudirect_strategy = get_default('gpudirect_strategy')
     ops.managed_otel_scope = get_default('managed_otel_scope')
+    ops.enable_managed_mldiagnostics = get_default(
+        'enable_managed_mldiagnostics'
+    )
     return ops
 
 
@@ -1799,6 +1812,9 @@ class CreateAlpha(Create):
         get_default('cross_connect_subnetworks'))
     ops.enable_service_externalips = get_default('enable_service_externalips')
     ops.enable_managed_prometheus = get_default('enable_managed_prometheus')
+    ops.enable_managed_mldiagnostics = get_default(
+        'enable_managed_mldiagnostics'
+    )
     ops.auto_monitoring_scope = get_default('auto_monitoring_scope')
     ops.spot = get_default('spot')
     ops.maintenance_interval = get_default('maintenance_interval')

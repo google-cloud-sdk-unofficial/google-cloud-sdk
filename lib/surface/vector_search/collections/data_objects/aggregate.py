@@ -44,7 +44,7 @@ class Aggregate(base.Command):
           """
           To aggregate data objects from collection `my-collection` in location `us-central1` in project `my-project` with aggregation method `COUNT`, run:
 
-          $ {command} --collection=my-collection --location=us-central1 --aggregation-method=COUNT --project=my-project
+          $ {command} --collection=my-collection --location=us-central1 --aggregation-method=count --project=my-project
       """
       ),
   }
@@ -56,7 +56,9 @@ class Aggregate(base.Command):
     parser.add_argument(
         '--aggregation-method',
         required=True,
-        choices=['COUNT'],
+        choices={
+            'count': 'Count the number of data objects that match the filter.'
+        },
         help='The aggregation method to apply to the query.',
     )
 
@@ -89,7 +91,7 @@ class Aggregate(base.Command):
             '--json-filter', f'Error converting JSON filter to message: {e}'
         )
 
-    if args.aggregation_method == 'COUNT':
+    if args.aggregation_method == 'count':
       aggregate_request_body.aggregate = (
           client.messages.GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest.AggregateValueValuesEnum.COUNT
       )

@@ -22,7 +22,7 @@ def _GetUriFunction(resource):
   return util.GetCatalogRef(resource.name).SelfLink()
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class ListIcebergCatalogs(base.ListCommand):
   """List BigLake Iceberg REST catalogs."""

@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Remove IAM policy binding of a Cloud Run instance.
+    description: |
+      Remove an IAM policy binding from the IAM policy of a instance. One binding consists of a member,
+      and a role.
+
+    examples: |
+      To remove an IAM policy binding for the role of 'roles/run.viewer' for the user 'test-user@gmail.com'
+      with servcie 'my-instance' and region 'us-central1', run:
+
+        $ {command} my-instance --region='us-central1' --member='user:test-user@gmail.com' --role='roles/run.viewer'
+
+      See https://cloud.google.com/iam/docs/managing-policies for details of
+      policy role and member types.
+
+  request:
+    collection: run.projects.locations.instances
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.run.platforms:ValidatePlatformIsManaged
+
+  arguments:
+    resource:
+      help_text: The instance for which to remove the IAM policy binding.
+      spec: !REF googlecloudsdk.command_lib.run.resources:instance
+      # The --region flag is specified at the group level, so don't try to add it here
+      removed_flags: ['region']
+      command_level_fallthroughs:
+        region:
+        - arg_name: 'region'
+
+  iam:
+    enable_condition: false

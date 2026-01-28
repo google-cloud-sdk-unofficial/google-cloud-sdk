@@ -19,7 +19,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class DescribeCatalog(base.DescribeCommand):
   """Describe a BigLake Iceberg REST catalog."""

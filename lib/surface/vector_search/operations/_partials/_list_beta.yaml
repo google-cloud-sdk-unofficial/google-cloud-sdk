@@ -21,11 +21,11 @@
   hidden: true
   help_text:
     brief: List operations
-    description: List operations
+    description: List operations.
     examples: |-
-      To list all operations, run:
+      To list operations in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-

@@ -24,7 +24,7 @@
     description: |
       List registry book resources.
     examples: |-
-      To list all registry books in location `global` run:
+      To list all registry books run:
 
       $ {command} --location=global
   arguments:

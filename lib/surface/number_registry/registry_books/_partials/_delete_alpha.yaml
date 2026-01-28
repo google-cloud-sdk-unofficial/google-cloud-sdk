@@ -24,7 +24,7 @@
     description: |
       Deletes a single registry book.
     examples: |-
-      To delete a registry book `my-registry-book` in location `global` run:
+      To delete a registry book `my-registry-book` run:
 
       $ {command} my-registry-book --location=global
   arguments:

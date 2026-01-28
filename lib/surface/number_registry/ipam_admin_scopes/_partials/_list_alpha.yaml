@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List ipamAdminScopes
-    description: List ipamAdminScopes
+    brief: List IPAM admin scope resources
+    description: |
+      List IPAM admin scope resources.
     examples: |-
-      To list all ipamAdminScopes, run:
+      To list all IPAM admin scopes run:
 
-          $ {command}
+      $ {command} --location=global
   arguments:
     params:
     - help_text: |-

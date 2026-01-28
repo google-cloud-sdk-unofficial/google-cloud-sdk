@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update customRanges
-    description: Update a customRange
+    brief: Update the parameters of a single custom range resource
+    description: |
+      Update a custom range resource.
     examples: |-
-      To update the customRange, run:
+      To update the labels of a custom range `my-custom-range` run:
 
-          $ {command}
+      $ {command} my-custom-range --location=global --update-labels=key=value
   arguments:
     params:
     - group:
@@ -53,28 +54,29 @@
       required: true
     - arg_name: realm
       help_text: |-
-        The realm of the CustomRange.
+        The realm of the CustomRange. The realm must be in the same project as the
+        custom range. Do not allow setting realm if parent range is specified,
+        since the realm should be inherited from the parent range. Format must
+        follow this pattern: projects/{project}/locations/{location}/realms/{realm}
       is_positional: false
       is_primary_resource: false
       resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_realms
       resource_method_params:
         customRange.realm: '{__relative_name__}'
       required: false
-    - arg_name: registry-book
+      clearable: true
+    - arg_name: parent-range
       help_text: |-
-        The registry book of the CustomRange.
+        The parent range of the CustomRange. Do not allow setting parent range if
+        realm is specified. Format must follow this pattern:
+        projects/{project}/locations/{location}/customRanges/{custom_range}
       is_positional: false
       is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_custom_ranges
       resource_method_params:
-        customRange.registryBook: '{__relative_name__}'
+        customRange.parentRange: '{__relative_name__}'
       required: false
-    - arg_name: parent-range
-      api_field: customRange.parentRange
-      required: false
-      repeated: false
-      help_text: |-
-        The parent range of the CustomRange.
+      clearable: true
     - arg_name: attributes
       api_field: customRange.attributes
       required: false

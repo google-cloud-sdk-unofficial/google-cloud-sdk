@@ -28,7 +28,6 @@ from googlecloudsdk.command_lib.compute.ssl_certificates import ssl_certificates
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.GA)
-@base.UnicodeIsSupported
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine SSL certificate.
 

@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete realms
-    description: Delete a realm
+    brief: Delete a single realm resource
+    description: |
+      Deletes a single realm.
     examples: |-
-      To delete the realm, run:
+      To delete a realm `my-realm` run:
 
-          $ {command}
+      $ {command} my-realm --location=global
   arguments:
     params:
     - help_text: |-

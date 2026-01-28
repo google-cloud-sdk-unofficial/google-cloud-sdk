@@ -408,6 +408,7 @@
       api_field: service.hiveMetastoreConfig.endpointProtocol
     - group:
         release_tracks: [ALPHA, BETA]
+        hidden: true
         help_text: |
           Custom region configuration for the metastore service.
         params:
@@ -416,13 +417,17 @@
           help_text: |
             The list of read-write regions where the metastore service runs in. These regions
             should be part (or subset) of the multi-region.
-          type: "arg_list"
+          action:
+            deprecated:
+              error: 'The --read-write-regions flag is deprecated and will be removed in a future release.'
         - arg_name: read-only-regions
           api_field: service.multiRegionConfig.customRegionConfig.readOnlyRegions
           help_text: |
             The list of read-only regions where the metastore service runs in. These regions
             should be part (or subset) of the multi-region.
-          type: "arg_list"
+          action:
+            deprecated:
+              error: 'The --read-only-regions flag is deprecated and will be removed in a future release.'
     - group:
         mutex: true
         help_text: |

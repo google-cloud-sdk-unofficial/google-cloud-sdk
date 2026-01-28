@@ -20,7 +20,7 @@ from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class DeleteCatalog(base.DeleteCommand):
   """Delete a BigLake Iceberg REST catalog."""

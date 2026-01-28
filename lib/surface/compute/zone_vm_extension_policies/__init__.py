@@ -22,7 +22,7 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-@base.UniverseCompatible
+@base.DefaultUniverseOnly
 class ZoneVmExtensionPolicies(base.Group):
   """Compute Engine zone VM extension policies."""
 

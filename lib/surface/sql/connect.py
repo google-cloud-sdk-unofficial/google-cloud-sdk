@@ -48,27 +48,7 @@ EXAMPLES = (
     """
 )
 
-DETAILED_GA_HELP = {
-    'DESCRIPTION':
-        """
-        Connects to a Cloud SQL instance.
-
-        This command temporarily changes the authorized networks for this
-        instance to allow the connection from your IP address.
-
-        This command isn't supported for Cloud SQL instances with only
-        private IP addresses.
-
-        NOTE: If you're connecting from an IPv6 address, or are constrained by
-        certain organization policies (restrictPublicIP,
-        restrictAuthorizedNetworks), consider running the beta version of this
-        command to avoid error by connecting through the Cloud SQL proxy:
-        *gcloud beta sql connect*
-        """,
-    'EXAMPLES': EXAMPLES,
-}
-
-DETAILED_ALPHA_BETA_HELP = {
+DETAILED_HELP = {
     'DESCRIPTION':
         """
         Connects to a Cloud SQL instance.
@@ -178,42 +158,8 @@ def _GetClientIP(instance_ref, sql_client, acl_name):
   return instance_info, client_ip
 
 
-def AddBaseArgs(parser):
-  """Declare flag and positional arguments for this command parser.
-
-  Args:
-      parser: An argparse parser that you can use it to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-  """
-  parser.add_argument(
-      'instance',
-      completer=sql_flags.InstanceCompleter,
-      help='Cloud SQL instance ID.')
-
-  parser.add_argument(
-      '--user',
-      '-u',
-      required=False,
-      help='Cloud SQL instance user to connect as.')
-
-
-def AddBetaArgs(parser):
-  """Declare beta flag arguments for this command parser.
-
-  Args:
-      parser: An argparse parser that you can use it to add arguments that go on
-        the command line after this command. Positional arguments are allowed.
-  """
-  parser.add_argument(
-      '--port',
-      type=arg_parsers.BoundedInt(lower_bound=1, upper_bound=65535),
-      default=constants.DEFAULT_PROXY_PORT_NUMBER,
-      help=('Port number that gcloud will use to connect to the Cloud SQL '
-            'Proxy through localhost.'))
-
-
-def AddProxyV2Args(parser) -> None:
-  """Declare alpha flag arguments for this command parser.
+def AddBaseArgs(parser) -> None:
+  """Declare flag arguments for this command parser.
 
   Args:
       parser: An argparse parser that you can use it to add arguments that go on
@@ -588,18 +534,19 @@ def RunProxyV2ConnectCommand(args, supports_database=False):
 class Connect(base.Command):
   """Connects to a Cloud SQL instance."""
 
-  detailed_help = DETAILED_GA_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
     AddBaseArgs(parser)
     sql_flags.AddDatabase(
-        parser, 'The SQL Server database to connect to.')
+        parser, 'The PostgreSQL or SQL Server database to connect to.'
+    )
 
   def Run(self, args):
     """Connects to a Cloud SQL instance."""
-    return RunConnectCommand(args, supports_database=True)
+    return RunProxyV2ConnectCommand(args, supports_database=True)
 
 
 @base.DefaultUniverseOnly
@@ -607,12 +554,12 @@ class Connect(base.Command):
 class ConnectBeta(base.Command):
   """Connects to a Cloud SQL instance."""
 
-  detailed_help = DETAILED_ALPHA_BETA_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddProxyV2Args(parser)
+    AddBaseArgs(parser)
     sql_flags.AddDatabase(
         parser, 'The PostgreSQL or SQL Server database to connect to.')
 
@@ -626,12 +573,12 @@ class ConnectBeta(base.Command):
 class ConnectAlpha(base.Command):
   """Connects to a Cloud SQL instance."""
 
-  detailed_help = DETAILED_ALPHA_BETA_HELP
+  detailed_help = DETAILED_HELP
 
   @staticmethod
   def Args(parser):
     """Args is called by calliope to gather arguments for this command."""
-    AddProxyV2Args(parser)
+    AddBaseArgs(parser)
     sql_flags.AddDatabase(
         parser, 'The PostgreSQL or SQL Server database to connect to.'
     )

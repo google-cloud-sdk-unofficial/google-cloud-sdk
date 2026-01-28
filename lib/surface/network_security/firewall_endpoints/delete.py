@@ -44,21 +44,39 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
+
+@base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Firewall Plus endpoint."""
 
   @classmethod
   def Args(cls, parser):
-    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    activation_flags.AddEndpointResource(
+        cls.ReleaseTrack(),
+        parser,
+        project_scope_supported,
+    )
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
 
   def Run(self, args):
-    client = activation_api.Client(self.ReleaseTrack())
+    result = args.CONCEPTS.firewall_endpoint.Parse()
+    endpoint = result.result
 
-    endpoint = args.CONCEPTS.firewall_endpoint.Parse()
+    project_scoped = (
+        result.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+
+    client = activation_api.Client(self.ReleaseTrack(), project_scoped)
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)

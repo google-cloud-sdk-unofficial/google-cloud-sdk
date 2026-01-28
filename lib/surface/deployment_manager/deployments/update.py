@@ -43,7 +43,6 @@ import six
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2)
 class Update(base.UpdateCommand, dm_base.DmCommand):
@@ -330,7 +329,6 @@ More information is available at https://cloud.google.com/deployment-manager/doc
                                   update_labels, remove_labels)
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.ALPHA)
 class UpdateAlpha(Update):
@@ -347,7 +345,6 @@ class UpdateAlpha(Update):
     parser.display_info.AddFormat(alpha_flags.RESOURCES_AND_OUTPUTS_FORMAT)
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2BETA)
 class UpdateBeta(Update):

@@ -74,6 +74,18 @@ class Copy(base.Command):
             ' stored in the lro metadata and response.'
         ),
     )
+    parser.add_argument(
+        '--max-version-age-days',
+        type=int,
+        default=0,
+        help=(
+            'If set, only versions updated within the specified number of days'
+            " (24-hour periods) up to the operation's start time will be"
+            ' copied. If unset or set to 0, all versions will be copied. This'
+            ' arg provides a convenient way to speed up regular repository'
+            ' copies by skipping older versions.'
+        ),
+    )
 
   def Run(self, args):
     """Run the repository copy command."""
@@ -84,6 +96,7 @@ class Copy(base.Command):
         args.source_repo,
         repo_ref.RelativeName(),
         args.continue_on_skipped_version,
+        args.max_version_age_days,
     )
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations'

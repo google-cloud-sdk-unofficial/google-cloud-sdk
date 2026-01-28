@@ -20,7 +20,10 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.network_security import activation_flags
+from googlecloudsdk.command_lib.util.args import common_args
+from googlecloudsdk.core import properties
 
 DETAILED_HELP = {
     'DESCRIPTION': """
@@ -45,30 +48,78 @@ table(
 )
 """
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
+
+@base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Firewall Plus endpoints."""
 
   @classmethod
   def Args(cls, parser):
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(
         activation_flags.MakeGetUriFunc(cls.ReleaseTrack())
     )
-    activation_flags.AddOrganizationArg(
-        parser, help_text='The organization for a list operation'
+    group = parser.add_group(required=False)
+    group.add_argument(
+        '--organization',
+        help='The organization for a list operation',
     )
-    # TODO(b/274296391): Change to required=False once it's supported.
+    if project_scope_supported:
+      common_args.ProjectArgument(
+          help_text_to_prepend='The project for a list operation'
+      ).AddToParser(group)
     activation_flags.AddZoneArg(
-        parser, required=True, help_text='The zone for a list operation'
+        parser, required=False, help_text='The zone for a list operation'
     )
 
   def Run(self, args):
-    client = activation_api.Client(self.ReleaseTrack())
+    # Temporarily separating the org-only scenario from the org+project scenario
+    # to make the code clearer. This section will go away once the project
+    # scope is in GA.
+    project_scope_supported = (
+        self.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    if not project_scope_supported:
+      return self._ListOrganizationEndpoints(args)
+
+    organization = args.organization
+    project = args.project or properties.VALUES.core.project.Get()
+    if not organization and not project:
+      raise exceptions.RequiredArgumentException(
+          'organization or project',
+          '--organization or --project flag must be specified.',
+      )
+
+    # We check if organization is not specified because we allow both project
+    # and organization, and assume organization in this scenario.
+    project_scoped = not organization
+
+    client = activation_api.Client(self.ReleaseTrack(), project_scoped)
 
     zone = args.zone if args.zone else '-'
-    parent = 'organizations/{}/locations/{}'.format(args.organization, zone)
+    if project_scoped:
+      parent = 'projects/{}/locations/{}'.format(project, zone)
+    else:
+      parent = 'organizations/{}/locations/{}'.format(organization, zone)
 
+    return client.ListEndpoints(parent, args.limit, args.page_size)
+
+  def _ListOrganizationEndpoints(self, args):
+    if not args.IsSpecified('organization'):
+      raise exceptions.RequiredArgumentException(
+          'organization',
+          '--organization flag must be specified.',
+      )
+    client = activation_api.Client(self.ReleaseTrack())
+    zone = args.zone if args.zone else '-'
+    parent = 'organizations/{}/locations/{}'.format(args.organization, zone)
     return client.ListEndpoints(parent, args.limit, args.page_size)
 
 

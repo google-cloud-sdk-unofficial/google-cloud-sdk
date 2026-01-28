@@ -27,9 +27,6 @@ _DETAILED_HELP = {
         """,
 }
 
-_VARIANT_STORAGE_STRATEGY_LABEL_KEY = 'configdelivery-variant-storage-strategy'
-_VARIANT_STORAGE_STRATEGY_LABEL_VALUE_NESTED = 'nested'
-
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)

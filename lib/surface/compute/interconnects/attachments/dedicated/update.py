@@ -52,9 +52,7 @@ class Update(base.UpdateCommand):
     cls.INTERCONNECT_ATTACHMENT_ARG.AddArgument(parser, operation_type='patch')
     attachment_flags.AddDescription(parser)
     attachment_flags.AddAdminEnabled(parser, update=True)
-    attachment_flags.AddBandwidth(
-        parser, required=False, release_track=cls.ReleaseTrack()
-    )
+    attachment_flags.AddBandwidth(parser, required=False, supports_400g=True)
     attachment_flags.AddMtu(parser)
     attachment_flags.AddStackType(parser)
     attachment_flags.AddCandidateIpv6Subnets(parser)
@@ -85,6 +83,7 @@ class Update(base.UpdateCommand):
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
+        supports_400g=True,
     )
 
 
@@ -140,10 +139,7 @@ class UpdateBeta(Update):
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
-        supports_400g=(
-            self.ReleaseTrack()
-            in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-        ),
+        supports_400g=True,
     )
 
 

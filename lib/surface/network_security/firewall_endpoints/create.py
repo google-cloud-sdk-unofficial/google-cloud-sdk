@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import datetime
 from googlecloudsdk.api_lib.network_security.firewall_endpoints import activation_api
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.network_security import activation_flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
@@ -42,6 +43,10 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
@@ -50,11 +55,18 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    activation_flags.AddEndpointResource(
+        cls.ReleaseTrack(),
+        parser,
+        project_scope_supported,
+    )
     activation_flags.AddMaxWait(parser, '60m')  # default to 60 minutes wait.
     activation_flags.AddDescriptionArg(parser)
     activation_flags.AddEnableJumboFramesArg(parser)
-    activation_flags.AddBillingProjectArg(parser)
+    activation_flags.AddBillingProjectArg(parser, required=False)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, True)
     labels_util.AddCreateLabelsFlags(parser)
@@ -63,9 +75,23 @@ class Create(base.CreateCommand):
     return self._Run(args)
 
   def _Run(self, args, target_firewall_attachment=None, endpoint_type=None):
-    client = activation_api.Client(self.ReleaseTrack())
+    result = args.CONCEPTS.firewall_endpoint.Parse()
+    endpoint = result.result
 
-    endpoint = args.CONCEPTS.firewall_endpoint.Parse()
+    project_scoped = (
+        result.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+
+    if not project_scoped and not args.billing_project:
+      raise exceptions.RequiredArgumentException(
+          'billing-project',
+          '--billing-project flag must be specified for org-scoped firewall'
+          ' endpoints.',
+      )
+
+    client = activation_api.Client(self.ReleaseTrack(), project_scoped)
+
     labels = labels_util.ParseCreateArgs(
         args, client.messages.FirewallEndpoint.LabelsValue
     )

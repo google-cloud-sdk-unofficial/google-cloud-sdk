@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Describe customRanges
-    description: Describe a customRange
+    brief: Gets details of a single custom range resource
+    description: |
+      Gets details of a single custom range resource.
     examples: |-
-      To describe the customRange, run:
+      To get the details of a single custom range `my-custom-range` run:
 
-          $ {command}
+      $ {command} my-custom-range --location=global
   arguments:
     params:
     - help_text: |-

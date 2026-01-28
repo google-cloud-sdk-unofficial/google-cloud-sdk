@@ -115,7 +115,6 @@ def _Run(args, holder, ssl_certificate_ref):
   return client.MakeRequests([(collection, 'Insert', request)])
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):

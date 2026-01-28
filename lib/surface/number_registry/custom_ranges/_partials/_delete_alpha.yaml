@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete customRanges
-    description: Delete a customRange
+    brief: Delete a single custom range resource
+    description: |
+      Deletes a single custom range.
     examples: |-
-      To delete the customRange, run:
+      To delete a custom range `my-custom-range` run:
 
-          $ {command}
+      $ {command} my-custom-range --location=global
   arguments:
     params:
     - help_text: |-

@@ -45,3 +45,4 @@ terraform-tools: google-cloud-sdk-terraform-tools
 bundled-python3-unix: google-cloud-sdk-bundled-python3
 managed-flink-client: google-cloud-sdk-managed-flink-client
 spanner-cli: google-cloud-cli-spanner-cli
+sbom-extractor: unavailable

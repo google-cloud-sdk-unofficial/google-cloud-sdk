@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: show discoveredRanges
-    description: show discoveredRanges
+    brief: Show utilization of a discovered range
+    description: |
+      Show utilization of a discovered range.
     examples: |-
-      To show all discoveredRanges, run:
+      To show the utilization of a discovered range `my-discovered-range` run:
 
-          $ {command}
+      $ {command} my-discovered-range --location=global
   arguments:
     params:
     - help_text: |-

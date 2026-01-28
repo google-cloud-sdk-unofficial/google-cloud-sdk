@@ -17,6 +17,7 @@
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.api_lib.storage import storage_util
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.dataflow import dataflow_util
@@ -79,7 +80,13 @@ class Run(base.Command):
         '--pipeline-options',
         metavar='OPTIONS=VALUE;OPTION=VALUE',
         type=arg_parsers.ArgDict(),
-        action=arg_parsers.UpdateAction,
+        action=actions.DeprecationAction(
+            '--pipeline-options',
+            warn=(
+                'The `--pipeline-options` flag is deprecated. Pipeline options '
+                'should be passed using --additional-pipeline-options flag.'
+            ),
+            action=arg_parsers.UpdateAction),
         help='Pipeline options to pass to the job.',
     )
 
@@ -112,6 +119,135 @@ class Run(base.Command):
             'run the pipeline.  If not set, the default subnetwork is used.'
         ),
     )
+
+    parser.add_argument(
+        '--service-account-email',
+        type=arg_parsers.RegexpValidator(r'.*@.*\..*',
+                                         'must provide a valid email address'),
+        help=(
+            'Service account to run the workers as.'
+        ),
+    )
+
+    parser.add_argument(
+        '--additional-experiments',
+        metavar='ADDITIONAL_EXPERIMENTS',
+        type=arg_parsers.ArgList(),
+        action=arg_parsers.UpdateAction,
+        help=(
+            'Additional experiments to pass to the job. Example: '
+            '--additional-experiments=experiment1,experiment2=value2'
+        )
+    )
+
+    parser.add_argument(
+        '--additional-pipeline-options',
+        metavar='ADDITIONAL_PIPELINE_OPTIONS',
+        type=arg_parsers.ArgList(),
+        action=arg_parsers.UpdateAction,
+        help=(
+            'Additional pipeline options to pass to the job. Example: '
+            '--additional-pipeline-options=option1=value1,option2=value2 '
+            'For a list of available options, see the Dataflow reference: '
+            'https://cloud.google.com/dataflow/docs/reference/pipeline-options'
+        ),
+    )
+
+    parser.add_argument(
+        '--additional-user-labels',
+        metavar='ADDITIONAL_USER_LABELS',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help=(
+            'Additional user labels to pass to the job. Example: '
+            "--additional-user-labels='key1=value1,key2=value2'"
+        ),
+    )
+
+    parser.add_argument(
+        '--disable-public-ips',
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.disable_public_ips
+        ),
+        help=(
+            'If specified, Cloud Dataflow workers will not use public IP'
+            ' addresses.'
+        ),
+    )
+
+    parser.add_argument(
+        '--staging-location',
+        help=(
+            'Google Cloud Storage location to stage local files. '
+            'If not set, defaults to the value for --temp-location.'
+            "(Must be a URL beginning with 'gs://'.)"
+        ),
+        type=arg_parsers.RegexpValidator(
+            r'^gs://.*', "Must begin with 'gs://'"
+        ),
+    )
+
+    parser.add_argument(
+        '--temp-location',
+        help=(
+            'Google Cloud Storage location to stage temporary files. '
+            'If not set, defaults to the value for --staging-location.'
+            "(Must be a URL beginning with 'gs://'.)"
+        ),
+        type=arg_parsers.RegexpValidator(
+            r'^gs://.*', "Must begin with 'gs://'"
+        ),
+    )
+
+    parser.add_argument(
+        '--max-workers', type=int, help='Maximum number of workers to run.'
+    )
+
+    parser.add_argument(
+        '--num-workers', type=int, help='Initial number of workers to use.'
+    )
+
+    parser.add_argument(
+        '--worker-machine-type',
+        help=(
+            'Type of machine to use for workers. Defaults to server-specified.'
+        ),
+    )
+
+    parser.add_argument(
+        '--launcher-machine-type',
+        help=(
+            'The machine type to use for launching the job. The default is '
+            'n1-standard-1.'
+        ),
+    )
+
+    parser.add_argument(
+        '--dataflow-kms-key', help='Cloud KMS key to protect the job resources.'
+    )
+
+    parser.add_argument(
+        '--enable-streaming-engine',
+        action=actions.StoreBooleanProperty(
+            properties.VALUES.dataflow.enable_streaming_engine
+        ),
+        help='Enable Streaming Engine for the streaming job.',
+    )
+
+    streaming_update_args = parser.add_argument_group()
+    streaming_update_args.add_argument(
+        '--transform-name-mappings',
+        metavar='TRANSFORM_NAME_MAPPINGS',
+        type=arg_parsers.ArgDict(),
+        action=arg_parsers.UpdateAction,
+        help=
+        ('Transform name mappings for the streaming update job.'))
+
+    streaming_update_args.add_argument(
+        '--update',
+        help=('Specify this flag to update a streaming job.'),
+        action=arg_parsers.StoreTrueFalseAction,
+        required=True)
 
   def Run(self, args):
     """Runs the command.
@@ -158,6 +294,21 @@ class Run(base.Command):
         parameters=parameters,
         network=args.network,
         subnetwork=args.subnetwork,
+        service_account_email=args.service_account_email,
+        additional_experiments=args.additional_experiments,
+        additional_pipeline_options=args.additional_pipeline_options,
+        additional_user_labels=args.additional_user_labels,
+        disable_public_ips=properties.VALUES.dataflow.disable_public_ips.GetBool(),
+        staging_location=args.staging_location,
+        temp_location=args.temp_location,
+        max_workers=args.max_workers,
+        num_workers=args.num_workers,
+        worker_machine_type=args.worker_machine_type,
+        launcher_machine_type=args.launcher_machine_type,
+        kms_key_name=args.dataflow_kms_key,
+        enable_streaming_engine=properties.VALUES.dataflow.enable_streaming_engine.GetBool(),
+        transform_name_mappings=args.transform_name_mappings,
+        streaming_update=args.update,
     )
     return apis.Templates.CreateJobFromFlexTemplate(arguments)
 

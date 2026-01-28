@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Create ipamAdminScopes
-    description: Create an ipamAdminScope
+    brief: Create an IPAM admin scope resource
+    description: |
+      Create an IPAM admin scope resource.
     examples: |-
-      To create the ipamAdminScope, run:
+      To create an IPAM admin scope `my-ipam-admin-scope` run:
 
-          $ {command}
+      $ {command} my-ipam-admin-scope --location=global
   arguments:
     params:
     - help_text: |-

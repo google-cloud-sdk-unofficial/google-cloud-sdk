@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List discoveredRanges
-    description: List discoveredRanges
+    brief: List discovered range resources
+    description: |
+      List discovered range resources.
     examples: |-
-      To list all discoveredRanges, run:
+      To list all discovered ranges run:
 
-          $ {command}
+      $ {command} --location=global
   arguments:
     params:
     - help_text: |-

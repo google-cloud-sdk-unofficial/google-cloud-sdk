@@ -42,18 +42,36 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
+
+@base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Firewall Plus endpoint."""
 
   @classmethod
   def Args(cls, parser):
-    activation_flags.AddEndpointResource(cls.ReleaseTrack(), parser)
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    activation_flags.AddEndpointResource(
+        cls.ReleaseTrack(),
+        parser,
+        project_scope_supported,
+    )
 
   def Run(self, args):
-    client = activation_api.Client(self.ReleaseTrack())
+    result = args.CONCEPTS.firewall_endpoint.Parse()
+    endpoint = result.result
 
-    endpoint = args.CONCEPTS.firewall_endpoint.Parse()
+    project_scoped = (
+        result.concept_type.name
+        == activation_flags.PROJECT_ENDPOINT_RESOURCE_COLLECTION
+    )
+
+    client = activation_api.Client(self.ReleaseTrack(), project_scoped)
 
     return client.DescribeEndpoint(endpoint.RelativeName())
 

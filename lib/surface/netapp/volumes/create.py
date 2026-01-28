@@ -108,6 +108,7 @@ class Create(base.CreateCommand):
     cache_parameters = args.cache_parameters
     cache_pre_populate = args.cache_pre_populate
     block_devices = args.block_devices
+    large_capacity_config = getattr(args, 'large_capacity_config', None)
     if (self._RELEASE_TRACK == base.ReleaseTrack.BETA or
         self._RELEASE_TRACK == base.ReleaseTrack.GA):
       backup_config = args.backup_config
@@ -144,6 +145,7 @@ class Create(base.CreateCommand):
         cache_parameters=cache_parameters,
         cache_pre_populate=cache_pre_populate,
         block_devices=block_devices,
+        large_capacity_config=large_capacity_config,
     )
     result = client.CreateVolume(volume_ref, args.async_, volume)
     if args.async_:

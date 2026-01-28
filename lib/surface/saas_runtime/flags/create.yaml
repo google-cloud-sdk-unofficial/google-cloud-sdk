@@ -66,6 +66,11 @@
       - api_field: defaultTarget
         help_text: |-
           Default variant for the flag.
+      - api_field: rules
+        hidden: true
+        help_text: |-
+          Define the logic for evaluating the flag against a given context.
+          The rules are evaluated sequentially in their specified order.
       - api_field: variants
         help_text: |-
           A list of variants.
@@ -87,6 +92,38 @@
         - api_field: doubleValue
           help_text: |-
             Value is a single double flag value for the variant.
+
+    - arg_name: variants
+      hidden: true
+      api_field: flag.variants
+      help_text: |-
+        A list of variants.
+        Variant is an identifier for a value (name assigned to a value).
+      is_positional: false
+      required: false
+      repeated: true
+      spec:
+      - api_field: id
+        help_text: |-
+          Id of the variant.
+          Max length: 128 bytes.
+      - api_field: description
+        help_text: |-
+          A description of the variant.
+          Max length: 500 bytes.
+      - api_field: booleanValue
+        help_text: |-
+          Value is a single boolean flag value for the variant.
+      - api_field: integerValue
+        help_text: |-
+          Value is a single integer flag value for the variant.
+      - api_field: stringValue
+        help_text: |-
+          Value is a single string flag value for the variant.
+          Max length: 500 bytes.
+      - api_field: doubleValue
+        help_text: |-
+          Value is a single double flag value for the variant.
 
     - arg_name: unit-kind
       help_text: |-

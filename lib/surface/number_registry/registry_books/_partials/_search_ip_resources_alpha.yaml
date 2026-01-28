@@ -20,64 +20,58 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: search registryBooks
-    description: search registryBooks
+    brief: Search IP resources in a registry book
+    description: |
+      Search IP resources in a registry book using IP address, IP version, attributes, etc.
     examples: |-
-      To search all registryBooks, run:
+      To search for an ip address across ranges in a registry book run:
 
-          $ {command}
+      $ {command} my-registry-book --location=global --query="ip_address=10.0.0.1 AND ip_version=IPV4"
+
+      To search for a range in a registry book with text in its attributes run:
+
+      $ {command} my-registry-book --location=global --query="attribute_text=foo"
+
+      To search for a range in a registry book with exact text in its attributes run:
+
+      $ {command} my-registry-book --location=global --query="attribute:(foo=bar)"
+
+      To additionally show the utilization of a range in a registry book run:
+
+      $ {command} my-registry-book --location=global --query="ip_address=10.0.0.1 AND ip_version=IPV4" --show-utilization
   arguments:
     params:
     - help_text: |-
-        Parent value for SearchIpResourcesRequest
-      is_positional: false
-      is_parent_resource: true
+        The name of the RegistryBook to search in.
+      is_positional: true
       is_primary_resource: true
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations
+      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_registry_books
       required: true
     - arg_name: query
-      api_field: query
+      api_field: searchIpResourcesRequest.query
       required: false
       repeated: false
       help_text: |-
-        Search query.
-    - arg_name: realm
-      help_text: |-
-        Realm name to search for.
-      is_positional: false
-      is_primary_resource: false
-      resource_spec: !REF googlecloudsdk.command_lib.number_registry.v1alpha_resources:projects_locations_realms
-      resource_method_params:
-        realm: '{__relative_name__}'
-      required: false
-    - arg_name: ip-address
-      api_field: ipAddress
-      required: false
-      repeated: false
-      help_text: |-
-        The IP address to search for.
-    - arg_name: ip-version
-      api_field: ipVersion
-      required: false
-      help_text: |-
-        The IP version to search for.
-      choices:
-      - arg_value: ipv4
-        enum_value: IPV4
-        help_text: |-
-          IPv4.
-      - arg_value: ipv6
-        enum_value: IPV6
-        help_text: |-
-          IPv6.
-    - arg_name: attribute-text
-      api_field: attributeText
-      required: false
-      repeated: false
-      help_text: |-
-        The attribute text to search for in keys or values.
+        Search query. This string filters resources in an AIP-160-like format.
+        It has some limitations. You can only specify top level conjunctions or
+        attribute level negations. Each restriction can only be used once except
+        the attribute restriction. The available restrictions are:
+        - `realm`: The realm name to search in.
+        - `ip_address`: The IP address to search for within ranges.
+        - `ip_version`: The IP version to filter by (e.g., "IPV4", "IPV6").
+        - `attribute_text`: The attribute text to search for within ranges.
+        - `attribute`: The attribute key and value to filter by.
+
+        Only one of attribute_text or multiple attribute filters can be specified.
+        Examples:
+        - realm=test-realm
+        - realm=test-realm AND ip_address=10.0.0.0
+        - realm=test-realm AND ip_version=IPV6
+        - realm=test-realm AND attribute_text=test
+        - realm=test-realm AND attribute_text=test AND ip_version=IPV4
+        - ip_address=10.0.0.0 AND NOT attribute:(key1=value1)
     - arg_name: show-utilization
-      api_field: showUtilization
+      api_field: searchIpResourcesRequest.showUtilization
       action: store_true
       required: false
       type: bool

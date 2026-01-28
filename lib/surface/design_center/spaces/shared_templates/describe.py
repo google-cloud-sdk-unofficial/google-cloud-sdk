@@ -18,8 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
 import re
 
+from googlecloudsdk.api_lib.design_center import constants
 from googlecloudsdk.api_lib.design_center import shared_templates as apis
 from googlecloudsdk.api_lib.design_center import utils as api_lib_utils
 from googlecloudsdk.calliope import base
@@ -41,12 +43,11 @@ _DETAILED_HELP = {
 
           $ {command} google-template --google-catalog --location=us-central1
         """,
-    'API REFERENCE': """ \
-        This command uses the designcenter/v1alpha API. The full documentation for
-        this API can be found at:
-        http://cloud.google.com/application-design-center/docs
-        """,
+    'API REFERENCE': constants.API_REFERENCE_ALPHA,
 }
+
+_DETAILED_HELP_GA = copy.deepcopy(_DETAILED_HELP)
+_DETAILED_HELP_GA['API REFERENCE'] = constants.API_REFERENCE_GA
 
 _BASE_ERROR_MESSAGE = 'Error parsing [shared_template].'
 
@@ -234,7 +235,7 @@ class DescribeAlpha(base.DescribeCommand):
 class DescribeGa(base.DescribeCommand):
   """Describe a shared template."""
 
-  detailed_help = _DETAILED_HELP
+  detailed_help = _DETAILED_HELP_GA
 
   @staticmethod
   def Args(parser):

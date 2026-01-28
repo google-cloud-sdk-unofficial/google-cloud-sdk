@@ -42,7 +42,6 @@ import six
 OPERATION_TIMEOUT = 20 * 60  # 20 mins
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2)
 class Create(base.CreateCommand, dm_base.DmCommand):
@@ -294,7 +293,6 @@ More information is available at https://cloud.google.com/deployment-manager/doc
     return completed_operation
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.ALPHA)
 class CreateAlpha(Create):
@@ -325,7 +323,6 @@ class CreateAlpha(Create):
         supports_create_policy=True)
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @dm_base.UseDmApi(dm_base.DmApiVersion.V2BETA)
 class CreateBeta(Create):

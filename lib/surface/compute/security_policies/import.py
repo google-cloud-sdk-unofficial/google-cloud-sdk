@@ -35,7 +35,6 @@ import six
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.UnicodeIsSupported
 class Import(base.SilentCommand):
   """Import security policy configs into your project.
 
@@ -107,7 +106,6 @@ class Import(base.SilentCommand):
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
-@base.UnicodeIsSupported
 class ImportBeta(base.SilentCommand):
   """Import security policy configs into your project.
 
@@ -179,7 +177,6 @@ class ImportBeta(base.SilentCommand):
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.UnicodeIsSupported
 class ImportAlpha(base.SilentCommand):
   """Import security policy configs into your project.
 

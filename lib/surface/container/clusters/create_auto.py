@@ -74,6 +74,7 @@ auto_flags = [
     'controlPlaneEgress',
     'tag_bindings',
     'managedOTelScope',
+    'managedMLDiagnostics',
     'autopilotPrivilegedAdmission',
     'enablePodSnapshots',
     'disablePodSnapshots',

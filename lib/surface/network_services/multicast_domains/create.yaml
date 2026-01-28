@@ -42,6 +42,9 @@ arguments:
   - arg_name: multicast-domain-group
     api_field: multicastDomain.multicastDomainGroup
     help_text: The URI of the multicast domain group to be used.
+  - arg_name: ull-multicast-domain
+    api_field: multicastDomain.ullMulticastDomain.preconfiguredUllDomain
+    help_text: The name of the ULL multicast feed to be used. This is for ULL multicast service only.
   labels:
     api_field: multicastDomain.labels
 

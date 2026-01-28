@@ -1,0 +1,34 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "List Google Compute Engine Rollout Plans."
+    description: "List Google Compute Engine Rollout Plans in a project."
+    examples: |
+      To list all rollout plans in your project, run:
+
+        $ {command}
+
+  request:
+    ALPHA:
+      api_version: alpha
+
+    collection: compute.rolloutPlans
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the rollout plans to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name,
+        id,
+        creationTimestamp:label=CREATION_TIME,
+        locationScope:label=LOCATION_SCOPE,
+        description
+      )

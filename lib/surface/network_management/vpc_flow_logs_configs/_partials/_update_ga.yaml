@@ -247,7 +247,7 @@
     - networkmanagement.projects.locations.vpcFlowLogsConfigs
   async:
     collection:
-    - networkmanagement.organizations.locations.operations
+    - networkmanagement.organizations.locations.global.operations
     - networkmanagement.projects.locations.global.operations
   update:
     read_modify_update: true

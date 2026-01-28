@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Update ipamAdminScopes
-    description: Update an ipamAdminScope
+    brief: Update the parameters of a single IPAM admin scope resource
+    description: |
+      Update an IPAM admin scope resource.
     examples: |-
-      To update the ipamAdminScope, run:
+      To update the labels of an IPAM admin scope `my-ipam-admin-scope` run:
 
-          $ {command}
+      $ {command} my-ipam-admin-scope --location=global --update-labels=key=value
   arguments:
     params:
     - help_text: |-

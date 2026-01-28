@@ -1,0 +1,110 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Create a transport.
+    description: Create a transport with the given name to a remote provider.
+    examples: |
+      To create a transport that generates a key to ``aws-us-east-1''.
+
+        $ gcloud beta network-connectivity transports create my-cci-aws \
+             --bandwidth 1G --profile aws-us-east-1 --network default \
+             --advertised-routes '10.128.0.0/9'
+
+      To accept a key:
+
+        $ gcloud beta network-connectivity transports create my-cci-aws \
+            --activation-key ABC1234
+
+  output:
+    format: yaml
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.transports
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:transport
+      help_text: Name of the Transport to be created.
+    params:
+    - arg_name: network
+      resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:network
+      resource_method_params:
+        transportsV1BetaTransport.network: "{__relative_name__}"
+      help_text: VPC that will be peered to the provider via the Transport.
+      required: true
+    - arg_name: advertised-routes
+      api_field: transportsV1BetaTransport.advertisedRoutes
+      help_text: List of routes to advertise from the VPC `network` toward the provider.
+      required: true
+      metavar: CIDR_RANGE
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: activation-key
+          api_field: transportsV1BetaTransport.providedActivationKey
+          help_text: Key from the remote provider to establish a connection over the Transport.
+        - group:
+            help_text: These values must all be specified if Google is expected to generate the key.
+            params:
+            - arg_name: remote-profile
+              resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:remote_transport_profile
+              resource_method_params:
+                transportsV1BetaTransport.remoteProfile: "{__relative_name__}"
+              help_text: Remote transport profile representing the provider and their location.
+              required: true
+            - arg_name: bandwidth
+              api_field: transportsV1BetaTransport.bandwidth
+              help_text: Bandwidth of the transport to create. Must be a supported bandwidth on the remote profile.
+              required: true
+              choices:
+              - arg_value: 50M
+                enum_value: BPS_50M
+              - arg_value: 100M
+                enum_value: BPS_100M
+              - arg_value: 200M
+                enum_value: BPS_200M
+              - arg_value: 300M
+                enum_value: BPS_300M
+              - arg_value: 400M
+                enum_value: BPS_400M
+              - arg_value: 500M
+                enum_value: BPS_500M
+              - arg_value: 1G
+                enum_value: BPS_1G
+              - arg_value: 2G
+                enum_value: BPS_2G
+              - arg_value: 5G
+                enum_value: BPS_5G
+              - arg_value: 10G
+                enum_value: BPS_10G
+              - arg_value: 20G
+                enum_value: BPS_20G
+              - arg_value: 50G
+                enum_value: BPS_50G
+              - arg_value: 100G
+                enum_value: BPS_100G
+            - arg_name: remote-account-id
+              api_field: transportsV1BetaTransport.remoteAccountId
+              help_text: Account ID in the remote provider to associate with the generated key.
+              required: true
+    - arg_name: description
+      api_field: transportsV1BetaTransport.description
+      help_text: Description of the transport.
+    - arg_name: stack-type
+      api_field: transportsV1BetaTransport.stackType
+      help_text: IP version of the routes to be exchanged.
+      choices:
+      - arg_value: ipv4-only
+      - arg_value: ipv4-ipv6
+    - arg_name: enable-admin
+      type: bool
+      api_field: transportsV1BetaTransport.adminEnabled
+      help_text: Administrative state of the underlying connectivity.
+      default: true
+    labels:
+      api_field: transportsV1BetaTransport.labels

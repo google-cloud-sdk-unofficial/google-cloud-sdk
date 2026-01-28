@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: List customRanges
-    description: List customRanges
+    brief: List custom range resources
+    description: |
+      List custom range resources.
     examples: |-
-      To list all customRanges, run:
+      To list all custom ranges run:
 
-          $ {command}
+      $ {command} --location=global
   arguments:
     params:
     - help_text: |-

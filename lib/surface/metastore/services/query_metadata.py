@@ -67,7 +67,6 @@ def AddBaseArgs(parser):
   )
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )

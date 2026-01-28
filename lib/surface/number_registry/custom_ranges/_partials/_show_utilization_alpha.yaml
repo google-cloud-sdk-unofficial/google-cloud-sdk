@@ -20,12 +20,13 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: show customRanges
-    description: show customRanges
+    brief: Show utilization of a custom range
+    description: |
+      Show utilization of a custom range.
     examples: |-
-      To show all customRanges, run:
+      To show the utilization of a custom range `my-custom-range` run:
 
-          $ {command}
+      $ {command} my-custom-range --location=global
   arguments:
     params:
     - help_text: |-

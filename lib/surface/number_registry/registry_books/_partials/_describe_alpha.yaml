@@ -24,7 +24,7 @@
     description: |
       Gets details of a single registry book resource.
     examples: |-
-      To get the details of a single registry book `my-registry-book` in location `global` run:
+      To get the details of a single registry book `my-registry-book` run:
 
       $ {command} my-registry-book --location=global
   arguments:

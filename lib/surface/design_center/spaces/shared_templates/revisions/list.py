@@ -18,13 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import copy
 import re
+
+from googlecloudsdk.api_lib.design_center import constants
 from googlecloudsdk.api_lib.design_center import shared_template_revisions as apis
 from googlecloudsdk.api_lib.design_center import utils as api_lib_utils
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
+
 
 _DETAILED_HELP = {
     'DESCRIPTION': 'List shared template revisions in a given shared template.',
@@ -45,12 +49,11 @@ _DETAILED_HELP = {
 
           $ {command} --shared-template=my-shared-template --space=my-space --project=my-project --location=us-central1 --limit=10
         """,
-    'API REFERENCE': """ \
-        This command uses the designcenter/v1alpha API. The full documentation for
-        this API can be found at:
-        http://cloud.google.com/application-design-center/docs
-        """,
+    'API REFERENCE': constants.API_REFERENCE_ALPHA,
 }
+
+_DETAILED_HELP_GA = copy.deepcopy(_DETAILED_HELP)
+_DETAILED_HELP_GA['API REFERENCE'] = constants.API_REFERENCE_GA
 
 _REQUIRED_FLAGS_BASE_TEXT = (
     'SharedTemplate resource - The parent resource from which to list shared'
@@ -247,7 +250,7 @@ class List(base.ListCommand):
 class ListGa(base.ListCommand):
   """List shared template revisions."""
 
-  detailed_help = _DETAILED_HELP
+  detailed_help = _DETAILED_HELP_GA
 
   @staticmethod
   def Args(parser):

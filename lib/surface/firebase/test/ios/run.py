@@ -36,7 +36,6 @@ import six
 _IPA_MIME_TYPE = 'application/octet-stream'
 
 
-@base.UnicodeIsSupported
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Run(base.ListCommand):
   """Invoke a test in Firebase Test Lab for iOS and view test results."""

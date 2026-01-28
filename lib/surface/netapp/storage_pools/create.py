@@ -84,6 +84,7 @@ class Create(base.CreateCommand):
     enable_hot_tier_auto_resize = None
     unified_pool = None
     storage_pool_type = None
+    scale_tier = None
     if args.type is not None:
       storage_pool_type = storagepools_flags.GetStoragePoolTypeEnumFromArg(
           args.type, client.messages
@@ -95,6 +96,10 @@ class Create(base.CreateCommand):
       enable_hot_tier_auto_resize = args.enable_hot_tier_auto_resize
       if args.unified_pool is not None:
         unified_pool = args.unified_pool
+      if args.scale_tier is not None:
+        scale_tier = storagepools_flags.GetStoragePoolScaleTierEnumFromArg(
+            args.scale_tier, client.messages
+        )
 
     storage_pool = client.ParseStoragePoolConfig(
         name=storagepool_ref.RelativeName(),
@@ -117,6 +122,7 @@ class Create(base.CreateCommand):
         unified_pool=unified_pool,
         qos_type=qos_type,
         storage_pool_type=storage_pool_type,
+        scale_tier=scale_tier,
     )
     result = client.CreateStoragePool(
         storagepool_ref, args.async_, storage_pool

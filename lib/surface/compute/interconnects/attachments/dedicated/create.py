@@ -57,9 +57,7 @@ class Create(base.CreateCommand):
     attachment_flags.AddAdminEnabled(parser, default_behavior=True)
     attachment_flags.AddVlan(parser)
     attachment_flags.AddCandidateSubnets(parser)
-    attachment_flags.AddBandwidth(
-        parser, required=False, release_track=cls.ReleaseTrack()
-    )
+    attachment_flags.AddBandwidth(parser, required=False, supports_400g=True)
     attachment_flags.AddMtu(parser)
     attachment_flags.AddEncryption(parser)
     attachment_flags.GetIpsecInternalAddressesFlag().AddToParser(parser)
@@ -147,10 +145,7 @@ class Create(base.CreateCommand):
         candidate_customer_router_ipv6_address=getattr(
             args, 'candidate_customer_router_ipv6_address', None
         ),
-        supports_400g=(
-            self.ReleaseTrack()
-            in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-        ),
+        supports_400g=True,
         resource_manager_tags=args.resource_manager_tags,
     )
 

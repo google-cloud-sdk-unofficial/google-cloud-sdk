@@ -22,14 +22,17 @@ from googlecloudsdk.calliope import base
 
 
 DETAILED_HELP = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
         The gcloud biglake command group lets you create and manage Google Cloud BigLake resources.
-        """,
+        """
+    ),
 }
 
 
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA,
+    base.ReleaseTrack.BETA,
 )
 @base.DefaultUniverseOnly
 class Biglake(base.Group):

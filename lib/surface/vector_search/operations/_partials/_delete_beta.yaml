@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: Delete operations
-    description: Delete an operation
+    brief: Delete an operation
+    description: Delete an operation.
     examples: |-
-      To delete the operation, run:
+      To delete operation `operation-1234567890` in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} operation-1234567890 --location=us-central1 --project=my-project
   arguments:
     params:
     - help_text: |-
