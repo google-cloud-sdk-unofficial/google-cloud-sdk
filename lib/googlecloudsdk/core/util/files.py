@@ -1357,10 +1357,24 @@ def PrivatizeFile(path):
   """
   try:
     if os.path.exists(path):
-      os.chmod(path, 0o600)
+      # do not follow symlinks when hardening credential/config files.
+      # use O_NOFOLLOW when available so the final path component cannot be a symlink.
+      flags = os.O_RDONLY
+      if hasattr(os, 'O_NOFOLLOW'):
+        flags |= os.O_NOFOLLOW
+      fd = os.open(path, flags)
+      try:
+        if hasattr(os, 'fchmod'):
+          os.fchmod(fd, 0o600)
+        else:
+          os.chmod(path, 0o600)
+      finally:
+        os.close(fd)
     else:
       _MakePathToFile(path, mode=0o700)
       flags = os.O_RDWR | os.O_CREAT | os.O_TRUNC
+      if hasattr(os, 'O_NOFOLLOW'):
+        flags |= os.O_NOFOLLOW
       # Accommodate Windows; stolen from python2.6/tempfile.py.
       if hasattr(os, 'O_NOINHERIT'):
         flags |= os.O_NOINHERIT
