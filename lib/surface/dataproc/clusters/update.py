@@ -43,9 +43,9 @@ class Update(base.UpdateCommand):
 
     $ {command} my-cluster --region=us-central1 --num-workers=5
 
-  To change the number preemptible workers in a cluster, run:
+  To change the number of secondary workers in a cluster, run:
 
-    $ {command} my-cluster --region=us-central1 --num-preemptible-workers=5
+    $ {command} my-cluster --region=us-central1 --num-secondary-workers=5
 
   To add the label 'customer=acme' to a cluster, run:
 

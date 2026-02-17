@@ -30,7 +30,8 @@
     - arg_name: source-network
       api_field: connectivityTest.source.network
       help_text: |
-        A VPC network URI where the source is located.
+        A VPC network URI for the source endpoint. Used according to the `source-network-type`
+        flag.
     - arg_name: source-network-type
       api_field: connectivityTest.source.networkType
       help_text: |
@@ -38,11 +39,31 @@
       choices:
       - enum_value: gcp-network
         arg_value: gcp-network
-        help_text: Network in Google Cloud Platform.
+        help_text: A VPC network. Should be used for internal IP addresses in VPC networks. The
+          `source-network` field should be set to the URI of this network. Only endpoints within
+          this network will be considered.
       - enum_value: non-gcp-network
         arg_value: non-gcp-network
-        help_text: Network outside Google Cloud Platform.
-      default: gcp-network
+        help_text: A network outside of Google Cloud (for example, an on-premises network or another
+          cloud provider network). Should be used for internal IP addresses outside of Google
+          Cloud. The `source-network`  field should be set to the URI of the VPC network containing
+          a corresponding Cloud VPN tunnel, Cloud Interconnect VLAN attachment, or a router
+          appliance instance. Only endpoints reachable from the provided VPC network via the routes
+          to networks outside of Google Cloud will be considered.
+      - enum_value: internet
+        arg_value: internet
+        help_text: Internet. Should be used for internet-routable external IP addresses or IP
+          addresses for global Google APIs and services.
+      - enum_value: network-type-unspecified
+        arg_value: unspecified
+        help_text: Unspecified. The test will analyze all possible IP address locations. This might
+          take longer and produce inaccurate or ambiguous results, so prefer specifying an explicit
+          network type. The `source-project` field should be set to the project where the Google
+          Cloud endpoint is located, or where the endpoint outside of Google Cloud should be
+          reachable from (via routes to networks outside of Google Cloud). The project might also
+          be inferred from the Connectivity Test project or other projects referenced in the
+          request.
+      default: unspecified
     - group:
         mutex: true
         params:
@@ -69,6 +90,17 @@
           type: bool
           help_text: |
             Clear existing source cluster for Google Kubernetes Engine master.
+    - group:
+        mutex: true
+        params:
+        - arg_name: source-gke-pod
+          api_field: connectivityTest.source.gkePod
+          help_text: |
+            A GKE Pod URI as the source endpoint.
+        - arg_name: clear-source-gke-pod
+          type: bool
+          help_text: |
+            Clear existing source GKE Pod.
     - group:
         mutex: true
         params:
@@ -127,7 +159,8 @@
     - arg_name: destination-network
       api_field: connectivityTest.destination.network
       help_text: |
-        A VPC network URI where the destination is located.
+        A VPC network URI for the destination endpoint. Used only when the source is an external
+        IP address endpoint, and the destination is an internal IP address endpoint.
     - arg_name: destination-port
       api_field: connectivityTest.destination.port
       help_text: |
@@ -163,6 +196,17 @@
           type: bool
           help_text: |
             Clear existing destination cluster for Google Kubernetes Engine master.
+    - group:
+        mutex: true
+        params:
+        - arg_name: destination-gke-pod
+          api_field: connectivityTest.destination.gkePod
+          help_text: |
+            A GKE Pod URI as the destination endpoint.
+        - arg_name: clear-destination-gke-pod
+          type: bool
+          help_text: |
+            Clear existing destination GKE Pod.
     - group:
         mutex: true
         params:
@@ -256,6 +300,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
       - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrsBeta
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateGkePodsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs
@@ -271,6 +316,7 @@
       - googlecloudsdk.command_lib.network_management.util:ValidateNetworkURIs
       - googlecloudsdk.command_lib.network_management.util:ClearEndpointAttrs
       - googlecloudsdk.command_lib.network_management.util:ValidateGKEMasterClustersURIs
+      - googlecloudsdk.command_lib.network_management.util:ValidateGkePodsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudSQLInstancesURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateCloudFunctionsURIs
       - googlecloudsdk.command_lib.network_management.util:ValidateAppEngineVersionsURIs

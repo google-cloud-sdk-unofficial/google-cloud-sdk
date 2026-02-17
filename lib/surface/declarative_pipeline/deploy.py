@@ -18,22 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections.abc import MutableMapping, Sequence
-import contextlib
 import pathlib
 import subprocess
-import sys
 import textwrap
-from typing import Any
 
 from googlecloudsdk.calliope import base as calliope_base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.declarative_pipeline import deployment_model
 from googlecloudsdk.command_lib.declarative_pipeline import gcp_deployer
 from googlecloudsdk.command_lib.declarative_pipeline.handlers import dataproc
+from googlecloudsdk.command_lib.declarative_pipeline.processors import action_processor
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
-from googlecloudsdk.core.util import files
 
 PIPELINE_ID = "customer-analytics-pipeline"
 ARTIFACT_BUCKET_NAME = "project-dataproc-artifacts"
@@ -77,7 +73,7 @@ def _GetVersionId(subprocess_mod):
         .strip()
     )
   except (subprocess_mod.CalledProcessError, FileNotFoundError):
-    raise exceptions.ToolException(textwrap.dedent("""\
+    raise exceptions.ToolException(textwrap.dedent("""
         Please ensure command is run from within a git repository."""))
 
 
@@ -134,91 +130,6 @@ def _UploadString(subprocess_mod, content, dest):
     if p.returncode != 0:
       log.error(f"Failed to upload string to {dest}: {stderr.decode()}")
       raise exceptions.ToolException("String upload to GCS failed.")
-
-
-@contextlib.contextmanager
-def _TempBuildDir(work_dir):
-  """Context manager for a temporary build directory."""
-  build_root = work_dir / "temp_build_libs"
-  try:
-    files.RmTree(build_root)
-  except FileNotFoundError:
-    pass
-  build_root.mkdir(parents=True, exist_ok=True)
-  try:
-    yield build_root
-  finally:
-    try:
-      files.RmTree(build_root)
-    except FileNotFoundError:
-      pass
-
-
-def _BuildEnvLocal(subprocess_mod, work_dir):
-  """Builds dependencies.tar.gz locally using pip and tar.
-
-  Args:
-    subprocess_mod: The subprocess module or mock.
-    work_dir: The working directory as a pathlib.Path object.
-  """
-
-  requirements_file = work_dir / "jobs" / "requirements.txt"
-  output_zip = work_dir / ENV_PACK_FILE
-
-  with _TempBuildDir(work_dir) as build_root:
-    site_packages = build_root / "site-packages"
-    site_packages.mkdir(parents=True, exist_ok=True)
-
-    try:
-      pip_cmd = [
-          sys.executable,
-          "-m",
-          "pip",
-          "install",
-          "-r",
-          str(requirements_file),
-          "--target",
-          str(site_packages),
-          "--no-cache-dir",
-          "--platform",
-          "manylinux2014_x86_64",
-          "--only-binary=:all:",
-          "--implementation",
-          "cp",
-          "--python-version",
-          "3.11",
-          "--extra-index-url",
-          "https://pypi.org/simple",
-      ]
-
-      subprocess_mod.check_call(pip_cmd)
-
-      subprocess_mod.check_call(
-          [
-              "tar",
-              "-czf",  # Create, Gzip, File
-              str(output_zip),
-              "--exclude=*.pyc",
-              "--exclude=__pycache__",
-              "site-packages",
-          ],
-          cwd=str(build_root),
-      )
-
-    except subprocess_mod.CalledProcessError as e:
-      raise exceptions.ToolException(
-          "Local build failed. Ensure pip and tar are installed."
-      ) from e
-
-
-def _GetNestedDict(
-    d: MutableMapping[str, Any], keys: Sequence[str]
-) -> MutableMapping[str, Any]:
-  """Gets a nested dictionary from `d`, creating keys with empty dictionaries if they don't exist."""
-  current = d
-  for key in keys:
-    current = current.setdefault(key, {})
-  return current
 
 
 def _DeployGcpResources(deployment_file, env, dry_run):
@@ -347,7 +258,7 @@ class Deploy(calliope_base.Command):
     else:
       log.status.Print(
           f'Pipeline file "{TEMPLATE_FILE}" not found, '
-          'skipping pipeline deployment.'
+          "skipping pipeline deployment."
       )
 
     if not did_work:
@@ -385,11 +296,17 @@ class Deploy(calliope_base.Command):
 
     resolved_pipeline = yaml.load_path(str(template_path))
 
-    if (work_dir / "jobs" / "requirements.txt").exists():
-      _BuildEnvLocal(self._subprocess, work_dir)
-
     for action in resolved_pipeline.get("actions", []):
-      self._ProcessPipelineAction(action, work_dir, artifact_base_uri)
+      processor = action_processor.get_action_processor(
+          action,
+          work_dir,
+          artifact_base_uri,
+          # TODO(b/474620155): This should per action, not global.
+          ENV_PACK_FILE,
+          self._subprocess,
+          resolved_pipeline.get("defaults", {}),
+      )
+      processor.process_action()
 
     self._UploadArtifacts(
         subprocess_mod=self._subprocess,
@@ -422,42 +339,6 @@ class Deploy(calliope_base.Command):
         self._subprocess, f"default-version: {version_id}", manifest_dest
     )
     return version_id
-
-  def _ProcessPipelineAction(self, action, work_dir, artifact_base_uri):
-    """Processes a single action in the pipeline, resolving local paths to GCS URIs."""
-    if "filename" not in action:
-      return
-
-    raw_path = action["filename"]
-    local_path = pathlib.Path(raw_path.lstrip("/"))
-
-    absolute_local_path = work_dir / local_path
-    if not absolute_local_path.exists():
-      raise exceptions.BadFileException(
-          f"File in YAML does not exist locally: {local_path}"
-      )
-
-    action["filename"] = f"{artifact_base_uri}{local_path.as_posix()}"
-
-    env_pack_path = work_dir / ENV_PACK_FILE
-    if env_pack_path.exists():
-      env_pack_uri = f"{artifact_base_uri}{ENV_PACK_FILE}#libs"
-
-      if "archives" not in action:
-        action["archives"] = []
-
-      if not any(env_pack_uri in arch for arch in action["archives"]):
-        action["archives"].append(env_pack_uri)
-
-    # Add PYTHONPATH to Spark driver and executors to include the site-packages
-    # from the uploaded dependencies.zip, allowing the Spark jobs to find
-    # the required Python libraries.
-    full_python_path = "./libs/site-packages"
-    props = _GetNestedDict(
-        action, ["config", "sessionTemplate", "inline", "properties"]
-    )
-    props["spark.dataproc.driverEnv.PYTHONPATH"] = full_python_path
-    props["spark.executorEnv.PYTHONPATH"] = full_python_path
 
   def _UploadArtifacts(self, *, subprocess_mod, work_dir, artifact_uri):
     """Uploads pipeline artifacts to the GCS artifact bucket."""

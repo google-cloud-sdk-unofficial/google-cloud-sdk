@@ -1,0 +1,19 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Describe a transport.
+    description: Retrieve and display details about a transport.
+    examples: |
+      To display details about a transport named ``mytransport'' in the ``us-central1'' region, run:
+
+        $ gcloud beta network-connectivity transports describe mytransport --region=us-central1
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.transports
+    method: get
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:transport
+      help_text: Name of the Transport to be described.

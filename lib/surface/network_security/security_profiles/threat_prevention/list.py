@@ -14,10 +14,6 @@
 # limitations under the License.
 """List Threat Prevention Profiles command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import tpp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
@@ -43,6 +39,10 @@ table(
 )
 """
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -53,16 +53,27 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(sp_flags.MakeGetUriFunc(cls.ReleaseTrack()))
     sp_flags.AddLocationResourceArg(
-        parser, 'Parent resource for the list operation.', required=True
+        parser=parser,
+        help_text='Parent resource for the list operation.',
+        required=True,
+        project_scope_supported=project_scope_supported,
     )
 
   def Run(self, args):
-    client = tpp_api.Client(self.ReleaseTrack())
+    result = args.CONCEPTS.location.Parse()
+    parent_ref = result.result
 
-    parent_ref = args.CONCEPTS.location.Parse()
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_LOCATION_RESOURCE_COLLECTION
+    )
+    client = tpp_api.Client(self.ReleaseTrack(), project_scoped)
 
     return client.ListThreatPreventionProfiles(
         parent_ref.RelativeName(), page_size=args.page_size

@@ -42,8 +42,8 @@ FLAG_TYPE_MAP: dict[str, str] = {
 }
 
 VALUE_TYPE_HANDLERS: dict[str, tuple[str, type[Any]]] = {
-    'FLAG_VALUE_TYPE_BOOL': ('boolValue', bool),
-    'FLAG_VALUE_TYPE_INT': ('intValue', int),
+    'FLAG_VALUE_TYPE_BOOL': ('booleanValue', bool),
+    'FLAG_VALUE_TYPE_INT': ('integerValue', int),
     'FLAG_VALUE_TYPE_DOUBLE': ('doubleValue', float),
     'FLAG_VALUE_TYPE_STRING': ('stringValue', str),
 }
@@ -77,12 +77,15 @@ def _ParseFlagData(
         f'Flag "{flag_key}" invalid. "defaultValue" is not set.'
     )
 
+  default_evaluation_spec, default_variant = (
+      _GetDefaultEvalSpecAndVariantsDicts(default_value, value_type)
+  )
+
   flag_dict = {
       'key': flag_key,
       'valueType': value_type,
-      'evaluationSpec': _GetDefaultEvaluationSpecDict(
-          default_value, value_type
-      ),
+      'evaluationSpec': default_evaluation_spec,
+      'variants': [default_variant],
       'unitKind': unit_kind_name,
   }
   if flag_definition.get('description'):
@@ -91,10 +94,10 @@ def _ParseFlagData(
   return flag_dict
 
 
-def _GetDefaultEvaluationSpecDict(
+def _GetDefaultEvalSpecAndVariantsDicts(
     default_value: str, value_type: str
-) -> dict[str, Any]:
-  """Returns the default evaluation spec for the given value type."""
+) -> tuple[dict[str, Any], dict[str, Any]]:
+  """Returns the default evaluation spec and default variant for the given value type."""
 
   if value_type not in VALUE_TYPE_HANDLERS:
     raise exceptions.InvalidDataError(f'Unsupported value type: {value_type}')
@@ -110,14 +113,11 @@ def _GetDefaultEvaluationSpecDict(
     )
 
   variant_dict = {
-      'name': 'default',
+      'id': 'default',
   }
   variant_dict[variant_type] = expected_type(default_value)
 
-  return {
-      'defaultTarget': 'default',
-      'variants': [variant_dict],
-  }
+  return {'defaultTarget': 'default'}, variant_dict
 
 
 def _GetFlagMessagesFromManifest(

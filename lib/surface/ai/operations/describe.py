@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.ai import indexes_util
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.UniverseCompatible
 class DescribeV1(base.DescribeCommand):
   """Gets detailed index information about the given operation id.
 
@@ -86,6 +87,7 @@ class DescribeV1(base.DescribeCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class DescribeV1Beta1(DescribeV1):
   """Gets detailed index information about the given operation id.
 

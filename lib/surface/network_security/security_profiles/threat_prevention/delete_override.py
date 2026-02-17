@@ -14,10 +14,6 @@
 # limitations under the License.
 """Delete Override command to delete existing overrides of threat prevention profile overrides."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import tpp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
@@ -50,6 +46,10 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
@@ -60,7 +60,12 @@ class DeleteOverride(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddSeverityorThreatIDorAntivirusArg(parser, required=True)
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -70,9 +75,15 @@ class DeleteOverride(base.UpdateCommand):
     return client.GetSecurityProfile(security_profile.RelativeName()).labels
 
   def Run(self, args):
-    client = tpp_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
     is_async = args.async_
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = tpp_api.Client(self.ReleaseTrack(), project_scoped)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
@@ -92,11 +103,6 @@ class DeleteOverride(base.UpdateCommand):
     else:
       raise core_exceptions.Error(
           'Either --antivirus, --severities, or --threat-ids  must be specified'
-      )
-
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
       )
 
     response = client.DeleteOverride(

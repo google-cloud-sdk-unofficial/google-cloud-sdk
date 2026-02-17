@@ -97,6 +97,7 @@ class CreateHelper(object):
       support_zonal_affinity,
       support_allow_multinetwork,
       support_identity,
+      support_external_passthrough,
   ):
     """Add flags to create a backend service to the parser."""
 
@@ -124,7 +125,9 @@ class CreateHelper(object):
     flags.AddSessionAffinity(parser, support_stateful_affinity=True)
     flags.AddAffinityCookie(parser, support_stateful_affinity=True)
     flags.AddConnectionDrainingTimeout(parser)
-    flags.AddLoadBalancingScheme(parser)
+    flags.AddLoadBalancingScheme(
+        parser, include_external_passthrough=support_external_passthrough
+    )
     flags.AddCustomRequestHeaders(parser, remove_all_flag=False)
     flags.AddCacheKeyIncludeProtocol(parser, default=True)
     flags.AddCacheKeyIncludeHost(parser, default=True)
@@ -171,6 +174,7 @@ class CreateHelper(object):
       support_zonal_affinity,
       support_allow_multinetwork,
       support_identity,
+      support_external_passthrough,
   ):
     self._support_subsetting_subset_size = support_subsetting_subset_size
     self._support_ip_port_dynamic_forwarding = (
@@ -180,6 +184,7 @@ class CreateHelper(object):
     self._support_allow_multinetwork = support_allow_multinetwork
     self._release_track = release_track
     self._support_identity = support_identity
+    self._support_external_passthrough = support_external_passthrough
 
   def _CreateGlobalRequests(self, holder, args, backend_services_ref):
     """Returns a global backend service create request."""
@@ -521,6 +526,7 @@ class CreateGA(base.CreateCommand):
   _support_zonal_affinity = False
   _support_allow_multinetwork = False
   _support_identity = False
+  _support_external_passthrough = False
 
   @classmethod
   def Args(cls, parser):
@@ -531,6 +537,7 @@ class CreateGA(base.CreateCommand):
         support_zonal_affinity=cls._support_zonal_affinity,
         support_allow_multinetwork=cls._support_allow_multinetwork,
         support_identity=cls._support_identity,
+        support_external_passthrough=cls._support_external_passthrough,
     )
 
   def Run(self, args):
@@ -544,6 +551,7 @@ class CreateGA(base.CreateCommand):
         support_allow_multinetwork=self._support_allow_multinetwork,
         release_track=self.ReleaseTrack(),
         support_identity=self._support_identity,
+        support_external_passthrough=self._support_external_passthrough,
     ).Run(args, holder)
 
 
@@ -570,6 +578,7 @@ class CreateBeta(CreateGA):
   _support_zonal_affinity = True
   _support_allow_multinetwork = False
   _support_identity = True
+  _support_external_passthrough = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -595,3 +604,4 @@ class CreateAlpha(CreateBeta):
   _support_zonal_affinity = True
   _support_allow_multinetwork = True
   _support_identity = True
+  _support_external_passthrough = True

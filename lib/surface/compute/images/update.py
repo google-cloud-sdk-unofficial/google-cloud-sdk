@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope  import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
@@ -84,17 +85,31 @@ def _CommonArgs(messages, cls, parser, support_user_licenses=False):
         '--update-user-licenses',
         type=arg_parsers.ArgList(),
         metavar='LICENSE',
-        action=arg_parsers.UpdateAction,
+        action=actions.DeprecationAction(
+            '--update-user-licenses',
+            error='The {flag_name} flag has been removed.',
+            removed=True,
+            action=arg_parsers.UpdateAction,
+        ),
         help=(
             'List of user licenses to be updated on an image. These user '
             'licenses replace all existing user licenses. If this flag is not '
-            'provided, all existing user licenses remain unchanged.'))
+            'provided, all existing user licenses remain unchanged.'
+        ),
+    )
     scope.add_argument(
         '--clear-user-licenses',
-        action='store_true',
-        help='Remove all existing user licenses on an image.')
+        action=actions.DeprecationAction(
+            '--clear-user-licenses',
+            error='The {flag_name} flag has been removed.',
+            removed=True,
+            action='store_true',
+        ),
+        help='Remove all existing user licenses on an image.',
+    )
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Compute Engine image."""

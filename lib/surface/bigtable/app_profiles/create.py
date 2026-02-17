@@ -91,6 +91,7 @@ class CreateAppProfile(base.CreateCommand):
     Returns:
       Created app profile resource object.
     """
+    arguments.ValidateStandardIsolationArgs(args)
     return app_profiles.Create(
         app_profile_ref,
         cluster=args.route_to,
@@ -192,6 +193,7 @@ class CreateAppProfileBeta(CreateAppProfile):
     Returns:
       Created app profile resource object.
     """
+    arguments.ValidateStandardIsolationArgs(args)
     return app_profiles.Create(
         app_profile_ref,
         cluster=args.route_to,
@@ -218,7 +220,7 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         arguments.ArgAdder(parser)
         .AddDescription('app profile', required=False)
         .AddAppProfileRouting()
-        .AddIsolation()
+        .AddIsolation(allow_memory_layer=True)
         .AddForce('create')
     )
 
@@ -238,6 +240,7 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
     Returns:
       Created app profile resource object.
     """
+    arguments.ValidateStandardIsolationArgs(args, allow_memory_layer=True)
     return app_profiles.Create(
         app_profile_ref,
         cluster=args.route_to,
@@ -247,6 +250,7 @@ class CreateAppProfileAlpha(CreateAppProfileBeta):
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,
+        use_memory_layer=args.use_memory_layer,
         data_boost=args.data_boost,
         data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,

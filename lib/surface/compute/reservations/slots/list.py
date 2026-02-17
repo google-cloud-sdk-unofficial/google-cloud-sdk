@@ -29,11 +29,12 @@ from googlecloudsdk.command_lib.compute.reservations import resource_args
 from googlecloudsdk.command_lib.compute.reservations.slots import flags
 
 DETAILED_HELP = {
-    'DESCRIPTION':
+    'DESCRIPTION': (
         """\
         {command} displays all Compute Engine reservation slots in an extended reservation's sub-block.
-      """,
-    'EXAMPLES':
+      """
+    ),
+    'EXAMPLES': (
         """\
         To list all reservation slots in an extended reservation's block my-block and sub-block my-sub-block in table form,
         run:
@@ -44,11 +45,14 @@ DETAILED_HELP = {
 
         $ {command} extended-reservation --block-name=my-block --sub-block-name=my-sub-block --zone=us-central1-a --project=my-project --uri
     """
+    ),
 }
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 class List(base.ListCommand):
   """List Compute Engine reservation slots."""
 
@@ -63,28 +67,31 @@ class List(base.ListCommand):
   def _Run(self, args, holder):
     client = holder.client
 
-    reservation_ref = (
-        List.ReservationArg.ResolveAsResource(
-            args,
-            holder.resources,
-            default_scope=compute_scope.ScopeEnum.ZONE,
-            scope_lister=compute_flags.GetDefaultScopeLister(client)))
+    reservation_ref = List.ReservationArg.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=compute_scope.ScopeEnum.ZONE,
+        scope_lister=compute_flags.GetDefaultScopeLister(client),
+    )
 
     parent_name = f'reservations/{reservation_ref.reservation}/reservationBlocks/{args.block_name}/reservationSubBlocks/{args.sub_block_name}'
 
     service = client.apitools_client.reservationSlots
-    request = (client.messages.
-               ComputeReservationSlotsListRequest(
-                   parentName=parent_name,
-                   zone=reservation_ref.zone,
-                   project=reservation_ref.project))
+    request = client.messages.ComputeReservationSlotsListRequest(
+        parentName=parent_name,
+        zone=reservation_ref.zone,
+        project=reservation_ref.project,
+    )
 
     errors = []
-    results = list(request_helper.MakeRequests(
-        requests=[(service, 'List', request)],
-        http=client.apitools_client.http,
-        batch_url=client.batch_url,
-        errors=errors))
+    results = list(
+        request_helper.MakeRequests(
+            requests=[(service, 'List', request)],
+            http=client.apitools_client.http,
+            batch_url=client.batch_url,
+            errors=errors,
+        )
+    )
 
     if errors:
       utils.RaiseToolException(errors)

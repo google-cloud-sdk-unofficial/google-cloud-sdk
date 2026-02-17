@@ -14,10 +14,6 @@
 # limitations under the License.
 """Update command to update a new Custom Intercept profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import intercept_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
@@ -47,6 +43,10 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -59,17 +59,28 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
     labels_util.AddUpdateLabelsFlags(parser)
 
   def Run(self, args):
-    client = intercept_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
     description = args.description
     is_async = args.async_
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = intercept_api.Client(self.ReleaseTrack(), project_scoped)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,

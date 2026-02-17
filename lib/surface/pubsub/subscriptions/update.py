@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 def _Args(
     parser,
     enable_push_to_cps=False,
+    enable_bigtable_config=False,
 ):
   """Adds the arguments for this command.
 
@@ -38,12 +39,15 @@ def _Args(
     parser: the parser for the command.
     enable_push_to_cps: whether or not to enable Pubsub Export config flags
       support.
+    enable_bigtable_config: whether or not to enable Bigtable export config
+      flags.
   """
   resource_args.AddSubscriptionResourceArg(parser, 'to update.')
   flags.AddSubscriptionSettingsFlags(
       parser,
       is_update=True,
       enable_push_to_cps=enable_push_to_cps,
+      enable_bigtable_config=enable_bigtable_config,
   )
   labels_util.AddUpdateLabelsFlags(parser)
   flags.AddMessageTransformsFlags(parser, is_update=True)
@@ -105,6 +109,7 @@ class Update(base.UpdateCommand):
         if enable_push_to_cps
         else None
     )
+    clear_bigtable_config = getattr(args, 'clear_bigtable_config', None)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
@@ -183,6 +188,12 @@ class Update(base.UpdateCommand):
         args, 'pubsub_export_topic_region', None
     )
 
+    bigtable_table = getattr(args, 'bigtable_table', None)
+    bigtable_app_profile_id = getattr(args, 'bigtable_app_profile_id', None)
+    bigtable_service_account_email = getattr(
+        args, 'bigtable_service_account_email', None
+    )
+
     enable_exactly_once_delivery = getattr(
         args, 'enable_exactly_once_delivery', None
     )
@@ -230,6 +241,10 @@ class Update(base.UpdateCommand):
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
           clear_pubsub_export_config=clear_pubsub_export_config,
+          bigtable_table=bigtable_table,
+          bigtable_app_profile_id=bigtable_app_profile_id,
+          bigtable_service_account_email=bigtable_service_account_email,
+          clear_bigtable_config=clear_bigtable_config,
           message_transforms_file=message_transforms_file,
           clear_message_transforms=clear_message_transforms,
           enable_vertex_ai_smt=enable_vertex_ai_smt,
@@ -256,6 +271,7 @@ class UpdateBeta(Update):
     _Args(
         parser,
         enable_push_to_cps=True,
+        enable_bigtable_config=True,
     )
 
   @exceptions.CatchHTTPErrorRaiseHTTPException()

@@ -33,6 +33,7 @@ from googlecloudsdk.api_lib.compute import kms_utils
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute import zone_utils
 from googlecloudsdk.api_lib.compute.regions import utils as region_utils
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -237,6 +238,14 @@ def _CommonArgs(
         '--user-licenses',
         type=arg_parsers.ArgList(),
         metavar='LICENSE',
+        action=actions.DeprecationAction(
+            '--user-licenses',
+            error=(
+                'The {flag_name} flag has been removed. Use --licenses instead.'
+            ),
+            removed=True,
+            action='store',
+        ),
         help=(
             'List of URIs to license resources. User-provided licenses '
             'can be edited after disk is created.'

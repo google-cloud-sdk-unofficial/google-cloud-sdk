@@ -1,0 +1,22 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: List identity providers created on Google Distributed Cloud zone.
+    description: Lists identity providers created on Google Distributed Cloud zone.
+    examples: |
+      To list identity providers in organization `sample-org`, location `us-central1`, run:
+
+      $ {command} --location=us-central1 --organization=sample-org
+
+  request:
+    collection: edgecontainer.organizations.locations.identityProviders
+    ALPHA:
+      api_version: v1alpha
+
+  response:
+    id_field: name
+
+  arguments:
+    resource:
+      help_text: Google Cloud Platform region to list identity providers in an Organization.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.identity_provider.resources:location

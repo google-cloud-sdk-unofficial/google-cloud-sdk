@@ -101,6 +101,11 @@ def _Run(
       getattr(args, 'pubsub_export_topic', None) if enable_push_to_cps else None
   )
   pubsub_export_topic_region = getattr(args, 'pubsub_export_topic_region', None)
+  bigtable_table = getattr(args, 'bigtable_table', None)
+  bigtable_app_profile_id = getattr(args, 'bigtable_app_profile_id', None)
+  bigtable_service_account_email = getattr(
+      args, 'bigtable_service_account_email', None
+  )
   message_transforms_file = getattr(args, 'message_transforms_file', None)
 
   no_expiration = False
@@ -165,6 +170,9 @@ def _Run(
           cloud_storage_service_account_email=cloud_storage_service_account_email,
           pubsub_export_topic=pubsub_export_topic,
           pubsub_export_topic_region=pubsub_export_topic_region,
+          bigtable_table=bigtable_table,
+          bigtable_app_profile_id=bigtable_app_profile_id,
+          bigtable_service_account_email=bigtable_service_account_email,
           message_transforms_file=message_transforms_file,
           tags=tags,
           enable_vertex_ai_smt=enable_vertex_ai_smt,
@@ -189,7 +197,7 @@ def _Run(
     raise util.RequestsFailedError(failed, 'create')
 
 
-def _Args(parser, enable_push_to_cps=False):
+def _Args(parser, enable_push_to_cps=False, enable_bigtable_config=False):
   """Add flags to the arg parser for creating a subscription."""
   topic_help_text = (
       'from which this subscription is receiving messages. Each subscription is'
@@ -203,7 +211,9 @@ def _Args(parser, enable_push_to_cps=False):
   )
   resource_args.AddResourceArgs(parser, [topic, subscription])
   flags.AddSubscriptionSettingsFlags(
-      parser, enable_push_to_cps=enable_push_to_cps
+      parser,
+      enable_push_to_cps=enable_push_to_cps,
+      enable_bigtable_config=enable_bigtable_config,
   )
 
   labels_util.AddCreateLabelsFlags(parser)
@@ -236,7 +246,7 @@ class CreateBeta(Create):
 
   @classmethod
   def Args(cls, parser):
-    _Args(parser, enable_push_to_cps=True)
+    _Args(parser, enable_push_to_cps=True, enable_bigtable_config=True)
 
   def Run(self, args):
     flags.ValidateFilterString(args)

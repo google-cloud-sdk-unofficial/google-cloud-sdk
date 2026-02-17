@@ -119,12 +119,8 @@ class Create(base.CreateCommand):
     flags.AddSlurmLoginNode(
         parser=flag_group, api_version=api_version, required=True
     )
-    flags.AddSlurmNodeSets(
-        parser=flag_group, api_version=api_version, required=True
-    )
-    flags.AddSlurmPartitions(
-        parser=flag_group, api_version=api_version, required=True
-    )
+    flags.AddSlurmNodeSets(parser=flag_group, api_version=api_version)
+    flags.AddSlurmPartitions(parser=flag_group, api_version=api_version)
     flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
 
   def Run(self, args):

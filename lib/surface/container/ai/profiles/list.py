@@ -91,16 +91,15 @@ class List(commands.List):
     parser.add_argument(
         "--model-server",
         help=(
-            "The model server version. Default is latest. Other options include"
-            " the model server version of a profile, all which returns all"
-            " versions."
+            "The model server."
         ),
     )
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. If not specified, this defaults to the"
-            " latest version."
+            "The model server version. Default is latest. Other options include"
+            " the model server version of a profile, all which returns all"
+            " versions."
         ),
     )
     parser.add_argument(

@@ -162,7 +162,7 @@ class Create(base.Command):
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
-  _support_instance_flexibility_policy = False
+  _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
 
   _log_async = False
@@ -376,7 +376,7 @@ class CreateBeta(Create):
   _support_source_snapshot_region = False
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = False
-  _support_instance_flexibility_policy = False
+  _support_instance_flexibility_policy = True
   _support_workload_identity_config = False
 
   @classmethod

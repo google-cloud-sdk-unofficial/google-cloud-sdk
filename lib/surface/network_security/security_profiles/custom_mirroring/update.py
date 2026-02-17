@@ -14,10 +14,6 @@
 # limitations under the License.
 """Update command to update a new Custom Mirroring profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import mirroring_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
@@ -49,6 +45,9 @@ DETAILED_HELP = {
 }
 
 _BROKER_RELEASE_TRACKS = (base.ReleaseTrack.ALPHA,)
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
 
 @base.DefaultUniverseOnly
@@ -62,7 +61,12 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
@@ -78,8 +82,15 @@ class Update(base.UpdateCommand):
       )
 
   def Run(self, args):
-    client = mirroring_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = mirroring_api.Client(self.ReleaseTrack(), project_scoped)
+
     description = args.description
     is_async = args.async_
 

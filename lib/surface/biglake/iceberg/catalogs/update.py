@@ -20,17 +20,24 @@ from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
 class UpdateCatalog(base.UpdateCommand):
   """Update a BigLake Iceberg REST catalog."""
 
-  @staticmethod
-  def Args(parser):
+  _support_catalog_type_biglake = False
+
+  @classmethod
+  def Args(cls, parser):
     flags.AddCatalogResourceArg(parser, 'to update')
     util.GetCredentialModeEnumMapper(
         base.ReleaseTrack.BETA
     ).choice_arg.AddToParser(parser)
+    if cls._support_catalog_type_biglake:
+      util.GetUpdateCatalogTypeEnumMapper(
+          base.ReleaseTrack.ALPHA
+      ).choice_arg.AddToParser(parser)
+      util.AddAdditionalLocationsArg(parser)
 
   def Run(self, args):
     client = util.GetClientInstance(self.ReleaseTrack())
@@ -46,13 +53,30 @@ class UpdateCatalog(base.UpdateCommand):
           self.ReleaseTrack()
       ).GetEnumForChoice(args.credential_mode)
 
-    catalog_type_enum = messages.IcebergCatalog.CatalogTypeValueValuesEnum
+    catalog_type = (
+        messages.IcebergCatalog.CatalogTypeValueValuesEnum.CATALOG_TYPE_GCS_BUCKET
+    )
+    if self._support_catalog_type_biglake and args.IsSpecified('catalog_type'):
+      update_mask.append('catalog_type')
+      catalog_type = util.GetUpdateCatalogTypeEnumMapper(
+          self.ReleaseTrack()
+      ).GetEnumForChoice(args.catalog_type)
+
+    additional_locations = []
+    if self._support_catalog_type_biglake and args.IsSpecified(
+        'additional_locations'
+    ):
+      update_mask.append('additional_locations')
+      additional_locations = args.additional_locations
+
     catalog = messages.IcebergCatalog(
         name=catalog_name,
-        catalog_type=catalog_type_enum.CATALOG_TYPE_GCS_BUCKET,
+        catalog_type=catalog_type,
         credential_mode=credential_mode,
     )
 
+    if self._support_catalog_type_biglake:
+      catalog.additional_locations = additional_locations
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsPatchRequest(
         name=catalog_name,
         icebergCatalog=catalog,
@@ -62,3 +86,9 @@ class UpdateCatalog(base.UpdateCommand):
     return client.iceberg_v1_restcatalog_extensions_projects_catalogs.Patch(
         request
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class UpdateAlpha(UpdateCatalog):
+  """Update a BigLake Iceberg REST catalog."""
+  _support_catalog_type_biglake = True

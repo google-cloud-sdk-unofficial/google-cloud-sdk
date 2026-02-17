@@ -1,0 +1,26 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a service account key for a service account on a Google Distributed Cloud zone.
+    description: Describe a service account key for a service account on a Google Distributed Cloud zone.
+    examples: |
+      To describe service account key with ID `KEY_ID` for a service account called `sample-service-account` in project `sample-project` and location `us-central1`, run:
+
+      $ {command} KEY_ID --service-account=sample-service-account --location=us-central1 --project=sample-project
+
+  request:
+    collection: edgecontainer.projects.locations.serviceAccounts
+    api_version: v1alpha
+    method: describeKey
+
+  arguments:
+    resource:
+      help_text: Google Distributed Cloud service account.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.service_account.resources:serviceAccount
+      is_positional: false
+      arg_name: service-account
+    params:
+    - arg_name: key_id
+      is_positional: true
+      required: true
+      api_field: describeServiceAccountKeyRequest.keyId
+      help_text: The service account key ID to describe.

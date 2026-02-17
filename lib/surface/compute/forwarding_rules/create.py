@@ -35,13 +35,14 @@ import six
 from six.moves import range  # pylint: disable=redefined-builtin
 
 
-def _Args(parser, support_all_protocol):
+def _Args(parser, support_all_protocol, support_external_passthrough):
   """Add the flags to create a forwarding rule."""
 
   flags.AddCreateArgs(
       parser,
       include_psc_google_apis=True,
       include_target_service_attachment=True,
+      include_external_passthrough=support_external_passthrough,
   )
   flags.AddIPProtocols(parser, support_all_protocol)
   flags.AddDescription(parser)
@@ -65,7 +66,9 @@ def _Args(parser, support_all_protocol):
       'You cannot use the `--service-label` flag  if the forwarding rule '
       'references an internal IP address that has the '
       '`--purpose=SHARED_LOADBALANCER_VIP` flag set.')
-  flags.AddAddressesAndIPVersions(parser)
+  flags.AddAddressesAndIPVersions(
+      parser, include_external_passthrough=support_external_passthrough
+  )
   forwarding_rule_arg = flags.ForwardingRuleArgument()
   forwarding_rule_arg.AddArgument(parser, operation_type='create')
   parser.display_info.AddCacheUpdater(flags.ForwardingRulesCompleter)
@@ -82,17 +85,21 @@ class CreateHelper(object):
       holder,
       support_all_protocol,
       support_sd_registration_for_regional,
+      support_external_passthrough,
   ):
     self._holder = holder
     self._support_all_protocol = support_all_protocol
     self._support_sd_registration_for_regional = (
         support_sd_registration_for_regional
     )
+    self._support_external_passthrough = support_external_passthrough
 
   @classmethod
-  def Args(cls, parser, support_all_protocol):
+  def Args(cls, parser, support_all_protocol, support_external_passthrough):
     """Inits the class args for supported features."""
-    cls.FORWARDING_RULE_ARG = _Args(parser, support_all_protocol)
+    cls.FORWARDING_RULE_ARG = _Args(
+        parser, support_all_protocol, support_external_passthrough
+    )
 
   def ConstructProtocol(self, messages, args):
     if args.ip_protocol:
@@ -159,8 +166,12 @@ class CreateHelper(object):
     port_range = _MakeSingleUnifiedPortRange(args.port_range, range_list)
     # All global forwarding rules must use EXTERNAL or INTERNAL_SELF_MANAGED
     # schemes presently.
-    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
-                                                    is_psc_google_apis)
+    load_balancing_scheme = _GetLoadBalancingScheme(
+        args,
+        client.messages,
+        is_psc_google_apis,
+        self._support_external_passthrough,
+    )
     if (load_balancing_scheme == client.messages.ForwardingRule
         .LoadBalancingSchemeValueValuesEnum.INTERNAL):
       raise fw_exceptions.ArgumentError(
@@ -216,7 +227,9 @@ class CreateHelper(object):
             bundles_list)
     else:
       # L7XLB in Premium Tier.
-      target_ref = utils.GetGlobalTarget(resources, args)
+      target_ref = utils.GetGlobalTarget(
+          resources, args, self._support_external_passthrough
+      )
       target_as_str = target_ref.SelfLink()
 
       if ports_all_specified:
@@ -276,8 +289,9 @@ class CreateHelper(object):
                                    compute_flags.compute_scope.ScopeEnum.REGION,
                                    forwarding_rule_ref)
 
-    load_balancing_scheme = _GetLoadBalancingScheme(args, client.messages,
-                                                    is_psc_ilb)
+    load_balancing_scheme = _GetLoadBalancingScheme(
+        args, client.messages, is_psc_ilb, self._support_external_passthrough
+    )
 
     if is_psc_ilb and load_balancing_scheme:
       raise exceptions.InvalidArgumentException(
@@ -501,8 +515,9 @@ class CreateHelper(object):
           if not args.global_address and not args.address_region:
             if forwarding_rule_ref.Collection() == 'compute.forwardingRules':
               args.address_region = forwarding_rule_ref.region
-        address_ref = flags.AddressArg().ResolveAsResource(
-            args, resources, default_scope=scope)
+        address_ref = flags.AddressArg(
+            self._support_external_passthrough
+        ).ResolveAsResource(args, resources, default_scope=scope)
         address = address_ref.SelfLink()
 
     return address
@@ -540,10 +555,13 @@ class Create(base.CreateCommand):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_all_protocol = False
   _support_sd_registration_for_regional = False
+  _support_external_passthrough = False
 
   @classmethod
   def Args(cls, parser):
-    CreateHelper.Args(parser, cls._support_all_protocol)
+    CreateHelper.Args(
+        parser, cls._support_all_protocol, cls._support_external_passthrough
+    )
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -551,6 +569,7 @@ class Create(base.CreateCommand):
         holder,
         self._support_all_protocol,
         self._support_sd_registration_for_regional,
+        self._support_external_passthrough,
     ).Run(args)
 
 
@@ -559,6 +578,7 @@ class CreateBeta(Create):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_all_protocol = False
   _support_sd_registration_for_regional = True
+  _support_external_passthrough = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -566,6 +586,7 @@ class CreateAlpha(CreateBeta):
   """Create a forwarding rule to direct network traffic to a load balancer."""
   _support_all_protocol = True
   _support_sd_registration_for_regional = True
+  _support_external_passthrough = True
 
 
 Create.detailed_help = {
@@ -638,7 +659,9 @@ def _GetPortList(range_list):
   return sorted(ports)
 
 
-def _GetLoadBalancingScheme(args, messages, is_psc):
+def _GetLoadBalancingScheme(
+    args, messages, is_psc, include_external_passthrough
+):
   """Get load balancing scheme."""
   if not args.load_balancing_scheme:
     # The default is EXTERNAL for non-PSC forwarding rules.
@@ -655,6 +678,13 @@ def _GetLoadBalancingScheme(args, messages, is_psc):
   elif args.load_balancing_scheme == 'INTERNAL_MANAGED':
     return (messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum
             .INTERNAL_MANAGED)
+  elif (
+      include_external_passthrough
+      and args.load_balancing_scheme == 'EXTERNAL_PASSTHROUGH'
+  ):
+    return (
+        messages.ForwardingRule.LoadBalancingSchemeValueValuesEnum.EXTERNAL_PASSTHROUGH
+    )
   return None
 
 

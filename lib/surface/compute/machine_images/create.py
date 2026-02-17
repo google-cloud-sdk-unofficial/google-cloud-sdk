@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import csek_utils
 from googlecloudsdk.api_lib.compute import kms_utils
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute.machine_images import flags as machine_image_flags
 from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
@@ -32,18 +34,20 @@ from googlecloudsdk.command_lib.kms import resource_args as kms_resource_args
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Compute Engine machine image."""
+
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
   _SUPPORT_DISK_FILTERING = False
+  _SUPPORT_RESOURCE_MANAGER_TAGS = False
 
   detailed_help = {
-      'brief':
-          'Create a Compute Engine machine image.',
-      'EXAMPLES':
+      'brief': 'Create a Compute Engine machine image.',
+      'EXAMPLES': (
           """
          To create a machine image, run:
 
            $ {command} my-machine-image --source-instance=example-source --source-instance-zone=us-central1-a
-       """,
+       """
+      ),
   }
 
   @classmethod
@@ -53,7 +57,8 @@ class Create(base.CreateCommand):
     Create.MACHINE_IMAGE_ARG.AddArgument(parser, operation_type='create')
     parser.add_argument(
         '--description',
-        help='Specifies a text description of the machine image.')
+        help='Specifies a text description of the machine image.',
+    )
     csek_utils.AddCsekKeyArgs(parser, resource_type='machine image')
     flags.AddStorageLocationFlag(parser, "machine image's")
     flags.AddGuestFlushFlag(parser, 'machine image')
@@ -62,6 +67,17 @@ class Create(base.CreateCommand):
 
     if cls._SUPPORT_DISK_FILTERING:
       machine_image_flags.AddDiskFilterArgs(parser)
+
+    if cls._SUPPORT_RESOURCE_MANAGER_TAGS:
+      parser.add_argument(
+          '--resource-manager-tags',
+          type=arg_parsers.ArgDict(),
+          metavar='KEY=VALUE',
+          help=(
+              'A comma-separated list of Resource Manager tags to apply to the'
+              ' machine image.'
+          ),
+      )
 
     Create.SOURCE_INSTANCE = machine_image_flags.MakeSourceInstanceArg()
     Create.SOURCE_INSTANCE.AddArgument(parser)
@@ -75,25 +91,32 @@ class Create(base.CreateCommand):
         args,
         holder.resources,
         default_scope=scope.ScopeEnum.GLOBAL,
-        scope_lister=flags.GetDefaultScopeLister(client))
+        scope_lister=flags.GetDefaultScopeLister(client),
+    )
 
     source_instance = Create.SOURCE_INSTANCE.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources
+    )
 
     machine_image = client.messages.MachineImage(
         name=machine_image_ref.Name(),
         description=args.description,
-        sourceInstance=source_instance.SelfLink())
+        sourceInstance=source_instance.SelfLink(),
+    )
 
     csek_keys = csek_utils.CsekKeyStore.FromArgs(
-        args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+        args, self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS
+    )
     if csek_keys:
       machine_image.machineImageEncryptionKey = csek_utils.MaybeToMessage(
           csek_keys.LookupKey(
-              machine_image_ref, raise_if_missing=args.require_csek_key_create),
-          client.apitools_client)
+              machine_image_ref, raise_if_missing=args.require_csek_key_create
+          ),
+          client.apitools_client,
+      )
     machine_image.machineImageEncryptionKey = kms_utils.MaybeGetKmsKey(
-        args, client.messages, machine_image.machineImageEncryptionKey)
+        args, client.messages, machine_image.machineImageEncryptionKey
+    )
 
     if args.IsSpecified('storage_location'):
       machine_image.storageLocations = [args.storage_location]
@@ -101,16 +124,41 @@ class Create(base.CreateCommand):
     if args.IsSpecified('guest_flush'):
       machine_image.guestFlush = args.guest_flush
 
+    params = None
     if self._SUPPORT_DISK_FILTERING:
       if args.IsSpecified('include_disks'):
-        machine_image.params = client.messages.MachineImageParams(
+        params = client.messages.MachineImageParams(
             includedDisks=args.include_disks
         )
 
       if args.IsSpecified('exclude_disks'):
-        machine_image.params = client.messages.MachineImageParams(
+        params = client.messages.MachineImageParams(
             excludedDisks=args.exclude_disks
         )
+
+    if self._SUPPORT_RESOURCE_MANAGER_TAGS and args.IsSpecified(
+        'resource_manager_tags'
+    ):
+      if not params:
+        params = client.messages.MachineImageParams()
+      resource_manager_tags_map = (
+          resource_manager_tags_utils.GetResourceManagerTags(
+              args.resource_manager_tags
+          )
+      )
+      params.resourceManagerTags = (
+          client.messages.MachineImageParams.ResourceManagerTagsValue(
+              additionalProperties=[
+                  params.ResourceManagerTagsValue.AdditionalProperty(
+                      key=key, value=value
+                  )
+                  for key, value in sorted(resource_manager_tags_map.items())
+              ]
+          )
+      )
+
+    if params:
+      machine_image.params = params
 
     source_csek_keys = getattr(args, 'source_disk_csek_key', [])
 
@@ -124,29 +172,35 @@ class Create(base.CreateCommand):
             collection='compute.disks',
             params={
                 'project': source_instance.project,
-                'zone': source_instance.project
-            })
+                'zone': source_instance.project,
+            },
+        )
         key_store = csek_utils.CsekKeyStore.FromFile(
-            key.get('csek-key-file'), self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS)
+            key.get('csek-key-file'), self._ALLOW_RSA_ENCRYPTED_CSEK_KEYS
+        )
 
         disk_key = csek_utils.MaybeToMessage(
-            key_store.LookupKey(disk_ref), client.apitools_client)
+            key_store.LookupKey(disk_ref), client.apitools_client
+        )
         disk_keys[disk_url] = disk_key
 
     source_disk_messages = []
     if disk_keys:
       for disk, key in disk_keys.items():
         source_disk_message = client.messages.SourceDiskEncryptionKey(
-            sourceDisk=disk, diskEncryptionKey=key)
+            sourceDisk=disk, diskEncryptionKey=key
+        )
         source_disk_messages.append(source_disk_message)
 
     if source_disk_messages:
       machine_image.sourceDiskEncryptionKeys = source_disk_messages
 
     request = client.messages.ComputeMachineImagesInsertRequest(
-        machineImage=machine_image, project=machine_image_ref.project)
-    return client.MakeRequests([(client.apitools_client.machineImages, 'Insert',
-                                 request)])
+        machineImage=machine_image, project=machine_image_ref.project
+    )
+    return client.MakeRequests(
+        [(client.apitools_client.machineImages, 'Insert', request)]
+    )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
@@ -154,6 +208,7 @@ class CreateBeta(Create):
   """Create a Compute Engine machine image."""
 
   _SUPPORT_DISK_FILTERING = False
+  _SUPPORT_RESOURCE_MANAGER_TAGS = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -161,3 +216,4 @@ class CreateAlpha(CreateBeta):
   """Create a Compute Engine machine image."""
 
   _SUPPORT_DISK_FILTERING = True
+  _SUPPORT_RESOURCE_MANAGER_TAGS = True

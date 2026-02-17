@@ -14,10 +14,6 @@
 # limitations under the License.
 """Update command to update a security profile group resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profile_groups import spg_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import spg_flags

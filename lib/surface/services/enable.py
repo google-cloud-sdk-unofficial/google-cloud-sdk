@@ -26,7 +26,8 @@ _OP_BASE_CMD = 'gcloud beta services operations '
 _OP_WAIT_CMD = _OP_BASE_CMD + 'wait {0}'
 
 _DETAILED_HELP_ALPHA = {
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
         This command enables a service for consumption for a project, folder or organization.
 
         To see a list of available services for a project, run:
@@ -37,8 +38,10 @@ _DETAILED_HELP_ALPHA = {
      https://cloud.google.com/service-usage/docs/list-services and on
      disabling a service at:
      https://cloud.google.com/service-usage/docs/enable-disable
-        """,
-    'EXAMPLES': """\
+        """
+    ),
+    'EXAMPLES': (
+        """\
         To enable a service called `my-consumed-service` on the current
         project, run:
 
@@ -48,6 +51,11 @@ _DETAILED_HELP_ALPHA = {
         `my-project`, run:
 
           $ {command} my-consumed-service --project=my-project
+
+        To enable a service called `my-consumed-service` on the project
+        `my-project` in group `groups`, run:
+
+          $ {command} my-consumed-service --project=my-project --group=groups
 
         To enable a service called `my-consumed-service` on the folder
         `my-folder, run:
@@ -67,7 +75,8 @@ _DETAILED_HELP_ALPHA = {
         current project, run:
 
           $ {command} service1 service2 service3
-        """,
+        """
+    ),
 }
 
 _DETAILED_HELP = {
@@ -120,6 +129,11 @@ class EnableAlpha(base.SilentCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     common_flags.validate_only_args(parser, suffix='enable')
     common_flags.skip_dependency_flag(parser)
+    parser.add_argument(
+        '--group',
+        default='dependencies',
+        help='The service group name.',
+    )
 
   def Run(self, args):
     """Run 'services enable'.
@@ -140,6 +154,7 @@ class EnableAlpha(base.SilentCommand):
     organization = (
         args.organization if args.IsSpecified('organization') else None
     )
+    inputted_group = True if args.IsSpecified('group') else False
 
     update_consumer_policy_op, services_enabled = serviceusage.AddEnableRule(
         args.service,
@@ -148,6 +163,8 @@ class EnableAlpha(base.SilentCommand):
         organization=organization,
         validate_only=args.validate_only,
         skip_dependency=args.skip_dependency,
+        group=args.group,
+        inputted_group=inputted_group,
     )
 
     if update_consumer_policy_op is None:

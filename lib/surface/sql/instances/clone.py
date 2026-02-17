@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
-
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
@@ -30,8 +29,9 @@ from googlecloudsdk.command_lib.sql import flags
 from googlecloudsdk.command_lib.sql import instances as command_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 
-DESCRIPTION = ("""\
+DESCRIPTION = """\
 
     *{command}* creates a clone of a Cloud SQL instance. The clone is an
     independent copy of the source instance with the same data and settings.
@@ -50,9 +50,9 @@ DESCRIPTION = ("""\
     instance to clone. If not specified, the current state of the instance is
     cloned.
 
-    """)
+    """
 
-EXAMPLES_GA = ("""\
+EXAMPLES_GA = """\
     To clone an instance from its current state (most recent binary log
   coordinates):
 
@@ -78,15 +78,15 @@ EXAMPLES_GA = ("""\
   To clone a deleted instance, include the name and deletion time of the source instance:
 
   $ {command} my-source-instance my-cloned-instance --source-instance-deletion-time '2012-11-15T16:19:00.094Z'
-    """)
+    """
 
-EXAMPLES_ALPHA = ("""\
+EXAMPLES_ALPHA = """\
 
   To specify the allocated IP range for the private IP target Instance
   (reserved for future use):
 
   $ {command} my-source-instance my-cloned-instance --allocated-ip-range-name cloned-instance-ip-range
-    """)
+    """
 
 DETAILED_HELP = {
     'DESCRIPTION': DESCRIPTION,
@@ -102,30 +102,49 @@ DETAILED_APLHA_HELP = {
 def _GetInstanceRefsFromArgs(args, client):
   """Get validated refs to source and destination instances from args."""
 
+  if bool(args.destination_project) != bool(args.destination_network):
+    raise exceptions.ArgumentError(
+        'Both --destination-project and --destination-network must be '
+        'specified for a cross-project clone.'
+    )
+
   validate.ValidateInstanceName(args.source)
   validate.ValidateInstanceName(args.destination)
   source_instance_ref = client.resource_parser.Parse(
       args.source,
       params={'project': properties.VALUES.core.project.GetOrFail},
-      collection='sql.instances')
-  destination_instance_ref = client.resource_parser.Parse(
-      args.destination,
-      params={'project': properties.VALUES.core.project.GetOrFail},
-      collection='sql.instances')
-
-  _CheckSourceAndDestination(source_instance_ref, destination_instance_ref)
+      collection='sql.instances',
+  )
+  if args.destination_project:
+    destination_instance_ref = client.resource_parser.Parse(
+        args.destination,
+        params={'project': args.destination_project},
+        collection='sql.instances',
+    )
+  else:
+    destination_instance_ref = client.resource_parser.Parse(
+        args.destination,
+        params={'project': properties.VALUES.core.project.GetOrFail},
+        collection='sql.instances',
+    )
+    _CheckSourceAndDestinationProjectsMatch(
+        source_instance_ref, destination_instance_ref
+    )
   return source_instance_ref, destination_instance_ref
 
 
-def _CheckSourceAndDestination(source_instance_ref, destination_instance_ref):
-  """Verify that the source and destination instance ids are different."""
+def _CheckSourceAndDestinationProjectsMatch(
+    source_instance_ref: resources.Resource,
+    destination_instance_ref: resources.Resource,
+) -> None:
+  """Verify that the source and destination projects are the same."""
 
   if source_instance_ref.project != destination_instance_ref.project:
     raise exceptions.ArgumentError(
         'The source and the clone instance must belong to the same project:'
-        ' "{src}" != "{dest}".'.format(
-            src=source_instance_ref.project,
-            dest=destination_instance_ref.project))
+        f' "{source_instance_ref.project}" !='
+        f' "{destination_instance_ref.project}".'
+    )
 
 
 def AddAlphaArgs(parser):
@@ -139,7 +158,8 @@ def AddAlphaArgs(parser):
       \'google-managed-services-default\'. If set, the destination instance
       IP is created in the allocated range represented by this name.
       Reserved for future use.
-      """)
+      """,
+  )
 
 
 def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
@@ -149,10 +169,12 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
   if args.bin_log_file_name and args.bin_log_position:
     clone_context.binLogCoordinates = sql_messages.BinLogCoordinates(
         binLogFileName=args.bin_log_file_name,
-        binLogPosition=args.bin_log_position)
+        binLogPosition=args.bin_log_position,
+    )
   elif args.point_in_time:
     clone_context.pointInTime = args.point_in_time.strftime(
-        '%Y-%m-%dT%H:%M:%S.%fZ')
+        '%Y-%m-%dT%H:%M:%S.%fZ'
+    )
 
   if args.point_in_time and args.restore_database_name:
     clone_context.databaseNames[:] = [args.restore_database_name]
@@ -162,6 +184,12 @@ def _UpdateRequestFromArgs(request, args, sql_messages, release_track):
 
   if args.preferred_secondary_zone:
     clone_context.preferredSecondaryZone = args.preferred_secondary_zone
+
+  if args.destination_project:
+    clone_context.destinationProject = args.destination_project
+
+  if args.destination_network:
+    clone_context.destinationNetwork = args.destination_network
 
   if args.source_instance_deletion_time:
     clone_context.sourceInstanceDeletionTime = (
@@ -192,8 +220,9 @@ def RunBaseCloneCommand(args, release_track):
   sql_client = client.sql_client
   sql_messages = client.sql_messages
 
-  source_instance_ref, destination_instance_ref = (
-      _GetInstanceRefsFromArgs(args, client))
+  source_instance_ref, destination_instance_ref = _GetInstanceRefsFromArgs(
+      args, client
+  )
 
   request = sql_messages.SqlInstancesCloneRequest(
       project=source_instance_ref.project,
@@ -201,7 +230,10 @@ def RunBaseCloneCommand(args, release_track):
       instancesCloneRequest=sql_messages.InstancesCloneRequest(
           cloneContext=sql_messages.CloneContext(
               kind='sql#cloneContext',
-              destinationInstanceName=destination_instance_ref.instance)))
+              destinationInstanceName=destination_instance_ref.instance,
+          )
+      ),
+  )
 
   _UpdateRequestFromArgs(request, args, sql_messages, release_track)
 
@@ -210,7 +242,9 @@ def RunBaseCloneCommand(args, release_track):
     source_instance_resource = sql_client.instances.Get(
         sql_messages.SqlInstancesGetRequest(
             project=source_instance_ref.project,
-            instance=source_instance_ref.instance))
+            instance=source_instance_ref.instance,
+        )
+    )
     if source_instance_resource.diskEncryptionConfiguration:
       command_util.ShowCmekWarning('clone', 'the source instance')
   except apitools_exceptions.HttpError:
@@ -222,21 +256,27 @@ def RunBaseCloneCommand(args, release_track):
   operation_ref = client.resource_parser.Create(
       'sql.operations',
       operation=result.name,
-      project=destination_instance_ref.project)
+      project=destination_instance_ref.project,
+  )
 
   if args.async_:
     if not args.IsSpecified('format'):
       args.format = 'default'
     return sql_client.operations.Get(
         sql_messages.SqlOperationsGetRequest(
-            project=operation_ref.project, operation=operation_ref.operation))
-  operations.OperationsV1Beta4.WaitForOperation(sql_client, operation_ref,
-                                                'Cloning Cloud SQL instance')
+            project=operation_ref.project, operation=operation_ref.operation
+        )
+    )
+  operations.OperationsV1Beta4.WaitForOperation(
+      sql_client, operation_ref, 'Cloning Cloud SQL instance'
+  )
   log.CreatedResource(destination_instance_ref)
   rsource = sql_client.instances.Get(
       sql_messages.SqlInstancesGetRequest(
           project=destination_instance_ref.project,
-          instance=destination_instance_ref.instance))
+          instance=destination_instance_ref.instance,
+      )
+  )
   rsource.kind = None
   return rsource
 
@@ -248,14 +288,35 @@ def AddBaseArgs(parser):
   parser.add_argument(
       'source',
       completer=flags.InstanceCompleter,
-      help='Cloud SQL instance ID of the source.')
+      help='Cloud SQL instance ID of the source.',
+  )
   parser.add_argument('destination', help='Cloud SQL instance ID of the clone.')
-
+  parser.add_argument(
+      '--destination-project',
+      required=False,
+      help="""\
+      The project ID of the destination project where the cloned instance
+      will be created. To perform a cross-project clone, this field is
+      required. If not specified, the clone is created in the same project
+      as the source instance.
+      """,
+  )
+  parser.add_argument(
+      '--destination-network',
+      required=False,
+      help="""\
+      The fully qualified URI of the VPC network to which the cloned instance
+      will be connected via Private Services Access for private IP. For
+      example: `projects/my-network-project/global/networks/my-network`. This
+      field is required only for cross-project cloning.
+      """,
+  )
   pitr_options_group = parser.add_group(mutex=True, required=False)
   bin_log_group = pitr_options_group.add_group(
       mutex=False,
       required=False,
-      help='Binary log coordinates for point-in-time recovery.')
+      help='Binary log coordinates for point-in-time recovery.',
+  )
   bin_log_group.add_argument(
       '--bin-log-file-name',
       required=True,
@@ -265,7 +326,8 @@ def AddBaseArgs(parser):
       <--bin-log-position> to form a valid binary log coordinate, it defines an
       earlier point in time to clone a source instance from.
       For example, mysql-bin.000001.
-      """)
+      """,
+  )
   bin_log_group.add_argument(
       '--bin-log-position',
       type=int,
@@ -276,9 +338,11 @@ def AddBaseArgs(parser):
       valid binary log coordinate, it defines an earlier point in time to clone
       a source instance from.
       For example, 123 (a numeric value).
-      """)
+      """,
+  )
   point_in_time_group = pitr_options_group.add_group(
-      mutex=False, required=False)
+      mutex=False, required=False
+  )
   point_in_time_group.add_argument(
       '--point-in-time',
       type=arg_parsers.Datetime.Parse,
@@ -293,14 +357,16 @@ def AddBaseArgs(parser):
       up to the point in time they want to restore up to. Uses RFC 3339 format
       in UTC timezone. If specified, defines a past state of the instance to
       clone. For example, '2012-11-15T16:19:00.094Z'.
-      """)
+      """,
+  )
   point_in_time_group.add_argument(
       '--restore-database-name',
       required=False,
       help="""\
     The name of the database to be restored for a point-in-time restore. If
     set, the destination instance will only restore the specified database.
-    """)
+    """,
+  )
   parser.add_argument(
       '--preferred-zone',
       required=False,
@@ -308,7 +374,8 @@ def AddBaseArgs(parser):
     The preferred zone for the cloned instance. If you specify a value for
     this flag, then the destination instance uses the value as the primary
     zone.
-    """)
+    """,
+  )
   parser.add_argument(
       '--preferred-secondary-zone',
       required=False,
@@ -317,7 +384,8 @@ def AddBaseArgs(parser):
     specify a value for this flag, then the destination instance uses the
     value as the secondary zone. The secondary zone can't be the same as the
     primary zone.
-    """)
+    """,
+  )
   parser.add_argument(
       '--source-instance-deletion-time',
       type=arg_parsers.Datetime.Parse,
@@ -325,7 +393,8 @@ def AddBaseArgs(parser):
       help="""\
       The time the source instance was deleted. This is required if cloning
       from a deleted instance.
-      """)
+      """,
+  )
 
 
 @base.DefaultUniverseOnly

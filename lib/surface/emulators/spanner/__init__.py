@@ -40,11 +40,15 @@ def _RequireDockerInstalled():
     raise DockerNotFoundError(
         'To use the Cloud Spanner Emulator on {platform}, '
         'docker must be installed on your system PATH'.format(
-            platform=platforms.OperatingSystem.Current().name))
+            platform=platforms.OperatingSystem.Current().name
+        )
+    )
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
+@base.DefaultUniverseOnly
 class Spanner(base.Group):
   """Manage your local Spanner emulator.
 
@@ -52,20 +56,25 @@ class Spanner(base.Group):
   """
 
   detailed_help = {
-      'EXAMPLES':
+      'EXAMPLES': (
           """\
           To start a local Cloud Spanner emulator, run:
 
             $ {command} start
-          """,
+          """
+      ),
   }
 
   # Override
   def Filter(self, context, args):
     current_os = platforms.OperatingSystem.Current()
-    if current_os is platforms.OperatingSystem.LINUX:
+    if (
+        current_os is platforms.OperatingSystem.LINUX
+        or current_os is platforms.OperatingSystem.MACOSX
+    ):
       util.EnsureComponentIsInstalled(
           spanner_util.SPANNER_EMULATOR_COMPONENT_ID,
-          spanner_util.SPANNER_EMULATOR_TITLE)
+          spanner_util.SPANNER_EMULATOR_TITLE,
+      )
     else:
       _RequireDockerInstalled()

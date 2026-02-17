@@ -38,6 +38,10 @@
         help_text: |-
           Define the logic for evaluating the flag against a given context.
           The rules are evaluated sequentially in their specified order.
+      - api_field: attributes
+        hidden: true
+        help_text: |-
+          Names of the context attributes that are used in the evaluation rules.
       - api_field: variants
         help_text: |-
           A list of variants.

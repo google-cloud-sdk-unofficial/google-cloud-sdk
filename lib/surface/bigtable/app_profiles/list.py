@@ -27,8 +27,10 @@ from googlecloudsdk.command_lib.bigtable import arguments
 
 def _TransformAppProfileToRoutingInfo(app_profile):
   """Extracts the routing info from the app profile."""
-  if ('singleClusterRouting' in app_profile and
-      'clusterId' in app_profile['singleClusterRouting']):
+  if (
+      'singleClusterRouting' in app_profile
+      and 'clusterId' in app_profile['singleClusterRouting']
+  ):
     return app_profile['singleClusterRouting']['clusterId']
   elif 'multiClusterRoutingUseAny' in app_profile:
     if 'clusterIds' in app_profile['multiClusterRoutingUseAny']:
@@ -57,6 +59,16 @@ def _TransformAppProfileToStandardIsolationPriority(app_profile):
     return 'PRIORITY_HIGH'
 
 
+def _TransformAppProfileToStandardIsolationMemoryLayer(app_profile):
+  """Extracts whether memory layer is enabled from app profile."""
+  if (
+      app_profile.get('standardIsolation')
+      and app_profile['standardIsolation'].get('memoryConfig') is not None
+  ):
+    return 'Yes'
+  return 'No'
+
+
 def _TransformAppProfileToDataBoostComputeBillingOwner(app_profile):
   """Extracts the Data Boot compute billing owner from the app profile."""
   if (
@@ -74,8 +86,7 @@ class ListAppProfilesGA(base.ListCommand):
   """List Bigtable app profiles."""
 
   detailed_help = {
-      'EXAMPLES':
-          textwrap.dedent("""\
+      'EXAMPLES': textwrap.dedent("""\
           To list all app profiles for an instance, run:
 
             $ {command} --instance=my-instance-id
@@ -164,6 +175,9 @@ class ListAppProfilesAlpha(ListAppProfilesBeta):
         'standardIsolationPriority': (
             _TransformAppProfileToStandardIsolationPriority
         ),
+        'standardIsolationMemoryLayer': (
+            _TransformAppProfileToStandardIsolationMemoryLayer
+        ),
         'dataBoostComputeBillingOwner': (
             _TransformAppProfileToDataBoostComputeBillingOwner
         ),
@@ -179,6 +193,7 @@ class ListAppProfilesAlpha(ListAppProfilesBeta):
             singleClusterRouting.allowTransactionalWrites.yesno("Yes"):label=TRANSACTIONAL_WRITES,
             isolationMode():label=ISOLATION_MODE,
             standardIsolationPriority():label=STANDARD_ISOLATION_PRIORITY,
+            standardIsolationMemoryLayer():label=STANDARD_ISOLATION_MEMORY_LAYER,
             dataBoostComputeBillingOwner():label=DATA_BOOST_COMPUTE_BILLING_OWNER
           )
         """)

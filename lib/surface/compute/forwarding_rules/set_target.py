@@ -30,14 +30,17 @@ class SetTargetHelper(object):
 
   FORWARDING_RULE_ARG = None
 
-  def __init__(self, holder):
+  def __init__(self, holder, support_external_passthrough):
     self._holder = holder
+    self._support_external_passthrough = support_external_passthrough
 
   @classmethod
-  def Args(cls, parser):
+  def Args(cls, parser, support_external_passthrough):
     """Adds flags to set the target of a forwarding rule."""
     cls.FORWARDING_RULE_ARG = flags.ForwardingRuleArgument()
-    flags.AddSetTargetArgs(parser)
+    flags.AddSetTargetArgs(
+        parser, include_external_passthrough=support_external_passthrough
+    )
     cls.FORWARDING_RULE_ARG.AddArgument(parser)
 
   def Run(self, args):
@@ -60,7 +63,9 @@ class SetTargetHelper(object):
 
   def CreateGlobalRequests(self, client, resources, forwarding_rule_ref, args):
     """Create a globally scoped request."""
-    target_ref = utils.GetGlobalTarget(resources, args)
+    target_ref = utils.GetGlobalTarget(
+        resources, args, self._support_external_passthrough
+    )
 
     request = client.messages.ComputeGlobalForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),
@@ -96,6 +101,7 @@ class Set(base.UpdateCommand):
   """Modify a forwarding rule to direct network traffic to a new target."""
 
   FORWARDING_RULE_ARG = None
+  _support_external_passthrough = False
 
   detailed_help = {
       'DESCRIPTION': ("""
@@ -112,22 +118,22 @@ class Set(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    SetTargetHelper.Args(parser)
+    SetTargetHelper.Args(parser, cls._support_external_passthrough)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
-    return SetTargetHelper(holder).Run(args)
+    return SetTargetHelper(holder, self._support_external_passthrough).Run(args)
 
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetBeta(Set):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  pass
+  _support_external_passthrough = False
 
 
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetAlpha(SetBeta):
   """Modify a forwarding rule to direct network traffic to a new target."""
-  pass
+  _support_external_passthrough = True

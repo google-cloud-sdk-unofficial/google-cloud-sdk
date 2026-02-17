@@ -92,7 +92,6 @@
 
     - arg_name: resource-manager-tags
       api_field: storagePool.params.resourceManagerTags
-      release_tracks: [ALPHA]
       help_text: |
         Resource manager tags to be bound to the storage pool.
       metavar: KEY=VALUE

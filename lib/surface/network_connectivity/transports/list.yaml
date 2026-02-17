@@ -1,0 +1,35 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: List transports.
+    description: Retrieve and display a list of all transports in the specified project.
+    examples: |
+      To list all transports in the `us-east4` region, run:
+
+            $ {command} --region=us-east4
+
+      To list all transports in all regions, run:
+
+            $ {command}
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.transports
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.network_connectivity.util:AddDefaultLocationToList
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:project
+      help_text: Project of the transports to list
+      override_resource_collection: true
+    params:
+    - arg_name: region
+      help_text: The region of the transports to list. Provide "-" to list all transports.
+      default: '-'
+
+  response:
+    id_field: name
+
+  output:
+    format: table(name.segment(5):label=NAME, name.segment(3):label=REGION, remoteProfile.scope(remoteTransportProfiles), bandwidth, state)

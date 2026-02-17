@@ -14,6 +14,8 @@
 # limitations under the License.
 """Command to create Release."""
 
+import textwrap
+
 from googlecloudsdk.api_lib.container.fleet.packages import releases as apis
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.packages import flags
@@ -21,19 +23,15 @@ from googlecloudsdk.command_lib.container.fleet.packages import utils
 
 _DETAILED_HELP = {
     'DESCRIPTION': '{description}',
-    'EXAMPLES': """ \
-        To create Release `v1.0.0` for Resource Bundle `my-bundle` in `us-central1`, run:
+    'EXAMPLES': textwrap.dedent(""" \
+        To create Release `v1.0.0` for Resource Bundle `my-bundle`, run:
 
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=manifest.yaml
+          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=<SOURCE_PATH>
 
-        To create a Release with multiple variants in one directory, run:
-
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=/manifests/ --variants-pattern=manifest-*.yaml
-
-        To create a Release with multiple variants across multiple directories, ex:
-
-          $ {command} --version=v1.0.0 --resource-bundle=my-bundle --source=/manifests/ --variants-pattern=dir-*/
-        """,
+        SOURCE_PATH could be a one of the following:
+        - A glob pattern for manifest files, e.g. `/manifests-dir/*.yaml`. This will create a Variant for each matching file, inferring the Variant name from the file name, e.g. `manifest-1.yaml` will be used to create `manifest-1` Variant.
+        - A glob pattern for directories of manifest files, e.g. `/manifests-dirs/*`. This will create a Variant for each matching directory, inferring the Variant name from the directory name, e.g. `/manifests-dirs/manifest-1` will be used to create `manifest-1` Variant. All YAML files under `/manifests-dirs/manifest-1/` folder and its subfolders will be used to create the Variant.
+        """),
 }
 
 
@@ -53,25 +51,19 @@ class Create(base.CreateCommand):
         '--version', required=True, help='Version of the Release to create.'
     )
     flags.AddLifecycleFlag(parser)
-    flags.AddVariantsPatternFlag(parser)
     parser.add_argument(
         '--source',
         required=True,
         help="""Source file or directory to create the Release from.
-          e.g. ``--source=manifest.yaml'', ``--source=/manifests-dir/''
-          Can optionally be paired with the ``--variants-pattern'' arg to create
-          multiple variants of a Release.""",
+          e.g. ``--source=manifest.yaml'', ``--source=/manifests-dir/'',
+          ``--source=/manifests-dir/*.yaml''""",
     )
     flags.AddSkipCreatingVariantResourcesFlag(parser)
 
   def Run(self, args):
     """Run the create command."""
     client = apis.ReleasesClient(self._api_version)
-    utils.ValidateSource(args.source)
-    glob_pattern = utils.GlobPatternFromSourceAndVariantsPattern(
-        args.source, args.variants_pattern
-    )
-    variants = utils.VariantsFromGlobPattern(glob_pattern)
+    variants = utils.VariantsFromGlobPattern(args.source)
 
     return client.Create(
         resource_bundle=args.resource_bundle,

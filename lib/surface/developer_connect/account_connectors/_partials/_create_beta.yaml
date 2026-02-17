@@ -135,6 +135,7 @@
                   - arg_value: google
                     enum_value: GOOGLE
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       Google provider.
                       Recommended scopes:
                         "https://www.googleapis.com/auth/drive.readonly",
@@ -142,27 +143,32 @@
                   - arg_value: sentry
                     enum_value: SENTRY
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       Sentry provider.
                       Scopes can be found at
                       https://docs.sentry.io/api/permissions/
                   - arg_value: rovo
                     enum_value: ROVO
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       Rovo provider.
                       Must select the "rovo" scope.
                   - arg_value: new-relic
                     enum_value: NEW_RELIC
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       New Relic provider.
                       No scopes are allowed.
                   - arg_value: datastax
                     enum_value: DATASTAX
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       Datastax provider.
                       No scopes are allowed.
                   - arg_value: dynatrace
                     enum_value: DYNATRACE
                     help_text: |-
+                      Deprecated: This provider is no longer supported.
                       Dynatrace provider.
             - arg_name: provider-oauth-config-scopes
               api_field: accountConnector.providerOauthConfig.scopes

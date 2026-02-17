@@ -71,7 +71,7 @@ class Gcloud(base.Group):
         action=actions.StoreProperty(properties.VALUES.core.universe_domain))
 
     parser.add_argument(
-        '--force-endpoint-mode',
+        '--endpoint-mode',
         metavar='ENDPOINT_MODE',
         choices=[
             properties.VALUES.regional.GLOBAL,

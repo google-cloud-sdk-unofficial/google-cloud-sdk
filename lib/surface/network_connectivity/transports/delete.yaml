@@ -1,0 +1,24 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Delete a transport.
+    description: Delete the specified transport.
+    examples: |
+      To delete a transport named ``mytransport'' in the ``us-east4'' region, run:
+
+        $ gcloud beta network-connectivity transports delete mytransport --region=us-east4
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.transports
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:transport
+      help_text: Name of the Transport to be deleted.
+
+  input:
+    confirmation_prompt: 'You are about to delete transport [{__relative_name__}]'

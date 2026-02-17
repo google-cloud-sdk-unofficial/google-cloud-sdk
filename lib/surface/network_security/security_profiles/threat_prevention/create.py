@@ -14,15 +14,10 @@
 # limitations under the License.
 """Create command to create a new resource of threat prevention profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import tpp_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -39,6 +34,10 @@ DETAILED_HELP = {
         """,
 }
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
@@ -49,15 +48,27 @@ class CreateProfile(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
     labels_util.AddCreateLabelsFlags(parser)
 
   def Run(self, args):
-    client = tpp_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = tpp_api.Client(self.ReleaseTrack(), project_scoped)
+
     description = args.description
     labels = labels_util.ParseCreateArgs(
         args, client.messages.SecurityProfile.LabelsValue
@@ -66,11 +77,6 @@ class CreateProfile(base.CreateCommand):
 
     if not args.IsSpecified('description'):
       args.description = 'Security Profile of type Threat Prevention'
-
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
-      )
 
     response = client.CreateThreatPreventionProfile(
         name=security_profile.RelativeName(),

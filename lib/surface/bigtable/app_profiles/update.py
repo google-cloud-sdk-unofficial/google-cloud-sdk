@@ -92,6 +92,7 @@ class UpdateAppProfile(base.CreateCommand):
     Returns:
       Long running operation.
     """
+    arguments.ValidateStandardIsolationArgs(args)
     return app_profiles.Update(
         app_profile_ref,
         cluster=args.route_to,
@@ -206,6 +207,7 @@ class UpdateAppProfileBeta(UpdateAppProfile):
     Returns:
       Long running operation.
     """
+    arguments.ValidateStandardIsolationArgs(args)
     return app_profiles.Update(
         app_profile_ref,
         cluster=args.route_to,
@@ -234,7 +236,7 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
         .AddAppProfileRouting(
             required=False,
         )
-        .AddIsolation()
+        .AddIsolation(allow_memory_layer=True)
         .AddForce('update')
         .AddAsync()
     )
@@ -255,6 +257,7 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
     Returns:
       Long running operation.
     """
+    arguments.ValidateStandardIsolationArgs(args, allow_memory_layer=True)
     return app_profiles.Update(
         app_profile_ref,
         cluster=args.route_to,
@@ -264,6 +267,7 @@ class UpdateAppProfileAlpha(UpdateAppProfileBeta):
         transactional_writes=args.transactional_writes,
         row_affinity=args.row_affinity,
         priority=args.priority,
+        use_memory_layer=args.use_memory_layer,
         data_boost=args.data_boost,
         data_boost_compute_billing_owner=args.data_boost_compute_billing_owner,
         force=args.force,

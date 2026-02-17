@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Delete an identity provider on a Google Distributed Cloud zone.
+    description: |
+      Deletes an identity provider on a Google Distributed Cloud zone.
+    examples: |
+      To delete an identity provider called `sample-identity-provider` in organization `sample-org`, location `us-central1`:
+
+      $ {command} delete sample-identity-provider --location=us-central1 --organization=sample-org
+
+  request:
+    collection: edgecontainer.organizations.locations.identityProviders
+    api_version: v1alpha
+    method: delete
+
+  arguments:
+    resource:
+      help_text: The identity provider to delete.
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.identity_provider.resources:identityProvider
+
+  async:
+    collection: edgecontainer.organizations.locations.operations

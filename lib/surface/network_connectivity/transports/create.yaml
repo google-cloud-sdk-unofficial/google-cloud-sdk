@@ -33,11 +33,11 @@
     - arg_name: network
       resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.compute_resources:network
       resource_method_params:
-        transportsV1BetaTransport.network: "{__relative_name__}"
+        googleCloudNetworkconnectivityV1betaTransport.network: "{__relative_name__}"
       help_text: VPC that will be peered to the provider via the Transport.
       required: true
     - arg_name: advertised-routes
-      api_field: transportsV1BetaTransport.advertisedRoutes
+      api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes
       help_text: List of routes to advertise from the VPC `network` toward the provider.
       required: true
       metavar: CIDR_RANGE
@@ -46,7 +46,7 @@
         required: true
         params:
         - arg_name: activation-key
-          api_field: transportsV1BetaTransport.providedActivationKey
+          api_field: googleCloudNetworkconnectivityV1betaTransport.providedActivationKey
           help_text: Key from the remote provider to establish a connection over the Transport.
         - group:
             help_text: These values must all be specified if Google is expected to generate the key.
@@ -54,11 +54,11 @@
             - arg_name: remote-profile
               resource_spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:remote_transport_profile
               resource_method_params:
-                transportsV1BetaTransport.remoteProfile: "{__relative_name__}"
+                googleCloudNetworkconnectivityV1betaTransport.remoteProfile: "{__relative_name__}"
               help_text: Remote transport profile representing the provider and their location.
               required: true
             - arg_name: bandwidth
-              api_field: transportsV1BetaTransport.bandwidth
+              api_field: googleCloudNetworkconnectivityV1betaTransport.bandwidth
               help_text: Bandwidth of the transport to create. Must be a supported bandwidth on the remote profile.
               required: true
               choices:
@@ -89,22 +89,22 @@
               - arg_value: 100G
                 enum_value: BPS_100G
             - arg_name: remote-account-id
-              api_field: transportsV1BetaTransport.remoteAccountId
+              api_field: googleCloudNetworkconnectivityV1betaTransport.remoteAccountId
               help_text: Account ID in the remote provider to associate with the generated key.
               required: true
     - arg_name: description
-      api_field: transportsV1BetaTransport.description
+      api_field: googleCloudNetworkconnectivityV1betaTransport.description
       help_text: Description of the transport.
     - arg_name: stack-type
-      api_field: transportsV1BetaTransport.stackType
+      api_field: googleCloudNetworkconnectivityV1betaTransport.stackType
       help_text: IP version of the routes to be exchanged.
       choices:
       - arg_value: ipv4-only
       - arg_value: ipv4-ipv6
     - arg_name: enable-admin
       type: bool
-      api_field: transportsV1BetaTransport.adminEnabled
+      api_field: googleCloudNetworkconnectivityV1betaTransport.adminEnabled
       help_text: Administrative state of the underlying connectivity.
       default: true
     labels:
-      api_field: transportsV1BetaTransport.labels
+      api_field: googleCloudNetworkconnectivityV1betaTransport.labels

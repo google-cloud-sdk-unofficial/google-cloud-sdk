@@ -62,7 +62,6 @@ class Create(base.CreateCommand):
   _support_source_snapshot_region = True
   _support_skip_guest_os_shutdown = True
   _support_preemption_notice_duration = True
-  _support_instance_flexibility_policy = True
   _support_workload_identity_config = True
 
   @classmethod
@@ -85,7 +84,7 @@ class Create(base.CreateCommand):
         support_source_snapshot_region=cls._support_source_snapshot_region,
         support_skip_guest_os_shutdown=cls._support_skip_guest_os_shutdown,
         support_preemption_notice_duration=cls._support_preemption_notice_duration,
-        support_instance_flexibility_policy=cls._support_instance_flexibility_policy,
+        support_instance_flexibility_policy=False,
         support_workload_identity_config=cls._support_workload_identity_config,
     )
     cls.AddSourceInstanceTemplate(parser)
@@ -127,7 +126,7 @@ class Create(base.CreateCommand):
         args,
         support_max_count_per_zone=self._support_max_count_per_zone,
         support_custom_hostnames=self._support_custom_hostnames,
-        support_instance_flexibility_policy=self._support_instance_flexibility_policy,
+        support_instance_flexibility_policy=False,
     )
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
@@ -156,7 +155,8 @@ class Create(base.CreateCommand):
         self._support_source_snapshot_region,
         self._support_skip_guest_os_shutdown,
         self._support_preemption_notice_duration,
-        self._support_instance_flexibility_policy,
+        # Instance flexibility policy is not supported in QueuedResource.
+        False,
         self._support_workload_identity_config,
     )
     bulk_insert_instance_resource = bulk_util.CreateBulkInsertInstanceResource(

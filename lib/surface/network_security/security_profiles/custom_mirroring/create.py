@@ -14,16 +14,10 @@
 # limitations under the License.
 """Create command to create a new resource of Custom Mirroring profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import mirroring_api
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.network_security import endpoint_group_association_flags as mirroring_flags
 from googlecloudsdk.command_lib.network_security import sp_flags
 from googlecloudsdk.command_lib.util.args import labels_util
-from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 DETAILED_HELP = {
@@ -42,6 +36,9 @@ DETAILED_HELP = {
 }
 
 _BROKER_RELEASE_TRACKS = (base.ReleaseTrack.ALPHA,)
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
 
 
 @base.DefaultUniverseOnly
@@ -55,20 +52,32 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    sp_flags.AddSecurityProfileResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    sp_flags.AddSecurityProfileResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     sp_flags.AddProfileDescription(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
     labels_util.AddCreateLabelsFlags(parser)
-    mirroring_flags.AddMirroringEndpointGroupResource(
-        cls.ReleaseTrack(), parser
+    sp_flags.AddMirroringEndpointGroupResource(
+        cls.ReleaseTrack(), parser, project_scope_supported
     )
     if cls.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
       sp_flags.AddCustomMirroringDeploymentGroupsArg(parser)
 
   def Run(self, args):
-    client = mirroring_api.Client(self.ReleaseTrack())
-    security_profile = args.CONCEPTS.security_profile.Parse()
+    result = args.CONCEPTS.security_profile.Parse()
+    security_profile = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_SECURITY_PROFILE_RESOURCE_COLLECTION
+    )
+    client = mirroring_api.Client(self.ReleaseTrack(), project_scoped)
+
     description = args.description
     labels = labels_util.ParseCreateArgs(
         args, client.messages.SecurityProfile.LabelsValue
@@ -79,11 +88,6 @@ class Create(base.CreateCommand):
     mirroring_deployment_groups = None
     if self.ReleaseTrack() in _BROKER_RELEASE_TRACKS:
       mirroring_deployment_groups = args.mirroring_deployment_groups
-
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
-      )
 
     response = client.CreateCustomMirroringProfile(
         sp_id=security_profile.Name(),

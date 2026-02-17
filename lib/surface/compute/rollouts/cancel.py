@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Cancel rollout command."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+
+from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope.concepts import concepts
+from googlecloudsdk.command_lib.util.concepts import concept_parsers
+from googlecloudsdk.command_lib.util.concepts import presentation_specs
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+class Cancel(base.Command):
+  """Cancel Google Compute Engine rollouts."""
+
+  detailed_help = {
+      'brief': 'Cancel a Google Compute Engine rollout.',
+      'DESCRIPTION': 'Cancel a Google Compute Engine rollout.',
+      'EXAMPLES': (
+          r"""
+    To cancel a rollout named 'my-rollout', run:
+
+      $ {command} my-rollout
+    """
+      ),
+  }
+
+  @staticmethod
+  def Args(parser):
+    rollout_resource_spec = concepts.ResourceSpec(
+        'compute.rollouts',
+        resource_name='rollout',
+        rollout=concepts.ResourceParameterAttributeConfig(
+            name='name', help_text='Name of rollout to cancel.'
+        ),
+        project=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
+        api_version='alpha',
+    )
+    presentation_spec = presentation_specs.ResourcePresentationSpec(
+        'name',
+        rollout_resource_spec,
+        'Name of the rollout to cancel.',
+        required=True,
+    )
+    concept_parsers.ConceptParser([presentation_spec]).AddToParser(parser)
+    parser.add_argument(
+        '--rollback',
+        action='store_true',
+        default=False,
+        help="""
+        If true, then the ongoing rollout must be rolled back. Else, just cancel
+        the rollout without taking any further actions.
+        """,
+    )
+
+  def Run(self, args):
+    holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    client = holder.client
+    service = client.apitools_client.rollouts
+    messages = holder.client.messages
+    rollout_ref = args.CONCEPTS.name.Parse()
+
+    request = messages.ComputeRolloutsCancelRequest(
+        project=rollout_ref.project,
+        rollout=rollout_ref.Name(),
+        rollback=args.rollback,
+    )
+
+    return service.Cancel(request)

@@ -1,0 +1,39 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: Creates an identity provider for a Google Destributed Cloud zone.
+    description: Creates an identity provider for a Google Destributed Cloud zone.
+    examples: |
+      To create an OIDC identity provider called `sample-identity-provider` in organization `sample-org`, location `us-central1` with the contents of `test-config.json` on zone `us-central1-edge-sample-zone`:
+
+      $ {command} sample-identity-provider --location=us-central1 --organization=sample-org --oidc-config=test-config.json --zone=us-central1-edge-sample-zone
+
+  request:
+    collection: edgecontainer.organizations.locations.identityProviders
+    api_version: v1alpha
+    method: create
+
+  arguments:
+    resource:
+      help_text: Identity Provider
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.identity_provider.resources:identityProvider
+    params:
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: oidc-config
+          help_text: OIDC Identity Provider configuration file.
+          api_field: identityProvider.oidcConfig
+          processor: googlecloudsdk.command_lib.edge_cloud.identity_provider.hooks:LoadConfigFromFile
+        - arg_name: saml-config
+          help_text: SAML Identity Provider configuration file.
+          api_field: identityProvider.samlConfig
+          processor: googlecloudsdk.command_lib.edge_cloud.identity_provider.hooks:LoadConfigFromFile
+    - arg_name: zone
+      api_field: identityProvider.zoneId
+      required: true
+      help_text: Google Distributed Cloud zone name.
+
+  async:
+    collection: edgecontainer.organizations.locations.operations

@@ -22,6 +22,7 @@ from googlecloudsdk.api_lib.compute import disks_util as api_util
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
+from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -81,15 +82,34 @@ def _CommonArgs(
         '--update-user-licenses',
         type=arg_parsers.ArgList(),
         metavar='LICENSE',
-        action=arg_parsers.UpdateAction,
+        action=actions.DeprecationAction(
+            '--update-user-licenses',
+            error=(
+                'The {flag_name} flag has been removed. Please use'
+                ' --append-licenses or --replace-license instead.'
+            ),
+            removed=True,
+            action=arg_parsers.UpdateAction,
+        ),
         help=(
             'List of user licenses to be updated on a disk. These user licenses'
-            ' will replace all existing user licenses. If this flag is not '
-            'provided, all existing user licenses will remain unchanged.'))
+            ' replaces all existing user licenses. If this flag is not '
+            'provided, all existing user licenses remain unchanged.'
+        ),
+    )
     scope.add_argument(
         '--clear-user-licenses',
-        action='store_true',
-        help='Remove all existing user licenses on a disk.')
+        action=actions.DeprecationAction(
+            '--clear-user-licenses',
+            error=(
+                'The {flag_name} flag has been removed. Please use'
+                ' --remove-licenses instead.'
+            ),
+            removed=True,
+            action='store_true',
+        ),
+        help='Remove all existing user licenses on a disk.',
+    )
 
   if support_licenses:
     scope = parser.add_group()

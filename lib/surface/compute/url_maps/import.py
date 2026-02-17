@@ -135,6 +135,16 @@ def _GetClearedFieldsForDuration(duration, field_prefix):
   return cleared_fields
 
 
+def _GetClearedFieldsForCachePolicyDuration(duration, field_prefix):
+  """Gets a list of fields cleared by the user for Duration."""
+  cleared_fields = []
+  if hasattr(duration, 'seconds') and duration.seconds is None:
+    cleared_fields.append(field_prefix + 'seconds')
+  if hasattr(duration, 'nanos') and duration.nanos is None:
+    cleared_fields.append(field_prefix + 'nanos')
+  return cleared_fields
+
+
 def _GetClearedFieldsForUrlRewrite(url_rewrite, field_prefix):
   """Gets a list of fields cleared by the user for UrlRewrite."""
   cleared_fields = []
@@ -230,6 +240,67 @@ def _GetClearedFieldsForFaultInjectionPolicy(fault_injection_policy,
   return cleared_fields
 
 
+def _GetClearedFieldsForCacheKeyPolicy(cache_key_policy, field_prefix):
+  """Gets a list of fields cleared by the user for CacheKeyPolicy."""
+  cleared_fields = []
+  if cache_key_policy.includeProtocol is None:
+    cleared_fields.append(field_prefix + 'includeProtocol')
+  if cache_key_policy.includeHost is None:
+    cleared_fields.append(field_prefix + 'includeHost')
+  if cache_key_policy.includeQueryString is None:
+    cleared_fields.append(field_prefix + 'includeQueryString')
+  if not cache_key_policy.includedQueryParameters:
+    cleared_fields.append(field_prefix + 'includedQueryParameters')
+  if not cache_key_policy.excludedQueryParameters:
+    cleared_fields.append(field_prefix + 'excludedQueryParameters')
+  if not cache_key_policy.includedHeaderNames:
+    cleared_fields.append(field_prefix + 'includedHeaderNames')
+  if not cache_key_policy.includedCookieNames:
+    cleared_fields.append(field_prefix + 'includedCookieNames')
+  return cleared_fields
+
+
+def _GetClearedFieldsForCachePolicy(cache_policy, field_prefix):
+  """Gets a list of fields cleared by the user for CachePolicy."""
+  cleared_fields = []
+  if not cache_policy.cacheKeyPolicy:
+    cleared_fields.append(field_prefix + 'cacheKeyPolicy')
+  else:
+    cleared_fields = cleared_fields + _GetClearedFieldsForCacheKeyPolicy(
+        cache_policy.cacheKeyPolicy, field_prefix + 'cacheKeyPolicy.')
+  if cache_policy.requestCoalescing is None:
+    cleared_fields.append(field_prefix + 'requestCoalescing')
+  if not cache_policy.cacheMode:
+    cleared_fields.append(field_prefix + 'cacheMode')
+  if cache_policy.defaultTtl is None:
+    cleared_fields.append(field_prefix + 'defaultTtl')
+  else:
+    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
+        cache_policy.defaultTtl, field_prefix + 'defaultTtl.')
+  if cache_policy.maxTtl is None:
+    cleared_fields.append(field_prefix + 'maxTtl')
+  else:
+    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
+        cache_policy.maxTtl, field_prefix + 'maxTtl.')
+  if cache_policy.clientTtl is None:
+    cleared_fields.append(field_prefix + 'clientTtl')
+  else:
+    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
+        cache_policy.clientTtl, field_prefix + 'clientTtl.')
+  if cache_policy.negativeCaching is None:
+    cleared_fields.append(field_prefix + 'negativeCaching')
+  if not cache_policy.negativeCachingPolicy:
+    cleared_fields.append(field_prefix + 'negativeCachingPolicy')
+  if not cache_policy.cacheBypassRequestHeaderNames:
+    cleared_fields.append(field_prefix + 'cacheBypassRequestHeaderNames')
+  if cache_policy.serveWhileStale is None:
+    cleared_fields.append(field_prefix + 'serveWhileStale')
+  else:
+    cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicyDuration(
+        cache_policy.serveWhileStale, field_prefix + 'serveWhileStale.')
+  return cleared_fields
+
+
 def _GetClearedFieldsForRoutAction(route_action, field_prefix):
   """Gets a list of fields cleared by the user for HttpRouteAction."""
   cleared_fields = []
@@ -266,6 +337,14 @@ def _GetClearedFieldsForRoutAction(route_action, field_prefix):
     cleared_fields = cleared_fields + _GetClearedFieldsForFaultInjectionPolicy(
         route_action.faultInjectionPolicy,
         field_prefix + 'faultInjectionPolicy.')
+
+  # cachePolicy is currently Alpha-only.
+  if hasattr(route_action, 'cachePolicy'):
+    if not route_action.cachePolicy:
+      cleared_fields.append(field_prefix + 'cachePolicy')
+    else:
+      cleared_fields = cleared_fields + _GetClearedFieldsForCachePolicy(
+          route_action.cachePolicy, field_prefix + 'cachePolicy.')
   return cleared_fields
 
 

@@ -1,0 +1,33 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: "List Google Compute Engine Rollouts."
+    description: "List Google Compute Engine Rollouts in a project."
+    examples: |
+      To list all rollouts in your project, run:
+
+        $ {command}
+
+  request:
+    ALPHA:
+      api_version: alpha
+
+    collection: compute.rollouts
+
+  arguments:
+    resource:
+      help_text: |
+        The project of the rollouts to list.
+      spec: !REF googlecloudsdk.command_lib.compute.resources:compute_project
+      override_resource_collection: true
+
+  response:
+    id_field: name
+
+  output:
+    format: |
+      table(
+        name,
+        id,
+        creationTimestamp:label=CREATION_TIME,
+        description
+      )

@@ -14,10 +14,6 @@
 # limitations under the License.
 """List URL Filtering Profiles command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.network_security.security_profiles import urlf_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import sp_flags
@@ -43,6 +39,10 @@ table(
 )
 """
 
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -53,16 +53,28 @@ class List(base.ListCommand):
 
   @classmethod
   def Args(cls, parser):
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
     parser.display_info.AddFormat(_FORMAT)
     parser.display_info.AddUriFunc(sp_flags.MakeGetUriFunc(cls.ReleaseTrack()))
     sp_flags.AddLocationResourceArg(
-        parser, 'Parent resource for the list operation.', required=True
+        parser=parser,
+        help_text='Parent resource for the list operation.',
+        required=True,
+        project_scope_supported=project_scope_supported,
     )
 
   def Run(self, args):
-    client = urlf_api.Client(self.ReleaseTrack())
 
-    parent_ref = args.CONCEPTS.location.Parse()
+    result = args.CONCEPTS.location.Parse()
+    parent_ref = result.result
+
+    project_scoped = (
+        result.concept_type.name
+        == sp_flags.PROJECT_LOCATION_RESOURCE_COLLECTION
+    )
+    client = urlf_api.Client(self.ReleaseTrack(), project_scoped)
 
     return client.ListUrlFilteringProfiles(
         parent_ref.RelativeName(), page_size=args.page_size

@@ -1,0 +1,36 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: Update a transport.
+    description: Update a transport with the given name to a remote provider.
+    examples: |
+      To update a transport named ``mytransport'' in the ``us-east4'' region, run:
+
+      $ {command} mytransport --region=us-east4 \
+        --description="new description" \
+        --advertised-routes="10.0.0.0/8,10.1.0.0/16"
+
+  output:
+    format: yaml
+
+  async:
+    collection: networkconnectivity.projects.locations.operations
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.transports
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.v1beta_resources:transport
+      help_text: Name of the Transport to be updated.
+    params:
+    - arg_name: advertised-routes
+      api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes
+      help_text: List of routes to advertise from the VPC `network` toward the provider.
+      metavar: CIDR_RANGE
+    - arg_name: description
+      api_field: googleCloudNetworkconnectivityV1betaTransport.description
+      help_text: Description of the transport.
+    labels:
+      api_field: googleCloudNetworkconnectivityV1betaTransport.labels

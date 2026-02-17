@@ -181,7 +181,6 @@ def RunBaseAssignRolesCommand(args):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
-@base.Hidden
 class AssignRoles(base.UpdateCommand):
   """Updates a user's database roles in a given instance.
 
@@ -208,7 +207,6 @@ class AssignRoles(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
-@base.Hidden
 class AssignRolesBeta(base.UpdateCommand):
   """Updates a user's database roles in a given instance.
 
@@ -236,7 +234,6 @@ class AssignRolesBeta(base.UpdateCommand):
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.UniverseCompatible
-@base.Hidden
 class AssignRolesAlpha(base.UpdateCommand):
   """Updates a user's database roles in a given instance.
 

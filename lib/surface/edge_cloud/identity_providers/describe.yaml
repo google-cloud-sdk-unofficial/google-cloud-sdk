@@ -1,0 +1,21 @@
+- release_tracks: [ALPHA]
+
+  help_text:
+    brief: |
+      Describes an identity provider on a Google Distributed Cloud zone.
+    description: |
+      Describes an identity provider on a Google Distributed Cloud zone.
+    examples: |
+      To describe an identity provider called `sample-identity-provider` in organization `sample-org`, location `us-central1`:
+
+      $ {command} sample-identity-provider --location=us-central1 --organization=sample-org
+
+  request:
+    collection: edgecontainer.organizations.locations.identityProviders
+    api_version: v1alpha
+    method: get
+
+  arguments:
+    resource:
+      help_text: Identity Provider
+      spec: !REF googlecloudsdk.command_lib.edge_cloud.identity_provider.resources:identityProvider
