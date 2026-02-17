@@ -23,23 +23,26 @@ import subprocess
 import textwrap
 
 from googlecloudsdk.calliope import base as calliope_base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.command_lib.declarative_pipeline import deployment_model
 from googlecloudsdk.command_lib.declarative_pipeline import gcp_deployer
 from googlecloudsdk.command_lib.declarative_pipeline.handlers import dataproc
 from googlecloudsdk.command_lib.declarative_pipeline.processors import action_processor
+from googlecloudsdk.command_lib.declarative_pipeline.tools import yaml_processor
+from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import yaml
-
-PIPELINE_ID = "customer-analytics-pipeline"
-ARTIFACT_BUCKET_NAME = "project-dataproc-artifacts"
-COMPOSER_ENV_NAME = "zhiwei-auto-deploy"
-LOCATION = "us-central1"
+from googlecloudsdk.core.util import files
 
 DAG_FILE_NAME = "orchestration-pipeline.py"
-TEMPLATE_FILE = "orchestration-pipeline.yaml"
+PIPELINE_FILE = "orchestration-pipeline.yaml"
 MANIFEST_FILE_NAME = "manifest.yml"
 ENV_PACK_FILE = "environment.tar.gz"
+
+
+class DeployError(exceptions.Error):
+  """Exception for errors during the deploy process."""
+  pass
 
 
 def _CheckGitStatus(subprocess_mod):
@@ -54,14 +57,13 @@ def _CheckGitStatus(subprocess_mod):
       real_changes = [
           l for l in lines if not any(p in l for p in ignored_patterns)
       ]
-
       if real_changes:
         log.error(f"Uncommitted changes detected!\n{real_changes!r}")
-        raise exceptions.ToolException(
+        raise DeployError(
             "Please commit or stash changes before deploying."
         )
-  except subprocess_mod.CalledProcessError:
-    raise exceptions.ToolException("Failed to check Git status.")
+  except subprocess_mod.CalledProcessError as e:
+    raise calliope_exceptions.FailedSubCommand(e.cmd, e.returncode)
 
 
 def _GetVersionId(subprocess_mod):
@@ -73,11 +75,11 @@ def _GetVersionId(subprocess_mod):
         .strip()
     )
   except (subprocess_mod.CalledProcessError, FileNotFoundError):
-    raise exceptions.ToolException(textwrap.dedent("""
+    raise DeployError(textwrap.dedent("""
         Please ensure command is run from within a git repository."""))
 
 
-def _GetComposerBucket(subprocess_mod, env_name):
+def _GetComposerBucket(subprocess_mod, env_name, location):
   """Retrieves the GCS bucket for the Composer environment."""
   try:
     out = subprocess_mod.check_output(
@@ -88,18 +90,16 @@ def _GetComposerBucket(subprocess_mod, env_name):
             "describe",
             env_name,
             "--location",
-            LOCATION,
+            location,
             "--format",
             "value(config.dagGcsPrefix)",
         ],
         text=True,
     ).strip()
-    bucket, *_ = out.replace("gs://", "").split("/")
+    bucket = out.replace("gs://", "").split("/")[0]
     return bucket
   except subprocess_mod.CalledProcessError as e:
-    raise exceptions.ToolException(
-        f"Failed to find Composer bucket: {e}"
-    ) from e
+    raise DeployError(f"Failed to find Composer bucket: {e}") from e
 
 
 def _RunGcloudStorage(subprocess_mod, args):
@@ -113,8 +113,8 @@ def _RunGcloudStorage(subprocess_mod, args):
     )
   except subprocess_mod.CalledProcessError as e:
     log.error(f"GCS Operation Failed: {e.stderr}")
-    raise exceptions.ToolException(
-        "GCS Upload failed. Check the error above."
+    raise DeployError(
+        f"GCS Upload failed. Check the error: {e}"
     ) from e
 
 
@@ -128,8 +128,8 @@ def _UploadString(subprocess_mod, content, dest):
   ) as p:
     _, stderr = p.communicate(input=content.encode("utf-8"))
     if p.returncode != 0:
-      log.error(f"Failed to upload string to {dest}: {stderr.decode()}")
-      raise exceptions.ToolException("String upload to GCS failed.")
+      log.error(f"Failed to upload pipeline yaml to {dest}: {stderr.decode()}")
+      raise DeployError("pipeline yaml upload to GCS failed.")
 
 
 def _DeployGcpResources(deployment_file, env, dry_run):
@@ -141,9 +141,9 @@ def _DeployGcpResources(deployment_file, env, dry_run):
     dry_run: If True, performs a dry run.
 
   Raises:
-    googlecloudsdk.calliope.exceptions.ToolException: If the specified
-      environment is not found in the deployment file, or if any error occurs
-      during the resource deployment process.
+    DeployError: If the specified environment is not found in the
+      deployment file, or if any error occurs during the resource deployment
+      process.
   """
   log.status.Print(
       f"Deployment file {deployment_file.name} found, deploying resources..."
@@ -151,8 +151,9 @@ def _DeployGcpResources(deployment_file, env, dry_run):
   try:
     deployment_config = yaml.load_path(str(deployment_file))
     deployment = deployment_model.DeploymentModel.build(deployment_config)
+    # TODO(b/474163740): Remove this check once the validation is ready.
     if env not in deployment.environments:
-      raise exceptions.ToolException(
+      raise DeployError(
           f'Environment "{env}" not found in {deployment_file.name}'
       )
     environment = deployment.environments[env]
@@ -163,7 +164,7 @@ def _DeployGcpResources(deployment_file, env, dry_run):
       handler = _GetHandler(resource, environment, dry_run)
       gcp_deployer.deploy_gcp_resource(handler)
   except Exception as e:
-    raise exceptions.ToolException(
+    raise DeployError(
         f"Failed to deploy resources for environment '{env}' "
         f"from file '{deployment_file.name}'."
     ) from e
@@ -185,16 +186,14 @@ def _GetHandler(
     A handler object for the specified resource type.
 
   Raises:
-    exceptions.ToolException: If the resource type is not supported.
+    DeployError: If the resource type is not supported.
   """
   if resource.type == "dataproc.cluster":
     return dataproc.DataprocClusterHandler(
         resource, environment, dry_run, debug, show_requests
     )
   else:
-    raise exceptions.ToolException(
-        f"Unsupported resource type: {resource.type}"
-    )
+    raise DeployError(f"Unsupported resource type: {resource.type}")
 
 
 @calliope_base.Hidden
@@ -235,37 +234,35 @@ class Deploy(calliope_base.Command):
 
     if args.deployment_file:
       deployment_path = work_dir / args.deployment_file
+      deployment_yaml = yaml.load_path(str(deployment_path))
+      deployment = deployment_model.DeploymentModel.build(deployment_yaml)
       try:
         _DeployGcpResources(deployment_path, args.env, args.dry_run)
         status["resource_deployment"] = "SUCCESS"
         did_work = True
       except (FileNotFoundError, yaml.YAMLParseError) as e:
-        raise exceptions.BadFileException(
+        raise calliope_exceptions.BadFileException(
             "Deployment file not found or failed to parse: "
             f"{args.deployment_file}"
         ) from e
-    else:
-      log.status.Print(
-          "--deployment-file not provided, skipping resource deployment."
-      )
-
-    template_path = work_dir / TEMPLATE_FILE
-    if template_path.exists():
-      version_id = self._DeployPipeline(work_dir, template_path)
-      status["pipeline_deployment"] = "SUCCESS"
-      status["version"] = version_id
-      did_work = True
-    else:
-      log.status.Print(
-          f'Pipeline file "{TEMPLATE_FILE}" not found, '
-          "skipping pipeline deployment."
-      )
+      for resource in deployment.environments[args.env].resources:
+        if resource.type == "resourceProfile":
+          pipeline_path = work_dir / PIPELINE_FILE
+          version_id = self._DeployPipeline(
+              args, work_dir, pipeline_path, deployment_path
+          )
+          status["pipeline_deployment"] = "SUCCESS"
+          status["version"] = version_id
+          did_work = True
+          log.status.Print(
+              f"Pipeline deployment successful for version {version_id}"
+          )
 
     if not did_work:
-      raise exceptions.ToolException(
+      raise DeployError(
           "Nothing to deploy: resource deployment skipped (--deployment-file "
           "not provided) and pipeline deployment skipped "
-          f"({TEMPLATE_FILE} not found)."
+          f"({PIPELINE_FILE} not found)."
       )
 
     if (
@@ -283,18 +280,41 @@ class Deploy(calliope_base.Command):
     elif status["resource_deployment"] == "SUCCESS":
       log.status.Print("Resource deployment successful.")
 
-    return status
-
-  def _DeployPipeline(self, work_dir, template_path):
-    """Deploys the pipeline defined in template_path."""
+  def _DeployPipeline(self, args, work_dir, pipeline_path, deployment_path):
+    """Deploys the pipeline using the dynamic context."""
     _CheckGitStatus(self._subprocess)
     version_id = _GetVersionId(self._subprocess)
-    composer_bucket = _GetComposerBucket(self._subprocess, COMPOSER_ENV_NAME)
 
-    artifact_base_path = f"pipelines/{PIPELINE_ID}/versions/{version_id}/"
-    artifact_base_uri = f"gs://{ARTIFACT_BUCKET_NAME}/{artifact_base_path}"
+    parsed_deployment = yaml_processor.parse_deployment(
+        deployment_path, args.env
+    )
 
-    resolved_pipeline = yaml.load_path(str(template_path))
+    composer_bucket = _GetComposerBucket(
+        self._subprocess,
+        parsed_deployment["composer_env"],
+        parsed_deployment["region"],
+    )
+    if not pipeline_path.exists():
+      raise calliope_exceptions.BadFileException(
+          f"{PIPELINE_FILE} not found in {work_dir}"
+      )
+
+    try:
+      yaml_content = files.ReadFileContents(pipeline_path)
+    except files.Error as e:
+      raise calliope_exceptions.BadFileException(
+          f"Error reading {PIPELINE_FILE}: {e}"
+      )
+
+    resolved_pipeline = yaml_processor.resolve_dynamic_variables(
+        yaml_content=yaml_content,
+        deployment_path=deployment_path,
+        env=args.env,
+    )
+
+    artifact_base_path = f"{parsed_deployment['artifact_storage']['path_prefix']}/versions/{version_id}/"
+    artifact_base_uri = f"gs://{parsed_deployment['artifact_storage']['bucket']}/{artifact_base_path}"
+    pipeline_id = resolved_pipeline["pipelineId"]
 
     for action in resolved_pipeline.get("actions", []):
       processor = action_processor.get_action_processor(
@@ -316,8 +336,8 @@ class Deploy(calliope_base.Command):
 
     resolved_yaml_content = yaml.dump(resolved_pipeline)
     yaml_dest = (
-        f"gs://{composer_bucket}/data/{PIPELINE_ID}/"
-        f"versions/{version_id}/{TEMPLATE_FILE}"
+        f"gs://{composer_bucket}/data/{pipeline_id}/"
+        f"versions/{version_id}/{PIPELINE_FILE}"
     )
     _UploadString(self._subprocess, resolved_yaml_content, yaml_dest)
 
@@ -325,15 +345,11 @@ class Deploy(calliope_base.Command):
     if dag_path.exists():
       _RunGcloudStorage(
           self._subprocess,
-          [
-              "cp",
-              str(dag_path),
-              f"gs://{composer_bucket}/dags/{DAG_FILE_NAME}",
-          ],
+          ["cp", str(dag_path), f"gs://{composer_bucket}/dags/{DAG_FILE_NAME}"],
       )
 
     manifest_dest = (
-        f"gs://{composer_bucket}/data/{PIPELINE_ID}/{MANIFEST_FILE_NAME}"
+        f"gs://{composer_bucket}/data/{pipeline_id}/{MANIFEST_FILE_NAME}"
     )
     _UploadString(
         self._subprocess, f"default-version: {version_id}", manifest_dest

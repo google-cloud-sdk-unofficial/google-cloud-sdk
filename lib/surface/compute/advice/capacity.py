@@ -106,7 +106,6 @@ class ArgMultiValueDict:
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-@base.Hidden
 class Capacity(base.Command):
   """Get capacity advice for Compute Engine resources."""
 

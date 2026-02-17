@@ -587,6 +587,8 @@ def update_transfer_config(
       raise bq_error.BigqueryNotFoundError(
           'Not found: %r' % (dataset_reference,), {'reason': 'notFound'}, []
       ) from e
+    else:
+      raise e
 
 
 def create_transfer_config(

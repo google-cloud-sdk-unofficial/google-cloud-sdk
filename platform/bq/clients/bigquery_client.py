@@ -74,6 +74,36 @@ AuthorizedHttp: TypeAlias = Union[
 ]
 
 
+def CreateHttp() -> httplib2.Http:
+  """Returns the httplib2 Http to use."""
+  proxy_info = httplib2.proxy_info_from_environment
+  if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
+    try:
+      port = int(flags.FLAGS.proxy_port)
+    except ValueError as e:
+      raise ValueError(
+          'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
+      ) from e
+    proxy_info = httplib2.ProxyInfo(
+        proxy_type=3,
+        proxy_host=flags.FLAGS.proxy_address,
+        proxy_port=port,
+        proxy_user=flags.FLAGS.proxy_username or None,
+        proxy_pass=flags.FLAGS.proxy_password or None,
+    )
+
+  http = httplib2.Http(
+      proxy_info=proxy_info,
+      ca_certs=flags.FLAGS.ca_certificates_file or certifi.where(),
+      disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation,
+  )
+
+  if hasattr(http, 'redirect_codes'):
+    http.redirect_codes = set(http.redirect_codes) - {308}
+
+  return http
+
+
 class BigqueryClient:
   """Class encapsulating interaction with the BigQuery service."""
 
@@ -193,30 +223,7 @@ class BigqueryClient:
   ) -> AuthorizedHttp:
     """Returns the httplib2 Http to use."""
 
-    proxy_info = httplib2.proxy_info_from_environment
-    if flags.FLAGS.proxy_address and flags.FLAGS.proxy_port:
-      try:
-        port = int(flags.FLAGS.proxy_port)
-      except ValueError as e:
-        raise ValueError(
-            'Invalid value for proxy_port: {}'.format(flags.FLAGS.proxy_port)
-        ) from e
-      proxy_info = httplib2.ProxyInfo(
-          proxy_type=3,
-          proxy_host=flags.FLAGS.proxy_address,
-          proxy_port=port,
-          proxy_user=flags.FLAGS.proxy_username or None,
-          proxy_pass=flags.FLAGS.proxy_password or None,
-      )
-
-    http = httplib2.Http(
-        proxy_info=proxy_info,
-        ca_certs=flags.FLAGS.ca_certificates_file or certifi.where(),
-        disable_ssl_certificate_validation=flags.FLAGS.disable_ssl_validation,
-    )
-
-    if hasattr(http, 'redirect_codes'):
-      http.redirect_codes = set(http.redirect_codes) - {308}
+    http = CreateHttp()
 
     if flags.FLAGS.mtls:
       _, self._cert_file = tempfile.mkstemp()

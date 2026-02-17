@@ -47,10 +47,10 @@ class Create(base.CreateCommand):
     flags.AddArgNetworkFirewallPolicyCreation(parser)
 
     additional_policy_types = []
-    if cls.support_ull_policy_type:
-      additional_policy_types.append('ULL_POLICY')
     if cls.support_falcon_policy_type:
       additional_policy_types.append('RDMA_FALCON_POLICY')
+    if cls.support_ull_policy_type:
+      additional_policy_types.append('ULL_POLICY')
 
     flags.AddPolicyType(parser, additional_policy_types)
 
@@ -91,8 +91,8 @@ class CreateBeta(Create):
   firewall policy is a set of rules that controls access to various resources.
   """
 
-  support_ull_policy_type = False
-  support_falcon_policy_type = False
+  support_ull_policy_type = True
+  support_falcon_policy_type = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

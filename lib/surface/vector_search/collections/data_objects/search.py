@@ -27,10 +27,31 @@ from googlecloudsdk.api_lib.vector_search import clients
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import files
+
+
+SEMANTIC_SEARCH_TASK_TYPE_CHOICES = {
+    'classification': 'Specifies that the given text will be classified.',
+    'clustering': 'Specifies that the embeddings will be used for clustering.',
+    'code-retrieval-query': (
+        'Specifies that the embeddings will be used for code retrieval.'
+    ),
+    'fact-verification': (
+        'Specifies that the embeddings will be used for fact verification.'
+    ),
+    'question-answering': (
+        'Specifies that the embeddings will be used for question answering.'
+    ),
+    'retrieval-document': (
+        'Specifies the given text is a document from the corpus being searched.'
+    ),
+    'retrieval-query': (
+        'Specifies the given text is a query in a search/retrieval setting.'
+    ),
+    'semantic-similarity': 'Specifies the given text will be used for STS.',
+}
 
 
 VECTOR_SEARCH_DISTANCE_METRIC_CHOICES = {
@@ -41,7 +62,6 @@ VECTOR_SEARCH_DISTANCE_METRIC_CHOICES = {
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Search(base.Command):
   """Search data objects from a Vector Search collection."""
 
@@ -78,7 +98,7 @@ class Search(base.Command):
         help="""
         The resource name of the index to use for the search.
 
-        This flag is compatible only with Vector Search.
+        This flag is compatible only with Semantic Search and Vector Search.
         """,
     )
     search_hint_group.add_argument(
@@ -88,7 +108,7 @@ class Search(base.Command):
             """If set to true, the search will use the system's default K-Nearest
             Neighbor (KNN) index engine.
 
-            This flag is compatible only with Vector Search.
+            This flag is compatible only with Semantic Search and Vector Search.
             """
         ),
     )
@@ -96,8 +116,29 @@ class Search(base.Command):
     search_type_group = parser.add_mutually_exclusive_group(
         'Search type', required=True
     )
+    semantic_search_group = search_type_group.add_argument_group(
+        'Semantic Search'
+    )
     vector_search_group = search_type_group.add_argument_group('Vector Search')
     text_search_group = search_type_group.add_argument_group('Text Search')
+
+    # Semantic search flags
+    semantic_search_group.add_argument(
+        '--semantic-search-text',
+        required=True,
+        help='The query text for semantic search.',
+    )
+    semantic_search_group.add_argument(
+        '--semantic-search-field',
+        required=True,
+        help='The vector field to search.',
+    )
+    semantic_search_group.add_argument(
+        '--semantic-task-type',
+        required=True,
+        choices=SEMANTIC_SEARCH_TASK_TYPE_CHOICES,
+        help='The task type of the query embedding for semantic search.',
+    )
 
     # Vector search flags
     vector_search_group.add_argument(
@@ -168,6 +209,38 @@ class Search(base.Command):
         )
     return None
 
+  def _BuildSemanticSearchMessage(
+      self, args, client, filter_dict, search_hint, output_fields
+  ):
+    """Builds a SemanticSearch message."""
+    semantic_search = (
+        client.messages.GoogleCloudVectorsearchV1betaSemanticSearch(
+            searchText=args.semantic_search_text,
+            searchField=args.semantic_search_field,
+            topK=args.top_k,
+        )
+    )
+    if args.semantic_task_type:
+      task_type_code_name = args.semantic_task_type.replace('-', '_').upper()
+      semantic_search.taskType = client.messages.GoogleCloudVectorsearchV1betaSemanticSearch.TaskTypeValueValuesEnum.lookup_by_name(
+          task_type_code_name
+      )
+    if filter_dict:
+      try:
+        semantic_search.filter = encoding.DictToMessage(
+            filter_dict,
+            client.messages.GoogleCloudVectorsearchV1betaSemanticSearch.FilterValue,
+        )
+      except Exception as e:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--json-filter', f'Error converting JSON filter to message: {e}'
+        )
+    if search_hint:
+      semantic_search.searchHint = search_hint
+    if output_fields:
+      semantic_search.outputFields = output_fields
+    return semantic_search
+
   def _FillInVectorFromFile(self, args, vector_search, client):
     try:
       file_content = files.ReadFileContents(args.vector_from_file)
@@ -225,9 +298,10 @@ class Search(base.Command):
             client.messages.GoogleCloudVectorsearchV1betaVectorSearch.FilterValue,
         )
       except Exception as e:
-        raise exceptions.ToolException(
-            f'Error converting JSON filter to message: {e}'
+        raise calliope_exceptions.InvalidArgumentException(
+            '--json-filter', f'Error converting JSON filter to message: {e}'
         )
+
     if search_hint:
       vector_search.searchHint = search_hint
     if output_fields:
@@ -263,8 +337,8 @@ class Search(base.Command):
             client.messages.GoogleCloudVectorsearchV1betaTextSearch.FilterValue,
         )
       except Exception as e:
-        raise exceptions.ToolException(
-            f'Error converting JSON filter to message: {e}'
+        raise calliope_exceptions.InvalidArgumentException(
+            '--json-filter', f'Error converting JSON filter to message: {e}'
         )
 
     return text_search
@@ -285,7 +359,15 @@ class Search(base.Command):
     search_hint = self._GetSearchHint(args, client)
     filter_dict = self._GetFilterDict(args)
 
-    if args.vector_from_file or args.vector_search_field:
+    if (
+        args.semantic_search_text
+        or args.semantic_search_field
+        or args.semantic_task_type
+    ):
+      search_request_body.semanticSearch = self._BuildSemanticSearchMessage(
+          args, client, filter_dict, search_hint, output_fields
+      )
+    elif args.vector_from_file or args.vector_search_field:
       search_request_body.vectorSearch = self._BuildVectorSearchMessage(
           args, client, filter_dict, search_hint, output_fields
       )

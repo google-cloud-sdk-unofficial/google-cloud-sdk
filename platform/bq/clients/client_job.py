@@ -432,6 +432,7 @@ def _StartQueryRpc(
     job_creation_mode: Optional[
         bigquery_client.BigqueryClient.JobCreationMode
     ] = None,
+    labels: Optional[dict[str, str]] = None,
     reservation_id: Optional[str] = None,
     create_session: Optional[bool] = None,
     query_parameters=None,
@@ -475,6 +476,7 @@ def _StartQueryRpc(
       corresponding to the value.
     job_creation_mode: Optional. An option for job creation. The valid values
       are JOB_CREATION_REQUIRED and JOB_CREATION_OPTIONAL.
+    labels: Optional. Labels to be attached to the query.
     reservation_id: Optional. An option to set the reservation to use when
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
@@ -542,6 +544,8 @@ def _StartQueryRpc(
       if positional_parameter_mode is None
       else ('POSITIONAL' if positional_parameter_mode else 'NAMED'),
   )
+  if labels:
+    bq_processor_utils.ApplyParameters(request, labels=labels)
   bq_processor_utils.ApplyParameters(
       request, connection_properties=connection_properties
   )
@@ -899,6 +903,7 @@ def RunQueryRpc(
     job_creation_mode: Optional[
         bigquery_client.BigqueryClient.JobCreationMode
     ] = None,
+    labels: Optional[dict[str, str]] = None,
     reservation_id: Optional[str] = None,
     job_timeout_ms: Optional[int] = None,
     max_slots: Optional[int] = None,
@@ -937,6 +942,7 @@ def RunQueryRpc(
       corresponding to the value.
     job_creation_mode: Optional. An option for job creation. The valid values
       are JOB_CREATION_REQUIRED and JOB_CREATION_OPTIONAL.
+    labels: Optional. Labels to be attached to the query.
     reservation_id: Optional. An option to set the reservation to use when
       execute the job. Reservation should be in the format of
       "project_id:reservation_id", "project_id:location.reservation_id", or
@@ -954,10 +960,12 @@ def RunQueryRpc(
     A tuple (schema fields, row results, execution metadata).
       For regular queries, the execution metadata dict contains
       the 'State' and 'status' elements that would be in a job result
-      after FormatJobInfo().
+      after FormatJobInfo(). If a job was not created, `queryId` is present;
+      otherwise, `jobReference` is present.
       For dry run queries schema and rows are empty, the execution metadata
       dict contains statistics
   """
+
   if not bqclient.sync:
     raise bq_error.BigqueryClientError(
         'Running RPC-style query asynchronously is not supported'
@@ -976,6 +984,7 @@ def RunQueryRpc(
   start_time = time.time()
   elapsed_time = 0
   job_reference = None
+  query_id = None
   current_wait_ms = None
   while True:
     try:
@@ -1015,6 +1024,7 @@ def RunQueryRpc(
             location=location,
             connection_properties=connection_properties,
             job_creation_mode=job_creation_mode,
+            labels=labels,
             reservation_id=reservation_id,
             **kwds,
         )
@@ -1035,6 +1045,10 @@ def RunQueryRpc(
           job_reference = bq_id_utils.ApiClientHelper.JobReference.Create(
               **result['jobReference']
           )
+        elif 'queryId' in result:
+          # If a job was not created, we get a query_id and
+          # the request is completed.
+          query_id = result['queryId']
       else:
         # The query/getQueryResults methods do not return the job state,
         # so we just print 'RUNNING' while we are actively waiting.
@@ -1063,6 +1077,7 @@ def RunQueryRpc(
             'State': 'SUCCESS',
             'status': status,
             'jobReference': job_reference,
+            'queryId': query_id,
         }
         return (schema, rows, execution)
     except bq_error.BigqueryCommunicationError as e:

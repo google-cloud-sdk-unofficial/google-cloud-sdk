@@ -482,6 +482,21 @@
                   repeated: false
                   help_text: |-
                     The name of the DbHome resource associated with the Database.
+                - arg_name: database-pluggable-id
+                  api_field: dbSystem.properties.dbHome.database.pluggableDatabaseId
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The ID of the pluggable database associated with the Database. The ID must
+                    be unique within the project and location.
+                - arg_name: database-pluggable-name
+                  api_field: dbSystem.properties.dbHome.database.pluggableDatabaseName
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The pluggable database associated with the Database. The name must begin
+                    with an alphabetic character and can contain a maximum of thirty
+                    alphanumeric characters.
             - arg_name: db-home-is-unified-auditing-enabled
               api_field: dbSystem.properties.dbHome.isUnifiedAuditingEnabled
               action: store_true

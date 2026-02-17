@@ -37,7 +37,6 @@ class Create(base.CreateCommand):
 
   _ALLOW_RSA_ENCRYPTED_CSEK_KEYS = True
   _SUPPORT_DISK_FILTERING = False
-  _SUPPORT_RESOURCE_MANAGER_TAGS = False
 
   detailed_help = {
       'brief': 'Create a Compute Engine machine image.',
@@ -68,16 +67,15 @@ class Create(base.CreateCommand):
     if cls._SUPPORT_DISK_FILTERING:
       machine_image_flags.AddDiskFilterArgs(parser)
 
-    if cls._SUPPORT_RESOURCE_MANAGER_TAGS:
-      parser.add_argument(
-          '--resource-manager-tags',
-          type=arg_parsers.ArgDict(),
-          metavar='KEY=VALUE',
-          help=(
-              'A comma-separated list of Resource Manager tags to apply to the'
-              ' machine image.'
-          ),
-      )
+    parser.add_argument(
+        '--resource-manager-tags',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help=(
+            'A comma-separated list of Resource Manager tags to apply to the'
+            ' machine image.'
+        ),
+    )
 
     Create.SOURCE_INSTANCE = machine_image_flags.MakeSourceInstanceArg()
     Create.SOURCE_INSTANCE.AddArgument(parser)
@@ -136,9 +134,7 @@ class Create(base.CreateCommand):
             excludedDisks=args.exclude_disks
         )
 
-    if self._SUPPORT_RESOURCE_MANAGER_TAGS and args.IsSpecified(
-        'resource_manager_tags'
-    ):
+    if args.IsSpecified('resource_manager_tags'):
       if not params:
         params = client.messages.MachineImageParams()
       resource_manager_tags_map = (
@@ -208,7 +204,6 @@ class CreateBeta(Create):
   """Create a Compute Engine machine image."""
 
   _SUPPORT_DISK_FILTERING = False
-  _SUPPORT_RESOURCE_MANAGER_TAGS = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -216,4 +211,3 @@ class CreateAlpha(CreateBeta):
   """Create a Compute Engine machine image."""
 
   _SUPPORT_DISK_FILTERING = True
-  _SUPPORT_RESOURCE_MANAGER_TAGS = True

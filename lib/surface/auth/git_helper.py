@@ -50,7 +50,6 @@ from googlecloudsdk.core.credentials import exceptions as creds_exceptions
 from googlecloudsdk.core.credentials import store as c_store
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
-from oauth2client import client
 
 
 _KEYVAL_RE = re.compile(r'(.+)=(.*)')
@@ -100,7 +99,8 @@ class GitHelper(base.Command):
         ),
     )
 
-  @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error)
+  @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError,
+                             google_auth_exceptions.GoogleAuthError)
   def Run(self, args):
     """Run the helper command."""
 

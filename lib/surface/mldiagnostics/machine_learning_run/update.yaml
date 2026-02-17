@@ -1,0 +1,232 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks:
+  - ALPHA
+  auto_generated: false
+  help_text:
+    brief: Update a machine learning run
+    description: Update a machine learning run.
+    examples: |-
+      To update the machine learning run, run:
+
+          $ {command} my-run --location=us-central1 --gcs-path=gs://my-bucket/my-run
+          --gke-cluster-name=projects/my-project/locations/us-central1/clusters/my-cluster
+          --gke-workload-name=my-workload --gke-kind=Job --gke-namespace=default
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The name of the Machine Learning run.
+      is_positional: true
+      is_primary_resource: true
+      request_id_field: machineLearningRunId
+      resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs
+      required: true
+    - arg_name: display-name
+      api_field: machineLearningRun.displayName
+      required: false
+      repeated: false
+      help_text: |-
+        Display name for the run.
+    - arg_name: run-group
+      api_field: machineLearningRun.runSet
+      required: false
+      default: ''
+      repeated: false
+      help_text: |-
+        Allows grouping of similar runs.
+         * Helps improve UI rendering performance.
+         * Allows comparing similar runs via fast filters.
+    - arg_name: etag
+      api_field: machineLearningRun.etag
+      required: true
+      repeated: false
+      help_text: |-
+        ETag for the run.
+        It must be provided for update/delete operations and must match the
+        server's etag.
+    - group:
+        api_field: machineLearningRun.configs
+        required: false
+        help_text: |-
+          Configuration for a Machine Learning run.
+        params:
+        - arg_name: configs-user
+          api_field: machineLearningRun.configs.userConfigs
+          required: false
+          repeated: true
+          help_text: |-
+            User defined configs.
+          spec:
+          - api_field: key
+          - api_field: value
+        - arg_name: configs-software
+          api_field: machineLearningRun.configs.softwareConfigs
+          required: false
+          repeated: true
+          help_text: |-
+            Software configs.
+          spec:
+          - api_field: key
+          - api_field: value
+        - arg_name: configs-hardware
+          api_field: machineLearningRun.configs.hardwareConfigs
+          required: false
+          repeated: true
+          help_text: |-
+            Hardware configs.
+          spec:
+          - api_field: key
+          - api_field: value
+    - arg_name: tools
+      api_field: machineLearningRun.tools
+      required: false
+      default: xprof
+      repeated: true
+      help_text: |-
+        List of tools enabled for this run. This is a repeated argument, and each instance
+        configures one tool. If no tools are specified, XProf will be used by default by the service.
+
+        To enable XProf without a specific session ID:
+          `--tools=xprof`
+        To enable XProf with a specific session ID:
+          `--tools=xprof:sessionId=my-session-id`
+        To enable multiple tools, repeat the argument:
+          `--tools=xprof:sessionId=123 --tools=nsys`
+      spec:
+      - api_field: xprof
+        one_of_index: 0
+        help_text: |-
+          Configuration for the XProf tool.
+        spec:
+        - api_field: sessionId
+          help_text: |-
+            The session ID for XProf.
+            Example: `my-session-id`
+    - arg_name: labels
+      api_field: machineLearningRun.labels
+      required: false
+      repeated: true
+      help_text: |-
+        Any custom labels for this run
+        Example: type:workload, type:simulation etc.
+      spec:
+      - api_field: key
+      - api_field: value
+    - group:
+        api_field: machineLearningRun.artifacts
+        required: false
+        help_text: |-
+          Represents information about the artifacts of the Machine Learning Run.
+        params:
+        - arg_name: gcs-path
+          api_field: machineLearningRun.artifacts.gcsPath
+          required: true
+          repeated: false
+          help_text: |-
+            The Cloud Storage path where the artifacts of the run are stored.
+            Example: `gs://my-bucket/my-run-directory`.
+    - arg_name: orchestrator
+      api_field: machineLearningRun.orchestrator
+      required: false
+      default: gke
+      help_text: |-
+        The orchestrator used for the run. If not specified, gke will be used by default.
+      choices:
+      - arg_value: gce
+        enum_value: GCE
+        help_text: |-
+          Google Compute Engine orchestrator.
+      - arg_value: gke
+        enum_value: GKE
+        help_text: |-
+          Google Kubernetes Engine orchestrator.
+      - arg_value: slurm
+        enum_value: SLURM
+        help_text: |-
+          Slurm cluster orchestrator.
+    - group:
+        api_field: machineLearningRun.workloadDetails
+        required: false
+        help_text: |-
+          Workload details associated for the Machine Learning Run.
+          Workload have different metadata based on the orchestrator like
+          GKE cluster, Slurm cluster, Google Compute Engine instance etc.
+        params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the metadata.
+            params:
+            - group:
+                api_field: machineLearningRun.workloadDetails.gke
+                required: false
+                help_text: |-
+                  Workload details for the GKE orchestrator.
+                params:
+                - arg_name: gke-workload-name
+                  api_field: machineLearningRun.workloadDetails.gke.id
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The identifier of the workload. Example - jobset-abcd
+                - arg_name: gke-kind
+                  api_field: machineLearningRun.workloadDetails.gke.kind
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The kind of the workload. Example - JobSet
+                - arg_name: gke-cluster-name
+                  api_field: machineLearningRun.workloadDetails.gke.cluster
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The cluster of the workload.
+                    Example - /projects/<project id>/locations/<location>/clusters/<cluster
+                    name>
+                - arg_name: gke-namespace
+                  api_field: machineLearningRun.workloadDetails.gke.namespace
+                  required: true
+                  repeated: false
+                  help_text: |-
+                    The namespace of the workload. Example - default
+    - arg_name: run-phase
+      api_field: machineLearningRun.runPhase
+      required: false
+      default: active
+      help_text: |-
+        RunPhase defines the phase of the run. This should be used only if non standard
+        machine learning run needs to be updated. If not specified, run phase will be set to active by default.
+      choices:
+      - arg_value: active
+        enum_value: ACTIVE
+        help_text: |-
+          Run is active.
+      - arg_value: completed
+        enum_value: COMPLETED
+        help_text: |-
+          Run is completed.
+      - arg_value: failed
+        enum_value: FAILED
+        help_text: |-
+          Run is failed.
+  request:
+    api_version: v1alpha
+    collection:
+    - hypercomputecluster.projects.locations.machineLearningRuns
+    static_fields:
+      updateMask: '*'
+  async:
+    collection:
+    - hypercomputecluster.projects.locations.operations

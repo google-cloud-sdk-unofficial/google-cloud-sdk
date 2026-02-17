@@ -467,21 +467,23 @@
         - group:
             api_field: connection.secureSourceManagerInstanceConfig
             required: false
-            hidden: true
             help_text: |-
               Configuration for connections to SSM instance
             params:
             - arg_name: secure-source-manager-instance-config
-              api_field: connection.secureSourceManagerInstanceConfig.instance
-              required: true
-              repeated: false
               help_text: |-
                 SSM instance resource, formatted as `projects/*/locations/*/instances/*`
+              is_positional: false
+              is_primary_resource: false
+              resource_spec: !REF googlecloudsdk.command_lib.developer_connect.v1_resources:projects_locations_instances
+              resource_method_params:
+                connection.secureSourceManagerInstanceConfig.instance: '{__relative_name__}'
+              required: true
         - group:
             api_field: connection.httpConfig
             required: false
             help_text: |-
-              Configuration for connections to an HTTP service provider.
+              Defines the configuration for connections to an HTTP service provider.
             params:
             - group:
                 mutex: true

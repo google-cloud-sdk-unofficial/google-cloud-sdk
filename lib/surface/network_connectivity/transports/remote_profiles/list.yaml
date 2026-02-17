@@ -1,0 +1,37 @@
+- release_tracks: [BETA]
+  help_text:
+    brief: List remote transport profiles.
+    description: |
+      Retrieve and display a list of all remote transport profiles in the specified
+      project.
+    examples: |
+      To list all remote transport profiles in the "us-east4" region, run:
+
+            $ {command} --region=us-east4
+
+      To list all remote transport profiles in all regions, run:
+
+            $ {command}
+
+  request:
+    BETA:
+      api_version: v1beta
+    collection: networkconnectivity.projects.locations.remoteTransportProfiles
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.network_connectivity.util:AddDefaultLocationToList
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.network_connectivity.resources:project
+      help_text: Project of the remote transport profiles to list
+      override_resource_collection: true
+    params:
+    - arg_name: region
+      help_text: The region of the remote transport profiles to list. Use "-" to list all profiles.
+      default: "-"
+
+  response:
+    id_field: name
+
+  output:
+    format: table(name.segment(5):label=NAME, name.segment(3):label=REGION, provider, providerSite)

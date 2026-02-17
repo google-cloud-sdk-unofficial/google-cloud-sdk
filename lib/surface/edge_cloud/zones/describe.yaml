@@ -1,15 +1,37 @@
 - release_tracks: [ALPHA]
   help_text:
-    brief: Describe a Google Distributed Cloud zone
-    description: Describes a Google Distributed Cloud zone.
+    brief: Describe a Google Distributed Cloud zone.
+    description: Displays details about a specific Google Distributed Cloud zone.
     examples: |
-      To describe a Google Distributed Cloud zone called `sample-zone` in organization `sample-org` and location `us-central1`, run:
-      $ {command} sample-zone --location=us-central1 --organization=test-org
+      To describe a zone named `my-zone` in organization `1234567890` and location `us-central1`, run:
+
+        $ {command} my-zone --location=us-central1 --organization=1234567890
+
+      To describe a zone named `another-zone` in project `my-sample-project` and location `us-central1`, run:
+
+        $ {command} another-zone --location=us-central1 --project=my-sample-project
   request:
     collection: edgecontainer.organizations.locations.zones
-    api_version: v1alpha
+    disable_resource_check: true
     method: get
+    ALPHA:
+      api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.zone.hooks:SetNameForZoneDescribe
   arguments:
-    resource:
-      help_text: Google Distributed Cloud zone to describe.
-      spec: !REF googlecloudsdk.command_lib.edge_cloud.zone.resources:zone
+    params:
+    - arg_name: zone
+      help_text: Google Distributed Cloud zone name to describe.
+      required: true
+      is_positional: true
+    - arg_name: location
+      required: true
+      help_text: Google Cloud Platform location.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: organization
+          help_text: Google Distributed Cloud organization number for the zone.
+        - arg_name: project
+          help_text: Google Cloud Platform project ID for the zone.

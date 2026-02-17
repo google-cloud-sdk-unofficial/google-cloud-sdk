@@ -49,6 +49,22 @@
             enum_value: BASIC
             help_text: |-
               File system basic audit logs are enabled.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the  source backup.
+        params:
+        - arg_name: source-backup
+          help_text: |-
+            The source backup used to create the instance. Only set this field if the
+            instance is being created from a backup.
+            Format: projects/{project}/locations/{location}/backups/{backup}
+          is_positional: false
+          is_primary_resource: false
+          resource_spec: !REF googlecloudsdk.command_lib.lustre.v1alpha_resources:projects_locations_backups
+          resource_method_params:
+            instance.sourceBackup: '{__relative_name__}'
+          required: false
     - help_text: |-
         Identifier.
         The name of the instance.
@@ -72,7 +88,7 @@
       type: long
       help_text: |-
         The storage capacity of the instance in gibibytes (GiB). Allowed values
-        are from `18000` to `7632000`, depending on the `perUnitStorageThroughput`.
+        are from `9000` to `7632000`, depending on the `perUnitStorageThroughput`.
         See [Performance tiers and maximum storage
         capacities](https://cloud.google.com/managed-lustre/docs/create-instance#performance-tiers)
         for specific minimums, maximums, and step sizes for each performance tier.
@@ -104,7 +120,7 @@
       - api_field: value
     - arg_name: per-unit-storage-throughput
       api_field: instance.perUnitStorageThroughput
-      required: true
+      required: false
       repeated: false
       type: long
       help_text: |-
@@ -266,15 +282,16 @@
         required: false
         hidden: true
         help_text: |-
-          The maintenance policy for the instance to determine when to allow or deny
+          The maintenance policy for the instance to determine when to allow or exclude
           updates.
         params:
-        - arg_name: maintenance-policy-windows
-          api_field: instance.maintenancePolicy.maintenanceWindows
+        - arg_name: maintenance-policy-weekly-windows
+          api_field: instance.maintenancePolicy.weeklyMaintenanceWindows
           required: true
           repeated: true
           help_text: |-
-            The maintenance window for the instance.
+            The weekly maintenance windows for the instance. Currently limited to 1
+            window.
           spec:
           - api_field: dayOfWeek
             help_text: |-
@@ -301,17 +318,17 @@
               help_text: |-
                 Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
                 and less than or equal to 999,999,999.
-        - arg_name: maintenance-policy-deny-periods
-          api_field: instance.maintenancePolicy.denyPeriods
+        - arg_name: maintenance-policy-exclusion-window
+          api_field: instance.maintenancePolicy.maintenanceExclusionWindow
           required: false
           repeated: true
           help_text: |-
-            The deny periods for the instance.
-            Currently limited to 4.
+            The exclusion windows for the instance. Currently limited to 1 window.
           spec:
           - api_field: startDate
             help_text: |-
-              Start date of the deny period in UTC time zone.
+              Start date of the exclusion period in UTC time zone. This date is
+              inclusive.
             spec:
             - api_field: year
               help_text: |-
@@ -328,7 +345,8 @@
                 significant.
           - api_field: endDate
             help_text: |-
-              End date of the deny period in UTC time zone.
+              End date of the exclusion period in UTC time zone. This date is
+              inclusive.
             spec:
             - api_field: year
               help_text: |-
@@ -345,7 +363,7 @@
                 significant.
           - api_field: time
             help_text: |-
-              Time in UTC when the deny period starts on start_date and ends on
+              Time in UTC when the exclusion window starts on start_date and ends on
               end_date. This can be:
               * Full time OR
               * All zeros for 00:00:00 UTC
@@ -368,6 +386,27 @@
               help_text: |-
                 Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
                 and less than or equal to 999,999,999.
+    - group:
+        api_field: instance.hybridTierOptions
+        required: false
+        hidden: true
+        help_text: |-
+          Hybrid tier options for a Managed Lustre instance.
+        params:
+        - arg_name: hybrid-tier-options-mode
+          api_field: instance.hybridTierOptions.mode
+          required: true
+          help_text: |-
+            The mode for the Hybrid tier instance.
+          choices:
+          - arg_value: disabled
+            enum_value: DISABLED
+            help_text: |-
+              Hybrid tier is explicitly disabled.
+          - arg_value: default-cache
+            enum_value: DEFAULT_CACHE
+            help_text: |-
+              Hybrid tier is enabled with a default cache configuration.
     - arg_name: request-id
       api_field: requestId
       required: false

@@ -25,7 +25,7 @@ from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete Google Compute Engine rollout plans."""
@@ -51,7 +51,7 @@ class Delete(base.DeleteCommand):
             name='name', help_text='Name of rollout plan to delete.'
         ),
         project=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
-        api_version='alpha',
+        api_version='beta',
     )
     presentation_spec = presentation_specs.ResourcePresentationSpec(
         'name',

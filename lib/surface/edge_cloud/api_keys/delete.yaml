@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  hidden: true
+
   help_text:
     brief: Delete a Google Distributed Cloud API key.
     description: Deletes the specified Google Distributed Cloud API key.

@@ -126,6 +126,11 @@
         enum_value: PRINCIPAL_ACCESS_BOUNDARY
         help_text: |-
           Principal access boundary policy kind
+      - arg_value: regional-access-boundary
+        enum_value: REGIONAL_ACCESS_BOUNDARY
+        help_text: |-
+          Regional access boundary policy kind.
+        hidden: true
     - arg_name: policy
       api_field: googleIamV3PolicyBinding.policy
       required: true

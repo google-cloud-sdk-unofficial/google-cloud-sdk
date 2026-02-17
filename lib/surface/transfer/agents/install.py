@@ -32,12 +32,12 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.transfer import agents_util
 from googlecloudsdk.command_lib.transfer import creds_util
+from googlecloudsdk.core import config
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import gce_cache
 from googlecloudsdk.core.universe_descriptor import universe_descriptor
 from googlecloudsdk.core.util import platforms
-from oauth2client import client as oauth2_client
 
 
 COUNT_FLAG_HELP_TEXT = """
@@ -250,7 +250,7 @@ def _authenticate_and_get_creds_file_path(creds_file_supplied_by_user=None):
               executed_command=_get_executed_command()))
     return creds_file_path
 
-  creds_file_path = oauth2_client._get_well_known_file()
+  creds_file_path = config.ADCFilePath()
   # pylint:enable=protected-access
   if os.path.exists(creds_file_path):
     return creds_file_path

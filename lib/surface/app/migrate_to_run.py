@@ -35,12 +35,10 @@ from googlecloudsdk.core import properties
 from surface.run import deploy
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class AppEngineToCloudRun(deploy.AlphaDeploy):
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+class AppEngineToCloudRun(deploy.Deploy):
   """Migrate a second-generation App Engine app to Cloud Run."""
-
   detailed_help = {
       'DESCRIPTION': """\
           Migrates the second-generation App Engine app to Cloud Run.
@@ -57,7 +55,13 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
 
   @classmethod
   def Args(cls, parser):
-    super().Args(parser)
+    deploy.Deploy.CommonArgs(parser)
+    cls.CommonArgs(parser)
+    cls.AddCloudRunFlags(parser)
+
+  @classmethod
+  def CommonArgs(cls, parser) -> None:
+    """Common arguments for the App Engine to Cloud Run migration command."""
     parser.add_argument(
         '--appyaml',
         help=(
@@ -78,6 +82,28 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         help='entrypoint required for some runtimes',
     )
 
+  @classmethod
+  def AddCloudRunFlags(cls, parser) -> None:
+    """Adds Cloud Run flags common to Alpha and Beta migration commands."""
+    container_args = deploy.ContainerArgGroup(cls.ReleaseTrack())
+    container_args.AddArgument(flags.ReadinessProbeFlag())
+    deploy.container_parser.AddContainerFlags(
+        parser, container_args, cls.ReleaseTrack()
+    )
+
+    flags.AddIapFlag(parser)
+    flags.AddRuntimeFlag(parser)
+    flags.SERVICE_MESH_FLAG.AddToParser(parser)
+    flags.IDENTITY_FLAG.AddToParser(parser)
+    flags.IDENTITY_CERTIFICATE_FLAG.AddToParser(parser)
+    flags.IDENTITY_TYPE_FLAG.AddToParser(parser)
+    flags.MESH_DATAPLANE_FLAG.AddToParser(parser)
+    flags.AddDelegateBuildsFlag(parser)
+    flags.AddOverflowScalingFlag(parser)
+    flags.AddCpuUtilizationFlag(parser)
+    flags.AddConcurrencyUtilizationFlag(parser)
+    flags.AddPresetFlags(parser)
+
   def Run(self, args):
     """Overrides the Deploy.Run method, applying the wrapper logic for FlagIsExplicitlySet."""
     api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
@@ -85,7 +111,7 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     self.release_track = self.ReleaseTrack()
     original_flag_is_explicitly_set = flags.FlagIsExplicitlySet
     try:
-      flags.FlagIsExplicitlySet = self._flag_is_explicitly_set_wrapper
+      flags.FlagIsExplicitlySet = self._FlagIsExplicitlySetWrapper
       self.StartMigration(args)
       # Execute the gcloud run deploy command using the arguments prepared in
       # StartMigration.
@@ -94,14 +120,14 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
     finally:
       flags.FlagIsExplicitlySet = original_flag_is_explicitly_set
 
-  def _flag_is_explicitly_set_wrapper(self, args, flag):
+  def _FlagIsExplicitlySetWrapper(self, unused_args, flag) -> bool:
     """Wrapper function to check if a flag is explicitly set.
 
     This wrapper checks for flags added during the migration process,
     in addition to the original flags.FlagIsExplicitlySet check.
 
     Args:
-      args: The arguments to check.
+      unused_args: The arguments to check (unused).
       flag: The flag to check.
 
     Returns:
@@ -119,7 +145,7 @@ class AppEngineToCloudRun(deploy.AlphaDeploy):
         ),
     )
     changes.append(
-        config_changes.SetLaunchStageAnnotationChange(base.ReleaseTrack.ALPHA)
+        config_changes.SetLaunchStageAnnotationChange(self.ReleaseTrack())
     )
     return changes
 

@@ -600,7 +600,11 @@ def ParseCreateOptionsBase(
       control_plane_egress_mode=get_default('control_plane_egress'),
       enable_slice_controller=get_default('enable_slice_controller'),
       autopilot_general_profile=get_default('autopilot_general_profile'),
+      node_architecture_taint_behavior=get_default(
+          'node_architecture_taint_behavior'
+      ),
   )
+
 
 GA = 'ga'
 BETA = 'beta'
@@ -767,6 +771,9 @@ flags_to_add = {
         'nodelabels': flags.AddNodeLabelsFlag,
         'nodelocations': flags.AddNodeLocationsFlag,
         'nodetaints': flags.AddNodeTaintsFlag,
+        'nodearchitecturetaintbehavior': (
+            flags.AddNodeArchitectureTaintBehaviorFlag
+        ),
         'nodeversion': flags.AddNodeVersionFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
         'num_nodes': flags.AddNumNodes,
@@ -977,6 +984,9 @@ flags_to_add = {
         ),
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodetaints': flags.AddNodeTaintsFlag,
+        'nodearchitecturetaintbehavior': (
+            flags.AddNodeArchitectureTaintBehaviorFlag
+        ),
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
         'nodeversion': flags.AddNodeVersionFlag,
         'nodelabels': flags.AddNodeLabelsFlag,
@@ -1211,6 +1221,9 @@ flags_to_add = {
         'monitoring': flags.AddMonitoringFlag,
         'networkpolicy': flags.AddNetworkPolicyFlags,
         'nodetaints': flags.AddNodeTaintsFlag,
+        'nodearchitecturetaintbehavior': (
+            flags.AddNodeArchitectureTaintBehaviorFlag
+        ),
         'nodeidentity': flags.AddClusterNodeIdentityFlags,
         'nodeversion': flags.AddNodeVersionFlag,
         'nodelabels': flags.AddNodeLabelsFlag,

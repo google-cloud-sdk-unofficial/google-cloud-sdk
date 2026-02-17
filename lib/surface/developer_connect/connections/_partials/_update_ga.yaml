@@ -411,7 +411,7 @@
             clearable: true
             required: false
             help_text: |-
-              Configuration for connections to an HTTP service provider.
+              Defines the configuration for connections to an HTTP service provider.
             params:
             - group:
                 mutex: true

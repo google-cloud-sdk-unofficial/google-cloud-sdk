@@ -34,7 +34,6 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.credentials import creds as c_creds
 from googlecloudsdk.core.credentials import store as c_store
-from oauth2client import client
 
 
 # bq needs this as part of its auth flow to support the Drive scope.
@@ -180,7 +179,6 @@ class AccessToken(base.Command):
 
   @c_exc.RaiseErrorInsteadOf(
       auth_exceptions.AuthenticationError,
-      client.Error,
       google_auth_exceptions.GoogleAuthError,
   )
   def Run(self, args):

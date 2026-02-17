@@ -54,7 +54,14 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
 
             $ sed -i "s/policyDir: foo/policyDir: bar/g" config.yaml
 
-            $ {command} --config=config.yaml --memberships=example-membership-1"""
+            $ {command} --config=config.yaml --memberships=example-membership-1
+
+          To update the [fleet-default membership configuration](https://docs.cloud.google.com/kubernetes-engine/fleet-management/docs/manage-features)
+          and sync select membership configurations to it, run:
+
+            $ {command} --fleet-default-member-config=config.yaml
+
+            $ {command} --origin=fleet --memberships=example-membership-1,example-membership-2"""
       ),
   }
   mf_name = utils.CONFIG_MANAGEMENT_FEATURE_NAME
@@ -101,9 +108,9 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
     configuration_group = membership_specific_group.add_group(
         required=True,
         mutex=True,
-        # TODO(b/440401143): Add help text. Can reference --source help text.
-        # Explain .yaml files in error msg.
+        help='Membership configuration flags.'
     )
+    cls.ORIGIN_FLAG.AddToParser(configuration_group)
     v2_api_version = util.V2_VERSION_MAP[cls.ReleaseTrack()]
     # TODO(b/435530306): Use GA describe command in example instead.
     configuration_group.add_argument(
@@ -152,6 +159,9 @@ class Update(mf_base.UpdateCommand, features_base.UpdateCommand):
       return
     # Do not search or auto-select.
     memberships = features_base.ParseMembershipsPlural(args, prompt=True)
+    if args.origin:
+      self.sync_memberships_to_fleet_default(memberships)
+      return
     # Feature must exist to reconcile v2 configuration changes.
     feature = self.GetFeature()
     cm_spec = flag_parser.parse_config(args.config, is_fleet_default=False)

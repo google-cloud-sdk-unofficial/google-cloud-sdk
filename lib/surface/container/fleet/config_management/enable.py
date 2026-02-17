@@ -128,7 +128,6 @@ class EnableAlpha(features_base.EnableCommand,
   def Args(cls, parser):
     parser.add_argument(
         '--fleet-default-member-config',
-        # TODO(b/440400885): Reference update instead of apply command.
         help=textwrap.dedent(
             f"""\
             Path to YAML file, or `-` to read from stdin, that specifies the
@@ -139,8 +138,8 @@ class EnableAlpha(features_base.EnableCommand,
             Provides the additional field-handling documented at
             https://docs.cloud.google.com/kubernetes-engine/config-sync/docs/reference/gcloud-configuration-field-behavior.
             Use the `update` command to update the fleet-default membership
-            configuration and the `apply` command to sync a membership to the
-            fleet-default membership configuration.
+            configuration or sync a membership to the fleet-default membership
+            configuration.
 
             To create a Config Management feature with a fleet-default
             membership configuration from a file and debug logs, populate a

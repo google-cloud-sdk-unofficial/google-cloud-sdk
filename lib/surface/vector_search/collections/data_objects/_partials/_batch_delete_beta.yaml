@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Delete a batch of data objects
     description: Delete a batch of data objects.
@@ -46,7 +45,7 @@
         A maximum of 1000 DataObjects can be deleted in a batch.
       spec:
       - api_field: name
-        resource_pattern: projects/{project}/locations/{location}/collections/{collection}/dataObjects/{data_object}
+        resource_pattern: projects/{project}/locations/{location}/collections/{collection}/dataObjects/{dataObject}
         help_text: |-
           The name of the DataObject resource to be deleted.
           Format:

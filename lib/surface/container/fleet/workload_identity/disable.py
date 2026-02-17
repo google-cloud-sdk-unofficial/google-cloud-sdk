@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Disable(feature_base.DisableCommand):
   """Disable Workload Identity Feature.
 

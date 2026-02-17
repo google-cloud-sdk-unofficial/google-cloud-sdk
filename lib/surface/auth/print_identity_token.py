@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as c_exc
@@ -28,7 +29,6 @@ from googlecloudsdk.command_lib.auth import flags
 from googlecloudsdk.command_lib.config import config_helper
 from googlecloudsdk.core import config
 from googlecloudsdk.core.credentials import store as c_store
-from oauth2client import client
 
 
 def _Run(args):
@@ -126,7 +126,8 @@ class IdentityToken(base.Command):
     flags.AddIncludeEmailArg(parser)
     parser.display_info.AddFormat('value(id_token)')
 
-  @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError, client.Error)
+  @c_exc.RaiseErrorInsteadOf(auth_exceptions.AuthenticationError,
+                             google_auth_exceptions.GoogleAuthError)
   def Run(self, args):
     """Run the print_identity_token command."""
     credential = _Run(args)

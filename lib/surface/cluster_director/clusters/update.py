@@ -84,6 +84,12 @@ DETAILED_HELP = {
         --remove-spot-instances compute3 \
         --remove-dws-flex-instances compute4
 
+        Add and remove slurm prolog/epilog scripts:
+
+        $ {command} my-cluster --location us-central1-a \
+        --add-slurm-prolog-scripts script1.sh \
+        --remove-slurm-epilog-scripts script2.sh
+
         Or cluster `my-cluster` in location `us-central1-a` with config JSON run the following JSON example:
 
         $ {command} my-cluster --location=us-central1-a --update-mask=labels --config='{"key": "value"}'
@@ -171,6 +177,24 @@ class Update(base.UpdateCommand):
     )
     flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
     flags.AddSlurmLoginNode(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmPrologBashScripts(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmEpilogBashScripts(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmTaskPrologBashScripts(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmTaskEpilogBashScripts(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmConfig(
+        parser=flag_group, api_version=api_version, include_update_flags=True
+    )
+    flags.AddSlurmDisableHealthCheckProgram(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
 

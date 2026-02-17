@@ -28,6 +28,20 @@
       `projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key`, run:
 
         $ {command} my-autonomous-database --location=us-east4 --properties-encryption-key-provider=GOOGLE_MANAGED --properties-encryption-key-kms-key=projects/project-id/locations/us-east4/keyRings/keyring/cryptoKeys/key
+
+      To enable Local Data Guard on an AutonomousDatabase with id `my-instance` in the location `us-east4`
+      and set the auto failover max data loss limit to 0, run:
+
+        $ {command} my-instance --location=us-east4 --properties-local-data-guard-enabled=true --properties-local-adg-auto-failover-max-data-loss-limit-duration=0
+
+      To update Local Data Guard settings on an AutonomousDatabase with id `my-instance` in the location `us-east4`
+      and set the auto failover max data loss limit to 60 seconds, run:
+
+        $ {command} my-instance --location=us-east4 --properties-local-adg-auto-failover-max-data-loss-limit-duration=60
+
+      To disable Local Data Guard on an AutonomousDatabase with id `my-instance` in the location `us-east4`, run:
+
+        $ {command} my-instance --location=us-east4 --properties-local-data-guard-enabled=false
   arguments:
     params:
     - help_text: |-
@@ -45,6 +59,47 @@
         help_text: |-
           The properties of an Autonomous Database.
         params:
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  local data guard enabled.
+            params:
+            - arg_name: properties-local-data-guard-enabled
+              api_field: autonomousDatabase.properties.localDataGuardEnabled
+              action: store_true_false
+              required: false
+              type: bool
+              help_text: |-
+                Indicates whether the Autonomous Database has a local (in-region) standby
+                database. Not applicable to cross-region Data Guard or dedicated Exadata
+                infrastructure.
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  local adg auto failover max data loss limit duration.
+            params:
+            - arg_name: properties-local-adg-auto-failover-max-data-loss-limit-duration
+              api_field: autonomousDatabase.properties.localAdgAutoFailoverMaxDataLossLimitDuration
+              required: false
+              repeated: false
+              type: int
+              help_text: |-
+                This field indicates the maximum data loss limit for an Autonomous
+                Database, in seconds.
+        - group:
+            mutex: true
+            help_text: |-
+              Arguments for the  refreshable clone.
+            params:
+            - arg_name: properties-refreshable-clone
+              api_field: autonomousDatabase.properties.refreshableClone
+              action: store_true_false
+              required: false
+              type: bool
+              help_text: |-
+                Indicates if the Autonomous Database is a refreshable clone. This field is
+                used in update flow to connect / disconnect a refreshable clone from its
+                source database.
         - group:
             api_field: autonomousDatabase.properties.encryptionKey
             required: false

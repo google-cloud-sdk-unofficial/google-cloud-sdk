@@ -1,0 +1,23 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Describe a BigLake Delta Sharing catalog.
+    description: |
+      Describe a BigLake Delta Sharing catalog.
+  request:
+    collection: biglake.deltasharing.v1.projects.catalogs
+    api_version: delta_v1
+    method: get
+  arguments:
+    resource:
+      help_text: The Delta Sharing catalog to describe.
+      spec:
+        name: catalog
+        collection: biglake.deltasharing.v1.projects.catalogs
+        attributes:
+        - attribute_name: project
+          parameter_name: projectsId
+          property: core/project
+          help: The project of the catalog.
+        - attribute_name: catalog
+          parameter_name: catalogsId
+          help: The Delta Sharing Catalog for the resource.

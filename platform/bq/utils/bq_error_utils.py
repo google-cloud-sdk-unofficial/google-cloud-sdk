@@ -8,6 +8,7 @@ import sys
 import textwrap
 import time
 import traceback
+from typing import Optional
 
 from absl import app
 from absl import flags
@@ -39,6 +40,64 @@ _BIGQUERY_TOS_MESSAGE = (
 )
 
 
+def text_wrap_error_message(
+    text: str,
+    length: Optional[int] = None,
+    indent: str = '',
+    drop_whitespace: bool = False,
+) -> str:
+  """Wraps a given text to a maximum line length and returns it.
+
+  It turns lines that only contain whitespace into empty lines, keeps new lines,
+  and expands tabs using 4 spaces.
+
+  Args:
+    text: str, text to wrap.
+    length: int, maximum length of a line, includes indentation. If this is None
+      then use get_help_width()
+    indent: str, indent for all but first line.
+    drop_whitespace: bool, whether to drop whitespace from the text after
+      wrapping.
+
+  Returns:
+    str, the wrapped text.
+
+  Raises:
+    ValueError: Raised if indent or firstline_indent not shorter than length.
+  """
+  # Get defaults where callee used None
+  if length is None:
+    length = flags.get_help_width()
+  if indent is None:
+    indent = ''
+
+  if len(indent) >= length:
+    raise ValueError('Length of indent exceeds length')
+
+  text = text.expandtabs(4)
+
+  result = []
+  wrapper = textwrap.TextWrapper(
+      width=length,
+      initial_indent=indent,
+      subsequent_indent=indent,
+      drop_whitespace=drop_whitespace,
+  )
+
+  # textwrap does not have any special treatment for newlines. From the docs:
+  # "...newlines may appear in the middle of a line and cause strange output.
+  # For this reason, text should be split into paragraphs (using
+  # str.splitlines() or similar) which are wrapped separately."
+  for paragraph in (p.rstrip() for p in text.splitlines()):
+    if paragraph:
+      result.extend([line.rstrip() for line in wrapper.wrap(paragraph)])
+    else:
+      result.append('')  # Keep empty lines.
+    # Replace initial wrapper with wrapper for subsequent paragraphs.
+
+  return '\n'.join(result)
+
+
 def process_error(
     err: BaseException,
     name: str = 'unknown',
@@ -56,7 +115,7 @@ def process_error(
   response = []
   retcode = 1
 
-  (etype, value, tb) = sys.exc_info()
+  etype, value, tb = sys.exc_info()
   trace = ''.join(traceback.format_exception(etype, value, tb))
   contact_us_msg = _generate_contact_us_message()
   platform_str = bq_utils.GetPlatformString()
@@ -185,7 +244,11 @@ def process_error(
   response_message = '\n'.join(response)
   wrap_error_message = True
   if wrap_error_message:
-    response_message = flags.text_wrap(response_message)
+    # Use our own text wrap function to preserve the traceback format.
+    if 'Traceback' in response_message:
+      response_message = text_wrap_error_message(response_message)
+    else:
+      response_message = flags.text_wrap(response_message)
   logger.exception(response_message, exc_info=err)
   print(response_message)
   return retcode

@@ -14,6 +14,8 @@
 # limitations under the License.
 """Create command to create a new resource of security profile group."""
 
+import types
+
 from googlecloudsdk.api_lib.network_security.security_profile_groups import spg_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import spg_flags
@@ -43,14 +45,26 @@ _WILDFIRE_ANALYSIS_SUPPORTED = (
     base.ReleaseTrack.ALPHA,
 )
 
+_SUPPORTED_PROFILES = (
+    'threat_prevention_profile',
+    'url_filtering_profile',
+    'wildfire_analysis_profile',
+    'custom_mirroring_profile',
+    'custom_intercept_profile',
+)
+
 _INCOMPATIBLE_PAIRS = (
-    ('threat-prevention-profile', 'custom-mirroring-profile'),
-    ('threat-prevention-profile', 'custom-intercept-profile'),
-    ('url-filtering-profile', 'custom-mirroring-profile'),
-    ('url-filtering-profile', 'custom-intercept-profile'),
-    ('wildfire-analysis-profile', 'custom-mirroring-profile'),
-    ('wildfire-analysis-profile', 'custom-intercept-profile'),
-    ('custom-mirroring-profile', 'custom-intercept-profile'),
+    ('threat_prevention_profile', 'custom_mirroring_profile'),
+    ('threat_prevention_profile', 'custom_intercept_profile'),
+    ('url_filtering_profile', 'custom_mirroring_profile'),
+    ('url_filtering_profile', 'custom_intercept_profile'),
+    ('wildfire_analysis_profile', 'custom_mirroring_profile'),
+    ('wildfire_analysis_profile', 'custom_intercept_profile'),
+    ('custom_mirroring_profile', 'custom_intercept_profile'),
+)
+
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
 )
 
 
@@ -63,7 +77,12 @@ class CreateProfileGroup(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    spg_flags.AddSecurityProfileGroupResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     spg_flags.AddProfileGroupDescription(parser)
     required_group = parser.add_group(required=True)
     # TODO: b/349671332 - Remove this conditional once the group is released.
@@ -74,6 +93,8 @@ class CreateProfileGroup(base.CreateCommand):
           'url-filtering-profile',
           group=required_group,
           required=False,
+          help_text='Path to URL Filtering Profile resource.',
+          project_scope_supported=project_scope_supported,
       )
     # TODO: b/399684751 - Remove this conditional once the group is released.
     if cls.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED:
@@ -83,6 +104,8 @@ class CreateProfileGroup(base.CreateCommand):
           'wildfire-analysis-profile',
           group=required_group,
           required=False,
+          help_text='Path to Wildfire Analysis Profile resource.',
+          project_scope_supported=project_scope_supported,
       )
     spg_flags.AddSecurityProfileResource(
         parser,
@@ -91,13 +114,17 @@ class CreateProfileGroup(base.CreateCommand):
         group=required_group,
         required=False,
         arg_aliases=['security-profile'],
+        help_text='Path to Threat Prevention Profile resource.',
+        project_scope_supported=project_scope_supported,
     )
     spg_flags.AddSecurityProfileResource(
         parser,
         cls.ReleaseTrack(),
         'custom-mirroring-profile',
         group=required_group,
-        required=False
+        required=False,
+        help_text='Path to Custom Mirroring Profile resource.',
+        project_scope_supported=project_scope_supported,
     )
     spg_flags.AddSecurityProfileResource(
         parser,
@@ -105,69 +132,54 @@ class CreateProfileGroup(base.CreateCommand):
         'custom-intercept-profile',
         group=required_group,
         required=False,
+        help_text='Path to Custom Intercept Profile resource.',
+        project_scope_supported=project_scope_supported,
     )
     labels_util.AddCreateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
     base.ASYNC_FLAG.SetDefault(parser, False)
 
   def Run(self, args):
-    client = spg_api.Client(self.ReleaseTrack())
-    self.ValidateCompatibleProfiles(args)
-    security_profile_group = args.CONCEPTS.security_profile_group.Parse()
-    threat_prevention_profile = args.CONCEPTS.threat_prevention_profile.Parse()
-    url_filtering_profile = (
-        args.CONCEPTS.url_filtering_profile.Parse()
-        if hasattr(args.CONCEPTS, 'url_filtering_profile')
-        else None
+    result = args.CONCEPTS.security_profile_group.Parse()
+    security_profile_group = result.result
+
+    profiles = self.ParseAndValidateSecurityProfiles(args)
+
+    project_scoped = (
+        result.concept_type.name
+        == spg_flags.PROJECT_SECURITY_PROFILE_GROUP_RESOURCE_COLLECTION
     )
-    wildfire_analysis_profile = (
-        args.CONCEPTS.wildfire_analysis_profile.Parse()
-        if hasattr(args.CONCEPTS, 'wildfire_analysis_profile')
-        else None
-    )
-    custom_mirroring_profile = (
-        args.CONCEPTS.custom_mirroring_profile.Parse()
-        if hasattr(args.CONCEPTS, 'custom_mirroring_profile')
-        else None
-    )
-    custom_intercept_profile = (
-        args.CONCEPTS.custom_intercept_profile.Parse()
-        if hasattr(args.CONCEPTS, 'custom_intercept_profile')
-        else None
-    )
+    client = spg_api.Client(self.ReleaseTrack(), project_scoped)
 
     description = args.description
     is_async = args.async_
     labels = labels_util.ParseCreateArgs(
         args, client.messages.SecurityProfileGroup.LabelsValue
     )
-
-    if security_profile_group.locationsId != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s'
-          % security_profile_group.locationsId
-      )
+    safe_relative_name = (
+        lambda profile: profile.RelativeName() if profile is not None else None
+    )
 
     response = client.CreateSecurityProfileGroup(
         security_profile_group_name=security_profile_group.RelativeName(),
         security_profile_group_id=security_profile_group.Name(),
         parent=security_profile_group.Parent().RelativeName(),
         description=description,
-        threat_prevention_profile=threat_prevention_profile.RelativeName()
-        if threat_prevention_profile is not None
-        else None,
-        url_filtering_profile=url_filtering_profile.RelativeName()
-        if url_filtering_profile is not None
-        else None,
-        wildfire_analysis_profile=wildfire_analysis_profile.RelativeName()
-        if wildfire_analysis_profile is not None
-        else None,
-        custom_mirroring_profile=custom_mirroring_profile.RelativeName()
-        if custom_mirroring_profile is not None
-        else None,
-        custom_intercept_profile=custom_intercept_profile.RelativeName()
-        if custom_intercept_profile is not None
-        else None,
+        threat_prevention_profile=safe_relative_name(
+            profiles.threat_prevention_profile
+        ),
+        url_filtering_profile=safe_relative_name(
+            profiles.url_filtering_profile
+        ),
+        wildfire_analysis_profile=safe_relative_name(
+            profiles.wildfire_analysis_profile
+        ),
+        custom_mirroring_profile=safe_relative_name(
+            profiles.custom_mirroring_profile
+        ),
+        custom_intercept_profile=safe_relative_name(
+            profiles.custom_intercept_profile
+        ),
         labels=labels,
     )
 
@@ -189,46 +201,24 @@ class CreateProfileGroup(base.CreateCommand):
         has_result=True,
     )
 
-  # TODO: b/353974844 - remove hasattr checks once custom_mirroring and
-  # custom_intercept profiles are fully rolled out to v1.
-  def ValidateCompatibleProfiles(self, args):
-    profiles = {
-        'threat-prevention-profile': False,
-        'url-filtering-profile': False,
-        'wildfire-analysis-profile': False,
-        'custom-mirroring-profile': False,
-        'custom-intercept-profile': False,
-    }
-    if args.CONCEPTS.threat_prevention_profile.Parse() is not None:
-      profiles['threat-prevention-profile'] = True
-    if (
-        hasattr(args.CONCEPTS, 'url_filtering_profile')
-        and args.CONCEPTS.url_filtering_profile.Parse() is not None
-    ):
-      profiles['url-filtering-profile'] = True
-    if (
-        hasattr(args.CONCEPTS, 'wildfire_analysis_profile')
-        and args.CONCEPTS.wildfire_analysis_profile.Parse() is not None
-    ):
-      profiles['wildfire-analysis-profile'] = True
-    if (
-        hasattr(args.CONCEPTS, 'custom_mirroring_profile')
-        and args.CONCEPTS.custom_mirroring_profile.Parse() is not None
-    ):
-      profiles['custom-mirroring-profile'] = True
-    if (
-        hasattr(args.CONCEPTS, 'custom_intercept_profile')
-        and args.CONCEPTS.custom_intercept_profile.Parse() is not None
-    ):
-      profiles['custom-intercept-profile'] = True
+  def ParseAndValidateSecurityProfiles(self, args):
+    """Parses and validates security profiles from args."""
+    profiles = {}
+
+    for supported_profile in _SUPPORTED_PROFILES:
+      profiles[supported_profile] = None
+      if getattr(args, supported_profile, None):
+        result = getattr(args.CONCEPTS, supported_profile).Parse()
+        profiles[supported_profile] = result.result
 
     for pair in _INCOMPATIBLE_PAIRS:
       if profiles[pair[0]] and profiles[pair[1]]:
         raise core_exceptions.Error(
             'Only one of the following profiles can be specified at the same'
             ' time: %s'
-            % ', '.join(pair)
+            % ', '.join(pair).replace('_', '-')
         )
+    return types.SimpleNamespace(**profiles)
 
 
 CreateProfileGroup.detailed_help = _DETAILED_HELP

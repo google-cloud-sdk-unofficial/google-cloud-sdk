@@ -50,6 +50,9 @@ DESCRIPTION = """\
     instance to clone. If not specified, the current state of the instance is
     cloned.
 
+    Note: The flags --destination-project and --destination-network are
+    currently for allowlisted customers only.
+
     """
 
 EXAMPLES_GA = """\

@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class EdgeCloudApiKey(base.Group):
   """Read and manipulate API keys for Google Distributed Cloud."""
+  category = base.GDCC_ZONE_CATEGORY

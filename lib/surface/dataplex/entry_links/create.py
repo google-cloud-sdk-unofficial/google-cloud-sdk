@@ -19,13 +19,10 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import entry_link
-from googlecloudsdk.api_lib.dataplex import util as dataplex_util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base
-from googlecloudsdk.calliope import exceptions
+from googlecloudsdk.command_lib.dataplex import flags
 from googlecloudsdk.command_lib.dataplex import resource_args
-from googlecloudsdk.core import log
-from googlecloudsdk.core import yaml
 
 
 @base.DefaultUniverseOnly
@@ -93,49 +90,10 @@ Example of entry_references.yaml file:
             '    type: TARGET'
         ),
     )
+    flags.AddEntryLinkAspectFlags(parser, update_aspects_name='aspects')
 
   @gcloud_exception.CatchHTTPErrorRaiseHTTPException(
       'Status code: {status_code}. {status_message}.'
   )
   def Run(self, args):
-    entry_link_ref = args.CONCEPTS.entry_link.Parse()
-    # Read and parse the entry_references.yaml file
-    try:
-      entry_references_content = yaml.load_path(args.entry_references)
-    except yaml.Error as e:
-      raise exceptions.BadFileException(
-          'entry-references', f'Error parsing YAML file: {e}'
-      )
-    if not entry_references_content:
-      raise exceptions.BadFileException(
-          'entry-references', 'The entry references file is empty.'
-      )
-
-    # Create the list of entry references objects
-    entry_references_message = entry_link.CreateEntryReferences(
-        entry_references_content=entry_references_content
-    )
-
-    dataplex_client = dataplex_util.GetClientInstance()
-    entry_link_response = dataplex_client.projects_locations_entryGroups_entryLinks.Create(
-        dataplex_util.GetMessageModule().DataplexProjectsLocationsEntryGroupsEntryLinksCreateRequest(
-            entryLinkId=entry_link_ref.Name(),
-            parent=entry_link_ref.Parent().RelativeName(),
-            googleCloudDataplexV1EntryLink=dataplex_util.GetMessageModule().GoogleCloudDataplexV1EntryLink(
-                entryLinkType=args.entry_link_type,
-                entryReferences=entry_references_message,
-                name=entry_link_ref.RelativeName(),
-            ),
-        )
-    )
-    log.CreatedResource(
-        entry_link_response.name,
-        details=(
-            'Content entry link in project [{0}] with location [{1}] in entry'
-            ' group [{2}]'.format(
-                entry_link_ref.projectsId,
-                entry_link_ref.locationsId,
-                entry_link_ref.entryGroupsId,
-            )
-        ),
-    )
+    entry_link.Create(args)

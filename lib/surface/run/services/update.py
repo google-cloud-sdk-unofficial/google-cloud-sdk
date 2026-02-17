@@ -14,6 +14,7 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
+
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.api_lib.run import traffic
 from googlecloudsdk.calliope import base
@@ -22,6 +23,7 @@ from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import iap_util
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import resource_args
@@ -212,6 +214,21 @@ class Update(base.Command):
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
     iap = self._GetIap(args)
+    project_id = properties.VALUES.core.project.Get(required=True)
+
+    if iap:
+      if (
+          iap_util.IsOrglessProject(project_id)
+          and not iap_util.IsIapAlreadyEnabled(self)
+      ):
+        pretty_print.Info(
+            '\n {bold}**[Warning]**{reset} Deploying services with IAP'
+            ' enabled in a project outside of an Organization and may require'
+            ' initial setup via the Cloud Console. Please use the Cloud Run'
+            ' UI to enable IAP for the first time in the project. '
+            'https://cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run#custom-oauth-client\n'
+        )
+
     with serverless_operations.Connect(conn_context) as client:
       service = client.GetService(service_ref)
       messages_util.MaybeLogDefaultGpuTypeMessage(args, service)
@@ -275,25 +292,31 @@ class Update(base.Command):
           raise e
 
       if args.async_:
-        pretty_print.Success(
-            'Service [{{bold}}{serv}{{reset}}] is {result_message} '
-            'asynchronously.'.format(
-                serv=service.name, result_message=result_message
-            )
-        )
-      else:
-        if creates_revision:
+        if service:
           pretty_print.Success(
-              messages_util.GetSuccessMessageForSynchronousDeploy(
-                  service, args.no_traffic
+              'Service [{{bold}}{serv}{{reset}}] is {result_message} '
+              'asynchronously.'.format(
+                  serv=service.name, result_message=result_message
               )
           )
         else:
-          pretty_print.Success(
-              'Service [{{bold}}{serv}{{reset}}] has been updated.'.format(
-                  serv=service.name
-              )
-          )
+          pretty_print.Info('Service update/deployment may have failed.')
+      else:
+        if service:
+          if creates_revision:
+            pretty_print.Success(
+                messages_util.GetSuccessMessageForSynchronousDeploy(
+                    service, args.no_traffic
+                )
+            )
+          else:
+            pretty_print.Success(
+                'Service [{{bold}}{serv}{{reset}}] has been updated.'.format(
+                    serv=service.name
+                )
+            )
+        else:
+          pretty_print.Info('Service update/deployment may have failed.')
       return service
 
 

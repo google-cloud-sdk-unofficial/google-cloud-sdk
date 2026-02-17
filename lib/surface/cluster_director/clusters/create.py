@@ -41,7 +41,7 @@ DETAILED_HELP = {
         --description "My cluster description" \
         --labels env=prod,client=gcloud-cli \
         --create-network name=network0 \
-        --create-filestores name=locations/us-central1-a/instances/filestore0,tier=BASIC_HDD,capacityGb={filestoreSize},fileshare={fileshare} \
+        --create-filestores name=locations/us-central1-a/instances/filestore0,tier=ZONAL,capacityGb={filestoreSize},fileshare={fileshare} \
         --filestores locations/us-central1-a/instances/filestore1 \
         --create-buckets name=bucket0 \
         --buckets bucket1 \
@@ -106,6 +106,9 @@ class Create(base.CreateCommand):
     flags.AddSubnetSource(
         parser=network_source_group, api_version=api_version, required=True
     )
+    flags.AddNetworkProject(
+        parser=network_source_group, api_version=api_version
+    )
     flags.AddCreateFilestores(parser=flag_group, api_version=api_version)
     flags.AddFilestores(parser=flag_group, api_version=api_version)
     flags.AddCreateGcsBuckets(parser=flag_group, api_version=api_version)
@@ -122,6 +125,23 @@ class Create(base.CreateCommand):
     flags.AddSlurmNodeSets(parser=flag_group, api_version=api_version)
     flags.AddSlurmPartitions(parser=flag_group, api_version=api_version)
     flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
+    if api_version == "v1alpha":
+      flags.AddSlurmPrologBashScripts(
+          parser=flag_group, api_version=api_version
+      )
+      flags.AddSlurmEpilogBashScripts(
+          parser=flag_group, api_version=api_version
+      )
+      flags.AddSlurmTaskPrologBashScripts(
+          parser=flag_group, api_version=api_version
+      )
+      flags.AddSlurmTaskEpilogBashScripts(
+          parser=flag_group, api_version=api_version
+      )
+      flags.AddSlurmConfig(parser=flag_group, api_version=api_version)
+      flags.AddSlurmDisableHealthCheckProgram(
+          parser=flag_group, api_version=api_version
+      )
 
   def Run(self, args):
     """Constructs and sends request.

@@ -108,6 +108,21 @@ class Create(base.CreateCommand):
         target_firewall_attachment=target_firewall_attachment,
         enable_jumbo_frames=getattr(args, 'enable_jumbo_frames', None),
         endpoint_type=endpoint_type,
+        enable_wildfire=getattr(args, 'enable_wildfire', None),
+        wildfire_region=getattr(args, 'wildfire_region', None),
+        content_cloud_region=getattr(args, 'content_cloud_region', None),
+        wildfire_lookup_timeout=getattr(args, 'wildfire_lookup_timeout', None),
+        wildfire_lookup_action=getattr(args, 'wildfire_lookup_action', None),
+        wildfire_analysis_timeout=getattr(
+            args, 'wildfire_analysis_timeout', None
+        ),
+        wildfire_analysis_action=getattr(
+            args, 'wildfire_analysis_action', None
+        ),
+        enable_wildfire_analysis_logging=getattr(
+            args, 'enable_wildfire_analysis_logging', None
+        ),
+        block_partial_http=getattr(args, 'block_partial_http', None),
     )
     # Return the in-progress operation if async is requested.
     if is_async:
@@ -135,6 +150,15 @@ class CreateAlpha(Create):
   def Args(cls, parser):
     super(CreateAlpha, cls).Args(parser)
     activation_flags.AddTargetFirewallAttachmentArg(parser)
+    activation_flags.AddEnableWildfireArg(parser)
+    activation_flags.AddWildfireRegionArg(parser)
+    activation_flags.AddContentCloudRegionArg(parser)
+    activation_flags.AddWildfireLookupTimeoutArg(parser)
+    activation_flags.AddWildfireLookupActionArg(parser)
+    activation_flags.AddWildfireAnalysisTimeoutArg(parser)
+    activation_flags.AddWildfireAnalysisActionArg(parser)
+    activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
+    activation_flags.AddBlockPartialHttpArg(parser)
 
   def Run(self, args):
     target_firewall_attachment = getattr(

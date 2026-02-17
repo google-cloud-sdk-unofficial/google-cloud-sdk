@@ -40,6 +40,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core import properties
 import six
 
+
 # API allows up to 58 characters but asked us to send only 54 (unless user
 # explicitly asks us for more).
 _MAX_LEN_FOR_DEDUCED_BASE_INSTANCE_NAME = 54
@@ -132,7 +133,7 @@ class CreateGA(base.CreateCommand):
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
-    managed_flags.AddInstanceFlexibilityPolicyArgs(parser)
+    flags.AddInstanceFlexibilityPolicyArgs(parser)
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.

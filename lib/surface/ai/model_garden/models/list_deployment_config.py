@@ -30,6 +30,7 @@ from googlecloudsdk.command_lib.ai.region_util import (
     _IsDefaultUniverse,
 )
 from googlecloudsdk.core import exceptions as core_exceptions
+from googlecloudsdk.core import properties
 
 
 _DEFAULT_FORMAT = """
@@ -144,6 +145,14 @@ class ListDeployMentConfig(base.ListCommand):
     validation.ValidateModelGardenModelArgs(args)
     version = constants.BETA_VERSION
 
-    region = 'us-central1' if _IsDefaultUniverse() else None
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    if _IsDefaultUniverse():
+      api_region = 'us-central1'
+    else:
+      api_region = properties.VALUES.ai.region.Get()
+      if not api_region:
+        raise c_exceptions.RequiredArgumentException(
+            'ai/region',
+            'The [ai/region] property must be set in this environment.',
+        )
+    with endpoint_util.AiplatformEndpointOverrides(version, region=api_region):
       return self._GetMultiDeploy(args, version)

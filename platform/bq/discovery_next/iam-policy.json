@@ -5,7 +5,7 @@
   "name": "bigquery",
   "canonicalName": "Bigquery",
   "version": "v2",
-  "revision": "20260107",
+  "revision": "20260202",
   "title": "BigQuery API",
   "description": "A data platform for customers to create, manage, share and query data.",
   "ownerDomain": "google.com",
@@ -6511,6 +6511,11 @@
             "UNSUPPORTED_OPERATOR"
           ]
         },
+        "disabledReasonDetails": {
+          "description": "Output only. Additional human-readable clarification, if available, for DisabledReason.",
+          "readOnly": true,
+          "type": "string"
+        },
         "resultSetLastReplaceTime": {
           "description": "Output only. The time at which the result table's contents were completely replaced. May be absent if no results have been written or the query has completed.",
           "readOnly": true,
@@ -6522,6 +6527,24 @@
           "readOnly": true,
           "type": "string",
           "format": "google-datetime"
+        },
+        "firstIncrementalRowTime": {
+          "description": "Output only. The time at which the first incremental result was written. If the query needed to restart internally, this only describes the final attempt.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "lastIncrementalRowTime": {
+          "description": "Output only. The time at which the last incremental result was written. Does not include the final result written after query completion.",
+          "readOnly": true,
+          "type": "string",
+          "format": "google-datetime"
+        },
+        "incrementalRowCount": {
+          "description": "Output only. Number of rows that were in the latest result set before query completion.",
+          "readOnly": true,
+          "type": "string",
+          "format": "int64"
         }
       }
     },

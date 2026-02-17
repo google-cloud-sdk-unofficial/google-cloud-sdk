@@ -73,6 +73,7 @@ class Update(base.UpdateCommand):
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
 
+    flags.AddNodePoolDatapathProviderFlags(group)
     flags.AddNodePoolLocationsFlag(group)
 
     node_management_group = group.add_argument_group('Node management')
@@ -107,6 +108,9 @@ class Update(base.UpdateCommand):
     flags.AddLabelsFlag(group, for_node_pool=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(
+        group, for_node_pool=True, for_update=True
+    )
     flags.AddTagsNodePoolUpdate(group)
     flags.AddEnableGvnicFlag(group)
     flags.AddEnableImageStreamingFlag(group, for_node_pool=True)
@@ -197,6 +201,8 @@ class Update(base.UpdateCommand):
         node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
         respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
+        datapath_provider=args.datapath_provider,
+        node_architecture_taint_behavior=args.node_architecture_taint_behavior,
     )
 
   def Run(self, args):
@@ -279,6 +285,7 @@ class UpdateBeta(Update):
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
 
+    flags.AddNodePoolDatapathProviderFlags(group)
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
@@ -315,6 +322,9 @@ class UpdateBeta(Update):
     flags.AddLabelsFlag(group, for_node_pool=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(
+        group, for_node_pool=True, for_update=True
+    )
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
@@ -409,6 +419,8 @@ class UpdateBeta(Update):
         node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
         respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
+        datapath_provider=args.datapath_provider,
+        node_architecture_taint_behavior=args.node_architecture_taint_behavior,
     )
     return ops
 
@@ -422,6 +434,7 @@ class UpdateAlpha(Update):
     _Args(parser)
     group = parser.add_mutually_exclusive_group(required=True)
 
+    flags.AddNodePoolDatapathProviderFlags(group)
     node_management_group = group.add_argument_group('Node management')
     flags.AddEnableAutoRepairFlag(node_management_group, for_node_pool=True)
     flags.AddEnableAutoUpgradeFlag(node_management_group, for_node_pool=True)
@@ -458,6 +471,9 @@ class UpdateAlpha(Update):
     flags.AddLabelsFlag(group, for_node_pool=True)
     flags.AddNodeLabelsFlag(group, for_node_pool=True, for_update=True)
     flags.AddNodeTaintsFlag(group, for_node_pool=True, for_update=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(
+        group, for_node_pool=True, for_update=True
+    )
     flags.AddTagsNodePoolUpdate(group)
     flags.AddNodePoolEnablePrivateNodes(group)
     flags.AddEnableGcfsFlag(group, for_node_pool=True)
@@ -552,6 +568,8 @@ class UpdateAlpha(Update):
         node_drain_pdb_timeout=args.node_drain_pdb_timeout_seconds,
         respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
         enable_lustre_multi_nic=args.enable_lustre_multi_nic,
+        datapath_provider=args.datapath_provider,
+        node_architecture_taint_behavior=args.node_architecture_taint_behavior,
     )
     return ops
 

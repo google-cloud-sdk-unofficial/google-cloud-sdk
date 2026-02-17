@@ -1,22 +1,38 @@
 - release_tracks: [ALPHA]
 
   help_text:
-    brief: List Google Distributed Cloud zones enabled in an organization
-    description: Lists Google Distributed Cloud zones enabled in an organization and location.
+    brief: List Google Distributed Cloud zones.
+    description: Lists Google Distributed Cloud zones enabled in a given location for either an organization or a project.
     examples: |
-      To list GDC Connected zones in organization `sample-org` and location `us-central1`, run:
+      To list GDC zones in organization `1234567890` and location `us-central1`, run:
 
-      $ {command} --location=us-central1 --organization=sample-org
+        $ {command} --location=us-central1 --organization=1234567890
+
+      To list GDC zones in project `my-sample-project` and location `us-central1`, run:
+
+        $ {command} --location=us-central1 --project=my-sample-project
 
   request:
     collection: edgecontainer.organizations.locations.zones
+    disable_resource_check: true
     ALPHA:
       api_version: v1alpha
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.zone.hooks:SetParentForZonesList
 
   response:
     id_field: name
 
   arguments:
-    resource:
-      help_text: Google Cloud Platform region.
-      spec: !REF googlecloudsdk.command_lib.edge_cloud.zone.resources:orglocation
+    params:
+    - arg_name: location
+      required: true
+      help_text: Google Cloud Platform location.
+    - group:
+        mutex: true
+        required: true
+        params:
+        - arg_name: organization
+          help_text: Google Distributed Cloud organization number to list zones for.
+        - arg_name: project
+          help_text: Google Cloud Platform project ID to list zones for.

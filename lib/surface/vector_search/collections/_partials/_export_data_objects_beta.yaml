@@ -18,7 +18,6 @@
 - release_tracks:
   - BETA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Export data objects from a collection
     description: Export data objects from a collection to Google Cloud Storage.

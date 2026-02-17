@@ -29,7 +29,8 @@ import ipaddr
 from six.moves import zip  # pylint: disable=redefined-builtin
 
 
-def _Args(cls, parser, support_psc_google_apis):
+def _Args(cls, parser, support_psc_google_apis,
+          support_passthrough_lb_availability_groups):
   """Argument parsing."""
 
   cls.ADDRESSES_ARG = flags.AddressArgument(required=False)
@@ -40,7 +41,11 @@ def _Args(cls, parser, support_psc_google_apis):
   flags.AddAddressesAndIPVersions(parser, required=False)
   flags.AddNetworkTier(parser)
   flags.AddPrefixLength(parser)
-  flags.AddPurpose(parser, support_psc_google_apis)
+  flags.AddPurpose(
+      parser,
+      support_psc_google_apis,
+      support_passthrough_lb_availability_groups,
+  )
   flags.AddIPv6EndPointType(parser)
 
   cls.SUBNETWORK_ARG = flags.SubnetworkArgument()
@@ -104,13 +109,16 @@ class Create(base.CreateCommand):
   NETWORK_ARG = None
 
   _support_psc_google_apis = True
+  _support_passthrough_lb_availability_groups = False
 
   @classmethod
   def Args(cls, parser):
     _Args(
         cls,
         parser,
-        support_psc_google_apis=cls._support_psc_google_apis)
+        support_psc_google_apis=cls._support_psc_google_apis,
+        support_passthrough_lb_availability_groups=(
+            cls._support_passthrough_lb_availability_groups))
 
   def ConstructNetworkTier(self, messages, args):
     if args.network_tier:
@@ -192,6 +200,16 @@ class Create(base.CreateCommand):
           'must be GCE_ENDPOINT or SHARED_LOADBALANCER_VIP for regional '
           'internal addresses.')
 
+  def _IsGlobalPassthroughNetLb(self, args):
+    if not self._support_passthrough_lb_availability_groups:
+      return False
+    if not args.purpose:
+      return False
+    return args.purpose in (
+        'PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0',
+        'PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP1',
+    )
+
   # TODO(b/266237285): Need to remove exceptions and break down function.
   def GetAddress(self, messages, args, address, address_ref, resource_parser):
     """Get and validate address setting.
@@ -236,7 +254,21 @@ class Create(base.CreateCommand):
       raise exceptions.ConflictingArgumentsException('--network', '--subnet')
 
     purpose = None
-    if args.purpose and not args.network and not args.subnet:
+    address_type = None
+    if self._IsGlobalPassthroughNetLb(args):
+      if args.network:
+        raise exceptions.InvalidArgumentException(
+            '--network',
+            'may not be specified with purpose set to {}'.format(args.purpose)
+        )
+      if args.subnet:
+        raise exceptions.InvalidArgumentException(
+            '--subnet',
+            'may not be specified with purpose set to {}'.format(args.purpose),
+        )
+      purpose = messages.Address.PurposeValueValuesEnum(args.purpose)
+      address_type = messages.Address.AddressTypeValueValuesEnum.EXTERNAL
+    elif args.purpose and not args.network and not args.subnet:
       raise exceptions.MinimumArgumentException(['--network', '--subnet'],
                                                 ' if --purpose is specified')
 
@@ -275,7 +307,6 @@ class Create(base.CreateCommand):
           supported_purposes['PRIVATE_SERVICE_CONNECT'] = (
               messages.Address.PurposeValueValuesEnum.PRIVATE_SERVICE_CONNECT
           )
-
         if purpose not in supported_purposes.values():
           raise exceptions.InvalidArgumentException(
               '--purpose', 'must be {} for '
@@ -287,7 +318,6 @@ class Create(base.CreateCommand):
       ipv6_endpoint_type = messages.Address.Ipv6EndpointTypeValueValuesEnum(
           args.endpoint_type)
 
-    address_type = None
     if args.endpoint_type:
       address_type = messages.Address.AddressTypeValueValuesEnum.EXTERNAL
     elif subnetwork_url or network_url:
@@ -402,6 +432,7 @@ class CreateBeta(Create):
   """
 
   _support_psc_google_apis = True
+  _support_passthrough_lb_availability_groups = False
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -453,6 +484,19 @@ class CreateAlpha(CreateBeta):
 
     $ {command} psc-address-1 --global --addresses=10.110.0.10 \
       --purpose=PRIVATE_SERVICE_CONNECT --network=default
+
+  To reserve an external IPv4 address for global passthrough Network Load
+  Balancer in availability group 0, run:
+
+    $ {command} gnlb-ipv4-address-0 --global --ip-version=IPV4 \
+      --purpose=PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0
+
+  To reserve an external IPv6 address for global passthrough Network Load
+  Balancer in availability group 0, run:
+
+    $ {command} gnlb-ipv6-address-0 --global --ip-version=IPV6 \
+      --purpose=PASSTHROUGH_LOAD_BALANCER_AVAILABILITY_GROUP0
   """
 
   _support_psc_google_apis = True
+  _support_passthrough_lb_availability_groups = True

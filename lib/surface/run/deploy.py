@@ -34,6 +34,7 @@ from googlecloudsdk.command_lib.run import connection_context
 from googlecloudsdk.command_lib.run import container_parser
 from googlecloudsdk.command_lib.run import exceptions
 from googlecloudsdk.command_lib.run import flags
+from googlecloudsdk.command_lib.run import iap_util
 from googlecloudsdk.command_lib.run import messages_util
 from googlecloudsdk.command_lib.run import platforms
 from googlecloudsdk.command_lib.run import pretty_print
@@ -47,6 +48,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+
 
 _PROJECT_TOML_FILE_NAME = 'project.toml'
 _GPU_BUILD_MACHINE_TYPE = 'E2_HIGHCPU_8'
@@ -224,7 +226,11 @@ class Deploy(base.Command):
           operations,
           service_ref,
           not service_exists,
-          region_override=self._GetRegionsForMultiRegion()[0],
+          region_override=(
+              self._GetRegionsForMultiRegion()[0]
+              if self._GetRegionsForMultiRegion()
+              else None
+          ),
       )
       # Avoid failure removing a policy binding for a service that
       # doesn't exist.
@@ -848,6 +854,7 @@ class Deploy(base.Command):
 
     service_ref = args.CONCEPTS.service.Parse()
     flags.ValidateResource(service_ref)
+    project_id = properties.VALUES.core.project.Get(required=True)
 
     required_apis = self._GetRequiredApis(
         deploy_from_source, is_no_build_from_source
@@ -959,6 +966,19 @@ class Deploy(base.Command):
       )
 
       iap = self._GetIap(args)
+
+      if iap:
+        if (
+            iap_util.IsOrglessProject(project_id)
+            and not iap_util.IsIapAlreadyEnabled(self)
+        ):
+          pretty_print.Info(
+              '\n {bold}**[Warning]**{reset} Deploying services with IAP'
+              ' enabled in a project outside of an Organization and may require'
+              ' initial setup via the Cloud Console. Please use the Cloud Run'
+              ' UI to enable IAP for the first time in the project. '
+              'https://cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run#custom-oauth-client\n'
+          )
 
       def _ReleaseService(changes_):
         with self._GetTracker(

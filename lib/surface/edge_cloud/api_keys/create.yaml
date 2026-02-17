@@ -1,5 +1,5 @@
 - release_tracks: [ALPHA]
-  hidden: true
+
   help_text:
     brief: Create a Google Distributed Cloud API key.
     description: Creates a Google Distributed Cloud API key.

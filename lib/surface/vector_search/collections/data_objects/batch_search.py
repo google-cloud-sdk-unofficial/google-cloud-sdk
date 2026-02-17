@@ -33,7 +33,6 @@ from googlecloudsdk.core.util import files
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class BatchSearch(base.Command):
   """Batch search data objects from a Vector Search collection."""
 

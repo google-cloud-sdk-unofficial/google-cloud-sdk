@@ -1,0 +1,30 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Create a BigLake Delta Sharing catalog.
+    description: |
+      Create a BigLake Delta Sharing catalog.
+  request:
+    collection: biglake.deltasharing.v1.projects.catalogs
+    api_version: delta_v1
+    method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.biglake.delta_sharing:SetParentAndCatalogId
+  arguments:
+    resource:
+      help_text: The Delta Sharing catalog to create.
+      spec:
+        name: catalog
+        collection: biglake.deltasharing.v1.projects.catalogs
+        attributes:
+        - attribute_name: project
+          parameter_name: projectsId
+          property: core/project
+          help: The project of the catalog.
+        - attribute_name: catalog
+          parameter_name: catalogsId
+          help: The Delta Sharing Catalog for the resource.
+    params:
+    - arg_name: location
+      api_field: deltaSharingCatalog.location
+      help_text: The location of the catalog.
+      required: true

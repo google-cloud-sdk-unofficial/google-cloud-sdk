@@ -26,14 +26,12 @@ from googlecloudsdk.api_lib.vector_search import args as common_args
 from googlecloudsdk.api_lib.vector_search import clients
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
-from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Query(base.ListCommand):
   """Query data objects from a Vector Search collection."""
 
@@ -89,8 +87,8 @@ class Query(base.ListCommand):
         )
       except Exception as e:
         # Catch other potential errors during DictToMessage conversion
-        raise exceptions.ToolException(
-            f'Error converting JSON filter to message: {e}'
+        raise calliope_exceptions.InvalidArgumentException(
+            '--json-filter', f'Error converting JSON filter to message: {e}'
         )
 
     if (

@@ -67,7 +67,9 @@ class CachedCredentialLoader(CredentialLoader):
   """
 
   def __init__(
-      self, credential_cache_file: str, read_cache_first: bool = True
+      self,
+      credential_cache_file: str,
+      read_cache_first: bool = True,
   ) -> None:
     """Creates CachedCredentialLoader instance.
 

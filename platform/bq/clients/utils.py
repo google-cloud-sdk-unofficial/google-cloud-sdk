@@ -642,12 +642,8 @@ def NormalizeWait(wait):
 
 
 def _ParseDatasetIdentifier(identifier: str) -> Tuple[str, str]:
-  # We need to parse plx datasets separately.
-  if identifier.startswith('plx.google:'):
-    return 'plx.google', identifier[len('plx.google:') :]
-  else:
-    project_id, _, dataset_id = identifier.rpartition(':')
-    return project_id, dataset_id
+  project_id, _, dataset_id = identifier.rpartition(':')
+  return project_id, dataset_id
 
 
 def _ShiftInformationSchema(dataset_id: str, table_id: str) -> Tuple[str, str]:

@@ -30,7 +30,6 @@ from googlecloudsdk.core import properties
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class Aggregate(base.Command):
   """Aggregate data objects."""
 

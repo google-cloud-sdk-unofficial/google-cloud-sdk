@@ -14,6 +14,8 @@
 # limitations under the License.
 """Update command to update a security profile group resource."""
 
+import types
+
 from googlecloudsdk.api_lib.network_security.security_profile_groups import spg_api
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.network_security import spg_flags
@@ -39,6 +41,20 @@ _URL_FILTERING_SUPPORTED = (
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
 )
 
+_WILDFIRE_ANALYSIS_SUPPORTED = (
+    base.ReleaseTrack.ALPHA,
+)
+
+_SUPPORTED_PROFILES = [
+    'threat_prevention_profile',
+    'url_filtering_profile',
+    'wildfire_analysis_profile',
+]
+
+_PROJECT_SCOPE_SUPPORTED_TRACKS = (
+    base.ReleaseTrack.ALPHA,
+)
+
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(
@@ -49,7 +65,12 @@ class UpdateProfileGroup(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    spg_flags.AddSecurityProfileGroupResource(parser, cls.ReleaseTrack())
+    project_scope_supported = (
+        cls.ReleaseTrack() in _PROJECT_SCOPE_SUPPORTED_TRACKS
+    )
+    spg_flags.AddSecurityProfileGroupResource(
+        parser, cls.ReleaseTrack(), project_scope_supported
+    )
     spg_flags.AddProfileGroupDescription(parser)
     # TODO: b/349671332 - Remove this conditional once the group is released.
     threat_prevention_group = None
@@ -69,6 +90,8 @@ class UpdateProfileGroup(base.UpdateCommand):
         group=threat_prevention_group,
         required=False,
         arg_aliases=['security-profile'],
+        help_text='Path to Threat Prevention Profile resource.',
+        project_scope_supported=project_scope_supported,
     )
     # TODO: b/349671332 - Remove this conditional once the group is released.
     if cls.ReleaseTrack() in _URL_FILTERING_SUPPORTED:
@@ -85,7 +108,26 @@ class UpdateProfileGroup(base.UpdateCommand):
           cls.ReleaseTrack(),
           'url-filtering-profile',
           group=url_filtering_group,
-          required=False
+          required=False,
+          help_text='Path to URL Filtering Profile resource.',
+          project_scope_supported=project_scope_supported,
+      )
+    if cls.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED:
+      wildfire_analysis_group = parser.add_group(mutex=True)
+      wildfire_analysis_group.add_argument(
+          '--clear-wildfire-analysis-profile',
+          action='store_true',
+          help='''\
+            Clear the wildfire-analysis-profile field.
+          ''',
+      )
+      spg_flags.AddSecurityProfileResource(
+          parser,
+          cls.ReleaseTrack(),
+          'wildfire-analysis-profile',
+          group=wildfire_analysis_group,
+          required=False,
+          help_text='Path to Wildfire Analysis Profile resource.',
       )
     labels_util.AddUpdateLabelsFlags(parser)
     base.ASYNC_FLAG.AddToParser(parser)
@@ -97,22 +139,18 @@ class UpdateProfileGroup(base.UpdateCommand):
     ).labels
 
   def Run(self, args):
-    client = spg_api.Client(self.ReleaseTrack())
-    security_profile_group = args.CONCEPTS.security_profile_group.Parse()
-    threat_prevention_profile = (
-        args.CONCEPTS.threat_prevention_profile.Parse()
-        if args.threat_prevention_profile
-        else None
-    )
-    if (
-        self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
-        and args.url_filtering_profile
-    ):
-      url_filtering_profile = args.CONCEPTS.url_filtering_profile.Parse()
-    else:
-      url_filtering_profile = None
+    result = args.CONCEPTS.security_profile_group.Parse()
+    security_profile_group = result.result
+
+    profiles = self.ParseSecurityProfiles(args)
     description = args.description
     is_async = args.async_
+
+    project_scoped = (
+        result.concept_type.name
+        == spg_flags.PROJECT_SECURITY_PROFILE_GROUP_RESOURCE_COLLECTION
+    )
+    client = spg_api.Client(self.ReleaseTrack(), project_scoped)
 
     labels_update = labels_util.ProcessUpdateArgsLazy(
         args,
@@ -120,20 +158,19 @@ class UpdateProfileGroup(base.UpdateCommand):
         orig_labels_thunk=lambda: self.getLabel(client, security_profile_group),
     )
 
-    if args.location != 'global':
-      raise core_exceptions.Error(
-          'Only `global` location is supported, but got: %s' % args.location
-      )
-
     update_mask = []
-    if (threat_prevention_profile is not None
+    if (profiles.threat_prevention_profile is not None
         or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
         and args.clear_threat_prevention_profile):
       update_mask.append('threatPreventionProfile')
-    if (url_filtering_profile is not None
+    if (profiles.url_filtering_profile is not None
         or self.ReleaseTrack() in _URL_FILTERING_SUPPORTED
         and args.clear_url_filtering_profile):
       update_mask.append('urlFilteringProfile')
+    if (profiles.wildfire_analysis_profile is not None
+        or self.ReleaseTrack() in _WILDFIRE_ANALYSIS_SUPPORTED
+        and args.clear_wildfire_analysis_profile):
+      update_mask.append('wildfireAnalysisProfile')
 
     if description is not None:
       update_mask.append('description')
@@ -148,11 +185,14 @@ class UpdateProfileGroup(base.UpdateCommand):
     response = client.UpdateSecurityProfileGroup(
         security_profile_group_name=security_profile_group.RelativeName(),
         description=description if description is not None else None,
-        threat_prevention_profile=threat_prevention_profile.RelativeName()
-        if threat_prevention_profile is not None
+        threat_prevention_profile=profiles.threat_prevention_profile.RelativeName()
+        if profiles.threat_prevention_profile is not None
         else None,
-        url_filtering_profile=url_filtering_profile.RelativeName()
-        if url_filtering_profile is not None
+        url_filtering_profile=profiles.url_filtering_profile.RelativeName()
+        if profiles.url_filtering_profile is not None
+        else None,
+        wildfire_analysis_profile=profiles.wildfire_analysis_profile.RelativeName()
+        if profiles.wildfire_analysis_profile is not None
         else None,
         update_mask=','.join(update_mask),
         labels=labels_update.GetOrNone(),
@@ -175,6 +215,18 @@ class UpdateProfileGroup(base.UpdateCommand):
         ),
         has_result=True,
     )
+
+  def ParseSecurityProfiles(self, args):
+    """Parses security profiles from args."""
+    profiles = {}
+
+    for supported_profile in _SUPPORTED_PROFILES:
+      profiles[supported_profile] = None
+      if getattr(args, supported_profile, None):
+        result = getattr(args.CONCEPTS, supported_profile).Parse()
+        profiles[supported_profile] = result.result
+
+    return types.SimpleNamespace(**profiles)
 
 
 UpdateProfileGroup.detailed_help = _detailed_help

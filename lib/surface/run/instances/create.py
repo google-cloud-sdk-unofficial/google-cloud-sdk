@@ -53,6 +53,7 @@ Container Flags
   group.AddArgument(
       flags.ImageArg(image=EXAMPLE_INSTANCE_IMAGE, required=False)
   )
+  group.AddArgument(flags.PortArg())
   group.AddArgument(flags.MutexEnvVarsFlags(release_track=release_track))
   group.AddArgument(flags.MemoryFlag())
   group.AddArgument(flags.CpuFlag())
@@ -115,6 +116,8 @@ class Create(base.Command):
     flags.AddVolumesFlags(parser, cls.ReleaseTrack())
     flags.AddGpuTypeFlag(parser)
     flags.GpuZonalRedundancyFlag(parser)
+    flags.AddIngressFlag(parser)
+    flags.AddInvokerIamCheckFlag(parser)
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)

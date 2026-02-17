@@ -39,7 +39,6 @@
     - arg_name: advertised-routes
       api_field: googleCloudNetworkconnectivityV1betaTransport.advertisedRoutes
       help_text: List of routes to advertise from the VPC `network` toward the provider.
-      required: true
       metavar: CIDR_RANGE
     - group:
         mutex: true

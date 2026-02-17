@@ -26,6 +26,8 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.command_lib.run import pretty_print
 from googlecloudsdk.command_lib.run import up
 from googlecloudsdk.command_lib.run.compose import compose_resource
+from googlecloudsdk.command_lib.run.compose import exceptions as compose_exceptions
+from googlecloudsdk.command_lib.run.compose import exit_codes
 from googlecloudsdk.command_lib.run.compose import tracker as stages
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
@@ -104,7 +106,9 @@ class Up(base.BinaryBackedCommand):
           'resource_error',
           error_message,
       )
-      raise exceptions.ConfigurationError(error_message)
+      raise compose_exceptions.GoBinaryError(
+          error_message, resource_response.exit_code
+      )
     try:
       config_obj = compose_resource.ResourcesConfig.from_json(
           resource_response.stdout[0]
@@ -114,8 +118,9 @@ class Up(base.BinaryBackedCommand):
 
       if not config_obj.project:
       # TODO: b/474246517 - Fix error message type.
-        raise exceptions.ConfigurationError(
-            'Ccompose_ould not determine project name from compose file.'
+        raise compose_exceptions.GcloudError(
+            'Could not determine project name from compose file.',
+            exit_code=exit_codes.PROJECT_NAME_MISSING,
         )
 
       project_id = properties.VALUES.core.project.Get(required=True)
@@ -180,19 +185,33 @@ class Up(base.BinaryBackedCommand):
             'translate_error',
             error_message,
         )
-        raise exceptions.ConfigurationError(error_message)
+        raise compose_exceptions.GoBinaryError(
+            error_message, response.exit_code
+        )
 
       return response
-    except Exception:
+    except Exception as e:
       log.debug(f'Raw output: {resource_response.stdout}')
-      raise
+      raise compose_exceptions.GcloudError(
+          str(e), exit_codes.UNKNOWN_ERROR
+      ) from e
 
   def Run(self, args):
     """Deploy a container from the source Compose file to Cloud Run."""
     log.status.Print('Deploying from Compose to Cloud Run...')
-    region = flags.GetRegion(args, prompt=True)
+    try:
+      region = flags.GetRegion(args, prompt=True)
+    except properties.RequiredPropertyError as e:
+      raise compose_exceptions.GcloudError(
+          str(e), exit_codes.REGION_NOT_SET
+      )
     self._SetRegionConfig(region)
-    project = properties.VALUES.core.project.Get(required=True)
+    try:
+      project = properties.VALUES.core.project.Get(required=True)
+    except properties.RequiredPropertyError as e:
+      raise compose_exceptions.GcloudError(
+          str(e), exit_codes.PROJECT_NOT_SET
+      )
     project_number = projects_util.GetProjectNumber(project)
     repo = self._GenerateRepositoryName(
         project,
@@ -246,7 +265,8 @@ class Up(base.BinaryBackedCommand):
       if os.path.exists(filename):
         return filename
     raise exceptions.ConfigurationError(
-        'No compose file found. Please provide a compose file.'
+        'No compose file found. Please provide a compose file.',
+        exit_code=exit_codes.COMPOSE_FILE_NOT_FOUND,
     )
 
   def _CreateARRepository(self, docker_repo):

@@ -21,11 +21,13 @@ from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions as c_exceptions
 from googlecloudsdk.command_lib.ai import constants
 from googlecloudsdk.command_lib.ai import endpoint_util
 from googlecloudsdk.command_lib.ai.region_util import (
     _IsDefaultUniverse,
 )
+from googlecloudsdk.core import properties
 
 _SHORT_NAME_FORMAT = (
     'format("{0:s}@{1:s}/{2:s}", name, versionId,'
@@ -138,8 +140,16 @@ class List(base.ListCommand):
       if args.page_size is None:
         args.page_size = 100
 
-    region = 'us-central1' if _IsDefaultUniverse() else None
-    with endpoint_util.AiplatformEndpointOverrides(version, region=region):
+    if _IsDefaultUniverse():
+      api_region = 'us-central1'
+    else:
+      api_region = properties.VALUES.ai.region.Get()
+      if not api_region:
+        raise c_exceptions.RequiredArgumentException(
+            'ai/region',
+            'The [ai/region] property must be set in this environment.',
+        )
+    with endpoint_util.AiplatformEndpointOverrides(version, region=api_region):
       mg_client = client_mg.ModelGardenClient(version)
       return mg_client.ListPublisherModels(
           limit=args.limit,

@@ -1,0 +1,128 @@
+# -*- coding: utf-8 -*- #
+# Copyright 2026 Google LLC. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+- release_tracks:
+  - ALPHA
+  auto_generated: false
+  help_text:
+    brief: Create profiler sessions
+    description: Create a profiler session
+    examples: |-
+      To create the profiler session, run:
+
+          $ {command} --location=us-central1 --machine-learning-run=my-ml-run --targets=my-target-1
+  arguments:
+    params:
+    - help_text: |-
+        Identifier. The name of the profiler session.
+        Format:
+        projects/{project}/locations/{location}/machineLearningRuns/{machine_learning_run}/profilerSessions/{profiler_session}
+      is_positional: true
+      is_primary_resource: true
+      request_id_field: profilerSessionId
+      resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs_profiler_sessions
+      required: true
+    - arg_name: is-trace-enabled
+      api_field: profilerSession.isTraceEnabled
+      action: store_true
+      required: false
+      type: bool
+      help_text: |-
+        Customer setting to enable trace level details for the session.
+      default: null
+    - arg_name: duration
+      api_field: profilerSession.duration
+      required: true
+      repeated: false
+      type: googlecloudsdk.core.util.times:ParseDuration
+      processor: googlecloudsdk.core.util.times:FormatDurationForJson
+      help_text: |-
+        Duration for the profiler session.
+    - arg_name: targets
+      help_text: |-
+        List of profiler targets.
+        Targets on which profiler session to be started. If empty, control
+        plan shall start profiler session on all the targets associated with
+        ML Run.
+      is_positional: false
+      is_primary_resource: false
+      resource_spec: !REF googlecloudsdk.command_lib.mldiagnostics.machine_learning_run.v1alpha_resources:projects_locations_machine_learning_runs_profiler_targets
+      resource_method_params:
+        profilerSession.profilerTargets: '{__relative_name__}'
+      required: false
+      repeated: true
+    - arg_name: host-tracer-level
+      api_field: profilerSession.hostTracerLevel
+      required: false
+      default: host-tracer-level-info
+      help_text: |-
+        Host tracer level for the session. If the field is not set or unspecified,
+        the default is `HOST_TRACER_LEVEL_INFO`.
+      choices:
+      - arg_value: host-tracer-level-disabled
+        enum_value: HOST_TRACER_LEVEL_DISABLED
+        help_text: |-
+          Tracer level is disabled.
+      - arg_value: host-tracer-level-critical
+        enum_value: HOST_TRACER_LEVEL_CRITICAL
+        help_text: |-
+          Tracer level is critical.
+      - arg_value: host-tracer-level-info
+        enum_value: HOST_TRACER_LEVEL_INFO
+        help_text: |-
+          Tracer level is info.
+      - arg_value: host-tracer-level-verbose
+        enum_value: HOST_TRACER_LEVEL_VERBOSE
+        help_text: |-
+          Tracer level is verbose.
+    - arg_name: device-tracer-level
+      api_field: profilerSession.deviceTracerLevel
+      required: false
+      default: device-tracer-level-enabled
+      help_text: |-
+        Device tracer level for the session. If the field is not set or
+        unspecified, the default is `DEVICE_TRACER_LEVEL_ENABLED`.
+      choices:
+      - arg_value: device-tracer-level-disabled
+        enum_value: DEVICE_TRACER_LEVEL_DISABLED
+        help_text: |-
+          Tracer level is disabled.
+      - arg_value: device-tracer-level-enabled
+        enum_value: DEVICE_TRACER_LEVEL_ENABLED
+        help_text: |-
+          Tracer level is enabled.
+    - arg_name: python-tracer-level
+      api_field: profilerSession.pythonTracerLevel
+      required: false
+      default: python-tracer-level-disabled
+      help_text: |-
+        Python tracer level for the session. If the field is not set or
+        unspecified, the default is `PYTHON_TRACER_LEVEL_DISABLED`.
+      choices:
+      - arg_value: python-tracer-level-disabled
+        enum_value: PYTHON_TRACER_LEVEL_DISABLED
+        help_text: |-
+          Tracer level is disabled.
+      - arg_value: python-tracer-level-enabled
+        enum_value: PYTHON_TRACER_LEVEL_ENABLED
+        help_text: |-
+          Tracer level is enabled.
+  request:
+    api_version: v1alpha
+    collection:
+    - hypercomputecluster.projects.locations.machineLearningRuns.profilerSessions
+    method: create
+  async:
+    collection:
+    - hypercomputecluster.projects.locations.operations

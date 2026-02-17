@@ -1466,6 +1466,10 @@
         "name": {
           "description": "Identifier. The resource name of the reservation group, e.g., `projects\/*\/locations\/*\/reservationGroups\/team1-prod`. The reservation_group_id must only contain lower case alphanumeric characters or dashes. It must start with a letter and must not end with a dash. Its maximum length is 64 characters.",
           "type": "string"
+        },
+        "parentGroup": {
+          "description": "Optional. The parent reservation group of the reservation group. Format: `projects\/*\/locations\/*\/reservationGroups\/team1-prod` for non-root reservation groups, or `projects\/*\/locations\/*` for root reservation groups.",
+          "type": "string"
         }
       }
     },
@@ -2614,6 +2618,41 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
                   "description": "Lists all the reservation groups for the project in the specified location."
+                },
+                "patch": {
+                  "id": "bigqueryreservation.projects.locations.reservationGroups.patch",
+                  "path": "v1/{+name}",
+                  "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/reservationGroups/{reservationGroupsId}",
+                  "httpMethod": "PATCH",
+                  "parameters": {
+                    "name": {
+                      "description": "Identifier. The resource name of the reservation group, e.g., `projects\/*\/locations\/*\/reservationGroups\/team1-prod`. The reservation_group_id must only contain lower case alphanumeric characters or dashes. It must start with a letter and must not end with a dash. Its maximum length is 64 characters.",
+                      "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/reservationGroups\/[^\/]+$",
+                      "location": "path",
+                      "required": true,
+                      "type": "string"
+                    },
+                    "updateMask": {
+                      "description": "Optional. Standard field mask for the set of fields to be updated.",
+                      "location": "query",
+                      "type": "string",
+                      "format": "google-fieldmask"
+                    }
+                  },
+                  "parameterOrder": [
+                    "name"
+                  ],
+                  "request": {
+                    "$ref": "ReservationGroup"
+                  },
+                  "response": {
+                    "$ref": "ReservationGroup"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/bigquery",
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ],
+                  "description": "Updates an existing reservation group resource."
                 }
               }
             }

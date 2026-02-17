@@ -243,6 +243,7 @@ def ParseCreateNodePoolOptionsBase(args):
       respect_pdb_during_node_pool_deletion=args.respect_pdb_during_node_pool_deletion,
       enable_lustre_multi_nic=args.enable_lustre_multi_nic,
       subnetwork=args.subnetwork,
+      node_architecture_taint_behavior=args.node_architecture_taint_behavior,
   )
 
 
@@ -269,6 +270,7 @@ class Create(base.CreateCommand):
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
@@ -421,6 +423,7 @@ class CreateBeta(Create):
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=False)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
@@ -619,6 +622,7 @@ class CreateAlpha(Create):
     flags.AddMinCpuPlatformFlag(parser, for_node_pool=True)
     flags.AddWorkloadMetadataFlag(parser, use_mode=False)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
+    flags.AddNodeArchitectureTaintBehaviorFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
     flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
     flags.AddSandboxFlag(parser)

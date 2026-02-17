@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import log
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Google Compute Engine rollout plan."""
@@ -50,7 +50,7 @@ class Create(base.CreateCommand):
             name='name', help_text='Name of rollout plan to create.'
         ),
         project=concepts.DEFAULT_PROJECT_ATTRIBUTE_CONFIG,
-        api_version='alpha',
+        api_version='beta',
     )
     presentation_spec = presentation_specs.ResourcePresentationSpec(
         'name',
@@ -85,7 +85,7 @@ class Create(base.CreateCommand):
     rollout_plan_ref = args.CONCEPTS.name.Parse()
 
     waves = rollout_plans_util.LoadWavesFromFileAndAddToRequest(
-        args.waves_from_file
+        args.waves_from_file, messages
     )
 
     rollout_plan = messages.RolloutPlan(

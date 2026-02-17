@@ -189,6 +189,17 @@ class Deploy(base.Command):
     ).AddToParser(parser)
 
     base.Argument(
+        '--disable-dedicated-endpoint',
+        action='store_true',
+        default=False,
+        required=False,
+        help=(
+            'If true, the dedicated endpoint will be disabled and the deployed'
+            ' model will be exposed through the shared DNS.'
+        ),
+    ).AddToParser(parser)
+
+    base.Argument(
         '--enable-fast-tryout',
         action='store_true',
         default=False,
@@ -337,7 +348,7 @@ class Deploy(base.Command):
     version = constants.BETA_VERSION
     is_hf_model = '@' not in args.model
 
-    region = 'us-central1' if _IsDefaultUniverse() else None
+    region = 'us-central1' if _IsDefaultUniverse() else args.region
     with endpoint_util.AiplatformEndpointOverrides(version, region=region):
       # Custom weights model deployment.
       if is_custom_weights_model:

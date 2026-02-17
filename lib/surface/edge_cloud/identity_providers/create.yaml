@@ -30,6 +30,10 @@
           help_text: SAML Identity Provider configuration file.
           api_field: identityProvider.samlConfig
           processor: googlecloudsdk.command_lib.edge_cloud.identity_provider.hooks:LoadConfigFromFile
+
+    - arg_name: proxy
+      help_text: Identity Provider proxy endpoint.
+      api_field: identityProvider.proxyUri
     - arg_name: zone
       api_field: identityProvider.zoneId
       required: true

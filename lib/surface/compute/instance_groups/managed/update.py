@@ -80,7 +80,7 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddMigSizeFlag(parser)
-    managed_flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
+    flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlags(parser)
     if cls.support_multi_mig_flag:
@@ -397,9 +397,9 @@ class UpdateGA(base.UpdateCommand):
     )
     if standby_policy:
       patch_instance_group_manager.standbyPolicy = standby_policy
-    if args.suspended_size:
+    if args.IsKnownAndSpecified('suspended_size'):
       patch_instance_group_manager.targetSuspendedSize = args.suspended_size
-    if args.stopped_size:
+    if args.IsKnownAndSpecified('stopped_size'):
       patch_instance_group_manager.targetStoppedSize = args.stopped_size
 
     resource_policies = managed_instance_groups_utils.CreateResourcePolicies(
@@ -434,13 +434,17 @@ class UpdateGA(base.UpdateCommand):
         scope_lister=flags.GetDefaultScopeLister(client),
     )
 
-    if igm_ref.Collection() not in [
-        'compute.instanceGroupManagers',
-        'compute.regionInstanceGroupManagers',
-    ]:
-      raise ValueError(
-          'Unknown reference type {0}'.format(igm_ref.Collection())
+    if igm_ref:
+      collection = (
+          igm_ref[0].Collection()
+          if isinstance(igm_ref, list)
+          else igm_ref.Collection()
       )
+      if collection not in [
+          'compute.instanceGroupManagers',
+          'compute.regionInstanceGroupManagers',
+      ]:
+        raise ValueError('Unknown reference type {0}'.format(collection))
 
     igm_resource = managed_instance_groups_utils.GetInstanceGroupManagerOrThrow(
         igm_ref, client

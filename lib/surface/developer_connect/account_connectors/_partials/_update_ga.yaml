@@ -143,6 +143,23 @@
       spec:
       - api_field: key
       - api_field: value
+    - group:
+        api_field: accountConnector.proxyConfig
+        arg_name: proxy-config
+        clearable: true
+        required: false
+        hidden: true
+        help_text: |-
+          The proxy configuration.
+        params:
+        - arg_name: proxy-config-enabled
+          api_field: accountConnector.proxyConfig.enabled
+          action: store_true_false
+          required: false
+          type: bool
+          help_text: |-
+            Setting this to true allows the git and http proxies to perform actions on
+            behalf of the user configured under the account connector.
     - arg_name: request-id
       api_field: requestId
       required: false
