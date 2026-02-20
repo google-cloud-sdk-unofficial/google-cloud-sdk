@@ -497,23 +497,21 @@ def _AddPatchConfigArguments(parser):
       '--skip-unpatchable-vms',
       action='store_true',
       help="""\
-        If set, enables enhanced reporting for the patch job:
+        Enables enhanced reporting for the patch job. If this flag is set:
 
-        1. Allows the patch job to skip unpatchable instances, reporting them as
-        SKIPPED. An instance can be unpatchable for two reasons:
-
-          a. The instance runs Container-Optimized OS (COS), which cannot be
+        1. The patch job skips instances that cannot be patched
+        and reports them as `SKIPPED`. An instance cannot be patched for two reasons:
+          * The instance runs Container-Optimized OS (COS), which cannot be
           patched.
-
-          b. The instance is part of a managed instance group (MIG), and
+          * The instance is part of a managed instance group (MIG), and
           patching MIG instances is disabled in the patch job's configuration
           (`--mig-instances-allowed` flag is not set).
 
-        2. Reports the patch job as SUCCEEDED if it completes without errors,
-        even if some instances were SKIPPED.
+        2. The patch job is reported as `SUCCEEDED` if it completes without errors,
+        even if some instances are `SKIPPED`.
 
-        3. Reports the patch job as COMPLETED_WITH_INACTIVE_VMS if it completes
-        without errors, but some instances were INACTIVE and were not patched.
+        3. The patch job is reported as `COMPLETED_WITH_INACTIVE_VMS` if it
+        completes without errors, but does not patch instances that are `INACTIVE`.
         """,
   )
 

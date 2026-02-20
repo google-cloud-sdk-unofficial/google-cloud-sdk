@@ -496,6 +496,10 @@ def WrapExpectedDockerlessErrors(optional_image_name=None):
   except (v2_docker_http.TokenRefreshException,
           v2_2_docker_http.TokenRefreshException) as err:
     raise TokenRefreshError(six.text_type(err))
+  except ValueError as e:
+    raise UserRecoverableV2Error(
+        'Invalid response from server: {0}.'.format(six.text_type(e))
+    )
 
 
 def Http(timeout='unset'):

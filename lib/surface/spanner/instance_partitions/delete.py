@@ -27,10 +27,10 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core.console import console_io
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   """Delete a Spanner instance partition. You can't delete the default instance partition using this command."""  # pylint: disable=line-too-long
 

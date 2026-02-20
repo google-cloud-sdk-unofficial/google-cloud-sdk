@@ -22,6 +22,7 @@ import os
 import re
 import sys
 import uuid
+import zipfile
 
 from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
@@ -48,10 +49,9 @@ if sys.version_info >= (3, 6):
 
 
 def _UploadSourceDirToGCS(gcs_client, source, gcs_source_staging, ignore_file):
-  """Uploads a local directory to GCS.
+  """Uploads a local directory to GCS as a zip archive.
 
-  Uploads one file at a time rather than tarballing/zipping for compatibility
-  with the back-end.
+  Uploads a zip archive of the directory for compatibility with the back-end.
 
   Args:
     gcs_client: a storage_api.StorageClient instance for interacting with GCS.
@@ -59,6 +59,9 @@ def _UploadSourceDirToGCS(gcs_client, source, gcs_source_staging, ignore_file):
     gcs_source_staging: resources.Resource, the bucket to upload to. This must
       already exist.
     ignore_file: optional string, a path to a gcloudignore file.
+
+  Returns:
+    The generation number of the uploaded GCS object.
   """
 
   source_snapshot = deterministic_snapshot.DeterministicSnapshot(
@@ -72,17 +75,26 @@ def _UploadSourceDirToGCS(gcs_client, source, gcs_source_staging, ignore_file):
       )
   )
 
-  for file_metadata in source_snapshot.GetSortedFiles():
-    full_local_path = os.path.join(file_metadata.root, file_metadata.path)
+  with files.TemporaryDirectory() as tmp_dir:
+    zip_path = os.path.join(six.ensure_text(tmp_dir), 'source.zip')
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+      for file_metadata in source_snapshot.GetSortedFiles():
+        full_local_path = os.path.join(file_metadata.root, file_metadata.path)
+        zip_info = zipfile.ZipInfo(
+            file_metadata.path, date_time=(1980, 1, 1, 0, 0, 0)
+        )
+        zip_info.compress_type = zipfile.ZIP_DEFLATED
+        zip_file.writestr(
+            zip_info, files.ReadBinaryFileContents(full_local_path)
+        )
 
-    target_obj_ref = 'gs://{0}/{1}/{2}'.format(
-        gcs_source_staging.bucket, gcs_source_staging.object, file_metadata.path
-    )
     target_obj_ref = resources.REGISTRY.Parse(
-        target_obj_ref, collection='storage.objects'
+        'gs://{0}/{1}'.format(
+            gcs_source_staging.bucket, gcs_source_staging.object
+        ),
+        collection='storage.objects',
     )
-
-    gcs_client.CopyFileToGCS(full_local_path, target_obj_ref)
+    return gcs_client.CopyFileToGCS(zip_path, target_obj_ref).generation
 
 
 def _UploadSourceToGCS(
@@ -104,7 +116,7 @@ def _UploadSourceToGCS(
     ignore_file: string, a path to a gcloudignore file.
 
   Returns:
-    A string in the format "gs://path/to/resulting/upload".
+    A string in the format "gs://path/to/resulting/upload#generation".
 
   Raises:
     RequiredArgumentException: if stage-bucket is owned by another project.
@@ -147,8 +159,8 @@ def _UploadSourceToGCS(
     )
 
   # This will look something like this:
-  # "1615850562.234312-044e784992744951b0cd71c0b011edce"
-  staged_object = '{stamp}-{uuid}'.format(
+  # "1615850562.234312-044e784992744951b0cd71c0b011edce.zip"
+  staged_object = '{stamp}-{uuid}.zip'.format(
       stamp=times.GetTimeStampFromDateTime(times.Now()),
       uuid=uuid.uuid4().hex,
   )
@@ -172,13 +184,15 @@ def _UploadSourceToGCS(
         'source is not a directory [{}]'.format(source)
     )
 
-  _UploadSourceDirToGCS(gcs_client, source, gcs_source_staging, ignore_file)
+  generation = _UploadSourceDirToGCS(
+      gcs_client, source, gcs_source_staging, ignore_file
+  )
 
   upload_bucket = 'gs://{0}/{1}'.format(
       gcs_source_staging.bucket, gcs_source_staging.object
   )
 
-  return upload_bucket
+  return '{0}#{1}'.format(upload_bucket, generation)
 
 
 def UpdateDeploymentDeleteRequestWithForce(unused_ref, unused_args, request):
@@ -1268,4 +1282,3 @@ def _DisplayObsoleteTfVersionMessage(
       )
   except apitools_exceptions.HttpError:
     pass
-

@@ -94,5 +94,5 @@ def deploy_gcp_resource(handler: GcpResourceHandler) -> None:
   except (apitools_exceptions.HttpError, ValueError) as e:
     raise ValueError(
         f"Failed to deploy resource '{resource_id}' of type"
-        f" '{resource_type_name}'"
+        f" '{resource_type_name}': {e}"
     ) from e

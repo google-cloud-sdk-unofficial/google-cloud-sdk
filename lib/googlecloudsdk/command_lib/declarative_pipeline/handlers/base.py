@@ -15,10 +15,9 @@
 """Base class for GCP resource handlers."""
 
 import abc
-from typing import Any
+from typing import Any, Optional, Tuple
 from googlecloudsdk.api_lib.util import apis
-from googlecloudsdk.command_lib.declarative_pipeline.deployment_model import AnyResource
-from googlecloudsdk.command_lib.declarative_pipeline.deployment_model import EnvironmentModel
+from googlecloudsdk.command_lib.declarative_pipeline import deployment_model
 
 
 class GcpResourceHandler(abc.ABC):
@@ -29,8 +28,8 @@ class GcpResourceHandler(abc.ABC):
 
   def __init__(
       self,
-      resource: AnyResource,
-      environment: EnvironmentModel,
+      resource: deployment_model.AnyResource,
+      environment: deployment_model.EnvironmentModel,
       dry_run: bool,
       debug: bool = False,
       show_requests: bool = False,
@@ -62,7 +61,8 @@ class GcpResourceHandler(abc.ABC):
     """Finds the existing resource on GCP."""
 
   def get_local_definition(self) -> dict[str, Any]:
-    return self.resource.definition.copy()
+    definition = getattr(self.resource, "definition", None)
+    return definition.copy() if definition else {}
 
   @abc.abstractmethod
   def build_create_request(self, definition: dict[str, Any]) -> Any:
@@ -93,3 +93,20 @@ class GcpResourceHandler(abc.ABC):
         for k, v in local_definition.items()
         if getattr(existing_resource, k, None) != v
     ]
+
+  def wait_for_operation(
+      self, operation: Any
+  ) -> Tuple[Any, Optional[str]]:
+    """Waits for long running operation if applicable and returns result and name.
+
+    The default implementation handles resources that don't return LROs.
+    It returns the operation as is, and resource name for name_to_print.
+    Handlers for resources that return LROs should override this method.
+
+    Args:
+      operation: The operation to wait for, or the result if no LRO.
+
+    Returns:
+      A tuple containing the completed operation and a name to print.
+    """
+    return operation, getattr(operation, "name", None)

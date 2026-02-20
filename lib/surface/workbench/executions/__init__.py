@@ -22,6 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
-class Instances(base.Group):
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+class Executions(base.Group):
   """Workbench executions command group."""

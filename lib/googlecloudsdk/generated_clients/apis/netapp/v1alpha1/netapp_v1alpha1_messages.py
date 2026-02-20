@@ -887,32 +887,29 @@ class ExecuteOntapDeleteResponse(_messages.Message):
   body = _messages.MessageField('BodyValue', 1)
 
 
-class ExecuteOntapListResponse(_messages.Message):
-  r"""Response message for `ExecuteOntapList` API.
+class ExecuteOntapGetResponse(_messages.Message):
+  r"""Response message for `ExecuteOntapGet` API.
 
   Messages:
-    RawResponseValue: The raw `JSON` body of the response.
-    ResultsValueListEntry: A ResultsValueListEntry object.
+    BodyValue: The raw `JSON` body of the response.
 
   Fields:
-    rawResponse: The raw `JSON` body of the response.
-    results: The list of results from the ONTAP `LIST` request.
+    body: The raw `JSON` body of the response.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
-  class RawResponseValue(_messages.Message):
+  class BodyValue(_messages.Message):
     r"""The raw `JSON` body of the response.
 
     Messages:
-      AdditionalProperty: An additional property for a RawResponseValue
-        object.
+      AdditionalProperty: An additional property for a BodyValue object.
 
     Fields:
       additionalProperties: Properties of the object.
     """
 
     class AdditionalProperty(_messages.Message):
-      r"""An additional property for a RawResponseValue object.
+      r"""An additional property for a BodyValue object.
 
       Fields:
         key: Name of the additional property.
@@ -924,33 +921,7 @@ class ExecuteOntapListResponse(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class ResultsValueListEntry(_messages.Message):
-    r"""A ResultsValueListEntry object.
-
-    Messages:
-      AdditionalProperty: An additional property for a ResultsValueListEntry
-        object.
-
-    Fields:
-      additionalProperties: Properties of the object.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      r"""An additional property for a ResultsValueListEntry object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A extra_types.JsonValue attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.MessageField('extra_types.JsonValue', 2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  rawResponse = _messages.MessageField('RawResponseValue', 1)
-  results = _messages.MessageField('ResultsValueListEntry', 2, repeated=True)
+  body = _messages.MessageField('BodyValue', 1)
 
 
 class ExecuteOntapPatchRequest(_messages.Message):
@@ -2548,29 +2519,28 @@ class NetappProjectsLocationsStoragePoolsOntapExecuteOntapDeleteRequest(_message
   object.
 
   Fields:
-    name: Required. The resource name of the ONTAP resource. Format: `projects
-      /{project_number}/locations/{location_id}/storagePools/{storage_pool_id}
-      /ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
+      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
+      l_id}/ontap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
-      pool/ontap/api/my-ontap-resource`.
+      pool/ontap/api/storage/volumes`.
   """
 
-  name = _messages.StringField(1, required=True)
+  ontapPath = _messages.StringField(1, required=True)
 
 
-class NetappProjectsLocationsStoragePoolsOntapExecuteOntapListRequest(_messages.Message):
-  r"""A NetappProjectsLocationsStoragePoolsOntapExecuteOntapListRequest
-  object.
+class NetappProjectsLocationsStoragePoolsOntapExecuteOntapGetRequest(_messages.Message):
+  r"""A NetappProjectsLocationsStoragePoolsOntapExecuteOntapGetRequest object.
 
   Fields:
-    name: Required. The resource name of the ONTAP resource. Format: `projects
-      /{project_number}/locations/{location_id}/storagePools/{storage_pool_id}
-      /ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
+      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
+      l_id}/ontap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
-      pool/ontap/api/my-ontap-resource`.
+      pool/ontap/api/storage/volumes`.
   """
 
-  name = _messages.StringField(1, required=True)
+  ontapPath = _messages.StringField(1, required=True)
 
 
 class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPatchRequest(_messages.Message):
@@ -2580,15 +2550,15 @@ class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPatchRequest(_messages
   Fields:
     executeOntapPatchRequest: A ExecuteOntapPatchRequest resource to be passed
       as the request body.
-    name: Required. The resource name of the ONTAP resource. Format: `projects
-      /{project_number}/locations/{location_id}/storagePools/{storage_pool_id}
-      /ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
+      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
+      l_id}/ontap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
-      pool/ontap/api/my-ontap-resource`.
+      pool/ontap/api/storage/volumes`.
   """
 
   executeOntapPatchRequest = _messages.MessageField('ExecuteOntapPatchRequest', 1)
-  name = _messages.StringField(2, required=True)
+  ontapPath = _messages.StringField(2, required=True)
 
 
 class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest(_messages.Message):
@@ -2598,15 +2568,15 @@ class NetappProjectsLocationsStoragePoolsOntapExecuteOntapPostRequest(_messages.
   Fields:
     executeOntapPostRequest: A ExecuteOntapPostRequest resource to be passed
       as the request body.
-    name: Required. The resource name of the ONTAP resource. Format: `projects
-      /{project_number}/locations/{location_id}/storagePools/{storage_pool_id}
-      /ontap/{ontap_resource_path}`. For example:
+    ontapPath: Required. The resource path of the ONTAP resource. Format: `pro
+      jects/{project_number}/locations/{location_id}/storagePools/{storage_poo
+      l_id}/ontap/{ontap_resource_path}`. For example:
       `projects/123456789/locations/us-central1/storagePools/my-storage-
-      pool/ontap/api/my-ontap-resource`.
+      pool/ontap/api/storage/volumes`.
   """
 
   executeOntapPostRequest = _messages.MessageField('ExecuteOntapPostRequest', 1)
-  name = _messages.StringField(2, required=True)
+  ontapPath = _messages.StringField(2, required=True)
 
 
 class NetappProjectsLocationsStoragePoolsPatchRequest(_messages.Message):

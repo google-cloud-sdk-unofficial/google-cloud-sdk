@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.UniverseCompatible
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner database."""
 

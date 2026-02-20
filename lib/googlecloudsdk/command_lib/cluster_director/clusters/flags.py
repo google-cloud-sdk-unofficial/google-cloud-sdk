@@ -19,23 +19,18 @@ import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import parser_arguments
-from googlecloudsdk.calliope.exceptions import core_exceptions
 from googlecloudsdk.command_lib.cluster_director.clusters import flag_types
-
-
-class ClusterDirectorError(core_exceptions.Error):
-  """Error for Cluster Director commands."""
 
 
 def AddConfig(parser, api_version=None, required=False, hidden=False):
   """Adds a config flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for config: {api_version!r}")
   parser.add_argument(
       "--config",
       help="Configuration of the cluster specs in the form of a JSON object.",
       type=arg_parsers.ArgObject(
-          spec=flag_types.API_VERSION_TO_CLUSTER_FLAG_TYPE[api_version],
+          spec=flag_types.FlagTypes(api_version).GetClusterFlagType(),
           enable_shorthand=True,
       ),
       required=required,
@@ -45,8 +40,10 @@ def AddConfig(parser, api_version=None, required=False, hidden=False):
 
 def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
   """Adds an update mask flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for update-mask: {api_version!r}"
+    )
   parser.add_argument(
       "--update-mask",
       help=textwrap.dedent("""
@@ -62,8 +59,10 @@ def AddUpdateMask(parser, api_version=None, required=False, hidden=False):
 
 def AddDescription(parser, api_version=None, hidden=False):
   """Adds a description flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for description: {api_version!r}"
+    )
   parser.add_argument(
       "--description",
       help=textwrap.dedent("""
@@ -84,8 +83,8 @@ def AddLabels(
     include_update_flags=False,
 ):
   """Adds a labels flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for labels: {api_version!r}")
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
     name = f"add-{name}"
@@ -115,8 +114,10 @@ def AddLabels(
 
 def AddCreateNetwork(parser, api_version=None, hidden=False):
   """Adds a create network flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for create-network: {api_version!r}"
+    )
   parser.add_argument(
       "--create-network",
       help=textwrap.dedent("""
@@ -135,8 +136,8 @@ def AddCreateNetwork(parser, api_version=None, hidden=False):
 
 def AddNetworkSource(parser, api_version=None, required=False, hidden=False):
   """Adds a network flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for network: {api_version!r}")
   parser.add_argument(
       "--network",
       help=textwrap.dedent("""
@@ -154,8 +155,10 @@ def AddNetworkSource(parser, api_version=None, required=False, hidden=False):
 
 def AddNetworkProject(parser, api_version=None, hidden=False):
   """Adds a network project flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for network-project: {api_version!r}"
+    )
   parser.add_argument(
       "--network-project",
       help=textwrap.dedent("""\
@@ -169,8 +172,8 @@ def AddNetworkProject(parser, api_version=None, hidden=False):
 
 def AddSubnetSource(parser, api_version=None, required=False, hidden=False):
   """Adds a subnet flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for subnet: {api_version!r}")
   parser.add_argument(
       "--subnet",
       help=textwrap.dedent("""
@@ -194,8 +197,10 @@ def AddCreateFilestores(
     include_update_flags=False,
 ):
   """Adds a create filestores flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for create-filestores: {api_version!r}"
+    )
   if include_update_flags:
     name = "add-new-filestore-instances"
   parser.add_argument(
@@ -223,7 +228,7 @@ def AddCreateFilestores(
         Defaults:
         - protocol: NFSV3
       """),
-      type=flag_types.FILESTORES_OBJECT,
+      type=flag_types.FlagTypes(api_version).GetFilestoresObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -237,8 +242,8 @@ def AddFilestores(
     include_update_flags=False,
 ):
   """Adds a filestores flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for filestores: {api_version!r}")
   remove_flag_name = "remove-filestore-instances"
   if include_update_flags:
     name = "add-filestore-instances"
@@ -275,16 +280,16 @@ def AddCreateGcsBuckets(
     include_update_flags: bool = False,
 ):
   """Adds a create Google Cloud Storage buckets flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for create-buckets: {api_version!r}"
+    )
   if include_update_flags:
     name = "add-new-storage-buckets"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
         Parameters to create a Google Cloud Storage bucket.
 
-        For e.g. --{name} name={{bucket-path}},storageClass=STANDARD,autoclassTerminalStorageClass=TERMINAL_STORAGE_CLASS_NEARLINE,enableHNS=true
+        For e.g. --{name} name={{bucket-path}},storageClass=STANDARD,terminalStorageClass=TERMINAL_STORAGE_CLASS_NEARLINE,enableHNS=true
 
         Supported storageClass values:
         - STANDARD
@@ -292,7 +297,7 @@ def AddCreateGcsBuckets(
         - COLDLINE
         - ARCHIVE
 
-        Supported autoclassTerminalStorageClass values:
+        Supported terminalStorageClass values:
         - TERMINAL_STORAGE_CLASS_NEARLINE
         - TERMINAL_STORAGE_CLASS_ARCHIVE
 
@@ -302,8 +307,29 @@ def AddCreateGcsBuckets(
         Note:
         - Either storageClass or enableAutoclass can be set.
         - HNS: Hierarchical namespace
-      """),
-      type=flag_types.GCS_BUCKETS_OBJECT,
+      """)
+  beta_help = textwrap.dedent(f"""
+        Parameters to create a Google Cloud Storage bucket.
+
+        For e.g. --{name} name={{bucket-path}},storageClass=STANDARD,enableHNS=true
+
+        Supported storageClass values:
+        - STANDARD
+        - NEARLINE
+        - COLDLINE
+        - ARCHIVE
+
+        Defaults:
+        - storageClass: STANDARD
+
+        Note:
+        - Either storageClass or enableAutoclass can be set.
+        - HNS: Hierarchical namespace
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetGcsBucketsObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -317,8 +343,8 @@ def AddGcsBuckets(
     include_update_flags: bool = False,
 ):
   """Adds a Google Cloud Storage buckets flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for buckets: {api_version!r}")
   remove_flag_name = f"remove-storage-{name}"
   if include_update_flags:
     name = f"add-storage-{name}"
@@ -355,8 +381,10 @@ def AddCreateLustres(
     include_update_flags: bool = False,
 ):
   """Adds a create lustres flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for create-lustres: {api_version!r}"
+    )
   if include_update_flags:
     name = "add-new-lustre-instances"
   parser.add_argument(
@@ -364,7 +392,9 @@ def AddCreateLustres(
       help=textwrap.dedent(f"""
         Parameters to create a Lustre instance.
 
-        For e.g. --{name} name=locations/{{location}}/instances/{{lustre}},capacityGb={{lustreSize}},filesystem={{filesystem}}
+        For e.g. --{name} name=locations/{{location}}/instances/{{lustre}},capacityGb={{lustreSize}},filesystem={{filesystem}},perUnitStorageThroughput=1000
+
+        Values for perUnitStorageThroughput: 125, 250, 500, 1000
       """),
       type=flag_types.LUSTRES_OBJECT,
       action=arg_parsers.FlattenAction(),
@@ -380,8 +410,8 @@ def AddLustres(
     include_update_flags=False,
 ):
   """Adds a lustres flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(f"Unsupported API version for lustres: {api_version!r}")
   remove_flag_name = "remove-lustre-instances"
   if include_update_flags:
     name = "add-lustre-instances"
@@ -418,26 +448,27 @@ def AddOnDemandInstances(
     include_update_flags=False,
 ):
   """Adds an on demand instances flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for on-demand-instances: {api_version!r}"
+    )
   remove_flag_name = f"remove-{name}"
-  spec = {
-      "id": str,
-      "zone": str,
-      "machineType": str,
-  }
-  if api_version == "v1alpha":
-    spec["atmTags"] = flag_types.LABEL
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
+        Parameters to define cluster on demand instances.
+
+        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},atmTags="tag1=val1"
+      """)
+  beta_help = textwrap.dedent(f"""
         Parameters to define cluster on demand instances.
 
         For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}}
-      """),
-      type=flag_types.ON_DEMAND_INSTANCES_OBJECT,
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetOnDemandInstancesObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -463,22 +494,27 @@ def AddSpotInstances(
     include_update_flags=False,
 ):
   """Adds an spot instances flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for spot-instances: {api_version!r}"
+    )
   remove_flag_name = f"remove-{name}"
-  spec = {"id": str, "zone": str, "machineType": str, "terminationAction": str}
-  if api_version == "v1alpha":
-    spec["atmTags"] = flag_types.LABEL
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
+        Parameters to define cluster spot instances.
+
+        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},atmTags="tag1=val1"
+      """)
+  beta_help = textwrap.dedent(f"""
         Parameters to define cluster spot instances.
 
         For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}}
-      """),
-      type=flag_types.SPOT_INSTANCES_OBJECT,
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetSpotInstancesObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -504,28 +540,32 @@ def AddReservedInstances(
     include_update_flags=False,
 ):
   """Adds an reserved instances flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for reserved-instances: {api_version!r}"
+    )
   remove_flag_name = f"remove-{name}"
-  spec = {
-      "id": str,
-      "reservation": str,
-      "machineType": str,
-  }
-  if api_version == "v1alpha":
-    spec["atmTags"] = flag_types.LABEL
-    spec["reservationBlock"] = str
-    spec["reservationSubBlock"] = str
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
         Parameters to define cluster reserved instances.
 
         For e.g. --{name} id={{computeId}},reservation=zones/{{zone}}/reservations/{{reservation}}
-      """),
-      type=flag_types.RESERVED_INSTANCES_OBJECT,
+
+        Exactly one of reservation, reservation-block, or reservation-sub-block must be provided.
+        reservation: The name of the reservation to use, in the format zones/{{zone}}/reservations/{{reservation}}.
+        reservationBlock: The name of the reservation block to use, in the format zones/{{zone}}/reservations/{{reservation}}/reservationBlocks/{{reservation_block}}.
+        reservationSubBlock: The name of the reservation sub-block to use, in the format zones/{{zone}}/reservations/{{reservation}}/reservationBlocks/{{reservation_block}}/reservationSubBlocks/{{reservation_sub_block}}.
+      """)
+  beta_help = textwrap.dedent(f"""
+        Parameters to define cluster reserved instances.
+
+        For e.g. --{name} id={{computeId}},reservation=zones/{{zone}}/reservations/{{reservation}}
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetReservedInstancesObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -551,27 +591,27 @@ def AddFlexStartInstances(
     include_update_flags=False,
 ):
   """Adds an Flex Start instances flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for flex-start-instances: {api_version!r}"
+    )
   remove_flag_name = f"remove-{name}"
-  spec = {
-      "id": str,
-      "zone": str,
-      "machineType": str,
-      "maxDuration": str,
-  }
-  if api_version == "v1alpha":
-    spec["atmTags"] = flag_types.LABEL
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
+        Parameters to define cluster Flex Start instances.
+
+        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},maxDuration=10000s,atmTags="tag1=val1"
+      """)
+  beta_help = textwrap.dedent(f"""
         Parameters to define cluster Flex Start instances.
 
         For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},maxDuration=10000s
-      """),
-      type=flag_types.FLEX_START_INSTANCES_OBJECT,
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetFlexStartInstancesObject(),
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -598,21 +638,40 @@ def AddSlurmNodeSets(
     include_update_flags=False,
 ):
   """Adds a slurm node sets flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for slurm-node-sets: {api_version!r}"
+    )
   update_flag_name = f"update-{name}"
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
-        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},startupScript="echo hello",labels="{{key1=value1,key2=value2}}"
+        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gce,staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},startupScript="echo hello",labels="{{key1=value1,key2=value2}}"
 
-        To configure a node set backed by GKE, use container-resource-labels or container-startup-script.
-        For e.g. --{name} id={{nodesetId}},container-resource-labels="key1=val1",container-startup-script="echo hello"
+        To configure a node set backed by Google Kubernetes Engine, use type=gke. If type=gke is
+        specified, Compute Engine specific fields (labels, startupScript, bootDisk,
+        startupScriptTimeout) cannot be used, but container-specific fields
+        (container-resource-labels, container-startup-script) may be used.
+        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gke
+        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gke,container-resource-labels="key1=val1",container-startup-script="echo hello"
+
+        Defaults:
+        - staticNodeCount: 1
+        - type: gce
+
+        Note:
+        - startupScript:
+          - Either str or file_path
+          - For file_path, only bash file format (.sh or .bash) is supported.
+          - For file_path, only absolute path is supported.
+      """)
+  beta_help = textwrap.dedent(f"""
+        Parameters to define slurm cluster nodeset config.
+
+        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},computeInstance=[startupScript="echo hello",labels="key1=value1,key2=value2"]
 
         Defaults:
         - staticNodeCount: 1
@@ -622,24 +681,35 @@ def AddSlurmNodeSets(
           - Either str or file_path
           - For file_path, only bash file format (.sh or .bash) is supported.
           - For file_path, only absolute path is supported.
-      """),
-      type=flag_types.SLURM_NODE_SETS_OBJECT,
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetSlurmNodeSetsObject(),
       action=arg_parsers.FlattenAction(),
       required=required,
       hidden=hidden,
   )
   if include_update_flags:
-    parser.add_argument(
-        f"--{update_flag_name}",
-        help=textwrap.dedent(f"""
+    alpha_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster nodeset config.
 
           For e.g. --{update_flag_name} id={{nodesetId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}}
 
           To update a node set backed by GKE, use container-resource-labels or container-startup-script.
-          For e.g. --{update_flag_name} id={{nodesetId}},container-resource-labels="key1=val1",container-startup-script="echo hello"
-        """),
-        type=flag_types.SLURM_NODE_SETS_OBJECT,
+          For e.g. --{update_flag_name} id={{nodesetId}},type=gke,container-resource-labels="key1=val1",container-startup-script="echo hello"
+        """)
+    beta_update_help = textwrap.dedent(f"""
+          Parameters to define and update slurm cluster nodeset config.
+
+          For e.g. --{update_flag_name} id={{nodesetId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},computeInstance=[startupScript="echo hello"]
+        """)
+    parser.add_argument(
+        f"--{update_flag_name}",
+        help=alpha_update_help
+        if api_version == "v1alpha"
+        else beta_update_help,
+        type=flag_types.FlagTypes(api_version).GetSlurmNodeSetsObject(),
         action=arg_parsers.FlattenAction(),
         required=required,
         hidden=hidden,
@@ -667,33 +737,49 @@ def AddSlurmPartitions(
     include_update_flags=False,
 ):
   """Adds a slurm partitions flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for slurm-partitions: {api_version!r}"
+    )
   update_flag_name = f"update-{name}"
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
     name = f"add-{name}"
-  parser.add_argument(
-      f"--{name}",
-      help=textwrap.dedent(f"""
+  alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster partitions.
 
-        For e.g. --{name} id={{partitionId}},nodesetIds=[{{nodesetId1}},{{nodesetId2}}],exclusive=false
-      """),
-      type=flag_types.SLURM_PARTITIONS_OBJECT,
+        For e.g. --{name} id=p1,nodesetIds=[ns1,ns2],exclusive=false
+      """)
+  beta_help = textwrap.dedent(f"""
+        Parameters to define slurm cluster partitions.
+
+        For e.g. --{name} id=p1,nodesetIds=[ns1,ns2]
+      """)
+  parser.add_argument(
+      f"--{name}",
+      help=alpha_help if api_version == "v1alpha" else beta_help,
+      type=flag_types.FlagTypes(api_version).GetSlurmPartitionsObject(),
       action=arg_parsers.FlattenAction(),
       required=required,
       hidden=hidden,
   )
   if include_update_flags:
-    parser.add_argument(
-        f"--{update_flag_name}",
-        help=textwrap.dedent(f"""
+    alpha_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster partition config.
 
-          For e.g. --{update_flag_name} id={{partitionId}},nodesetIds=[{{nodesetId1}},{{nodesetId2}}],exclusive=false
-        """),
-        type=flag_types.SLURM_PARTITIONS_UPDATE_OBJECT,
+          For e.g. --{update_flag_name} id=p1,nodesetIds=[ns1,ns2],exclusive=false
+        """)
+    beta_update_help = textwrap.dedent(f"""
+          Parameters to define and update slurm cluster partition config.
+
+          For e.g. --{update_flag_name} id=p1,nodesetIds=[ns1,ns2]
+        """)
+    parser.add_argument(
+        f"--{update_flag_name}",
+        help=alpha_update_help
+        if api_version == "v1alpha"
+        else beta_update_help,
+        type=flag_types.FlagTypes(api_version).GetSlurmPartitionsUpdateObject(),
         action=arg_parsers.FlattenAction(),
         required=required,
         hidden=hidden,
@@ -703,7 +789,7 @@ def AddSlurmPartitions(
         help=textwrap.dedent(f"""
           Parameters to remove slurm partition config by partition id.
 
-          For e.g. --{remove_flag_name} {{partitionId1}},{{partitionId2}},...
+          For e.g. --{remove_flag_name} p1,p2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -714,8 +800,10 @@ def AddSlurmPartitions(
 
 def AddSlurmDefaultPartition(parser, api_version=None, hidden=False):
   """Adds a slurm default partition flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for slurm-default-partition: {api_version!r}"
+    )
   parser.add_argument(
       "--slurm-default-partition",
       help=textwrap.dedent("""
@@ -737,29 +825,34 @@ def AddSlurmLoginNode(
     include_update_flags=False,
 ):
   """Adds a slurm login node flag for the given API version."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
-  flag_name = name
-  if include_update_flags:
-    flag_name = f"update-{name}"
-    help_text = textwrap.dedent(f"""
-      Parameters to update slurm cluster login node.
-      Only bootDisk, count and startupScript can be updated.
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for slurm-login-node: {api_version!r}"
+    )
+  ft = flag_types.FlagTypes(api_version)
+  alpha_create_help = """
+        Parameters to define slurm cluster login node.
 
-      For e.g. --{flag_name} count=2,startupScript="echo hello"
-    """)
-    spec = {
-        "count": int,
-        "startupScript": arg_parsers.ArgObject(),
-        "bootDisk": flag_types.PROTO_BOOT_DISK_TYPE,
-    }
-    if api_version == "v1alpha":
-      spec["serviceAccount"] = flag_types.SERVICE_ACCOUNT_TYPE
-  else:
-    help_text = textwrap.dedent("""
-      Parameters to define slurm cluster login node.
+        For e.g. --slurm-login-node machineType={machineType},zone={zone},count={count},enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="{key1=value1,key2=value2}"
 
-      For e.g. --slurm-login-node machineType={machineType},zone={zone},count={count},enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="{key1=value1,key2=value2}",bootDisk={type=pd-standard,sizeGb=100}
+          If bootDisk is specified, sizeGb must be greater than 50.
+
+        Defaults:
+        - count: 1
+        - enableOSLogin: true
+        - enablePublicIPs: true
+        - bootDisk.sizeGb: 100
+
+        Note:
+        - startupScript:
+          - Either str or file_path
+          - For file_path, only bash file format (.sh or .bash) is supported.
+          - For file_path, only absolute path is supported.
+      """
+  beta_create_help = """
+        Parameters to define slurm cluster login node.
+
+      For e.g. --slurm-login-node machineType={machineType},zone={zone},count={count},enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",bootDisk={type=pd-standard,sizeGb=100}
 
         If bootDisk is specified, sizeGb must be greater than 50.
 
@@ -774,25 +867,27 @@ def AddSlurmLoginNode(
         - Either str or file_path
         - For file_path, only bash file format (.sh or .bash) is supported.
         - For file_path, only absolute path is supported.
-    """)
-    spec = {
-        "machineType": str,
-        "zone": str,
-        "count": int,
-        "enableOSLogin": bool,
-        "enablePublicIPs": bool,
-        "startupScript": arg_parsers.ArgObject(),
-        "labels": flag_types.LABEL,
-        "bootDisk": flag_types.PROTO_BOOT_DISK_TYPE,
-    }
-    if api_version == "v1alpha":
-      spec["serviceAccount"] = flag_types.SERVICE_ACCOUNT_TYPE
+    """
+  flag_name = name
+  if include_update_flags:
+    flag_name = f"update-{name}"
+    help_text = f"""
+        Parameters to update slurm cluster login node.
+        Only bootDisk, count and startupScript can be updated.
+
+        For e.g. --{flag_name} count=2,startupScript="echo hello"
+    """
+    flag_type = ft.GetSlurmLoginNodeUpdateObject()
+  else:
+    help_text = (
+        alpha_create_help if api_version == "v1alpha" else beta_create_help
+    )
+    flag_type = ft.GetSlurmLoginNodeObject()
+
   parser.add_argument(
       f"--{flag_name}",
       help=help_text,
-      type=flag_types.SLURM_LOGIN_NODE_UPDATE_OBJECT
-      if include_update_flags
-      else flag_types.SLURM_LOGIN_NODE_OBJECT,
+      type=flag_type,
       required=required,
       hidden=hidden,
   )
@@ -802,8 +897,10 @@ def _AddScriptFlags(
     parser, name, help_kind, api_version, hidden, include_update_flags
 ):
   """Helper to add script flags."""
-  if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+  if api_version not in ["v1alpha", "v1beta"]:
+    raise ValueError(
+        f"Unsupported API version for {help_kind}: {api_version!r}"
+    )
   remove_flag_name = f"remove-{name}"
   if include_update_flags:
     flag_name = f"add-{name}"
@@ -865,7 +962,22 @@ def AddSlurmEpilogBashScripts(
 def AddSlurmTaskPrologBashScripts(
     parser, api_version=None, hidden=False, include_update_flags=False
 ):
-  """Adds a slurm task prolog bash scripts flag for the given API version."""
+  """Adds a slurm task prolog bash scripts flag for the given API version.
+
+  Args:
+    parser: The argparse parser.
+    api_version: The API version to use (e.g., "v1alpha").
+    hidden: Whether the flag should be hidden.
+    include_update_flags: Whether to include flags for update commands.
+
+  Raises:
+    ValueError: If the api_version is not supported.
+  """
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        "Unsupported API version for slurm-task-prolog-scripts:"
+        f" {api_version!r}"
+    )
   _AddScriptFlags(
       parser,
       "slurm-task-prolog-scripts",
@@ -879,7 +991,22 @@ def AddSlurmTaskPrologBashScripts(
 def AddSlurmTaskEpilogBashScripts(
     parser, api_version=None, hidden=False, include_update_flags=False
 ):
-  """Adds a slurm task epilog bash scripts flag for the given API version."""
+  """Adds a slurm task epilog bash scripts flag for the given API version.
+
+  Args:
+    parser: The argparse parser.
+    api_version: The API version to use (e.g., "v1alpha").
+    hidden: Whether the flag should be hidden.
+    include_update_flags: Whether to include flags for update commands.
+
+  Raises:
+    ValueError: If the api_version is not supported.
+  """
+  if api_version not in ["v1alpha"]:
+    raise ValueError(
+        "Unsupported API version for slurm-task-epilog-scripts:"
+        f" {api_version!r}"
+    )
   _AddScriptFlags(
       parser,
       "slurm-task-epilog-scripts",
@@ -895,7 +1022,9 @@ def AddSlurmConfig(
 ):
   """Adds a slurm config flag for the given API version."""
   if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+    raise ValueError(
+        f"Unsupported API version for slurm-config: {api_version!r}"
+    )
   flag_name = "slurm-config"
   if include_update_flags:
     flag_name = f"update-{flag_name}"
@@ -916,7 +1045,10 @@ def AddSlurmDisableHealthCheckProgram(
 ):
   """Adds a slurm disable health check program flag for the given API version."""
   if api_version not in ["v1alpha"]:
-    raise ValueError(f"Unsupported API version: {api_version}")
+    raise ValueError(
+        "Unsupported API version for slurm-disable-health-check-program:"
+        f" {api_version!r}"
+    )
   flag_name = "slurm-disable-health-check-program"
   if include_update_flags:
     flag_name = f"update-{flag_name}"

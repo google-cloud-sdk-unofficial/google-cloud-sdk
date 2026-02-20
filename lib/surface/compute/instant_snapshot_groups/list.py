@@ -29,7 +29,7 @@ def _CommonArgs(parser):
   parser.display_info.AddCacheUpdater(completers.InstantSnapshotGroupsCompleter)
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class List(base.ListCommand):
   """List Compute Engine instant snapshot groups.
@@ -58,6 +58,7 @@ class List(base.ListCommand):
 
   def Run(self, args):
     return self._Run(args)
+
 
 List.detailed_help = base_classes.GetMultiScopeListerHelp(
     'instant snapshot groups',

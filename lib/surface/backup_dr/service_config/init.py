@@ -68,6 +68,13 @@ class Init(base.Command):
            will be applied. Examples include, "compute.<UNIVERSE_DOMAIN>.com/Instance"
 """,
     )
+    flags.AddCloudsqlEdition(
+        parser,
+        """Cloud SQL Edition: (Required only for Cloud SQL instances, ignored
+        otherwise). The edition of the Cloud SQL instance. Possible values:
+        "ENTERPRISE" - Enterprise edition.
+        "ENTERPRISE_PLUS" - Enterprise Plus edition.""",
+    )
 
   def Run(self, args):
     """Constructs and sends request.
@@ -82,13 +89,11 @@ class Init(base.Command):
     client = ServiceConfigClient()
     location = args.CONCEPTS.location.Parse().RelativeName()
     resource_type = args.resource_type
+    cloudsql_edition = args.cloudsql_edition
     no_async = args.no_async
 
     try:
-      operation = client.Init(
-          location,
-          resource_type,
-      )
+      operation = client.Init(location, resource_type, cloudsql_edition)
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)
 

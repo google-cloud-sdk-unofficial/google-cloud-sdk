@@ -41,6 +41,15 @@ REGIONAL_FLAGS = [
     'on_repair_allow_changing_zone',
 ]
 
+INSTANCE_TEMPLATE_ARG = managed_flags.InstanceTemplateArg(
+    required=False,
+    help_override="""
+        Specifies the instance template that will replace the existing template used by the MIG.
+        The MIG then uses this new template to create instances. Specifying the new template overrides
+        any template versions that you've set for the MIG. Specify either a global or a regional instance template.
+        """,
+)
+
 
 # TODO(b/345166947) Remove universe annotation once b/341682289 is resolved.
 @base.UniverseCompatible
@@ -50,6 +59,7 @@ class UpdateGA(base.UpdateCommand):
 
   support_update_policy_min_ready_flag = False
   support_multi_mig_flag = False
+  support_instance_selection_min_cpu_platform = False
 
   @classmethod
   def Args(cls, parser):
@@ -74,13 +84,18 @@ class UpdateGA(base.UpdateCommand):
     managed_flags.AddMigInstanceRedistributionTypeFlag(parser)
     managed_flags.AddMigDistributionPolicyTargetShapeFlag(parser)
     managed_flags.AddMigListManagedInstancesResultsFlag(parser)
+    INSTANCE_TEMPLATE_ARG.AddArgument(parser)
     managed_flags.AddMigUpdatePolicyFlags(
         parser, support_min_ready_flag=cls.support_update_policy_min_ready_flag
     )
     managed_flags.AddMigForceUpdateOnRepairFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
     managed_flags.AddMigSizeFlag(parser)
-    flags.AddInstanceFlexibilityPolicyArgs(parser, is_update=True)
+    flags.AddInstanceFlexibilityPolicyArgs(
+        parser,
+        is_update=True,
+        support_instance_selection_min_cpu_platform=cls.support_instance_selection_min_cpu_platform,
+    )
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlags(parser)
     if cls.support_multi_mig_flag:
@@ -299,6 +314,13 @@ class UpdateGA(base.UpdateCommand):
     )
     return auto_healing_policies
 
+  def _GetInstanceTemplateRef(self, args, holder, default_scope):
+    return INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+        args,
+        holder.resources,
+        default_scope=default_scope,
+    )
+
   def _PatchTargetDistributionShape(
       self,
       patch_instance_group_manager,
@@ -353,6 +375,17 @@ class UpdateGA(base.UpdateCommand):
     if auto_healing_policies is not None:
       patch_instance_group_manager.autoHealingPolicies = auto_healing_policies
 
+    if args.IsSpecified('template'):
+      template_ref = self._GetInstanceTemplateRef(
+          args, holder, compute_scope.ScopeEnum.GLOBAL
+      )
+      patch_instance_group_manager.instanceTemplate = template_ref.SelfLink()
+      patch_instance_group_manager.versions = [
+          client.messages.InstanceGroupManagerVersion(
+              instanceTemplate=template_ref.SelfLink()
+          )
+      ]
+
     update_policy = managed_instance_groups_utils.PatchUpdatePolicy(
         client, args, igm_resource.updatePolicy
     )
@@ -382,10 +415,11 @@ class UpdateGA(base.UpdateCommand):
             client.messages, args
         )
     )
-    patch_instance_group_manager.instanceFlexibilityPolicy = (
-        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            args, client.messages, igm_resource
-        )
+    patch_instance_group_manager.instanceFlexibilityPolicy = managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+        args,
+        client.messages,
+        igm_resource,
+        support_instance_selection_min_cpu_platform=self.support_instance_selection_min_cpu_platform,
     )
     if args.IsSpecified('size'):
       patch_instance_group_manager.targetSize = args.size
@@ -500,6 +534,7 @@ class UpdateBeta(UpdateGA):
 
   support_update_policy_min_ready_flag = True
   support_multi_mig_flag = True
+  support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):
@@ -526,6 +561,7 @@ class UpdateAlpha(UpdateBeta):
   """Update a Compute Engine managed instance group."""
 
   support_multi_mig_flag = True
+  support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):

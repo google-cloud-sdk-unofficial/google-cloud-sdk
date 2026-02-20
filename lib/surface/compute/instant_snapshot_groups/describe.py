@@ -38,7 +38,7 @@ def _CommonArgs(parser):
   Describe.ISG_ARG.AddArgument(parser, operation_type='describe')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Describe(base.DescribeCommand):
   """Describe a Compute Engine instant snapshot group."""
@@ -66,3 +66,6 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     return self._Run(args)
+
+
+Describe.detailed_help = DETAILED_HELP

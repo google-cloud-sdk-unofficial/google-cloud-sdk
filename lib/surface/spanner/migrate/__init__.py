@@ -22,5 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Migration(base.Group):
   """Migrate external databases to Cloud Spanner."""

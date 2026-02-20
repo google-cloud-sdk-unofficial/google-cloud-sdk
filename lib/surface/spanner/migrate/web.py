@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Web(base.BinaryBackedCommand):
   """Run the web UI assistant for schema migrations."""
 

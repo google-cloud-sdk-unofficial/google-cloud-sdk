@@ -25,9 +25,3 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  reference:
-    description: |-
-      [Output Only] Server-defined URL for resources referencing given
-      BackendService like UrlMaps, TargetTcpProxies, TargetSslProxies and
-      ForwardingRule.
-    type: string

@@ -26,10 +26,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Cloud Spanner backup schedule."""
 

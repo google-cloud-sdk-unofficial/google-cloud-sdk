@@ -35,7 +35,7 @@ class Create(base.CreateCommand):
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
   support_target_type = False
-  support_network_context = False
+  support_network_context = True
 
   @classmethod
   def Args(cls, parser):
@@ -64,22 +64,21 @@ class Create(base.CreateCommand):
     flags.AddSrcFqdns(parser)
     flags.AddDestFqdns(parser)
     flags.AddSrcRegionCodes(
-        parser, support_network_scopes=cls.support_network_scopes
+        parser, support_network_scopes=cls.support_network_context
     )
     flags.AddDestRegionCodes(
-        parser, support_network_scopes=cls.support_network_scopes
+        parser, support_network_scopes=cls.support_network_context
     )
     flags.AddSrcThreatIntelligence(
-        parser, support_network_scopes=cls.support_network_scopes
+        parser, support_network_scopes=cls.support_network_context
     )
     flags.AddDestThreatIntelligence(
-        parser, support_network_scopes=cls.support_network_scopes
+        parser, support_network_scopes=cls.support_network_context
     )
     flags.AddSecurityProfileGroup(parser)
     flags.AddTlsInspect(parser)
     if cls.support_network_scopes:
       flags.AddSrcNetworkScope(parser)
-      flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
@@ -89,6 +88,7 @@ class Create(base.CreateCommand):
     if cls.support_network_context:
       flags.AddSrcNetworkContext(parser)
       flags.AddDestNetworkContext(parser)
+      flags.AddSrcNetworks(parser)
 
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
@@ -151,6 +151,8 @@ class Create(base.CreateCommand):
       security_profile_group = args.security_profile_group
     if args.IsSpecified('tls_inspect'):
       tls_inspect = args.tls_inspect
+    if args.IsSpecified('src_networks'):
+      src_networks = args.src_networks
 
     if self.support_network_scopes:
       if args.IsSpecified('src_network_scope') and args.IsSpecified(
@@ -176,8 +178,6 @@ class Create(base.CreateCommand):
           src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
               args.src_network_scope
           )
-      if args.IsSpecified('src_networks'):
-        src_networks = args.src_networks
       if args.IsSpecified('dest_network_scope'):
         if not args.dest_network_scope:
           dest_network_scope = (
@@ -253,6 +253,7 @@ class Create(base.CreateCommand):
     if self.support_network_context:
       matcher.srcNetworkContext = src_network_context
       matcher.destNetworkContext = dest_network_context
+      matcher.srcNetworks = src_networks
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
     if args.IsSpecified('dest_address_groups'):

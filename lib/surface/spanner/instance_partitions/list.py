@@ -26,10 +26,10 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the Spanner instance partitions contained within the given instance."""
 

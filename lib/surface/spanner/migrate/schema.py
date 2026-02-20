@@ -24,7 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Schema(base.BinaryBackedCommand):
   """Migrate schema from a source database to Cloud Spanner."""
 

@@ -307,16 +307,41 @@ class Client:
     return self._endpoint_client.Create(create_request)
 
   def UpdateEndpoint(
-      self, name, description, update_mask, labels=None, billing_project_id=None
+      self,
+      name,
+      update_mask,
+      description=None,
+      labels=None,
+      billing_project_id=None,
+      enable_wildfire=None,
+      wildfire_region=None,
+      content_cloud_region=None,
+      wildfire_lookup_timeout=None,
+      wildfire_lookup_action=None,
+      wildfire_analysis_timeout=None,
+      wildfire_analysis_action=None,
+      enable_wildfire_analysis_logging=None,
+      block_partial_http=None,
   ):
     """Calls the UpdateEndpoint API.
 
     Args:
       name: str, full name of the firewall endpoint.
+      update_mask: str, comma-separated list of fields to update.
       description: str, description of the firewall endpoint.
-      update_mask: str, comma separated list of fields to update.
       labels: LabelsValue, labels for the firewall endpoint.
       billing_project_id: str, billing project ID.
+      enable_wildfire: bool, whether to enable wildfire.
+      wildfire_region: str, wildfire region.
+      content_cloud_region: str, content cloud region.
+      wildfire_lookup_timeout: int, wildfire lookup timeout.
+      wildfire_lookup_action: str, wildfire lookup action.
+      wildfire_analysis_timeout: int, wildfire analysis timeout.
+      wildfire_analysis_action: str, wildfire analysis action.
+      enable_wildfire_analysis_logging: bool, whether to enable wildfire
+        analysis logging.
+      block_partial_http: bool, whether to block partial http.
+
     Returns:
       Operation ref to track the long-running process.
     """
@@ -325,6 +350,33 @@ class Client:
         description=description,
         billingProjectId=billing_project_id,
     )
+    if content_cloud_region is not None or block_partial_http is not None:
+      endpoint_settings = self._ParseEndpointSettings(
+          content_cloud_region=content_cloud_region,
+          block_partial_http=block_partial_http,
+      )
+      if endpoint_settings:
+        endpoint.endpointSettings = endpoint_settings
+
+    if self.release_track == base.ReleaseTrack.ALPHA and (
+        enable_wildfire is not None
+        or wildfire_region is not None
+        or wildfire_lookup_timeout is not None
+        or wildfire_lookup_action is not None
+        or wildfire_analysis_timeout is not None
+        or wildfire_analysis_action is not None
+        or enable_wildfire_analysis_logging is not None
+    ):
+      endpoint.wildfireSettings = self._ParseWildfireSettings(
+          enabled=enable_wildfire,
+          wildfire_region=wildfire_region,
+          wildfire_lookup_timeout=wildfire_lookup_timeout,
+          wildfire_lookup_action_str=wildfire_lookup_action,
+          wildfire_analysis_timeout=wildfire_analysis_timeout,
+          wildfire_analysis_action_str=wildfire_analysis_action,
+          enable_wildfire_analysis_logging=enable_wildfire_analysis_logging,
+      )
+
     update_request = self._patch_request(
         name=name,
         firewallEndpoint=endpoint,

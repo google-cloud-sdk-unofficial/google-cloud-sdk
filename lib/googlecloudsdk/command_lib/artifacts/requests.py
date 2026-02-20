@@ -471,16 +471,21 @@ def CopyRepository(
     dest_repo_name,
     continue_on_skipped_version=False,
     max_version_age_days=0,
+    include_all_attachments=False,
+    exclude_all_tags=False,
 ):
   """Copies a repository."""
   client = GetClient()
   messages = GetMessages()
-  copy_req = messages.CopyRepositoryRequest(sourceRepository=source_repo)
-  if continue_on_skipped_version:  # Remove condition once behaviors rolled out.
-    copy_req.behavior = messages.Behavior(
-        continueOnSkippedVersion=continue_on_skipped_version,
-        maxVersionAgeDays=max_version_age_days,
-    )
+  copy_req = messages.CopyRepositoryRequest(
+      sourceRepository=source_repo,
+      behavior=messages.Behavior(
+          continueOnSkippedVersion=continue_on_skipped_version,
+          maxVersionAgeDays=max_version_age_days,
+          allAttachmentsIncluded=include_all_attachments,
+          allTagsExcluded=exclude_all_tags,
+      ),
+  )
   req = messages.ArtifactregistryProjectsLocationsRepositoriesCopyRepositoryRequest(
       destinationRepository=dest_repo_name,
       copyRepositoryRequest=copy_req,

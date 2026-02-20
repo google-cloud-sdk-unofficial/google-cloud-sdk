@@ -18,13 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import Optional
+
 from googlecloudsdk.command_lib.declarative_pipeline.processors import base
 
 
 class DataprocServerlessActionProcessor(base.ActionProcessor):
   """Action processor for Dataproc Serverless actions."""
 
-  def get_python_version(self) -> str:
+  def _get_python_version(self) -> Optional[str]:
     # See
     # https://docs.cloud.google.com/dataproc-serverless/docs/concepts/versions/dataproc-serverless-versions
     config = self.action.get("config", {})
@@ -39,18 +41,20 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
 
   def _update_yaml_properties(self, action):
     env_pack_path = self._work_dir / self._env_pack_file
-    if env_pack_path.exists():
-      env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#libs"
-      if "archives" not in self.action:
-        self.action["archives"] = []
-      if not any(env_pack_uri in arch for arch in self.action["archives"]):
-        self.action["archives"].append(env_pack_uri)
-      # Add PYTHONPATH to Spark driver and executors
-      # to include the site-packages
-      # from the uploaded dependencies.zip, allowing the Spark jobs to find
-      # the required Python libraries.
-      props = self._get_nested_dict(
-          action, ["config", "sessionTemplate", "inline", "properties"]
-      )
-      props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
-      props["spark.executorEnv.PYTHONPATH"] = self.full_python_path
+    if not env_pack_path.exists():
+      return
+
+    env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#libs"
+    if "archives" not in self.action:
+      self.action["archives"] = []
+    if not any(env_pack_uri in arch for arch in self.action["archives"]):
+      self.action["archives"].append(env_pack_uri)
+    # Add PYTHONPATH to Spark driver and executors
+    # to include the site-packages
+    # from the uploaded dependencies.zip, allowing the Spark jobs to find
+    # the required Python libraries.
+    props = self._get_nested_dict(
+        action, ["config", "sessionTemplate", "inline", "properties"]
+    )
+    props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
+    props["spark.executorEnv.PYTHONPATH"] = self.full_python_path

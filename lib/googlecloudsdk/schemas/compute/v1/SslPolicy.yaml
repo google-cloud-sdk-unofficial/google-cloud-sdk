@@ -25,9 +25,6 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp inRFC3339 text format.'
-    type: string
   customFeatures:
     description: |-
       A list of features enabled when the selected profile is CUSTOM. The
@@ -41,12 +38,6 @@ properties:
       An optional description of this resource. Provide this property when
       you create the resource.
     type: string
-  enabledFeatures:
-    description: |-
-      [Output Only] The list of features enabled in the SSL policy.
-    type: array
-    items:
-      type: string
   fingerprint:
     description: |-
       Fingerprint of this resource. A hash of the contents stored in
@@ -56,16 +47,6 @@ properties:
       otherwise the request will fail with error 412 conditionNotMet.
       To see the latest fingerprint, make a get() request to retrieve an
       SslPolicy.
-    type: string
-  id:
-    description: |-
-      [Output Only] The unique identifier for the resource. This
-      identifier is defined by the server.
-    type: integer
-  kind:
-    description: |-
-      [Output only] Type of the resource. Alwayscompute#sslPolicyfor SSL
-      policies.
     type: string
   minTlsVersion:
     description: |-
@@ -103,18 +84,3 @@ properties:
     - FIPS_202205
     - MODERN
     - RESTRICTED
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional SSL policy
-      resides. This field is not applicable to global SSL policies.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
-  warnings:
-    description: |-
-      [Output Only] If potential misconfigurations are detected for this
-      SSL policy, this field will be populated with warning messages.
-    type: array
-    items:
-      $ref: WarningsValueListEntry.yaml

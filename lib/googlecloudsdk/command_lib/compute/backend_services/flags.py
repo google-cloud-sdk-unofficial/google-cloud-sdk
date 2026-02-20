@@ -1300,10 +1300,13 @@ def AddLoggingOptionalFields(parser):
   )
 
 
-def AddInstanceGroupAndNetworkEndpointGroupArgs(parser,
-                                                verb,
-                                                support_global_neg=False,
-                                                support_region_neg=False):
+def AddInstanceGroupAndNetworkEndpointGroupArgs(
+    parser,
+    verb,
+    support_global_neg=False,
+    support_region_neg=False,
+    support_inline_service=False,
+):
   """Adds instance group and network endpoint group args to the argparse."""
   backend_group = parser.add_group(required=True, mutex=True)
   instance_group = backend_group.add_group('Instance Group')
@@ -1315,6 +1318,14 @@ def AddInstanceGroupAndNetworkEndpointGroupArgs(parser,
       support_region_neg=support_region_neg)
   neg_group_arg.AddArgument(
       neg_group, operation_type='{} the backend service'.format(verb))
+  if support_inline_service:
+    service_group = backend_group.add_group('Service Group')
+    service_group.add_argument(
+        '--service',
+        required=True,
+        type=str,
+        help='The name or URI of a Google Cloud service to use as a backend.',
+    )
 
 
 def AddNetwork(parser):
@@ -1441,9 +1452,10 @@ def AddBackendServiceCustomMetrics(parser, add_clear_argument=False):
     )
 
 
-def AddIpPortDynamicForwarding(parser):
-  """Adds the logging optional argument to the argparse."""
-  parser.add_argument(
+def AddDynamicForwarding(parser, support_forward_proxy=False):
+  """Adds a dynamic-forwarding flag to the given parser."""
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument(
       '--ip-port-dynamic-forwarding',
       required=False,
       action='store_true',
@@ -1452,6 +1464,25 @@ def AddIpPortDynamicForwarding(parser):
       Enables Dynamic Forwarding in IpPort selection mode.
       """,
   )
+  if support_forward_proxy:
+    group.add_argument(
+        '--forward-proxy-direct-forwarding',
+        required=False,
+        action='store_true',
+        default=None,
+        help="""\
+        Enables Direct Forwarding in Forward Proxy mode.
+        """,
+    )
+    group.add_argument(
+        '--forward-proxy-cloud-run',
+        required=False,
+        action='store_true',
+        default=None,
+        help="""\
+        Enables Cloud Run in Forward Proxy mode.
+        """,
+    )
 
 
 def AddAllowMultinetwork(parser):

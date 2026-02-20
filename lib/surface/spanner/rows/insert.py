@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import write_util
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 class Insert(base.Command):
   # pylint:disable=line-too-long
   """Insert a row in a Cloud Spanner database.

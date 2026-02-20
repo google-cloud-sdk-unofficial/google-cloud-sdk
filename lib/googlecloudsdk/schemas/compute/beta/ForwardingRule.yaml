@@ -92,17 +92,6 @@ properties:
       Required for internal and external passthrough Network Load Balancers;
       must be omitted for all other load balancer types.
     type: string
-  baseForwardingRule:
-    description: |-
-      [Output Only] The URL for the corresponding base forwarding rule. By base
-      forwarding rule, we mean the forwarding rule that has the same IP address,
-      protocol, and port settings with the current forwarding rule, but without
-      sourceIPRanges specified. Always empty if the current forwarding rule does
-      not have sourceIPRanges specified.
-    type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   description:
     description: |-
       An optional description of this resource. Provide this property when you
@@ -136,11 +125,6 @@ properties:
       rule applies to them. This can only be set to true for load balancers that
       have their loadBalancingScheme set to INTERNAL.
     type: boolean
-  kind:
-    description: |-
-      [Output Only] Type of the resource. Always compute#forwardingRule for
-      forwarding rule resources.
-    type: string
   labelFingerprint:
     description: |-
       A fingerprint for the labels being applied to this resource, which is
@@ -272,10 +256,6 @@ properties:
     type: array
     items:
       type: string
-  pscConnectionId:
-    description: |-
-      [Output Only] The PSC connection id of the PSC forwarding rule.
-    type: integer
   pscConnectionStatus:
     description: A PscConnectionStatusValueValuesEnum attribute.
     type: string
@@ -286,16 +266,6 @@ properties:
     - PENDING
     - REJECTED
     - STATUS_UNSPECIFIED
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional forwarding rule
-      resides. This field is not applicable to global forwarding rules.
-      You must specify this field as part of the HTTP request URL. It is
-      not settable as a field in the request body.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
   serviceDirectoryRegistrations:
     description: |-
       Service Directory resources to register this forwarding rule with.
@@ -315,12 +285,6 @@ properties:
       be a dash, lowercase letter, or digit, except the last
       character, which cannot be a dash. This field is only used for
       internal load balancing.
-    type: string
-  serviceName:
-    description: |-
-      [Output Only] The internal fully qualified service name for
-      this forwarding rule. This field is only used for internal
-      load balancing.
     type: string
   sourceIpRanges:
     description: |-

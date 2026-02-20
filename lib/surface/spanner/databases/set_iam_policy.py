@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.spanner import iam
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.UniverseCompatible
 class SetIamPolicy(base.Command):
   """Set the IAM policy for a Cloud Spanner database."""
 

@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 import googlecloudsdk
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -1510,12 +1512,22 @@ def AddInputPayloadFormatArgs(parser):
   )
 
 
-def AddTriggerRetryPolicyArgs(parser):
+def AddTriggerRetryPolicyArgs(parser, with_clear=True):
   """Adds arguments for the trigger's retry policy."""
-  retry_policy_group = parser.add_group(help="""
-The retry policy configuration for the trigger.
-Can only be set for Cloud Run destinations.
-""")
+  help_text = textwrap.dedent("""\
+      The retry policy configuration for the trigger.
+      Can only be set for Cloud Run destinations.
+      """)
+  if with_clear:
+    retry_policy_group = parser.add_mutually_exclusive_group(help=help_text)
+    retry_policy_group.add_argument(
+        '--clear-max-retry-attempts',
+        action='store_true',
+        required=False,
+        help='Clear the maximum number of delivery attempts for the trigger.',
+    )
+  else:
+    retry_policy_group = parser.add_group(help=help_text)
   retry_policy_group.add_argument(
       '--max-retry-attempts',
       type=int,

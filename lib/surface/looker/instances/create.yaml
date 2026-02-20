@@ -284,6 +284,20 @@
           type: bool
           help_text: |
             This specifies whether Gemini AI prompt logging is enabled for the Looker instance.
+    # Group for Enable Catalog Integration
+    - group:
+        required: false
+        release_tracks: [ALPHA]
+        help_text: |
+          Catalog Integration - Catalog Integration is a feature that allows Looker to integrate with Universal Dataplex Catalog.
+        params:
+        - api_field: instance.catalogIntegrationEnabled
+          arg_name: catalog-integration-enabled
+          type: bool
+          default: true
+          required: false
+          help_text: |
+            This specifies whether Catalog Integration is enabled on the Looker instance.
 
   async:
     collection: looker.projects.locations.operations

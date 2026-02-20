@@ -22,3 +22,8 @@ from surface.cluster_director.locations import _init_extensions as extensions
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class LocationsAlpha(extensions.LocationsAlpha):
   """View Locations resources."""
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class LocationsBeta(extensions.LocationsBeta):
+  """View Locations resources."""

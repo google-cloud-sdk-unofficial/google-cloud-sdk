@@ -18,6 +18,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
 class Schedules(base.Group):
   """Workbench schedules command group."""

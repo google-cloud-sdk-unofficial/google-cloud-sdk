@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from apitools.base.py import encoding
-
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import exceptions
@@ -28,8 +27,8 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
-                    base.ReleaseTrack.GA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class RemoveBackend(base.UpdateCommand):
   """Remove a backend from a backend service.
 
@@ -44,6 +43,7 @@ class RemoveBackend(base.UpdateCommand):
 
   support_global_neg = True
   support_region_neg = True
+  support_inline_service = False
 
   @classmethod
   def Args(cls, parser):
@@ -52,7 +52,9 @@ class RemoveBackend(base.UpdateCommand):
         parser,
         'remove from',
         support_global_neg=cls.support_global_neg,
-        support_region_neg=cls.support_region_neg)
+        support_region_neg=cls.support_region_neg,
+        support_inline_service=cls.support_inline_service,
+    )
 
   def GetGetRequest(self, client, backend_service_ref):
     if backend_service_ref.Collection() == 'compute.regionBackendServices':
@@ -98,8 +100,28 @@ class RemoveBackend(base.UpdateCommand):
               resources,
               scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+  def _RemoveInlineServiceBackend(self, args, backend_service_ref, existing):
+    replacement = encoding.CopyProtoMessage(existing)
+    backend_idx = None
+    for i, backend in enumerate(existing.backends):
+      if backend.service == args.service:
+        backend_idx = i
+        break
+    if backend_idx is None:
+      raise exceptions.ArgumentError(
+          'No backend with name [{0}] is part of the backend '
+          'service [{1}].'.format(args.service, backend_service_ref.Name())
+      )
+    else:
+      replacement.backends.pop(backend_idx)
+    return replacement
+
   def Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
+    if self.support_inline_service:
+      return self._RemoveInlineServiceBackend(
+          args, backend_service_ref, existing
+      )
 
     group_ref = self._GetGroupRef(args, resources, client)
     group_uri = group_ref.RelativeName()
@@ -145,4 +167,21 @@ class RemoveBackend(base.UpdateCommand):
                              args, objects[0])
 
     return client.MakeRequests(
-        [self.GetSetRequest(client, backend_service_ref, new_object)])
+        [self.GetSetRequest(client, backend_service_ref, new_object)]
+    )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class RemoveBackendAlpha(RemoveBackend):
+  """Remove a backend from a backend service.
+
+  *{command}* is used to remove a backend from a backend
+  service.
+
+  Before removing a backend, it is a good idea to "drain" the
+  backend first. A backend can be drained by setting its
+  capacity scaler to zero through 'gcloud compute
+  backend-services edit'.
+  """
+
+  support_inline_service = True

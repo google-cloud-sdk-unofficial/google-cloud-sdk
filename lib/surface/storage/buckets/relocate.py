@@ -17,6 +17,8 @@
 
 import textwrap
 
+from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import errors as api_errors
 from googlecloudsdk.calliope import arg_parsers
@@ -98,6 +100,23 @@ def _prompt_user_to_confirm_advancing_the_relocation(bucket_name):
   )
 
 
+def _validate_kms_key(key_name):
+  """Validates the KMS key exists and is accessible."""
+  client = cloudkms_base.GetClientInstance()
+  messages = cloudkms_base.GetMessagesModule()
+  try:
+    client.projects_locations_keyRings_cryptoKeys.Get(
+        messages.CloudkmsProjectsLocationsKeyRingsCryptoKeysGetRequest(
+            name=key_name
+        )
+    )
+  except (api_errors.CloudApiError, apitools_exceptions.HttpError) as e:
+    raise command_errors.FatalError(
+        f"The Cloud KMS key '{key_name}' could not be accessed. Please ensure "
+        'the key exists and you have permissions to access it.'
+    ) from e
+
+
 # TODO: b/361729720 - Make bucket-relocate command group universe compatible.
 @base.DefaultUniverseOnly
 class Relocate(base.Command):
@@ -160,26 +179,27 @@ class Relocate(base.Command):
         ),
     )
     flags.add_placement_flag(bucket_relocate_group)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      bucket_relocate_group.add_argument(
+          '--destination-kms-key-name',
+          type=str,
+          help=textwrap.dedent("""\
+              This is only required when relocating a bucket that uses
+              Customer-Managed Encryption Keys (CMEK). The full resource name of
+              the Cloud KMS key to use for encrypting objects in the destination
+              bucket. This key will be set as the default bucket encryption key.
+              The key must exist in the destination location. Format:
+              projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
+          """),
+      )
     bucket_relocate_group.add_argument(
         '--dry-run',
         action='store_true',
-        help=(
-            'Prints the operations that the relocate command would perform'
-            ' without actually performing relocation. This is helpful to'
-            ' identify any issues that need to be detected asynchronously.'
-        ),
-    )
-    bucket_relocate_group.add_argument(
-        '--destination-kms-key-name',
-        type=str,
         help=textwrap.dedent("""\
-            The full resource name of the Cloud KMS key to use for encrypting
-            objects in the destination bucket. This key will be set as the
-            default bucket encryption key. The key must exist in the
-            destination location. Format:
-            projects/PROJECT/locations/LOCATION/keyRings/RING/cryptoKeys/KEY
+            Prints the operations that the relocate command would perform
+            without actually performing relocation. This is helpful to
+            identify any issues that need to be detected asynchronously.
         """),
-        hidden=True,
     )
 
     advance_relocate_operation_group = relocate_arguments_group.add_group(
@@ -227,10 +247,14 @@ class Relocate(base.Command):
       bucket_resource = _get_bucket_resource(gcs_client, url)
       _prompt_user_to_confirm_the_relocation(bucket_resource, args)
 
+      if getattr(args, 'destination_kms_key_name', None):
+        _validate_kms_key(args.destination_kms_key_name)
+
       return gcs_client.relocate_bucket(
           url.bucket_name,
           args.location,
           args.placement,
+          getattr(args, 'destination_kms_key_name', None),
           args.dry_run,
       )
 

@@ -80,9 +80,6 @@ properties:
       load_balancing_scheme set to INTERNAL_MANAGED. - A global backend
       service with the load_balancing_scheme set to INTERNAL_SELF_MANAGED.
     $ref: ConsistentHashLoadBalancerSettings.yaml
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   customMetrics:
     description: |-
       List of custom metrics that are used for the WEIGHTED_ROUND_ROBIN
@@ -118,11 +115,6 @@ properties:
       feature which together with Service Extension allows
       customized and complex routing logic.
     $ref: BackendServiceDynamicForwarding.yaml
-  edgeSecurityPolicy:
-    description: |-
-      [Output Only] The resource URL for the edge security
-      policy associated with this backend service.
-    type: string
   enableCDN:
     description: |-
       If true, enables Cloud CDN for the backend service of a
@@ -267,11 +259,6 @@ properties:
     - IPV6_ONLY
     - IP_ADDRESS_SELECTION_POLICY_UNSPECIFIED
     - PREFER_IPV6
-  kind:
-    description: |-
-      [Output Only] Type of resource. Always
-      compute#backendService for backend services.
-    type: string
   loadBalancingScheme:
     description: |-
       Specifies the load balancer type. A backend service
@@ -472,20 +459,6 @@ properties:
     - TCP
     - UDP
     - UNSPECIFIED
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional
-      backend service resides. This field is not
-      applicable to global backend services. You must
-      specify this field as part of the HTTP request
-      URL. It is not settable as a field in the request
-      body.
-    type: string
-  securityPolicy:
-    description: |-
-      [Output Only] The resource URL for the security
-      policy associated with this backend service.
-    type: string
   securitySettings:
     description: |-
       This field specifies the security settings that
@@ -494,10 +467,6 @@ properties:
       load_balancing_scheme set to
       INTERNAL_SELF_MANAGED.
     $ref: SecuritySettings.yaml
-  selfLink:
-    description: |-
-      [Output Only] Server-defined URL for the resource.
-    type: string
   serviceBindings:
     description: |-
       URLs of networkservices.ServiceBinding resources.
@@ -572,13 +541,6 @@ properties:
       and mTLS. May only be specified when the
       backend protocol is SSL, HTTPS or HTTP2.
     $ref: BackendServiceTlsSettings.yaml
-  usedBy:
-    description: |-
-      [Output Only] List of resources referencing
-      given backend service.
-    type: array
-    items:
-      $ref: BackendServiceUsedBy.yaml
   vpcNetworkScope:
     description: |-
       The network scope of the backends that can

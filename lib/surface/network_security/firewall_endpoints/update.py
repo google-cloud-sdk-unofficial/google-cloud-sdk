@@ -53,6 +53,7 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 )
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Update(base.UpdateCommand):
   """Update a Firewall Plus endpoint.
@@ -112,13 +113,71 @@ class Update(base.UpdateCommand):
     if billing_project_id:
       update_mask.append('billing_project_id')
 
+    if hasattr(args, 'enable_wildfire') and args.IsSpecified('enable_wildfire'):
+      update_mask.append('wildfire_settings.enabled')
+    if hasattr(args, 'wildfire_region') and args.IsSpecified('wildfire_region'):
+      update_mask.append('wildfire_settings.wildfire_region')
+    if hasattr(args, 'content_cloud_region') and args.IsSpecified(
+        'content_cloud_region'
+    ):
+      update_mask.append('endpoint_settings.content_cloud_region')
+    if hasattr(args, 'wildfire_lookup_timeout') and args.IsSpecified(
+        'wildfire_lookup_timeout'
+    ):
+      update_mask.append('wildfire_settings.wildfire_realtime_lookup_duration')
+    if hasattr(args, 'wildfire_lookup_action') and args.IsSpecified(
+        'wildfire_lookup_action'
+    ):
+      update_mask.append(
+          'wildfire_settings.wildfire_realtime_lookup_timeout_action'
+      )
+    if hasattr(args, 'wildfire_analysis_timeout') and args.IsSpecified(
+        'wildfire_analysis_timeout'
+    ):
+      update_mask.append(
+          'wildfire_settings.wildfire_inline_cloud_analysis_settings.max_analysis_duration'
+      )
+    if hasattr(args, 'wildfire_analysis_action') and args.IsSpecified(
+        'wildfire_analysis_action'
+    ):
+      update_mask.append(
+          'wildfire_settings.wildfire_inline_cloud_analysis_settings.timeout_action'
+      )
+    if hasattr(
+        args, 'enable_wildfire_analysis_logging'
+    ) and args.IsSpecified('enable_wildfire_analysis_logging'):
+      update_mask.append(
+          'wildfire_settings.wildfire_inline_cloud_analysis_settings.submission_timeout_logging_disabled'
+      )
+    if hasattr(args, 'block_partial_http') and args.IsSpecified(
+        'block_partial_http'
+    ):
+      update_mask.append('endpoint_settings.http_partial_response_blocked')
+
     if not update_mask:
-      raise exceptions.MinimumArgumentException([
-          '--clear-labels',
-          '--remove-labels',
-          '--update-labels',
-          '--update-billing-project',
-      ])
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        raise exceptions.MinimumArgumentException([
+            '--clear-labels',
+            '--remove-labels',
+            '--update-labels',
+            '--update-billing-project',
+            '--enable-wildfire',
+            '--wildfire-region',
+            '--content-cloud-region',
+            '--wildfire-lookup-timeout',
+            '--wildfire-lookup-action',
+            '--wildfire-analysis-timeout',
+            '--wildfire-analysis-action',
+            '--enable-wildfire-analysis-logging',
+            '--block-partial-http',
+        ])
+      else:
+        raise exceptions.MinimumArgumentException([
+            '--clear-labels',
+            '--remove-labels',
+            '--update-labels',
+            '--update-billing-project',
+        ])
 
     is_async = args.async_
     max_wait = datetime.timedelta(seconds=args.max_wait)
@@ -129,6 +188,21 @@ class Update(base.UpdateCommand):
         update_mask=','.join(update_mask),
         labels=labels,
         billing_project_id=billing_project_id,
+        enable_wildfire=getattr(args, 'enable_wildfire', None),
+        wildfire_region=getattr(args, 'wildfire_region', None),
+        content_cloud_region=getattr(args, 'content_cloud_region', None),
+        wildfire_lookup_timeout=getattr(args, 'wildfire_lookup_timeout', None),
+        wildfire_lookup_action=getattr(args, 'wildfire_lookup_action', None),
+        wildfire_analysis_timeout=getattr(
+            args, 'wildfire_analysis_timeout', None
+        ),
+        wildfire_analysis_action=getattr(
+            args, 'wildfire_analysis_action', None
+        ),
+        enable_wildfire_analysis_logging=getattr(
+            args, 'enable_wildfire_analysis_logging', None
+        ),
+        block_partial_http=getattr(args, 'block_partial_http', None),
     )
     # Return the in-progress operation if async is requested.
     if is_async:
@@ -145,6 +219,25 @@ class Update(base.UpdateCommand):
         has_result=True,
         max_wait=max_wait,
     )
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.DefaultUniverseOnly
+class UpdateAlpha(Update):
+  """Update a Firewall Plus endpoint."""
+
+  @classmethod
+  def Args(cls, parser):
+    super(UpdateAlpha, cls).Args(parser)
+    activation_flags.AddEnableWildfireArg(parser)
+    activation_flags.AddWildfireRegionArg(parser)
+    activation_flags.AddContentCloudRegionArg(parser)
+    activation_flags.AddWildfireLookupTimeoutArg(parser)
+    activation_flags.AddWildfireLookupActionArg(parser)
+    activation_flags.AddWildfireAnalysisTimeoutArg(parser)
+    activation_flags.AddWildfireAnalysisActionArg(parser)
+    activation_flags.AddEnableWildfireAnalysisLoggingArg(parser)
+    activation_flags.AddBlockPartialHttpArg(parser)
 
 
 Update.detailed_help = DETAILED_HELP

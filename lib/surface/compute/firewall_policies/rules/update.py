@@ -36,10 +36,7 @@ class Update(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    support_network_scopes = (
-        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
-    )
+    support_network_scopes = True
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyRuleArgument(
         required=True, operation='update'
     )
@@ -74,15 +71,13 @@ class Update(base.UpdateCommand):
         or cls.ReleaseTrack() == base.ReleaseTrack.BETA
     ):
       flags.AddSrcNetworkScope(parser)
-      flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
 
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA or cls.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      flags.AddSrcNetworkContext(parser)
-      flags.AddDestNetworkContext(parser)
+    flags.AddSrcNetworkContext(parser)
+    flags.AddDestNetworkContext(parser)
+    flags.AddSrcNetworks(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -237,6 +232,10 @@ class Update(base.UpdateCommand):
     else:
       new_priority = priority
 
+    if args.IsSpecified('src_networks'):
+      src_networks = args.src_networks
+      should_setup_match = True
+
     if (
         self.ReleaseTrack() == base.ReleaseTrack.ALPHA
         or self.ReleaseTrack() == base.ReleaseTrack.BETA
@@ -265,9 +264,6 @@ class Update(base.UpdateCommand):
           src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
               args.src_network_scope
           )
-        should_setup_match = True
-      if args.IsSpecified('src_networks'):
-        src_networks = args.src_networks
         should_setup_match = True
       if args.IsSpecified('dest_network_scope'):
         if not args.dest_network_scope:
@@ -312,35 +308,33 @@ class Update(base.UpdateCommand):
       ):
         cleared_fields.append('match.srcNetworks')
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      if args.IsSpecified('src_network_context'):
-        if not args.src_network_context:
-          src_network_context = (
-              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
-          )
-        else:
-          src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
-              args.src_network_context
-          )
-        should_setup_match = True
-      if args.IsSpecified('dest_network_context'):
-        if not args.dest_network_context:
-          dest_network_context = (
-              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
-          )
-        else:
-          dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
-              args.dest_network_context
-          )
+    if args.IsSpecified('src_network_context'):
+      if not args.src_network_context:
+        src_network_context = (
+            holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
+        )
+      else:
+        src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
+            args.src_network_context
+        )
+      should_setup_match = True
+    if args.IsSpecified('dest_network_context'):
+      if not args.dest_network_context:
+        dest_network_context = (
+            holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
+        )
+      else:
+        dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
+            args.dest_network_context
+        )
         should_setup_match = True
 
-      if (
-          src_network_context is not None
-          and src_network_context
-          != holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.VPC_NETWORKS
-      ):
-        cleared_fields.append('match.srcNetworks')
+    if (
+        src_network_context is not None
+        and src_network_context
+        != holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.VPC_NETWORKS
+    ):
+      cleared_fields.append('match.srcNetworks')
 
     # If need to construct a new matcher.
     if should_setup_match:
@@ -380,6 +374,10 @@ class Update(base.UpdateCommand):
             destThreatIntelligences=dest_threat_intelligence,
             srcSecureTags=src_secure_tags,
         )
+      matcher.srcNetworkContext = src_network_context
+      matcher.destNetworkContext = dest_network_context
+      matcher.srcNetworks = src_networks
+
     if args.IsSpecified('direction'):
       if args.direction == 'INGRESS':
         traffic_direct = (
@@ -389,10 +387,6 @@ class Update(base.UpdateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      matcher.srcNetworkContext = src_network_context
-      matcher.destNetworkContext = dest_network_context
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=new_priority,
@@ -424,12 +418,14 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
     To update a rule with priority ``10" in an organization firewall policy
     with ID ``123456789" to change the action to ``allow" and description to
     ``new-example-rule", run:
 
       $ {command} 10 --firewall-policy=123456789 --action=allow
       --description=new-example-rule
-    """,
+    """
+    ),
 }

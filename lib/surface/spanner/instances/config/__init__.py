@@ -22,5 +22,6 @@ from googlecloudsdk.calliope import base
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Config(base.Group):
   """Manage Spanner instance configurations."""

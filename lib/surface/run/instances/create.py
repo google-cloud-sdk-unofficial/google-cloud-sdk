@@ -118,6 +118,7 @@ class Create(base.Command):
     flags.GpuZonalRedundancyFlag(parser)
     flags.AddIngressFlag(parser)
     flags.AddInvokerIamCheckFlag(parser)
+    flags.AddTimeoutFlag(parser)
 
     polling_group = parser.add_mutually_exclusive_group()
     flags.AddAsyncFlag(polling_group)

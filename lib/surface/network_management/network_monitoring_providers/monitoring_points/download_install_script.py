@@ -38,17 +38,17 @@ class DownloadInstallScript(base.Command):
           Downloads an installation script for a Monitoring Point for a given
           Network Monitoring Provider.
 
-          The command downloads a tarball for `--monitoring-point-type=container`,
-          or a zip file for `--monitoring-point-type=kvm` or
-          `--monitoring-point-type=vmware`.
+          The command downloads a tarball for `--monitoring-point-type=container`
+          or `--monitoring-point-type=helm`, or a zip file for
+          `--monitoring-point-type=kvm` or `--monitoring-point-type=vmware`.
 
           The `--network-monitoring-provider`, `--location`, `--monitoring-point-type`,
           and `--hostname` arguments are required for all Monitoring Points.
           Additional arguments depend on the value of `--monitoring-point-type`.
 
-          If `--monitoring-point-type=container` is specified, no other flags
-          are required, and flags like `--password`, `--time-zone`,
-          `--use-dhcp`, and `--static-ip-address` are not allowed.
+          If `--monitoring-point-type=container` or `--monitoring-point-type=helm`
+          is specified, no other flags are required, and flags like `--password`,
+          `--time-zone`, `--use-dhcp`, and `--static-ip-address` are not allowed.
 
           If `--monitoring-point-type=kvm` or `--monitoring-point-type=vmware`
           is specified, `--password` and `--time-zone` are also required.
@@ -90,7 +90,7 @@ class DownloadInstallScript(base.Command):
     parser.add_argument(
         '--monitoring-point-type',
         required=True,
-        choices=['container', 'kvm', 'vmware'],
+        choices=['container', 'helm', 'kvm', 'vmware'],
         help='The type of the Monitoring Point.',
     )
     parser.add_argument(
@@ -192,7 +192,7 @@ class DownloadInstallScript(base.Command):
     """Validates argument combinations based on monitoring_point_type."""
     mp_type = args.monitoring_point_type.upper()
 
-    if mp_type == 'CONTAINER':
+    if mp_type in ['CONTAINER', 'HELM']:
       illegal_container_args = [
           'password',
           'time_zone',
@@ -211,7 +211,7 @@ class DownloadInstallScript(base.Command):
           arg_name_dash = arg_name.replace('_', '-')
           raise exceptions.InvalidArgumentException(
               arg_name_dash,
-              f'{arg_name_dash} is not allowed for type CONTAINER',
+              f'{arg_name_dash} is not allowed for type {mp_type}',
           )
     elif mp_type in ['KVM', 'VMWARE']:
       if not args.IsSpecified('time_zone'):

@@ -89,6 +89,18 @@ def UpdateSimulateMaintenanceEvent(unused_cluster_ref, args, patch_request):
   return patch_request
 
 
+def UpdateRotateServerCertificate(unused_cluster_ref, args, patch_request):
+  """Hook to update rotate server certificate to the update mask of the request."""
+  if args.IsSpecified('rotate_server_certificate'):
+    patch_request.cluster.rotateServerCertificate = (
+        args.rotate_server_certificate
+    )
+    patch_request = AddFieldToUpdateMask(
+        'rotate_server_certificate', patch_request
+    )
+  return patch_request
+
+
 def UpdateShardCount(unused_cluster_ref, args, patch_request):
   """Hook to add shard count to the redis cluster update request."""
   if args.IsSpecified('shard_count'):

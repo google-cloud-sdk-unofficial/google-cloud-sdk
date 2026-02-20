@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Operations(base.Group):
   """Manage Cloud Spanner operations."""
   pass

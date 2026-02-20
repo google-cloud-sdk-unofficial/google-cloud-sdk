@@ -54,7 +54,7 @@ Or, to investigate an IAP tunneling issue:
 {0}
 """
 
-ReleaseTrack = {
+_RELEASE_TRACK = {
     'alpha': 'alpha',
     'beta': 'beta',
 }
@@ -72,7 +72,8 @@ def AddCommandArg(parser):
       A command to run on the virtual machine.
 
       Runs the command on the target instance and then exits.
-      """)
+      """,
+  )
 
 
 def AddSSHArgs(parser):
@@ -96,7 +97,8 @@ def AddSSHArgs(parser):
       replaced with that, otherwise it is replaced with the internal IP.
       ``%INTERNAL%'' is always replaced with the internal interface of the
       instance.
-      """)
+      """,
+  )
 
   parser.add_argument(
       'user_host',
@@ -111,7 +113,8 @@ def AddSSHArgs(parser):
 
       ``INSTANCE'' specifies the name of the virtual machine instance to SSH
       into.
-      """)
+      """,
+  )
 
   parser.add_argument(
       'ssh_args',
@@ -121,7 +124,8 @@ def AddSSHArgs(parser):
           """,
       example="""\
         $ {command} example-instance --zone=us-central1-a -- -vvv -L 80:%INSTANCE%:80
-      """)
+      """,
+  )
 
 
 def AddContainerArg(parser):
@@ -132,7 +136,8 @@ def AddContainerArg(parser):
           to connect to. This only applies to virtual machines that are using
           a Google Container-Optimized virtual machine image. For more
           information, see [](https://cloud.google.com/compute/docs/containers).
-          """)
+          """,
+  )
 
 
 def AddInternalIPArg(group):
@@ -152,7 +157,8 @@ def AddInternalIPArg(group):
 
         To learn how to use this flag, see
         [](https://cloud.google.com/compute/docs/instances/connecting-advanced#sshbetweeninstances).
-        """)
+        """,
+  )
 
 
 def TroubleshootHelp():
@@ -208,20 +214,21 @@ def RecommendMessage(
 
 def AddTroubleshootArg(parser):
   parser.add_argument(
-      '--troubleshoot',
-      action='store_true',
-      help=TroubleshootHelp())
+      '--troubleshoot', action='store_true', help=TroubleshootHelp()
+  )
 
 
 # pylint: disable=unused-argument
-def RunTroubleshooting(project=None, zone=None, instance=None,
-                       iap_tunnel_args=None):
+def RunTroubleshooting(
+    project=None, zone=None, instance=None, iap_tunnel_args=None
+):
   """Run each category of troubleshoot action."""
   if base_classes.SupportNetworkConnectivityTest():
     network_args = {
         'project': project,
         'zone': zone,
         'instance': instance,
+        'iap_tunnel_args': iap_tunnel_args,
     }
     network = network_troubleshooter.NetworkTroubleshooter(**network_args)
     network()
@@ -233,7 +240,8 @@ def RunTroubleshooting(project=None, zone=None, instance=None,
       'iap_tunnel_args': iap_tunnel_args,
   }
   user_permission = user_permission_troubleshooter.UserPermissionTroubleshooter(
-      **user_permission_args)
+      **user_permission_args
+  )
   user_permission()
 
   vpc_args = {
@@ -286,7 +294,8 @@ class Ssh(base.Command):
       iap_tunnel.AddHostBasedTunnelArgs(parser)
 
     flags.AddZoneFlag(
-        parser, resource_type='instance', operation_type='connect to')
+        parser, resource_type='instance', operation_type='connect to'
+    )
     ssh_utils.AddVerifyInternalIpArg(parser)
 
     routing_group = parser.add_mutually_exclusive_group()
@@ -297,9 +306,9 @@ class Ssh(base.Command):
   def Run(self, args):
     """See ssh_utils.BaseSSHCLICommand.Run."""
 
-    on_prem = (
-        args.IsKnownAndSpecified('network') and
-        args.IsKnownAndSpecified('region'))
+    on_prem = args.IsKnownAndSpecified('network') and args.IsKnownAndSpecified(
+        'region'
+    )
     if on_prem:
       args.plain = True
 
@@ -312,6 +321,13 @@ class Ssh(base.Command):
     ssh_helper.Run(args)
 
     iap_tunnel_args = None
+    project = None
+    instance = None
+    instance_ref = None
+    instance_name = None
+    host_keys = None
+    expiration = None
+
     if on_prem:
       user, ip = ssh_utils.GetUserAndInstance(args.user_host)
       remote = ssh.Remote(ip, user)
@@ -326,16 +342,20 @@ class Ssh(base.Command):
     else:
       user, instance_name = ssh_utils.GetUserAndInstance(args.user_host)
       instance_ref = instance_flags.SSH_INSTANCE_RESOLVER.ResolveResources(
-          [instance_name], compute_scope.ScopeEnum.ZONE, args.zone,
+          [instance_name],
+          compute_scope.ScopeEnum.ZONE,
+          args.zone,
           holder.resources,
-          scope_lister=instance_flags.GetInstanceZoneScopeLister(client))[0]
+          scope_lister=instance_flags.GetInstanceZoneScopeLister(client),
+      )[0]
       instance = ssh_helper.GetInstance(client, instance_ref)
       project = ssh_helper.GetProject(client, instance_ref.project)
       if args.strict_host_key_checking == 'no':
         host_keys = None
       else:
         host_keys = ssh_helper.GetHostKeysFromGuestAttributes(
-            client, instance_ref, instance, project)
+            client, instance_ref, instance, project
+        )
 
       if base_classes.SupportIAP():
         iap_tunnel_args = iap_tunnel.CreateSshTunnelArgs(
@@ -348,25 +368,34 @@ class Ssh(base.Command):
       internal_address = ssh_utils.GetInternalIPAddress(instance)
 
       if args.troubleshoot:
-        log.status.Print(TROUBLESHOOT_HEADER.format(
-            instance_ref, args.zone or instance_ref.zone,
-            datetime.datetime.now()
-        ))
-        RunTroubleshooting(project, args.zone or instance_ref.zone,
-                           instance, iap_tunnel_args)
+        log.status.Print(
+            TROUBLESHOOT_HEADER.format(
+                instance_ref,
+                args.zone or instance_ref.zone,
+                datetime.datetime.now(),
+            )
+        )
+        RunTroubleshooting(
+            project, args.zone or instance_ref.zone, instance, iap_tunnel_args
+        )
         return
 
       if not host_keys and host_keys is not None:
-        log.debug('Unable to retrieve host keys from instance metadata. '
-                  'Continuing.')
+        log.debug(
+            'Unable to retrieve host keys from instance metadata. Continuing.'
+        )
       expiration, expiration_micros = ssh_utils.GetSSHKeyExpirationFromArgs(
-          args)
+          args
+      )
 
       if args.plain:
         oslogin_state = ssh.OsloginState(oslogin_enabled=False)
       else:
-        public_key = ssh_helper.keys.GetPublicKey().ToEntry(
-            include_comment=True)
+        public_key = (
+            ssh_helper.keys.GetPublicKey().ToEntry(include_comment=True)
+            if ssh_helper.keys
+            else None
+        )
         # If there is an '@' symbol in the user_host arg, the user is requesting
         # to connect as a specific user. This may get overridden by OS Login.
         username_requested = '@' in args.user_host
@@ -378,7 +407,8 @@ class Ssh(base.Command):
             expiration_micros,
             self.ReleaseTrack(),
             username_requested=username_requested,
-            messages=holder.client.messages)
+            messages=holder.client.messages,
+        )
         user = oslogin_state.user
       log.debug(oslogin_state)
 
@@ -405,14 +435,18 @@ class Ssh(base.Command):
     options = None
     if not args.plain:
       if not identity_file_list:
-        identity_file = ssh_helper.keys.key_file
+        identity_file = ssh_helper.keys.key_file if ssh_helper.keys else None
       options = ssh_helper.GetConfig(
           ssh_utils.HostKeyAlias(instance),
           args.strict_host_key_checking,
           host_keys_to_add=host_keys,
       )
 
-    if oslogin_state.third_party_user or oslogin_state.require_certificates:
+    if (
+        oslogin_state.third_party_user
+        or oslogin_state.require_certificates
+        or not oslogin_state.is_default_universe
+    ):
       cert_file = ssh.CertFileFromComputeInstance(
           project.name, instance_ref.zone, instance.id
       )
@@ -447,8 +481,12 @@ class Ssh(base.Command):
 
     if args.dry_run:
       # Add quotes around any arguments that contain spaces.
-      log.out.Print(' '.join('"{0}"'.format(arg) if ' ' in arg else arg
-                             for arg in cmd.Build(ssh_helper.env)))
+      log.out.Print(
+          ' '.join(
+              '"{0}"'.format(arg) if ' ' in arg else arg
+              for arg in cmd.Build(ssh_helper.env)
+          )
+      )
       return
 
     # Raise errors if instance requires a security key but the local
@@ -461,45 +499,53 @@ class Ssh(base.Command):
     # At a minimum, avoid injecting 'y' if PuTTY will prompt for a password /
     # 2FA authentication method (since we know that won't work), or if the user
     # has disabled the property.
-    prompt_for_password = (
-        args.plain
-        and not any(f == '-i' or f.startswith('-i=') for f in extra_flags))
+    prompt_for_password = args.plain and not any(
+        f == '-i' or f.startswith('-i=') for f in extra_flags
+    )
     putty_force_connect = (
         not prompt_for_password
         and not oslogin_state.oslogin_2fa_enabled
-        and properties.VALUES.ssh.putty_force_connect.GetBool())
+        and properties.VALUES.ssh.putty_force_connect.GetBool()
+    )
 
     if args.plain or oslogin_state.oslogin_enabled:
       keys_newly_added = False
     else:
       keys_newly_added = ssh_helper.EnsureSSHKeyExists(
-          client, remote.user, instance, project, expiration=expiration)
+          client, remote.user, instance, project, expiration=expiration
+      )
 
     if keys_newly_added:
-      poller = ssh_utils.CreateSSHPoller(remote, identity_file, options,
-                                         iap_tunnel_args,
-                                         extra_flags=extra_flags)
+      poller = ssh_utils.CreateSSHPoller(
+          remote,
+          identity_file,
+          options,
+          iap_tunnel_args,
+          extra_flags=extra_flags,
+      )
       log.status.Print('Waiting for SSH key to propagate.')
       try:
-        poller.Poll(
-            ssh_helper.env,
-            putty_force_connect=putty_force_connect)
+        poller.Poll(ssh_helper.env, putty_force_connect=putty_force_connect)
       except retry.WaitException:
         raise ssh_utils.NetworkError()
 
     if args.internal_ip and not on_prem:
-      ssh_helper.PreliminarilyVerifyInstance(instance.id, remote, identity_file,
-                                             options, putty_force_connect)
+      ssh_helper.PreliminarilyVerifyInstance(
+          instance.id, remote, identity_file, options, putty_force_connect
+      )
 
     # Errors from SSH itself result in an ssh.CommandError being raised
     try:
       return_code = cmd.Run(
-          ssh_helper.env,
-          putty_force_connect=putty_force_connect)
+          ssh_helper.env, putty_force_connect=putty_force_connect
+      )
     except ssh.CommandError as e:
       if not on_prem:
-        log.status.Print(self.createRecommendMessage(args, instance_name,
-                                                     instance_ref, project))
+        log.status.Print(
+            self.createRecommendMessage(
+                args, instance_name, instance_ref, project
+            )
+        )
       raise e
 
     if cert_file:
@@ -511,7 +557,7 @@ class Ssh(base.Command):
       sys.exit(return_code)
 
   def createRecommendMessage(self, args, instance_name, instance_ref, project):
-    release_track = ReleaseTrack.get(str(self.ReleaseTrack()).lower())
+    release_track = _RELEASE_TRACK.get(str(self.ReleaseTrack()).lower())
     release_track = release_track + ' ' if release_track else ''
     zone_name = args.zone or instance_ref.zone
     project_name = project.name
@@ -529,6 +575,7 @@ class Ssh(base.Command):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class SshAlphaBeta(Ssh):
   """SSH into a virtual machine instance (Beta)."""
+
   enable_security_keys = True
 
 
@@ -536,7 +583,8 @@ def _DetailedHelp():
   """Construct help text based on the command release track."""
   detailed_help = {
       'brief': 'SSH into a virtual machine instance',
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
 *{command}* is a thin wrapper around the *ssh(1)* command that
 takes care of authentication and the translation of the
 instance name into an IP address.
@@ -559,8 +607,10 @@ flag is given, the generated key will have an empty passphrase).
 If the `--region` and `--network` flags are provided, then `--plain` and
 `--tunnel-through-iap` are implied and an IP address must be supplied instead of
 an instance name. This is most useful for connecting to on-prem resources.
-""",
-      'EXAMPLES': """\
+"""
+      ),
+      'EXAMPLES': (
+          """\
 To SSH into 'example-instance' in zone ``us-central1-a'', run:
 
   $ {command} example-instance --zone=us-central1-a
@@ -597,7 +647,8 @@ To use the IP address of your remote VM (eg, for on-prem), you must also specify
 the `--region` and `--network` flags:
 
   $ {command} 10.1.2.3 --region=us-central1 --network=default
-""",
+"""
+      ),
   }
 
   return detailed_help

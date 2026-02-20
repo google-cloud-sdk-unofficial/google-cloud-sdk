@@ -520,6 +520,7 @@ class ResourcesConfig:
       repo: str,
       tracker: progress_tracker.StagedProgressTracker,
       no_build: bool = False,
+      build: bool = False,
   ) -> 'ResourcesConfig':
     """Creates or updates all resources defined in the configuration.
 
@@ -531,6 +532,7 @@ class ResourcesConfig:
       repo: The repo of the compose project.
       tracker: The progress tracker to use for handling the resources.
       no_build: If true, skip building from source.
+      build: If true, force build from source.
 
     Returns:
       The ResourcesConfig instance after handling the resources.
@@ -549,7 +551,8 @@ class ResourcesConfig:
             self.project,
             region,
             tracker,
-            no_build,
+            no_build=no_build,
+            build=build,
         )
 
     log.debug('Starting resource handling for project: %s', self.project)

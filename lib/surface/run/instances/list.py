@@ -56,7 +56,7 @@ class List(commands.List):
     concept_parsers.ConceptParser([namespace_presentation]).AddToParser(parser)
     parser.display_info.AddFormat(
         'table('
-        f'{instance_printer.status_color_format()},'
+        f'{instance_printer.StatusColorFormat()},'
         'name:label=INSTANCE,'
         'region:label=REGION,'
         'creation_timestamp.date("%Y-%m-%d %H:%M:%S %Z"):label="CREATED AT",'

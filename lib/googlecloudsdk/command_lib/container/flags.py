@@ -307,6 +307,31 @@ be either the project ID or the project number.
   )
 
 
+def AddNodePoolUpgradeConcurrencyConfigFlag(parser, hidden=False):
+  """Adds a --node-pool-upgrade-concurrency-config flag to the given parser."""
+
+  help_text = """\
+Configure the concurrency settings for node pool auto upgrades.
+
+Examples:
+
+  $ {command} example-cluster --node-pool-upgrade-concurrency-config=max-count=10
+
+`max-count`::: The maximum number of node pools to upgrade concurrently. The
+  maximum allowed value is 100.
+"""
+  return parser.add_argument(
+      '--node-pool-upgrade-concurrency-config',
+      type=arg_parsers.ArgDict(
+          spec={
+              'max-count': int,
+          },
+      ),
+      help=help_text,
+      hidden=hidden,
+  )
+
+
 def AddReleaseChannelFlag(
     parser, is_update=False, autopilot=False, hidden=False
 ):
@@ -5964,6 +5989,28 @@ Examples:
   )
 
 
+def AddEnableAmbientFlag(parser, hidden=False, is_update=False):
+  """Adds the --enable-ambient flag to the parser."""
+  help_text = """\
+  Enable Ambient Networking on the cluster.
+  """
+  if is_update:
+    parser.add_argument(
+        '--enable-ambient',
+        action=arg_parsers.StoreTrueFalseAction,
+        help=help_text,
+        hidden=hidden,
+    )
+  else:
+    parser.add_argument(
+        '--enable-ambient',
+        action='store_true',
+        default=None,
+        help=help_text,
+        hidden=hidden,
+    )
+
+
 def AddMasterGlobalAccessFlag(parser):
   """Adds --enable-master-global-access boolean flag."""
   help_text = """
@@ -8654,4 +8701,19 @@ def AddNodeDrainSettingsFlag(parser, hidden=False):
       help="""\
       Whether to respect PDBs when deleting nodes in the node pool.
       """,
+  )
+
+
+def AddLinkedRunnersModeFlag(parser, hidden=False):
+  """Adds the --linked-runners-mode flag to parser."""
+  help_text = """\
+  Sets the linked runners mode for the cluster; possible values are `standard` and `none`.
+  """
+  parser.add_argument(
+      '--linked-runners-mode',
+      required=False,
+      default=None,
+      hidden=hidden,
+      choices=['standard', 'none'],
+      help=help_text,
   )

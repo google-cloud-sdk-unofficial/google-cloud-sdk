@@ -27,10 +27,10 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.GA, base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA
 )
+@base.UniverseCompatible
 class Update(base.Command):
   """Update a Spanner instance partition. You can't update the default instance partition using this command."""  # pylint: disable=line-too-long
 

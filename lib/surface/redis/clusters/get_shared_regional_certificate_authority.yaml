@@ -1,0 +1,29 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: |
+      Get the shared regional certificate authority certificates for Memorystore for Redis Cluster.
+    description: |
+      Get the shared regional certificate authority certificates for Memorystore for Redis Cluster.
+
+      This command can fail for the following reasons:
+        * The active account doesn't have permission to access the given region.
+    examples: |
+      To get the shared regional certificate authority in the default region, run:
+
+        $ {command}
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.redis.resources:region
+      help_text: |
+        Arguments and flags that specify the region.
+      is_positional: false
+
+  request:
+    ALPHA:
+      api_version: v1alpha1
+    collection: redis.projects.locations
+    method: getSharedRegionalCertificateAuthority
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.redis.util:UpdateGetSharedRegionalCertificateAuthorityRequestPath

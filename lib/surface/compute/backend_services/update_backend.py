@@ -104,30 +104,47 @@ class UpdateBackend(base.UpdateCommand):
   def _Modify(self, client, resources, backend_service_ref, args, existing):
     replacement = encoding.CopyProtoMessage(existing)
 
-    group_ref = self._GetGroupRef(args, resources, client)
-
     backend_to_update = None
-    for backend in replacement.backends:
-      # At most one backend will match
+    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.service:
+      for backend in replacement.backends:
+        if backend.service == args.service:
+          backend_to_update = backend
+          break
+      if not backend_to_update:
+        raise exceptions.ArgumentError(
+            'No backend with name [{0}] is part of the backend '
+            'service [{1}].'.format(args.service, backend_service_ref.Name())
+        )
+    else:
+      group_ref = self._GetGroupRef(args, resources, client)
+      for backend in replacement.backends:
+        # At most one backend will match
 
-      if group_ref.RelativeName() == resources.ParseURL(
-          backend.group).RelativeName():
-        backend_to_update = backend
-        break
+        if (
+            group_ref.RelativeName()
+            == resources.ParseURL(backend.group).RelativeName()
+        ):
+          backend_to_update = backend
+          break
 
-    if not backend_to_update:
-      scope_type = None
-      scope_name = None
-      if hasattr(group_ref, 'zone'):
-        scope_type = 'zone'
-        scope_name = group_ref.zone
-      if hasattr(group_ref, 'region'):
-        scope_type = 'region'
-        scope_name = group_ref.region
-      raise exceptions.ArgumentError(
-          'No backend with name [{0}] in {1} [{2}] is part of the backend '
-          'service [{3}].'.format(group_ref.Name(), scope_type, scope_name,
-                                  backend_service_ref.Name()))
+      if not backend_to_update:
+        scope_type = None
+        scope_name = None
+        if hasattr(group_ref, 'zone'):
+          scope_type = 'zone'
+          scope_name = group_ref.zone
+        if hasattr(group_ref, 'region'):
+          scope_type = 'region'
+          scope_name = group_ref.region
+        raise exceptions.ArgumentError(
+            'No backend with name [{0}] in {1} [{2}] is part of the backend '
+            'service [{3}].'.format(
+                group_ref.Name(),
+                scope_type,
+                scope_name,
+                backend_service_ref.Name(),
+            )
+        )
 
     if args.description:
       backend_to_update.description = args.description
@@ -290,6 +307,7 @@ class UpdateBackendBeta(UpdateBackend):
         args.capacity_scaler is not None,
         args.failover is not None,
         args.preference is not None,
+        hasattr(args, 'service') and args.service is not None,
     ]):
       raise exceptions.UpdatePropertyError(
           'At least one property must be modified.')
@@ -322,7 +340,9 @@ class UpdateBackendAlpha(UpdateBackendBeta):
   @classmethod
   def Args(cls, parser):
     flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
-    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'update in')
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(
+        parser, 'update in', support_inline_service=True
+    )
     backend_flags.AddDescription(parser)
     backend_flags.AddBalancingMode(parser, release_track=cls.ReleaseTrack())
     backend_flags.AddCapacityLimits(parser, release_track=cls.ReleaseTrack())

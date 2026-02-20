@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.Hidden
+@base.UniverseCompatible
 class SsdCaches(base.Group):
   """Manage Cloud Spanner SSD caches."""
 

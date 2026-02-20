@@ -67,7 +67,7 @@ DETAILED_HELP = {
 }
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class List(base.ListCommand):
   """List the Cloud Spanner operations."""
@@ -224,7 +224,7 @@ class List(base.ListCommand):
     return instance_operations.List(args.instance)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaList(List):
   """List the Cloud Spanner operations."""
@@ -247,7 +247,7 @@ class BetaList(List):
     super(BetaList, BetaList).Args(parser)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaList(BetaList):
   """List the Cloud Spanner operations."""

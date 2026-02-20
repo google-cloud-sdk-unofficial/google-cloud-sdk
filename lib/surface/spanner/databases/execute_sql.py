@@ -150,7 +150,7 @@ def GetRequestPriorityMapper(messages):
   )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Query(base.Command):
   """Executes a SQL query against a Cloud Spanner database."""
   detailed_help = DETAILED_HELP

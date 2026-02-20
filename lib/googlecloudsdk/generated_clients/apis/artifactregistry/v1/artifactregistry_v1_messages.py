@@ -1414,23 +1414,28 @@ class Behavior(_messages.Message):
   operation.
 
   Fields:
+    allAttachmentsIncluded: Optional. Includes all source artifact
+      attachments.
+    allTagsExcluded: Optional. Excludes all source artifact tags.
     continueOnSkippedVersion: Optional. Indicates that the repo copy operation
       should continue even if a version is skipped due to a non-transient
       error that should not fail the entire copy operation (e.g. a version
       missing an underlying file). The operation metadata and response will
       contain a list of skipped version errors that can be inspected for
       details on the failure(s).
-    maxVersionAgeDays: Optional. If set, only versions created within the
-      specified number of days (24-hour periods) up to the operation's start
-      time will be copied. If unset or set to 0, all versions will be copied.
-      This field provides a convenient way to speed up regular repository
-      copies. For example, after an initial full copy operation, this field
-      can be set in recurring calls (e.g., from a cron job) to copy only
-      recent artifacts, rather than the entire repository.
+    maxVersionAgeDays: Optional. If set, only versions updated or created
+      within the specified number of days (24-hour periods) up to the
+      operation's start time will be copied. If unset or set to 0, all
+      versions will be copied. This field provides a convenient way to speed
+      up regular repository copies. For example, after an initial full copy
+      operation, this field can be set in recurring calls (e.g., from a cron
+      job) to copy only recent artifacts, rather than the entire repository.
   """
 
-  continueOnSkippedVersion = _messages.BooleanField(1)
-  maxVersionAgeDays = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  allAttachmentsIncluded = _messages.BooleanField(1)
+  allTagsExcluded = _messages.BooleanField(2)
+  continueOnSkippedVersion = _messages.BooleanField(3)
+  maxVersionAgeDays = _messages.IntegerField(4, variant=_messages.Variant.INT32)
 
 
 class Binding(_messages.Message):
@@ -1624,6 +1629,7 @@ class CopyRepositoryMetadata(_messages.Message):
   the progress of the repo copy.
 
   Fields:
+    copyFailureTime: Represents the time that the copy operation failed.
     copyStartTime: The time that the request was received, and the time we
       will copy from. Artifacts pushed after this time will not be copied.
     destinationRepository: Repository being copied to. Format:
@@ -1646,15 +1652,16 @@ class CopyRepositoryMetadata(_messages.Message):
     versionsCopiedCount: The total number of versions successfully copied.
   """
 
-  copyStartTime = _messages.StringField(1)
-  destinationRepository = _messages.StringField(2)
-  packagesCopiedCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  skippedVersionErrorCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
-  skippedVersionErrorSamples = _messages.MessageField('SkippedVersionError', 5, repeated=True)
-  sourceRepository = _messages.StringField(6)
-  totalPackagesCount = _messages.IntegerField(7, variant=_messages.Variant.INT32)
-  totalVersionsCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
-  versionsCopiedCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  copyFailureTime = _messages.StringField(1)
+  copyStartTime = _messages.StringField(2)
+  destinationRepository = _messages.StringField(3)
+  packagesCopiedCount = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  skippedVersionErrorCount = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  skippedVersionErrorSamples = _messages.MessageField('SkippedVersionError', 6, repeated=True)
+  sourceRepository = _messages.StringField(7)
+  totalPackagesCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  totalVersionsCount = _messages.IntegerField(9, variant=_messages.Variant.INT32)
+  versionsCopiedCount = _messages.IntegerField(10, variant=_messages.Variant.INT32)
 
 
 class CopyRepositoryRequest(_messages.Message):

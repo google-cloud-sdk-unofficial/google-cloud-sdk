@@ -1327,20 +1327,43 @@ class BuildTrigger(_messages.Message):
 class BuiltImage(_messages.Message):
   r"""An image built by the pipeline.
 
+  Enums:
+    OciMediaTypeValueValuesEnum: Output only. The OCI media type of the
+      artifact. Non-OCI images, such as Docker images, will have an
+      unspecified value.
+
   Fields:
     artifactRegistryPackage: Output only. Path to the artifact in Artifact
       Registry.
     digest: Docker Registry 2.0 digest.
     name: Name used to push the container image to Google Container Registry,
       as presented to `docker push`.
+    ociMediaType: Output only. The OCI media type of the artifact. Non-OCI
+      images, such as Docker images, will have an unspecified value.
     pushTiming: Output only. Stores timing information for pushing the
       specified image.
   """
 
+  class OciMediaTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The OCI media type of the artifact. Non-OCI images, such
+    as Docker images, will have an unspecified value.
+
+    Values:
+      OCI_MEDIA_TYPE_UNSPECIFIED: Default value.
+      IMAGE_MANIFEST: The artifact is an image manifest, which represents a
+        single image with all its layers.
+      IMAGE_INDEX: The artifact is an image index, which can contain a list of
+        image manifests.
+    """
+    OCI_MEDIA_TYPE_UNSPECIFIED = 0
+    IMAGE_MANIFEST = 1
+    IMAGE_INDEX = 2
+
   artifactRegistryPackage = _messages.StringField(1)
   digest = _messages.StringField(2)
   name = _messages.StringField(3)
-  pushTiming = _messages.MessageField('TimeSpan', 4)
+  ociMediaType = _messages.EnumField('OciMediaTypeValueValuesEnum', 4)
+  pushTiming = _messages.MessageField('TimeSpan', 5)
 
 
 class CancelBuildRequest(_messages.Message):
@@ -4926,8 +4949,8 @@ class Results(_messages.Message):
       build.
     numArtifacts: Number of non-container artifacts uploaded to Cloud Storage.
       Only populated when artifacts are uploaded to Cloud Storage.
-    ociArtifacts: Output only. OCI artifacts uploaded to Artifact Registry at
-      the end of the build.
+    ociArtifacts: Output only. Deprecated: Read from the `images` field
+      instead.
     pythonPackages: Python artifacts uploaded to Artifact Registry at the end
       of the build.
   """
@@ -5680,7 +5703,7 @@ class UploadedNpmPackage(_messages.Message):
 
 
 class UploadedOCIArtifact(_messages.Message):
-  r"""An oci image uploaded to Artifact Registry using the OCI directive.
+  r"""Deprecated: Read from the `images` field instead.
 
   Fields:
     artifactRegistryPackage: Output only. Path to the artifact in Artifact

@@ -63,13 +63,12 @@ def resolve_dynamic_variables(yaml_content, deployment_path, env):
   combined_variables = {
       "project": parsed_deployment["project"],
       "region": parsed_deployment["region"],
-      VARIABLES_KEY: parsed_deployment[VARIABLES_KEY],
+      **parsed_deployment.get(VARIABLES_KEY, {}),
   }
-  nested_vars = combined_variables.pop(VARIABLES_KEY, {})
-  if nested_vars:
-    combined_variables.update(nested_vars)
 
-  resolved_resource_profile = _resolve_resource_profile(parsed_deployment)
+  resolved_resource_profile = _resolve_resource_profile(
+      parsed_deployment, combined_variables
+  )
   resolved_yaml_content = _resolve_string_templates(
       yaml_content, combined_variables
   )
@@ -90,29 +89,28 @@ def resolve_dynamic_variables(yaml_content, deployment_path, env):
   return resolved_yaml_content
 
 
-def _resolve_resource_profile(deployment):
+def _resolve_resource_profile(deployment, combined_variables):
   """Resolves the resource profile."""
-  profile_resource = next(
-      (r for r in deployment[RESOURCES_KEY] if r.type == "resourceProfile"),
-      None,
-  )
-  resource_profile = {}
-  if profile_resource and hasattr(profile_resource, "source"):
+  profile_map = {}
+  profiles = [
+      r for r in deployment[RESOURCES_KEY] if r.type == "resourceProfile"
+  ]
+  for p in profiles:
     try:
-      raw_profile_content = files.ReadFileContents(profile_resource.source)
+      raw_profile_content = files.ReadFileContents(p.source)
       resolved_profile_str = _resolve_string_templates(
-          raw_profile_content, deployment[VARIABLES_KEY]
+          raw_profile_content, combined_variables
       )
       resource_profile = yaml.load(resolved_profile_str)
     except (IOError, OSError, yaml.Error) as e:
       raise BadFileError(
-          "Error reading or parsing resource profile"
-          f" '{profile_resource.source}': {e}"
+          f"Error reading or parsing resource profile '{p.source}': {e}"
       ) from e
-  return resource_profile
+    profile_map[p.name] = resource_profile
+  return profile_map
 
 
-def _resolve_pipeline_yaml(yaml_content, resource_profile, deployment):
+def _resolve_pipeline_yaml(yaml_content, profile_map, deployment):
   """Resolves pipeline specific configurations within the YAML content.
 
   This function injects artifact storage details and resource profile
@@ -121,7 +119,8 @@ def _resolve_pipeline_yaml(yaml_content, resource_profile, deployment):
 
   Args:
     yaml_content: The parsed YAML content of the pipeline.
-    resource_profile: The resolved resource profile.
+    profile_map: A dictionary mapping resource profile names to their resolved
+      definitions.
     deployment: A dictionary containing deployment-specific configurations,
       including "resources" and "artifact_storage".
 
@@ -130,10 +129,8 @@ def _resolve_pipeline_yaml(yaml_content, resource_profile, deployment):
 
   Raises:
     ValueError: If there is an error reading the resource profile file.
+    BadFileError: If a resource profile used in an action is not found.
   """
-  profile_definition = {}
-  if resource_profile:
-    profile_definition = resource_profile.get("definition", {})
 
   for action in yaml_content.get("actions", []):
     action["depsBucket"] = deployment[ARTIFACT_STORAGE_KEY]["bucket"]
@@ -142,10 +139,23 @@ def _resolve_pipeline_yaml(yaml_content, resource_profile, deployment):
       del action["script"]["mainPythonFileUri"]
       if not action["script"]:
         del action["script"]
-    config = action.setdefault("config", {})
-    session_template = config.setdefault("sessionTemplate", {})
-    session_template["inline"] = profile_definition
-
+    profile_name = action.get("resourceProfile")
+    if profile_name:
+      if profile_name in profile_map:
+        profile_definition = profile_map[profile_name].get("definition", {})
+        engine_type = action.get("engine", {}).get("engineType")
+        config = action.setdefault("config", {})
+        if engine_type == "dataproc-serverless":
+          session_template = config.setdefault("sessionTemplate", {})
+          session_template["inline"] = profile_definition
+        elif engine_type == "dataproc-gce":
+          config.update(profile_definition)
+        del action["resourceProfile"]
+      else:
+        raise BadFileError(
+            f"Resource profile '{profile_name}' used in action "
+            f"'{action.get('name')}' was not found in deployment resources."
+        )
   return yaml_content
 
 

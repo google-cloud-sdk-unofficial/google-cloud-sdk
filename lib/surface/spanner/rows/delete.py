@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import write_util
 from googlecloudsdk.core import resources
 
 
+@base.UniverseCompatible
 class Delete(base.DeleteCommand):
   # pylint:disable=line-too-long
   """Delete a row in a Cloud Spanner database.

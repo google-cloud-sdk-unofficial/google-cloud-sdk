@@ -1115,6 +1115,7 @@ def AddEraseVssSignature(parser, resource):
 def AddInstanceFlexibilityPolicyArgs(
     parser: Any,
     is_update: bool = False,
+    support_instance_selection_min_cpu_platform: bool = False,
 ) -> None:
   """Adds instance flexibility policy args."""
   parser.add_argument(
@@ -1126,17 +1127,31 @@ def AddInstanceFlexibilityPolicyArgs(
           ' machine type specified in the instance template is used.'
       ),
   )
-  parser.add_argument(
-      '--instance-selection',
-      help=(
-          'Named selection of machine types with an optional rank. '
-          'For example,'
-          ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0"`'
-      ),
-      metavar='name=NAME,machine-type=MACHINE_TYPE[,machine-type=MACHINE_TYPE...][,rank=RANK]',
-      type=ArgMultiValueDict(),
-      action=arg_parsers.FlattenAction(),
-  )
+  if support_instance_selection_min_cpu_platform:
+    parser.add_argument(
+        '--instance-selection',
+        help=(
+            'Named selection of machine types with an optional rank and'
+            ' minimum CPU platform. '
+            'For example,'
+            ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0,min-cpu-platform=MIN_CPU_PLATFORM"`'
+        ),
+        metavar='name=NAME,machine-type=MACHINE_TYPE[,machine-type=MACHINE_TYPE...][,rank=RANK][,min-cpu-platform=MIN_CPU_PLATFORM]',
+        type=ArgMultiValueDict(),
+        action=arg_parsers.FlattenAction(),
+    )
+  else:
+    parser.add_argument(
+        '--instance-selection',
+        help=(
+            'Named selection of machine types with an optional rank. '
+            'For example,'
+            ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0"`'
+        ),
+        metavar='name=NAME,machine-type=MACHINE_TYPE[,machine-type=MACHINE_TYPE...][,rank=RANK]',
+        type=ArgMultiValueDict(),
+        action=arg_parsers.FlattenAction(),
+    )
   if is_update:
     parser.add_argument(
         '--remove-instance-selections-all',

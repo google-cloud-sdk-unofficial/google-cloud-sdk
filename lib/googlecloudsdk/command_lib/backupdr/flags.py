@@ -270,8 +270,12 @@ def AddCreateBackupPlanAssociationFlags(parser):
 
   AddResourceType(
       parser,
-      """Type of resource to which the backup plan should be applied.
-          E.g., `compute.<UNIVERSE_DOMAIN>.com/Instance` """,
+      textwrap.dedent("""\
+      Type of resource to which the backup plan should be applied.
+
+      For example:
+      * `compute.<UNIVERSE_DOMAIN>/Instance` for Compute Engine instances.
+      * `file.<UNIVERSE_DOMAIN>/Instance` for Filestore instances."""),
   )
 
 
@@ -727,33 +731,33 @@ def AddBackupVaultAccessRestrictionEnumFlag(parser, command: str):
     )
     default = 'within-org'
   else:
-    help_text = """
-Authorize certain sources and destinations for data being sent into, or restored from the current backup vault.
+    help_text = textwrap.dedent("""\
+        Authorize certain sources and destinations for data being sent into, or restored from the current backup vault.
 
-Access restrictions can be modified to be more or less restrictive.
+        Access restrictions can be modified to be more or less restrictive.
 
-    ::: More restrictive access restriction update will fail by default if there will be non compliant Data Sources.
-    To allow such updates, use the --force-update-access-restriction flag.
-    :::  For Google Cloud Console resources, the following changes are allowed to make access restrictions more restrictive:
-        *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
-        *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
+            ::: More restrictive access restriction update will fail by default if there will be non compliant Data Sources.
+            To allow such updates, use the --force-update-access-restriction flag.
+            :::  For Google Cloud Console resources, the following changes are allowed to make access restrictions more restrictive:
+                *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
+                *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
 
-    ::: For Management Server resources, the following changes are allowed to make access restrictions more restrictive:
-        *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
-        *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
+            ::: For Management Server resources, the following changes are allowed to make access restrictions more restrictive:
+                *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
+                *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
 
-    :::   For both Google Cloud Console and Management Server resources, the following changes are allowed to make access restrictions more restrictive:
-        *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
-        *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
+            :::   For both Google Cloud Console and Management Server resources, the following changes are allowed to make access restrictions more restrictive:
+                *   `UNRESTRICTED` to `WITHIN_PROJECT` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` / `WITHIN_ORGANIZATION`
+                *   `WITHIN_PROJECT` to `WITHIN_ORGANIZATION` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
 
-    ::: For Google Cloud Console resources,  the following changes are allowed to make access restrictions less restrictive:
-        *   `WITHIN_ORGANIZATION` to `UNRESTRICTED` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
-        *   `WITHIN_PROJECT` to `UNRESTRICTED`
-        *   `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` to `UNRESTRICTED`
+            ::: For Google Cloud Console resources,  the following changes are allowed to make access restrictions less restrictive:
+                *   `WITHIN_ORGANIZATION` to `UNRESTRICTED` / `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA`
+                *   `WITHIN_PROJECT` to `UNRESTRICTED`
+                *   `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` to `UNRESTRICTED`
 
-    ::: For Management Server resources, the following changes are allowed to make access restrictions less restrictive:
-        *   `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` to `UNRESTRICTED`
-    """
+            ::: For Management Server resources, the following changes are allowed to make access restrictions less restrictive:
+                *   `WITHIN_ORG_BUT_UNRESTRICTED_FOR_BA` to `UNRESTRICTED`
+        """)
     default = None
 
   parser.add_argument(
@@ -818,7 +822,8 @@ def AddLogRetentionDays(parser, hidden=True):
       required=False,
       hidden=hidden,
       type=int,
-      help=("""Configures how long logs will be stored. It is defined in "days".
+      help=textwrap.dedent("""\
+          Configures how long logs will be stored. It is defined in "days".
           This value should be greater than or equal to minimum enforced log
           retention duration of the backup vault."""),
   )
@@ -884,13 +889,12 @@ def AddBackupRule(parser, required=False):
       ),
       action='append',
       metavar='PROPERTY=VALUE',
-      help=(
-          f"""Backup rule that defines parameters for when and how a backup
+      help=textwrap.dedent(f"""\
+          Backup rule that defines parameters for when and how a backup
           is created. This flag can be repeated to create more backup rules.
 
           {BACKUP_RULE_COMMON_HELP_TEXT}
-          """
-      ),
+          """),
   )
 
 
@@ -946,16 +950,15 @@ def AddUpdateBackupRule(parser: argparse.ArgumentParser):
       ),
       action='append',
       metavar='PROPERTY=VALUE',
-      help=(
-          f"""Full definition of an existing backup rule with updated values.
+      help=textwrap.dedent(f"""\
+          Full definition of an existing backup rule with updated values.
           The existing backup rule is replaced by this new set of values.
           This flag can be repeated to update multiple backup rules.
           It is not allowed to pass the same rule-id in this flag more than once
           in the same command.
 
           {BACKUP_RULE_COMMON_HELP_TEXT}
-          """
-      ),
+          """),
   )
 
 
@@ -1018,10 +1021,9 @@ def AddAddBackupRule(parser):
       ),
       action='append',
       metavar='PROPERTY=VALUE',
-      help=(
-          """Parameters of backup rule to be added to the Backup Plan. This flag can be repeated to add more backup rules.
-          """
-      ),
+      help=textwrap.dedent("""\
+          Parameters of backup rule to be added to the Backup Plan. This flag can be repeated to add more backup rules.
+          """),
   )
 
 
@@ -1035,10 +1037,9 @@ def AddRemoveBackupRule(parser):
       '--remove-backup-rule',
       required=False,
       type=str,
-      help=(
-          """Name of an existing backup rule to be removed from the Backup Plan. This flag can be repeated to remove more backup rules.
-          """
-      ),
+      help=textwrap.dedent("""\
+          Name of an existing backup rule to be removed from the Backup Plan. This flag can be repeated to remove more backup rules.
+          """),
       action='append',
       metavar='RULE-ID',
   )
@@ -1058,13 +1059,54 @@ def AddBackupRulesFromFile(parser):
   )
 
 
+def AddCloudsqlEdition(parser, help_text):
+  """Adds a positional edition argument to parser.
+
+  Args:
+    parser: argparse.Parser: Parser object for command line inputs.
+    help_text: Help text for the edition argument.
+  """
+  parser.add_argument(
+      '--cloudsql-edition',
+      required=False,
+      type=str,
+      help=help_text,
+  )
+
+
 def AddMaxCustomOnDemandRetentionDays(parser):
   """Adds a max-custom-on-demand-retention-days argument to parser."""
   parser.add_argument(
       '--max-custom-on-demand-retention-days',
       required=False,
       type=int,
-      help=("""Configure the maximum retention period for on-demand backups.
+      help=textwrap.dedent("""\
+          Configure the maximum retention period for on-demand backups.
           The value must be greater than or equal to the minimum enforced
           retention period set on the backup vault."""),
+  )
+
+
+def AddDiskBackupPlanProperties(parser):
+  """Adds the --disk-properties flag to the given parser."""
+  help_text = textwrap.dedent("""\
+      Workload-specific properties for disk backups generated by this plan.
+
+      *guest-flush*::: Indicates whether to perform a guest flush operation
+      before taking a disk backup. When set to true, the system will attempt
+      to ensure application-consistent backups. When set to false, the system
+      will create crash-consistent backups. Default value is false.
+
+      Example: --disk-properties=guest-flush=true
+      """)
+  parser.add_argument(
+      '--disk-properties',
+      metavar='PROPERTY=VALUE',
+      hidden=True,
+      type=arg_parsers.ArgDict(
+          spec={
+              'guest-flush': arg_parsers.ArgBoolean(),
+          },
+      ),
+      help=help_text,
   )

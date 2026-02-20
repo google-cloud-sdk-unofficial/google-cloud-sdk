@@ -22,7 +22,7 @@ was not caught anywhere in the Cloud SDK), will direct the user to the Cloud SDK
 bug tracker, with a partly pre-filled form.
 
 2. Otherwise, directs the user to either the Cloud SDK bug tracker,
-StackOverflow, or the Cloud SDK groups page.
+or the Cloud SDK groups page.
 """
 
 from __future__ import absolute_import
@@ -44,7 +44,6 @@ import six
 from six.moves import map
 
 
-STACKOVERFLOW_URL = 'http://stackoverflow.com/questions/tagged/gcloud'
 GROUPS_PAGE_URL = ('https://groups.google.com/forum/?fromgroups#!forum/'
                    'google-cloud-dev')
 
@@ -53,14 +52,10 @@ FEEDBACK_MESSAGE = """\
 
 We appreciate your feedback.
 
-If you have a question, post it on Stack Overflow using the "gcloud" tag at
-[{0}].
-
 For general feedback, use our groups page
-[{1}],
-send a mail to [google-cloud-dev@googlegroups.com] or visit the [#gcloud] IRC
-channel on freenode.
-""".format(STACKOVERFLOW_URL, GROUPS_PAGE_URL)
+[{0}],
+or send a mail to [google-cloud-dev@googlegroups.com].
+""".format(GROUPS_PAGE_URL)
 
 
 FEEDBACK_PROMPT = """\
@@ -83,20 +78,15 @@ def _PrintQuiet(info_str, log_data):
 
   log.Print(textwrap.dedent("""\
 
-      If you have a question, post it on Stack Overflow using the "gcloud" tag
-      at [{0}].
-
       For general feedback, use our groups page
-      [{1}],
-      send a mail to [google-cloud-dev@googlegroups.com], or visit the [#gcloud]
-      IRC channel on freenode.
+      [{0}], or
+      send a mail to [google-cloud-dev@googlegroups.com].
 
       If you have found a bug, file it using our issue tracker site at
-      [{2}].
+      [{1}].
 
       Please include the following information when filing a bug report:\
-      """).format(STACKOVERFLOW_URL, GROUPS_PAGE_URL,
-                  feedback_util.ISSUE_TRACKER_URL))
+      """).format(GROUPS_PAGE_URL, feedback_util.ISSUE_TRACKER_URL))
   divider = feedback_util.GetDivider()
   log.Print(divider)
   if log_data and log_data.traceback:
@@ -123,6 +113,7 @@ def _SuggestIncludeRecentLogs():
       return recent_runs[idx]
 
 
+@base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Feedback(base.Command):
   """Provide feedback to the Google Cloud CLI team.
@@ -130,7 +121,6 @@ class Feedback(base.Command):
   The Google Cloud CLI team offers support through a number of channels:
 
   * Google Cloud CLI Issue Tracker
-  * Stack Overflow "#gcloud" tag
   * google-cloud-dev Google group
 
   This command lists the available channels and facilitates getting help through

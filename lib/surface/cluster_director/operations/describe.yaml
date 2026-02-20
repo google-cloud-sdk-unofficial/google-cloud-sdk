@@ -14,6 +14,7 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  - BETA
   help_text:
     brief: Describe operations
     description: Describe an operation
@@ -29,6 +30,9 @@
       resource_spec: !REF googlecloudsdk.command_lib.cluster_director.default_resources:projects_locations_operations
       required: true
   request:
-    api_version: v1alpha
+    ALPHA:
+      api_version: v1alpha
+    BETA:
+      api_version: v1beta
     collection:
     - hypercomputecluster.projects.locations.operations

@@ -23,6 +23,7 @@ import enum
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.util import times
 
 
 class InstanceStatus(enum.Enum):
@@ -100,6 +101,26 @@ class Instance(container_resource.ContainerResource):
     if self._m.status and self._m.status.urls:
       return self._m.status.urls
     return []
+
+  @property
+  def timeout(self):
+    """The timeout number in the revisionTemplate.
+
+    The lib can accept either a duration format like '1m20s' or integer like
+    '80' to set the timeout. The returned object is an integer value, which
+    assumes second the unit, e.g., 80.
+    """
+    if self.spec.timeout:
+      return int(times.ParseDuration(self.spec.timeout).total_seconds)
+    return None
+
+  @timeout.setter
+  def timeout(self, value):
+    if value is None:
+      self.spec.timeout = None
+    else:
+      duration = times.ParseDuration(str(value), default_suffix='s')
+      self.spec.timeout = times.FormatDurationForJson(duration)
 
   @property
   def status(self):

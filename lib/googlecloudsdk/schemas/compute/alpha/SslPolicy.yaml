@@ -25,14 +25,11 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   customFeatures:
     description: |-
-      A list of features enabled when the selected profile is CUSTOM. The method
-      returns the set of features that can be specified in this list. This field
-      must be empty if the profile is not CUSTOM.
+      A list of features enabled when the selected profile is CUSTOM. The
+      method returns the set of features that can be specified in this list.
+      This field must be empty if the profile is notCUSTOM.
     type: array
     items:
       type: string
@@ -41,22 +38,12 @@ properties:
       An optional description of this resource. Provide this property when
       you create the resource.
     type: string
-  enabledFeatures:
-    description: |-
-      [Output Only] The list of features enabled in the SSL policy.
-    type: array
-    items:
-      type: string
-  kind:
-    description: |-
-      [Output only] Type of the resource. Always compute#sslPolicyfor
-      SSL policies.
-    type: string
   minTlsVersion:
     description: |-
-      The minimum version of SSL protocol that can be used by the
-      clients to establish a connection with the load balancer. This can
-      be one of TLS_1_0, TLS_1_1, TLS_1_2.
+      The minimum version of SSL protocol that can be used by the clients to
+      establish a connection with the load balancer. This can be one
+      ofTLS_1_0, TLS_1_1, TLS_1_2,TLS_1_3. When set to TLS_1_3, the profile
+      field must be set to RESTRICTED.
     type: string
     enum:
     - TLS_1_0
@@ -66,20 +53,35 @@ properties:
   name:
     description: |-
       Name of the resource. The name must be 1-63 characters long, and
-      comply with RFC1035. Specifically, the name must be 1-63
-      characters long and match the regular expression
-      `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must
-      be a lowercase letter, and all following characters must be a
-      dash, lowercase letter, or digit, except the last character, which
-      cannot be a dash.
+      comply with RFC1035. Specifically, the name must be 1-63 characters
+      long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?`
+      which means the first character must be a lowercase letter, and all
+      following characters must be a dash, lowercase letter, or digit,
+      except the last character, which cannot be a dash.
     type: string
+  postQuantumKeyExchange:
+    description: |-
+      One of DEFAULT, ENABLED, or DEFERRED. Controls whether the load
+      balancer allows negotiating X25519MLKEM768 key exchange when clients
+      advertise support for it. When set to DEFAULT, or if no SSL Policy is
+      attached to the target proxy, the load balancer disallows
+      X25519MLKEM768 key exchange until it is enabled by default on load balancers.
+      When set to ENABLED, the load balancer can negotiate X25519MLKEM768
+      key exchange. When set to DEFERRED, temporarily opts out the load
+      balancer from negotiating X25519MLKEM768 beyond the point where it is
+      enabled by default on load balancers.
+    type: string
+    enum:
+    - DEFAULT
+    - DEFERRED
+    - ENABLED
   profile:
     description: |-
-      Profile specifies the set of SSL features that can be used by the
-      load balancer when negotiating SSL with clients. This can be one
-      of COMPATIBLE, MODERN, RESTRICTED, or CUSTOM. If using CUSTOM, the
-      set of SSL features to enable must be specified in the
-      customFeatures field.
+      Profile specifies the set of SSL features that can be used by the load
+      balancer when negotiating SSL with clients. This can be one
+      ofCOMPATIBLE, MODERN, RESTRICTED, orCUSTOM. If using CUSTOM, the set
+      of SSL features to enable must be specified in the customFeatures
+      field.
     type: string
     enum:
     - COMPATIBLE
@@ -87,29 +89,9 @@ properties:
     - FIPS_202205
     - MODERN
     - RESTRICTED
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional SSL policy
-      resides. This field is not applicable to global SSL policies.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
-  selfLinkWithId:
-    description: |-
-      [Output Only] Server-defined URL for this resource with the
-      resource id.
-    type: string
   tlsSettings:
     description: |-
-      Security settings for the proxy. This field is only applicable to
-      a global backend service with the loadBalancingScheme set to
-      INTERNAL_SELF_MANAGED.
+      Security settings for the proxy. This field is only applicable to a
+      global backend service with the loadBalancingScheme set
+      toINTERNAL_SELF_MANAGED.
     $ref: ServerTlsSettings.yaml
-  warnings:
-    description: |-
-      [Output Only] If potential misconfigurations are detected for this
-      SSL policy, this field will be populated with warning messages.
-    type: array
-    items:
-      $ref: WarningsValueListEntry.yaml

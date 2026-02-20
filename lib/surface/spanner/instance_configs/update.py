@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Cloud Spanner instance configuration."""
   detailed_help = {

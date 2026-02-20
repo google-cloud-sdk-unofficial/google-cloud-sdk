@@ -26,10 +26,10 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.UniverseCompatible
 class Add(base.UpdateCommand):
   """Add split points to a  Spanner database."""
 

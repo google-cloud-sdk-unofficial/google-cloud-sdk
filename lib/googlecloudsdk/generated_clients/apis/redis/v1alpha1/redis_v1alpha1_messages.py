@@ -180,12 +180,18 @@ class Backup(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State of the backup.
@@ -432,6 +438,7 @@ class Cluster(_messages.Message):
     NodeTypeValueValuesEnum: Optional. The type of a redis node in the
       cluster. NodeType determines the underlying machine-type of a redis
       node.
+    ServerCaModeValueValuesEnum: Optional. Server CA mode for the cluster.
     StateValueValuesEnum: Output only. The current state of this cluster. Can
       be CREATING, READY, UPDATING, DELETING and SUSPENDED
     TransitEncryptionModeValueValuesEnum: Optional. The in-transit encryption
@@ -512,8 +519,15 @@ class Cluster(_messages.Message):
     redisConfigs: Optional. Key/Value pairs of customer overrides for mutable
       Redis Configs
     replicaCount: Optional. The number of replica nodes per shard.
+    rotateServerCertificate: Optional. Input only. Rotate the server
+      certificates.
     satisfiesPzi: Optional. Output only. Reserved for future use.
     satisfiesPzs: Optional. Output only. Reserved for future use.
+    serverCaMode: Optional. Server CA mode for the cluster.
+    serverCaPool: Optional. Customer-managed CA pool for the cluster. Only
+      applicable for BYOCA i.e. if server_ca_mode is
+      SERVER_CA_MODE_CUSTOMER_MANAGED_CAS_CA. Format:
+      "projects/{project}/locations/{region}/caPools/{ca_pool}".
     shardCount: Optional. Number of shards for the Redis cluster.
     simulateMaintenanceEvent: Optional. Input only. Simulate a maintenance
       event.
@@ -555,12 +569,35 @@ class Cluster(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
+
+  class ServerCaModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Server CA mode for the cluster.
+
+    Values:
+      SERVER_CA_MODE_UNSPECIFIED: Server CA mode not specified.
+      SERVER_CA_MODE_GOOGLE_MANAGED_PER_INSTANCE_CA: Each cluster has its own
+        Google managed CA.
+      SERVER_CA_MODE_GOOGLE_MANAGED_SHARED_CA: The cluster uses Google managed
+        shared CA in the region.
+      SERVER_CA_MODE_CUSTOMER_MANAGED_CAS_CA: The cluster uses customer
+        managed CA from CAS.
+    """
+    SERVER_CA_MODE_UNSPECIFIED = 0
+    SERVER_CA_MODE_GOOGLE_MANAGED_PER_INSTANCE_CA = 1
+    SERVER_CA_MODE_GOOGLE_MANAGED_SHARED_CA = 2
+    SERVER_CA_MODE_CUSTOMER_MANAGED_CAS_CA = 3
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of this cluster. Can be CREATING,
@@ -674,17 +711,20 @@ class Cluster(_messages.Message):
   pscServiceAttachments = _messages.MessageField('PscServiceAttachment', 29, repeated=True)
   redisConfigs = _messages.MessageField('RedisConfigsValue', 30)
   replicaCount = _messages.IntegerField(31, variant=_messages.Variant.INT32)
-  satisfiesPzi = _messages.BooleanField(32)
-  satisfiesPzs = _messages.BooleanField(33)
-  shardCount = _messages.IntegerField(34, variant=_messages.Variant.INT32)
-  simulateMaintenanceEvent = _messages.BooleanField(35)
-  sizeGb = _messages.IntegerField(36, variant=_messages.Variant.INT32)
-  state = _messages.EnumField('StateValueValuesEnum', 37)
-  stateInfo = _messages.MessageField('StateInfo', 38)
-  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 39)
-  uid = _messages.StringField(40)
-  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 41)
-  zones = _messages.StringField(42, repeated=True)
+  rotateServerCertificate = _messages.BooleanField(32)
+  satisfiesPzi = _messages.BooleanField(33)
+  satisfiesPzs = _messages.BooleanField(34)
+  serverCaMode = _messages.EnumField('ServerCaModeValueValuesEnum', 35)
+  serverCaPool = _messages.StringField(36)
+  shardCount = _messages.IntegerField(37, variant=_messages.Variant.INT32)
+  simulateMaintenanceEvent = _messages.BooleanField(38)
+  sizeGb = _messages.IntegerField(39, variant=_messages.Variant.INT32)
+  state = _messages.EnumField('StateValueValuesEnum', 40)
+  stateInfo = _messages.MessageField('StateInfo', 41)
+  transitEncryptionMode = _messages.EnumField('TransitEncryptionModeValueValuesEnum', 42)
+  uid = _messages.StringField(43)
+  zoneDistributionConfig = _messages.MessageField('ZoneDistributionConfig', 44)
+  zones = _messages.StringField(45, repeated=True)
 
 
 class ClusterDenyMaintenancePeriod(_messages.Message):
@@ -4456,6 +4496,19 @@ class RedisProjectsLocationsGetRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
+class RedisProjectsLocationsGetSharedRegionalCertificateAuthorityRequest(_messages.Message):
+  r"""A RedisProjectsLocationsGetSharedRegionalCertificateAuthorityRequest
+  object.
+
+  Fields:
+    name: Required. Regional certificate authority resource name using the
+      form: `projects/{project_id}/locations/{location_id}/sharedRegionalCerti
+      ficateAuthority` where `location_id` refers to a Google Cloud region.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class RedisProjectsLocationsInstancesCreateRequest(_messages.Message):
   r"""A RedisProjectsLocationsInstancesCreateRequest object.
 
@@ -4742,6 +4795,28 @@ class RedisProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class RegionalCertChain(_messages.Message):
+  r"""The certificates that form the CA chain, from leaf to root order.
+
+  Fields:
+    certificates: The certificates that form the CA chain, from leaf to root
+      order.
+  """
+
+  certificates = _messages.StringField(1, repeated=True)
+
+
+class RegionalManagedCertificateAuthority(_messages.Message):
+  r"""CA certificate chains for redis managed server authentication.
+
+  Fields:
+    caCerts: The PEM encoded CA certificate chains for redis managed server
+      authentication
+  """
+
+  caCerts = _messages.MessageField('RegionalCertChain', 1, repeated=True)
 
 
 class RemoteCluster(_messages.Message):
@@ -5067,6 +5142,21 @@ class RetentionSettings(_messages.Message):
   timestampBasedRetentionTime = _messages.StringField(5)
 
 
+class SharedRegionalCertificateAuthority(_messages.Message):
+  r"""Shared regional certificate authority
+
+  Fields:
+    managedServerCa: CA certificate chains for redis managed server
+      authentication.
+    name: Identifier. Unique name of the resource in this scope including
+      project and location using the form: `projects/{project}/locations/{loca
+      tion}/sharedRegionalCertificateAuthority`
+  """
+
+  managedServerCa = _messages.MessageField('RegionalManagedCertificateAuthority', 1)
+  name = _messages.StringField(2)
+
+
 class StandardQueryParameters(_messages.Message):
   r"""Query parameters accepted by all methods.
 
@@ -5328,12 +5418,18 @@ class UpdateInfo(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
 
   targetNodeType = _messages.EnumField('TargetNodeTypeValueValuesEnum', 1)
   targetReplicaCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)

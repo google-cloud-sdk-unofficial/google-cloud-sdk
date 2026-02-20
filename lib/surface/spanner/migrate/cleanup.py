@@ -24,6 +24,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import migration_backend
 
 
+@base.UniverseCompatible
 class Cleanup(base.BinaryBackedCommand):
   """Cleanup migration resources given a data migration job id."""
 

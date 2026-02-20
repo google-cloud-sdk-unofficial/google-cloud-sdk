@@ -186,6 +186,7 @@ class Update(base.UpdateCommand):
     flags.AddAddBackupRule(parser)
     flags.AddRemoveBackupRule(parser)
     flags.AddBackupRulesFromFile(parser)
+    flags.AddDiskBackupPlanProperties(parser)
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -228,6 +229,7 @@ class Update(base.UpdateCommand):
     update_backup_rules = args.backup_rule
     add_backup_rules = args.add_backup_rule
     remove_backup_rules = args.remove_backup_rule
+    disk_properties = args.disk_properties
 
     if backup_rules_file_content and (
         update_backup_rules or add_backup_rules or remove_backup_rules
@@ -259,6 +261,7 @@ class Update(base.UpdateCommand):
           current_backup_plan,
           log_retention_days,
           max_custom_on_demand_retention_days,
+          disk_properties,
       )
       update_mask = []
       if (
@@ -277,6 +280,8 @@ class Update(base.UpdateCommand):
           != current_backup_plan.maxCustomOnDemandRetentionDays
       ):
         update_mask.append('maxCustomOnDemandRetentionDays')
+      if args.IsSpecified('disk_properties'):
+        update_mask.append('disk_backup_plan_properties.guest_flush')
       if any([
           update_backup_rules,
           add_backup_rules,

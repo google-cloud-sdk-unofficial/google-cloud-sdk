@@ -35,23 +35,47 @@ class AWSV4Signature(_messages.Message):
 class AgentGateway(_messages.Message):
   r"""AgentGateway represents the agent gateway resource.
 
+  Enums:
+    ProtocolsValueListEntryValuesEnum:
+
   Messages:
     LabelsValue: Optional. Set of label tags associated with the AgentGateway
       resource.
 
   Fields:
+    agentGatewayCard: Output only. Field for populated AgentGateway card.
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
     etag: Optional. Etag of the resource. If this is provided, it must match
       the server's etag. If the provided etag does not match the server's
       etag, the request will fail with a 409 ABORTED error.
+    googleManaged: Required. Proxy is orchestrated and managed by GoogleCloud
+      in a tenant project.
     labels: Optional. Set of label tags associated with the AgentGateway
       resource.
     name: Identifier. Name of the AgentGateway resource. It matches pattern
       `projects/*/locations/*/agentGateways/`.
+    networkConfig: Optional. Network configuration for the AgentGateway.
+    protocols: Required. List of protocols supported by an Agent Gateway
+    registries: Optional. A list of Agent registries containing the agents,
+      MCP servers and tools governed by the Agent Gateway. Note: Currently
+      limited to project-scoped registries Must be of format
+      `//agentregistry.googleapis.com/projects/{project}/locations/{location}/
+    selfManaged: Required. Attach to existing Application Load Balancers or
+      Secure Web Proxies.
     updateTime: Output only. The timestamp when the resource was updated.
   """
+
+  class ProtocolsValueListEntryValuesEnum(_messages.Enum):
+    r"""ProtocolsValueListEntryValuesEnum enum type.
+
+    Values:
+      PROTOCOL_UNSPECIFIED: Unspecified protocol.
+      MCP: Message Control Plane protocol.
+    """
+    PROTOCOL_UNSPECIFIED = 0
+    MCP = 1
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -77,12 +101,94 @@ class AgentGateway(_messages.Message):
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  etag = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  name = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  agentGatewayCard = _messages.MessageField('AgentGatewayAgentGatewayOutputCard', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  etag = _messages.StringField(4)
+  googleManaged = _messages.MessageField('AgentGatewayGoogleManaged', 5)
+  labels = _messages.MessageField('LabelsValue', 6)
+  name = _messages.StringField(7)
+  networkConfig = _messages.MessageField('AgentGatewayNetworkConfig', 8)
+  protocols = _messages.EnumField('ProtocolsValueListEntryValuesEnum', 9, repeated=True)
+  registries = _messages.StringField(10, repeated=True)
+  selfManaged = _messages.MessageField('AgentGatewaySelfManaged', 11)
+  updateTime = _messages.StringField(12)
+
+
+class AgentGatewayAgentGatewayOutputCard(_messages.Message):
+  r"""AgentGatewayOutputCard contains informational output-only fields
+
+  Fields:
+    mtlsEndpoint: Output only. mTLS Endpoint associated with this AgentGateway
+    rootCertificate: Output only. Root Certificate for Agents to validate this
+      AgentGateway
+    serviceExtensionsServiceAccount: Output only. Service Account used by
+      Service Extensions to operate.
+  """
+
+  mtlsEndpoint = _messages.StringField(1)
+  rootCertificate = _messages.StringField(2)
+  serviceExtensionsServiceAccount = _messages.StringField(3)
+
+
+class AgentGatewayGoogleManaged(_messages.Message):
+  r"""Configuration for Google Managed deployment mode. Proxy is orchestrated
+  and managed by GoogleCloud in a tenant project.
+
+  Enums:
+    GovernedAccessPathValueValuesEnum: Optional. Operating Mode of Agent
+      Gateway.
+
+  Fields:
+    governedAccessPath: Optional. Operating Mode of Agent Gateway.
+  """
+
+  class GovernedAccessPathValueValuesEnum(_messages.Enum):
+    r"""Optional. Operating Mode of Agent Gateway.
+
+    Values:
+      GOVERNED_ACCESS_PATH_UNSPECIFIED: Governed access path is not specified.
+      AGENT_TO_ANYWHERE: Govern agent conections to destinations.
+      CLIENT_TO_AGENT: Protect connection to Agent or Tool.
+    """
+    GOVERNED_ACCESS_PATH_UNSPECIFIED = 0
+    AGENT_TO_ANYWHERE = 1
+    CLIENT_TO_AGENT = 2
+
+  governedAccessPath = _messages.EnumField('GovernedAccessPathValueValuesEnum', 1)
+
+
+class AgentGatewayNetworkConfig(_messages.Message):
+  r"""NetworkConfig contains network configurations for the AgentGateway.
+
+  Fields:
+    egress: Optional. Optional PSC-Interface network attachment for
+      connectivity to your private VPCs network.
+  """
+
+  egress = _messages.MessageField('AgentGatewayNetworkConfigEgress', 1)
+
+
+class AgentGatewayNetworkConfigEgress(_messages.Message):
+  r"""Configuration for Egress
+
+  Fields:
+    networkAttachment: Optional. The URI of the Network Attachment resource.
+  """
+
+  networkAttachment = _messages.StringField(1)
+
+
+class AgentGatewaySelfManaged(_messages.Message):
+  r"""Configuration for Self Managed deployment mode. Attach to existing
+  Application Load Balancers or Secure Web Proxies.
+
+  Fields:
+    resourceUri: Optional. A supported Google Cloud networking proxy in the
+      Project and Location
+  """
+
+  resourceUri = _messages.StringField(1)
 
 
 class AuditConfig(_messages.Message):
@@ -5200,8 +5306,6 @@ class MulticastDomain(_messages.Message):
     name: Identifier. The resource name of the multicast domain. Use the
       following format: `projects/*/locations/global/multicastDomains/*`
     state: Output only. [Output only] The state of the resource.
-    ullMulticastDomain: Optional. Information for an Ultra-Low-Latency
-      multicast domain.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all multicast domain resources. If
       a domain is deleted and another with the same name is created, the new
@@ -5242,9 +5346,8 @@ class MulticastDomain(_messages.Message):
   multicastDomainGroup = _messages.StringField(6)
   name = _messages.StringField(7)
   state = _messages.MessageField('MulticastResourceState', 8)
-  ullMulticastDomain = _messages.MessageField('UllMulticastDomain', 9)
-  uniqueId = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
+  uniqueId = _messages.StringField(9)
+  updateTime = _messages.StringField(10)
 
 
 class MulticastDomainActivation(_messages.Message):
@@ -7986,11 +8089,12 @@ class NetworkservicesProjectsLocationsMulticastConsumerAssociationsPatchRequest(
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the MulticastConsumerAssociation resource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastConsumerAssociation resource by the update.
+      The fields specified in the `update_mask` are relative to the resource,
+      not the full request. A field will be overwritten if it is in the mask.
+      If the user does not provide a mask then all mutable fields present in
+      the request will be overwritten.
   """
 
   multicastConsumerAssociation = _messages.MessageField('MulticastConsumerAssociation', 1)
@@ -8122,11 +8226,12 @@ class NetworkservicesProjectsLocationsMulticastDomainActivationsPatchRequest(_me
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the MulticastDomainActivation resource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastDomainActivation resource by the update. The
+      fields specified in the `update_mask` are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all mutable fields present in the
+      request will be overwritten.
   """
 
   multicastDomainActivation = _messages.MessageField('MulticastDomainActivation', 1)
@@ -8254,11 +8359,12 @@ class NetworkservicesProjectsLocationsMulticastDomainGroupsPatchRequest(_message
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast domain resource by the update. The fields specified in the
-      `update_mask` are relative to the resource, not the full request. If a
-      field is in the mask, then it is overwritten. If the you do not provide
-      a mask, then all fields are overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastDomainGroup resource by the update. The
+      fields specified in the `update_mask` are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all fields present in the request
+      will be overwritten.
   """
 
   multicastDomainGroup = _messages.MessageField('MulticastDomainGroup', 1)
@@ -8380,11 +8486,12 @@ class NetworkservicesProjectsLocationsMulticastDomainsPatchRequest(_messages.Mes
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast domain resource by the update. The fields specified in the
-      `update_mask` are relative to the resource, not the full request. If a
-      field is in the mask, then it is overwritten. If the you do not provide
-      a mask, then all fields are overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastDomain resource by the update. The fields
+      specified in the `update_mask` are relative to the resource, not the
+      full request. A field will be overwritten if it is in the mask. If the
+      user does not provide a mask then all mutable fields present in the
+      request will be overwritten.
   """
 
   multicastDomain = _messages.MessageField('MulticastDomain', 1)
@@ -8517,11 +8624,12 @@ class NetworkservicesProjectsLocationsMulticastGroupConsumerActivationsPatchRequ
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the MulticastGroupConsumerActivationresource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastGroupConsumerActivation resource by the
+      update. The fields specified in the `update_mask` are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask. If the user does not provide a mask then all mutable fields
+      present in the request will be overwritten.
   """
 
   multicastGroupConsumerActivation = _messages.MessageField('MulticastGroupConsumerActivation', 1)
@@ -8788,11 +8896,12 @@ class NetworkservicesProjectsLocationsMulticastGroupProducerActivationsPatchRequ
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the MulticastGroupProducerActivationresource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastGroupProducerActivation resource by the
+      update. The fields specified in the `update_mask` are relative to the
+      resource, not the full request. A field will be overwritten if it is in
+      the mask. If the user does not provide a mask then all mutable fields
+      present in the request will be overwritten.
   """
 
   multicastGroupProducerActivation = _messages.MessageField('MulticastGroupProducerActivation', 1)
@@ -8927,11 +9036,12 @@ class NetworkservicesProjectsLocationsMulticastGroupRangeActivationsPatchRequest
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast group range activation resource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastGroupRangeActivation resource by the update.
+      The fields specified in the `update_mask` are relative to the resource,
+      not the full request. A field will be overwritten if it is in the mask.
+      If the user does not provide a mask then all mutable fields present in
+      the request will be overwritten.
   """
 
   multicastGroupRangeActivation = _messages.MessageField('MulticastGroupRangeActivation', 1)
@@ -9058,11 +9168,12 @@ class NetworkservicesProjectsLocationsMulticastGroupRangesPatchRequest(_messages
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the multicast group range resource by the update. The fields specified
-      in the `update_mask` are relative to the resource, not the full request.
-      If a field is in the mask, then it is overwritten. If the you do not
-      provide a mask, then all fields are overwritten.
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastGroupRange resource by the update. The
+      fields specified in the `update_mask` are relative to the resource, not
+      the full request. A field will be overwritten if it is in the mask. If
+      the user does not provide a mask then all mutable fields present in the
+      request will be overwritten.
   """
 
   multicastGroupRange = _messages.MessageField('MulticastGroupRange', 1)
@@ -9323,11 +9434,12 @@ class NetworkservicesProjectsLocationsMulticastProducerAssociationsPatchRequest(
       This prevents clients from accidentally creating duplicate commitments.
       The request ID must be a valid UUID with the exception that zero UUID is
       not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Optional. The field mask specifies the fields to overwrite in
-      the MulticastProducerAssociation resource by the update. The fields
-      specified in the `update_mask` are relative to the resource, not the
-      full request. If a field is in the mask, then it is overwritten. If the
-      you do not provide a mask, then all fields are overwritten
+    updateMask: Optional. Field mask is used to specify the fields to be
+      overwritten in the MulticastProducerAssociation resource by the update.
+      The fields specified in the `update_mask` are relative to the resource,
+      not the full request. A field will be overwritten if it is in the mask.
+      If the user does not provide a mask then all mutable fields present in
+      the request will be overwritten.
   """
 
   multicastProducerAssociation = _messages.MessageField('MulticastProducerAssociation', 1)
@@ -9489,7 +9601,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsCreat
     regionalMulticastConsumerAssociationId: Required. A unique name for the
       regional multicast consumer association. The name is restricted to
       letters, numbers, and hyphen, with the first character a letter, and the
-      last a letter or a number. The name must not exceed 48 characters.
+      last a letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -9602,7 +9714,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastConsumerAssociationsPatch
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastConsumerAssociation resource by the
-      update. The fields specified in the update_mask are relative to the
+      update. The fields specified in the `update_mask` are relative to the
       resource, not the full request. A field will be overwritten if it is in
       the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
@@ -9626,7 +9738,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastDomainActivationsCreateRe
     regionalMulticastDomainActivationId: Required. A unique name for the
       regional multicast domain activation. The name is restricted to letters,
       numbers, and hyphen, with the first character a letter, and the last a
-      letter or a number. The name must not exceed 48 characters.
+      letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -9738,7 +9850,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastDomainActivationsPatchReq
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastDomainActivation resource by the
-      update. The fields specified in the update_mask are relative to the
+      update. The fields specified in the `update_mask` are relative to the
       resource, not the full request. A field will be overwritten if it is in
       the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
@@ -9763,7 +9875,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupConsumerActivationsC
     regionalMulticastGroupConsumerActivationId: Required. A unique name for
       the regional multicast group consumer activation. The name is restricted
       to letters, numbers, and hyphen, with the first character a letter, and
-      the last a letter or a number. The name must not exceed 48 characters.
+      the last a letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -9876,9 +9988,9 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupConsumerActivationsP
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastGroupConsumerActivation resource by
-      the update. The fields specified in the update_mask are relative to the
-      resource, not the full request. A field will be overwritten if it is in
-      the mask. If the user does not provide a mask then all mutable fields
+      the update. The fields specified in the `update_mask` are relative to
+      the resource, not the full request. A field will be overwritten if it is
+      in the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
   """
 
@@ -9901,7 +10013,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupProducerActivationsC
     regionalMulticastGroupProducerActivationId: Required. A unique name for
       the regional multicast group producer activation. The name is restricted
       to letters, numbers, and hyphen, with the first character a letter, and
-      the last a letter or a number. The name must not exceed 48 characters.
+      the last a letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -10014,9 +10126,9 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupProducerActivationsP
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastGroupProducerActivation resource by
-      the update. The fields specified in the update_mask are relative to the
-      resource, not the full request. A field will be overwritten if it is in
-      the mask. If the user does not provide a mask then all mutable fields
+      the update. The fields specified in the `update_mask` are relative to
+      the resource, not the full request. A field will be overwritten if it is
+      in the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
   """
 
@@ -10039,7 +10151,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupRangeActivationsCrea
     regionalMulticastGroupRangeActivationId: Required. A unique name for the
       regional multicast group range activation. The name is restricted to
       letters, numbers, and hyphen, with the first character a letter, and the
-      last a letter or a number. The name must not exceed 48 characters.
+      last a letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -10152,7 +10264,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastGroupRangeActivationsPatc
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastGroupRangeActivation resource by the
-      update. The fields specified in the update_mask are relative to the
+      update. The fields specified in the `update_mask` are relative to the
       resource, not the full request. A field will be overwritten if it is in
       the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
@@ -10177,7 +10289,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastProducerAssociationsCreat
     regionalMulticastProducerAssociationId: Required. A unique name for the
       regional multicast producer association. The name is restricted to
       letters, numbers, and hyphen, with the first character a letter, and the
-      last a letter or a number. The name must not exceed 48 characters.
+      last a letter or a number. The name must not exceed 63 characters.
     requestId: Optional. An optional request ID to identify requests. Specify
       a unique request ID so that if you must retry your request, the server
       will know to ignore the request if it has already been completed. The
@@ -10290,7 +10402,7 @@ class NetworkservicesProjectsLocationsRegionalMulticastProducerAssociationsPatch
       not supported (00000000-0000-0000-0000-000000000000).
     updateMask: Optional. Field mask is used to specify the fields to be
       overwritten in the RegionalMulticastProducerAssociation resource by the
-      update. The fields specified in the update_mask are relative to the
+      update. The fields specified in the `update_mask` are relative to the
       resource, not the full request. A field will be overwritten if it is in
       the mask. If the user does not provide a mask then all mutable fields
       present in the request will be overwritten.
@@ -11300,7 +11412,7 @@ class PimSpec(_messages.Message):
       source.
     pimMode: Optional. Specifies the PIM mode. If not specified, the service
       will default to SPARSE. Only SPARSE is supported.
-    rpAddress: Optional. The IP address of the PIM-SM Rendezvous Point (RP).
+    rpIpAddress: Optional. The IP address of the PIM-SM Rendezvous Point (RP).
   """
 
   class MulticastSourceLocationValueValuesEnum(_messages.Enum):
@@ -11328,7 +11440,7 @@ class PimSpec(_messages.Message):
 
   multicastSourceLocation = _messages.EnumField('MulticastSourceLocationValueValuesEnum', 1)
   pimMode = _messages.EnumField('PimModeValueValuesEnum', 2)
-  rpAddress = _messages.StringField(3)
+  rpIpAddress = _messages.StringField(3)
 
 
 class Policy(_messages.Message):
@@ -11544,6 +11656,12 @@ class RegionalMulticastDomainActivation(_messages.Message):
     name: Identifier. The resource name of the regional multicast domain
       activation. Use the following format:
       `projects/*/locations/*/regionalMulticastDomainActivations/*`.
+    pimSpec: Optional. The PIM specification for the regional multicast domain
+      activation.
+    regionalMulticastConsumerAssociations: Output only. [Output only] The
+      resource names of the associated regional multicast consumer
+      associations in the following format:
+      `projects/*/locations/*/regionalMulticastConsumerAssociations/*`.
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all regional multicast domain
@@ -11584,9 +11702,11 @@ class RegionalMulticastDomainActivation(_messages.Message):
   labels = _messages.MessageField('LabelsValue', 4)
   multicastDomain = _messages.StringField(5)
   name = _messages.StringField(6)
-  state = _messages.MessageField('MulticastResourceState', 7)
-  uniqueId = _messages.StringField(8)
-  updateTime = _messages.StringField(9)
+  pimSpec = _messages.MessageField('PimSpec', 7)
+  regionalMulticastConsumerAssociations = _messages.StringField(8, repeated=True)
+  state = _messages.MessageField('MulticastResourceState', 9)
+  uniqueId = _messages.StringField(10)
+  updateTime = _messages.StringField(11)
 
 
 class RegionalMulticastGroupConsumerActivation(_messages.Message):
@@ -11777,12 +11897,17 @@ class RegionalMulticastGroupRangeActivation(_messages.Message):
     name: Identifier. The resource name of the regional multicast group range
       activation. Use the following format:
       `projects/*/locations/*/regionalMulticastGroupRangeActivations/*`.
-    pimSpec: Required. The PIM specification for the multicast group range
-      activation.
+    pimSpec: Optional. The PIM specification for the regional multicast group
+      range activation. If not specified, inherit the PIM spec from the
+      regional multicast domain activation resource.
     regionalMulticastDomainActivation: Required. Immutable. The resource name
       of a regional multicast domain activation that is in the same region as
       this regional multicast group range activation. Use the following
       format: `projects/*/locations/*/regionalMulticastDomainActivations/*`
+    regionalMulticastGroupConsumerActivations: Output only. [Output only] The
+      resource names of associated regional multicast group consumer
+      activations in the following format:
+      `projects/*/locations/*/regionalMulticastGroupConsumerActivations/*`.
     state: Output only. [Output only] The state of the resource.
     uniqueId: Output only. [Output only] The Google-generated UUID for the
       resource. This value is unique across all regional multicast group range
@@ -11826,9 +11951,10 @@ class RegionalMulticastGroupRangeActivation(_messages.Message):
   name = _messages.StringField(7)
   pimSpec = _messages.MessageField('PimSpec', 8)
   regionalMulticastDomainActivation = _messages.StringField(9)
-  state = _messages.MessageField('MulticastResourceState', 10)
-  uniqueId = _messages.StringField(11)
-  updateTime = _messages.StringField(12)
+  regionalMulticastGroupConsumerActivations = _messages.StringField(10, repeated=True)
+  state = _messages.MessageField('MulticastResourceState', 11)
+  uniqueId = _messages.StringField(12)
+  updateTime = _messages.StringField(13)
 
 
 class RegionalMulticastProducerAssociation(_messages.Message):
@@ -12960,18 +13086,6 @@ class TrafficSpec(_messages.Message):
   avgPacketSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   maxPerGroupIngressPps = _messages.IntegerField(4)
   maxPerGroupSubscribers = _messages.IntegerField(5)
-
-
-class UllMulticastDomain(_messages.Message):
-  r"""Information for an Ultra-Low-Latency multicast domain. This is only
-  available in specific locations and allowlisted projects.
-
-  Fields:
-    preconfiguredUllDomain: Optional. The preconfigured Ultra-Low-Latency
-      domain name.
-  """
-
-  preconfiguredUllDomain = _messages.StringField(1)
 
 
 class UrlRedirect(_messages.Message):

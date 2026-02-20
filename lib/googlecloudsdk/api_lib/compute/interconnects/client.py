@@ -130,6 +130,8 @@ class Interconnect(object):
       kwargs['aaiEnabled'] = aai_enabled
     if application_aware_interconnect is not None:
       kwargs['applicationAwareInterconnect'] = application_aware_interconnect
+    if location is not None:
+      kwargs['location'] = location
     return (
         self._client.interconnects,
         'Patch',
@@ -142,7 +144,6 @@ class Interconnect(object):
                 linkType=link_type,
                 nocContactEmail=noc_contact_email,
                 requestedLinkCount=requested_link_count,
-                location=location,
                 adminEnabled=admin_enabled,
                 macsecEnabled=macsec_enabled,
                 macsec=macsec,

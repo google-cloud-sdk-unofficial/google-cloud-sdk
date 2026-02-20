@@ -22,3 +22,9 @@ from surface.cluster_director import _init_extensions as extensions
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ClusterDirectorAlpha(extensions.ClusterDirectorAlpha):
   """Manage Cluster Director resources."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class ClusterDirectorBeta(extensions.ClusterDirectorBeta):
+  """Manage Cluster Director resources."""

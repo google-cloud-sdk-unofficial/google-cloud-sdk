@@ -430,6 +430,7 @@ class Update(base.UpdateCommand):
     flags.AddEnableRayClusterLogging(group, is_update=True)
     flags.AddEnableRayClusterMonitoring(group, is_update=True)
     flags.AddSecretManagerEnableFlagGroup(group, is_update=True)
+    flags.AddSecretSyncFlagGroup(group, is_update=True, hidden=True)
     flags.AddInsecureRBACBindingFlags(group, hidden=False)
     group_add_additional_ip_ranges = group.add_group()
     flags.AddAdditionalIpRangesFlag(group_add_additional_ip_ranges)
@@ -597,6 +598,9 @@ class Update(base.UpdateCommand):
     opts.secret_manager_rotation_interval = (
         args.secret_manager_rotation_interval
     )
+    opts.enable_secret_sync = args.enable_secret_sync
+    opts.enable_secret_sync_rotation = args.enable_secret_sync_rotation
+    opts.secret_sync_rotation_interval = args.secret_sync_rotation_interval
     opts.enable_insecure_binding_system_authenticated = (
         args.enable_insecure_binding_system_authenticated
     )
@@ -1351,6 +1355,8 @@ class UpdateBeta(Update):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
+    flags.AddLinkedRunnersModeFlag(group, hidden=True)
+    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1577,6 +1583,10 @@ class UpdateBeta(Update):
         args.enable_kernel_module_signature_enforcement
     )
     opts.autopilot_general_profile = args.autopilot_general_profile
+    opts.node_pool_upgrade_concurrency_config = (
+        args.node_pool_upgrade_concurrency_config
+    )
+    opts.linked_runners_mode = args.linked_runners_mode
     return opts
 
 
@@ -1666,6 +1676,7 @@ class UpdateAlpha(Update):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
+    flags.AddEnableAmbientFlag(group, is_update=True)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1748,6 +1759,8 @@ class UpdateAlpha(Update):
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
+    flags.AddLinkedRunnersModeFlag(group, hidden=True)
+    flags.AddNodePoolUpgradeConcurrencyConfigFlag(group, hidden=True)
 
   def ParseUpdateOptions(self, args, locations):
     get_default = lambda key: getattr(args, key)
@@ -1846,6 +1859,7 @@ class UpdateAlpha(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
+    opts.enable_ambient = args.enable_ambient
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.enable_dataplane_v2_flow_observability = (
@@ -1970,4 +1984,8 @@ class UpdateAlpha(Update):
         args.enable_kernel_module_signature_enforcement
     )
     opts.autopilot_general_profile = args.autopilot_general_profile
+    opts.node_pool_upgrade_concurrency_config = (
+        args.node_pool_upgrade_concurrency_config
+    )
+    opts.linked_runners_mode = args.linked_runners_mode
     return opts

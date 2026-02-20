@@ -1032,7 +1032,10 @@ class Cluster(_messages.Message):
       Domain_Routing) notation (e.g. `10.96.0.0/14`). Leave blank to have one
       automatically chosen or specify a `/14` block in `10.0.0.0/8`.
     clusterTelemetry: Telemetry integration for the cluster.
-    compliancePostureConfig: Enable/Disable Compliance Posture features for
+    compliancePostureConfig: Optional. Deprecated: Compliance Posture is no
+      longer supported. For more details, see
+      https://cloud.google.com/kubernetes-engine/docs/deprecations/posture-
+      management-deprecation. Enable/Disable Compliance Posture features for
       the cluster.
     concurrentOpsConfig: Allows enabling concurrent ops for supported
       operations on this cluster. This flag is for EAP users only. Concurrent
@@ -1252,8 +1255,8 @@ class Cluster(_messages.Message):
     secretManagerConfig: Secret CSI driver configuration.
     secretSyncConfig: Configuration for sync Secret Manager secrets as k8s
       secrets.
-    securityPostureConfig: Enable/Disable Security Posture API features for
-      the cluster.
+    securityPostureConfig: Optional. Enable/Disable Security Posture API
+      features for the cluster.
     selfLink: Output only. Server-defined URL for the resource.
     servicesIpv4Cidr: Output only. The IP address range of the Kubernetes
       services in this cluster, in
@@ -1665,8 +1668,11 @@ class ClusterUpdate(_messages.Message):
     desiredClusterAutoscaling: Cluster-level autoscaling configuration.
     desiredClusterTelemetry: The desired telemetry integration for the
       cluster.
-    desiredCompliancePostureConfig: Enable/Disable Compliance Posture features
-      for the cluster.
+    desiredCompliancePostureConfig: Deprecated: Compliance Posture is no
+      longer supported. For more details, see
+      https://cloud.google.com/kubernetes-engine/docs/deprecations/posture-
+      management-deprecation. Enable/Disable Compliance Posture features for
+      the cluster.
     desiredConcurrentOpsConfig: Desired value for the cluster's
       concurrent_ops_config.
     desiredContainerdConfig: The desired containerd config for the cluster.
@@ -1725,6 +1731,9 @@ class ClusterUpdate(_messages.Message):
       of kubernetes objects changes and snapshots to specified targets.
     desiredL4ilbSubsettingConfig: The desired L4 Internal Load Balancer
       Subsetting configuration.
+    desiredLinkedRunnersConfig: Sets the desired configuration for Linked
+      Runners. Use this to enable or disable the Linked Runners feature on the
+      cluster.
     desiredLocations: The desired list of Google Compute Engine
       [zones](https://cloud.google.com/compute/docs/zones#available) in which
       the cluster's nodes should be located. This list must always include the
@@ -2000,67 +2009,68 @@ class ClusterUpdate(_messages.Message):
   desiredK8sBetaApis = _messages.MessageField('K8sBetaAPIConfig', 45)
   desiredKubernetesObjectsExportConfig = _messages.MessageField('KubernetesObjectsExportConfig', 46)
   desiredL4ilbSubsettingConfig = _messages.MessageField('ILBSubsettingConfig', 47)
-  desiredLocations = _messages.StringField(48, repeated=True)
-  desiredLoggingConfig = _messages.MessageField('LoggingConfig', 49)
-  desiredLoggingService = _messages.StringField(50)
-  desiredLustreConfig = _messages.MessageField('LustreConfig', 51)
-  desiredManagedConfig = _messages.MessageField('ManagedConfig', 52)
-  desiredManagedMachineLearningDiagnosticsConfig = _messages.MessageField('ManagedMachineLearningDiagnosticsConfig', 53)
-  desiredManagedOpentelemetryConfig = _messages.MessageField('ManagedOpenTelemetryConfig', 54)
-  desiredMaster = _messages.MessageField('Master', 55)
-  desiredMasterAuthorizedNetworksConfig = _messages.MessageField('MasterAuthorizedNetworksConfig', 56)
-  desiredMasterVersion = _messages.StringField(57)
-  desiredMeshCertificates = _messages.MessageField('MeshCertificates', 58)
-  desiredMonitoringConfig = _messages.MessageField('MonitoringConfig', 59)
-  desiredMonitoringService = _messages.StringField(60)
-  desiredNetworkPerformanceConfig = _messages.MessageField('ClusterNetworkPerformanceConfig', 61)
-  desiredNetworkTierConfig = _messages.MessageField('NetworkTierConfig', 62)
-  desiredNodeKubeletConfig = _messages.MessageField('NodeKubeletConfig', 63)
-  desiredNodeNetworkPolicy = _messages.MessageField('NodeNetworkPolicy', 64)
-  desiredNodePoolAutoConfigKubeletConfig = _messages.MessageField('NodeKubeletConfig', 65)
-  desiredNodePoolAutoConfigLinuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 66)
-  desiredNodePoolAutoConfigNetworkTags = _messages.MessageField('NetworkTags', 67)
-  desiredNodePoolAutoConfigResourceManagerTags = _messages.MessageField('ResourceManagerTags', 68)
-  desiredNodePoolAutoscaling = _messages.MessageField('NodePoolAutoscaling', 69)
-  desiredNodePoolId = _messages.StringField(70)
-  desiredNodePoolLoggingConfig = _messages.MessageField('NodePoolLoggingConfig', 71)
-  desiredNodePoolUpgradeConcurrencyConfig = _messages.MessageField('NodePoolUpgradeConcurrencyConfig', 72)
-  desiredNodeVersion = _messages.StringField(73)
-  desiredNotificationConfig = _messages.MessageField('NotificationConfig', 74)
-  desiredParentProductConfig = _messages.MessageField('ParentProductConfig', 75)
-  desiredPodAutoscaling = _messages.MessageField('PodAutoscaling', 76)
-  desiredPodSecurityPolicyConfig = _messages.MessageField('PodSecurityPolicyConfig', 77)
-  desiredPrivateClusterConfig = _messages.MessageField('PrivateClusterConfig', 78)
-  desiredPrivateIpv6GoogleAccess = _messages.EnumField('DesiredPrivateIpv6GoogleAccessValueValuesEnum', 79)
-  desiredPrivilegedAdmissionConfig = _messages.MessageField('PrivilegedAdmissionConfig', 80)
-  desiredProtectConfig = _messages.MessageField('ProtectConfig', 81)
-  desiredRbacBindingConfig = _messages.MessageField('RBACBindingConfig', 82)
-  desiredReleaseChannel = _messages.MessageField('ReleaseChannel', 83)
-  desiredResourceUsageExportConfig = _messages.MessageField('ResourceUsageExportConfig', 84)
-  desiredRollbackSafeUpgrade = _messages.MessageField('RollbackSafeUpgrade', 85)
-  desiredRuntimeVulnerabilityInsightConfig = _messages.MessageField('RuntimeVulnerabilityInsightConfig', 86)
-  desiredScheduleUpgradeConfig = _messages.MessageField('ScheduleUpgradeConfig', 87)
-  desiredSecretManagerConfig = _messages.MessageField('SecretManagerConfig', 88)
-  desiredSecretSyncConfig = _messages.MessageField('SecretSyncConfig', 89)
-  desiredSecurityPostureConfig = _messages.MessageField('SecurityPostureConfig', 90)
-  desiredServiceExternalIpsConfig = _messages.MessageField('ServiceExternalIPsConfig', 91)
-  desiredShieldedNodes = _messages.MessageField('ShieldedNodes', 92)
-  desiredStableFleetConfig = _messages.MessageField('StableFleetConfig', 93)
-  desiredStackType = _messages.EnumField('DesiredStackTypeValueValuesEnum', 94)
-  desiredTpuConfig = _messages.MessageField('TpuConfig', 95)
-  desiredUserManagedKeysConfig = _messages.MessageField('UserManagedKeysConfig', 96)
-  desiredVerticalPodAutoscaling = _messages.MessageField('VerticalPodAutoscaling', 97)
-  desiredWorkloadAltsConfig = _messages.MessageField('WorkloadALTSConfig', 98)
-  desiredWorkloadCertificates = _messages.MessageField('WorkloadCertificates', 99)
-  desiredWorkloadConfig = _messages.MessageField('WorkloadConfig', 100)
-  desiredWorkloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 101)
-  desiredWorkloadMonitoringEapConfig = _messages.MessageField('WorkloadMonitoringEapConfig', 102)
-  enableK8sBetaApis = _messages.MessageField('K8sBetaAPIConfig', 103)
-  etag = _messages.StringField(104)
-  gkeAutoUpgradeConfig = _messages.MessageField('GkeAutoUpgradeConfig', 105)
-  privateClusterConfig = _messages.MessageField('PrivateClusterConfig', 106)
-  removedAdditionalPodRangesConfig = _messages.MessageField('AdditionalPodRangesConfig', 107)
-  userManagedKeysConfig = _messages.MessageField('UserManagedKeysConfig', 108)
+  desiredLinkedRunnersConfig = _messages.MessageField('LinkedRunnersConfig', 48)
+  desiredLocations = _messages.StringField(49, repeated=True)
+  desiredLoggingConfig = _messages.MessageField('LoggingConfig', 50)
+  desiredLoggingService = _messages.StringField(51)
+  desiredLustreConfig = _messages.MessageField('LustreConfig', 52)
+  desiredManagedConfig = _messages.MessageField('ManagedConfig', 53)
+  desiredManagedMachineLearningDiagnosticsConfig = _messages.MessageField('ManagedMachineLearningDiagnosticsConfig', 54)
+  desiredManagedOpentelemetryConfig = _messages.MessageField('ManagedOpenTelemetryConfig', 55)
+  desiredMaster = _messages.MessageField('Master', 56)
+  desiredMasterAuthorizedNetworksConfig = _messages.MessageField('MasterAuthorizedNetworksConfig', 57)
+  desiredMasterVersion = _messages.StringField(58)
+  desiredMeshCertificates = _messages.MessageField('MeshCertificates', 59)
+  desiredMonitoringConfig = _messages.MessageField('MonitoringConfig', 60)
+  desiredMonitoringService = _messages.StringField(61)
+  desiredNetworkPerformanceConfig = _messages.MessageField('ClusterNetworkPerformanceConfig', 62)
+  desiredNetworkTierConfig = _messages.MessageField('NetworkTierConfig', 63)
+  desiredNodeKubeletConfig = _messages.MessageField('NodeKubeletConfig', 64)
+  desiredNodeNetworkPolicy = _messages.MessageField('NodeNetworkPolicy', 65)
+  desiredNodePoolAutoConfigKubeletConfig = _messages.MessageField('NodeKubeletConfig', 66)
+  desiredNodePoolAutoConfigLinuxNodeConfig = _messages.MessageField('LinuxNodeConfig', 67)
+  desiredNodePoolAutoConfigNetworkTags = _messages.MessageField('NetworkTags', 68)
+  desiredNodePoolAutoConfigResourceManagerTags = _messages.MessageField('ResourceManagerTags', 69)
+  desiredNodePoolAutoscaling = _messages.MessageField('NodePoolAutoscaling', 70)
+  desiredNodePoolId = _messages.StringField(71)
+  desiredNodePoolLoggingConfig = _messages.MessageField('NodePoolLoggingConfig', 72)
+  desiredNodePoolUpgradeConcurrencyConfig = _messages.MessageField('NodePoolUpgradeConcurrencyConfig', 73)
+  desiredNodeVersion = _messages.StringField(74)
+  desiredNotificationConfig = _messages.MessageField('NotificationConfig', 75)
+  desiredParentProductConfig = _messages.MessageField('ParentProductConfig', 76)
+  desiredPodAutoscaling = _messages.MessageField('PodAutoscaling', 77)
+  desiredPodSecurityPolicyConfig = _messages.MessageField('PodSecurityPolicyConfig', 78)
+  desiredPrivateClusterConfig = _messages.MessageField('PrivateClusterConfig', 79)
+  desiredPrivateIpv6GoogleAccess = _messages.EnumField('DesiredPrivateIpv6GoogleAccessValueValuesEnum', 80)
+  desiredPrivilegedAdmissionConfig = _messages.MessageField('PrivilegedAdmissionConfig', 81)
+  desiredProtectConfig = _messages.MessageField('ProtectConfig', 82)
+  desiredRbacBindingConfig = _messages.MessageField('RBACBindingConfig', 83)
+  desiredReleaseChannel = _messages.MessageField('ReleaseChannel', 84)
+  desiredResourceUsageExportConfig = _messages.MessageField('ResourceUsageExportConfig', 85)
+  desiredRollbackSafeUpgrade = _messages.MessageField('RollbackSafeUpgrade', 86)
+  desiredRuntimeVulnerabilityInsightConfig = _messages.MessageField('RuntimeVulnerabilityInsightConfig', 87)
+  desiredScheduleUpgradeConfig = _messages.MessageField('ScheduleUpgradeConfig', 88)
+  desiredSecretManagerConfig = _messages.MessageField('SecretManagerConfig', 89)
+  desiredSecretSyncConfig = _messages.MessageField('SecretSyncConfig', 90)
+  desiredSecurityPostureConfig = _messages.MessageField('SecurityPostureConfig', 91)
+  desiredServiceExternalIpsConfig = _messages.MessageField('ServiceExternalIPsConfig', 92)
+  desiredShieldedNodes = _messages.MessageField('ShieldedNodes', 93)
+  desiredStableFleetConfig = _messages.MessageField('StableFleetConfig', 94)
+  desiredStackType = _messages.EnumField('DesiredStackTypeValueValuesEnum', 95)
+  desiredTpuConfig = _messages.MessageField('TpuConfig', 96)
+  desiredUserManagedKeysConfig = _messages.MessageField('UserManagedKeysConfig', 97)
+  desiredVerticalPodAutoscaling = _messages.MessageField('VerticalPodAutoscaling', 98)
+  desiredWorkloadAltsConfig = _messages.MessageField('WorkloadALTSConfig', 99)
+  desiredWorkloadCertificates = _messages.MessageField('WorkloadCertificates', 100)
+  desiredWorkloadConfig = _messages.MessageField('WorkloadConfig', 101)
+  desiredWorkloadIdentityConfig = _messages.MessageField('WorkloadIdentityConfig', 102)
+  desiredWorkloadMonitoringEapConfig = _messages.MessageField('WorkloadMonitoringEapConfig', 103)
+  enableK8sBetaApis = _messages.MessageField('K8sBetaAPIConfig', 104)
+  etag = _messages.StringField(105)
+  gkeAutoUpgradeConfig = _messages.MessageField('GkeAutoUpgradeConfig', 106)
+  privateClusterConfig = _messages.MessageField('PrivateClusterConfig', 107)
+  removedAdditionalPodRangesConfig = _messages.MessageField('AdditionalPodRangesConfig', 108)
+  userManagedKeysConfig = _messages.MessageField('UserManagedKeysConfig', 109)
 
 
 class ClusterUpgradeInfo(_messages.Message):
@@ -2212,8 +2222,10 @@ class CompleteNodePoolUpgradeRequest(_messages.Message):
 
 
 class CompliancePostureConfig(_messages.Message):
-  r"""CompliancePostureConfig defines the settings needed to enable/disable
-  features for the Compliance Posture.
+  r"""Deprecated: Compliance Posture is no longer supported. For more details,
+  see https://cloud.google.com/kubernetes-engine/docs/deprecations/posture-
+  management-deprecation. CompliancePostureConfig defines the settings needed
+  to enable/disable features for the Compliance Posture.
 
   Enums:
     ModeValueValuesEnum: Defines the enablement mode for Compliance Posture.
@@ -3467,10 +3479,10 @@ class DisruptionBudget(_messages.Message):
       on the control plane.
     lastMinorVersionDisruptionTime: Output only. The last time a minor version
       upgrade was performed on the control plane.
-    minorVersionDisruptionInterval: The minimum duration between two minor
-      version upgrades of the control plane.
-    patchVersionDisruptionInterval: The minimum duration between two patch
-      version upgrades of the control plane.
+    minorVersionDisruptionInterval: Optional. The minimum duration between two
+      minor version upgrades of the control plane.
+    patchVersionDisruptionInterval: Optional. The minimum duration between two
+      patch version upgrades of the control plane.
   """
 
   lastDisruptionTime = _messages.StringField(1)
@@ -5203,6 +5215,7 @@ class LoggingComponentConfig(_messages.Message):
       KCP_SSHD: kcp-sshd
       KCP_CONNECTION: kcp connection logs
       KCP_HPA: horizontal pod autoscaler decision logs
+      KCP_VPA: vertical pod autoscaler decision logs
     """
     COMPONENT_UNSPECIFIED = 0
     SYSTEM_COMPONENTS = 1
@@ -5214,6 +5227,7 @@ class LoggingComponentConfig(_messages.Message):
     KCP_SSHD = 7
     KCP_CONNECTION = 8
     KCP_HPA = 9
+    KCP_VPA = 10
 
   enableComponents = _messages.EnumField('EnableComponentsValueListEntryValuesEnum', 1, repeated=True)
 
@@ -5347,8 +5361,8 @@ class MaintenancePolicy(_messages.Message):
   cluster.
 
   Fields:
-    disruptionBudget: The upgrade disruption budget for the cluster control
-      plane.
+    disruptionBudget: Optional. The upgrade disruption budget for the cluster
+      control plane.
     resourceVersion: A hash identifying the version of this policy, so that
       updates to fields of the policy won't accidentally undo intermediate
       changes (and so that users of the API unaware of some fields won't
@@ -8603,8 +8617,11 @@ class SecurityPostureConfig(_messages.Message):
       MODE_UNSPECIFIED: Default value not specified.
       DISABLED: Disables Security Posture features on the cluster.
       BASIC: Applies Security Posture features on the cluster.
-      ENTERPRISE: Applies the Security Posture off cluster Enterprise level
-        features.
+      ENTERPRISE: Deprecated: Security Posture Enterprise features are no
+        longer supported. For more details, see
+        https://cloud.google.com/kubernetes-engine/docs/deprecations/posture-
+        management-deprecation. Applies the Security Posture off cluster
+        Enterprise level features.
     """
     MODE_UNSPECIFIED = 0
     DISABLED = 1
@@ -8617,7 +8634,10 @@ class SecurityPostureConfig(_messages.Message):
     Values:
       VULNERABILITY_MODE_UNSPECIFIED: Default value not specified.
       VULNERABILITY_DISABLED: Disables vulnerability scanning on the cluster.
-      VULNERABILITY_BASIC: Applies basic vulnerability scanning on the
+      VULNERABILITY_BASIC: Deprecated: Basic vulnerability scanning is no
+        longer supported. For more details, see
+        https://cloud.google.com/kubernetes-engine/docs/deprecations/posture-
+        management-deprecation. Applies basic vulnerability scanning on the
         cluster.
       VULNERABILITY_ENTERPRISE: Applies the Security Posture's vulnerability
         on cluster Enterprise level features.

@@ -65,10 +65,16 @@ class Up(base.BinaryBackedCommand):
     flags.AddRegionArg(parser)
     flags.AddDryRunFlag(parser)
     flags.AddAllowUnauthenticatedFlag(parser)
-    parser.add_argument(
+    build_group = parser.add_mutually_exclusive_group()
+    build_group.add_argument(
         '--no-build',
         action='store_true',
         help='Skip building from source if applicable.',
+    )
+    build_group.add_argument(
+        '--build',
+        action='store_true',
+        help='Force build of images.',
     )
 
   @staticmethod
@@ -136,7 +142,7 @@ class Up(base.BinaryBackedCommand):
           success_message='Resource setup complete.',
       ) as tracker:
         resources_config = config_obj.handle_resources(
-            region, repo, tracker, args.no_build
+            region, repo, tracker, no_build=args.no_build, build=args.build
         )
         log.debug('Handled ResourcesConfig:\n%s', resources_config)
 

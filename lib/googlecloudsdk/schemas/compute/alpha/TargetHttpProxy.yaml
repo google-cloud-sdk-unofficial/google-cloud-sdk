@@ -25,9 +25,6 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   description:
     description: |-
       An optional description of this resource. Provide this property when you
@@ -61,11 +58,6 @@ properties:
       Global external HTTP(S) load balancer (classic), this option is not
       available publicly.
     type: integer
-  kind:
-    description: |-
-      [Output Only] Type of resource. Always compute#targetHttpProxy for
-      target HTTP proxies.
-    type: string
   name:
     description: |-
       Name of the resource. Provided by the client when the resource is
@@ -87,19 +79,6 @@ properties:
       sidecar proxy). The Envoy proxy listens for inbound requests and
       handles requests when it receives them. The default is false.
     type: boolean
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional Target HTTP Proxy
-      resides. This field is not applicable to global Target HTTP Proxies.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
-  selfLinkWithId:
-    description: |-
-      [Output Only] Server-defined URL for this resource with the resource
-      id.
-    type: string
   urlMap:
     description: |-
       URL to the UrlMap resource that defines the mapping from URL to the

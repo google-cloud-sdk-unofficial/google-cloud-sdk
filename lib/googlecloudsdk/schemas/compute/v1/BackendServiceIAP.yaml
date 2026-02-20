@@ -45,7 +45,3 @@ properties:
       hash of the value is returned in the oauth2ClientSecretSha256 field.
       @InputOnly
     type: string
-  oauth2ClientSecretSha256:
-    description: |-
-      [Output Only] SHA256 hash value for the field oauth2_client_secret above.
-    type: string

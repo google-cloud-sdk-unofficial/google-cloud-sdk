@@ -86,6 +86,18 @@ class Copy(base.Command):
             ' copies by skipping older versions.'
         ),
     )
+    parser.add_argument(
+        '--include-all-attachments',
+        action='store_true',
+        default=False,
+        help='Include all attachments for each artifact version copied.',
+    )
+    parser.add_argument(
+        '--exclude-all-tags',
+        action='store_true',
+        default=False,
+        help='Exclude all tags for each artifact version copied.',
+    )
 
   def Run(self, args):
     """Run the repository copy command."""
@@ -97,6 +109,8 @@ class Copy(base.Command):
         repo_ref.RelativeName(),
         args.continue_on_skipped_version,
         args.max_version_age_days,
+        args.include_all_attachments,
+        args.exclude_all_tags,
     )
     op_ref = resources.REGISTRY.ParseRelativeName(
         op.name, collection='artifactregistry.projects.locations.operations'

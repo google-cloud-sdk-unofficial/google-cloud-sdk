@@ -286,6 +286,7 @@ def ParseCreateOptionsBase(
       dataplane_v2_observability_mode=get_default(
           'dataplane_v2_observability_mode'
       ),
+      enable_ambient=get_default('enable_ambient'),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
@@ -837,6 +838,9 @@ flags_to_add = {
         ),
         'containerdConfig': flags.AddContainerdConfigFlag,
         'secretManagerConfig': flags.AddSecretManagerEnableFlagGroup,
+        'secretSyncConfig': lambda p: flags.AddSecretSyncFlagGroup(
+            p, hidden=True
+        ),
         'InTransitEncryption': flags.AddInTransitEncryptionFlag,
         'enableCiliumClusterwideNetworkPolicy': (
             flags.AddEnableCiliumClusterwideNetworkPolicyFlag
@@ -991,6 +995,11 @@ flags_to_add = {
         'nodeversion': flags.AddNodeVersionFlag,
         'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
+        'nodepoolupgradeconcurrencyconfig': (
+            lambda p: flags.AddNodePoolUpgradeConcurrencyConfigFlag(
+                p, hidden=True
+            )
+        ),
         'num_nodes': flags.AddNumNodes,
         'performancemonitoringunit': (
             lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=False)
@@ -1121,6 +1130,9 @@ flags_to_add = {
             p, hidden=True
         ),
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
+            p, hidden=True
+        ),
     },
     ALPHA: {
         'accelerator': lambda p: AddAcceleratorFlag(p, True, True, True, True),
@@ -1164,6 +1176,7 @@ flags_to_add = {
         'dataplanev2': flags.AddDataplaneV2Flag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
+        'enableAmbient': flags.AddEnableAmbientFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'disksize': flags.AddDiskSizeFlag,
         'disktype': flags.AddDiskTypeFlag,
@@ -1228,6 +1241,11 @@ flags_to_add = {
         'nodeversion': flags.AddNodeVersionFlag,
         'nodelabels': flags.AddNodeLabelsFlag,
         'notificationconfig': flags.AddNotificationConfigFlag,
+        'nodepoolupgradeconcurrencyconfig': (
+            lambda p: flags.AddNodePoolUpgradeConcurrencyConfigFlag(
+                p, hidden=True
+            )
+        ),
         'num_nodes': flags.AddNumNodes,
         'performancemonitoringunit': (
             lambda p: flags.AddPerformanceMonitoringUnit(p, hidden=False)
@@ -1361,6 +1379,9 @@ flags_to_add = {
             p, hidden=True
         ),
         'autopilotGeneralProfile': flags.AddAutopilotGeneralProfileFlag,
+        'linkedRunnersMode': lambda p: flags.AddLinkedRunnersModeFlag(
+            p, hidden=True
+        ),
     },
 }
 # LINT.ThenChange(create_auto.py:auto_flags)
@@ -1615,6 +1636,9 @@ class CreateBeta(Create):
     ops.enable_experimental_vertical_pod_autoscaling = get_default(
         'enable_experimental_vertical_pod_autoscaling'
     )
+    ops.node_pool_upgrade_concurrency_config = get_default(
+        'node_pool_upgrade_concurrency_config'
+    )
     ops.security_group = get_default('security_group')
     ops.max_surge_upgrade = get_default('max_surge_upgrade')
     ops.max_unavailable_upgrade = get_default('max_unavailable_upgrade')
@@ -1739,6 +1763,7 @@ class CreateBeta(Create):
     ops.enable_managed_mldiagnostics = get_default(
         'enable_managed_mldiagnostics'
     )
+    ops.linked_runners_mode = get_default('linked_runners_mode')
     return ops
 
 
@@ -1859,6 +1884,9 @@ class CreateAlpha(Create):
     ops.enable_runtime_vulnerability_insight = get_default(
         'enable_runtime_vulnerability_insight'
     )
+    ops.node_pool_upgrade_concurrency_config = get_default(
+        'node_pool_upgrade_concurrency_config'
+    )
     ops.patch_update = get_default('patch_update')
     ops.host_maintenance_interval = get_default('host_maintenance_interval')
     ops.contianerd_config_from_file = get_default('contianerd_config_from_file')
@@ -1907,4 +1935,5 @@ class CreateAlpha(Create):
     ops.gpudirect_strategy = get_default('gpudirect_strategy')
     ops.managed_otel_scope = get_default('managed_otel_scope')
     ops.autopilot_general_profile = get_default('autopilot_general_profile')
+    ops.linked_runners_mode = get_default('linked_runners_mode')
     return ops

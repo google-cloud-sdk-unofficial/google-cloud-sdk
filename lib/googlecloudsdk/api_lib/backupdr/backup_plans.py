@@ -96,6 +96,7 @@ class BackupPlansClient(util.BackupDrClientBase):
       description,
       labels,
       max_custom_on_demand_retention_days,
+      disk_properties,
   ):
     """Creates a Backup Plan.
 
@@ -109,20 +110,16 @@ class BackupPlansClient(util.BackupDrClientBase):
       labels: The labels of the Backup Plan.
       max_custom_on_demand_retention_days: The custom on demand retention days
         limit of the Backup Plan.
+      disk_properties: The disk properties of the Backup Plan.
 
     Returns:
       The created Backup Plan.
     """
     parent = resource.Parent().RelativeName()
     backup_plan_id = resource.Name()
-    backup_plan = self.messages.BackupPlan(
-        resourceType=resource_type,
-        backupVault=backup_vault,
-    )
-    if description is not None:
-      backup_plan.description = description
-    if labels is not None:
-      backup_plan.labels = self.messages.BackupPlan.LabelsValue(
+    labels_message = None
+    if labels:
+      labels_message = self.messages.BackupPlan.LabelsValue(
           additionalProperties=[
               self.messages.BackupPlan.LabelsValue.AdditionalProperty(
                   key=key, value=value
@@ -130,13 +127,27 @@ class BackupPlansClient(util.BackupDrClientBase):
               for key, value in labels.items()
           ]
       )
-    backup_plan.backupRules = self._ParseBackupRules(backup_rules)
-    if log_retention_days is not None:
-      backup_plan.logRetentionDays = log_retention_days
-    if max_custom_on_demand_retention_days is not None:
-      backup_plan.maxCustomOnDemandRetentionDays = (
-          int(max_custom_on_demand_retention_days)
-      )
+    disk_props_message = None
+    if disk_properties:
+      disk_props_message = self.messages.DiskBackupPlanProperties(
+          guestFlush=disk_properties.get('guest-flush', False)
+          )
+
+    backup_plan = self.messages.BackupPlan(
+        resourceType=resource_type,
+        backupVault=backup_vault,
+        description=description,
+        labels=labels_message,
+        backupRules=self._ParseBackupRules(backup_rules),
+        logRetentionDays=log_retention_days,
+        maxCustomOnDemandRetentionDays=(
+            int(max_custom_on_demand_retention_days)
+            if max_custom_on_demand_retention_days is not None
+            else None
+        ),
+        diskBackupPlanProperties=disk_props_message,
+    )
+
     request = self.messages.BackupdrProjectsLocationsBackupPlansCreateRequest(
         parent=parent,
         backupPlan=backup_plan,
@@ -168,6 +179,7 @@ class BackupPlansClient(util.BackupDrClientBase):
       current_backup_plan,
       log_retention_days,
       max_custom_on_demand_retention_days,
+      disk_properties=None,
   ):
     """Parses the update request for a Backup Plan.
 
@@ -182,6 +194,8 @@ class BackupPlansClient(util.BackupDrClientBase):
       log_retention_days: The log retention days of the Backup Plan.
       max_custom_on_demand_retention_days: The custom on demand retention days
         limit of the Backup Plan.
+      disk_properties: A dictionary containing the disk properties of the
+        Backup Plan.
 
     Returns:
       The updated Backup Plan.
@@ -250,20 +264,29 @@ class BackupPlansClient(util.BackupDrClientBase):
           self._ParseBackupRules(add_backup_rules)
       )
     if remove_backup_rules is not None:
-      not_found_rule_ids = list(set([
-          rule_id
-          for rule_id in remove_backup_rules
-          if rule_id not in current_rule_ids
-      ]))
+      not_found_rule_ids = list(
+          set(
+              rule_id
+              for rule_id in remove_backup_rules
+              if rule_id not in current_rule_ids
+          )
+      )
       if not_found_rule_ids:
         raise exceptions.InvalidArgumentException(
             'rule-id',
             f'Rules {not_found_rule_ids} not found in the backup plan.',
         )
       updated_backup_plan.backupRules = [
-          rule for rule in updated_backup_plan.backupRules
+          rule
+          for rule in updated_backup_plan.backupRules
           if rule.ruleId not in remove_backup_rules
       ]
+    if disk_properties is not None:
+      updated_backup_plan.diskBackupPlanProperties = (
+          self.messages.DiskBackupPlanProperties(
+              guestFlush=disk_properties.get('guest-flush')
+          )
+      )
     return updated_backup_plan
 
   def Update(self, resource, backup_plan, update_mask):

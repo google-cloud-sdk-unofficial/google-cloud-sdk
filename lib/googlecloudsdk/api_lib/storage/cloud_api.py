@@ -361,6 +361,7 @@ class CloudApi(object):
       bucket_name,
       destination_location,
       destination_custom_placement_config,
+      destination_kms_key_name,
       validate_only,
   ):
     """Relocates a bucket between different locations.
@@ -371,6 +372,8 @@ class CloudApi(object):
         to.
       destination_custom_placement_config (list[str]): The bucket's new custom
         placement configuration if relocating to a Custom Dual Region.
+      destination_kms_key_name (str): The KMS key name to use for the relocated
+        bucket.
       validate_only (bool): If true, validate the operation, but do not actually
         relocate the bucket.
 

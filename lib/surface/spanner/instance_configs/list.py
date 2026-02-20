@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.spanner import instance_configs
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the available Cloud Spanner instance configurations."""
 

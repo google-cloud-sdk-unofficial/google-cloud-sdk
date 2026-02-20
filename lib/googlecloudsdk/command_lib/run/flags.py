@@ -3565,6 +3565,8 @@ def GetInstanceConfigurationChanges(args, release_track=base.ReleaseTrack.GA):
   changes = _GetConfigurationChanges(args, release_track=release_track)
   if 'gpu_type' in args and args.gpu_type:
     changes.append(config_changes.GpuTypeChange(gpu_type=args.gpu_type))
+  if 'timeout' in args and args.timeout:
+    changes.append(config_changes.TimeoutChanges(timeout=args.timeout))
 
   if FlagIsExplicitlySet(args, 'ingress'):
     changes.append(_GetIngressChanges(args))

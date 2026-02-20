@@ -138,8 +138,7 @@ class Create(base.CreateCommand):
         required=False,
         help=(
             "The serving stack to filter manifests by. If not"
-            " provided, manifests for all serving stacks that support"
-            " the given model and model server will be considered."
+            " provided, will default to none."
         ),
     )
     parser.add_argument(

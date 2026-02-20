@@ -153,9 +153,3 @@ properties:
       existing Cache-Control header. The actual headers served in
       responses will not be altered.
     type: integer
-  signedUrlKeyNames:
-    description: |-
-      [Output Only] Names of the keys for signing request URLs.
-    type: array
-    items:
-      type: string

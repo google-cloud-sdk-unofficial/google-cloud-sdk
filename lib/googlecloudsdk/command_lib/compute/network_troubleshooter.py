@@ -27,6 +27,7 @@ from dns import resolver
 from googlecloudsdk.api_lib.services import enable_api
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.compute import ssh_troubleshooter
+from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 import six
@@ -34,7 +35,6 @@ import six
 _NUM_RANDOM_CHARACTERS = 5
 
 _API_NETWORKMANAGEMENT_CLIENT_NAME = 'networkmanagement'
-_API_COMPUTE_CLIENT_NAME = 'compute'
 _API_CLIENT_VERSION_V1 = 'v1'
 
 NETWORK_API = 'networkmanagement.googleapis.com'
@@ -48,51 +48,57 @@ CONNECTIVITY_TEST_MESSAGE = (
     'https://console.cloud.google.com/net-intelligence/connectivity/tests/details/{0}?project={1}\n'
     '\n'
     'Help for connectivity tests:\n'
-    'https://cloud.google.com/network-intelligence-center/docs/connectivity-tests/concepts/overview\n')
+    'https://cloud.google.com/network-intelligence-center/docs/connectivity-tests/concepts/overview\n'
+)
 
 
 def _GetRandomSuffix():
   random_characters = [
       random.choice(string.ascii_lowercase + string.digits)
-      for _ in range(_NUM_RANDOM_CHARACTERS)]
+      for _ in range(_NUM_RANDOM_CHARACTERS)
+  ]
   return ''.join(random_characters)
 
 
 class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
   """Check network and firewall setting by running network connectivity test."""
 
-  def __init__(self, project, zone, instance):
+  def __init__(self, project, zone, instance, iap_tunnel_args=None):
     self.project = project
     self.zone = zone
     self.instance = instance
-    self.nm_client = apis.GetClientInstance(_API_NETWORKMANAGEMENT_CLIENT_NAME,
-                                            _API_CLIENT_VERSION_V1)
-    self.nm_message = apis.GetMessagesModule(_API_NETWORKMANAGEMENT_CLIENT_NAME,
-                                             _API_CLIENT_VERSION_V1)
-    self.compute_client = apis.GetClientInstance(_API_COMPUTE_CLIENT_NAME,
-                                                 _API_CLIENT_VERSION_V1)
-    self.compute_message = apis.GetMessagesModule(_API_COMPUTE_CLIENT_NAME,
-                                                  _API_CLIENT_VERSION_V1)
+    self.iap_tunnel_args = iap_tunnel_args
+    self.nm_client = apis.GetClientInstance(
+        _API_NETWORKMANAGEMENT_CLIENT_NAME, _API_CLIENT_VERSION_V1
+    )
+    self.nm_message = apis.GetMessagesModule(
+        _API_NETWORKMANAGEMENT_CLIENT_NAME, _API_CLIENT_VERSION_V1
+    )
     self.skip_troubleshoot = False
     self.test_id = 'ssh-troubleshoot-' + _GetRandomSuffix()
 
   def check_prerequisite(self):
     log.status.Print('---- Checking network connectivity ----')
-    msg = ('The Network Management API is needed to check the VM\'s network '
-           'connectivity.')
+    msg = (
+        "The Network Management API is needed to check the VM's network "
+        'connectivity.'
+    )
     prompt = (
         "If not already enabled, is it OK to enable it and check the VM's"
         ' network connectivity?'
     )
-    cancel = ('Test skipped.\n'
-              'To manually test network connectivity, try reaching another '
-              'device on the same network.\n')
+    cancel = (
+        'Test skipped.\n'
+        'To manually test network connectivity, try reaching another '
+        'device on the same network.\n'
+    )
     try:
       prompt_continue = console_io.PromptContinue(
           message=msg,
           prompt_string=prompt,
           cancel_on_no=True,
-          cancel_string=cancel)
+          cancel_string=cancel,
+      )
       self.skip_troubleshoot = not prompt_continue
     except console_io.OperationCancelledError:
       self.skip_troubleshoot = True
@@ -110,7 +116,9 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
           'Missing the IAM permissions {0} necessary to perform the network '
           'connectivity test. To manually test network connectivity, try '
           'reaching another device on the same network.\n'.format(
-              ' '.join(missing_permissions)))
+              ' '.join(missing_permissions)
+          )
+      )
       self.skip_troubleshoot = True
       return
 
@@ -121,11 +129,77 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     if self.skip_troubleshoot:
       return
 
-    self.ip_address = self._GetSourceIPAddress()
-    log.status.Print('Your source IP address is {0}\n'.format(self.ip_address))
-    if not self.ip_address:
-      log.status.Print('Could not resolve source external IP address, can\'t '
-                       'run network connectivity test.\n')
+    self.src_ip_address = ''
+    self.dst_ip_address = ''
+
+    if self.iap_tunnel_args:
+      # Connectivity via IAP from the IAP address to the internal IP address.
+      self.dst_ip_address = ssh_utils.GetInternalIPAddress(
+          self.instance, no_raise=True
+      )
+
+      if ':' not in self.dst_ip_address:
+        # IPv4 connectivity.
+        self.src_ip_address = '35.235.240.123'
+        log.status.Print(
+            'Source IP address: {0} (a random IP address from the IAP IPv4'
+            ' range - 35.235.240.0/20)\n'.format(self.src_ip_address)
+        )
+        log.status.Print(
+            'Destination IP address: {0} (primary internal IPv4 address of the'
+            ' instance)\n'.format(self.dst_ip_address)
+        )
+      elif ':' in self.dst_ip_address:
+        # IPv6 connectivity.
+        self.src_ip_address = '2600:2d00:1:7:1:2:3::'
+        log.status.Print(
+            'Source IP address: {0} (a random IP address from the IAP IPv6'
+            ' range - 2600:2d00:1:7::/64)\n'.format(self.src_ip_address)
+        )
+        log.status.Print(
+            'Destination IP address: {0} (primary internal IPv6 address of the'
+            ' instance)\n'.format(self.dst_ip_address)
+        )
+    else:
+      # Direct connectivity from the source address to the external IP address.
+      self.src_ip_address = self._GetSourceIPAddress()
+      log.status.Print(
+          'Source IP address: {0} (your current external IP address)\n'.format(
+              self.src_ip_address
+          )
+      )
+
+      if ':' not in self.src_ip_address:
+        # IPv4 connectivity.
+        self.dst_ip_address = ssh_utils.GetPrimaryExternalIPv4Address(
+            self.instance
+        )
+        log.status.Print(
+            'Destination IP address: {0} (primary external IPv4 address of the'
+            ' instance)\n'.format(self.dst_ip_address)
+        )
+      elif ':' in self.src_ip_address:
+        # IPv6 connectivity.
+        self.dst_ip_address = ssh_utils.GetPrimaryExternalIPv6Address(
+            self.instance
+        )
+        log.status.Print(
+            'Destination IP address: {0} (primary external IPv6 address of the'
+            ' instance)\n'.format(self.dst_ip_address)
+        )
+
+    if not self.src_ip_address:
+      log.status.Print(
+          "Could not resolve source IP address, can't run a Connectivity Test\n"
+      )
+      self.skip_troubleshoot = True
+      return
+
+    if not self.dst_ip_address:
+      log.status.Print(
+          "Could not resolve destination IP address, can't run a Connectivity"
+          ' Test\n'
+      )
       self.skip_troubleshoot = True
       return
 
@@ -136,8 +210,9 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
 
     test_result = self._GetConnectivityTestResult()
     self._PrintConciseConnectivityTestResult(test_result)
-    log.status.Print(CONNECTIVITY_TEST_MESSAGE.format(
-        self.test_id, self.project.name))
+    log.status.Print(
+        CONNECTIVITY_TEST_MESSAGE.format(self.test_id, self.project.name)
+    )
     return
 
   def _RunConnectivityTest(self):
@@ -145,61 +220,88 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     # pylint: disable=line-too-long
     connectivity_test_create_req = self.nm_message.NetworkmanagementProjectsLocationsGlobalConnectivityTestsCreateRequest(
         parent='projects/{project_id}/locations/global'.format(
-            project_id=self.project.name),
+            project_id=self.project.name
+        ),
         testId=self.test_id,
-        connectivityTest=connectivity_test)
+        connectivityTest=connectivity_test,
+    )
     return self.nm_client.projects_locations_global_connectivityTests.Create(
-        connectivity_test_create_req).name
+        connectivity_test_create_req
+    ).name
 
   def _GetConnectivityTestResult(self):
-    name = ('projects/{project_id}/locations/global/connectivityTests/'
-            '{test_id}'.format(project_id=self.project.name,
-                               test_id=self.test_id))
+    name = (
+        'projects/{project_id}/locations/global/connectivityTests/'
+        '{test_id}'.format(project_id=self.project.name, test_id=self.test_id)
+    )
     connectivity_test_get_req = self.nm_message.NetworkmanagementProjectsLocationsGlobalConnectivityTestsGetRequest(
-        name=name)
+        name=name
+    )
     return self.nm_client.projects_locations_global_connectivityTests.Get(
-        connectivity_test_get_req)
+        connectivity_test_get_req
+    )
 
   def _IsConnectivityTestFinish(self, name):
     # pylint: disable=line-too-long
     operation_get_req = self.nm_message.NetworkmanagementProjectsLocationsGlobalOperationsGetRequest(
-        name=name)
+        name=name
+    )
     return self.nm_client.projects_locations_global_operations.Get(
-        operation_get_req).done
+        operation_get_req
+    ).done
 
   def _CreateConnectivityTest(self):
     return self.nm_message.ConnectivityTest(
-        name='projects/{name}/locations/global/connectivityTests/{testId}'
-        .format(name=self.project.name, testId=self.test_id),
-        description='This connectivity test is created by '
-        "'gcloud compute ssh --troubleshoot'",
+        name=(
+            'projects/{name}/locations/global/connectivityTests/{testId}'
+            .format(name=self.project.name, testId=self.test_id)
+        ),
+        description=(
+            'This connectivity test is created by '
+            "'gcloud compute ssh --troubleshoot'"
+        ),
         source=self.nm_message.Endpoint(
-            ipAddress=self.ip_address, projectId=self.project.name),
+            ipAddress=self.src_ip_address,
+            networkType=self.nm_message.Endpoint.NetworkTypeValueValuesEnum.INTERNET,
+        ),
         destination=self.nm_message.Endpoint(
             port=22,
-            instance='projects/{project}/zones/{zone}/instances/{instance}'
-            .format(
-                project=self.project.name,
-                zone=self.zone,
-                instance=self.instance.name)),
-        protocol='TCP')
+            instance=(
+                'projects/{project}/zones/{zone}/instances/{instance}'.format(
+                    project=self.project.name,
+                    zone=self.zone,
+                    instance=self.instance.name,
+                )
+            ),
+            ipAddress=self.dst_ip_address,
+        ),
+        protocol='TCP',
+        roundTrip=True,
+    )
 
   def _CheckNetworkManagementPermissions(self):
-    resource_url = ('projects/{project_id}/locations/global/'
-                    'connectivityTests/*'.format(project_id=self.project.name))
+    resource_url = (
+        'projects/{project_id}/locations/global/connectivityTests/*'.format(
+            project_id=self.project.name
+        )
+    )
     test_permission_req = self.nm_message.TestIamPermissionsRequest(
-        permissions=networkmanagement_permissions)
+        permissions=networkmanagement_permissions
+    )
     # pylint: disable=line-too-long
     nm_testiampermission_req = self.nm_message.NetworkmanagementProjectsLocationsGlobalConnectivityTestsTestIamPermissionsRequest(
-        resource=resource_url, testIamPermissionsRequest=test_permission_req)
-    response = self.nm_client.projects_locations_global_connectivityTests.TestIamPermissions(nm_testiampermission_req)
+        resource=resource_url, testIamPermissionsRequest=test_permission_req
+    )
+    response = self.nm_client.projects_locations_global_connectivityTests.TestIamPermissions(
+        nm_testiampermission_req
+    )
     return set(networkmanagement_permissions) - set(response.permissions)
 
   def _GetSourceIPAddress(self):
     """Get current external IP from Google DNS server.
 
     Returns:
-      str, an ipv4 address represented by string
+      str, an address represented by string
     """
     re = resolver.Resolver()
     # pylint: disable=g-socket-gethostbyname
@@ -215,9 +317,16 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
       response: A response from projects_locations_global_connectivityTests Get
 
     Returns:
-
     """
     details = response.reachabilityDetails
     if details:
-      log.status.Print('Network Connectivity Test Result: {0}\n'.format(
-          details.result))
+      log.status.Print(
+          'Connectivity Test forward path result: {0}\n'.format(details.result)
+      )
+    return_details = response.returnReachabilityDetails
+    if return_details:
+      log.status.Print(
+          'Connectivity Test return path result: {0}\n'.format(
+              return_details.result
+          )
+      )

@@ -54,6 +54,7 @@ class AddBackend(base.UpdateCommand):
   support_region_neg = True
   support_failover = True
   support_in_flight_balancing = False
+  support_inline_service = False
 
   @classmethod
   def Args(cls, parser):
@@ -63,7 +64,9 @@ class AddBackend(base.UpdateCommand):
         parser,
         'add to',
         support_global_neg=cls.support_global_neg,
-        support_region_neg=cls.support_region_neg)
+        support_region_neg=cls.support_region_neg,
+        support_inline_service=cls.support_inline_service,
+    )
     backend_flags.AddBalancingMode(
         parser,
         support_global_neg=cls.support_global_neg,
@@ -131,6 +134,7 @@ class AddBackend(base.UpdateCommand):
               args,
               resources,
               scope_lister=compute_flags.GetDefaultScopeLister(client))
+    return None
 
   def _CreateBackendMessage(
       self,
@@ -176,6 +180,8 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        backend.service = args.service
       if (
           self.ReleaseTrack() == base.ReleaseTrack.ALPHA
           or self.ReleaseTrack() == base.ReleaseTrack.BETA
@@ -205,6 +211,8 @@ class AddBackend(base.UpdateCommand):
           maxConnectionsPerEndpoint=args.max_connections_per_endpoint,
           failover=args.failover,
       )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+        backend.service = args.service
       if (
           self.ReleaseTrack() == base.ReleaseTrack.ALPHA
           or self.ReleaseTrack() == base.ReleaseTrack.BETA
@@ -224,11 +232,10 @@ class AddBackend(base.UpdateCommand):
     replacement = encoding.CopyProtoMessage(existing)
 
     group_ref = self._GetGroupRef(args, resources, client)
-    group_uri = group_ref.SelfLink()
 
     scope = ''
     for backend in existing.backends:
-      if group_uri == backend.group:
+      if group_ref and group_ref.SelfLink() == backend.group:
         if (
             group_ref.Collection() == 'compute.instanceGroups'
             or group_ref.Collection() == 'compute.networkEndpointGroups'
@@ -245,6 +252,16 @@ class AddBackend(base.UpdateCommand):
         raise exceptions.ArgumentError(
             'Backend [{}] in {} already exists in backend service [{}].'.format(
                 group_ref.Name(), scope, backend_service_ref.Name()
+            )
+        )
+      elif (
+          self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+          and args.service
+          and args.service == backend.service
+      ):
+        raise exceptions.ArgumentError(
+            'Backend [{}] already exists in backend service [{}].'.format(
+                args.service, backend_service_ref.Name()
             )
         )
 
@@ -270,7 +287,7 @@ class AddBackend(base.UpdateCommand):
 
     backend = self._CreateBackendMessage(
         client.messages,
-        group_uri,
+        None if group_ref is None else group_ref.SelfLink(),
         balancing_mode,
         preference,
         traffic_duration,
@@ -348,3 +365,4 @@ class AddBackendAlpha(AddBackend):
   """
   # Allow --preference flag to be set when updating the backend.
   support_in_flight_balancing = True
+  support_inline_service = True

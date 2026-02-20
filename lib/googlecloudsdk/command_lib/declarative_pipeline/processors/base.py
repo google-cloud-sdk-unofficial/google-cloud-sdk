@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 from collections.abc import MutableMapping, Sequence
 import pathlib
-from typing import Any
+from typing import Any, Optional
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.declarative_pipeline.tools import python_environment
@@ -49,19 +49,35 @@ class ActionProcessor:
   def process_action(self):
     """Processes a single action in the pipeline, resolving local paths to GCS URIs."""
 
-    if (self._work_dir / "jobs" / "requirements.txt").exists():
-      python_version = self.get_python_version()
-      self.full_python_path = f"./libs/lib/python{python_version}/site-packages"
-      python_environment.build_env_local(
-          self._subprocess_mod,
-          self._work_dir,
-          self._work_dir / "jobs" / "requirements.txt",
-          self._work_dir / self._env_pack_file,
-          python_version,
-      )
+    requirements_path = self._work_dir / "jobs" / "requirements.txt"
+    if requirements_path.exists():
+      python_version = self._get_python_version()
+      if python_version:
+        self.full_python_path = (
+            f"./libs/lib/python{python_version}/site-packages"
+        )
 
-    if "filename" not in self.action:
+        python_environment.build_env_local(
+            self._subprocess_mod,
+            self._work_dir,
+            requirements_path,
+            self._work_dir / self._env_pack_file,
+            python_version,
+        )
+
+    if not self._resolve_filename():
       return
+
+    self._update_yaml_properties(self.action)
+
+  def _resolve_filename(self) -> bool:
+    """Checks for presence of and resolves filename to GCS URI.
+
+    Returns:
+      bool: True if filename is present in action, False otherwise.
+    """
+    if "filename" not in self.action:
+      return False
 
     raw_path = self.action["filename"]
     local_path = pathlib.Path(raw_path.lstrip("/"))
@@ -75,19 +91,19 @@ class ActionProcessor:
     self.action["filename"] = (
         f"{self._artifact_base_uri}{local_path.as_posix()}"
     )
+    return True
 
-    self._update_yaml_properties(self.action)
-
-  def get_python_version(self) -> str:
+  def _get_python_version(self) -> Optional[str]:
     """Returns the Python version for this action, or None if not specified."""
-    raise NotImplementedError()
+    return None
 
   def _update_yaml_properties(self, action):
     """Performs updates on YAML properties."""
     pass
 
+  @staticmethod
   def _get_nested_dict(
-      self, d: MutableMapping[str, Any], keys: Sequence[str]
+      d: MutableMapping[str, Any], keys: Sequence[str]
   ) -> MutableMapping[str, Any]:
     """Gets a nested dictionary from `d`, creating keys with empty dictionaries if they don't exist."""
     current = d

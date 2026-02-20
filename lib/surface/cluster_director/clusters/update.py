@@ -48,7 +48,7 @@ DETAILED_HELP = {
         --description "My updated cluster description" \
         --add-labels env=prod,client=gcloud-cli \
         --add-on-demand-instances id=compute1,zone=us-central1-a,machineType=n2-standard-2 \
-        --add-reserved-instances id=compute2,reservation=zones/us-central1-a/reservations/{reservation},machineType={machineType} \
+        --add-reserved-instances id=compute2,reservation=zones/us-central1-a/reservations/{reservation} \
         --add-spot-instances id=compute3,zone=us-central1-a,machineType=n2-standard-2 \
         --add-dws-flex-instances id=compute4,zone=us-central1-a,machineType=a4-highgpu-8g,maxDuration=10000s \
         --add-new-lustre-instances lustre=locations/us-central1-a/instances/lustre1,capacityGb=1024,filesystem=lustre1 \
@@ -106,7 +106,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Update(base.UpdateCommand):
   """Updates a Cluster Director resource."""
 
@@ -185,18 +185,19 @@ class Update(base.UpdateCommand):
     flags.AddSlurmEpilogBashScripts(
         parser=flag_group, api_version=api_version, include_update_flags=True
     )
-    flags.AddSlurmTaskPrologBashScripts(
-        parser=flag_group, api_version=api_version, include_update_flags=True
-    )
-    flags.AddSlurmTaskEpilogBashScripts(
-        parser=flag_group, api_version=api_version, include_update_flags=True
-    )
-    flags.AddSlurmConfig(
-        parser=flag_group, api_version=api_version, include_update_flags=True
-    )
-    flags.AddSlurmDisableHealthCheckProgram(
-        parser=flag_group, api_version=api_version, include_update_flags=True
-    )
+    if api_version == "v1alpha":
+      flags.AddSlurmTaskPrologBashScripts(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
+      flags.AddSlurmTaskEpilogBashScripts(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
+      flags.AddSlurmConfig(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
+      flags.AddSlurmDisableHealthCheckProgram(
+          parser=flag_group, api_version=api_version, include_update_flags=True
+      )
 
   def Run(self, args):
     """Constructs and sends request.

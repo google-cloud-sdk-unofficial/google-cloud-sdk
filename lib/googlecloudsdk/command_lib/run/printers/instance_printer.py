@@ -30,7 +30,7 @@ from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.resource import custom_printer_base as cp
 
 
-def status_color_format():
+def StatusColorFormat():
   """Return the color format string for the status of this instance."""
   color_formatters = []
   for _, symbol in instance.Instance.INSTANCE_SYMBOLS.items():
@@ -43,7 +43,6 @@ def status_color_format():
 INSTANCE_PRINTER_FORMAT = 'instance'
 
 
-# TODO: b/456195460 - Add more fields to the instance printer.
 class InstancePrinter(cp.CustomPrinterBase):
   """Prints the run Instance in a custom human-readable format.
 
@@ -52,11 +51,7 @@ class InstancePrinter(cp.CustomPrinterBase):
   """
 
   @staticmethod
-  def _formatOutput(record):
-    output = []
-    header = k8s_util.BuildHeader(record)
-    labels = k8s_util.GetLabels(record.labels)
-
+  def FormatReadyMessage(record):
     # The ready message should be the same as FormatReadyMessage but without the
     # symbol.
     ready_message = ''
@@ -67,23 +62,43 @@ class InstancePrinter(cp.CustomPrinterBase):
           textwrap.fill(record.ready_condition['message'], 100),
           color,
       )
+    return ready_message
+
+  @staticmethod
+  def GetConfig(record):
+    config = []
+    if record.timeout:
+      config.append(
+          cp.Labeled(
+              [('Timeout', k8s_util.FormatDurationShort(record.timeout))]
+          )
+      )
+    return cp.Lines(config)
+
+  @staticmethod
+  def _formatOutput(record):
+    output = []
+    header = k8s_util.BuildHeader(record)
+    ready_message = InstancePrinter.FormatReadyMessage(record)
+    labels = k8s_util.GetLabels(record.labels)
+    config = InstancePrinter.GetConfig(record)
+    route_fields = traffic_printer.TransformInstanceRouteFields(record)
+    containers = container_util.GetContainers(record)
 
     if header:
       output.append(header)
-    if labels:
-      output.append(labels)
     if ready_message:
       output.append(ready_message)
-
+    if labels:
+      output.append(labels)
     output.append(' ')
 
-    # Only print URL and Ingress if URL is present.
-    route_fields = traffic_printer.TransformInstanceRouteFields(record)
     if route_fields:
       output.append(route_fields)
       output.append(' ')
 
-    output.append(container_util.GetContainers(record))
+    output.append(containers)
+    output.append(config)
 
     return output
 

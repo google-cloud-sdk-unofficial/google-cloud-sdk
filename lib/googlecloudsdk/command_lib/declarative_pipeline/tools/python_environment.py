@@ -63,8 +63,11 @@ def build_env_local(
     try:
       # 1. Create the virtual environment using uv
       log.info('Creating virtual environment with uv...')
-      subprocess_mod.check_call(
-          ['uv', 'venv', str(venv_path), '--python', python_version]
+      subprocess_mod.run(
+          ['uv', 'venv', str(venv_path), '--python', python_version],
+          check=True,
+          capture_output=True,
+          text=True,
       )
 
       # 2. Install requirements using uv pip
@@ -78,25 +81,38 @@ def build_env_local(
           '-r',
           str(requirements_file_path),
           '--no-cache',
+          # Copying is required to have all libs in site packages.
           '--link-mode=copy',
+          # We host resulting spark jobs on Linux VMs.
+          '--python-platform',
+          'linux',
+          # Do not build from source as arch can be different.
+          '--only-binary=:all:',
       ]
 
-      subprocess_mod.check_call(pip_install_cmd)
+      subprocess_mod.run(
+          pip_install_cmd, check=True, capture_output=True, text=True
+      )
 
       # 3. Pack the environment using venv-pack
       log.info('Packing environment with venv-pack...')
-      subprocess_mod.check_call([
-          'uvx',
-          'venv-pack',
-          '-p',
-          str(venv_path),
-          '-o',
-          output_path,
-          '--force',
-      ])
+      subprocess_mod.run(
+          [
+              'uvx',
+              'venv-pack',
+              '-p',
+              str(venv_path),
+              '-o',
+              output_path,
+              '--force',
+          ],
+          check=True,
+          capture_output=True,
+          text=True,
+      )
 
     except subprocess_mod.CalledProcessError as e:
-      log.error('Command failed: %s', e)
-      raise exceptions.ToolException(
-          'Local build with uv failed. Ensure uv is installed in your PATH.'
-      ) from e
+      log.error('Command failed: %s', ' '.join(e.cmd))
+      if e.stderr:
+        log.error('Stderr:\n%s', e.stderr)
+      raise exceptions.ToolException('Local build failed') from e

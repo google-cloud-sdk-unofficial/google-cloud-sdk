@@ -5,6 +5,96 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 557.0.0 (2026-02-18)
+
+### Google Cloud CLI
+
+* Rebuilt Linux bundled Python for the `gcloud` CLI with setuptools 80.10.2 to
+  fix CVE CVE-2026-24049.
+* Update `gcloud feedback` to remove Stack Overflow and IRC as communication
+  channels.
+
+### App Engine
+
+* Updated the Go SDK to version 1.9.77.
+  Please visit the following release notes for details:
+  <https://cloud.google.com/appengine/docs/go/release-notes>.
+* Updated the Java SDK to version 4.0.2 build from the open source project
+  <https://github.com/GoogleCloudPlatform/appengine-java-standard/releases/tag/v4.0.2>.
+
+### Cloud Backup DR
+
+*   Added `--cloudsql-edition` flag to `gcloud backup-dr service-config init` to support initializing Cloud SQL instances.
+
+### Cloud Bigtable
+
+* Rebuilt with Go 1.24.11 to fix CVE-2025-61727 and CVE-2025-61729.
+
+### Cloud DNS
+
+* Enforce version 3 in setIamPolicy managed zone command.
+
+### Cloud Interconnect
+
+* Deprecate `--subzone` flag of `gcloud compute interconnects create`.
+
+### Compute Engine
+
+* Added `--template` flag for `gcloud compute instance-groups managed update` command in GA.
+* Promoted `gcloud compute instant-snapshot-groups create` to beta.
+* Promoted `gcloud compute instant-snapshot-groups delete` to beta.
+* Promoted `gcloud compute instant-snapshot-groups describe` to beta.
+* Promoted `gcloud compute instant-snapshot-groups list` to beta.
+* Promoted `gcloud compute rollouts describe` to beta.
+* Promoted `gcloud compute rollouts list` to beta.
+* Promoted `gcloud compute rollouts cancel` to beta.
+* Promoted `gcloud compute rollouts delete` to beta.
+* Added `min-cpu-platform` field in `--instance-selection` flag of `gcloud compute instance-groups managed create` and `gcloud compute instance-groups managed update` in beta.
+* Added `--discard-local-ssd` flag to `gcloud compute instances create` in alpha.
+* Updated the network troubleshooting logic within `gcloud compute ssh --troubleshoot` to handle IAP and IPv6 connectivity scenarios.
+
+### Compute Firewall Policies
+
+*   Promoted `--src-network-context` flag of `gcloud compute firewall-policies rules create` to GA.
+*   Promoted `--src-network-context` flag of `gcloud compute firewall-policies rules update` to GA.
+*   Promoted `--dest-network-context` flag of `gcloud compute firewall-policies rules create` to GA.
+*   Promoted `--dest-network-context` flag of `gcloud compute firewall-policies rules update` to GA.
+*   Promoted `--src-network-context` flag of `gcloud compute network-firewall-policies rules create` to GA.
+*   Promoted `--src-network-context` flag of `gcloud compute network-firewall-policies rules update` to GA.
+*   Promoted `--dest-network-context` flag of `gcloud compute network-firewall-policies rules create` to GA.
+*   Promoted `--dest-network-context` flag of `gcloud compute network-firewall-policies rules update` to GA.
+*   Promoted `--priority` and `--associated-policy-to-be-replaced` flags of
+`gcloud compute network-firewall-policies associations create` to beta.
+*   Promoted `gcloud compute network-firewall-policies associations update`
+command to beta.
+
+### Container Registry
+
+* Fixed an issue where `gcloud container images list-tags` would crash with a
+  stack trace when receiving a non-JSON response from the server (e.g. an HTML
+  error page). It now displays a user-friendly error message.
+
+### Eventarc
+
+* Added `--clear-max-retry-attempts` to `gcloud eventarc triggers update` to support unsetting a RetryPolicy delivery attempt setting.
+
+### Looker
+
+* Added `--catalog-integration-enabled` flag to `gcloud looker instance create` and `gcloud looker instance update` commands to manage Universal Dataplex Catalog integration with Looker.
+
+### Pubsub Emulator
+
+*   Add support for AI Inference Single Message Transforms (SMTs).
+*   Fix race condition in unit tests.
+
+### Workbench
+
+* Promoted `gcloud workbench executions` and `gcloud workbench schedules` to GA.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 556.0.0 (2026-02-10)
 
 ### Google Cloud CLI

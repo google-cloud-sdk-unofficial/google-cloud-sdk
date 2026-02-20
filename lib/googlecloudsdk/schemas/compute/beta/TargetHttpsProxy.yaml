@@ -51,9 +51,6 @@ properties:
       //certificatemanager.googleapis.com/projects/{project
       }/locations/{location}/certificateMaps/{resourceName}.
     type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   description:
     description: |-
       An optional description of this resource. Provide this property when you
@@ -96,16 +93,6 @@ properties:
       seconds. For classic Application Load Balancers, this option is not
       supported.
     type: integer
-  id:
-    description: |-
-      [Output Only] The unique identifier for the resource. This identifier
-      is defined by the server.
-    type: integer
-  kind:
-    description: |-
-      [Output Only] Type of resource. Always compute#targetHttpsProxy for
-      target HTTPS proxies.
-    type: string
   name:
     description: |-
       Name of the resource. Provided by the client when the resource is
@@ -142,14 +129,6 @@ properties:
     - DISABLE
     - ENABLE
     - NONE
-  region:
-    description: |-
-      [Output Only] URL of the region where the regional TargetHttpsProxy
-      resides. This field is not applicable to global TargetHttpsProxies.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
   serverTlsPolicy:
     description: |-
       A URL referring to a networksecurity.ServerTlsPolicy resource that

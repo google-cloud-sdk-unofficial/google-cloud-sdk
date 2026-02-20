@@ -28,24 +28,46 @@ class ServiceConfigClient(util.BackupDrClientBase):
     super(ServiceConfigClient, self).__init__()
     self.service = self.client.projects_locations_serviceConfig
 
-  def Init(self, location, resource_type):
+  def Init(self, location, resource_type, cloudsql_edition):
     """Calls the Backup and DR Initialize service.
 
     Args:
       location: location of the service config.
       resource_type: resource type for which the service config is being
         initialized.
+      cloudsql_edition: (Required only for Cloud SQL instances, ignored
+        otherwise) The edition of the Cloud SQL instance. Possible values:
+        "ENTERPRISE" - Enterprise edition. "ENTERPRISE_PLUS" - Enterprise Plus
+        edition.
 
     Returns:
       A long running operation
     """
     name = f'{location}/serviceConfig'
-    request = (
-        self.messages.BackupdrProjectsLocationsServiceConfigInitializeRequest(
-            name=name,
-            initializeServiceRequest=self.messages.InitializeServiceRequest(
-                resourceType=resource_type,
-            ),
-        )
-    )
+    if cloudsql_edition:
+      cloudsql_edition_enum = self.messages.CloudSqlInstanceInitializationConfig.EditionValueValuesEnum(
+          cloudsql_edition
+      )
+      request = (
+          self.messages.BackupdrProjectsLocationsServiceConfigInitializeRequest(
+              name=name,
+              initializeServiceRequest=self.messages.InitializeServiceRequest(
+                  resourceType=resource_type,
+                  cloudSqlInstanceInitializationConfig=(
+                      self.messages.CloudSqlInstanceInitializationConfig(
+                          edition=cloudsql_edition_enum,
+                      )
+                  ),
+              ),
+          )
+      )
+    else:
+      request = (
+          self.messages.BackupdrProjectsLocationsServiceConfigInitializeRequest(
+              name=name,
+              initializeServiceRequest=self.messages.InitializeServiceRequest(
+                  resourceType=resource_type,
+              ),
+          )
+      )
     return self.service.Initialize(request)

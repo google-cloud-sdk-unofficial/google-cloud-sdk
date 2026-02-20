@@ -21,10 +21,10 @@ from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.UniverseCompatible
 class BackupSchedules(base.Group):
   """Manage Cloud Spanner backup schedules."""
 

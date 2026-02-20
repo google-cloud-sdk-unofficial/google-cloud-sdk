@@ -24,7 +24,7 @@ DETAILED_HELP = {  # Dict[str, str]
 
 
 @base.UniverseCompatible
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InstantSnapshotGroups(base.Group):
   """Create, list and delete Compute Engine instant snapshot groups."""
 

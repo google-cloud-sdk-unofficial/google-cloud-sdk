@@ -443,22 +443,6 @@ def AsyncRequestReasonInterceptor():
   return AsyncHeaderAdderInterceptor(_GetRequestReasonHeader)
 
 
-def _GetUserAgentHeader():
-  """Returns the user agent headers to be used."""
-  user_agent = core_transport.MakeUserAgentString()
-  return [('user-agent', config.CLOUDSDK_USER_AGENT + ' ' + user_agent)]
-
-
-def UserAgentInterceptor():
-  """Returns an interceptor that adds a user agent header."""
-  return HeaderAdderInterceptor(_GetUserAgentHeader)
-
-
-def AsyncUserAgentInterceptor():
-  """Returns an interceptor that adds a user agent header."""
-  return AsyncHeaderAdderInterceptor(_GetUserAgentHeader)
-
-
 def _AddTimeout():
   """Returns a function that sets a timeout on client call details."""
   timeout = properties.VALUES.core.http_timeout.GetInt()
@@ -962,6 +946,12 @@ def MakeProxyFromEnvironmentVariables():
   return None
 
 
+def _GetUserAgent():
+  """Returns the user agent to be used."""
+  user_agent = core_transport.MakeUserAgentString()
+  return config.CLOUDSDK_USER_AGENT + ' ' + user_agent
+
+
 def MakeChannelOptions(channel_options=None):
   """Returns channel arguments for the underlying gRPC channel.
 
@@ -975,6 +965,7 @@ def MakeChannelOptions(channel_options=None):
   options = {
       'grpc.max_send_message_length': -1,
       'grpc.max_receive_message_length': -1,
+      'grpc.primary_user_agent': _GetUserAgent(),
   }
   if channel_options:
     options.update(channel_options)
@@ -1022,7 +1013,6 @@ def MakeTransport(
 
   interceptors = []
   interceptors.append(RequestReasonInterceptor())
-  interceptors.append(UserAgentInterceptor())
   interceptors.append(TimeoutInterceptor())
   interceptors.append(IAMAuthHeadersInterceptor())
   interceptors.append(RPCDurationReporterInterceptor())
@@ -1057,7 +1047,6 @@ def MakeAsyncTransport(
 
   interceptors = []
   interceptors.append(AsyncRequestReasonInterceptor())
-  interceptors.append(AsyncUserAgentInterceptor())
   interceptors.append(AsyncTimeoutInterceptor())
   interceptors.append(AsyncIAMAuthHeadersInterceptor())
   interceptors.append(AsyncRequestOrgRestrictionInterceptor())

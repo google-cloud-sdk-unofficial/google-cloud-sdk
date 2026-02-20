@@ -35,10 +35,10 @@ def _TransformBackupTypeSpec(schedule):
   return 'UNSPECIFIED'
 
 
-@base.DefaultUniverseOnly
 @base.ReleaseTracks(
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List Cloud Spanner backup schedules."""
 

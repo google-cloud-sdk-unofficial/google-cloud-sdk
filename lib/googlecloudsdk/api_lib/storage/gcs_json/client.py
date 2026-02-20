@@ -612,6 +612,7 @@ class JsonClient(cloud_api.CloudApi):
       bucket_name,
       destination_location,
       destination_custom_placement_config=None,
+      destination_kms_key_name=None,
       validate_only=False,
   ):
     """See CloudApi class."""
@@ -623,6 +624,7 @@ class JsonClient(cloud_api.CloudApi):
         destinationLocation=destination_location,
         destinationCustomPlacementConfig=destination_custom_placement_config,
         validateOnly=validate_only,
+        destinationKmsKeyName=destination_kms_key_name,
     )
     relocate_request = self.messages.StorageBucketsRelocateRequest(
         bucket=bucket_name, relocateBucketRequest=request

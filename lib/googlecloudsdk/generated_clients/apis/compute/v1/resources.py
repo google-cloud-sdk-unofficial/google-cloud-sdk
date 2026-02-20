@@ -469,6 +469,14 @@ class Collections(enum.Enum):
       ['project', 'region', 'disk'],
       True
   )
+  REGIONHEALTHAGGREGATIONPOLICIES = (
+      'regionHealthAggregationPolicies',
+      'projects/{project}/regions/{region}/healthAggregationPolicies/'
+      '{healthAggregationPolicy}',
+      {},
+      ['project', 'region', 'healthAggregationPolicy'],
+      True
+  )
   REGIONHEALTHCHECKSERVICES = (
       'regionHealthCheckServices',
       'projects/{project}/regions/{region}/healthCheckServices/'

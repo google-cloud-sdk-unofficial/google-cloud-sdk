@@ -29,7 +29,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 # TODO(b/305722139) Change @base.DefaultUniverseOnly to
 # @base.UniverseCompatible once b/305722139 is fixed.
 # See go/gcloud-cli-running-tpc-tests.
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 class Describe(base.ListCommand):
   """Describe the DDL for a Cloud Spanner database."""
 

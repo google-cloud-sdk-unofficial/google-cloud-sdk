@@ -29,8 +29,17 @@
         arg_value: redis-highmem-medium
       - enum_value: REDIS_HIGHMEM_XLARGE
         arg_value: redis-highmem-xlarge
+      - enum_value: REDIS_HIGHMEM_2XLARGE
+        arg_value: redis-highmem-2xlarge
+        hidden: true
+      - enum_value: REDIS_HIGHCPU_MEDIUM
+        arg_value: redis-highcpu-medium
+        hidden: true
       - enum_value: REDIS_STANDARD_SMALL
         arg_value: redis-standard-small
+      - enum_value: REDIS_STANDARD_LARGE
+        arg_value: redis-standard-large
+        hidden: true
       - enum_value: REDIS_SHARED_CORE_NANO
         arg_value: redis-shared-core-nano
     - arg_name: replica-count
@@ -174,6 +183,13 @@
       help_text: |
         Trigger a simulation for maintenance event.
       type: bool
+    - arg_name: rotate-server-certificate
+      action: store_true
+      release_tracks: [ALPHA]
+      hidden: true
+      help_text: |
+        Rotate the server certificates for the cluster. This is allowed only for clusters using a customer-managed CA.
+      type: bool
     additional_arguments_hook: googlecloudsdk.command_lib.redis.cluster_util:AdditionalClusterUpdateArguments
     labels:
       api_field: cluster.labels
@@ -194,6 +210,7 @@
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowAny
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceWindowPolicy
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateSimulateMaintenanceEvent
+      - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateRotateServerCertificate
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateAutomatedBackupConfig
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateNodeType
       - googlecloudsdk.command_lib.redis.clusters_update_util:UpdateMaintenanceVersion

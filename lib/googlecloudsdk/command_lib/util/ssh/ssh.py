@@ -898,6 +898,26 @@ class KnownHosts(object):
 
     return new_keys_added
 
+  def AddCertAuthority(
+      self,
+      *,
+      host_pattern: str,
+      ca_public_keys: list[str],
+  ) -> bool:
+    """Adds or updates CA trust anchors for a given host pattern.
+
+    Args:
+      host_pattern: The host pattern for which the CA public keys are valid.
+        This will be prefixed with '@cert-authority'.
+      ca_public_keys: A list of CA public keys.
+
+    Returns:
+      True if new CA public keys were added or existing ones were
+      overwritten, False otherwise.
+    """
+    ca_prefix = f'@cert-authority {host_pattern}'
+    return self.AddMultiple(ca_prefix, ca_public_keys, overwrite=True)
+
   def Write(self):
     """Writes the file to disk."""
     files.WriteFileContents(
@@ -1053,6 +1073,8 @@ class OsloginState(object):
       keys configured in the user's account.
     signed_ssh_key: bool, True if a valid signed ssh key exists.
     require_certificates: bool, True if passing a certificate is required.
+    is_default_universe: bool, False if the instance is in a partner universe
+      based on the universe domain property in the current gcloud configuration.
   """
 
   def __init__(
@@ -1067,6 +1089,7 @@ class OsloginState(object):
       security_keys=None,
       signed_ssh_key=False,
       require_certificates=False,
+      is_default_universe=True,
   ):
     self.oslogin_enabled = oslogin_enabled
     self.oslogin_2fa_enabled = oslogin_2fa_enabled
@@ -1081,6 +1104,7 @@ class OsloginState(object):
       self.security_keys = security_keys
     self.signed_ssh_key = signed_ssh_key
     self.require_certificates = require_certificates
+    self.is_default_universe = is_default_universe
 
   def __str__(self):
     return textwrap.dedent("""\
@@ -1095,6 +1119,7 @@ class OsloginState(object):
         {7}
         Signed SSH Key: {8}
         Require Certificates: {9}
+        Is Default Universe: {10}
         """).format(
         self.oslogin_enabled,
         self.oslogin_2fa_enabled,
@@ -1106,6 +1131,7 @@ class OsloginState(object):
         '\n'.join(self.security_keys),
         self.signed_ssh_key,
         self.require_certificates,
+        self.is_default_universe,
     )
 
   def __repr__(self):
@@ -1114,7 +1140,7 @@ class OsloginState(object):
         'security_keys_enabled={2}, user={3}, third_party_user={4}'
         'ssh_security_key_support={5}, environment={6}, '
         'security_keys={7}, signed_ssh_key={8}, '
-        'require_certificates={9})'.format(
+        'require_certificates={9}, is_default_universe={10})'.format(
             self.oslogin_enabled,
             self.oslogin_2fa_enabled,
             self.security_keys_enabled,
@@ -1125,6 +1151,7 @@ class OsloginState(object):
             self.security_keys,
             self.signed_ssh_key,
             self.require_certificates,
+            self.is_default_universe,
         )
     )
 
@@ -1306,6 +1333,7 @@ def GetOsloginState(
 
   oslogin_state.oslogin_enabled = oslogin_enabled
   oslogin_state.third_party_user = IsThirdPartyUser()
+  oslogin_state.is_default_universe = properties.IsDefaultUniverse()
 
   if cloud_run_params:
     oslogin_state.oslogin_2fa_enabled = False
@@ -1359,7 +1387,11 @@ def GetOsloginState(
       cloud_run_params['project_id'] if cloud_run_params else project.name
   )
 
-  if (oslogin_state.third_party_user or oslogin_state.require_certificates):
+  if (
+      oslogin_state.third_party_user
+      or oslogin_state.require_certificates
+      or not oslogin_state.is_default_universe
+  ):
     user_email = quote(user_email, safe=':@')
     if app_engine_params:
       ValidateCertificate(oslogin_state, app_engine_params)

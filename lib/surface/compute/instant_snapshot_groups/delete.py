@@ -22,7 +22,7 @@ from googlecloudsdk.command_lib.compute.instant_snapshot_groups import flags as 
 
 
 DETAILED_HELP = {  # Dict[str, str]
-    'brief': 'Delete an instant snapshot group.',
+    'brief': 'Delete a Compute Engine instant snapshot group.',
 }
 
 
@@ -32,7 +32,7 @@ def _CommonArgs(parser):
   Delete.ISG_ARG.AddArgument(parser, operation_type='delete')
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
 class Delete(base.DeleteCommand):
   """Delete a Compute Engine instant snapshot group."""
@@ -103,3 +103,6 @@ class Delete(base.DeleteCommand):
 
   def Run(self, args):
     return self._Run(args)
+
+
+Delete.detailed_help = DETAILED_HELP

@@ -31,6 +31,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.universe_descriptor import universe_descriptor
 
 
 ARTIFACTREGISTRY_API_NAME = "artifactregistry"
@@ -94,29 +95,46 @@ A valid container image can be referenced by tag or digest, has the format of
 """
 
 
+def _GetArtifactRegistryDomain():
+  """Gets the Artifact Registry domain for the current universe."""
+  universe_descriptor_obj = universe_descriptor.GetUniverseDomainDescriptor()
+
+  if properties.IsDefaultUniverse():
+    return "pkg.dev"  # GDU default
+  else:
+    return universe_descriptor_obj.artifact_registry_domain
+
+
 GCR_DOCKER_REPO_REGEX = r"^(?P<repo>(us\.|eu\.|asia\.)?gcr.io)\/(?P<project>[^\/\.]+)\/(?P<image>.*)"
 
 # For domain scoped repos, the project is two segments long instead of one
 GCR_DOCKER_DOMAIN_SCOPED_REPO_REGEX = r"^(?P<repo>(us\.|eu\.|asia\.)?gcr.io)\/(?P<project>[^\/]+\.[^\/]+\/[^\/]+)\/(?P<image>.*)"
 
-DOCKER_REPO_REGEX = r"^(?P<location>.*)[.-]docker.(?P<domain>{})\/(?P<project>[^\/]+)\/(?P<repo>[^\/]+)".format(
-    properties.VALUES.artifacts.domain.Get()
-)
 
-DOCKER_IMG_BY_TAG_REGEX = (
-    r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*):(?P<tag>.*)"
-    .format(properties.VALUES.artifacts.domain.Get())
-)
+def _GetDockerRepoRegex():
+  return r"^(?P<location>.*)[.-]docker.(?P<domain>{})\/(?P<project>[^\/]+)\/(?P<repo>[^\/]+)".format(
+      _GetArtifactRegistryDomain()
+  )
 
-DOCKER_IMG_BY_DIGEST_REGEX = r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)@(?P<digest>sha256:.*)".format(
-    properties.VALUES.artifacts.domain.Get()
-)
 
-DOCKER_IMG_REGEX = (
-    r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)".format(
-        properties.VALUES.artifacts.domain.Get()
-    )
-)
+def _GetDockerImgByTagRegex():
+  return (
+      r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*):(?P<tag>.*)"
+      .format(_GetArtifactRegistryDomain())
+  )
+
+
+def _GetDockerImgByDigestRegex():
+  return r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)@(?P<digest>sha256:.*)".format(
+      _GetArtifactRegistryDomain()
+  )
+
+
+def _GetDockerImgRegex():
+  return r"^.*[.-]docker.(?P<domain>{})\/[^\/]+\/[^\/]+\/(?P<img>.*)".format(
+      _GetArtifactRegistryDomain()
+  )
+
 
 _VERSION_COLLECTION_NAME = (
     "artifactregistry.projects.locations.repositories.packages.versions"
@@ -160,7 +178,7 @@ def _ParseInput(input_str):
   # calls to artifact registy.
   prefix = properties.VALUES.artifacts.registry_endpoint_prefix.Get()
   prefix = re.escape(prefix)
-  regex = "^" + prefix + DOCKER_REPO_REGEX[1:]
+  regex = "^" + prefix + _GetDockerRepoRegex()[1:]
   matches = re.match(regex, input_str)
   if not matches:
     raise ar_exceptions.InvalidInputValueError()
@@ -207,16 +225,16 @@ def _ParseDockerImage(img_str, err_msg, strict=True):
   except ar_exceptions.InvalidInputValueError:
     raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_IMAGE_ERROR)
 
-  img_by_digest_match = re.match(DOCKER_IMG_BY_DIGEST_REGEX, img_str)
+  img_by_digest_match = re.match(_GetDockerImgByDigestRegex(), img_str)
   if img_by_digest_match:
     docker_img = DockerImage(docker_repo, img_by_digest_match.group("img"))
     return docker_img, DockerVersion(docker_img,
                                      img_by_digest_match.group("digest"))
-  img_by_tag_match = re.match(DOCKER_IMG_BY_TAG_REGEX, img_str)
+  img_by_tag_match = re.match(_GetDockerImgByTagRegex(), img_str)
   if img_by_tag_match:
     docker_img = DockerImage(docker_repo, img_by_tag_match.group("img"))
     return docker_img, DockerTag(docker_img, img_by_tag_match.group("tag"))
-  whole_img_match = re.match(DOCKER_IMG_REGEX, img_str)
+  whole_img_match = re.match(_GetDockerImgRegex(), img_str)
   if whole_img_match:
     docker_img = DockerImage(docker_repo,
                              whole_img_match.group("img").strip("/"))
@@ -258,8 +276,8 @@ def ParseDockerVersionStr(version_str):
   except ar_exceptions.InvalidInputValueError:
     raise ar_exceptions.InvalidInputValueError(_INVALID_VERSION_STR_ERROR)
 
-  uri_digest_match = re.match(DOCKER_IMG_BY_DIGEST_REGEX, version_str)
-  uri_tag_match = re.match(DOCKER_IMG_BY_TAG_REGEX, version_str)
+  uri_digest_match = re.match(_GetDockerImgByDigestRegex(), version_str)
+  uri_tag_match = re.match(_GetDockerImgByTagRegex(), version_str)
 
   if uri_digest_match:
     docker_img = DockerImage(docker_repo, uri_digest_match.group("img"))
@@ -290,7 +308,7 @@ def _ParseDockerTag(tag):
   except ar_exceptions.InvalidInputValueError:
     raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_TAG_ERROR)
 
-  img_by_tag_match = re.match(DOCKER_IMG_BY_TAG_REGEX, tag)
+  img_by_tag_match = re.match(_GetDockerImgByTagRegex(), tag)
   if img_by_tag_match:
     docker_img = DockerImage(docker_repo, img_by_tag_match.group("img"))
     return docker_img, DockerTag(docker_img, img_by_tag_match.group("tag"))
@@ -486,7 +504,7 @@ class DockerRepo(object):
   def GetDockerString(self):
     return "{}-docker.{}/{}/{}".format(
         self.location,
-        properties.VALUES.artifacts.domain.Get(),
+        _GetArtifactRegistryDomain(),
         self.project,
         self.repo,
     )
@@ -539,7 +557,7 @@ class DockerImage(object):
     return "{}{}-docker.{}/{}/{}/{}".format(
         properties.VALUES.artifacts.registry_endpoint_prefix.Get(),
         self.docker_repo.location,
-        properties.VALUES.artifacts.domain.Get(),
+        _GetArtifactRegistryDomain(),
         self.docker_repo.project,
         self.docker_repo.repo,
         self.pkg.replace("%2F", "/"),
@@ -851,7 +869,7 @@ def DescribeDockerImage(args):
       "fully_qualified_digest": docker_version.GetDockerString(),
       "registry": "{}-docker.{}".format(
           docker_version.image.docker_repo.location,
-          properties.VALUES.artifacts.domain.Get(),
+          _GetArtifactRegistryDomain(),
       ),
       "repository": docker_version.image.docker_repo.repo,
   }
@@ -1080,7 +1098,7 @@ def DockerUrlToImage(url):
 
 
 def IsARDockerImage(uri):
-  return re.match(DOCKER_REPO_REGEX, uri) is not None
+  return re.match(_GetDockerRepoRegex(), uri) is not None
 
 
 def IsGCRImage(uri):

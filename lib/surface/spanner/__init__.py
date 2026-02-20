@@ -27,6 +27,7 @@ def _GetUri(resource):
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Spanner(base.Group):
   """Command groups for Cloud Spanner."""
 

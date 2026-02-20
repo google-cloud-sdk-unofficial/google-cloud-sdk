@@ -603,6 +603,9 @@ def AddDatabaseVersion(
       'SQLSERVER_2022_WEB',
       'SQLSERVER_2022_STANDARD',
       'SQLSERVER_2022_ENTERPRISE',
+      'SQLSERVER_2025_EXPRESS',
+      'SQLSERVER_2025_STANDARD',
+      'SQLSERVER_2025_ENTERPRISE',
   ]
   # End of engine-specific content.
 

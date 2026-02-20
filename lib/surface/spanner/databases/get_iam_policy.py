@@ -26,6 +26,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class GetIamPolicy(base.ListCommand):
   """Get the IAM policy for a Cloud Spanner database."""
 

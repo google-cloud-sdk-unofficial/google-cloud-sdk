@@ -261,6 +261,14 @@ def AddSubzone(parser):
       help="""\
       Subzone in the LOCATION specified by the --location flag.
       """,
+      action=actions.DeprecationAction(
+          '--subzone',
+          warn=(
+              'The {flag_name} flag is deprecated and will be removed in a'
+              ' future release.'
+          ),
+          removed=False,
+      ),
   )
 
 

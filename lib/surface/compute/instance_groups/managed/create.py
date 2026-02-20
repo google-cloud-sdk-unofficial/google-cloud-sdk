@@ -72,7 +72,7 @@ def _AddInstanceGroupManagerArgs(parser):
       metavar='TARGET_POOL',
       help=('Specifies any target pools you want the instances of this '
             'managed instance group to be part of.'))
-  managed_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
+  managed_flags.InstanceTemplateArg().AddArgument(parser)
 
 
 def _IsZonalGroup(ref):
@@ -113,6 +113,7 @@ class CreateGA(base.CreateCommand):
 
   support_update_policy_min_ready_flag = False
   support_resource_manager_tags = False
+  support_instance_selection_min_cpu_platform = False
 
   @classmethod
   def Args(cls, parser):
@@ -133,7 +134,10 @@ class CreateGA(base.CreateCommand):
     if cls.support_resource_manager_tags:
       managed_flags.AddMigResourceManagerTagsFlags(parser)
     managed_flags.AddMigDefaultActionOnVmFailure(parser, cls.ReleaseTrack())
-    flags.AddInstanceFlexibilityPolicyArgs(parser)
+    flags.AddInstanceFlexibilityPolicyArgs(
+        parser,
+        support_instance_selection_min_cpu_platform=cls.support_instance_selection_min_cpu_platform,
+    )
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlag(parser)
     # When adding RMIG-specific flag, update REGIONAL_FLAGS constant.
@@ -324,10 +328,10 @@ class CreateGA(base.CreateCommand):
             client.messages, args
         )
     )
-    instance_flexibility_policy = (
-        managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
-            args, client.messages
-        )
+    instance_flexibility_policy = managed_instance_groups_utils.CreateInstanceFlexibilityPolicy(
+        args,
+        client.messages,
+        support_instance_selection_min_cpu_platform=self.support_instance_selection_min_cpu_platform,
     )
     resource_policies = managed_instance_groups_utils.CreateResourcePolicies(
         client.messages, args
@@ -422,7 +426,7 @@ class CreateGA(base.CreateCommand):
 
     group_ref = self._CreateGroupReference(args, client, holder.resources)
 
-    template_ref = managed_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+    template_ref = managed_flags.InstanceTemplateArg().ResolveAsResource(
         args,
         holder.resources,
         default_scope=flags.compute_scope.ScopeEnum.GLOBAL,
@@ -472,6 +476,7 @@ class CreateBeta(CreateGA):
 
   support_update_policy_min_ready_flag = True
   support_resource_manager_tags = True
+  support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):
@@ -497,6 +502,7 @@ class CreateAlpha(CreateBeta):
   """Create Compute Engine managed instance groups."""
 
   support_resource_manager_tags = True
+  support_instance_selection_min_cpu_platform = True
 
   @classmethod
   def Args(cls, parser):

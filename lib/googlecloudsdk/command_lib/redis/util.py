@@ -148,3 +148,10 @@ def WarnOnAuthEnabled(auth_enabled):
 def UpdateGetCertificateAuthorityRequestPath(unused_ref, unused_args, req):
   req.name = req.name + '/certificateAuthority'
   return req
+
+
+def UpdateGetSharedRegionalCertificateAuthorityRequestPath(
+    unused_ref, unused_args, req
+):
+  req.name = req.name + '/sharedRegionalCertificateAuthority'
+  return req

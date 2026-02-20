@@ -312,6 +312,33 @@ class DeveloperconnectV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def FetchUserRepositories(self, request, global_params=None):
+      r"""FetchUserRepositories returns a list of UserRepos that are available for an account connector resource.
+
+      Args:
+        request: (DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositoriesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (FetchUserRepositoriesResponse) The response message.
+      """
+      config = self.GetMethodConfig('FetchUserRepositories')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    FetchUserRepositories.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/accountConnectors/{accountConnectorsId}:fetchUserRepositories',
+        http_method='GET',
+        method_id='developerconnect.projects.locations.accountConnectors.fetchUserRepositories',
+        ordered_params=['accountConnector'],
+        path_params=['accountConnector'],
+        query_params=['pageSize', 'pageToken', 'repository'],
+        relative_path='v1/{+accountConnector}:fetchUserRepositories',
+        request_field='',
+        request_type_name='DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositoriesRequest',
+        response_type_name='FetchUserRepositoriesResponse',
+        supports_download=False,
+    )
+
     def Get(self, request, global_params=None):
       r"""Gets details of a single AccountConnector.
 

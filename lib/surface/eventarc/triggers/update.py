@@ -58,7 +58,7 @@ class Update(base.UpdateCommand):
     flags.AddServiceAccountArg(service_account_group)
     flags.AddClearServiceAccountArg(service_account_group)
 
-    flags.AddTriggerRetryPolicyArgs(parser)
+    flags.AddTriggerRetryPolicyArgs(parser, with_clear=True)
 
     labels_util.AddUpdateLabelsFlags(parser)
 
@@ -101,7 +101,8 @@ class Update(base.UpdateCommand):
         destination_function_location=args.IsSpecified(
             'destination_function_location'
         ),
-        max_retry_attempts=args.IsSpecified('max_retry_attempts'),
+        max_retry_attempts=args.IsSpecified('max_retry_attempts')
+        or args.clear_max_retry_attempts,
         labels=labels_update_result.needs_update,
     )
     # The type can't be updated, so it's safe to use the original trigger's

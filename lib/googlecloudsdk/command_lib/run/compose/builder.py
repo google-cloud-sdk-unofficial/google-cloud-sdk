@@ -78,6 +78,7 @@ def handle(
     region: str,
     tracker: progress_tracker.StagedProgressTracker,
     no_build: bool = False,
+    build: bool = False,
 ) -> None:
   """Performs source builds for all containers in parallel."""
   if no_build:
@@ -90,7 +91,7 @@ def handle(
 
   for container, build_config in source_build.items():
     current_fingerprint = _calculate_source_fingerprint(build_config)
-    if loaded_fingerprints.get(container, {}).get(
+    if not build and loaded_fingerprints.get(container, {}).get(
         _FINGERPRINT_KEY
     ) == current_fingerprint:
       image_id = loaded_fingerprints[container][_IMAGE_ID_KEY]

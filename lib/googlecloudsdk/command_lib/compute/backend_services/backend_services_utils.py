@@ -962,6 +962,41 @@ def IpPortDynamicForwarding(client, args, backend_service):
     backend_service.dynamicForwarding = dynamic_forwarding_config
 
 
+def ForwardProxy(client, args, backend_service):
+  """Enables the Forward Proxy Dynamic Forwarding in the backend service.
+
+  Args:
+    client: The client used by gcloud.
+    args: The arguments passed to the gcloud command.
+    backend_service: The backend service object.
+  """
+
+  if args.forward_proxy_direct_forwarding:
+    dynamic_forwarding_config = (
+        client.messages.BackendServiceDynamicForwarding()
+    )
+    dynamic_forwarding_config.forwardProxy = (
+        client.messages.BackendServiceDynamicForwardingForwardProxy()
+    )
+    dynamic_forwarding_config.forwardProxy.enabled = True
+    dynamic_forwarding_config.forwardProxy.proxyMode = (
+        client.messages.BackendServiceDynamicForwardingForwardProxy.ProxyModeValueValuesEnum.DIRECT_FORWARDING
+    )
+    backend_service.dynamicForwarding = dynamic_forwarding_config
+  elif args.forward_proxy_cloud_run:
+    dynamic_forwarding_config = (
+        client.messages.BackendServiceDynamicForwarding()
+    )
+    dynamic_forwarding_config.forwardProxy = (
+        client.messages.BackendServiceDynamicForwardingForwardProxy()
+    )
+    dynamic_forwarding_config.forwardProxy.enabled = True
+    dynamic_forwarding_config.forwardProxy.proxyMode = (
+        client.messages.BackendServiceDynamicForwardingForwardProxy.ProxyModeValueValuesEnum.CLOUD_RUN
+    )
+    backend_service.dynamicForwarding = dynamic_forwarding_config
+
+
 def HasZonalAffinityArgs(args):
   """Returns true if at least one of the zonal affinity args is defined.
 

@@ -23,7 +23,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Create a Cloud Spanner instance."""
@@ -134,6 +134,7 @@ class Create(base.CreateCommand):
 
 
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.UniverseCompatible
 class BetaCreate(base.CreateCommand):
   """Create a Cloud Spanner instance."""
 
@@ -242,7 +243,7 @@ class BetaCreate(base.CreateCommand):
     instance_operations.Await(op, 'Creating instance')
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaCreate(Create):
   """Create a Cloud Spanner instance with ALPHA features."""

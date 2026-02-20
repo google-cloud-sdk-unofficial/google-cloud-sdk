@@ -35,37 +35,45 @@ class Create(base.CreateCommand):
   network firewall policy is a set of rules that controls access to various
   resources.
   """
+
   NEWORK_FIREWALL_POLICY_ARG = None
   _support_priority = False
-  _support_associated_policy_to_be_replaced = False
+  _support_associated_policy_to_be_replaced_global = False
+  _support_associated_policy_to_be_replaced_region = False
 
   @classmethod
   def Args(cls, parser):
     cls.NETWORK_FIREWALL_POLICY_ARG = (
         flags.NetworkFirewallPolicyAssociationArgument(
-            required=True, operation='create'))
+            required=True, operation='create'
+        )
+    )
     cls.NETWORK_FIREWALL_POLICY_ARG.AddArgument(parser, operation_type='create')
     flags.AddArgsCreateAssociation(
         parser,
         cls._support_priority,
-        cls._support_associated_policy_to_be_replaced,
+        cls._support_associated_policy_to_be_replaced_global
+        or cls._support_associated_policy_to_be_replaced_region,
     )
     parser.display_info.AddCacheUpdater(flags.NetworkFirewallPoliciesCompleter)
 
   def Run(self, args):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     ref = self.NETWORK_FIREWALL_POLICY_ARG.ResolveAsResource(
-        args, holder.resources)
+        args, holder.resources
+    )
 
     network_firewall_policy = client.NetworkFirewallPolicy(
-        ref, compute_client=holder.client)
+        ref, compute_client=holder.client
+    )
     if hasattr(ref, 'region'):
       network_firewall_policy = region_client.RegionNetworkFirewallPolicy(
-          ref, compute_client=holder.client)
+          ref, compute_client=holder.client
+      )
 
     network_ref = flags.NetworkArgumentForOtherResource(
-        'The network to which the firewall policy attaches.').ResolveAsResource(
-            args, holder.resources)
+        'The network to which the firewall policy attaches.'
+    ).ResolveAsResource(args, holder.resources)
 
     name = None
     if args.IsSpecified('name'):
@@ -80,9 +88,10 @@ class Create(base.CreateCommand):
       priority = association_utils.ConvertPriorityToInt(args.priority)
 
     associated_policy_to_be_replaced = None
-    if self._support_associated_policy_to_be_replaced and args.IsSpecified(
-        'associated_policy_to_be_replaced'
-    ):
+    if (
+        self._support_associated_policy_to_be_replaced_global
+        or self._support_associated_policy_to_be_replaced_region
+    ) and args.IsSpecified('associated_policy_to_be_replaced'):
       associated_policy_to_be_replaced = args.associated_policy_to_be_replaced
 
     replace_existing_association = False
@@ -104,7 +113,11 @@ class Create(base.CreateCommand):
         firewall_policy=args.firewall_policy,
         replace_existing_association=replace_existing_association,
         associated_policy_to_be_replaced=associated_policy_to_be_replaced,
-        support_associated_policy_to_be_replaced=self._support_associated_policy_to_be_replaced,
+        support_associated_policy_to_be_replaced=(
+            self._support_associated_policy_to_be_replaced_region
+            if hasattr(ref, 'region')
+            else self._support_associated_policy_to_be_replaced_global
+        ),
         only_generate_request=False,
     )
 
@@ -119,8 +132,9 @@ class CreateBeta(Create):
   resources.
   """
 
-  _support_priority = False
-  _support_associated_policy_to_be_replaced = False
+  _support_priority = True
+  _support_associated_policy_to_be_replaced_global = False
+  _support_associated_policy_to_be_replaced_region = True
 
 
 @base.UniverseCompatible
@@ -134,11 +148,12 @@ class CreateAlpha(Create):
   """
 
   _support_priority = True
-  _support_associated_policy_to_be_replaced = True
+  _support_associated_policy_to_be_replaced_global = True
+  _support_associated_policy_to_be_replaced_region = True
 
 
 Create.detailed_help = {
-    'EXAMPLES':
+    'EXAMPLES': (
         """\
     To associate a global network firewall policy with name ``my-policy''
     to network ``my-network'' with an association named ``my-association'', run:
@@ -158,5 +173,6 @@ Create.detailed_help = {
           --network=my-network
           --name=my-association
           --firewall-policy-region=region-a
-    """,
+    """
+    ),
 }

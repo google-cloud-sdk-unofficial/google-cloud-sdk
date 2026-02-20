@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from googlecloudsdk.api_lib.backupdr import backup_plan_associations
 from googlecloudsdk.api_lib.util import common_args
 from googlecloudsdk.calliope import base
@@ -71,10 +73,12 @@ class FetchForResourceType(base.ListCommand):
     )
     parser.add_argument(
         'resource_type',
-        help=(
-            'Resource type for which backup plan associations should be'
-            ' fetched.'
-        ),
+        help=textwrap.dedent("""\
+        Resource type for which backup plan associations should be fetched.
+
+        For example:
+        * `compute.<UNIVERSE_DOMAIN>/Instance` for Compute Engine instances.
+        * `file.<UNIVERSE_DOMAIN>/Instance` for Filestore instances."""),
     )
     flags.AddOutputFormat(parser, FetchForResourceType.DEFAULT_LIST_FORMAT)
 

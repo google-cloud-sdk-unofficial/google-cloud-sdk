@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Creates a backup of a Cloud Spanner database.
 

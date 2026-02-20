@@ -1224,6 +1224,8 @@ class _SectionApiEndpointOverrides(_Section):
         'accessapproval', command='gcloud access-approval')
     self.accesscontextmanager = self._Add(
         'accesscontextmanager', command='gcloud access-context-manager')
+    self.agentregistry = self._Add(
+        'agentregistry', command='gcloud agent-registry', hidden=True)
     self.ai = self._Add('ai', command='gcloud ai')
     self.aiplatform = self._Add('aiplatform', command='gcloud ai-platform')
     self.alloydb = self._Add('alloydb', command='gcloud alloydb', hidden=True)

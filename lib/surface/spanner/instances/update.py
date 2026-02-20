@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.Command):
   """Update a Cloud Spanner instance."""
@@ -125,7 +125,7 @@ class Update(base.Command):
     instance_operations.Await(op, 'Updating instance')
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaUpdate(base.Command):
   """Update a Cloud Spanner instance."""
@@ -223,7 +223,7 @@ class BetaUpdate(base.Command):
     instance_operations.Await(op, 'Updating instance')
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaUpdate(base.Command):
   """Update a Cloud Spanner instance with ALPHA features."""

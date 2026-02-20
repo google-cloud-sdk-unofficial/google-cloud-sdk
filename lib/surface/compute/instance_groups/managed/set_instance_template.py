@@ -27,13 +27,14 @@ from googlecloudsdk.command_lib.compute.instance_groups import flags as instance
 from googlecloudsdk.command_lib.compute.instance_groups.managed import flags as managed_flags
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetInstanceTemplateGA(base.Command):
   r"""Command for setting instance template of managed instance group."""
 
   @classmethod
   def Args(cls, parser):
-    managed_flags.INSTANCE_TEMPLATE_ARG.AddArgument(parser)
+    managed_flags.InstanceTemplateArg().AddArgument(parser)
     instance_groups_flags.MULTISCOPE_INSTANCE_GROUP_MANAGER_ARG.AddArgument(
         parser)
 
@@ -50,7 +51,7 @@ class SetInstanceTemplateGA(base.Command):
         default_scope=default_scope,
         scope_lister=scope_lister)
 
-    template_ref = managed_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+    template_ref = managed_flags.InstanceTemplateArg().ResolveAsResource(
         args,
         holder.resources,
         default_scope=flags.compute_scope.ScopeEnum.GLOBAL,

@@ -29,20 +29,6 @@ from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.util.apis import arg_utils
 
 
-INSTANCE_TEMPLATE_ARG = compute_flags.ResourceArgument(
-    '--template',
-    resource_name='instance template',
-    required=True,
-    plural=False,
-    scope_flags_usage=compute_flags.ScopeFlagsUsage.DONT_USE_SCOPE_FLAGS,
-    global_collection='compute.instanceTemplates',
-    regional_collection='compute.regionInstanceTemplates',
-    short_help="""
-    Specifies the instance template to use when creating new instances.
-    An instance template is either a global or regional resource.
-    """,
-)
-
 MULTI_MIG_ARG = compute_flags.ResourceArgument(
     '--multi-mig',
     resource_name='multi-MIG',
@@ -160,6 +146,39 @@ def AddForceArg(parser):
           'If set, accepts any original or new version '
           'configurations without validation.'
       ),
+  )
+
+
+def InstanceTemplateArg(
+    required=True,
+    help_override=None,
+) -> compute_flags.ResourceArgument:
+  """Create a resource argument for instance templates.
+
+  Args:
+    required: Whether the argument is required.
+    help_override: Optional help text to override the default.
+
+  Returns:
+    A compute_flags.ResourceArgument for instance templates.
+  """
+  if help_override is None:
+    help_text = """
+      Specifies the instance template to use when creating new instances.
+      An instance template is either a global or regional resource.
+      """
+  else:
+    help_text = help_override
+
+  return compute_flags.ResourceArgument(
+      '--template',
+      resource_name='instance template',
+      required=required,
+      plural=False,
+      scope_flags_usage=compute_flags.ScopeFlagsUsage.DONT_USE_SCOPE_FLAGS,
+      global_collection='compute.instanceTemplates',
+      regional_collection='compute.regionInstanceTemplates',
+      short_help=help_text,
   )
 
 

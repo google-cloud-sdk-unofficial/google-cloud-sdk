@@ -19,25 +19,47 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
+from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.compute import resource_manager_tags_utils
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.instant_snapshots import flags as ips_flags
 from googlecloudsdk.command_lib.util.args import labels_util
-
 import six
 
 DETAILED_HELP = {
     'brief': 'Create a Compute Engine instant snapshot',
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
     *{command}* creates an instant snapshot of a disk. Instant snapshots are useful for
     backing up the disk data.
-    """,
-    'EXAMPLES': """\
+    """
+    ),
+    'EXAMPLES': (
+        """\
     To create an instant snapshot 'my-instant-snap' from a disk 'my-disk' in zone 'us-east1-a', run:
 
         $ {command} my-instant-snap --source-disk=my-disk --zone=us-east1-a
-    """,
+    """
+    ),
 }
+
+
+def _CreateInstantSnapshotParams(messages, resource_manager_tags):
+  """Creates an instant snapshot params object for resource manager tags."""
+  resource_manager_tags_map = (
+      resource_manager_tags_utils.GetResourceManagerTags(resource_manager_tags)
+  )
+  params = messages.InstantSnapshotParams
+  additional_properties = [
+      params.ResourceManagerTagsValue.AdditionalProperty(key=key, value=value)
+      for key, value in sorted(resource_manager_tags_map.items())
+  ]
+  return params(
+      resourceManagerTags=params.ResourceManagerTagsValue(
+          additionalProperties=additional_properties
+      )
+  )
 
 
 def _SourceArgs(parser):
@@ -51,7 +73,8 @@ def _CommonArgs(parser):
   Create.IPS_ARG.AddArgument(parser, operation_type='create')
   labels_util.AddCreateLabelsFlags(parser)
   parser.display_info.AddFormat(
-      'table(name, location(), location_scope(), status)')
+      'table(name, location(), location_scope(), status)'
+  )
   _SourceArgs(parser)
 
 
@@ -70,7 +93,8 @@ class Create(base.Command):
 
   def _GetSourceDiskUri(self, args, compute_holder, default_scope):
     source_disk_ref = ips_flags.SOURCE_DISK_ARG.ResolveAsResource(
-        args, compute_holder.resources)
+        args, compute_holder.resources
+    )
     if source_disk_ref:
       return source_disk_ref.SelfLink()
     return None
@@ -80,39 +104,55 @@ class Create(base.Command):
     client = compute_holder.client
     messages = client.messages
 
-    ips_ref = Create.IPS_ARG.ResolveAsResource(
-        args, compute_holder.resources
-    )
+    ips_ref = Create.IPS_ARG.ResolveAsResource(args, compute_holder.resources)
     requests = []
     if ips_ref.Collection() == 'compute.instantSnapshots':
       instant_snapshot = messages.InstantSnapshot(
           name=ips_ref.Name(),
-          sourceDisk=self._GetSourceDiskUri(args, compute_holder,
-                                            compute_scope.ScopeEnum.ZONE))
+          sourceDisk=self._GetSourceDiskUri(
+              args, compute_holder, compute_scope.ScopeEnum.ZONE
+          ),
+      )
+      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.IsSpecified(
+          'resource_manager_tags'
+      ):
+        instant_snapshot.params = _CreateInstantSnapshotParams(
+            messages, args.resource_manager_tags
+        )
       request = messages.ComputeInstantSnapshotsInsertRequest(
           instantSnapshot=instant_snapshot,
           project=ips_ref.project,
-          zone=ips_ref.zone)
+          zone=ips_ref.zone,
+      )
       request = (client.apitools_client.instantSnapshots, 'Insert', request)
     elif ips_ref.Collection() == 'compute.regionInstantSnapshots':
       instant_snapshot = messages.InstantSnapshot(
           name=ips_ref.Name(),
-          sourceDisk=self._GetSourceDiskUri(args, compute_holder,
-                                            compute_scope.ScopeEnum.REGION))
+          sourceDisk=self._GetSourceDiskUri(
+              args, compute_holder, compute_scope.ScopeEnum.REGION
+          ),
+      )
       request = messages.ComputeRegionInstantSnapshotsInsertRequest(
           instantSnapshot=instant_snapshot,
           project=ips_ref.project,
-          region=ips_ref.region)
-      request = (client.apitools_client.regionInstantSnapshots, 'Insert',
-                 request)
+          region=ips_ref.region,
+      )
+      request = (
+          client.apitools_client.regionInstantSnapshots,
+          'Insert',
+          request,
+      )
 
     args_labels = getattr(args, 'labels', None)
     if args_labels:
-      labels = messages.InstantSnapshot.LabelsValue(additionalProperties=[
-          messages.InstantSnapshot.LabelsValue.AdditionalProperty(
-              key=key, value=value)
-          for key, value in sorted(six.iteritems(args_labels))
-      ])
+      labels = messages.InstantSnapshot.LabelsValue(
+          additionalProperties=[
+              messages.InstantSnapshot.LabelsValue.AdditionalProperty(
+                  key=key, value=value
+              )
+              for key, value in sorted(six.iteritems(args_labels))
+          ]
+      )
       instant_snapshot.labels = labels
 
     requests.append(request)
@@ -141,6 +181,15 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser)
+    parser.add_argument(
+        '--resource-manager-tags',
+        type=arg_parsers.ArgDict(),
+        metavar='KEY=VALUE',
+        help=(
+            'A comma-separated list of Resource Manager tags to apply to the'
+            ' snapshot.'
+        ),
+    )
 
   def Run(self, args):
     return self._Run(args)

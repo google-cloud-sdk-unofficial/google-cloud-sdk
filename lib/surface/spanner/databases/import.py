@@ -27,7 +27,7 @@ from googlecloudsdk.command_lib.util.apis import arg_utils
 from googlecloudsdk.core.credentials import store
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Import(base.BinaryBackedCommand):
   """Import data from various source files to Cloud Spanner."""

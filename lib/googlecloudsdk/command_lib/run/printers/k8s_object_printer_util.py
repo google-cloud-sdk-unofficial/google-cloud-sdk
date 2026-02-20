@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import json
 import textwrap
 from typing import Mapping, Union
@@ -75,13 +76,11 @@ def GetLabels(labels):
   if not labels:
     return ''
   return ' '.join(
-      sorted(
-          [
-              '{}:{}'.format(k, v)
-              for k, v in labels.items()
-              if not k.startswith(k8s_object.INTERNAL_GROUPS)
-          ]
-      )
+      sorted([
+          '{}:{}'.format(k, v)
+          for k, v in labels.items()
+          if not k.startswith(k8s_object.INTERNAL_GROUPS)
+      ])
   )
 
 
@@ -163,8 +162,10 @@ def GetExecutionEnvironment(record):
 
 
 def GetThreatDetectionEnabled(record):
-  if record.annotations.get(
-      k8s_object.THREAT_DETECTION_ANNOTATION, '').lower() == 'true':
+  if (
+      record.annotations.get(k8s_object.THREAT_DETECTION_ANNOTATION, '').lower()
+      == 'true'
+  ):
     return 'Enabled'
   return ''
 
@@ -239,3 +240,37 @@ def _GetProbe(probe, probe_type=''):
           ('Type', probe_type),
       ]),
   ])
+
+
+def FormatDurationShort(duration_seconds: int) -> str:
+  """Format duration from seconds into shorthand string.
+
+  Duration will be represented of the form `#d#h#m$s` for days, hours, minutes
+  and seconds. Any field that's 0 will be excluded. So 3660 seconds (1 hour and
+  1 minute) will be represented as "1h1m" with no days or seconds listed.
+
+  Args:
+    duration_seconds: the total time in seconds to format
+
+  Returns:
+    a string representing the duration in more human-friendly units.
+  """
+  if duration_seconds == 0:
+    return '0s'
+
+  duration = datetime.timedelta(seconds=duration_seconds)
+  remaining = duration.seconds
+  hours = remaining // 3600
+  remaining = remaining % 3600
+  minutes = remaining // 60
+  seconds = remaining % 60
+  res = ''
+  if duration.days:
+    res += '{}d'.format(duration.days)
+  if hours:
+    res += '{}h'.format(hours)
+  if minutes:
+    res += '{}m'.format(minutes)
+  if seconds:
+    res += '{}s'.format(seconds)
+  return res

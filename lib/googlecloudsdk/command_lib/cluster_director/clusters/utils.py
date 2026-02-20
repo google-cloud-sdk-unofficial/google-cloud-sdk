@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import collections
 from collections.abc import Mapping
+import enum
 import os
 import re
 from typing import Any, Set
@@ -33,9 +34,54 @@ from googlecloudsdk.command_lib.util.concepts import presentation_specs
 from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core.util import files
 
+_GCE_INSTANCE_FIELDS = frozenset([
+    "startupScript",
+    "labels",
+    "bootDisk",
+    "startupScriptTimeout",
+])
+_GKE_NODE_POOL_FIELDS = frozenset([
+    "container-resource-labels",
+    "container-startup-script",
+])
+
+# Error messages
+_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR = (
+    "Compute instances with id={0} already exist."
+)
+_COMPUTE_INSTANCE_NOT_FOUND_ERROR = "Compute instances with id={0} not found."
+_GCE_FIELDS_ON_GKE_NODE_SET_ERROR = (
+    "GCE node set fields (startupScript, labels, bootDisk, "
+    "startupScriptTimeout) cannot be specified for GKE node sets."
+)
+_GKE_FIELDS_ON_GCE_NODE_SET_ERROR = (
+    "GKE node set fields (container-*) cannot be specified for GCE node sets."
+)
+_SLURM_NODESET_ALREADY_EXISTS_ERROR = (
+    "Slurm nodesets with id={0} already exist."
+)
+_SLURM_NODESET_NOT_FOUND_ERROR = "Slurm nodesets with id={0} not found."
+_SLURM_PARTITION_ALREADY_EXISTS_ERROR = (
+    "Slurm partitions with id={0} already exist."
+)
+_SLURM_PARTITION_NOT_FOUND_ERROR = "Slurm partitions with id={0} not found."
+_UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR = (
+    "Cannot update compute instance fields for a GKE node set."
+)
+_UPDATE_GKE_FIELDS_ON_GCE_NODE_SET_ERROR = (
+    "Cannot update GKE node set fields for a compute instance node set."
+)
+
 
 class ClusterDirectorError(core_exceptions.Error):
   """Error for Cluster Director commands."""
+
+
+class NodeSetType(enum.Enum):
+  """Represents the type of a Slurm Node Set."""
+
+  GCE = "gce"
+  GKE = "gke"
 
 
 def AddClusterNameArgToParser(parser, api_version=None):
@@ -60,12 +106,7 @@ def AddClusterNameArgToParser(parser, api_version=None):
 
 def GetClusterFlagType(api_version=None) -> dict[str, Any]:  # pylint: disable=g-bare-generic
   """Returns the cluster spec for the given API version."""
-  if (
-      not api_version
-      or api_version not in flag_types.API_VERSION_TO_CLUSTER_FLAG_TYPE
-  ):
-    raise ClusterDirectorError(f"Unsupported API version: {api_version}")
-  return flag_types.API_VERSION_TO_CLUSTER_FLAG_TYPE[api_version]
+  return flag_types.FlagTypes(api_version).GetClusterFlagType()
 
 
 def _SetDefaultLoginNodeDiskSizesInDict(login_nodes: Mapping[str, Any]) -> None:
@@ -251,6 +292,9 @@ class ClusterUtil:
                             filesystem=lustre.get("filesystem"),
                             capacityGb=lustre.get("capacityGb"),
                             description=lustre.get("description"),
+                            perUnitStorageThroughput=lustre.get(
+                                "perUnitStorageThroughput"
+                            ),
                         )
                     ),
                 ),
@@ -281,10 +325,8 @@ class ClusterUtil:
         )
         if "storageClass" in gcs_bucket:
           gcs.storageClass = gcs_bucket.get("storageClass")
-        if not gcs.storageClass and "enableAutoclass" in gcs_bucket:
-          gcs.autoclass = self.message_module.GcsAutoclassConfig(
-              enabled=gcs_bucket.get("enableAutoclass")
-          )
+        else:
+          self._SetGcsAutoclassConfig(gcs, gcs_bucket)
         # If neither storageClass nor autoclass is set, set storageClass to
         # STANDARD by default.
         if not gcs.storageClass and not gcs.autoclass:
@@ -388,13 +430,20 @@ class ClusterUtil:
   def MakeClusterSlurmOrchestrator(self, cluster):
     """Makes a cluster message with slurm orchestrator fields."""
     slurm = self.message_module.SlurmOrchestrator()
-    storage_configs: list[self.message_module.StorageConfig] = (
-        self._GetStorageConfigs(cluster)
-    )
+    storage_configs: list[Any] = self._GetStorageConfigs(cluster)
     if self.args.IsSpecified("slurm_node_sets"):
       for node_set in self.args.slurm_node_sets:
-        compute_id = node_set.get("computeId")
-        machine_type = self._GetComputeMachineTypeFromArgs(compute_id)
+        node_set_keys = set(node_set.keys())
+        node_set_type = node_set.get("type")
+        has_gke_fields = node_set_keys.intersection(_GKE_NODE_POOL_FIELDS)
+        is_gke = node_set_type == NodeSetType.GKE.value or (
+            node_set_type is None and has_gke_fields
+        )
+        machine_type = None
+        if not is_gke:
+          compute_id = node_set.get("computeId")
+          if compute_id:
+            machine_type = self._GetComputeMachineTypeFromArgs(compute_id)
         slurm.nodeSets.append(
             self._MakeSlurmNodeSet(node_set, machine_type, storage_configs)
         )
@@ -424,24 +473,26 @@ class ClusterUtil:
       )
       boot_disk_args = login_node.get("bootDisk")
       if boot_disk_args:
-        slurm.loginNodes.bootDisk = self.message_module.BootDisk(
+        boot_disk = self.message_module.BootDisk(
             type=boot_disk_args.get("type"),
             sizeGb=boot_disk_args.get("sizeGb", 100),
-            image=boot_disk_args.get("image"),
         )
+        if hasattr(boot_disk, "image"):
+          boot_disk.image = boot_disk_args.get("image")
+        slurm.loginNodes.bootDisk = boot_disk
     if self.args.IsSpecified("slurm_prolog_scripts"):
       slurm.prologBashScripts = self.args.slurm_prolog_scripts
     if self.args.IsSpecified("slurm_epilog_scripts"):
       slurm.epilogBashScripts = self.args.slurm_epilog_scripts
-    if self.args.IsSpecified("slurm_task_prolog_scripts"):
+    if self.args.IsKnownAndSpecified("slurm_task_prolog_scripts"):
       slurm.taskPrologBashScripts = self.args.slurm_task_prolog_scripts
-    if self.args.IsSpecified("slurm_task_epilog_scripts"):
+    if self.args.IsKnownAndSpecified("slurm_task_epilog_scripts"):
       slurm.taskEpilogBashScripts = self.args.slurm_task_epilog_scripts
-    if self.args.IsSpecified("slurm_config"):
+    if self.args.IsKnownAndSpecified("slurm_config"):
       slurm.config = messages_util.DictToMessageWithErrorCheck(
           self.args.slurm_config, self.message_module.SlurmConfig
       )
-    if self.args.IsSpecified("slurm_disable_health_check_program"):
+    if self.args.IsKnownAndSpecified("slurm_disable_health_check_program"):
       slurm.disableHealthCheckProgram = (
           self.args.slurm_disable_health_check_program
       )
@@ -487,11 +538,13 @@ class ClusterUtil:
       disk_type = "hyperdisk-balanced"
     else:
       disk_type = "pd-standard"
-    return self.message_module.BootDisk(
+    boot_disk = self.message_module.BootDisk(
         type=disk_type,
         sizeGb=100,
-        image=image,
     )
+    if hasattr(boot_disk, "image"):
+      boot_disk.image = image
+    return boot_disk
 
   def MakeClusterPatchFromConfig(self):
     """Returns the cluster message from the config."""
@@ -515,7 +568,9 @@ class ClusterUtil:
       cluster.description = self.args.description
       self.update_mask.add("description")
 
-    labels = self._ConvertMessageToDict(self.existing_cluster.labels)
+    labels = self._ConvertMessageToDict(
+        self.existing_cluster.labels if self.existing_cluster else None
+    )
     is_labels_updated = False
     exception_message = "Label with key={0} not found."
     if self.args.IsSpecified("remove_labels"):
@@ -538,6 +593,8 @@ class ClusterUtil:
     storage_resources = self.message_module.Cluster.StorageResourcesValue()
     storages = self._ConvertMessageToDict(
         self.existing_cluster.storageResources
+        if self.existing_cluster
+        else None
     )
     is_storage_updated = False
 
@@ -733,6 +790,9 @@ class ClusterUtil:
                     filesystem=lustre.get("filesystem"),
                     capacityGb=lustre.get("capacityGb"),
                     description=lustre.get("description"),
+                    perUnitStorageThroughput=lustre.get(
+                        "perUnitStorageThroughput"
+                    ),
                 )
             )
         )
@@ -815,10 +875,8 @@ class ClusterUtil:
         )
         if "storageClass" in gcs_bucket:
           gcs.storageClass = gcs_bucket.get("storageClass")
-        if not gcs.storageClass and "enableAutoclass" in gcs_bucket:
-          gcs.autoclass = self.message_module.GcsAutoclassConfig(
-              enabled=gcs_bucket.get("enableAutoclass")
-          )
+        else:
+          self._SetGcsAutoclassConfig(gcs, gcs_bucket)
         if not gcs.storageClass and not gcs.autoclass:
           gcs.storageClass = (
               self.message_module.NewBucketConfig.StorageClassValueValuesEnum.STANDARD
@@ -847,18 +905,22 @@ class ClusterUtil:
   def MakeClusterComputePatch(self):
     """Makes a cluster compute patch message with compute fields."""
     compute_resources = self.message_module.Cluster.ComputeResourcesValue()
-    compute = self._ConvertMessageToDict(self.existing_cluster.computeResources)
+    compute = self._ConvertMessageToDict(
+        self.existing_cluster.computeResources
+        if self.existing_cluster
+        else None
+    )
     is_compute_updated = False
-    ex_msg_not_found = "Compute instances with id={0} not found."
-    ex_msg_already_exist = "Compute instances with id={0} already exist."
     if self.args.IsSpecified("remove_on_demand_instances"):
       for compute_id in self.args.remove_on_demand_instances:
         self._RemoveKeyByAttrFromDictSpec(
             key=compute_id,
             dict_spec=compute,
             attrs=["newOnDemandInstances"],
-            key_exception_message=ex_msg_not_found,
-            attr_exception_message=f"On demand {ex_msg_not_found}",
+            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
+            attr_exception_message=(
+                f"On demand {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
+            ),
         )
         is_compute_updated = True
     if self.args.IsSpecified("remove_spot_instances"):
@@ -867,8 +929,8 @@ class ClusterUtil:
             key=compute_id,
             dict_spec=compute,
             attrs=["newSpotInstances"],
-            key_exception_message=ex_msg_not_found,
-            attr_exception_message=f"Spot {ex_msg_not_found}",
+            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
+            attr_exception_message=f"Spot {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}",
         )
         is_compute_updated = True
     if self.args.IsSpecified("remove_reserved_instances"):
@@ -877,8 +939,10 @@ class ClusterUtil:
             key=compute_id,
             dict_spec=compute,
             attrs=["newReservedInstances"],
-            key_exception_message=ex_msg_not_found,
-            attr_exception_message=f"Reserved {ex_msg_not_found}",
+            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
+            attr_exception_message=(
+                f"Reserved {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
+            ),
         )
         is_compute_updated = True
     if self.args.IsSpecified("remove_flex_start_instances"):
@@ -887,8 +951,10 @@ class ClusterUtil:
             key=compute_id,
             dict_spec=compute,
             attrs=["newFlexStartInstances"],
-            key_exception_message=ex_msg_not_found,
-            attr_exception_message=f"Flex Start {ex_msg_not_found}",
+            key_exception_message=_COMPUTE_INSTANCE_NOT_FOUND_ERROR,
+            attr_exception_message=(
+                f"Flex Start {_COMPUTE_INSTANCE_NOT_FOUND_ERROR}"
+            ),
         )
         is_compute_updated = True
     if self.args.IsSpecified("add_on_demand_instances"):
@@ -897,7 +963,7 @@ class ClusterUtil:
             key=instance.get("id"),
             dict_spec=compute,
             value=self._MakeOnDemandComputeResource(instance),
-            exception_message=ex_msg_already_exist,
+            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
         )
         is_compute_updated = True
     if self.args.IsSpecified("add_spot_instances"):
@@ -906,7 +972,7 @@ class ClusterUtil:
             key=instance.get("id"),
             dict_spec=compute,
             value=self._MakeSpotComputeResource(instance),
-            exception_message=ex_msg_already_exist,
+            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
         )
         is_compute_updated = True
     if self.args.IsSpecified("add_reserved_instances"):
@@ -915,7 +981,7 @@ class ClusterUtil:
             key=instance.get("id"),
             dict_spec=compute,
             value=self._MakeReservedComputeResource(instance),
-            exception_message=ex_msg_already_exist,
+            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
         )
         is_compute_updated = True
     if self.args.IsSpecified("add_flex_start_instances"):
@@ -924,7 +990,7 @@ class ClusterUtil:
             key=instance.get("id"),
             dict_spec=compute,
             value=self._MakeFlexStartComputeResource(instance),
-            exception_message=ex_msg_already_exist,
+            exception_message=_COMPUTE_INSTANCE_ALREADY_EXISTS_ERROR,
         )
         is_compute_updated = True
     if is_compute_updated:
@@ -946,24 +1012,37 @@ class ClusterUtil:
       slurm.defaultPartition = self.args.slurm_default_partition
       self.update_mask.add("orchestrator.slurm.default_partition")
 
-    slurm_node_sets = self._ConvertSlurmMessageToDict(
-        self.existing_cluster.orchestrator.slurm.nodeSets
-    )
+    existing_slurm_node_sets = None
+    if (
+        self.existing_cluster
+        and self.existing_cluster.orchestrator
+        and self.existing_cluster.orchestrator.slurm
+    ):
+      existing_slurm_node_sets = (
+          self.existing_cluster.orchestrator.slurm.nodeSets
+      )
+    slurm_node_sets = self._ConvertSlurmMessageToDict(existing_slurm_node_sets)
     is_node_sets_updated = False
-    ex_msg_not_found = "Slurm nodesets with id={0} not found."
-    ex_msg_already_exist = "Slurm nodesets with id={0} already exist."
     if self.args.IsSpecified("remove_slurm_node_sets"):
       for node_set_id in self.args.remove_slurm_node_sets:
         self._RemoveKeyFromDictSpec(
-            node_set_id, slurm_node_sets, ex_msg_not_found
+            node_set_id, slurm_node_sets, _SLURM_NODESET_NOT_FOUND_ERROR
         )
         is_node_sets_updated = True
     if self.args.IsSpecified("update_slurm_node_sets"):
       for node_set in self.args.update_slurm_node_sets:
         node_set_id = node_set.get("id")
         existing_node_set = self._GetValueFromDictSpec(
-            node_set_id, slurm_node_sets, ex_msg_not_found
+            node_set_id, slurm_node_sets, _SLURM_NODESET_NOT_FOUND_ERROR
         )
+        node_set_keys = set(node_set.keys())
+        is_gke_node_set = existing_node_set.containerNodePool is not None
+        if is_gke_node_set and node_set_keys.intersection(_GCE_INSTANCE_FIELDS):
+          raise ClusterDirectorError(_UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
+        elif not is_gke_node_set and node_set_keys.intersection(
+            _GKE_NODE_POOL_FIELDS
+        ):
+          raise ClusterDirectorError(_UPDATE_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
         if "staticNodeCount" in node_set:
           existing_node_set.staticNodeCount = node_set.get("staticNodeCount")
         if "maxDynamicNodeCount" in node_set:
@@ -981,6 +1060,17 @@ class ClusterUtil:
         if "bootDisk" in node_set:
           self._PatchBootDiskForNodeSet(
               existing_node_set=existing_node_set, node_set_patch=node_set
+          )
+        if "container-resource-labels" in node_set:
+          self._GetOrCreateContainerNodePool(existing_node_set)
+          existing_node_set.containerNodePool.resourceLabels = self.MakeLabels(
+              label_args=node_set.get("container-resource-labels"),
+              label_cls=self.message_module.ContainerNodePoolSlurmNodeSet.ResourceLabelsValue,
+          )
+        if "container-startup-script" in node_set:
+          self._GetOrCreateContainerNodePool(existing_node_set)
+          existing_node_set.containerNodePool.startupScript = (
+              self._GetBashScript(node_set.get("container-startup-script"))
           )
 
         slurm_node_sets[node_set_id] = existing_node_set
@@ -1004,7 +1094,7 @@ class ClusterUtil:
             value=self._MakeSlurmNodeSet(
                 node_set, machine_type, storage_configs
             ),
-            exception_message=ex_msg_already_exist,
+            exception_message=_SLURM_NODESET_ALREADY_EXISTS_ERROR,
         )
         is_node_sets_updated = True
     if is_node_sets_updated:
@@ -1013,28 +1103,36 @@ class ClusterUtil:
         raise ClusterDirectorError("Slurm nodesets cannot be empty.")
       self.update_mask.add("orchestrator.slurm.node_sets")
 
+    existing_slurm_partitions = None
+    if (
+        self.existing_cluster
+        and self.existing_cluster.orchestrator
+        and self.existing_cluster.orchestrator.slurm
+    ):
+      existing_slurm_partitions = (
+          self.existing_cluster.orchestrator.slurm.partitions
+      )
     slurm_partitions = self._ConvertSlurmMessageToDict(
-        self.existing_cluster.orchestrator.slurm.partitions
+        existing_slurm_partitions
     )
     is_partitions_updated = False
-    ex_msg_not_found = "Slurm partitions with id={0} not found."
-    ex_msg_already_exist = "Slurm partitions with id={0} already exist."
     if self.args.IsSpecified("remove_slurm_partitions"):
       for partition_id in self.args.remove_slurm_partitions:
         self._RemoveKeyFromDictSpec(
-            partition_id, slurm_partitions, ex_msg_not_found
+            partition_id, slurm_partitions, _SLURM_PARTITION_NOT_FOUND_ERROR
         )
         is_partitions_updated = True
     if self.args.IsSpecified("update_slurm_partitions"):
       for partition in self.args.update_slurm_partitions:
         partition_id = partition.get("id")
         existing_partition = self._GetValueFromDictSpec(
-            partition_id, slurm_partitions, ex_msg_not_found
+            partition_id, slurm_partitions, _SLURM_PARTITION_NOT_FOUND_ERROR
         )
         if "nodesetIds" in partition:
           existing_partition.nodeSetIds = partition.get("nodesetIds")
         if "exclusive" in partition:
-          existing_partition.exclusive = partition.get("exclusive")
+          if hasattr(existing_partition, "exclusive"):
+            existing_partition.exclusive = partition.get("exclusive")
         slurm_partitions[partition_id] = existing_partition
         is_partitions_updated = True
     if self.args.IsSpecified("add_slurm_partitions"):
@@ -1043,7 +1141,7 @@ class ClusterUtil:
             key=partition.get("id"),
             dict_spec=slurm_partitions,
             value=self._MakeSlurmPartition(partition),
-            exception_message=ex_msg_already_exist,
+            exception_message=_SLURM_PARTITION_ALREADY_EXISTS_ERROR,
         )
         is_partitions_updated = True
     if is_partitions_updated:
@@ -1053,7 +1151,12 @@ class ClusterUtil:
       self.update_mask.add("orchestrator.slurm.partitions")
 
     if self.args.IsSpecified("update_slurm_login_node"):
-      if not self.existing_cluster.orchestrator.slurm.loginNodes:
+      if (
+          not self.existing_cluster
+          or not self.existing_cluster.orchestrator
+          or not self.existing_cluster.orchestrator.slurm
+          or not self.existing_cluster.orchestrator.slurm.loginNodes
+      ):
         raise ClusterDirectorError(
             "Login node is not part of existing cluster spec and cannot be"
             " updated."
@@ -1071,12 +1174,21 @@ class ClusterUtil:
           boot_disk = self.MakeBootDisk(login_nodes.machineType)
         boot_disk.type = boot_disk_patch.get("type", boot_disk.type)
         boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
-        boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
+        if hasattr(boot_disk, "image"):
+          boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
         login_nodes.bootDisk = boot_disk
       slurm.loginNodes = login_nodes
       self.update_mask.add("orchestrator.slurm.login_nodes")
 
     return slurm
+
+  def _GetOrCreateContainerNodePool(self, existing_node_set):
+    """Gets or creates the containerNodePool for a SlurmNodeSet."""
+    if not existing_node_set.containerNodePool:
+      existing_node_set.containerNodePool = (
+          self.message_module.ContainerNodePoolSlurmNodeSet()
+      )
+    return existing_node_set.containerNodePool
 
   def _PatchBootDiskForNodeSet(self, *, existing_node_set, node_set_patch):
     """Patches the bootDisk of a SlurmNodeSet."""
@@ -1086,7 +1198,7 @@ class ClusterUtil:
       return
     boot_disk_patch = node_set_patch.get("bootDisk")
     machine_type = self._GetComputeMachineTypeFromCluster(
-        existing_node_set.resourceRequestId,
+        existing_node_set.computeId,
         None,
         use_existing_cluster=True,
     )
@@ -1101,7 +1213,8 @@ class ClusterUtil:
 
     boot_disk.type = boot_disk_patch.get("type", boot_disk.type)
     boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
-    boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
+    if hasattr(boot_disk, "image"):
+      boot_disk.image = boot_disk_patch.get("image", boot_disk.image)
 
     # Assign the patched bootDisk to computeInstance.
     if not existing_node_set.computeInstance:
@@ -1187,7 +1300,7 @@ class ClusterUtil:
       compute_resources = self._ConvertMessageToDict(cluster.computeResources)
       if compute_id in compute_resources:
         return self._GetComputeMachineType(compute_id, compute_resources)
-    if use_existing_cluster:
+    if use_existing_cluster and self.existing_cluster:
       compute_resources = self._ConvertMessageToDict(
           self.existing_cluster.computeResources
       )
@@ -1214,7 +1327,7 @@ class ClusterUtil:
 
   def _GetStorageConfigs(self, cluster):
     """Returns the storage configs."""
-    storage_configs: list[self.message_module.StorageConfig] = []
+    storage_configs: list[Any] = []
     if not cluster.storageResources:
       return storage_configs
     sorted_storages = sorted(
@@ -1281,7 +1394,7 @@ class ClusterUtil:
 
   def _CheckIfBashFileFormat(self, arg_value: str) -> bool:
     """Checks if the argument is a bash file format."""
-    return re.match(r"^\S*\.(sh|bash)$", arg_value)
+    return bool(re.match(r"^\S*\.(sh|bash)$", arg_value))
 
   def _ConvertMessageToDict(self, message) -> dict[str, Any]:
     """Convert a message with list of type AdditionalProperty(key=str, value=Any) to a dict."""
@@ -1334,11 +1447,24 @@ class ClusterUtil:
 
   def _GetValueFromDictSpec(
       self, key: str, dict_spec: Mapping[str, Any], exception_message: str
-  ) -> Any | ClusterDirectorError:
+  ) -> Any:
     """Returns the value message by cluster identifier (key) from a dict spec."""
     if key not in dict_spec:
       raise ClusterDirectorError(exception_message.format(key))
     return dict_spec[key]
+
+  def _SetGcsAutoclassConfig(self, gcs_message, gcs_bucket_args):
+    """Sets the autoclass configuration on a NewBucketConfig message."""
+    if gcs_bucket_args.get("enableAutoclass") or gcs_bucket_args.get(
+        "terminalStorageClass"
+    ):
+      gcs_message.autoclass = self.message_module.GcsAutoclassConfig(
+          enabled=True
+      )
+      if gcs_bucket_args.get("terminalStorageClass"):
+        gcs_message.autoclass.terminalStorageClass = gcs_bucket_args.get(
+            "terminalStorageClass"
+        )
 
   def _MakeOnDemandComputeResource(self, instance):
     """Makes a cluster compute resource message for on demand instances."""
@@ -1365,13 +1491,45 @@ class ClusterUtil:
   def _MakeReservedComputeResource(self, instance):
     """Makes a cluster compute resource message for reserved instances."""
     reservation = instance.get("reservation")
-    return self.message_module.ComputeResource(
-        config=self.message_module.ComputeResourceConfig(
-            newReservedInstances=self.message_module.NewReservedInstancesConfig(
-                reservation=self._GetReservationName(reservation),
-            ),
-        ),
-    )
+    reservation_block = instance.get("reservationBlock")
+    reservation_sub_block = instance.get("reservationSubBlock")
+    if (
+        sum(
+            p is not None
+            for p in [reservation, reservation_block, reservation_sub_block]
+        )
+        != 1
+    ):
+      raise ClusterDirectorError(
+          "Exactly one of reservation, reservationBlock, or"
+          " reservationSubBlock must be provided for reserved instances."
+      )
+    if reservation:
+      return self.message_module.ComputeResource(
+          config=self.message_module.ComputeResourceConfig(
+              newReservedInstances=self.message_module.NewReservedInstancesConfig(
+                  reservation=self._GetReservationName(reservation),
+              ),
+          ),
+      )
+    elif reservation_block:
+      return self.message_module.ComputeResource(
+          config=self.message_module.ComputeResourceConfig(
+              newReservedInstances=self.message_module.NewReservedInstancesConfig(
+                  reservationBlock=self._GetReservationName(reservation_block),
+              ),
+          ),
+      )
+    else:
+      return self.message_module.ComputeResource(
+          config=self.message_module.ComputeResourceConfig(
+              newReservedInstances=self.message_module.NewReservedInstancesConfig(
+                  reservationSubBlock=self._GetReservationName(
+                      reservation_sub_block
+                  ),
+              ),
+          ),
+      )
 
   def _MakeFlexStartComputeResource(self, instance):
     """Makes a cluster compute resource message for flex start instances."""
@@ -1386,16 +1544,60 @@ class ClusterUtil:
     )
 
   def _MakeSlurmNodeSet(self, node_set, machine_type, storage_configs):
-    """Makes a cluster slurm node set message from node set args."""
-    is_container_node_pool = node_set.get(
-        "container-resource-labels"
-    ) or node_set.get("container-startup-script")
+    """Makes a cluster slurm node set message from node set args.
+
+    Args:
+      node_set: A dictionary containing the arguments for a single Slurm node
+        set.
+      machine_type: The machine type string associated with the 'computeId' if
+        it's a GCE node set.
+      storage_configs: A list of self.message_module.StorageConfig messages to
+        be associated with the node set.
+
+    Returns:
+      A self.message_module.SlurmNodeSet object.
+
+    Raises:
+      ClusterDirectorError: If the node set type is invalid, or if GKE-specific
+        fields are provided for a GCE node set, or GCE-specific fields are
+        provided for a GKE node set, or if 'computeId' is missing for a GCE
+        node set.
+    """
+    node_set_keys = set(node_set.keys())
+    node_set_type_str = node_set.get("type")
+    has_gke_fields = node_set_keys.intersection(_GKE_NODE_POOL_FIELDS)
+    has_gce_fields = node_set_keys.intersection(_GCE_INSTANCE_FIELDS)
+
+    node_set_type = None
+    if node_set_type_str:
+      try:
+        node_set_type = NodeSetType(node_set_type_str)
+      except ValueError:
+        raise ClusterDirectorError(
+            f"Invalid node set type: {node_set_type_str!r}. Must be 'gce' or"
+            " 'gke'."
+        )
+
+    is_container_node_pool = node_set_type == NodeSetType.GKE or (
+        node_set_type is None and has_gke_fields
+    )
+    if is_container_node_pool and has_gce_fields:
+      raise ClusterDirectorError(_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
+    if not is_container_node_pool and has_gke_fields:
+      raise ClusterDirectorError(_GKE_FIELDS_ON_GCE_NODE_SET_ERROR)
     slurm_node_set = self.message_module.SlurmNodeSet(
         id=node_set.get("id"),
         staticNodeCount=node_set.get("staticNodeCount", 1),
         maxDynamicNodeCount=node_set.get("maxDynamicNodeCount"),
         storageConfigs=storage_configs,
+        computeId=node_set.get("computeId"),
     )
+    service_account = node_set.get("serviceAccount")
+    if service_account:
+      slurm_node_set.serviceAccount = self.message_module.ServiceAccount(
+          email=service_account.get("email"),
+          scopes=service_account.get("scopes"),
+      )
     if is_container_node_pool:
       slurm_node_set.containerNodePool = self.message_module.ContainerNodePoolSlurmNodeSet(
           resourceLabels=self.MakeLabels(
@@ -1408,31 +1610,26 @@ class ClusterUtil:
       )
     else:
       if not node_set.get("computeId"):
-        raise exceptions.ToolException(
+        raise ClusterDirectorError(
             "computeId is required for node sets not backed by GKE."
         )
-      startup_script = self._GetBashScript(node_set.get("startupScript"))
+      conf = node_set.get("computeInstance") or node_set
+      startup_script = self._GetBashScript(conf.get("startupScript"))
       compute_instance_labels = self.MakeLabels(
-          label_args=node_set.get("labels"),
+          label_args=conf.get("labels"),
           label_cls=self.message_module.ComputeInstanceSlurmNodeSet.LabelsValue,
       )
-      boot_disk = node_set.get("bootDisk")
+      boot_disk = conf.get("bootDisk")
+      compute_instance_boot_disk = None
       if boot_disk:
         compute_instance_boot_disk = self.message_module.BootDisk(
             type=boot_disk.get("type"),
             sizeGb=boot_disk.get("sizeGb", 100),
-            image=boot_disk.get("image"),
         )
-      else:
-        compute_instance_boot_disk = self.MakeBootDisk(
-            machine_type=machine_type
-        )
-      service_account = node_set.get("serviceAccount")
-      if service_account:
-        slurm_node_set.serviceAccount = self.message_module.ServiceAccount(
-            email=service_account.get("email"),
-            scopes=service_account.get("scopes"),
-        )
+        if compute_instance_boot_disk and hasattr(
+            compute_instance_boot_disk, "image"
+        ):
+          compute_instance_boot_disk.image = boot_disk.get("image")
       compute_instance = self.message_module.ComputeInstanceSlurmNodeSet(
           bootDisk=compute_instance_boot_disk,
           startupScript=startup_script,
@@ -1442,19 +1639,24 @@ class ClusterUtil:
         compute_instance.startupScriptTimeout = node_set.get(
             "startupScriptTimeout"
         )
-      slurm_node_set.resourceRequestId = node_set.get("computeId")
+      if hasattr(slurm_node_set, "computeId"):
+        slurm_node_set.computeId = node_set.get("computeId")
       slurm_node_set.computeInstance = compute_instance
-      slurm_node_set.labels = self.MakeLabels(
-          label_args=node_set.get("labels"),
-          label_cls=self.message_module.SlurmNodeSet.LabelsValue,
-      )
-      slurm_node_set.startupScript = startup_script
+      if hasattr(self.message_module.SlurmNodeSet, "LabelsValue"):
+        slurm_node_set.labels = self.MakeLabels(
+            label_args=node_set.get("labels"),
+            label_cls=self.message_module.SlurmNodeSet.LabelsValue,
+        )
+      if hasattr(slurm_node_set, "startupScript"):
+        slurm_node_set.startupScript = startup_script
     return slurm_node_set
 
   def _MakeSlurmPartition(self, partition):
     """Makes a cluster slurm partition message from partition args."""
-    return self.message_module.SlurmPartition(
+    slurm_partition = self.message_module.SlurmPartition(
         id=partition.get("id"),
         nodeSetIds=partition.get("nodesetIds"),
-        exclusive=partition.get("exclusive"),
     )
+    if hasattr(slurm_partition, "exclusive"):
+      slurm_partition.exclusive = partition.get("exclusive")
+    return slurm_partition

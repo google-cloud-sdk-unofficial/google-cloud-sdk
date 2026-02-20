@@ -944,6 +944,33 @@ class RedisV1alpha1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def GetSharedRegionalCertificateAuthority(self, request, global_params=None):
+      r"""Gets the details of regional certificate authority information for Redis cluster.
+
+      Args:
+        request: (RedisProjectsLocationsGetSharedRegionalCertificateAuthorityRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (SharedRegionalCertificateAuthority) The response message.
+      """
+      config = self.GetMethodConfig('GetSharedRegionalCertificateAuthority')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetSharedRegionalCertificateAuthority.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1alpha1/projects/{projectsId}/locations/{locationsId}/sharedRegionalCertificateAuthority',
+        http_method='GET',
+        method_id='redis.projects.locations.getSharedRegionalCertificateAuthority',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1alpha1/{+name}',
+        request_field='',
+        request_type_name='RedisProjectsLocationsGetSharedRegionalCertificateAuthorityRequest',
+        response_type_name='SharedRegionalCertificateAuthority',
+        supports_download=False,
+    )
+
     def List(self, request, global_params=None):
       r"""Lists information about the supported locations for this service. This method can be called in two ways: * **List all public locations:** Use the path `GET /v1/locations`. * **List project-visible locations:** Use the path `GET /v1/projects/{project_id}/locations`. This may include public locations as well as private or other locations specifically visible to the project.
 

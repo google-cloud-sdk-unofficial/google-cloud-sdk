@@ -180,12 +180,18 @@ class Backup(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State of the backup.
@@ -519,12 +525,18 @@ class Cluster(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The current state of this cluster. Can be CREATING,
@@ -5141,12 +5153,18 @@ class UpdateInfo(_messages.Message):
       REDIS_HIGHMEM_MEDIUM: Redis highmem medium node_type.
       REDIS_HIGHMEM_XLARGE: Redis highmem xlarge node_type.
       REDIS_STANDARD_SMALL: Redis standard small node_type.
+      REDIS_HIGHCPU_MEDIUM: Redis highcpu medium node_type.
+      REDIS_STANDARD_LARGE: Redis standard large node_type.
+      REDIS_HIGHMEM_2XLARGE: Redis highmem 2xlarge node_type.
     """
     NODE_TYPE_UNSPECIFIED = 0
     REDIS_SHARED_CORE_NANO = 1
     REDIS_HIGHMEM_MEDIUM = 2
     REDIS_HIGHMEM_XLARGE = 3
     REDIS_STANDARD_SMALL = 4
+    REDIS_HIGHCPU_MEDIUM = 5
+    REDIS_STANDARD_LARGE = 6
+    REDIS_HIGHMEM_2XLARGE = 7
 
   targetNodeType = _messages.EnumField('TargetNodeTypeValueValuesEnum', 1)
   targetReplicaCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)

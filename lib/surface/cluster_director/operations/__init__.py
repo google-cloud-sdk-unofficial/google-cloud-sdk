@@ -22,3 +22,9 @@ from surface.cluster_director.operations import _init_extensions as extensions
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class OperationsAlpha(extensions.OperationsAlpha):
   """Manage Operation resources."""
+
+
+@base.DefaultUniverseOnly
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
+class OperationsBeta(extensions.OperationsBeta):
+  """Manage Operation resources."""

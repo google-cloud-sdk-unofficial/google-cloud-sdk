@@ -54,6 +54,17 @@
             If present, it fixes the release on the unit until the given time; i.e.
             changes to the release field will be rejected. Rollouts should and will
             also respect this by not requesting an upgrade in the first place.
+    - arg_name: flag-revisions
+      release_tracks: [ALPHA]
+      help_text: |-
+        List of flag revisions used by this unit
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
+      resource_method_params:
+        unit.flagRevisions: '{__relative_name__}'
+      required: false
+      repeated: true
+      clearable: true
     - arg_name: labels
       api_field: unit.labels
       required: false

@@ -129,12 +129,24 @@ class Backup(_messages.Message):
       HIGHMEM_MEDIUM: High memory medium.
       HIGHMEM_XLARGE: High memory extra large.
       STANDARD_SMALL: Standard small.
+      CUSTOM_MICRO: Custom micro.
+      CUSTOM_MINI: Custom mini.
+      HIGHCPU_MEDIUM: High cpu medium.
+      STANDARD_LARGE: Standard large.
+      HIGHMEM_2XLARGE: High memory 2xlarge.
+      CUSTOM_PICO: Custom pico.
     """
     NODE_TYPE_UNSPECIFIED = 0
     SHARED_CORE_NANO = 1
     HIGHMEM_MEDIUM = 2
     HIGHMEM_XLARGE = 3
     STANDARD_SMALL = 4
+    CUSTOM_MICRO = 5
+    CUSTOM_MINI = 6
+    HIGHCPU_MEDIUM = 7
+    STANDARD_LARGE = 8
+    HIGHMEM_2XLARGE = 9
+    CUSTOM_PICO = 10
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. State of the backup.
@@ -587,12 +599,24 @@ class Instance(_messages.Message):
       HIGHMEM_MEDIUM: High memory medium.
       HIGHMEM_XLARGE: High memory extra large.
       STANDARD_SMALL: Standard small.
+      CUSTOM_MICRO: Custom micro.
+      CUSTOM_MINI: Custom mini.
+      HIGHCPU_MEDIUM: High cpu medium.
+      STANDARD_LARGE: Standard large.
+      HIGHMEM_2XLARGE: High memory 2xlarge.
+      CUSTOM_PICO: Custom pico.
     """
     NODE_TYPE_UNSPECIFIED = 0
     SHARED_CORE_NANO = 1
     HIGHMEM_MEDIUM = 2
     HIGHMEM_XLARGE = 3
     STANDARD_SMALL = 4
+    CUSTOM_MICRO = 5
+    CUSTOM_MINI = 6
+    HIGHCPU_MEDIUM = 7
+    STANDARD_LARGE = 8
+    HIGHMEM_2XLARGE = 9
+    CUSTOM_PICO = 10
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. Current state of the instance.
@@ -1931,12 +1955,24 @@ class UpdateInfo(_messages.Message):
       HIGHMEM_MEDIUM: High memory medium.
       HIGHMEM_XLARGE: High memory extra large.
       STANDARD_SMALL: Standard small.
+      CUSTOM_MICRO: Custom micro.
+      CUSTOM_MINI: Custom mini.
+      HIGHCPU_MEDIUM: High cpu medium.
+      STANDARD_LARGE: Standard large.
+      HIGHMEM_2XLARGE: High memory 2xlarge.
+      CUSTOM_PICO: Custom pico.
     """
     NODE_TYPE_UNSPECIFIED = 0
     SHARED_CORE_NANO = 1
     HIGHMEM_MEDIUM = 2
     HIGHMEM_XLARGE = 3
     STANDARD_SMALL = 4
+    CUSTOM_MICRO = 5
+    CUSTOM_MINI = 6
+    HIGHCPU_MEDIUM = 7
+    STANDARD_LARGE = 8
+    HIGHMEM_2XLARGE = 9
+    CUSTOM_PICO = 10
 
   targetEngineVersion = _messages.StringField(1)
   targetNodeType = _messages.EnumField('TargetNodeTypeValueValuesEnum', 2)

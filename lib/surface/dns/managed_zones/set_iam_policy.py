@@ -25,6 +25,65 @@ from googlecloudsdk.command_lib.dns import flags
 from googlecloudsdk.command_lib.iam import iam_util
 
 
+@base.UniverseCompatible
+def _Args(parser):
+  flags.GetZoneResourceArg(
+      'The name of the managed-zone to set the IAM policy for.').AddToParser(
+          parser)
+  parser.add_argument(
+      '--policy-file',
+      required=True,
+      help='JSON or YAML file with the IAM policy')
+
+
+def _Run(args, release_track):
+  """Runs the set-iam-policy command.
+
+  Args:
+    args: The argparse namespace.
+    release_track: The current release track.
+
+  Returns:
+    The policy set on the managed zone.
+  """
+  if release_track == base.ReleaseTrack.ALPHA:
+    api_version = util.GetApiFromTrack(release_track)
+  else:
+    # The v1/v1beta2 apitools gcloud clients are not compatible with this method
+    api_version = 'v2'
+
+  dns_client = util.GetApiClient(api_version)
+  messages = apis.GetMessagesModule('dns', api_version)
+  zone_ref = args.CONCEPTS.zone.Parse()
+
+  if release_track == base.ReleaseTrack.ALPHA:
+    resource_name = 'projects/{0}/managedZones/{1}'.format(
+        zone_ref.project, zone_ref.managedZone)
+    request_type = messages.DnsProjectsManagedZonesSetIamPolicyRequest
+    service = dns_client.projects_managedZones
+  else:
+    resource_name = 'projects/{0}/locations/{1}/managedZones/{2}'.format(
+        zone_ref.project, 'global', zone_ref.managedZone)
+    request_type = messages.DnsManagedZonesSetIamPolicyRequest
+    service = dns_client.managedZones
+
+  policy, update_mask = iam_util.ParsePolicyFileWithUpdateMask(
+      args.policy_file, messages.GoogleIamV1Policy)
+
+  # Force version 3 to support conditions.
+  policy.version = iam_util.MAX_LIBRARY_IAM_SUPPORTED_VERSION
+  if update_mask and 'version' not in update_mask:
+    update_mask = update_mask + ',version'
+
+  req = request_type(
+      resource=resource_name,
+      googleIamV1SetIamPolicyRequest=messages.GoogleIamV1SetIamPolicyRequest(
+          policy=policy, updateMask=update_mask))
+
+  return service.SetIamPolicy(req)
+
+
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class SetIamPolicyAlpha(base.Command):
   """Set the IAM policy for a Cloud DNS managed-zone.
@@ -40,32 +99,13 @@ class SetIamPolicyAlpha(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetZoneResourceArg(
-        'The name of the managed-zone to set the IAM policy for.').AddToParser(
-            parser)
-    parser.add_argument(
-        '--policy-file',
-        required=True,
-        help='JSON or YAML file with the IAM policy')
+    _Args(parser)
 
   def Run(self, args):
-    api_version = util.GetApiFromTrack(self.ReleaseTrack())
-    dns_client = util.GetApiClient(api_version)
-    messages = apis.GetMessagesModule('dns', api_version)
-    zone_ref = args.CONCEPTS.zone.Parse()
-    resource_name = 'projects/{0}/managedZones/{1}'.format(
-        zone_ref.project, zone_ref.managedZone)
-    policy, update_mask = iam_util.ParsePolicyFileWithUpdateMask(
-        args.policy_file, messages.GoogleIamV1Policy)
-
-    req = messages.DnsProjectsManagedZonesSetIamPolicyRequest(
-        resource=resource_name,
-        googleIamV1SetIamPolicyRequest=messages.GoogleIamV1SetIamPolicyRequest(
-            policy=policy, updateMask=update_mask))
-
-    return dns_client.projects_managedZones.SetIamPolicy(req)
+    return _Run(args, self.ReleaseTrack())
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class SetIamPolicyBeta(base.Command):
   """Set the IAM policy for a Cloud DNS managed-zone.
@@ -81,33 +121,13 @@ class SetIamPolicyBeta(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetZoneResourceArg(
-        'The name of the managed-zone to set the IAM policy for.').AddToParser(
-            parser)
-    parser.add_argument(
-        '--policy-file',
-        required=True,
-        help='JSON or YAML file with the IAM policy')
+    _Args(parser)
 
   def Run(self, args):
-    # The v1/v1beta2 apitools gcloud clients are not compatible with this method
-    api_version = 'v2'
-    dns_client = util.GetApiClient(api_version)
-    messages = apis.GetMessagesModule('dns', api_version)
-    zone_ref = args.CONCEPTS.zone.Parse()
-    resource_name = 'projects/{0}/locations/{1}/managedZones/{2}'.format(
-        zone_ref.project, 'global', zone_ref.managedZone)
-    policy, update_mask = iam_util.ParsePolicyFileWithUpdateMask(
-        args.policy_file, messages.GoogleIamV1Policy)
-
-    req = messages.DnsManagedZonesSetIamPolicyRequest(
-        resource=resource_name,
-        googleIamV1SetIamPolicyRequest=messages.GoogleIamV1SetIamPolicyRequest(
-            policy=policy, updateMask=update_mask))
-
-    return dns_client.managedZones.SetIamPolicy(req)
+    return _Run(args, self.ReleaseTrack())
 
 
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class SetIamPolicyGA(base.Command):
   """Set the IAM policy for a Cloud DNS managed-zone.
@@ -123,28 +143,7 @@ class SetIamPolicyGA(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.GetZoneResourceArg(
-        'The name of the managed-zone to set the IAM policy for.').AddToParser(
-            parser)
-    parser.add_argument(
-        '--policy-file',
-        required=True,
-        help='JSON or YAML file with the IAM policy')
+    _Args(parser)
 
   def Run(self, args):
-    # The v1/v1beta2 apitools gcloud clients are not compatible with this method
-    api_version = 'v2'
-    dns_client = util.GetApiClient(api_version)
-    messages = apis.GetMessagesModule('dns', api_version)
-    zone_ref = args.CONCEPTS.zone.Parse()
-    resource_name = 'projects/{0}/locations/{1}/managedZones/{2}'.format(
-        zone_ref.project, 'global', zone_ref.managedZone)
-    policy, update_mask = iam_util.ParsePolicyFileWithUpdateMask(
-        args.policy_file, messages.GoogleIamV1Policy)
-
-    req = messages.DnsManagedZonesSetIamPolicyRequest(
-        resource=resource_name,
-        googleIamV1SetIamPolicyRequest=messages.GoogleIamV1SetIamPolicyRequest(
-            policy=policy, updateMask=update_mask))
-
-    return dns_client.managedZones.SetIamPolicy(req)
+    return _Run(args, self.ReleaseTrack())

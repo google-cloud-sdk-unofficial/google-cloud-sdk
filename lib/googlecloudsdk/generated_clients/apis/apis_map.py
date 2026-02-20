@@ -209,6 +209,19 @@ MAP = {
                 mtls_endpoint_override='https://www.mtls.googleapis.com/admin/directory/v1/',
                 regional_endpoints={}),
     },
+    'agentregistry': {
+        'v1alpha':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.agentregistry.v1alpha',
+                    client_classpath='agentregistry_v1alpha_client.AgentregistryV1alpha',
+                    base_url='https://agentregistry.googleapis.com/',
+                    messages_modulepath='agentregistry_v1alpha_messages'),
+                default_version=True,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
+    },
     'aiplatform': {
         'v1':
             APIDef(

@@ -28,6 +28,7 @@ from googlecloudsdk.command_lib.spanner import resource_args
 from googlecloudsdk.core import log
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update the DDL for a Cloud Spanner database."""
 

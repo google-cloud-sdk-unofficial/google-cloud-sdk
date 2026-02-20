@@ -47,6 +47,7 @@ auto_flags = [
     'enableSecurityPosture',
     'autoprovisioningEnableKubeletReadonlyPort',
     'dataplanev2obs',
+    'enableAmbient',
     'enableK8sBetaApis',
     'compliance',
     'complianceStandards',

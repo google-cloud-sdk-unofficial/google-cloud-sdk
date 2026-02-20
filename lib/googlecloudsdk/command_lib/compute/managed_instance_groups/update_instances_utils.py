@@ -140,7 +140,7 @@ def ParseVersion(
                                               'template has to be specified.')
 
   template_ref = (
-      instance_groups_managed_flags.INSTANCE_TEMPLATE_ARG.ResolveAsResource(
+      instance_groups_managed_flags.InstanceTemplateArg().ResolveAsResource(
           args,
           resources,
           default_scope=flags.compute_scope.ScopeEnum.GLOBAL,

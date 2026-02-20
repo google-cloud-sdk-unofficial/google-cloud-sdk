@@ -36,10 +36,7 @@ class Create(base.CreateCommand):
 
   @classmethod
   def Args(cls, parser):
-    support_network_scopes = (
-        cls.ReleaseTrack() == base.ReleaseTrack.ALPHA
-        or cls.ReleaseTrack() == base.ReleaseTrack.BETA
-    )
+    support_network_scopes = True
     cls.FIREWALL_POLICY_ARG = flags.FirewallPolicyRuleArgument(
         required=True, operation='create'
     )
@@ -73,14 +70,13 @@ class Create(base.CreateCommand):
         or cls.ReleaseTrack() == base.ReleaseTrack.BETA
     ):
       flags.AddSrcNetworkScope(parser)
-      flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
-    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA or cls.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      flags.AddSrcNetworkContext(parser)
-      flags.AddDestNetworkContext(parser)
+
+    flags.AddSrcNetworkContext(parser)
+    flags.AddDestNetworkContext(parser)
+    flags.AddSrcNetworks(parser)
 
     parser.display_info.AddCacheUpdater(flags.FirewallPoliciesCompleter)
 
@@ -188,6 +184,8 @@ class Create(base.CreateCommand):
       enable_logging = args.enable_logging
     if args.IsSpecified('disabled'):
       disabled = args.disabled
+    if args.IsSpecified('src_networks'):
+      src_networks = args.src_networks
 
     if (
         self.ReleaseTrack() == base.ReleaseTrack.ALPHA
@@ -217,8 +215,6 @@ class Create(base.CreateCommand):
           src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
               args.src_network_scope
           )
-      if args.IsSpecified('src_networks'):
-        src_networks = args.src_networks
       if args.IsSpecified('dest_network_scope'):
         if not args.dest_network_scope:
           dest_network_scope = (
@@ -251,26 +247,24 @@ class Create(base.CreateCommand):
               args.dest_network_type
           )
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      if args.IsSpecified('src_network_context'):
-        if not args.src_network_context:
-          src_network_context = (
-              holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
-          )
-        else:
-          src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
-              args.src_network_context
-          )
-      if args.IsSpecified('dest_network_context'):
-        if not args.dest_network_context:
-          dest_network_context = (
-              holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
-          )
-        else:
-          dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
-              args.dest_network_context
-          )
+    if args.IsSpecified('src_network_context'):
+      if not args.src_network_context:
+        src_network_context = (
+            holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum.UNSPECIFIED
+        )
+      else:
+        src_network_context = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkContextValueValuesEnum(
+            args.src_network_context
+        )
+    if args.IsSpecified('dest_network_context'):
+      if not args.dest_network_context:
+        dest_network_context = (
+            holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum.UNSPECIFIED
+        )
+      else:
+        dest_network_context = holder.client.messages.FirewallPolicyRuleMatcher.DestNetworkContextValueValuesEnum(
+            args.dest_network_context
+        )
 
     layer4_config_list = rule_utils.ParseLayer4Configs(
         layer4_configs, holder.client.messages
@@ -324,10 +318,10 @@ class Create(base.CreateCommand):
         traffic_direct = (
             holder.client.messages.FirewallPolicyRule.DirectionValueValuesEnum.EGRESS
         )
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA or self.ReleaseTrack(
-    ) == base.ReleaseTrack.BETA:
-      matcher.srcNetworkContext = src_network_context
-      matcher.destNetworkContext = dest_network_context
+
+    matcher.srcNetworkContext = src_network_context
+    matcher.destNetworkContext = dest_network_context
+    matcher.srcNetworks = src_networks
 
     firewall_policy_rule = holder.client.messages.FirewallPolicyRule(
         priority=rule_utils.ConvertPriorityToInt(ref.Name()),

@@ -25,18 +25,10 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
-  creationTimestamp:
-    description: '[Output Only] Creation timestamp in RFC3339 text format.'
-    type: string
   description:
     description: |-
       An optional description of this resource. Provide this property when you
       create the resource.
-    type: string
-  kind:
-    description: |-
-      [Output Only] Type of the resource. Always compute#targetGrpcProxy for
-      target grpc proxies.
     type: string
   name:
     description: |-
@@ -47,12 +39,6 @@ properties:
       must be a lowercase letter, and all following characters must be a dash,
       lowercase letter, or digit, except the last character, which cannot be a
       dash.
-    type: string
-  selfLink:
-    description: '[Output Only] Server-defined URL for the resource.'
-    type: string
-  selfLinkWithId:
-    description: '[Output Only] Server-defined URL with id for the resource.'
     type: string
   urlMap:
     description: |-

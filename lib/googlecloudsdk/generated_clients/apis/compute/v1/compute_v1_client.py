@@ -101,6 +101,7 @@ class ComputeV1(base_api.BaseApiClient):
     self.regionCommitments = self.RegionCommitmentsService(self)
     self.regionDiskTypes = self.RegionDiskTypesService(self)
     self.regionDisks = self.RegionDisksService(self)
+    self.regionHealthAggregationPolicies = self.RegionHealthAggregationPoliciesService(self)
     self.regionHealthCheckServices = self.RegionHealthCheckServicesService(self)
     self.regionHealthChecks = self.RegionHealthChecksService(self)
     self.regionInstanceGroupManagers = self.RegionInstanceGroupManagersService(self)
@@ -2286,7 +2287,7 @@ Can be invoked either in the primary or secondary scope.
     def Update(self, request, global_params=None):
       r"""Updates the specified disk with the data included in the request.
 The update is performed only on selected fields included as part
-of update-mask.
+of update-mask. Only the following fields can be modified: user_license.
 
       Args:
         request: (ComputeDisksUpdateRequest) input message
@@ -2773,7 +2774,7 @@ folder or organization.
         method_id='compute.firewallPolicies.listAssociations',
         ordered_params=[],
         path_params=[],
-        query_params=['targetResource'],
+        query_params=['includeInheritedPolicies', 'targetResource'],
         relative_path='locations/global/firewallPolicies/listAssociations',
         request_field='',
         request_type_name='ComputeFirewallPoliciesListAssociationsRequest',
@@ -15704,7 +15705,8 @@ Can be invoked either in the primary or secondary scope.
 
     def Update(self, request, global_params=None):
       r"""Update the specified disk with the data included in the request. Update is.
-performed only on selected fields included as part of update-mask.
+performed only on selected fields included as part of update-mask. Only the
+following fields can be modified: user_license.
 
       Args:
         request: (ComputeRegionDisksUpdateRequest) input message
@@ -15726,6 +15728,206 @@ performed only on selected fields included as part of update-mask.
         request_field='diskResource',
         request_type_name='ComputeRegionDisksUpdateRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class RegionHealthAggregationPoliciesService(base_api.BaseApiService):
+    """Service class for the regionHealthAggregationPolicies resource."""
+
+    _NAME = 'regionHealthAggregationPolicies'
+
+    def __init__(self, client):
+      super(ComputeV1.RegionHealthAggregationPoliciesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves the list of all HealthAggregationPolicy resources,.
+regional and global, available to the specified project.
+
+To prevent failure, it is recommended that you set the
+`returnPartialSuccess` parameter to `true`.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HealthAggregationPolicyAggregatedList) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionHealthAggregationPolicies.aggregatedList',
+        ordered_params=['project'],
+        path_params=['project'],
+        query_params=['filter', 'includeAllScopes', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess', 'serviceProjectNumber'],
+        relative_path='projects/{project}/aggregated/healthAggregationPolicies',
+        request_field='',
+        request_type_name='ComputeRegionHealthAggregationPoliciesAggregatedListRequest',
+        response_type_name='HealthAggregationPolicyAggregatedList',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified HealthAggregationPolicy in the given region.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='DELETE',
+        method_id='compute.regionHealthAggregationPolicies.delete',
+        ordered_params=['project', 'region', 'healthAggregationPolicy'],
+        path_params=['healthAggregationPolicy', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies/{healthAggregationPolicy}',
+        request_field='',
+        request_type_name='ComputeRegionHealthAggregationPoliciesDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified HealthAggregationPolicy resource in the given region.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HealthAggregationPolicy) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionHealthAggregationPolicies.get',
+        ordered_params=['project', 'region', 'healthAggregationPolicy'],
+        path_params=['healthAggregationPolicy', 'project', 'region'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies/{healthAggregationPolicy}',
+        request_field='',
+        request_type_name='ComputeRegionHealthAggregationPoliciesGetRequest',
+        response_type_name='HealthAggregationPolicy',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Create a HealthAggregationPolicy in the specified project in the given.
+region using the parameters that are included in the request.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionHealthAggregationPolicies.insert',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies',
+        request_field='healthAggregationPolicy',
+        request_type_name='ComputeRegionHealthAggregationPoliciesInsertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the HealthAggregationPolicies for a project in the given region.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (HealthAggregationPolicyList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='compute.regionHealthAggregationPolicies.list',
+        ordered_params=['project', 'region'],
+        path_params=['project', 'region'],
+        query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies',
+        request_field='',
+        request_type_name='ComputeRegionHealthAggregationPoliciesListRequest',
+        response_type_name='HealthAggregationPolicyList',
+        supports_download=False,
+    )
+
+    def Patch(self, request, global_params=None):
+      r"""Updates the specified regional HealthAggregationPolicy.
+resource with the data included in the request. This method supportsPATCH
+semantics and uses theJSON merge
+patch format and processing rules.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesPatchRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Patch')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Patch.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='PATCH',
+        method_id='compute.regionHealthAggregationPolicies.patch',
+        ordered_params=['project', 'region', 'healthAggregationPolicy'],
+        path_params=['healthAggregationPolicy', 'project', 'region'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies/{healthAggregationPolicy}',
+        request_field='healthAggregationPolicyResource',
+        request_type_name='ComputeRegionHealthAggregationPoliciesPatchRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeRegionHealthAggregationPoliciesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.regionHealthAggregationPolicies.testIamPermissions',
+        ordered_params=['project', 'region', 'resource'],
+        path_params=['project', 'region', 'resource'],
+        query_params=[],
+        relative_path='projects/{project}/regions/{region}/healthAggregationPolicies/{resource}/testIamPermissions',
+        request_field='testPermissionsRequest',
+        request_type_name='ComputeRegionHealthAggregationPoliciesTestIamPermissionsRequest',
+        response_type_name='TestPermissionsResponse',
         supports_download=False,
     )
 

@@ -2075,6 +2075,32 @@ Resources documentation.
         supports_download=False,
     )
 
+    def Convert(self, request, global_params=None):
+      r"""Converts a persistent disk to support Gen4+ VMs.
+
+      Args:
+        request: (ComputeDisksConvertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Convert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Convert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.disks.convert',
+        ordered_params=['project', 'zone', 'disk'],
+        path_params=['disk', 'project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/disks/{disk}/convert',
+        request_field='disksConvertRequest',
+        request_type_name='ComputeDisksConvertRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def CreateSnapshot(self, request, global_params=None):
       r"""Creates a snapshot of a specified persistent disk. For regular snapshot.
 creation, consider using snapshots.insert
@@ -2487,7 +2513,7 @@ Can be invoked either in the primary or secondary scope.
     def Update(self, request, global_params=None):
       r"""Updates the specified disk with the data included in the request.
 The update is performed only on selected fields included as part
-of update-mask.
+of update-mask. Only the following fields can be modified: user_license.
 
       Args:
         request: (ComputeDisksUpdateRequest) input message
@@ -6760,6 +6786,32 @@ This method can be used to apply new overrides and/or new versions.
         relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/applyUpdatesToInstances',
         request_field='instanceGroupManagersApplyUpdatesRequest',
         request_type_name='ComputeInstanceGroupManagersApplyUpdatesToInstancesRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
+    def ConfigureAcceleratorTopologies(self, request, global_params=None):
+      r"""Updates the accelerator topologies configuration.
+
+      Args:
+        request: (ComputeInstanceGroupManagersConfigureAcceleratorTopologiesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('ConfigureAcceleratorTopologies')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    ConfigureAcceleratorTopologies.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='POST',
+        method_id='compute.instanceGroupManagers.configureAcceleratorTopologies',
+        ordered_params=['project', 'zone', 'instanceGroupManager'],
+        path_params=['instanceGroupManager', 'project', 'zone'],
+        query_params=['requestId'],
+        relative_path='projects/{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/configureAcceleratorTopologies',
+        request_field='instanceGroupManagersConfigureAcceleratorTopologiesRequest',
+        request_type_name='ComputeInstanceGroupManagersConfigureAcceleratorTopologiesRequest',
         response_type_name='Operation',
         supports_download=False,
     )
@@ -18591,7 +18643,8 @@ Can be invoked either in the primary or secondary scope.
 
     def Update(self, request, global_params=None):
       r"""Update the specified disk with the data included in the request. Update is.
-performed only on selected fields included as part of update-mask.
+performed only on selected fields included as part of update-mask. Only the
+following fields can be modified: user_license.
 
       Args:
         request: (ComputeRegionDisksUpdateRequest) input message
@@ -25127,6 +25180,33 @@ behaviour for this method.
         request_field='',
         request_type_name='ComputeReservationSlotsListRequest',
         response_type_name='ReservationSlotsListResponse',
+        supports_download=False,
+    )
+
+    def Update(self, request, global_params=None):
+      r"""Update a reservation slot in the specified sub-block.
+
+      Args:
+        request: (ComputeReservationSlotsUpdateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Update')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Update.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlocksId}/reservationSlots/{reservationSlot}',
+        http_method='POST',
+        method_id='compute.reservationSlots.update',
+        ordered_params=['project', 'zone', 'parentName', 'reservationSlot'],
+        path_params=['parentName', 'project', 'reservationSlot', 'zone'],
+        query_params=['updateMask'],
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSlots/{reservationSlot}',
+        request_field='reservationSlotResource',
+        request_type_name='ComputeReservationSlotsUpdateRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

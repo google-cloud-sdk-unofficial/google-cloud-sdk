@@ -1448,18 +1448,27 @@ def CreateInstanceLifecyclePolicy(messages, args):
   return ValueOrNone(policy)
 
 
-def CreateInstanceFlexibilityPolicy(args, messages, igm_resource=None):
+def CreateInstanceFlexibilityPolicy(
+    args,
+    messages,
+    igm_resource=None,
+    support_instance_selection_min_cpu_platform=False,
+):
   """Creates instance flexibility policy from args.
 
   Args:
     args: arguments of the request
     messages: Compute API messages
     igm_resource: instance group manager resource that is being patched
+    support_instance_selection_min_cpu_platform: whether to support instance
+      selection min cpu platform field
 
   Returns:
     InstanceFlexibilityPolicy.
   """
-  instance_selections = CreateInstanceSelections(args, messages, igm_resource)
+  instance_selections = CreateInstanceSelections(
+      args, messages, igm_resource, support_instance_selection_min_cpu_platform
+  )
 
   instance_flexibility_policy = (
       messages.InstanceGroupManagerInstanceFlexibilityPolicy(
@@ -1483,7 +1492,12 @@ def CreateResourcePolicies(
   return ValueOrNone(policy)
 
 
-def CreateInstanceSelections(args, messages, igm_resource):
+def CreateInstanceSelections(
+    args,
+    messages,
+    igm_resource,
+    support_instance_selection_min_cpu_platform=False,
+):
   """Build a list of InstanceSelection from the given flags."""
   instance_selections = []
   if args.IsKnownAndSpecified(
@@ -1525,6 +1539,7 @@ def CreateInstanceSelections(args, messages, igm_resource):
         'instance-selection-1',
         args.instance_selection_machine_types,
         1,
+        min_cpu_platform=None,
     )
 
   if args.IsKnownAndSpecified('instance_selection'):
@@ -1549,8 +1564,19 @@ def CreateInstanceSelections(args, messages, igm_resource):
               'Invalid value for rank in instance selection.'
           )
         rank = int(rank)
+      min_cpu_platform = None
+      if (
+          'min-cpu-platform' in instance_selection
+          and support_instance_selection_min_cpu_platform
+      ):
+        min_cpu_platform = instance_selection['min-cpu-platform'][0]
       _AddInstanceSelection(
-          messages, instance_selections, name, machine_types, rank
+          messages,
+          instance_selections,
+          name,
+          machine_types,
+          rank,
+          min_cpu_platform,
       )
 
   if not instance_selections:
@@ -1561,7 +1587,12 @@ def CreateInstanceSelections(args, messages, igm_resource):
 
 
 def _AddInstanceSelection(
-    messages, instance_selections, instance_selection_name, machine_types, rank
+    messages,
+    instance_selections,
+    instance_selection_name,
+    machine_types,
+    rank,
+    min_cpu_platform=None,
 ):
   """Adds instance selection to instance selections list."""
   for instance_selection in instance_selections:
@@ -1576,24 +1607,21 @@ def _AddInstanceSelection(
               value=None,
           )
       )
+  instance_selection = (
+      messages.InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection(
+          machineTypes=machine_types
+      )
+  )
+  if min_cpu_platform is not None:
+    instance_selection.minCpuPlatform = min_cpu_platform
   if rank is not None:
-    instance_selections.append(
-        messages.InstanceGroupManagerInstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
-            key=instance_selection_name,
-            value=messages.InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection(
-                rank=rank, machineTypes=machine_types
-            ),
-        )
-    )
-  else:
-    instance_selections.append(
-        messages.InstanceGroupManagerInstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
-            key=instance_selection_name,
-            value=messages.InstanceGroupManagerInstanceFlexibilityPolicyInstanceSelection(
-                machineTypes=machine_types
-            ),
-        )
-    )
+    instance_selection.rank = rank
+  instance_selections.append(
+      messages.InstanceGroupManagerInstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
+          key=instance_selection_name,
+          value=instance_selection,
+      )
+  )
 
 
 def _IsPreviouslyProcessed(intance_selection_name, instance_selections, is_add):

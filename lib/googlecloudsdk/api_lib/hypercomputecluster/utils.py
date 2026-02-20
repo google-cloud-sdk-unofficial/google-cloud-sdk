@@ -25,7 +25,11 @@ from googlecloudsdk.core import resources
 
 API_NAME = 'hypercomputecluster'
 ALPHA_API_VERSION = 'v1alpha'
-TRACK_TO_API_VERSION = {base.ReleaseTrack.ALPHA: ALPHA_API_VERSION}
+BETA_API_VERSION = 'v1beta'
+TRACK_TO_API_VERSION = {
+    base.ReleaseTrack.ALPHA: ALPHA_API_VERSION,
+    base.ReleaseTrack.BETA: BETA_API_VERSION,
+}
 
 
 OPERATIONS_COLLECTION = 'hypercomputecluster.projects.locations.operations'

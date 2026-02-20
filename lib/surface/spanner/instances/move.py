@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import flags
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Move(base.Command):
   """Move the Cloud Spanner instance to the specified instance configuration."""
@@ -84,7 +84,7 @@ class Move(base.Command):
     )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaMove(base.Command):
   """Move the Cloud Spanner instance to the specified instance configuration."""
@@ -145,7 +145,7 @@ class BetaMove(base.Command):
     )
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaMove(base.Command):
   """Move the Cloud Spanner instance to the specified instance configuration."""

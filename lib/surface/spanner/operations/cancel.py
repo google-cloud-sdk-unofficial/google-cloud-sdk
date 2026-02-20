@@ -51,7 +51,7 @@ DETAILED_HELP = {
 }
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Cancel(base.Command):
   """Cancel a Cloud Spanner operation."""
@@ -115,7 +115,7 @@ class Cancel(base.Command):
     return instance_operations.Cancel(args.instance, args.operation)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class BetaAndAlphaCancel(Cancel):
   """Cancel a Cloud Spanner operation."""

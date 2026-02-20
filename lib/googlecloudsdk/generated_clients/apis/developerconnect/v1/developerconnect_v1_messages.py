@@ -592,6 +592,27 @@ class DeveloperconnectProjectsLocationsAccountConnectorsDeleteRequest(_messages.
   validateOnly = _messages.BooleanField(5)
 
 
+class DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositoriesRequest(_messages.Message):
+  r"""A DeveloperconnectProjectsLocationsAccountConnectorsFetchUserRepositorie
+  sRequest object.
+
+  Fields:
+    accountConnector: Required. The name of the Account Connector resource in
+      the format: `projects/*/locations/*/accountConnectors/*`.
+    pageSize: Optional. Number of results to return in the list. Defaults to
+      20.
+    pageToken: Optional. Page start.
+    repository: Optional. The name of the repository. When specified, only the
+      UserRepository with this name will be returned if the repository is
+      accessible under this Account Connector for the calling user.
+  """
+
+  accountConnector = _messages.StringField(1, required=True)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  repository = _messages.StringField(4)
+
+
 class DeveloperconnectProjectsLocationsAccountConnectorsGetRequest(_messages.Message):
   r"""A DeveloperconnectProjectsLocationsAccountConnectorsGetRequest object.
 
@@ -1562,6 +1583,20 @@ class FetchReadWriteTokenResponse(_messages.Message):
   expirationTime = _messages.StringField(1)
   gitUsername = _messages.StringField(2)
   token = _messages.StringField(3)
+
+
+class FetchUserRepositoriesResponse(_messages.Message):
+  r"""Response message for FetchUserRepositories.
+
+  Fields:
+    nextPageToken: A token identifying a page of results the server should
+      return.
+    userRepos: The repositories that the user can access with this account
+      connector.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  userRepos = _messages.MessageField('UserRepository', 2, repeated=True)
 
 
 class FinishOAuthResponse(_messages.Message):
@@ -2959,6 +2994,25 @@ class UserCredential(_messages.Message):
 
   userTokenSecretVersion = _messages.StringField(1)
   username = _messages.StringField(2)
+
+
+class UserRepository(_messages.Message):
+  r"""A user repository that can be linked to the account connector. Consists
+  of the repo name and the git proxy URL to forward requests to this repo.
+
+  Fields:
+    cloneUri: Output only. The git clone URL of the repo. For example:
+      https://github.com/myuser/myrepo.git
+    displayName: Output only. The user friendly repo name (e.g.,
+      myuser/myrepo)
+    gitProxyUri: Output only. The git proxy URL to send requests to this repo.
+      For example: https://us-west1-git.developerconnect.dev/a/my-proj/my-
+      ac/myuser/myrepo.git
+  """
+
+  cloneUri = _messages.StringField(1)
+  displayName = _messages.StringField(2)
+  gitProxyUri = _messages.StringField(3)
 
 
 encoding.AddCustomJsonFieldMapping(

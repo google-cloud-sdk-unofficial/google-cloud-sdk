@@ -24,6 +24,7 @@ from googlecloudsdk.api_lib.spanner import instances
 from googlecloudsdk.calliope import base
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the Cloud Spanner instances in this project."""
 

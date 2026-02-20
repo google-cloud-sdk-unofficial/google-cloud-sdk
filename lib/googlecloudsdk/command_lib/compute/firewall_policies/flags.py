@@ -546,7 +546,7 @@ def AddSrcRegionCodes(parser, support_network_scopes=False):
   if support_network_scopes:
     help_text += (
         'Cannot be specified when the source network'
-        ' type is NON_INTERNET, VPC_NETWORK or INTRA_VPC. '
+        ' context is NON_INTERNET, VPC_NETWORK or INTRA_VPC. '
     )
   parser.add_argument(
       '--src-region-codes',
@@ -565,7 +565,7 @@ def AddDestRegionCodes(parser, support_network_scopes=False):
   )
   if support_network_scopes:
     help_text += (
-        'Cannot be specified when the source network type is NON_INTERNET. '
+        'Cannot be specified when the source network context is NON_INTERNET. '
     )
   parser.add_argument(
       '--dest-region-codes',
@@ -588,7 +588,7 @@ def AddSrcThreatIntelligence(parser, support_network_scopes=False):
     text_help = (
         'Source Threat Intelligence lists to match for this rule. '
         'Can only be specified if DIRECTION is `ingress`. Cannot be specified'
-        ' when the source network type is NON_INTERNET, VPC_NETWORK or'
+        ' when the source network context is NON_INTERNET, VPC_NETWORK or'
         ' INTRA_VPC. '
         'The available lists can be found here: '
         'https://cloud.google.com/vpc/docs/firewall-policies-rule-details#threat-intelligence-fw-policy.'
@@ -614,7 +614,7 @@ def AddDestThreatIntelligence(parser, support_network_scopes=False):
     text_help = (
         'Destination Threat Intelligence lists to match for this rule. '
         'Can only be specified if DIRECTION is `egress`. Cannot be specified'
-        ' when source network type is NON_INTERNET. '
+        ' when source network context is NON_INTERNET. '
         'The available lists can be found here: '
         'https://cloud.google.com/vpc/docs/firewall-policies-rule-details#threat-intelligence-fw-policy.'
     )

@@ -23,6 +23,7 @@ from googlecloudsdk.calliope import base
 
 @base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA,
                     base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
 class Rows(base.Group):
   """Manage the rows in Cloud Spanner databases."""
   pass

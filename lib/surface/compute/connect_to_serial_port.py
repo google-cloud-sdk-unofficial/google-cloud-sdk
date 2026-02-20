@@ -31,11 +31,9 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.compute.instances import flags as instance_flags
 from googlecloudsdk.command_lib.util.ssh import ssh
-from googlecloudsdk.core import http
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-from googlecloudsdk.core.util import encoding
-from six.moves import http_client as httplib
+from googlecloudsdk.core import requests
 
 
 SERIAL_PORT_HELP = (
@@ -202,15 +200,16 @@ class ConnectToSerialPort(base.Command):
 
     def _GetHostKey(endpoint):
       """Get host key from endpoint."""
-      http_client = http.Http()
+      session = requests.GetSession()
+      resp = session.get(endpoint)
+      log.info('http_response: {0}'.format(resp.text))
+
       host_keys = []
-      http_response = http_client.request(endpoint)
-      log.info('http_response: {0}'.format(http_response))
-      if int(http_response[0]['status']) == httplib.OK:
+      if resp.ok:
         # There can be multiple public host keys for the same region,
         # in the response separated by newlines.
         retrieved_host_keys = (
-            encoding.Decode(http_response[1]).strip().split('\n')
+            resp.text.strip().split('\n')
         )
         for host_key in retrieved_host_keys:
           host_keys.append(host_key)

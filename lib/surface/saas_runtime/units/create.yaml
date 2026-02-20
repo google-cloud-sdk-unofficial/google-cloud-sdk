@@ -71,6 +71,16 @@
         help_text: |-
           The system will decide when to deprovision and delete the unit.
           User still can deprovision or delete the unit manually.
+    - arg_name: flag-revisions
+      release_tracks: [ALPHA]
+      help_text: |-
+        List of flag revisions used by this unit
+      is_positional: false
+      resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_revision
+      resource_method_params:
+        unit.flagRevisions: '{__relative_name__}'
+      required: false
+      repeated: true
     - arg_name: labels
       api_field: unit.labels
       required: false

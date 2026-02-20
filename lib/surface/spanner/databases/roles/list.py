@@ -25,6 +25,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.UniverseCompatible
 class List(base.ListCommand):
   """List the Cloud Spanner database roles defined in the given database."""
 

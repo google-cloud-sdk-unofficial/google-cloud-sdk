@@ -767,6 +767,7 @@ class CreateClusterOptions(object):
       enable_dataplane_v2_flow_observability=None,
       disable_dataplane_v2_flow_observability=None,
       dataplane_v2_observability_mode=None,
+      enable_ambient=None,
       shielded_secure_boot=None,
       shielded_integrity_monitoring=None,
       system_config_from_file=None,
@@ -910,7 +911,9 @@ class CreateClusterOptions(object):
       autopilot_general_profile=None,
       maintenance_minor_version_disruption_interval=None,
       maintenance_patch_version_disruption_interval=None,
+      linked_runners_mode=None,
       node_architecture_taint_behavior=None,
+      node_pool_upgrade_concurrency_config=None,
   ):
     self.node_machine_type = node_machine_type
     self.node_source_image = node_source_image
@@ -1048,6 +1051,7 @@ class CreateClusterOptions(object):
         disable_dataplane_v2_flow_observability
     )
     self.dataplane_v2_observability_mode = dataplane_v2_observability_mode
+    self.enable_ambient = enable_ambient
     self.shielded_secure_boot = shielded_secure_boot
     self.shielded_integrity_monitoring = shielded_integrity_monitoring
     self.system_config_from_file = system_config_from_file
@@ -1229,6 +1233,10 @@ class CreateClusterOptions(object):
     self.maintenance_patch_version_disruption_interval = (
         maintenance_patch_version_disruption_interval
     )
+    self.linked_runners_mode = linked_runners_mode
+    self.node_pool_upgrade_concurrency_config = (
+        node_pool_upgrade_concurrency_config
+    )
 
 
 class UpdateClusterOptions(object):
@@ -1343,6 +1351,7 @@ class UpdateClusterOptions(object):
       enable_dataplane_v2_flow_observability=None,
       disable_dataplane_v2_flow_observability=None,
       dataplane_v2_observability_mode=None,
+      enable_ambient=None,
       enable_workload_config_audit=None,
       enable_workload_vulnerability_scanning=None,
       enable_autoprovisioning_surge_upgrade=None,
@@ -1428,6 +1437,8 @@ class UpdateClusterOptions(object):
       autopilot_privileged_admission=None,
       enable_slice_controller=None,
       autopilot_general_profile=None,
+      node_pool_upgrade_concurrency_config=None,
+      linked_runners_mode=None,
   ):
     self.version = version
     self.update_master = bool(update_master)
@@ -1669,7 +1680,12 @@ class UpdateClusterOptions(object):
     self.enable_pod_snapshots = enable_pod_snapshots
     self.autopilot_privileged_admission = autopilot_privileged_admission
     self.enable_slice_controller = enable_slice_controller
+    self.enable_ambient = enable_ambient
     self.autopilot_general_profile = autopilot_general_profile
+    self.node_pool_upgrade_concurrency_config = (
+        node_pool_upgrade_concurrency_config
+    )
+    self.linked_runners_mode = linked_runners_mode
 
 
 class SetMasterAuthOptions(object):
@@ -2546,6 +2562,11 @@ class APIAdapter(object):
     node_config = self.ParseNodeConfig(options)
     pools = self.ParseNodePools(options, node_config)
     cluster = self.messages.Cluster(name=cluster_ref.clusterId, nodePools=pools)
+
+    if options.linked_runners_mode is not None:
+      cluster.linkedRunnersConfig = _GetLinkedRunnersConfig(
+          options.linked_runners_mode, self.messages)
+
     if options.tag_bindings:
       # Assign the dictionary to the cluster.tags field
       cluster.tags = self.messages.Cluster.TagsValue(
@@ -3266,6 +3287,13 @@ class APIAdapter(object):
           variant=VariantConfigEnumFromString(
               self.messages, options.logging_variant
           )
+      )
+
+    if options.enable_ambient is not None:
+      if cluster.networkConfig is None:
+        cluster.networkConfig = self.messages.NetworkConfig()
+      cluster.networkConfig.ambientNetworkingConfig = (
+          self.messages.AmbientNetworkingConfig(enabled=options.enable_ambient)
       )
 
     if options.enable_cost_allocation:
@@ -8654,6 +8682,7 @@ class V1Beta1Adapter(V1Adapter):
     _AddPSCPrivateClustersOptionsToClusterForCreateCluster(
         cluster, options, self.messages
     )
+    _AddNodePoolUpgradeConcurrencyConfig(cluster, options, self.messages)
 
     cluster_telemetry_type = self._GetClusterTelemetryType(
         options, cluster.loggingService, cluster.monitoringService
@@ -9919,6 +9948,18 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredNetworkTierConfig=_GetNetworkTierConfig(options, self.messages)
       )
+    if options.linked_runners_mode is not None:
+      update = self.messages.ClusterUpdate(
+          desiredLinkedRunnersConfig=_GetLinkedRunnersConfig(
+              options.linked_runners_mode, self.messages)
+      )
+    if options.enable_ambient is not None:
+      update = self.messages.ClusterUpdate(
+          desiredAmbientNetworkingConfig=self.messages.AmbientNetworkingConfig(
+              enabled=options.enable_ambient
+          )
+      )
+
     return update
 
   def UpdateCluster(self, cluster_ref, options):
@@ -10031,6 +10072,13 @@ class V1Beta1Adapter(V1Adapter):
       update = self.messages.ClusterUpdate(
           desiredServiceExternalIpsConfig=self.messages.ServiceExternalIPsConfig(
               enabled=options.enable_service_externalips
+          )
+      )
+
+    if options.node_pool_upgrade_concurrency_config is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNodePoolUpgradeConcurrencyConfig=_GetNodePoolUpgradeConcurrencyConfigForClusterUpdate(
+              options, self.messages
           )
       )
 
@@ -10595,6 +10643,7 @@ class V1Alpha1Adapter(V1Beta1Adapter):
     _AddPSCPrivateClustersOptionsToClusterForCreateCluster(
         cluster, options, self.messages
     )
+    _AddNodePoolUpgradeConcurrencyConfig(cluster, options, self.messages)
 
     cluster.releaseChannel = _GetReleaseChannel(options, self.messages)
     if options.enable_cost_allocation:
@@ -10810,6 +10859,13 @@ class V1Alpha1Adapter(V1Beta1Adapter):
       update = self.messages.ClusterUpdate(
           desiredServiceExternalIpsConfig=self.messages.ServiceExternalIPsConfig(
               enabled=options.enable_service_externalips
+          )
+      )
+
+    if options.node_pool_upgrade_concurrency_config is not None:
+      update = self.messages.ClusterUpdate(
+          desiredNodePoolUpgradeConcurrencyConfig=_GetNodePoolUpgradeConcurrencyConfigForClusterUpdate(
+              options, self.messages
           )
       )
 
@@ -11440,6 +11496,16 @@ def _AddNotificationConfigToCluster(cluster, options, messages):
     cluster.notificationConfig = messages.NotificationConfig(pubsub=pubsub)
 
 
+def _AddNodePoolUpgradeConcurrencyConfig(cluster, options, messages):
+  """Adds NodePoolUpgradeConcurrencyConfig to Cluster."""
+  nc = options.node_pool_upgrade_concurrency_config
+  if nc is not None:
+    cc = messages.NodePoolUpgradeConcurrencyConfig()
+    if 'max-count' in nc:
+      cc.maxCount = nc['max-count']
+      cluster.nodePoolUpgradeConcurrencyConfig = cc
+
+
 def _GetFilterFromArg(filter_arg, messages):
   """Gets a Filter message object from a filter phrase."""
   if not filter_arg:
@@ -11507,6 +11573,14 @@ def _GetNotificationConfigForClusterUpdate(options, messages):
     if 'filter' in nc:
       pubsub.filter = _GetFilterFromArg(nc['filter'], messages)
     return messages.NotificationConfig(pubsub=pubsub)
+
+
+def _GetNodePoolUpgradeConcurrencyConfigForClusterUpdate(options, messages):
+  """Gets the NodePoolUpgradeConcurrencyConfig from update options."""
+  nc = options.node_pool_upgrade_concurrency_config
+  if nc is not None:
+    if 'max-count' in nc:
+      return messages.NodePoolUpgradeConcurrencyConfig(maxCount=nc['max-count'])
 
 
 def _GetTpuConfigForClusterUpdate(options, messages):
@@ -12399,3 +12473,20 @@ def _GetNodeDrainConfig(options, messages):
       pdbTimeoutDuration=options.node_drain_pdb_timeout,
       respectPdbDuringNodePoolDeletion=options.respect_pdb_during_node_pool_deletion,
   )
+
+
+def _GetLinkedRunnersConfig(mode_str, messages):
+  """Gets the LinkedRunnersConfig from the mode string."""
+  if mode_str is None:
+    return None
+
+  linked_runners_config = messages.LinkedRunnersConfig()
+  if mode_str == 'standard':
+    linked_runners_config.mode = (
+        messages.LinkedRunnersConfig.ModeValueValuesEnum.STANDARD
+    )
+  elif mode_str == 'none':
+    linked_runners_config.mode = (
+        messages.LinkedRunnersConfig.ModeValueValuesEnum.NONE
+    )
+  return linked_runners_config

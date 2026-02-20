@@ -287,6 +287,15 @@ def UpdateControlledEgressConfig(unused_instance_ref, args, patch_request):
   return patch_request
 
 
+def UpdateCatalogIntegrationEnabled(unused_instance_ref, args, patch_request):
+  """Hook to update catalog integration enabled to the update mask of the request."""
+  if args.IsSpecified('catalog_integration_enabled'):
+    patch_request = AddFieldToUpdateMask(
+        'catalog_integration_enabled', patch_request
+    )
+  return patch_request
+
+
 def _WarnForMarketplaceEnabledUpdate():
   """Adds prompt that warns about marketplace enabled update."""
   message = 'Change to instance marketplace enabled requested. '

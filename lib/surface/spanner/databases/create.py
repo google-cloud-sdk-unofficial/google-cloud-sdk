@@ -27,6 +27,7 @@ from googlecloudsdk.command_lib.spanner import flags
 from googlecloudsdk.command_lib.spanner import resource_args
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a Cloud Spanner database."""
 

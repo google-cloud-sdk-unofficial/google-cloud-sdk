@@ -221,16 +221,13 @@ class Deploy(base.Command):
     ):
       return True
     if self._IsMultiRegion():
+      regions = self._GetRegionsForMultiRegion()
       allow_unauth = flags.GetAllowUnauthenticated(
           args,
           operations,
           service_ref,
           not service_exists,
-          region_override=(
-              self._GetRegionsForMultiRegion()[0]
-              if self._GetRegionsForMultiRegion()
-              else None
-          ),
+          region_override=regions[0] if regions else None,
       )
       # Avoid failure removing a policy binding for a service that
       # doesn't exist.

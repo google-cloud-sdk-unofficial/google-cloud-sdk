@@ -18,13 +18,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from typing import Optional
+
 from googlecloudsdk.command_lib.declarative_pipeline.processors import base
 
 
 class DataprocGCEActionProcessor(base.ActionProcessor):
   """Action processor for Dataproc GCE actions."""
 
-  def get_python_version(self) -> str:
+  def _get_python_version(self) -> Optional[str]:
     # See
     # https://docs.cloud.google.com/dataproc/docs/concepts/versioning/dataproc-version-clusters
     config = self.action.get("config", {})
@@ -47,7 +49,18 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     # from the uploaded dependencies.zip, allowing the Spark jobs to find
     # the required Python libraries.
     env_pack_path = self._work_dir / self._env_pack_file
-    if env_pack_path.exists():
-      props = self._get_nested_dict(action, ["config", "properties"])
-      props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
-      props["spark.executorEnv.PYTHONPATH"] = self.full_python_path
+    if not env_pack_path.exists():
+      return
+
+    env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#libs"
+    self.action.setdefault("archives", [])
+    if not any(env_pack_uri in arch for arch in self.action["archives"]):
+      self.action["archives"].append(env_pack_uri)
+
+    job_props = self._get_nested_dict(action, ["config", "job", "properties"])
+    deploy_mode = job_props.get("spark.submit.deployMode", "client")
+    job_props["spark.executorEnv.PYTHONPATH"] = self.full_python_path
+    if deploy_mode == "cluster":
+      job_props["spark.yarn.appMasterEnv.PYTHONPATH"] = self.full_python_path
+    else:
+      job_props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path

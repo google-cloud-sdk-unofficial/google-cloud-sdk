@@ -36,7 +36,7 @@ class Update(base.UpdateCommand):
   NETWORK_FIREWALL_POLICY_ARG = None
   support_network_scopes = False
   support_target_type = False
-  support_network_context = False
+  support_network_context = True
 
   @classmethod
   def Args(cls, parser):
@@ -81,7 +81,6 @@ class Update(base.UpdateCommand):
     flags.AddTlsInspect(parser)
     if cls.support_network_scopes:
       flags.AddSrcNetworkScope(parser)
-      flags.AddSrcNetworks(parser)
       flags.AddDestNetworkScope(parser)
       flags.AddSrcNetworkType(parser)
       flags.AddDestNetworkType(parser)
@@ -91,6 +90,7 @@ class Update(base.UpdateCommand):
     if cls.support_network_context:
       flags.AddSrcNetworkContext(parser)
       flags.AddDestNetworkContext(parser)
+      flags.AddSrcNetworks(parser)
 
   def Run(self, args):
     clearable_arg_name_to_field_name = {
@@ -181,6 +181,10 @@ class Update(base.UpdateCommand):
               holder.client, args.target_secure_tags
           )
       )
+    if args.IsSpecified('src_networks'):
+      src_networks = args.src_networks
+      should_setup_match = True
+
     if self.support_network_scopes:
       if args.IsSpecified('src_network_scope') and args.IsSpecified(
           'src_network_type'
@@ -205,9 +209,6 @@ class Update(base.UpdateCommand):
           src_network_scope = holder.client.messages.FirewallPolicyRuleMatcher.SrcNetworkScopeValueValuesEnum(
               args.src_network_scope
           )
-        should_setup_match = True
-      if args.IsSpecified('src_networks'):
-        src_networks = args.src_networks
         should_setup_match = True
       if args.IsSpecified('dest_network_scope'):
         if not args.dest_network_scope:
@@ -300,6 +301,7 @@ class Update(base.UpdateCommand):
     if self.support_network_context:
       matcher.srcNetworkContext = src_network_context
       matcher.destNetworkContext = dest_network_context
+      matcher.srcNetworks = src_networks
     if args.IsSpecified('src_address_groups'):
       matcher.srcAddressGroups = args.src_address_groups
       should_setup_match = True

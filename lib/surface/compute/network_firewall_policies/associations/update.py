@@ -27,7 +27,8 @@ from googlecloudsdk.command_lib.compute.network_firewall_policies import flags
 
 
 @base.Hidden
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.UniverseCompatible
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update association between a firewall policy and a network.
 
@@ -76,7 +77,8 @@ class Update(base.UpdateCommand):
 
 
 Update.detailed_help = {
-    'EXAMPLES': """\
+    'EXAMPLES': (
+        """\
   To update priority of association named ``my-association'' on network
   firewall policy with name ``my-policy'' in region ``region-a'', run:
 
@@ -85,5 +87,6 @@ Update.detailed_help = {
         --name=my-association
         --firewall-policy-region=region-a
         --priority=new-priority
-  """,
+  """
+    ),
 }

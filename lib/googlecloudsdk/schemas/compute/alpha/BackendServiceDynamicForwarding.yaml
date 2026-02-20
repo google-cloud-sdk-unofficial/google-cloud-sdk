@@ -25,6 +25,9 @@ properties:
     description: Unknown API fields that cannot be imported.
     items:
       type: string
+  forwardProxy:
+    description: Dynamic Forwarding Proxy configuration.
+    $ref: BackendServiceDynamicForwardingForwardProxy.yaml
   ipPortSelection:
     description: IP:PORT based dynamic forwarding configuration.
     $ref: BackendServiceDynamicForwardingIpPortSelection.yaml

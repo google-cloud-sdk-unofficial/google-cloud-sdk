@@ -61,7 +61,7 @@ class Create(base.CreateCommand):
     flags.AddServiceAccountArg(parser)
     flags.AddCreateDestinationArgs(parser, cls.ReleaseTrack(), required=True)
     flags.AddTransportTopicResourceArg(parser)
-    flags.AddTriggerRetryPolicyArgs(parser)
+    flags.AddTriggerRetryPolicyArgs(parser, with_clear=False)
     labels_util.AddCreateLabelsFlags(parser)
 
     base.ASYNC_FLAG.AddToParser(parser)

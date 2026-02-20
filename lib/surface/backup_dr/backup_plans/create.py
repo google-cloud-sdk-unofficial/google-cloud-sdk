@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import textwrap
+
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.backupdr import backup_plans
 from googlecloudsdk.api_lib.backupdr import util
@@ -40,19 +42,33 @@ class Create(base.CreateCommand):
           locations where Backup and DR is available.
       """,
       'EXAMPLES': """\
-        To create a new backup plan ``sample-backup-plan''
+        To create a new backup plan ``sample-backup-plan'' for Compute Engine instances
         in project ``sample-project'',
         at location ``us-central1'',
-        with resource-type ``compute.<UNIVERSE_DOMAIN>.com/Instance'' and
+        with resource-type ``compute.<UNIVERSE_DOMAIN>/Instance'' and
         backup-vault ``backup-vault''
         with 2 backup-rules:
 
         run:
 
           $ {command} sample-backup-plan --project=sample-project --location=us-central1
-            --resource-type 'compute.<UNIVERSE_DOMAIN>.com/Instance'
+            --resource-type 'compute.<UNIVERSE_DOMAIN>/Instance'
             --backup-vault <BACKUP-VAULT>
             --backup-rule <BACKUP-RULE>
+            --backup-rule <BACKUP-RULE>
+
+        To create a new backup plan ``sample-filestore-backup-plan'' for Filestore instances
+        in project ``sample-project'',
+        at location ``us-central1'',
+        with resource-type ``file.<UNIVERSE_DOMAIN>/Instance'' and
+        backup-vault ``backup-vault''
+        with 1 backup-rule:
+
+        run:
+
+          $ {command} sample-filestore-backup-plan --project=sample-project --location=us-central1
+            --resource-type 'file.<UNIVERSE_DOMAIN>/Instance'
+            --backup-vault <BACKUP-VAULT>
             --backup-rule <BACKUP-RULE>
 
         Backup Rule Examples:
@@ -113,11 +129,16 @@ class Create(base.CreateCommand):
     )
     flags.AddResourceType(
         parser,
-        """Type of resource to which the backup plan should be applied.
-          E.g., `compute.<UNIVERSE_DOMAIN>.com/Instance` """,
+        textwrap.dedent("""\
+        Type of resource to which the backup plan should be applied.
+
+        For example:
+        * `compute.<UNIVERSE_DOMAIN>/Instance` for Compute Engine instances.
+        * `file.<UNIVERSE_DOMAIN>/Instance` for Filestore instances.""")
     )
     flags.AddBackupRule(parser)
     flags.AddMaxCustomOnDemandRetentionDays(parser)
+    flags.AddDiskBackupPlanProperties(parser)
 
     description_help = """\
         Provide a description of the backup plan, such as specific use cases and
@@ -162,6 +183,7 @@ class Create(base.CreateCommand):
     max_custom_on_demand_retention_days = (
         args.max_custom_on_demand_retention_days
     )
+    disk_properties = args.disk_properties
 
     try:
       operation = client.Create(
@@ -172,7 +194,8 @@ class Create(base.CreateCommand):
           log_retention_days,
           description,
           labels,
-          max_custom_on_demand_retention_days
+          max_custom_on_demand_retention_days,
+          disk_properties,
       )
     except apitools_exceptions.HttpError as e:
       raise exceptions.HttpException(e, util.HTTP_ERROR_FORMAT)

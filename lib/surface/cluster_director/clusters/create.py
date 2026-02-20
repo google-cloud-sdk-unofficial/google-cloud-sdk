@@ -47,7 +47,7 @@ DETAILED_HELP = {
         --buckets bucket1 \
         --create-lustres name=locations/us-central1-a/instances/lustre0,capacityGb={lustreSize},filesystem={filesystem} \
         --lustres locations/us-central1-a/instances/lustre1 \
-        --reserved-instances id=compute0,machineType={machineType},reservation=zones/us-central1-a/reservations/{reservation} \
+        --reserved-instances id=compute0,reservation=zones/us-central1-a/reservations/{reservation} \
         --slurm-login-node machineType={machineType},zone=us-central1-a \
         --slurm-node-sets id=nodeset0,computeId=compute0 \
         --slurm-partitions id=partition0,nodesetIds=[nodeset0] \
@@ -66,7 +66,7 @@ DETAILED_HELP = {
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class Create(base.CreateCommand):
   """Creates a Cluster Director resource."""
 
@@ -125,13 +125,9 @@ class Create(base.CreateCommand):
     flags.AddSlurmNodeSets(parser=flag_group, api_version=api_version)
     flags.AddSlurmPartitions(parser=flag_group, api_version=api_version)
     flags.AddSlurmDefaultPartition(parser=flag_group, api_version=api_version)
+    flags.AddSlurmPrologBashScripts(parser=flag_group, api_version=api_version)
+    flags.AddSlurmEpilogBashScripts(parser=flag_group, api_version=api_version)
     if api_version == "v1alpha":
-      flags.AddSlurmPrologBashScripts(
-          parser=flag_group, api_version=api_version
-      )
-      flags.AddSlurmEpilogBashScripts(
-          parser=flag_group, api_version=api_version
-      )
       flags.AddSlurmTaskPrologBashScripts(
           parser=flag_group, api_version=api_version
       )

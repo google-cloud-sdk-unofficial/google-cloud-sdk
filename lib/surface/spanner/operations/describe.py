@@ -53,7 +53,7 @@ DETAILED_HELP = {
 }
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud Spanner operation."""
@@ -116,7 +116,7 @@ class Describe(base.DescribeCommand):
     return instance_operations.Get(args.instance, args.operation)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 class BetaDescribe(Describe):
   """Describe a Cloud Spanner operation."""
@@ -139,7 +139,7 @@ class BetaDescribe(Describe):
     super(BetaDescribe, BetaDescribe).Args(parser)
 
 
-@base.DefaultUniverseOnly
+@base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class AlphaDescribe(BetaDescribe):
   """Describe a Cloud Spanner operation."""
