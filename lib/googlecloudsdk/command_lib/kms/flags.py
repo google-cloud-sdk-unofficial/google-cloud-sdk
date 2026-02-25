@@ -14,10 +14,6 @@
 # limitations under the License.
 """Helpers for parsing flags and arguments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
@@ -42,6 +38,7 @@ IMPORT_JOB_COLLECTION = 'cloudkms.projects.locations.keyRings.importJobs'
 SINGLE_TENANT_HSM_INSTANCE_COLLECTION = (
     'cloudkms.projects.locations.singleTenantHsmInstances'
 )
+RETIRED_RESOURCE_COLLECTION = 'cloudkms.projects.locations.retiredResources'
 # list command aggregators
 
 
@@ -165,6 +162,17 @@ class ImportJobCompleter(ListCommandCompleter):
     )
 
 
+class RetiredResourceCompleter(ListCommandCompleter):
+
+  def __init__(self, **kwargs):
+    super(RetiredResourceCompleter, self).__init__(
+        collection=RETIRED_RESOURCE_COLLECTION,
+        list_command='kms retired-resources list --uri',
+        flags=['location'],
+        **kwargs
+    )
+
+
 # completers by parameter name convention
 
 COMPLETERS_BY_CONVENTION = {
@@ -173,6 +181,7 @@ COMPLETERS_BY_CONVENTION = {
     'key-handle': (KeyHandleCompleter, False),
     'key': (KeyCompleter, False),
     'import-jobs': (ImportJobCompleter, False),
+    'retired-resource': (RetiredResourceCompleter, False),
 }
 
 
@@ -623,6 +632,14 @@ def AddRequiredImportJobArgument(parser, help_action):
       completer=ImportJobCompleter,
       help='Name of the import job {0}.'.format(help_action),
       required=True,
+  )
+
+
+def AddRetiredResourceArgument(parser, help_action):
+  parser.add_argument(
+      'retired_resource',
+      completer=RetiredResourceCompleter,
+      help=f'Name of the retired resource {help_action}.',
   )
 
 

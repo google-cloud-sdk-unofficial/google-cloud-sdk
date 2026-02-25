@@ -18,9 +18,6 @@
 # Disable linting for line-too-long since the API path itself is too long.
 # pylint: disable=line-too-long
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils

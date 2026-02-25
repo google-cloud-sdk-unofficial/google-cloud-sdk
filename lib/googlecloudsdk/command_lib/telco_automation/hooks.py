@@ -14,9 +14,6 @@
 # limitations under the License.
 """Declarative hooks for TelcoAutomation surface arguments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base as calliope_base
 import googlecloudsdk.generated_clients.apis.telcoautomation.v1.telcoautomation_v1_messages as GAConfig

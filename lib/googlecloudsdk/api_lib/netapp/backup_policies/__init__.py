@@ -15,7 +15,4 @@
 
 """Cloud NetApp Files Backup Policies API client library helper files."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 

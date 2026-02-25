@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants for interacting with the Cloud NetApp Files API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 API_NAME = 'netapp'

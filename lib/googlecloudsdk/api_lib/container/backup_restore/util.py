@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for Backup for GKE commands to call Backup for GKE APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Any, Dict, Iterable, Optional, Union
 

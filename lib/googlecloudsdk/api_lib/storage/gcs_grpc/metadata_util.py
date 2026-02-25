@@ -14,10 +14,7 @@
 # limitations under the License.
 """Utility functions for normalizing gRPC messages."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 import datetime

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags for gcloud active-directory commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.active_directory import exceptions
 from googlecloudsdk.calliope import arg_parsers

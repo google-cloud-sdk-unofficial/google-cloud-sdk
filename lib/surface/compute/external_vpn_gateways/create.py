@@ -130,7 +130,7 @@ class CreateBeta(Create):
 
   *{command} creates a new External Vpn Gateway
   """
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

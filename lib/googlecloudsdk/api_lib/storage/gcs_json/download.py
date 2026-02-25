@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation functions for downloads from the Google Cloud Storage API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import http_wrapper as apitools_http_wrapper
 

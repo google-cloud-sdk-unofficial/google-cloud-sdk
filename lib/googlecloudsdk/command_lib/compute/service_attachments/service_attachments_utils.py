@@ -14,9 +14,6 @@
 # limitations under the License.
 """Code that's shared between multiple service-attachments subcommands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import six
 
@@ -106,3 +103,78 @@ def GetConsumerAcceptListWithEndpointBasedSecurity(args, messages):
             )
         )
   return consumer_accept_list
+
+
+def GetConnectedEndpointIds(service_attachment):
+  """Get connected endpoint resource IDs from service attachment."""
+  return set(
+      ep.endpointWithId.rstrip('/').split('/')[-1]
+      for ep in service_attachment.connectedEndpoints or []
+      if ep.endpointWithId
+  )
+
+
+def CleanObsoleteAcceptedEndpointUrls(
+    service_attachment, connected_endpoint_ids, cleared_fields
+):
+  """Removes consumer accept list entries with endpointUrls that are not in connectedEndpoints."""
+  if not service_attachment.consumerAcceptLists:
+    return False
+
+  old_accept_list_len = len(service_attachment.consumerAcceptLists)
+  # Use IDs for comparison to handle Project ID vs Project Number mismatches
+  service_attachment.consumerAcceptLists = list(
+      filter(
+          lambda entry: (
+              not entry.endpointUrl
+              or entry.endpointUrl.rstrip('/').split('/')[-1]
+              in connected_endpoint_ids
+          ),
+          service_attachment.consumerAcceptLists,
+      )
+  )
+  cleaned_accept_list = service_attachment.consumerAcceptLists
+  cleaned_accept_list_len = len(cleaned_accept_list)
+
+  # If list length has changed, it means obsolete entries were removed.
+  if cleaned_accept_list_len == old_accept_list_len:
+    return False
+
+  if not cleaned_accept_list and 'consumerAcceptLists' not in cleared_fields:
+    # If all entries are removed, we need to clear consumerAcceptLists.
+    cleared_fields.append('consumerAcceptLists')
+  elif cleaned_accept_list and 'consumerAcceptLists' in cleared_fields:
+    cleared_fields.remove('consumerAcceptLists')
+  return True
+
+
+def CleanObsoleteRejectedEndpointUrls(
+    service_attachment, connected_endpoint_ids, cleared_fields
+):
+  """Removes consumer reject list entries with endpointUrls that are not in connectedEndpoints."""
+  if not service_attachment.consumerRejectLists:
+    return False
+
+  old_reject_list_len = len(service_attachment.consumerRejectLists)
+  service_attachment.consumerRejectLists = list(
+      filter(
+          lambda entry: (
+              '/forwardingRules/' not in entry
+              or entry.rstrip('/').split('/')[-1] in connected_endpoint_ids
+          ),
+          service_attachment.consumerRejectLists,
+      )
+  )
+  cleaned_reject_list = service_attachment.consumerRejectLists
+  cleaned_reject_list_len = len(cleaned_reject_list)
+
+  # If list length has changed, it means obsolete entries were removed.
+  if cleaned_reject_list_len == old_reject_list_len:
+    return False
+
+  if not cleaned_reject_list and 'consumerRejectLists' not in cleared_fields:
+    # If all entries are removed, we need to clear consumerRejectLists.
+    cleared_fields.append('consumerRejectLists')
+  elif cleaned_reject_list and 'consumerRejectLists' in cleared_fields:
+    cleared_fields.remove('consumerRejectLists')
+  return True

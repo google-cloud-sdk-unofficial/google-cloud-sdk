@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Command sub-group for Security Profiles Wildfire Analysis Profile."""
+"""Command sub-group for Security Profiles WildFire Analysis Profile."""
 
 from googlecloudsdk.calliope import base
 
@@ -21,7 +21,7 @@ from googlecloudsdk.calliope import base
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class WildfireAnalysis(base.Group):
-  """Manage Security Profiles - Wildfire Analysis Profile.
+  """Manage Security Profiles - WildFire Analysis Profile.
   """
 
   category = base.NETWORK_SECURITY_CATEGORY

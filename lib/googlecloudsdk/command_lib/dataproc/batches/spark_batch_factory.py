@@ -15,9 +15,6 @@
 
 """Factory class for SparkBatch message."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.dataproc import flags
 from googlecloudsdk.command_lib.dataproc import local_file_uploader

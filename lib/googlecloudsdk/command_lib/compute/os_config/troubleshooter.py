@@ -14,9 +14,6 @@
 # limitations under the License.
 """Main function for the OS Config Troubleshooter."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.command_lib.compute.os_config.troubleshoot import agent_freshness

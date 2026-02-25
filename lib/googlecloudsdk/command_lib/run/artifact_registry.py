@@ -14,10 +14,6 @@
 # limitations under the License.
 """Utilities for working with Artifact Registry repositories."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as base_exceptions
 from googlecloudsdk.api_lib.util import waiter

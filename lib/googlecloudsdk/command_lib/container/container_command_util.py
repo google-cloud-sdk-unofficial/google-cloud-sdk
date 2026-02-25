@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command util functions for gcloud container commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -459,6 +456,7 @@ def ParseUpdateOptionsBase(args, locations):
           args, 'boot_disk_provisioned_throughput', None
       ),
       enable_pod_snapshots=getattr(args, 'pod_snapshots_enabled', None),
+      enable_agent_sandbox=getattr(args, 'enable_agent_sandbox', None),
       enable_slice_controller=getattr(args, 'enable_slice_controller', None),
   )
 

@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: lint specs
-    description: lint specs
+    brief: Lint a Spec
+    description: Lint a spec
     examples: |-
-      To lint all specs, run:
+      To lint a spec with the ID `my-spec` for version `my-version` and API `my-api`, run:
 
-          $ {command}
+      $ {command} my-spec --version=my-version --api=my-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

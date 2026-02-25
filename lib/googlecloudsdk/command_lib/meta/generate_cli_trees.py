@@ -27,9 +27,6 @@ The CLI tree for an unsupported command is generated from the output of
 `man the-command` and contains only the command root node.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import json

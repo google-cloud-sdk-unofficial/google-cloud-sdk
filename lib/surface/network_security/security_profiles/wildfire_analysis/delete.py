@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Delete a Wildfire Analysis Security Profile."""
+"""Delete a WildFire Analysis Security Profile."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -48,7 +48,7 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
     base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
 )
 class Delete(base.DeleteCommand):
-  """Delete a Wildfire Analysis Profile."""
+  """Delete a WildFire Analysis Profile."""
 
   detailed_help = DETAILED_HELP
 

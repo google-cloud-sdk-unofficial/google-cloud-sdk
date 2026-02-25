@@ -14,9 +14,6 @@
 # limitations under the License.
 """Commands for interacting with WorkloadSources API that will be used by multiple commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import List, Optional
 

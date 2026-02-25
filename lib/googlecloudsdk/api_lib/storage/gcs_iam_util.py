@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for GCS IAM Policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 # Determines which IAM format to use as new features are added. This is shared

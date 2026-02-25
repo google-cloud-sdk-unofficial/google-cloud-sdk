@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the Cloud NetApp Files Volume Snapshots commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.netapp import flags
 from googlecloudsdk.command_lib.util.args import labels_util

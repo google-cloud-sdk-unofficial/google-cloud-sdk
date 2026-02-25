@@ -14,9 +14,6 @@
 # limitations under the License.
 """Methods and constants for global access."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_exceptions
 from googlecloudsdk.api_lib.container import api_adapter as container_api_adapter

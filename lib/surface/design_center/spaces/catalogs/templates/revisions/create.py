@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.design_center import utils
+from googlecloudsdk.api_lib.util import messages as messages_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.design_center import flags
@@ -220,7 +221,9 @@ class Create(base.CreateCommand):
         metadata_dict = args.metadata
         if 'spec' in metadata_dict:
           catalog_template_revision.metadataInput = messages.MetadataInput(
-              spec=metadata_dict['spec']
+              spec=messages_util.DictToMessageWithErrorCheck(
+                  metadata_dict['spec'], messages.MetadataInputSpec
+              )
           )
         else:
           raise exceptions.InvalidArgumentException(
@@ -334,7 +337,9 @@ class CreateGa(base.CreateCommand):
         metadata_dict = args.metadata
         if 'spec' in metadata_dict:
           catalog_template_revision.metadataInput = messages.MetadataInput(
-              spec=metadata_dict['spec']
+              spec=messages_util.DictToMessageWithErrorCheck(
+                  metadata_dict['spec'], messages.MetadataInputSpec
+              )
           )
         else:
           raise exceptions.InvalidArgumentException(

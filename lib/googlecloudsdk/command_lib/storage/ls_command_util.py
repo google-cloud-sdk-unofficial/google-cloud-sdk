@@ -18,10 +18,6 @@ Typically executed in a task iterator:
 googlecloudsdk.command_lib.storage.tasks.task_executor.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.command_lib.storage import list_util

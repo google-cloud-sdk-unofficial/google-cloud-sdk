@@ -61,7 +61,7 @@ class Upgrade(base.SilentCommand):
     base.ASYNC_FLAG.AddToParser(parser)
     flags.AddRegion(parser)
     flags.AddCluster(parser)
-    flags.AddVersion(parser, alloydb_messages)
+    flags.AddVersion(parser, alloydb_messages, cls.ReleaseTrack())
 
   def ConstructUpgradeRequestFromArgs(
       self, alloydb_messages, cluster_ref, args

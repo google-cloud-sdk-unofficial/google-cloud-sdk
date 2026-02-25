@@ -14,9 +14,6 @@
 # limitations under the License.
 """Filter rewrite that determines the equivalent set restriction operands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core.resource import resource_expr_rewrite
 

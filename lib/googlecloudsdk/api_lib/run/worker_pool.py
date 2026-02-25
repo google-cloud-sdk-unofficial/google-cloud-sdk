@@ -14,10 +14,7 @@
 # limitations under the License.
 """Wraps a Serverless WorkerPool message, making fields more convenient."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import instance_split
 from googlecloudsdk.api_lib.run import k8s_object

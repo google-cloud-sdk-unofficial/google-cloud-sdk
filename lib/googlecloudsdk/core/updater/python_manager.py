@@ -113,7 +113,9 @@ def _MacInstallPython():
         'sudo password...')
 
   # Xcode Command Line Tools is required to install Python.
-  PromptAndInstallXcodeCommandLineTools()
+  install_error = InstallXcodeCommandLineTools()
+  if install_error:
+    return install_error
 
   with files.TemporaryDirectory() as tempdir:
     with files.ChDir(tempdir):
@@ -181,28 +183,25 @@ def CheckXcodeCommandLineToolsInstalled() -> bool:
   return exit_code == 0
 
 
-def PromptAndInstallXcodeCommandLineTools():
+def InstallXcodeCommandLineTools() -> str | None:
   """Optionally install Xcode Command Line Tools on Mac machines."""
   if platforms.OperatingSystem.Current() != platforms.OperatingSystem.MACOSX:
-    return
+    return None
 
   if CheckXcodeCommandLineToolsInstalled():
     print('Xcode Command Line Tools is already installed.')
-    return
+    return None
 
-  prompt = (
-      'Xcode Command Line Tools is required to install Python. Continue to'
-      ' install'
-  )
-  setup_xcode = console_io.PromptContinue(prompt_string=prompt, default=True)
+  print('Installing Xcode Command Line Tools, which is '
+        'required to install Python...')
+  xcode_command = ['xcode-select', '--install']
+  exit_code = execution_utils.Exec(xcode_command, no_exit=True)
+  if exit_code != 0:
+    print('Failed to install Xcode Command Line Tools. '
+          'Please run `xcode-select --install` manually to install '
+          'Xcode Command Line Tools.')
+    return 'Failed to install Xcode Command Line Tools.'
+  else:
+    print('Xcode Command Line Tools is installed.')
 
-  if setup_xcode:
-    print('Installing Xcode Command Line Tools...')
-    xcode_command = ['xcode-select', '--install']
-    exit_code = execution_utils.Exec(xcode_command, no_exit=True)
-    if exit_code != 0:
-      print('Failed to install Xcode Command Line Tools. '
-            'Please run `xcode-select --install` manually to install '
-            'Xcode Command Line Tools.')
-    else:
-      print('Xcode Command Line Tools is installed.')
+  return None

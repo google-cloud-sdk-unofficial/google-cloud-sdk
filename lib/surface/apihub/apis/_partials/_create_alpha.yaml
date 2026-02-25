@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
     brief: Create apis
-    description: Create an api
-    examples: |-
-      To create the api, run:
+    description: |-
+      Create an api
 
-          $ {command}
+      Note: The positional argument for API ID is currently not supported.
+      Please use the --api flag to specify the API ID.
+    examples: |-
+      To create an API with the ID `my-api`, run:
+
+      $ {command} --api=my-api --display-name="My API" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

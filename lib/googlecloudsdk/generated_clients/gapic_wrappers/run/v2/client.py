@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import contextlib
+
 from googlecloudsdk.core import gapic_util
 from googlecloudsdk.generated_clients.gapic_clients import run_v2
 
@@ -38,6 +40,7 @@ class GapicWrapperClient(object):
     Returns:
         GapicWrapperClient
     """
+    self._exit_stack = contextlib.ExitStack()
     self.credentials = credentials
     self.builds = gapic_util.MakeClient(
         run_v2.services.builds.client.BuildsClient,
@@ -60,3 +63,16 @@ class GapicWrapperClient(object):
     self.worker = gapic_util.MakeClient(
         run_v2.services.worker_pools.client.WorkerPoolsClient,
         credentials, **kwargs)
+
+  def __enter__(self):
+    self._exit_stack.enter_context(self.builds)
+    self._exit_stack.enter_context(self.executions)
+    self._exit_stack.enter_context(self.jobs)
+    self._exit_stack.enter_context(self.revisions)
+    self._exit_stack.enter_context(self.services)
+    self._exit_stack.enter_context(self.tasks)
+    self._exit_stack.enter_context(self.worker)
+    return self
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    self._exit_stack.close()

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Base class for gkemulticloud API clients for Attached resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import client
 from googlecloudsdk.api_lib.container.gkemulticloud import update_mask

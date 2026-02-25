@@ -58,9 +58,6 @@ produced attribute is required, raising an exception if no value is found and
 the concept is required, and storing fallthroughs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import six

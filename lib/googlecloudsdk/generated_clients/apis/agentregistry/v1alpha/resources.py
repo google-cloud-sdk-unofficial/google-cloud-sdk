@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://agentregistry.googleapis.com/v1alpha/'
-DOCS_URL = ''
+DOCS_URL = 'https://docs.cloud.google.com/agent-registry/overview'
 
 
 class Collections(enum.Enum):

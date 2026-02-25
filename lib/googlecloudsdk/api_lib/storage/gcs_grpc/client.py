@@ -14,9 +14,8 @@
 # limitations under the License.
 """Client for interacting with Google Cloud Storage using gRPC API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+
+import contextlib
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import errors as cloud_errors
@@ -57,6 +56,7 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
   def __init__(self):
     super(GrpcClientWithJsonFallback, self).__init__()
     self._gapic_client = None
+    self._exit_stack = contextlib.ExitStack()
 
   def _get_gapic_client(self, redact_request_body_reason=None):
     # Not using @property because the side-effect is non-trivial and
@@ -70,7 +70,12 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
           attempt_direct_path=True,
           redact_request_body_reason=redact_request_body_reason,
       )
+      self._exit_stack.enter_context(self._gapic_client)
     return self._gapic_client
+
+  def close(self):
+    """Closes the gapic client if it exists."""
+    self._exit_stack.close()
 
   def get_bucket(
       self,
@@ -423,8 +428,8 @@ class GrpcClientWithJsonFallback(gcs_json_client.JsonClient):
       destination_resource,
       request_config,
       posix_to_set=None,
-      serialization_data=None,
       source_resource=None,
+      serialization_data=None,
       tracker_callback=None,
       upload_strategy=cloud_api.UploadStrategy.SIMPLE,
   ):

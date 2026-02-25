@@ -14,9 +14,6 @@
 # limitations under the License.
 """A library for Security Command Center(SCC) external exposure commands arguments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def AddOrganizationFlag(parser, help_text):

@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create deployments
+    brief: Create a Deployment
     description: Create a deployment
     examples: |-
-      To create the deployment, run:
+      To create a deployment with the ID `my-deployment`, run:
 
-          $ {command}
+      $ {command} --deployment=my-deployment --display-name="My Deployment" --deployment-type=apigee --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

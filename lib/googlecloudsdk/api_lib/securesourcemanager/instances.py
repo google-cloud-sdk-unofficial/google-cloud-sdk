@@ -14,9 +14,6 @@
 # limitations under the License.
 """The Secure Source Manager instances client module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import datetime
 

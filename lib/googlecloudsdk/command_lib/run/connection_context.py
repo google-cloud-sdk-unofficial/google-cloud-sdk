@@ -14,10 +14,6 @@
 # limitations under the License.
 """Dynamic context for connection to Cloud Run."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import abc
 import base64

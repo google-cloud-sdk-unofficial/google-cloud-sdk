@@ -14,9 +14,6 @@
 # limitations under the License.
 """Operation Poller."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.lifesciences import lifesciences_client
 from googlecloudsdk.api_lib.util import waiter

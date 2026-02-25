@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Create command to create a new resource of Wildfire Analysis profile."""
+"""Create command to create a new resource of WildFire Analysis profile."""
 
 from googlecloudsdk.api_lib.network_security.security_profiles import wildfire_api
 from googlecloudsdk.calliope import base
@@ -23,13 +23,13 @@ from googlecloudsdk.core import log
 DETAILED_HELP = {
     'DESCRIPTION': """
 
-          Create a new Wildfire Analysis Security Profile.
+          Create a new WildFire Analysis Security Profile.
 
         """,
     'EXAMPLES': """
-          To create a Wildfire Analysis Security Profile named `my-wildfire-security-profile` with an optional description as `New Wildfire Security Profile`, run:
+          To create a WildFire Analysis Security Profile named `my-wildfire-security-profile` with an optional description as `New WildFire Security Profile`, run:
 
-              $ {command} my-wildfire-security-profile --description="New Wildfire Security Profile"
+              $ {command} my-wildfire-security-profile --description="New WildFire Security Profile"
 
         """,
 }
@@ -42,7 +42,7 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
-  """Create a new Wildfire Analysis Profile."""
+  """Create a new WildFire Analysis Profile."""
 
   detailed_help = DETAILED_HELP
 

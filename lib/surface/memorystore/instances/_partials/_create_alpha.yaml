@@ -158,6 +158,74 @@
           resource_method_params:
             instance.kmsKey: '{__relative_name__}'
           required: false
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  server ca mode.
+        params:
+        - arg_name: server-ca-mode
+          api_field: instance.serverCaMode
+          required: false
+          hidden: true
+          help_text: |-
+            The Server CA mode for the instance.
+          choices:
+          - arg_value: google-managed-per-instance-ca
+            enum_value: GOOGLE_MANAGED_PER_INSTANCE_CA
+            help_text: |-
+              Each instance has its own Google-managed CA.
+          - arg_value: google-managed-shared-ca
+            enum_value: GOOGLE_MANAGED_SHARED_CA
+            help_text: |-
+              The instance uses a Google-managed shared CA for the instance's region.
+          - arg_value: customer-managed-cas-ca
+            enum_value: CUSTOMER_MANAGED_CAS_CA
+            help_text: |-
+              The instance uses a customer-managed CA from CAS.
+          - arg_value: server-ca-mode-google-managed-per-instance-ca
+            enum_value: SERVER_CA_MODE_GOOGLE_MANAGED_PER_INSTANCE_CA
+            help_text: |-
+              Deprecated: Use GOOGLE_MANAGED_PER_INSTANCE_CA instead.
+          - arg_value: server-ca-mode-google-managed-shared-ca
+            enum_value: SERVER_CA_MODE_GOOGLE_MANAGED_SHARED_CA
+            help_text: |-
+              Deprecated: Use GOOGLE_MANAGED_SHARED_CA instead.
+          - arg_value: server-ca-mode-customer-managed-cas-ca
+            enum_value: SERVER_CA_MODE_CUSTOMER_MANAGED_CAS_CA
+            help_text: |-
+              Deprecated: Use CUSTOMER_MANAGED_CAS_CA instead.
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  server ca pool.
+        params:
+        - arg_name: server-ca-pool
+          api_field: instance.serverCaPool
+          required: false
+          repeated: false
+          hidden: true
+          help_text: |-
+            Customer-managed CA pool.
+            The resource name of the Certificate Authority Service (CAS) CA Pool.
+            Required and only applicable when --server-ca-mode is set to customer-managed-cas-ca.
+            Format: projects/{project}/locations/{region}/caPools/{ca_pool}
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  rotate server certificate.
+        params:
+        - arg_name: rotate-server-certificate
+          api_field: instance.rotateServerCertificate
+          action: store_true
+          required: false
+          type: bool
+          hidden: true
+          help_text: |-
+            Rotate the server certificates.
+          default: null
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -232,6 +300,36 @@
         enum_value: STANDARD_SMALL
         help_text: |-
           Standard small.
+      - arg_value: custom-micro
+        enum_value: CUSTOM_MICRO
+        hidden: true
+        help_text: |-
+          Custom micro.
+      - arg_value: custom-mini
+        enum_value: CUSTOM_MINI
+        hidden: true
+        help_text: |-
+          Custom mini.
+      - arg_value: highcpu-medium
+        enum_value: HIGHCPU_MEDIUM
+        hidden: true
+        help_text: |-
+          High cpu medium.
+      - arg_value: standard-large
+        enum_value: STANDARD_LARGE
+        hidden: true
+        help_text: |-
+          Standard large.
+      - arg_value: highmem-2xlarge
+        enum_value: HIGHMEM_2XLARGE
+        hidden: true
+        help_text: |-
+          High memory 2xlarge.
+      - arg_value: custom-pico
+        enum_value: CUSTOM_PICO
+        hidden: true
+        help_text: |-
+          Custom pico.
     - group:
         api_field: instance.persistenceConfig
         required: false

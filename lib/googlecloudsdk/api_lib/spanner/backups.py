@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Spanner backups API helper."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions as c_exceptions

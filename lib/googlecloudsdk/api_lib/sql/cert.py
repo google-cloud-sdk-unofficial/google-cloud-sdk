@@ -15,9 +15,6 @@
 """Common cert utility functions for sql instances."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def GetCertRefFromName(sql_client, sql_messages, resources, instance_ref,

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Resource arguments for Backup for GKE commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps

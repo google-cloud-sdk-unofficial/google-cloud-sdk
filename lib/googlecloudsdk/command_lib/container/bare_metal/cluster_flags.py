@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for flags in commands for Anthos clusters on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

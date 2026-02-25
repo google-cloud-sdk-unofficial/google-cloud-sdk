@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility for forming Artifact Registry requests."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 from concurrent import futures
@@ -2593,3 +2590,20 @@ def SanitizeRemoteRepositoryConfig(unused_ref, args, request):
 def GetMimetype(path):
   mime_type, _ = mimetypes.guess_type(path)
   return mime_type or "application/octet-stream"
+
+
+def GetProjectConfig(unused_ref, args):
+  """Get ProjectConfig for declarative YAML command."""
+  project = GetProject(args)
+  location = GetLocation(args)
+  return ar_requests.GetProjectConfig(project, location)
+
+
+def UpdateProjectConfigResource(unused_ref, unused_args, req):
+  """Hook to fix the name of the project config."""
+  req.name = req.name + "/projectConfig"
+  if not req.projectConfig:
+    messages = ar_requests.GetMessages()
+    req.projectConfig = messages.ProjectConfig()
+  req.projectConfig.name = req.name
+  return req

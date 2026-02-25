@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe hostProjectRegistrations
-    description: Describe a hostProjectRegistration
+    brief: Describe a Host Project Registration
+    description: Describe a host project registration
     examples: |-
-      To describe the hostProjectRegistration, run:
+      To describe a host project registration with the ID `my-registration`, run:
 
-          $ {command}
+      $ {command} my-registration --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

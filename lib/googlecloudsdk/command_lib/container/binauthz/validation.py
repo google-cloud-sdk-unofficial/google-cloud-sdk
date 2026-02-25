@@ -14,9 +14,6 @@
 # limitations under the License.
 """Functions related to resource validation for Binary Authorization's CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import attestations
 from googlecloudsdk.core import log

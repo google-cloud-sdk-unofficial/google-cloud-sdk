@@ -1884,6 +1884,39 @@ class ManagementDnsZoneBinding(_messages.Message):
   vpcNetwork = _messages.StringField(9)
 
 
+class MigrateManagementVmsRequest(_messages.Message):
+  r"""Request message for VmwareEngine.MigrateManagementVms
+
+  Fields:
+    clusterId: Required. The user-provided identifier of the workload cluster
+      to which the management VMs are to be migrated. The cluster must be in
+      the same private cloud as the one specified in `name`, and must be a
+      workload cluster. The eventual cluster name will be constructed from the
+      private cloud name and this cluster ID.
+    etag: Optional. Checksum used to ensure that the user-provided value is up
+      to date before the server processes the request. The server compares
+      provided checksum with the current checksum of the resource. If the
+      user-provided value is out of date, this request returns an `ABORTED`
+      error.
+    requestId: Optional. A request ID to identify requests. Specify a unique
+      request ID so that if you must retry your request, the server will know
+      to ignore the request if it has already been completed. The server
+      guarantees that a request doesn't result in creation of duplicate
+      commitments for at least 60 minutes. For example, consider a situation
+      where you make an initial request and the request times out. If you make
+      the request again with the same request ID, the server can check if the
+      original operation with the same request ID was received, and if so,
+      will ignore the second request. This prevents clients from accidentally
+      creating duplicate commitments. The request ID must be a valid UUID with
+      the exception that zero UUID is not supported
+      (00000000-0000-0000-0000-000000000000).
+  """
+
+  clusterId = _messages.StringField(1)
+  etag = _messages.StringField(2)
+  requestId = _messages.StringField(3)
+
+
 class MountDatastoreRequest(_messages.Message):
   r"""Mount Datastore Request message
 
@@ -4125,8 +4158,7 @@ class VmwareengineProjectsLocationsDatastoresPatchRequest(_messages.Message):
       overwritten in the Datastore resource by the update. The fields
       specified in the `update_mask` are relative to the resource, not the
       full request. A field will be overwritten if it is in the mask. If the
-      user does not provide a mask then all fields will be overwritten. Only
-      the following fields can be updated: `description`.
+      user does not provide a mask then all fields will be overwritten.
   """
 
   datastore = _messages.MessageField('Datastore', 1)
@@ -6115,6 +6147,24 @@ class VmwareengineProjectsLocationsPrivateCloudsManagementDnsZoneBindingsRepairR
 
   name = _messages.StringField(1, required=True)
   repairManagementDnsZoneBindingRequest = _messages.MessageField('RepairManagementDnsZoneBindingRequest', 2)
+
+
+class VmwareengineProjectsLocationsPrivateCloudsMigrateManagementVmsRequest(_messages.Message):
+  r"""A VmwareengineProjectsLocationsPrivateCloudsMigrateManagementVmsRequest
+  object.
+
+  Fields:
+    migrateManagementVmsRequest: A MigrateManagementVmsRequest resource to be
+      passed as the request body.
+    name: Required. The resource name of the private cloud whose management
+      vms are getting migrated. Resource names are schemeless URIs that follow
+      the conventions in https://cloud.google.com/apis/design/resource_names.
+      For example: `projects/my-project/locations/us-
+      central1-a/privateClouds/my-cloud`
+  """
+
+  migrateManagementVmsRequest = _messages.MessageField('MigrateManagementVmsRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class VmwareengineProjectsLocationsPrivateCloudsPatchRequest(_messages.Message):

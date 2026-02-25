@@ -17,9 +17,6 @@
 Uses command surface tests. Ex: cp_test.py, not cp_command_util_test.py.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import contextlib

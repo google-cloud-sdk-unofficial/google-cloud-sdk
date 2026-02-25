@@ -16,9 +16,6 @@
 
 # TODO(b/271932922): Move functions from here to its own client class.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import base64
 

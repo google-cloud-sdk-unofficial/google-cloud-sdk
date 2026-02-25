@@ -27,9 +27,6 @@ A typical use would be:
     # actually do the upload, too
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import fnmatch
 import os

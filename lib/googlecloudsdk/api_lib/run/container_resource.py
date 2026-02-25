@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wraps a resource message with a container with convenience methods."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import json

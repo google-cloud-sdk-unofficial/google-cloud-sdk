@@ -18,9 +18,6 @@ Implements CloudApi for the GCS JSON API. Example functions include listing
 buckets, uploading objects, and setting lifecycle conditions.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import contextlib
 import errno

@@ -14,9 +14,6 @@
 # limitations under the License.
 """API client library for Applications."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from __future__ import annotations
 
 from collections.abc import Sequence

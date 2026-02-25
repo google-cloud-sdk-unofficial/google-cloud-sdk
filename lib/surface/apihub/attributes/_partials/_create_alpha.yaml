@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create attributes
+    brief: Create an Attribute
     description: Create an attribute
     examples: |-
-      To create the attribute, run:
+      To create an attribute with the ID `my-attribute`, run:
 
-          $ {command}
+      $ {command} --attribute=my-attribute --display-name="My Attribute" --scope=api --data-type=string --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

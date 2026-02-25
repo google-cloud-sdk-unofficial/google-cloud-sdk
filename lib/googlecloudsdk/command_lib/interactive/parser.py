@@ -20,9 +20,6 @@ commands and flags being used as well as perform completion. This is not a
 replacement for argparse (yet).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import enum
 

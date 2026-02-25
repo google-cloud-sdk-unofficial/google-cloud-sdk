@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import contextlib
+
 from googlecloudsdk.core import gapic_util
 from googlecloudsdk.generated_clients.gapic_clients import logging_v2
 
@@ -38,6 +40,7 @@ class GapicWrapperClient(object):
     Returns:
         GapicWrapperClient
     """
+    self._aexit_stack = contextlib.AsyncExitStack()
     self.credentials = credentials
     self.config = gapic_util.MakeAsyncClient(
         logging_v2.services.config_service_v2.async_client.ConfigServiceV2AsyncClient,
@@ -48,3 +51,12 @@ class GapicWrapperClient(object):
     self.metrics = gapic_util.MakeAsyncClient(
         logging_v2.services.metrics_service_v2.async_client.MetricsServiceV2AsyncClient,
         credentials, **kwargs)
+
+  async def __aenter__(self):
+    await self._aexit_stack.enter_async_context(self.config)
+    await self._aexit_stack.enter_async_context(self.logging)
+    await self._aexit_stack.enter_async_context(self.metrics)
+    return self
+
+  async def __aexit__(self, exc_type, exc_value, traceback):
+    await self._aexit_stack.aclose()

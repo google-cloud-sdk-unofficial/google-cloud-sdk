@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Datastream API utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import uuid
 

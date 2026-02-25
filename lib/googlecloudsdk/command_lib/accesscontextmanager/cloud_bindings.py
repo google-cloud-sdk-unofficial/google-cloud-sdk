@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command line processing utilities for cloud access bindings."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 
@@ -821,31 +818,60 @@ def _ProcessSessionSettingsInScopedAccessSettings(req):
   _Start(req)
 
 
-def _ValidatePrincipalForRestrictedProject(args, req):
-  """Validate principal for restricted project."""
-  if req.gcpUserAccessBinding and req.gcpUserAccessBinding.scopedAccessSettings:
-    for sas in req.gcpUserAccessBinding.scopedAccessSettings:
-      if (
-          sas.scope
-          and sas.scope.clientScope
-          and getattr(sas.scope.clientScope, 'restrictedProject', None)
-      ):
-        break
-    else:
-      # No restricted project scope found.
-      return
+def _ValidateRestrictedProjectScope(args, req):
+  """Validate restricted project scope."""
+  if (
+      not req.gcpUserAccessBinding
+      or not req.gcpUserAccessBinding.scopedAccessSettings
+  ):
+    return
 
-  if properties.VALUES.access_context_manager.enable_gcsl.GetBool():
-    # hasattr(args, 'group_key') checks if we are in create command which has
-    # principal args.
-    if hasattr(args, 'group_key') and not args.IsKnownAndSpecified(
-        'federated_principal'
+  has_restricted_project = False
+  for sas in req.gcpUserAccessBinding.scopedAccessSettings:
+    if (
+        sas.scope
+        and sas.scope.clientScope
+        and getattr(sas.scope.clientScope, 'restrictedProject', None)
     ):
-      raise calliope_exceptions.InvalidArgumentException(
-          '--binding-file',
-          'When using a restricted project scope, --federated-principal must be'
-          ' specified.',
-      )
+      has_restricted_project = True
+      # If restrictedProject is present:
+      # group_key must not be used.
+      if hasattr(args, 'group_key') and args.IsKnownAndSpecified('group_key'):
+        raise calliope_exceptions.InvalidArgumentException(
+            '--group-key',
+            'Restricted project scope cannot be used with --group-key; use'
+            ' --federated-principal instead.',
+        )
+      # active_settings.session_settings must be present.
+      if not sas.activeSettings or not sas.activeSettings.sessionSettings:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--binding-file',
+            'Restricted project scope must have active session settings set.',
+        )
+      # access_levels and dry_run_access_levels must be empty
+      if sas.activeSettings and sas.activeSettings.accessLevels:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--binding-file',
+            'Restricted project scope cannot be used with access levels in'
+            ' activeSettings.',
+        )
+      if sas.dryRunSettings and sas.dryRunSettings.accessLevels:
+        raise calliope_exceptions.InvalidArgumentException(
+            '--binding-file',
+            'Restricted project scope cannot be used with access levels in'
+            ' dryRunSettings.',
+        )
+  if has_restricted_project:
+    # federated_principal must be used with restricted project scope.
+    if properties.VALUES.access_context_manager.enable_gcsl.GetBool():
+      if hasattr(args, 'federated_principal') and not args.IsKnownAndSpecified(
+          'federated_principal'
+      ):
+        raise calliope_exceptions.InvalidArgumentException(
+            '--binding-file',
+            'When using a restricted project scope, --federated-principal must'
+            ' be specified.',
+        )
 
 
 def ProcessScopedAccessSettings(unused_ref, args, req):
@@ -872,10 +898,10 @@ def ProcessScopedAccessSettings(unused_ref, args, req):
 
     _ValidateRestrictedClientApplicationNamesAndClientIdsAreNotSpecified(args)
     _ProcessScopesInScopedAccessSettings(req)
+    _ValidateRestrictedProjectScope(args, req)
     _ProcessAccessSettingsInScopedAccessSettings(req)
     _ProcessAccessLevelsInScopedAccessSettings(args, req)
     _ProcessSessionSettingsInScopedAccessSettings(req)
-    _ValidatePrincipalForRestrictedProject(args, req)
 
     return req
 
@@ -942,7 +968,9 @@ def ParseGcpUserAccessBindingFromBindingFile(api_version):
         path, util.GetMessages(version=api_version).GcpUserAccessBinding, False
     )
     _ValidateSingleGcpUserAccessBinding(bindings)
-    GcpUserAccessBindingStructureValidator(path, bindings[0]).Validate()
+    GcpUserAccessBindingStructureValidator(
+        path, bindings[0], api_version
+    ).Validate()
     return bindings[0]
 
   return _ParseVersionedGcpUserAccessBindingFromBindingFile
@@ -951,9 +979,10 @@ def ParseGcpUserAccessBindingFromBindingFile(api_version):
 class GcpUserAccessBindingStructureValidator:
   """Validates a GcpUserAccessBinding structure against unrecognized fields."""
 
-  def __init__(self, path, gcp_user_access_binding):
+  def __init__(self, path, gcp_user_access_binding, api_version):
     self.path = path
     self.gcp_user_access_binding = gcp_user_access_binding
+    self.api_version = api_version
 
   def Validate(self):
     """Validates the GcpUserAccessBinding structure."""

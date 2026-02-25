@@ -14,15 +14,15 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  - GA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Update deployments
     description: Update a deployment
     examples: |-
-      To update the deployment, run:
+      To update a deployment with the ID `my-deployment`, run:
 
-          $ {command}
+      $ {command} my-deployment --display-name="New Deployment Name" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

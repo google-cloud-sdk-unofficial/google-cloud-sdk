@@ -420,6 +420,9 @@ def AddServiceProxyArgsToMetadata(args):
     if 'access-log' in args.service_proxy:
       proxy_spec['access-log'] = args.service_proxy['access-log']
 
+    if 'use-regional-control-plane' in args.service_proxy:
+      proxy_spec['regional-control-plane'] = True
+
     proxy_spec['network'] = args.service_proxy.get('network', '')
 
     if 'scope' in args.service_proxy:

@@ -16,9 +16,6 @@
 """A printer for rollouts that sorts fields according to stage assignment."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Any
 

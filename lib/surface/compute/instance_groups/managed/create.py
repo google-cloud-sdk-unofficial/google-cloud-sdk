@@ -114,6 +114,7 @@ class CreateGA(base.CreateCommand):
   support_update_policy_min_ready_flag = False
   support_resource_manager_tags = False
   support_instance_selection_min_cpu_platform = False
+  support_flex_policy_flag_with_mincpu_and_disks = False
 
   @classmethod
   def Args(cls, parser):
@@ -137,6 +138,7 @@ class CreateGA(base.CreateCommand):
     flags.AddInstanceFlexibilityPolicyArgs(
         parser,
         support_instance_selection_min_cpu_platform=cls.support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=cls.support_flex_policy_flag_with_mincpu_and_disks,
     )
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlag(parser)
@@ -477,6 +479,7 @@ class CreateBeta(CreateGA):
   support_update_policy_min_ready_flag = True
   support_resource_manager_tags = True
   support_instance_selection_min_cpu_platform = True
+  support_flex_policy_flag_with_mincpu_and_disks = True
 
   @classmethod
   def Args(cls, parser):
@@ -503,6 +506,7 @@ class CreateAlpha(CreateBeta):
 
   support_resource_manager_tags = True
   support_instance_selection_min_cpu_platform = True
+  support_flex_policy_flag_with_mincpu_and_disks = True
 
   @classmethod
   def Args(cls, parser):

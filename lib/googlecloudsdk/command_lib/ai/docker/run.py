@@ -14,9 +14,6 @@
 # limitations under the License.
 """Functions required to interact with Docker to run a container."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.ai.docker import utils
 from googlecloudsdk.core import config

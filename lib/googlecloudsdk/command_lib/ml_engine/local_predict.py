@@ -18,10 +18,6 @@ This module will always be run within a subprocess, and therefore normal
 conventions of Cloud SDK do not apply here.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import argparse
 import json

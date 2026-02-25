@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List discoveredApiOperations
-    description: List discoveredApiOperations
+    brief: List Discovered Api Operations
+    description: List discovered api operations
     examples: |-
-      To list all discoveredApiOperations, run:
+      To list all discovered API operations for observation `my-observation`, run:
 
-          $ {command}
+      $ {command} --discovered-api-observation=my-observation --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

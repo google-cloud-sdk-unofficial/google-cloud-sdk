@@ -14,9 +14,6 @@
 # limitations under the License.
 """Task for listing, sorting, and writing files for rsync."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import errno
 import heapq

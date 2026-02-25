@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Delete attributes
+    brief: Delete an Attribute
     description: Delete an attribute
     examples: |-
-      To delete the attribute, run:
+      To delete an attribute with the ID `my-attribute`, run:
 
-          $ {command}
+      $ {command} my-attribute --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

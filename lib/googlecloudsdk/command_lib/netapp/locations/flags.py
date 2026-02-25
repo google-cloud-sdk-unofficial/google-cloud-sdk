@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the Cloud NetApp Files locations commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 LOCATIONS_LIST_FORMAT = """\
     table(

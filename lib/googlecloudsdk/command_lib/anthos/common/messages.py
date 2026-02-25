@@ -14,9 +14,6 @@
 # limitations under the License.
 """Shared messages for anthos surface."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 MISSING_BINARY = ('Could not locate anthos executable [{binary}]'
                   ' on the system PATH. '

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities Service Directory endpoints API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.service_directory import base as sd_base

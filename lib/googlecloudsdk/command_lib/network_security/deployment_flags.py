@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags for Mirroring Deployment commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.mirroring_deployments import api
 from googlecloudsdk.calliope import arg_parsers

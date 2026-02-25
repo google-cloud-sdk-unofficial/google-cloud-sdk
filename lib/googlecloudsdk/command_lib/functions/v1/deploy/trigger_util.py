@@ -14,9 +14,6 @@
 # limitations under the License.
 """'functions deploy' utilities for triggers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.functions.v1 import exceptions
 from googlecloudsdk.api_lib.functions.v1 import triggers

@@ -19,9 +19,6 @@ Error codes within the ranges defined by comments (e.g. 101-110) but not
 explicitly assigned are reserved for future use within that category.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 DEFAULT_EXIT_CODE = 100
 

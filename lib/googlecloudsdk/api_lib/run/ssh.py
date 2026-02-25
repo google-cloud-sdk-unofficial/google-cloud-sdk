@@ -15,13 +15,22 @@
 """Library to SSH into a Cloud Run Deployment."""
 
 import argparse
+from collections.abc import Sequence
 import enum
 import json
 import subprocess
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.command_lib.util.ssh import ssh
+from googlecloudsdk.core import log
+from googlecloudsdk.core import requests as core_requests
+
+
+SSH_CA_PUBLIC_KEY_URL_TEMPLATE = (
+    "https://www.gstatic.com/cloud-run/ssh-ca-public-keys/keys-{region}.pub"
+)
 
 
 def ProjectIdToProjectNumber(project_id):
@@ -92,6 +101,7 @@ class Ssh:
     WORKER_POOL = "worker_pool"
     JOB = "job"
     SERVICE = "service"
+    INSTANCE = "instance"
 
   def __init__(self, args: argparse.Namespace, workload_type: WorkloadType):
     """Initialize the SSH library."""
@@ -118,6 +128,8 @@ class Ssh:
       command.extend(["beta", "run", "worker-pools", "describe"])
     elif self.workload_type == self.WorkloadType.JOB:
       command.extend(["run", "jobs", "describe"])
+    elif self.workload_type == self.WorkloadType.INSTANCE:
+      command.extend(["alpha", "run", "instances", "describe"])
     else:
       raise ValueError(f"Unsupported workload type: {self.workload_type}")
 
@@ -153,10 +165,7 @@ class Ssh:
 
   def HostKeyAlias(self):
     """Returns the host key alias for the SSH connection."""
-    if self.instance and self.container:
-      return "cloud-run-{}-{}".format(self.instance, self.container)
-    else:
-      return "cloud-run-default"
+    return "cloud-run-default"
 
   def Run(self):
     """Run the SSH command."""
@@ -179,15 +188,25 @@ class Ssh:
             "project_id": self.project,
             "region": self.region,
             "service_account": self.service_account,
+            "workload_type": self.workload_type,
         },
     )
     cert_file = ssh.CertFileFromCloudRunDeployment(
         project=self.project,
         region=self.region,
         deployment=self.deployment_name,
+        workload_type=self.workload_type,
     )
     dest_addr = self.HostKeyAlias()
     remote = ssh.Remote(dest_addr, user)
+
+    ca_keys = self._FetchSshCaPublicKeys()
+    if ca_keys:
+      known_hosts = ssh.KnownHosts.FromDefaultFile()
+      known_hosts.AddCertAuthority(
+          host_pattern=dest_addr, ca_public_keys=list(ca_keys)
+      )
+      known_hosts.Write()
 
     iap_tunnel_args = CreateSshTunnelArgs(
         self.release_track,
@@ -214,3 +233,33 @@ class Ssh:
         options=ssh_options,
         identity_file=keys.key_file,
     ).Run(env)
+
+  def _FetchSshCaPublicKeys(self) -> Sequence[str] | None:
+    """Retrieves the CA public keys for the current region from a gstatic URL.
+
+    Returns:
+      A Sequence of strings, where each string is a public key, or None if
+      the keys could not be fetched.
+    """
+
+    endpoint = SSH_CA_PUBLIC_KEY_URL_TEMPLATE.format(region=self.region)
+    try:
+      with core_requests.GetSession() as session:
+        response = session.get(endpoint, timeout=10)
+    except core_requests.requests.exceptions.RequestException:
+      log.debug(
+          "Failed to fetch SSH CA public keys from %s.",
+          endpoint,
+          exc_info=True,
+      )
+      return None
+    else:
+      if response.status_code != 200:
+        log.debug(
+            "Failed to fetch SSH CA public keys from %s. Received status"
+            " code: %s",
+            endpoint,
+            response.status_code,
+        )
+        return None
+      return [k.strip() for k in response.text.splitlines() if k.strip()]

@@ -15,9 +15,6 @@
 
 """Shared flags definitions for flags and arguments for BigQuery Exports."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from googlecloudsdk.calliope import base
 

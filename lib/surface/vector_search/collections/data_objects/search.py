@@ -93,14 +93,34 @@ class Search(base.Command):
     )
 
     search_hint_group = parser.add_mutually_exclusive_group('Search Hint')
-    search_hint_group.add_argument(
+
+    use_index_group = search_hint_group.add_group('Use Index Options')
+    use_index_group.add_argument(
         '--use-index',
+        metavar='INDEX_NAME',
+        required=True,
         help="""
         The resource name of the index to use for the search.
 
         This flag is compatible only with Semantic Search and Vector Search.
         """,
     )
+    use_index_group.add_argument(
+        '--dense-scann-search-leaves-pct',
+        type=int,
+        metavar='PERCENTAGE',
+        help=(
+            'The percentage of leaves to search for dense ScaNN, in the range'
+            ' [0, 100].'
+        ),
+    )
+    use_index_group.add_argument(
+        '--dense-scann-initial-candidate-count',
+        type=int,
+        metavar='CANDIDATE_COUNT',
+        help='The number of initial candidates for dense ScaNN.',
+    )
+
     search_hint_group.add_argument(
         '--use-knn',
         action='store_true',
@@ -188,14 +208,33 @@ class Search(base.Command):
 
   def _GetSearchHint(self, args, client):
     if args.use_index:
-      return client.messages.GoogleCloudVectorsearchV1betaSearchHint(
-          useIndex=client.messages.GoogleCloudVectorsearchV1betaSearchHintIndexHint(
+      index_hint_msg = (
+          client.messages.GoogleCloudVectorsearchV1betaSearchHintIndexHint(
               name=args.use_index
           )
       )
+      if (
+          args.dense_scann_search_leaves_pct
+          or args.dense_scann_initial_candidate_count
+      ):
+        dense_scann_params = (
+            client.messages.GoogleCloudVectorsearchV1betaSearchHintIndexHintDenseScannParams()
+        )
+        if args.dense_scann_search_leaves_pct:
+          dense_scann_params.searchLeavesPct = (
+              args.dense_scann_search_leaves_pct
+          )
+        if args.dense_scann_initial_candidate_count:
+          dense_scann_params.initialCandidateCount = (
+              args.dense_scann_initial_candidate_count
+          )
+        index_hint_msg.denseScannParams = dense_scann_params
+      return client.messages.GoogleCloudVectorsearchV1betaSearchHint(
+          indexHint=index_hint_msg
+      )
     elif args.use_knn:
       return client.messages.GoogleCloudVectorsearchV1betaSearchHint(
-          useKnn=args.use_knn
+          knnHint=client.messages.GoogleCloudVectorsearchV1betaSearchHintKnnHint()
       )
     return None
 

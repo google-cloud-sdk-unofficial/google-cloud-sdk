@@ -14,10 +14,7 @@
 # limitations under the License.
 """Flags for Security Profile Threat Prevention commands."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.security_profiles import sp_api
 from googlecloudsdk.calliope import arg_parsers

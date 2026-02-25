@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for enabling service APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Optional
 

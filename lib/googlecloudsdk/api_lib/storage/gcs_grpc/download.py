@@ -14,9 +14,6 @@
 # limitations under the License.
 """Download workflow used by GCS gRPC client."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import gcs_download

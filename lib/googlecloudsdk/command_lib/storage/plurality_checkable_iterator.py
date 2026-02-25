@@ -14,9 +14,6 @@
 # limitations under the License.
 """Iterator wrapper that allows checking if an iterator is empty or plural."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import sys

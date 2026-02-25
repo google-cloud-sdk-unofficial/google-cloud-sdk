@@ -14,9 +14,6 @@
 # limitations under the License.
 """Util methods for Stackdriver Monitoring Surface."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

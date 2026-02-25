@@ -14,9 +14,6 @@
 # limitations under the License.
 """CRM operations utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import tags
 from googlecloudsdk.api_lib.util import waiter

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility function for OS Config Troubleshooter to check network config."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute.os_config.troubleshoot import utils
 from googlecloudsdk.core import exceptions

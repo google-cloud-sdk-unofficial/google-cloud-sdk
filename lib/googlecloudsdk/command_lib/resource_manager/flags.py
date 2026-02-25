@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags for commands that deal with the CRM API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import exceptions
 from googlecloudsdk.calliope import arg_parsers

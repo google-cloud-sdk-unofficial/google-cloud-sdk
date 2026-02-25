@@ -16,10 +16,6 @@
 # pylint: disable=raise-missing-from
 """Allows you to write surfaces in terms of logical Serverless operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import contextlib
 import copy
@@ -2081,12 +2077,18 @@ class ServerlessOperations(object):
       )
 
   def CreateInstance(
-      self, instance_ref, config_changes, tracker=None, asyn=False
+      self,
+      parent_ref,
+      instance_name,
+      config_changes,
+      tracker=None,
+      asyn=False,
   ):
     """Create a new Cloud Run Instance.
 
     Args:
-      instance_ref: Resource, the instance to create.
+      parent_ref: Resource, the parent namespace to create the instance in.
+      instance_name: str | None, optional name of the instance to create.
       config_changes: list, objects that implement Adjust().
       tracker: StagedProgressTracker, to report on the progress of releasing.
       asyn: bool, if True, return without waiting for the instance to be
@@ -2096,16 +2098,18 @@ class ServerlessOperations(object):
       A intance.Instance object.
     """
     messages = self.messages_module
-    new_instance = instance.Instance.New(
-        self._client, instance_ref.Parent().Name()
-    )
-    new_instance.name = instance_ref.Name()
-    parent = instance_ref.Parent().RelativeName()
+    new_instance = instance.Instance.New(self._client, parent_ref.Name())
+
+    if instance_name:
+      new_instance.name = instance_name
+
+    parent = parent_ref.RelativeName()
     for config_change in config_changes:
       new_instance = config_change.Adjust(new_instance)
     create_request = messages.RunNamespacesInstancesCreateRequest(
         instance=new_instance.Message(), parent=parent
     )
+
     created_instance = None
     with metrics.RecordDuration(metric_names.CREATE_INSTANCE):
       try:
@@ -2114,10 +2118,16 @@ class ServerlessOperations(object):
         )
       except api_exceptions.HttpConflictError:
         raise serverless_exceptions.DeploymentFailedError(
-            f'Instance [{instance_ref.Name()}] already exists.'
+            f'Instance [{instance_name}] already exists.'
         )
       except api_exceptions.HttpBadRequestError as e:
         exceptions.reraise(serverless_exceptions.HttpError(e))
+
+    instance_ref = self._registry.Parse(
+        created_instance.name,
+        params={'namespacesId': parent_ref.Name()},
+        collection='run.namespaces.instances',
+    )
 
     if not asyn:
       getter = functools.partial(self.GetInstance, instance_ref)

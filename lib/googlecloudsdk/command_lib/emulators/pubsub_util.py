@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility functions for gcloud pubsub emulator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 from googlecloudsdk.command_lib.emulators import util

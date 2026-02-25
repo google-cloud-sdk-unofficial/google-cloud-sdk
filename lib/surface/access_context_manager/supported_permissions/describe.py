@@ -42,7 +42,6 @@ class SupportedPermission:
     )
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class DescribeSupportedPermissions(base.DescribeCommand):

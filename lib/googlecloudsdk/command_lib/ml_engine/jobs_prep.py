@@ -19,9 +19,6 @@ from the command line arguments and returns a list of URLs to be given to the
 AI Platform API. See its docstring for details.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import collections

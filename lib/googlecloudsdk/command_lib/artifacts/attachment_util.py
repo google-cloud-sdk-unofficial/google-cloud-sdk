@@ -14,9 +14,6 @@
 # limitations under the License.
 """Attachment utils for Artifact Registry commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions
 from googlecloudsdk.command_lib.artifacts import docker_util

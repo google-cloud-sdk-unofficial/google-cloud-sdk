@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute subnetworks commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import utils as compute_api
 from googlecloudsdk.api_lib.util import apis

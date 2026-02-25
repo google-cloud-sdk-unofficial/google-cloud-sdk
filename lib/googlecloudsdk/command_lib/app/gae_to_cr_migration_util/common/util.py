@@ -205,6 +205,7 @@ def get_input_data_by_input_type(
         'threadsafe': gcloud_output.threadsafe,
         'versionUrl': gcloud_output.versionUrl,
         'zones': gcloud_output.zones,
+        'appEngineApis': gcloud_output.appEngineApis,
     }
     if gcloud_output.envVariables is not None:
       version_data.update(

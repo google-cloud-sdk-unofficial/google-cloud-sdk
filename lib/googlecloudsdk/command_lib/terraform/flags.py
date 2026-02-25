@@ -15,9 +15,6 @@
 
 """Provides common arguments for the Terraform command surface."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from argcomplete.completers import FilesCompleter
 from googlecloudsdk.calliope import base

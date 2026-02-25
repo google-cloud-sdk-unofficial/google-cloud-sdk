@@ -53,7 +53,8 @@ import six
 
 DETAILED_HELP = {
     'brief': 'Create Compute Engine persistent disks',
-    'DESCRIPTION': """\
+    'DESCRIPTION': (
+        """\
         *{command}* creates one or more Compute Engine
         persistent disks. When creating virtual machine instances,
         disks can be attached to the instances through the
@@ -74,13 +75,16 @@ DETAILED_HELP = {
         For a comprehensive guide, including details on minimum and maximum
         disk size, refer to:
         https://cloud.google.com/compute/docs/disks
-        """,
-    'EXAMPLES': """\
+        """
+    ),
+    'EXAMPLES': (
+        """\
         When creating disks, be sure to include the `--zone` option. To create
         disks 'my-disk-1' and 'my-disk-2' in zone us-east1-a:
 
           $ {command} my-disk-1 my-disk-2 --zone=us-east1-a
-        """,
+        """
+    ),
 }
 
 
@@ -213,6 +217,16 @@ def _CommonArgs(
           'A list of URIs to license resources. The provided licenses will '
           'be added onto the created disks to indicate the licensing and '
           'billing policies.'
+      ),
+  )
+
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help=(
+          'A comma-separated list of Resource Manager tags to apply to the'
+          ' disk.'
       ),
   )
 
@@ -824,9 +838,7 @@ class Create(base.Command):
       if support_gmi_restore:
         _SetSourceMachineImageOptions(args, disk)
 
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.IsSpecified(
-          'resource_manager_tags'
-      ):
+      if args.IsSpecified('resource_manager_tags'):
         disk.params = _CreateDiskParams(
             client.messages, args.resource_manager_tags
         )
@@ -930,15 +942,6 @@ class CreateAlpha(CreateBeta):
     )
     disks_flags.AddMultiWriterFlag(parser)
     disks_flags.AddEnableConfidentialComputeFlag(parser)
-    parser.add_argument(
-        '--resource-manager-tags',
-        type=arg_parsers.ArgDict(),
-        metavar='KEY=VALUE',
-        help=(
-            'A comma-separated list of Resource Manager tags to apply to the'
-            ' disk.'
-        ),
-    )
 
   def Run(self, args):
     return self._Run(

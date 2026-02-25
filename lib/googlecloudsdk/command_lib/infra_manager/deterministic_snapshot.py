@@ -15,9 +15,6 @@
 
 """Wrapper around Snapshot to provide file-order determinism."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

@@ -78,7 +78,13 @@
               The corresponding indices for the values.
         - api_field: values
           help_text: |-
-            The values of the vector.
+            Deprecated: Use `dense` or `sparse` instead.
+    - arg_name: etag
+      api_field: googleCloudVectorsearchV1betaDataObject.etag
+      required: false
+      repeated: false
+      help_text: |-
+        The etag of the dataObject.
   request:
     api_version: v1beta
     collection:

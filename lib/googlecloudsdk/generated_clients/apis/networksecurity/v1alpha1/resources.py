@@ -222,6 +222,19 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_FIREWALLENDPOINTS_WILDFIREVERDICTCHANGEREQUESTS = (
+      'projects.locations.firewallEndpoints.wildfireVerdictChangeRequests',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'firewallEndpoints/{firewallEndpointsId}/'
+              'wildfireVerdictChangeRequests/'
+              '{wildfireVerdictChangeRequestsId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GATEWAYSECURITYPOLICIES = (
       'projects.locations.gatewaySecurityPolicies',
       '{+name}',

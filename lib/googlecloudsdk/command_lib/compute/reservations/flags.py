@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute reservations commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -410,6 +407,28 @@ def GetSchedulingTypeFlag():
           'INDEPENDENT': (
               'In INDEPENDENT mode, your VMs have different, unsynchronized'
               ' maintenance schedules.'
+          ),
+      },
+      help=help_text,
+  )
+
+
+def GetEarlyAccessMaintenanceFlag():
+  """--early-access-maintenance flag."""
+  help_text = """\
+  The early access maintenance for the reservation.
+  """
+  return base.Argument(
+      '--early-access-maintenance',
+      choices={
+          'NO_EARLY_ACCESS': (
+              'No early access maintenance.'
+          ),
+          'WAVE1': (
+              'Wave 1: Fastest notification period.'
+          ),
+          'WAVE2': (
+              'Wave 2: Medium notification period.'
           ),
       },
       help=help_text,

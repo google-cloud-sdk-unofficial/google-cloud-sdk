@@ -988,6 +988,10 @@ apis:
           path: projects/{projectsId}/locations/{locationsId}
     v1beta:
       discovery_doc: hypercomputecluster_v1beta.json
+      default: false
+      resources:
+        projects.locations:
+          path: projects/{projectsId}/locations/{locationsId}
   oslogin:
     v1alpha:
       discovery_doc: oslogin_v1alpha.json
@@ -1167,15 +1171,14 @@ apis:
           path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
         projects.networks:
           path: projects/{projectsId}/global/networks/{networksId}
-    # broken (b/484002443)
-    # v1alpha:
-    #   discovery_doc: lustre_v1alpha.json
-    #   default: true
-    #   resources:
-    #     projects.serviceAccounts:
-    #       path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
-    #     projects.networks:
-    #       path: projects/{projectsId}/global/networks/{networksId}
+    v1alpha:
+      discovery_doc: lustre_v1alpha.json
+      default: true
+      resources:
+        projects.serviceAccounts:
+          path: projects/{projectsId}/serviceAccounts/{serviceAccountsId}
+        projects.networks:
+          path: projects/{projectsId}/global/networks/{networksId}
   managedflink:
     v1alpha:
       discovery_doc: managedflink_v1alpha.json
@@ -1297,10 +1300,9 @@ apis:
     v1alpha1:
       discovery_doc: networkmanagement_v1alpha1.json
   networkservices:
-    # broken (b/484004591)
-    # v1alpha1:
-      # discovery_doc: networkservices_v1alpha1.json
-      # enable_mtls: true
+    v1alpha1:
+      discovery_doc: networkservices_v1alpha1.json
+      enable_mtls: true
     v1beta1:
       discovery_doc: networkservices_v1beta1.json
       enable_mtls: true
@@ -2022,6 +2024,8 @@ apis:
   vectorsearch:
     v1beta:
       discovery_doc: vectorsearch_v1beta.json
+    v1:
+      discovery_doc: vectorsearch_v1.json
       default: true
 canonical_surfaces:
   accessapproval:
@@ -2274,6 +2278,10 @@ canonical_surfaces:
   eventarc:
     name: eventarc
     command: eventarc
+  externalexposure:
+    name: externalexposure
+    command: scc external-exposure
+    hidden: true
   eventarcpublishing:
     name: eventarcpublishing
     command: eventarc publish

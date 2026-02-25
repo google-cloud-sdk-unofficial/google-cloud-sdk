@@ -14,9 +14,6 @@
 # limitations under the License.
 """For managing the copy manifest feature (manifest = a file with copy info)."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import csv
 import datetime

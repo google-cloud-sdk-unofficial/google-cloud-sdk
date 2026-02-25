@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Delete specs
+    brief: Delete a Spec
     description: Delete a spec
     examples: |-
-      To delete the spec, run:
+      To delete a spec with the ID `my-spec` for version `my-version` and API `my-api`, run:
 
-          $ {command}
+      $ {command} my-spec --version=my-version --api=my-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

@@ -23,7 +23,6 @@ from googlecloudsdk.api_lib.accesscontextmanager import supported_permissions
 from googlecloudsdk.calliope import base
 
 
-@base.Hidden
 @base.UniverseCompatible
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class ListSupportedPermissions(base.ListCommand):
@@ -38,7 +37,8 @@ class ListSupportedPermissions(base.ListCommand):
       'DESCRIPTION': (
           'Lists the permissions that VPC Service Controls supports.'
       ),
-      'EXAMPLES': """\
+      'EXAMPLES': (
+          """\
   To list VPC Service Controls supported permissions, run:
 
     $ {command}
@@ -47,7 +47,8 @@ class ListSupportedPermissions(base.ListCommand):
 
     PERMISSION
     example.permission.one
-  """,
+  """
+      ),
   }
 
   @staticmethod
@@ -62,9 +63,7 @@ class ListSupportedPermissions(base.ListCommand):
     # Remove unneeded list-related flags from parser
     base.URI_FLAG.RemoveFromParser(parser)
 
-    parser.display_info.AddFormat(
-        'table(.:label=PERMISSION:sort=1)'
-    )
+    parser.display_info.AddFormat('table(.:label=PERMISSION:sort=1)')
 
   def Run(self, args):
     """Run 'access-context-manager supported-permissions list'.

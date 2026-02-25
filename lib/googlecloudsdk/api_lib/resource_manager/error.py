@@ -14,9 +14,6 @@
 # limitations under the License.
 """CRM API common error handling."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from functools import wraps
 from apitools.base.py import exceptions

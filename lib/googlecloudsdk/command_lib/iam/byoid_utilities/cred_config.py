@@ -14,9 +14,6 @@
 # limitations under the License.
 """Generators for Credential Config Files."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import enum

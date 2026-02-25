@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility functions for gcloud spanner emulator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import ipaddress
 import os
@@ -33,7 +30,7 @@ SPANNER_EMULATOR_COMPONENT_ID = 'cloud-spanner-emulator'
 SPANNER_EMULATOR_TITLE = 'Google Cloud Spanner Emulator'
 SPANNER_EMULATOR_EXECUTABLE_DIR = 'cloud_spanner_emulator'
 SPANNER_EMULATOR_EXECUTABLE_FILE = 'gateway_main'
-SPANNER_EMULATOR_DOCKER_IMAGE = 'gcr.io/cloud-spanner-emulator/emulator:1.5.48'
+SPANNER_EMULATOR_DOCKER_IMAGE = 'gcr.io/cloud-spanner-emulator/emulator:1.5.49'
 SPANNER_EMULATOR_DEFAULT_GRPC_PORT = 9010
 SPANNER_EMULATOR_DEFAULT_REST_PORT = 9020
 

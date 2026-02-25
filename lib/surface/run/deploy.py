@@ -181,6 +181,7 @@ class Deploy(base.Command):
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
     flags.AddRegionsArg(parser)
+    flags.AddIapFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -1232,7 +1233,6 @@ class BetaDeploy(Deploy):
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
-    flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
@@ -1249,7 +1249,6 @@ class AlphaDeploy(BetaDeploy):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)

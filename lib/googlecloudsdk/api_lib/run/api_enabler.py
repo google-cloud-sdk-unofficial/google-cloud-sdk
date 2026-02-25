@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for checking and enabling necessary APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import urllib.parse as urlparse
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Annotates the resource types with extra information."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 

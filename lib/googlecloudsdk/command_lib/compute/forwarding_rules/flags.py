@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute forwarding-rules commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

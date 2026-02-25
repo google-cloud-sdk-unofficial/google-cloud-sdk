@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command line flags for parsing kubectl config files commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

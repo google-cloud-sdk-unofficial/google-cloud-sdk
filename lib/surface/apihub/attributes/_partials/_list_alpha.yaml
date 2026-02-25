@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List attributes
+    brief: List Attributes
     description: List attributes
     examples: |-
-      To list all attributes, run:
+      To list all attributes in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

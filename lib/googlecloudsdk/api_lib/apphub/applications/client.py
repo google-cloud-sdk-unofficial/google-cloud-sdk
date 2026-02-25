@@ -14,9 +14,6 @@
 # limitations under the License.
 """Apphub Applications API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.apphub import consts as api_lib_consts

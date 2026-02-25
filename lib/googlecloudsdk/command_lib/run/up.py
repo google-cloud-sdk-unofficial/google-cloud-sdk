@@ -14,10 +14,7 @@
 # limitations under the License.
 """Wrapper for runcompose binary."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.util.anthos import binary_operations
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utils to send survey responses to clearcut's concord table."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import platform

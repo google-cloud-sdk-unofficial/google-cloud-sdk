@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utility functions to construct compute reservations message."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -28,11 +25,13 @@ import six
 
 def MakeReservationMessageFromArgs(messages, args, reservation_ref, resources):
   """Construct reservation message from args passed in."""
-  accelerators = MakeGuestAccelerators(messages,
-                                       getattr(args, 'accelerator', None))
+  accelerators = MakeGuestAccelerators(
+      messages, getattr(args, 'accelerator', None)
+  )
   local_ssds = MakeLocalSsds(messages, getattr(args, 'local_ssd', None))
   share_settings = MakeShareSettingsWithArgs(
-      messages, args, getattr(args, 'share_setting', None))
+      messages, args, getattr(args, 'share_setting', None)
+  )
   source_instance_template_ref = (
       ResolveSourceInstanceTemplate(args, resources)
       if args.IsKnownAndSpecified('source_instance_template')
@@ -51,12 +50,19 @@ def MakeReservationMessageFromArgs(messages, args, reservation_ref, resources):
       source_instance_template_ref,
   )
   resource_policies = MakeResourcePolicies(
-      messages, reservation_ref, getattr(args, 'resource_policies', None),
-      resources)
+      messages,
+      reservation_ref,
+      getattr(args, 'resource_policies', None),
+      resources,
+  )
 
   scheduling_type = None
   if args.IsKnownAndSpecified('scheduling_type'):
     scheduling_type = getattr(args, 'scheduling_type', None)
+
+  early_access_maintenance = None
+  if args.IsKnownAndSpecified('early_access_maintenance'):
+    early_access_maintenance = getattr(args, 'early_access_maintenance', None)
 
   return MakeReservationMessage(
       messages,
@@ -71,6 +77,7 @@ def MakeReservationMessageFromArgs(messages, args, reservation_ref, resources):
       getattr(args, 'reservation_sharing_policy', None),
       getattr(args, 'enable_emergent_maintenance', None),
       scheduling_type,
+      early_access_maintenance,
   )
 
 
@@ -95,7 +102,8 @@ def MakeGuestAccelerators(messages, accelerator_configs):
 
   for a in accelerator_configs:
     m = messages.AcceleratorConfig(
-        acceleratorCount=a['count'], acceleratorType=a['type'])
+        acceleratorCount=a['count'], acceleratorType=a['type']
+    )
     accelerators.append(m)
 
   return accelerators
@@ -108,8 +116,8 @@ def MakeLocalSsds(messages, ssd_configs):
 
   local_ssds = []
   disk_msg = (
-      messages
-      .AllocationSpecificSKUAllocationAllocatedInstancePropertiesReservedDisk)
+      messages.AllocationSpecificSKUAllocationAllocatedInstancePropertiesReservedDisk
+  )
   interface_msg = disk_msg.InterfaceValueValuesEnum
   for s in ssd_configs:
     if s['interface'].upper() == 'NVME':
@@ -135,54 +143,60 @@ def MakeLocalSsds(messages, ssd_configs):
   return local_ssds
 
 
-def MakeShareSettingsWithArgs(messages,
-                              args,
-                              setting_configs,
-                              share_with='share_with'):
+def MakeShareSettingsWithArgs(
+    messages, args, setting_configs, share_with='share_with'
+):
   """Constructs the share settings message object from raw args as input."""
   if setting_configs:
     if setting_configs == 'organization':
-      return messages.ShareSettings(shareType=messages.ShareSettings
-                                    .ShareTypeValueValuesEnum.ORGANIZATION)
+      return messages.ShareSettings(
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.ORGANIZATION
+      )
     if setting_configs == 'local':
       if args.IsSpecified(share_with) and share_with != 'remove_share_with':
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The scope this reservation is to be shared with must not be '
-            'specified with share setting local.')
+            'specified with share setting local.',
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.LOCAL)
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.LOCAL
+      )
     if setting_configs == 'projects':
       if not args.IsSpecified(share_with):
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The projects this reservation is to be shared with must be '
-            'specified.')
+            'specified.',
+        )
       project_map = None
       if share_with != 'remove_share_with':
         project_map = MakeProjectMapFromProjectList(
-            messages, getattr(args, share_with, None))
+            messages, getattr(args, share_with, None)
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum
-          .SPECIFIC_PROJECTS,
-          projectMap=project_map)
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.SPECIFIC_PROJECTS,
+          projectMap=project_map,
+      )
     if setting_configs == 'folders':
       if not args.IsSpecified(share_with):
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The folders this reservation is to be shared with must be '
-            'specified.')
+            'specified.',
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum
-          .DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
-          folderMap=MakeFolderMapFromFolderList(messages,
-                                                getattr(args, share_with,
-                                                        None)))
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
+          folderMap=MakeFolderMapFromFolderList(
+              messages, getattr(args, share_with, None)
+          ),
+      )
   else:
     if args.IsKnownAndSpecified(share_with):
       raise exceptions.InvalidArgumentException(
           '--share_setting',
-          'Please specify share setting if specifying share with.')
+          'Please specify share setting if specifying share with.',
+      )
     return None
 
 
@@ -190,43 +204,51 @@ def MakeShareSettingsWithDict(messages, dictionary, setting_configs):
   """Constructs the share settings message object from dictionary form of input."""
   if setting_configs:
     if setting_configs == 'organization':
-      return messages.ShareSettings(shareType=messages.ShareSettings
-                                    .ShareTypeValueValuesEnum.ORGANIZATION)
+      return messages.ShareSettings(
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.ORGANIZATION
+      )
     if setting_configs == 'local':
       if 'share_with' in dictionary.keys():
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The scope this reservation is to be shared with must not be '
-            'specified with share setting local.')
+            'specified with share setting local.',
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.LOCAL)
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.LOCAL
+      )
     if setting_configs == 'projects':
       if 'share_with' not in dictionary.keys():
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The projects this reservation is to be shared with must be '
-            'specified.')
+            'specified.',
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum
-          .SPECIFIC_PROJECTS,
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.SPECIFIC_PROJECTS,
           projectMap=MakeProjectMapFromProjectList(
-              messages, dictionary.get('share_with', None)))
+              messages, dictionary.get('share_with', None)
+          ),
+      )
     if setting_configs == 'folders':
       if 'share_with' not in dictionary.keys():
         raise exceptions.InvalidArgumentException(
             '--share_with',
             'The folders this reservation is to be shared with must be '
-            'specified.')
+            'specified.',
+        )
       return messages.ShareSettings(
-          shareType=messages.ShareSettings.ShareTypeValueValuesEnum
-          .DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
+          shareType=messages.ShareSettings.ShareTypeValueValuesEnum.DIRECT_PROJECTS_UNDER_SPECIFIC_FOLDERS,
           folderMap=MakeFolderMapFromFolderList(
-              messages, dictionary.get('share_with', None)))
+              messages, dictionary.get('share_with', None)
+          ),
+      )
   else:
     if 'share_with' in dictionary.keys():
       raise exceptions.InvalidArgumentException(
           '--share_setting',
-          'Please specify share setting if specifying share with.')
+          'Please specify share setting if specifying share with.',
+      )
     return None
 
 
@@ -243,8 +265,7 @@ def MakeSpecificSKUReservationMessage(
     source_instance_template_ref=None,
 ):
   """Constructs a single specific sku reservation message object."""
-  prop_msgs = (
-      messages.AllocationSpecificSKUAllocationReservedInstanceProperties)
+  prop_msgs = messages.AllocationSpecificSKUAllocationReservedInstanceProperties
   if source_instance_template_ref:
     return messages.AllocationSpecificSKUReservation(
         count=vm_count,
@@ -256,17 +277,21 @@ def MakeSpecificSKUReservationMessage(
         guestAccelerators=accelerators,
         localSsds=local_ssds,
         machineType=machine_type,
-        minCpuPlatform=min_cpu_platform)
+        minCpuPlatform=min_cpu_platform,
+    )
     if freeze_duration:
-      instance_properties.maintenanceFreezeDurationHours = freeze_duration // 3600
+      instance_properties.maintenanceFreezeDurationHours = (
+          freeze_duration // 3600
+      )
     if freeze_interval:
-      instance_properties.maintenanceInterval = (
-          messages.AllocationSpecificSKUAllocationReservedInstanceProperties
-          .MaintenanceIntervalValueValuesEnum(freeze_interval))
+      instance_properties.maintenanceInterval = messages.AllocationSpecificSKUAllocationReservedInstanceProperties.MaintenanceIntervalValueValuesEnum(
+          freeze_interval
+      )
     if location_hint:
       instance_properties.locationHint = location_hint
     return messages.AllocationSpecificSKUReservation(
-        count=vm_count, instanceProperties=instance_properties)
+        count=vm_count, instanceProperties=instance_properties
+    )
 
 
 def MakeReservationMessage(
@@ -282,13 +307,15 @@ def MakeReservationMessage(
     reservation_sharing_policy=None,
     enable_emergent_maintenance=None,
     scheduling_type=None,
+    early_access_maintenance=None,
 ):
   """Constructs a single reservations message object."""
   reservation_message = messages.Reservation(
       name=reservation_name,
       specificReservation=specific_reservation,
       specificReservationRequired=require_specific_reservation,
-      zone=reservation_zone)
+      zone=reservation_zone,
+  )
   if share_settings:
     reservation_message.shareSettings = share_settings
   if resource_policies:
@@ -313,8 +340,13 @@ def MakeReservationMessage(
     reservation_message.enableEmergentMaintenance = enable_emergent_maintenance
 
   if scheduling_type is not None:
-    reservation_message.schedulingType = (
-        MakeSchedulingType(messages, scheduling_type)
+    reservation_message.schedulingType = MakeSchedulingType(
+        messages, scheduling_type
+    )
+
+  if early_access_maintenance is not None:
+    reservation_message.earlyAccessMaintenance = MakeEarlyAccessMaintenance(
+        messages, early_access_maintenance
     )
 
   return reservation_message
@@ -339,9 +371,12 @@ def MakeProjectMapFromProjectList(messages, projects):
     additional_properties.append(
         messages.ShareSettings.ProjectMapValue.AdditionalProperty(
             key=project,
-            value=messages.ShareSettingsProjectConfig(projectId=project)))
+            value=messages.ShareSettingsProjectConfig(projectId=project),
+        )
+    )
   return messages.ShareSettings.ProjectMapValue(
-      additionalProperties=additional_properties)
+      additionalProperties=additional_properties
+  )
 
 
 def MakeFolderMapFromFolderList(messages, folders):
@@ -350,22 +385,29 @@ def MakeFolderMapFromFolderList(messages, folders):
     additional_properties.append(
         messages.ShareSettings.FolderMapValue.AdditionalProperty(
             key=folder,
-            value=messages.ShareSettingsFolderConfig(folderId=folder)))
+            value=messages.ShareSettingsFolderConfig(folderId=folder),
+        )
+    )
   return messages.ShareSettings.FolderMapValue(
-      additionalProperties=additional_properties)
+      additionalProperties=additional_properties
+  )
 
 
-def MakeResourcePolicies(messages, reservation_ref, resource_policy_dictionary,
-                         resources):
+def MakeResourcePolicies(
+    messages, reservation_ref, resource_policy_dictionary, resources
+):
   """Constructs the resource policies message objects."""
   if resource_policy_dictionary is None:
     return None
 
-  return messages.Reservation.ResourcePoliciesValue(additionalProperties=[
-      messages.Reservation.ResourcePoliciesValue.AdditionalProperty(
-          key=key, value=MakeUrl(resources, value, reservation_ref))
-      for key, value in sorted(six.iteritems(resource_policy_dictionary))
-  ])
+  return messages.Reservation.ResourcePoliciesValue(
+      additionalProperties=[
+          messages.Reservation.ResourcePoliciesValue.AdditionalProperty(
+              key=key, value=MakeUrl(resources, value, reservation_ref)
+          )
+          for key, value in sorted(six.iteritems(resource_policy_dictionary))
+      ]
+  )
 
 
 def MakeReservationsMaintenanceScope(messages, maintenance_scope):
@@ -414,9 +456,24 @@ def MakeSchedulingType(messages, scheduling_type):
   return None
 
 
+def MakeEarlyAccessMaintenance(messages, early_access_maintenance):
+  """Constructs the early access maintenance enum value."""
+  if early_access_maintenance:
+    if early_access_maintenance == 'NO_EARLY_ACCESS':
+      return (
+          messages.Reservation.EarlyAccessMaintenanceValueValuesEnum.NO_EARLY_ACCESS
+      )
+    if early_access_maintenance == 'WAVE1':
+      return messages.Reservation.EarlyAccessMaintenanceValueValuesEnum.WAVE1
+    if early_access_maintenance == 'WAVE2':
+      return messages.Reservation.EarlyAccessMaintenanceValueValuesEnum.WAVE2
+  return None
+
+
 def MakeUrl(resources, value, reservation_ref):
   return maintenance_util.ParseResourcePolicyWithZone(
       resources,
       value,
       project=reservation_ref.project,
-      zone=reservation_ref.zone).SelfLink()
+      zone=reservation_ref.zone,
+  ).SelfLink()

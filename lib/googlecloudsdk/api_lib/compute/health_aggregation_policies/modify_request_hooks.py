@@ -14,9 +14,6 @@
 # limitations under the License.
 """Modify request hooks, specifically for health-aggregation-policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.core import resources
 from googlecloudsdk.generated_clients.apis.compute.alpha import compute_alpha_messages
 

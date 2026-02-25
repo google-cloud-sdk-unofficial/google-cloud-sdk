@@ -14,10 +14,6 @@
 # limitations under the License.
 """Functions to validate that config changes can be applied to a resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import container_resource
 from googlecloudsdk.command_lib.run import exceptions

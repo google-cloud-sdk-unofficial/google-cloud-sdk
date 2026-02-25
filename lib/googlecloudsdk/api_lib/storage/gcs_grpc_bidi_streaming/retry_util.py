@@ -14,12 +14,8 @@
 # limitations under the License.
 """Retry wrapper for resumable BiDi downloads."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
-import re
 from typing import Any
 
 from googlecloudsdk.api_lib.storage import errors as cloud_errors
@@ -208,6 +204,45 @@ class BidiRedirectedTokenErrorHandler:
         destination_resource=self._destination_resource,
     )
 
+  def _get_routing_token_from_redirected_error(
+      self, error: grpc_retry_util.exceptions.Aborted
+  ) -> str | None:
+    """Fetches the routing token from a redirected error.
+
+    Parses the details of a gRPC Aborted error to extract a routing token
+    and updates `self._routing_token` with the new token.
+
+    Args:
+      error: The grpc.RpcError exception, expected to be an Aborted error
+        containing details about a redirection.
+
+    Raises:
+      ValueError: If the error details do not contain a recognized redirected
+        error type URL (e.g., BidiReadObjectRedirectedError or
+        BidiWriteObjectRedirectedError).
+      Exception: If there is an error during the deserialization of the
+        redirected error.
+
+    Returns:
+      str | None: The routing token if found, otherwise None.
+    """
+    try:
+      from google.api_core import protobuf_helpers  # pylint: disable=g-import-not-at-top
+      for any_proto in error.details:
+        # Retry only if the type_url matches the expected error type.
+        if any_proto.type_url == self._DOWNLOADS_TYPE_URL:
+          return protobuf_helpers.from_any_pb(
+              self._client.types.BidiReadObjectRedirectedError, any_proto
+          ).routing_token
+        if any_proto.type_url == self._UPLOADS_TYPE_URL:
+          return protobuf_helpers.from_any_pb(
+              self._client.types.BidiWriteObjectRedirectedError, any_proto
+          ).routing_token
+      return None
+    except (TypeError, ImportError) as e:
+      log.debug('Failed to process the any proto from Aborted error: %s', e)
+      raise
+
   def start_bidi_rpc_with_retry_on_redirected_token_error(
       self, initial_request
   ):
@@ -218,49 +253,18 @@ class BidiRedirectedTokenErrorHandler:
         bidi_rpc.open()
         return bidi_rpc
       except grpc_retry_util.exceptions.Aborted as e:
+        log.debug(
+            'Aborted error during BiDi RPC for data transfer from %s to %s: %s',
+            self._source_resource,
+            self._destination_resource,
+            e,
+        )
         bidi_rpc.close()
         if retry_count == _MAX_RETRIES_ON_REDIRECTED_TOKEN_ERROR - 1:
           # If we have exhausted all retries, re-raise the error.
           raise
-        trailing_metadata = e.response.trailing_metadata()
-        for key, value in trailing_metadata:
-          if key == 'grpc-status-details-bin':
-            status_details = value
-            break
-        else:
+        self._routing_token = self._get_routing_token_from_redirected_error(e)
+        if self._routing_token is None:
+          # If the error is not a redirected error / routing token was not found
+          # in the error(unexpected), re-raise the original error.
           raise
-        from google.rpc import status_pb2  # pylint: disable=g-import-not-at-top
-
-        status_msg = status_pb2.Status()
-        status_msg.ParseFromString(status_details)
-        any_proto, *_ = status_msg.details
-
-        # Retry only if the type_url matches the expected error type.
-        if any_proto.type_url not in (
-            self._UPLOADS_TYPE_URL,
-            self._DOWNLOADS_TYPE_URL,
-        ):
-          raise
-        # The any object is of the format:
-        # gcloud-disable-gdu-domain
-        # [type.googleapis.com/google.storage.v2.BidiWriteObjectRedirectedError]
-        # {
-        #   routing_token: "<token>",
-        #   <key>: "<value>"
-        # }
-        # This needs to be deserialized to get the routing token. gcloud does
-        # not ship google.storage.v2 module, and we can't use the generated
-        # client to deserialize the proto. Hence we are relying on string
-        # parsing here.
-        # TODO: b/448615330 - Update this to get routing token in a more robust
-        # way, so we can also extract read/write handles gracefully and use them
-        # in the retry logic.
-        any_proto_str = str(any_proto)
-        match = re.search(r'routing_token: "([^"]+)"', any_proto_str)
-        if match:
-          self._routing_token = match.group(1)
-        else:
-          log.debug(
-              'Routing token not found in the redirected token error: %s',
-              any_proto_str,
-          )

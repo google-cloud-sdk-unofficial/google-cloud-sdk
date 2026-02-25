@@ -14,9 +14,6 @@
 # limitations under the License.
 """Util for dynamically setting the best performing app configuration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import multiprocessing
 

@@ -22,7 +22,9 @@ from googlecloudsdk.calliope import base as calliope_base
 
 
 @calliope_base.ReleaseTracks(
-    calliope_base.ReleaseTrack.ALPHA, calliope_base.ReleaseTrack.BETA
+    calliope_base.ReleaseTrack.ALPHA,
+    calliope_base.ReleaseTrack.BETA,
+    calliope_base.ReleaseTrack.GA,
 )
 @calliope_base.DefaultUniverseOnly
 class WorkloadIdentity(calliope_base.Group):

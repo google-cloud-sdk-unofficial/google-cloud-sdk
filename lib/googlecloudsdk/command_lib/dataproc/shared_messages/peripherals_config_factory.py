@@ -15,9 +15,6 @@
 
 """Factory for PeripheralsConfig message."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.dataproc.shared_messages import (
     spark_history_server_config_factory as shscf)

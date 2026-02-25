@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants/functions related to operating system options supported by image and OVF imports."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 OS_CHOICES_IMAGE_IMPORT_GA = [
     'debian-8',

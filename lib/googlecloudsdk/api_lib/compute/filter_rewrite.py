@@ -65,9 +65,6 @@ aren't. Don't fiddle with the spacing in the list => string code without
 verifying against the actual compute implementation.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

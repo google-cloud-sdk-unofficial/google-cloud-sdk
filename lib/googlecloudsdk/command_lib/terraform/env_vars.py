@@ -19,9 +19,6 @@ Binary operations like terraform tools requires extracting env vars. This file
 exposes function that can be reused for extracting common env vars.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os.path
 

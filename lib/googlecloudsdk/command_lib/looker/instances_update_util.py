@@ -19,9 +19,6 @@ Looker instances. See go/gcloud-creating-commands#request-hooks for more
 details.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core.console import console_io

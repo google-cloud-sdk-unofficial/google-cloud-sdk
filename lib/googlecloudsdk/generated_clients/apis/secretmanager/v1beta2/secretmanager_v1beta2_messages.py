@@ -339,24 +339,6 @@ class ListLocationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
-class ListOperationsResponse(_messages.Message):
-  r"""The response message for Operations.ListOperations.
-
-  Fields:
-    nextPageToken: The standard List next-page token.
-    operations: A list of operations that matches the specified filter in the
-      request.
-    unreachable: Unordered list. Unreachable resources. Populated when the
-      request sets `ListOperationsRequest.return_partial_success` and reads
-      across collections. For example, when attempting to list all resources
-      across all supported locations.
-  """
-
-  nextPageToken = _messages.StringField(1)
-  operations = _messages.MessageField('Operation', 2, repeated=True)
-  unreachable = _messages.StringField(3, repeated=True)
-
-
 class ListSecretVersionsResponse(_messages.Message):
   r"""Response message for SecretManagerService.ListSecretVersions.
 
@@ -1107,60 +1089,6 @@ class SecretmanagerProjectsLocationsListRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
-
-
-class SecretmanagerProjectsLocationsOperationsCancelRequest(_messages.Message):
-  r"""A SecretmanagerProjectsLocationsOperationsCancelRequest object.
-
-  Fields:
-    name: The name of the operation resource to be cancelled.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class SecretmanagerProjectsLocationsOperationsDeleteRequest(_messages.Message):
-  r"""A SecretmanagerProjectsLocationsOperationsDeleteRequest object.
-
-  Fields:
-    name: The name of the operation resource to be deleted.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class SecretmanagerProjectsLocationsOperationsGetRequest(_messages.Message):
-  r"""A SecretmanagerProjectsLocationsOperationsGetRequest object.
-
-  Fields:
-    name: The name of the operation resource.
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class SecretmanagerProjectsLocationsOperationsListRequest(_messages.Message):
-  r"""A SecretmanagerProjectsLocationsOperationsListRequest object.
-
-  Fields:
-    filter: The standard list filter.
-    name: The name of the operation's parent resource.
-    pageSize: The standard list page size.
-    pageToken: The standard list page token.
-    returnPartialSuccess: When set to `true`, operations that are reachable
-      are returned as normal, and those that are unreachable are returned in
-      the ListOperationsResponse.unreachable field. This can only be `true`
-      when reading across collections. For example, when `parent` is set to
-      `"projects/example/locations/-"`. This field is not supported by default
-      and will result in an `UNIMPLEMENTED` error if set unless explicitly
-      documented otherwise in service or product specific documentation.
-  """
-
-  filter = _messages.StringField(1)
-  name = _messages.StringField(2, required=True)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class SecretmanagerProjectsLocationsSecretsAddVersionRequest(_messages.Message):

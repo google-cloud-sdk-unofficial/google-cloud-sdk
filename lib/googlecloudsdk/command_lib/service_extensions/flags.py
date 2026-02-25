@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common flags for service-extensions resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

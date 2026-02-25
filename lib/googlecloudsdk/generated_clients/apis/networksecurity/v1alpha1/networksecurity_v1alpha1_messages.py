@@ -4580,8 +4580,8 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChang
   Fields:
     parent: Required. Parent value for
       CreateWildfireVerdictChangeRequestRequest. The parent is a firewall
-      endpoint resource. Format: organizations/{organization}/locations/{locat
-      ion}/firewallEndpoints/{firewall_endpoint}
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
     wildfireVerdictChangeRequest: A WildfireVerdictChangeRequest resource to
       be passed as the request body.
   """
@@ -4596,11 +4596,11 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChang
 
   Fields:
     name: Required. Name of the WildfireVerdictChangeRequest to retrieve.
-      Format: organizations/{organization}/locations/{location}/firewallEndpoi
-      nts/{firewall_endpoint}/wildfireVerdictChangeRequests/{wildfire_verdict_
-      change_request_id} Where {wildfire_verdict_change_request_id} is the ID
-      in the format: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
-      F]{4}-[0-9a-fA-F]{12}$
+      Format: organizations|projects/{project_or_organization}/locations/{loca
+      tion}/firewallEndpoints/{firewall_endpoint}/wildfireVerdictChangeRequest
+      s/{wildfire_verdict_change_request_id} Where
+      {wildfire_verdict_change_request_id} is the ID in the format: ^[0-9a-fA-
+      F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
   """
 
   name = _messages.StringField(1, required=True)
@@ -4622,8 +4622,8 @@ class NetworksecurityOrganizationsLocationsFirewallEndpointsWildfireVerdictChang
       should return.
     parent: Required. Parent value for
       ListWildfireVerdictChangeRequestsRequest. The parent is a firewall
-      endpoint resource. Format: organizations/{organization}/locations/{locat
-      ion}/firewallEndpoints/{firewall_endpoint}
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
   """
 
   filter = _messages.StringField(1)
@@ -6112,6 +6112,65 @@ class NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest(_messages.Me
   name = _messages.StringField(2, required=True)
   requestId = _messages.StringField(3)
   updateMask = _messages.StringField(4)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsCreateRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsCreateRequest object.
+
+  Fields:
+    parent: Required. Parent value for
+      CreateWildfireVerdictChangeRequestRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+    wildfireVerdictChangeRequest: A WildfireVerdictChangeRequest resource to
+      be passed as the request body.
+  """
+
+  parent = _messages.StringField(1, required=True)
+  wildfireVerdictChangeRequest = _messages.MessageField('WildfireVerdictChangeRequest', 2)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsGetRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsGetRequest object.
+
+  Fields:
+    name: Required. Name of the WildfireVerdictChangeRequest to retrieve.
+      Format: organizations|projects/{project_or_organization}/locations/{loca
+      tion}/firewallEndpoints/{firewall_endpoint}/wildfireVerdictChangeRequest
+      s/{wildfire_verdict_change_request_id} Where
+      {wildfire_verdict_change_request_id} is the ID in the format: ^[0-9a-fA-
+      F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChangeRequestsListRequest(_messages.Message):
+  r"""A NetworksecurityProjectsLocationsFirewallEndpointsWildfireVerdictChange
+  RequestsListRequest object.
+
+  Fields:
+    filter: Optional. Filter expression to filter the results. See AIP-160 for
+      filtering syntax. Supported fields are: - `sha256` (string, equality
+      only, e.g. `sha256 = "..."`) - `state` (enum, equality only, e.g. `state
+      = "ACTIVE"`) - `create_time` (timestamp, comparisons, e.g. `create_time
+      > "2026-01-01T00:00:00Z"`)
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for
+      ListWildfireVerdictChangeRequestsRequest. The parent is a firewall
+      endpoint resource. Format: organizations|projects/{project_or_organizati
+      on}/locations/{location}/firewallEndpoints/{firewall_endpoint}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest(_messages.Message):
@@ -10871,11 +10930,12 @@ class WildfireVerdictChangeRequest(_messages.Message):
     finalVerdict: Output only. The final verdict of the Malware Sample.
     name: Output only. Identifier. The relative name of the
       WildfireVerdictChangeRequest. Output only. This is a unique identifier
-      generated by the third party API. Format: organizations/{organization}/l
-      ocations/{location}/firewallEndpoints/{firewall_endpoint}/wildfireVerdic
-      tChangeRequests/{wildfire_verdict_change_request_id} Where
-      {wildfire_verdict_change_request_id} is the ID in the format: ^[0-9a-fA-
-      F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      generated by the third party API. Format: organizations|projects/{projec
+      t_or_organization}/locations/{location}/firewallEndpoints/{firewall_endp
+      oint}/wildfireVerdictChangeRequests/{wildfire_verdict_change_request_id}
+      Where {wildfire_verdict_change_request_id} is the ID in the format: ^[0-
+      9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
+      F]{12}$
     newVerdict: Required. The suggested verdict to apply to the Malware
       Sample.
     oldVerdict: Output only. The original verdict of the Malware Sample.

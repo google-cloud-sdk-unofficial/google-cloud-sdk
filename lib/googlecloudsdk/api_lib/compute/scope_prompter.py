@@ -14,9 +14,6 @@
 # limitations under the License.
 """Facilities for user prompting for request context."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 from googlecloudsdk.api_lib.compute import exceptions

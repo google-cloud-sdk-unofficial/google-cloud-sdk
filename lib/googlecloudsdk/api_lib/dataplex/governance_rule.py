@@ -14,9 +14,6 @@
 # limitations under the License.
 """Client for interaction with Governance Rules API CRUD DATAPLEX."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

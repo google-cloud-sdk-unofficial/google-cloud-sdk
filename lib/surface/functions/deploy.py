@@ -126,8 +126,7 @@ def _CommonArgs(parser, track):
   flags.AddBinaryAuthorizationMutexGroup(parser)
 
   # Add flags for Direct VPC (2nd Gen only)
-  if track != base.ReleaseTrack.GA:
-    flags.AddAllDirectVpcFlags(parser)
+  flags.AddAllDirectVpcFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

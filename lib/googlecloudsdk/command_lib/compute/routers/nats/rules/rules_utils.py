@@ -14,9 +14,6 @@
 # limitations under the License.
 """Util functions for NAT commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute.routers.nats.rules import flags
 from googlecloudsdk.core import exceptions as core_exceptions

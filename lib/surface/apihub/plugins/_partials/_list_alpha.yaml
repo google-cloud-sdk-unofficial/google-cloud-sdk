@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List plugins
+    brief: List Plugins
     description: List plugins
     examples: |-
-      To list all plugins, run:
+      To list all plugins in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

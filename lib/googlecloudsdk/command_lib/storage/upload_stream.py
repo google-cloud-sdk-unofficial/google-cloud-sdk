@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for representing a part of a stream."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

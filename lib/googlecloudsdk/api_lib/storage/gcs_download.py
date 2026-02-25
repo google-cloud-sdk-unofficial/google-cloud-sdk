@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common download workflow used by GCS API clients."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import retry_util
 from googlecloudsdk.core import log

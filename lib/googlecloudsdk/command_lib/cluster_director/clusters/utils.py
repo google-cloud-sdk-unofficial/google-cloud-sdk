@@ -109,35 +109,6 @@ def GetClusterFlagType(api_version=None) -> dict[str, Any]:  # pylint: disable=g
   return flag_types.FlagTypes(api_version).GetClusterFlagType()
 
 
-def _SetDefaultLoginNodeDiskSizesInDict(login_nodes: Mapping[str, Any]) -> None:
-  """Sets default boot disk size for Slurm login nodes in a dict."""
-  boot_disk = login_nodes.get("bootDisk")
-  if boot_disk and boot_disk.get("sizeGb") is None:
-    boot_disk["sizeGb"] = 100
-  if disks := login_nodes.get("disks"):
-    for disk in disks:
-      if disk.get("boot") and disk.get("sizeGb") is None:
-        disk["sizeGb"] = 100
-
-
-def _SetDefaultNodeSetDiskSizesInDict(
-    node_sets: list[Mapping[str, Any]],
-) -> None:
-  """Sets default boot disk size for Slurm node sets in a dict."""
-  for nodeset in node_sets:
-    boot_disk = nodeset.get("bootDisk")
-    if boot_disk and boot_disk.get("boot") and boot_disk.get("sizeGb") is None:
-      boot_disk["sizeGb"] = 100
-
-
-def _SetDefaultSlurmDiskSizesInDict(slurm: Mapping[str, Any]) -> None:
-  """Sets default disk sizes for Slurm login nodes and node sets in a dict."""
-  if login_nodes := slurm.get("loginNodes"):
-    _SetDefaultLoginNodeDiskSizesInDict(login_nodes)
-  if node_sets := slurm.get("nodeSets"):
-    _SetDefaultNodeSetDiskSizesInDict(node_sets)
-
-
 class ClusterUtil:
   """Represents a cluster utility class."""
 
@@ -158,11 +129,6 @@ class ClusterUtil:
   def MakeClusterFromConfig(self):
     """Returns a cluster message from the config JSON string."""
     config_dict = self.args.config
-    orchestrator = config_dict.get("orchestrator")
-    if orchestrator:
-      slurm = orchestrator.get("slurm")
-      if slurm:
-        _SetDefaultSlurmDiskSizesInDict(slurm)
     return messages_util.DictToMessageWithErrorCheck(
         config_dict, self.message_module.Cluster
     )
@@ -463,7 +429,7 @@ class ClusterUtil:
           machineType=machine_type,
           zone=login_node.get("zone"),
           storageConfigs=storage_configs,
-          enableOsLogin=login_node.get("enableOSLogin", True),
+          enableOsLogin=login_node.get("enableOsLogin", True),
           enablePublicIps=login_node.get("enablePublicIps", True),
           startupScript=self._GetBashScript(login_node.get("startupScript")),
           labels=self.MakeLabels(
@@ -508,27 +474,6 @@ class ClusterUtil:
             for key, value in sorted(label_args.items())
         ]
     )
-
-  def MakeDisk(
-      self,
-      machine_type: str,
-      boot: bool = True,
-      source_image: str = "",
-  ):
-    """Returns the disk message, defaults to boot disk with empty source image."""
-    disk_type = "pd-standard"
-    if machine_type.startswith(
-        ("a3-megagpu", "a3-ultragpu", "a4-highgpu", "a4x-highgpu")
-    ):
-      disk_type = "hyperdisk-balanced"
-    disk = self.message_module.Disk(
-        type=disk_type,
-        boot=boot,
-        sourceImage=source_image,
-    )
-    if boot:
-      disk.sizeGb = 100
-    return disk
 
   def MakeBootDisk(self, machine_type: str, image: str = None) -> Any:
     """Returns BootDisk message for login node."""
@@ -1036,7 +981,9 @@ class ClusterUtil:
             node_set_id, slurm_node_sets, _SLURM_NODESET_NOT_FOUND_ERROR
         )
         node_set_keys = set(node_set.keys())
-        is_gke_node_set = existing_node_set.containerNodePool is not None
+        is_gke_node_set = (
+            getattr(existing_node_set, "containerNodePool", None) is not None
+        )
         if is_gke_node_set and node_set_keys.intersection(_GCE_INSTANCE_FIELDS):
           raise ClusterDirectorError(_UPDATE_GCE_FIELDS_ON_GKE_NODE_SET_ERROR)
         elif not is_gke_node_set and node_set_keys.intersection(
@@ -1084,10 +1031,19 @@ class ClusterUtil:
         ):
           storage_configs_source = cluster_patch
         storage_configs = self._GetStorageConfigs(storage_configs_source)
-        compute_id = node_set.get("computeId")
-        machine_type = self._GetComputeMachineTypeFromCluster(
-            compute_id, cluster_patch, use_existing_cluster=True
+        node_set_keys = set(node_set.keys())
+        node_set_type_str = node_set.get("type")
+        has_gke_fields = node_set_keys.intersection(_GKE_NODE_POOL_FIELDS)
+        is_gke_node_set = node_set_type_str == NodeSetType.GKE.value or (
+            node_set_type_str is None and has_gke_fields
         )
+        if is_gke_node_set:
+          machine_type = None
+        else:
+          compute_id = node_set.get("computeId")
+          machine_type = self._GetComputeMachineTypeFromCluster(
+              compute_id, cluster_patch, use_existing_cluster=True
+          )
         self._AddKeyToDictSpec(
             key=node_set.get("id"),
             dict_spec=slurm_node_sets,
@@ -1128,8 +1084,8 @@ class ClusterUtil:
         existing_partition = self._GetValueFromDictSpec(
             partition_id, slurm_partitions, _SLURM_PARTITION_NOT_FOUND_ERROR
         )
-        if "nodesetIds" in partition:
-          existing_partition.nodeSetIds = partition.get("nodesetIds")
+        if "nodeSetIds" in partition:
+          existing_partition.nodeSetIds = partition.get("nodeSetIds")
         if "exclusive" in partition:
           if hasattr(existing_partition, "exclusive"):
             existing_partition.exclusive = partition.get("exclusive")
@@ -1170,8 +1126,6 @@ class ClusterUtil:
         login_nodes.startupScript = self._GetBashScript(startup_script)
       if (boot_disk_patch := login_node_patch.get("bootDisk")) is not None:
         boot_disk = login_nodes.bootDisk
-        if not boot_disk:
-          boot_disk = self.MakeBootDisk(login_nodes.machineType)
         boot_disk.type = boot_disk_patch.get("type", boot_disk.type)
         boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
         if hasattr(boot_disk, "image"):
@@ -1197,19 +1151,9 @@ class ClusterUtil:
     if not existing_node_set.computeInstance.bootDisk:
       return
     boot_disk_patch = node_set_patch.get("bootDisk")
-    machine_type = self._GetComputeMachineTypeFromCluster(
-        existing_node_set.computeId,
-        None,
-        use_existing_cluster=True,
-    )
 
     # Determine the base bootDisk to patch.
     boot_disk = existing_node_set.computeInstance.bootDisk
-    default_boot_disk = self.MakeBootDisk(machine_type)
-    if boot_disk.type is None:
-      boot_disk.type = default_boot_disk.type
-    if boot_disk.sizeGb is None:
-      boot_disk.sizeGb = default_boot_disk.sizeGb
 
     boot_disk.type = boot_disk_patch.get("type", boot_disk.type)
     boot_disk.sizeGb = boot_disk_patch.get("sizeGb", boot_disk.sizeGb)
@@ -1484,6 +1428,7 @@ class ClusterUtil:
             newSpotInstances=self.message_module.NewSpotInstancesConfig(
                 zone=instance.get("zone"),
                 machineType=instance.get("machineType"),
+                terminationAction=instance.get("terminationAction"),
             ),
         ),
     )
@@ -1592,13 +1537,12 @@ class ClusterUtil:
         storageConfigs=storage_configs,
         computeId=node_set.get("computeId"),
     )
-    service_account = node_set.get("serviceAccount")
-    if service_account:
-      slurm_node_set.serviceAccount = self.message_module.ServiceAccount(
-          email=service_account.get("email"),
-          scopes=service_account.get("scopes"),
-      )
     if is_container_node_pool:
+      if not hasattr(slurm_node_set, "containerNodePool"):
+        raise ClusterDirectorError(
+            "GKE node set fields (container-*) are not supported in this API"
+            " version."
+        )
       slurm_node_set.containerNodePool = self.message_module.ContainerNodePoolSlurmNodeSet(
           resourceLabels=self.MakeLabels(
               label_args=node_set.get("container-resource-labels"),
@@ -1655,7 +1599,7 @@ class ClusterUtil:
     """Makes a cluster slurm partition message from partition args."""
     slurm_partition = self.message_module.SlurmPartition(
         id=partition.get("id"),
-        nodeSetIds=partition.get("nodesetIds"),
+        nodeSetIds=partition.get("nodeSetIds"),
     )
     if hasattr(slurm_partition, "exclusive"):
       slurm_partition.exclusive = partition.get("exclusive")

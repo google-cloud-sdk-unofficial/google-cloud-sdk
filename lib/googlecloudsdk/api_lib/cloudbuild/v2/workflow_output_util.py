@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities for displaying workflows for cloud build v2 API."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild.v2 import pipeline_output_util
 from googlecloudsdk.core import yaml

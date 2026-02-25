@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Wrapper for Cloud Run InstanceSplits messages in spec and status."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import dataclasses
 from typing import List, Mapping, Optional

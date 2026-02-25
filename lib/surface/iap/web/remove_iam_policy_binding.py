@@ -24,7 +24,9 @@ from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class RemoveIamPolicyBinding(base.Command):
   """Remove IAM policy binding from an IAP IAM resource.
@@ -83,8 +85,6 @@ class RemoveIamPolicyBinding(base.Command):
   """,
   }
 
-  _support_cloud_run = False
-
   @classmethod
   def Args(cls, parser):
     """Register flags for this command.
@@ -95,7 +95,6 @@ class RemoveIamPolicyBinding(base.Command):
     """
     iap_util.AddIapIamResourceArgs(
         parser,
-        support_cloud_run=cls._support_cloud_run,
         )
     iap_util.AddRemoveIamPolicyBindingArgs(parser)
     base.URI_FLAG.RemoveFromParser(parser)
@@ -114,20 +113,6 @@ class RemoveIamPolicyBinding(base.Command):
     iap_iam_ref = iap_util.ParseIapIamResource(
         self.ReleaseTrack(),
         args,
-        self._support_cloud_run,
     )
     return iap_iam_ref.RemoveIamPolicyBinding(args.member, args.role, condition,
                                               args.all)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class RemoveIamPolicyBindingAlpha(RemoveIamPolicyBinding):
-  """Remove IAM policy binding from an IAP IAM resource.
-
-  Removes a policy binding from the IAM policy of an IAP IAM resource. One
-  binding consists of a member, a role and an optional condition.
-  See $ {parent_command} get-iam-policy for examples of how to
-  specify an IAP IAM resource.
-  """
-
-  _support_cloud_run = True

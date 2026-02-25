@@ -18,9 +18,6 @@ Each function updates a single value, diving to the appropriate depth, updating
 and returning the updated object. Note that while client-side validation could
 occur here, it is deferred to the API layer.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.core import exceptions
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for node pool resources in Anthos standalone clusters on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages as protorpc_message
 from apitools.base.py import list_pager

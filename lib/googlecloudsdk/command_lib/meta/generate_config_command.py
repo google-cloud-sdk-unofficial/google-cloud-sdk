@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for meta generate-config-commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import datetime
 import os.path

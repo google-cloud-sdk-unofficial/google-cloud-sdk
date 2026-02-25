@@ -119,6 +119,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_RETIREDRESOURCES = (
+      'projects.locations.retiredResources',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'retiredResources/{retiredResourcesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_SINGLETENANTHSMINSTANCES = (
       'projects.locations.singleTenantHsmInstances',
       '{+name}',

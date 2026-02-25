@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags definition specifically for gcloud ai custom-jobs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import textwrap

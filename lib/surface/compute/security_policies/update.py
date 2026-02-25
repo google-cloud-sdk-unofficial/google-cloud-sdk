@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import typing
+
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.security_policies import client
 from googlecloudsdk.calliope import base
@@ -87,11 +89,14 @@ class UpdateGa(base.UpdateCommand):
     field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    assert self.SECURITY_POLICY_ARG is not None
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
         args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
     security_policy = client.SecurityPolicy(
         ref=ref, compute_client=holder.client)
-    existing_security_policy = security_policy.Describe()[0]
+    existing_security_policy = typing.cast(
+        typing.Any, security_policy.Describe()
+    )[0]
     description = existing_security_policy.description
     adaptive_protection_config = (
         existing_security_policy.adaptiveProtectionConfig)
@@ -170,6 +175,8 @@ class UpdateBeta(UpdateGa):
     flags.AddAdvancedOptions(parser, enable_large_body_size=True)
     flags.AddRecaptchaOptions(parser)
     flags.AddDdosProtectionConfigWithAdvancedPreview(parser)
+    flags.AddNetworkDdosAdaptiveProtection(parser)
+    flags.AddNetworkDdosImpactedBaselineThreshold(parser)
 
   def _ValidateArgs(self, args):
     """Validates that at least one field to update is specified.
@@ -196,6 +203,9 @@ class UpdateBeta(UpdateGa):
             'layer7_ddos_defense_auto_deploy_impacted_baseline_threshold'
         )
         or args.IsSpecified('layer7_ddos_defense_auto_deploy_expiration_sec')
+        or args.IsSpecified('network_ddos_adaptive_protection')
+        or args.IsSpecified('network_ddos_impacted_baseline_threshold')
+        or args.IsSpecified('clear_network_ddos_impacted_baseline_threshold')
     ):
       parameter_names = [
           '--description',
@@ -212,6 +222,9 @@ class UpdateBeta(UpdateGa):
           '--layer7-ddos-defense-auto-deploy-confidence-threshold',
           '--layer7-ddos-defense-auto-deploy-impacted-baseline-threshold',
           '--layer7-ddos-defense-auto-deploy-expiration-sec',
+          '--network-ddos-adaptive-protection',
+          '--network-ddos-impacted-baseline-threshold',
+          '--clear-network-ddos-impacted-baseline-threshold',
       ]
       raise exceptions.MinimumArgumentException(
           parameter_names, 'Please specify at least one property to update')
@@ -221,11 +234,15 @@ class UpdateBeta(UpdateGa):
     field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    assert self.SECURITY_POLICY_ARG is not None
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
     security_policy = client.SecurityPolicy(
         ref=ref, compute_client=holder.client)
-    existing_security_policy = security_policy.Describe()[0]
+    existing_security_policy = typing.cast(
+        typing.Any, security_policy.Describe()
+    )[0]
     description = existing_security_policy.description
     adaptive_protection_config = (
         existing_security_policy.adaptiveProtectionConfig)
@@ -270,6 +287,32 @@ class UpdateBeta(UpdateGa):
           security_policies_utils.CreateDdosProtectionConfig(
               holder.client, args, ddos_protection_config))
       field_mask.append('ddos_protection_config')
+    if args.IsSpecified('network_ddos_adaptive_protection'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithDdosAdaptiveProtection(
+          holder.client, args, ddos_protection_config
+      )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+    if args.IsSpecified('network_ddos_impacted_baseline_threshold'):
+      ddos_protection_config = security_policies_utils.CreateDdosProtectionConfigWithNetworkDdosImpactedBaselineThreshold(
+          holder.client, args, ddos_protection_config
+      )
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
+      )
+    elif args.IsSpecified('clear_network_ddos_impacted_baseline_threshold'):
+      if ddos_protection_config is None:
+        ddos_protection_config = (
+            holder.client.messages.SecurityPolicyDdosProtectionConfig()
+        )
+      ddos_protection_config.ddosImpactedBaselineThreshold = None
+      if 'ddos_protection_config' not in field_mask:
+        field_mask.append('ddos_protection_config')
+      field_mask.append(
+          'ddos_protection_config.ddos_impacted_baseline_threshold'
+      )
 
     updated_security_policy = holder.client.messages.SecurityPolicy(
         description=description,
@@ -372,11 +415,15 @@ class UpdateAlpha(UpdateBeta):
     field_mask = []
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
+    assert self.SECURITY_POLICY_ARG is not None
     ref = self.SECURITY_POLICY_ARG.ResolveAsResource(
-        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL)
+        args, holder.resources, default_scope=compute_scope.ScopeEnum.GLOBAL
+    )
     security_policy = client.SecurityPolicy(
         ref=ref, compute_client=holder.client)
-    existing_security_policy = security_policy.Describe()[0]
+    existing_security_policy = typing.cast(
+        typing.Any, security_policy.Describe()
+    )[0]
     description = existing_security_policy.description
     cloud_armor_config = existing_security_policy.cloudArmorConfig
     adaptive_protection_config = (

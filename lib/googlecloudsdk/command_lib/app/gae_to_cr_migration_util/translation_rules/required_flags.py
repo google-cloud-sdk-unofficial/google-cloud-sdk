@@ -40,10 +40,11 @@ def translate_add_required_flags(
 
 def _get_labels() -> str:
   """Get labels for gcloud run deploy command."""
-  return ','.join([
-      'migrated-from',
-      'gcloud-gae2cr-version=1',
-  ])
+  labels = {
+      'migrated-from': 'app-engine',
+      'migration-tool': 'gcloud-app-migrate-standard-v1',
+  }
+  return ','.join(f'{k}={v}' for k, v in labels.items())
 
 
 def _check_dockerfile_exists(source_path: str) -> bool:

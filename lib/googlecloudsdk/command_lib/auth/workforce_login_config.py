@@ -15,9 +15,6 @@
 
 """Support library for the login-config auth commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from google.auth import external_account_authorized_user
 from googlecloudsdk.api_lib.auth import util as auth_util

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cross-version utility classes and functions for gcloud functions commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import re

@@ -23,7 +23,7 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.GA)
 class Lookup(base.DescribeCommand):
   """Lookup a runtime project attachment."""
 

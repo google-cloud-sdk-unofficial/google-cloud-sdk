@@ -15,9 +15,6 @@
 
 """Declarative hooks for reCAPTCHA Enterprise Keys CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.generated_clients.apis.recaptchaenterprise.v1 import recaptchaenterprise_v1_messages as messages
 
 

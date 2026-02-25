@@ -99,6 +99,52 @@
         mutex: true
         hidden: true
         params:
+        - arg_name: enable-platform-logs
+          api_field: repository.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Enable platform logging for the repository.
+          choices:
+          - arg_value: true
+            enum_value: ENABLED
+            help_text: Platform logging set to enabled.
+        - arg_name: disable-platform-logs
+          api_field: repository.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Disable platform logging for the repository.
+          choices:
+          - arg_value: true
+            enum_value: DISABLED
+            help_text: Platform logging set to disabled.
+        - arg_name: clear-platform-logs
+          api_field: repository.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Clear platform logging settings for the repository to fall back to project settings.
+          choices:
+          - arg_value: true
+            enum_value: LOGGING_STATE_UNSPECIFIED
+            help_text: Platform logging set to project settings.
+    - arg_name: severity
+      api_field: repository.platformLogsConfig.severityLevel
+      hidden: true
+      choices:
+      - arg_value: INFO
+        enum_value: INFO
+        help_text: Log events with severity INFO or higher.
+      - arg_value: ERROR
+        enum_value: ERROR
+        help_text: Log events with severity ERROR or higher.
+      help_text: |
+        The minimum severity level of logs to generate. This flag is only applicable when using --enable-platform-logs.
+    - group:
+        mutex: true
+        hidden: true
+        params:
         - arg_name: allow-sbom-generation
           api_field: repository.sbomConfig.enablementConfig
           default: null

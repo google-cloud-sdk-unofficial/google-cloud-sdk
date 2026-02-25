@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for setting up GKE workload identity."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import iam_helpers

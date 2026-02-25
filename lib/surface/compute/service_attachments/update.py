@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
+from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.networks.subnets import flags as subnetwork_flags
@@ -62,11 +63,9 @@ class UpdateHelper(object):
   def __init__(
       self,
       holder,
-      support_target_service_arg,
       support_endpoint_based_security_arg,
   ):
     self._holder = holder
-    self._support_target_service_arg = support_target_service_arg
     self._support_endpoint_based_security_arg = (
         support_endpoint_based_security_arg
     )
@@ -75,15 +74,12 @@ class UpdateHelper(object):
   def Args(
       cls,
       parser,
-      support_target_service_arg,
       support_endpoint_based_security_arg,
   ):
     """Create a Google Compute Engine service attachment.
 
     Args:
       parser: the parser that parses the input from the user.
-      support_target_service_arg: Whether to add arguments for producer
-        forwarding rule.
       support_endpoint_based_security_arg: Whether to support endpoint based
         security.
 
@@ -99,14 +95,14 @@ class UpdateHelper(object):
     cls.NAT_SUBNETWORK_ARG.AddArgument(parser)
 
     flags.AddDescription(parser)
-    if support_target_service_arg:
-      flags.AddTargetServiceArgsForUpdate(parser)
+    flags.AddTargetServiceArgsForUpdate(parser)
     flags.AddConnectionPreference(parser, is_update=True)
     flags.AddEnableProxyProtocolForUpdate(parser)
     flags.AddReconcileConnectionsForUpdate(parser)
     flags.AddConsumerRejectList(parser)
     if support_endpoint_based_security_arg:
       flags.AddConsumerAcceptList(parser)
+      flags.AddRemoveObsoleteEndpointEntries(parser)
     else:
       flags.AddConsumerAcceptListOld(parser)
     flags.AddPropagatedConnectionLimit(parser)
@@ -155,23 +151,46 @@ class UpdateHelper(object):
 
   def _GetNatSubnets(self, holder, args):
     """Returns nat subnetwork urls from the argument."""
+    assert self.NAT_SUBNETWORK_ARG
     nat_subnetwork_refs = self.NAT_SUBNETWORK_ARG.ResolveAsResource(
         args,
         holder.resources,
         default_scope=compute_scope.ScopeEnum.REGION,
         scope_lister=compute_flags.GetDefaultScopeLister(holder.client))
+
+    if nat_subnetwork_refs is None:
+      return []
     nat_subnetworks = [
         nat_subnetwork_ref.SelfLink()
         for nat_subnetwork_ref in nat_subnetwork_refs
     ]
     return nat_subnetworks
 
+  def _RemoveObsoleteEndpointEntries(self, replacement, cleared_fields):
+    """Removes obsolete endpoint entries from accept and reject lists."""
+    is_updated = False
+    connected_endpoint_ids = service_attachments_utils.GetConnectedEndpointIds(
+        replacement
+    )
+    # Remove endpoint URLs that are no longer valid from consumer accept list.
+    if service_attachments_utils.CleanObsoleteAcceptedEndpointUrls(
+        replacement, connected_endpoint_ids, cleared_fields
+    ):
+      is_updated = True
+
+    # Remove endpoint URLs that are no longer valid from consumer reject list.
+    if service_attachments_utils.CleanObsoleteRejectedEndpointUrls(
+        replacement, connected_endpoint_ids, cleared_fields
+    ):
+      is_updated = True
+    return is_updated
+
   def _Modify(self, holder, args, old_resource, cleared_fields):
     """Returns the updated service attachment."""
     replacement = encoding.CopyProtoMessage(old_resource)
     is_updated = False
 
-    if self._support_target_service_arg and args.IsSpecified('target_service'):
+    if args.IsSpecified('target_service'):
       is_updated = True
       replacement.targetService = args.target_service
 
@@ -228,6 +247,21 @@ class UpdateHelper(object):
           # The user can clear up the accept list
           cleared_fields.append('consumerAcceptLists')
 
+    if (
+        self._support_endpoint_based_security_arg
+        and args.remove_obsolete_endpoint_accept_reject_entries
+    ):
+      if args.IsSpecified(
+          'consumer_accept_list'
+      ) or args.IsSpecified('consumer_reject_list'):
+        raise exceptions.ConflictingArgumentsException(
+            '--remove-obsolete-endpoint-accept-reject-entries cannot be '
+            'specified with --consumer-accept-list or --consumer-reject-list.'
+        )
+      is_updated = self._RemoveObsoleteEndpointEntries(
+          replacement, cleared_fields
+      )
+
     if args.IsSpecified('reconcile_connections'):
       if args.reconcile_connections != old_resource.reconcileConnections:
         replacement.reconcileConnections = args.reconcile_connections
@@ -248,6 +282,7 @@ class UpdateHelper(object):
   def Run(self, args):
     """Issue a service attachment PATCH request."""
     client = self._holder.client
+    assert self.SERVICE_ATTACHMENT_ARG
     service_attachment_ref = self.SERVICE_ATTACHMENT_ARG.ResolveAsResource(
         args,
         self._holder.resources,
@@ -268,7 +303,6 @@ class UpdateHelper(object):
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine service attachment."""
-  _support_target_service_arg = False
   _support_endpoint_based_security_arg = False
   detailed_help = _DetailedHelp()
 
@@ -276,7 +310,6 @@ class Update(base.UpdateCommand):
   def Args(cls, parser):
     UpdateHelper.Args(
         parser,
-        cls._support_target_service_arg,
         cls._support_endpoint_based_security_arg,
     )
 
@@ -285,7 +318,6 @@ class Update(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     return UpdateHelper(
         holder,
-        self._support_target_service_arg,
         self._support_endpoint_based_security_arg,
     ).Run(args)
 
@@ -300,5 +332,4 @@ class UpdateBeta(Update):
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class UpdateAlpha(UpdateBeta):
   """Update a Google Compute Engine service attachment."""
-  _support_target_service_arg = True
   detailed_help = _DetailedHelp()

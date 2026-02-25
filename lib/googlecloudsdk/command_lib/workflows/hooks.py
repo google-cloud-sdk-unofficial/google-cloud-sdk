@@ -14,9 +14,6 @@
 # limitations under the License.
 """Contains hooks to be executed along with Cloud Workflows gcloud commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.workflows import cache
 from googlecloudsdk.core import log

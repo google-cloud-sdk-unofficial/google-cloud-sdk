@@ -53,9 +53,6 @@ There are three operators in the language of properties:
         a list.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import copy

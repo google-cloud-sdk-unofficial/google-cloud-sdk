@@ -14,9 +14,6 @@
 # limitations under the License.
 """Shim-related utils for storage resource formatters."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import errors
 from googlecloudsdk.command_lib.storage.resources import resource_util

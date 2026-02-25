@@ -158,7 +158,7 @@ class CreateBeta(Create):
   gateway is responsible for routing.
   """
 
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):

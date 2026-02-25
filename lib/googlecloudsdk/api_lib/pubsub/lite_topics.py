@@ -15,9 +15,6 @@
 
 """Utilities for Pub/Sub Lite topics."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from google.cloud.pubsublite import cloudpubsub
 from google.cloud.pubsublite import types

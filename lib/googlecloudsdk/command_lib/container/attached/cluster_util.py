@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cluster-access utilities for Attached cluster commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.container.fleet import kube_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants

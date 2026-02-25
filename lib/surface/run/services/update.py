@@ -140,6 +140,7 @@ class Update(base.Command):
     flags.AddServiceAccountFlag(parser)
     flags.AddClientNameAndVersionFlags(parser)
     flags.AddIngressFlag(parser)
+    flags.AddIapFlag(parser)
     concept_parsers.ConceptParser([service_presentation]).AddToParser(parser)
     # No output by default, can be overridden by --format
     parser.display_info.AddFormat('none')
@@ -335,7 +336,6 @@ class BetaUpdate(Update):
 
     # Flags specific to managed CR
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
-    flags.AddIapFlag(parser)
     container_args = ContainerArgGroup(cls.ReleaseTrack())
     container_args.AddArgument(flags.ReadinessProbeFlag())
     container_parser.AddContainerFlags(
@@ -357,7 +357,6 @@ class AlphaUpdate(BetaUpdate):
     cls.CommonArgs(parser)
 
     # Flags specific to managed CR
-    flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.AddDescriptionFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)

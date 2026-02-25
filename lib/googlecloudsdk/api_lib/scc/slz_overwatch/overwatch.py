@@ -14,9 +14,6 @@
 # limitations under the License.
 """Overwatch Object to run all commands under overwatch."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.scc.slz_overwatch import instances
 

@@ -15,9 +15,6 @@
 
 """Magic constants for images module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # The version of the docker API the docker-py client uses.
 # Warning: other versions might have different return values for some functions.

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility file that contains helpers for the Cloud TPU Execution groups."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import datetime
 import os

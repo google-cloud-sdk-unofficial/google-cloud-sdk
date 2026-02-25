@@ -15,9 +15,6 @@
 
 """Debug command flags."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 SNAPSHOT_LIST_FORMAT = """
           table(

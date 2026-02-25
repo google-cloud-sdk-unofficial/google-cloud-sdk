@@ -14,9 +14,6 @@
 # limitations under the License.
 """Instance OS policies compliance gcloud commands declarative functions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute.os_config import flags
 from googlecloudsdk.core import properties

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for handling API endpoint overrides."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import gkehub_api_util
 from googlecloudsdk.api_lib.container.fleet.connectgateway import util as connectgateway_api_util

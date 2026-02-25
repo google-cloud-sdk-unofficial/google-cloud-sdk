@@ -14,9 +14,6 @@
 # limitations under the License.
 """Client for interaction with Metadata Job API CRUD DATAPLEX."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import util as dataplex_api
 from googlecloudsdk.calliope import exceptions

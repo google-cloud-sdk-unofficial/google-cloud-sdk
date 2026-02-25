@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for Anthos On-Prem API for VMware platform version parsing."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

@@ -16,9 +16,6 @@
 
 # TODO(b/331622809): Review and fix any violations of naming conventions.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import ipaddress
 import re

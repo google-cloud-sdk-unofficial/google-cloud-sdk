@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utility functions to construct compute reservations sub block messages."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import exceptions
 

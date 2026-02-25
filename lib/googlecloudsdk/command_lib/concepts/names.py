@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for naming concepts and attributes."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def StripFlagPrefix(name):

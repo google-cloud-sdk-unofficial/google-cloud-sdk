@@ -34,6 +34,8 @@ from googlecloudsdk.command_lib.run import serverless_operations
 from googlecloudsdk.command_lib.run import stages
 from googlecloudsdk.command_lib.util.concepts import concept_parsers
 from googlecloudsdk.command_lib.util.concepts import presentation_specs
+from googlecloudsdk.core import properties
+from googlecloudsdk.core import resources
 from googlecloudsdk.core.console import progress_tracker
 
 
@@ -76,10 +78,13 @@ class Create(base.Command):
   """Create a Cloud Run instance."""
 
   detailed_help = {
-      'DESCRIPTION': """\
+      'DESCRIPTION': (
+          """\
           Creates a new Cloud Run instance.
-          """,
-      'EXAMPLES': """\
+          """
+      ),
+      'EXAMPLES': (
+          """\
           To create a new instance `my-instance` on Cloud Run:
 
               $ {command} my-instance --image=us-docker.pkg.dev/project/image
@@ -88,7 +93,8 @@ class Create(base.Command):
           with a suggested default value:
 
               $ {command} --image=us-docker.pkg.dev/project/image
-          """,
+          """
+      ),
   }
 
   @classmethod
@@ -96,9 +102,9 @@ class Create(base.Command):
     # Flags not specific to any platform
     instance_presentation = presentation_specs.ResourcePresentationSpec(
         'INSTANCE',
-        resource_args.GetInstanceResourceSpec(prompt=True),
+        resource_args.GetInstanceResourceSpec(),
         'Instance to create.',
-        required=True,
+        required=False,
         prefixes=False,
     )
     flags.AddLabelsFlag(parser)
@@ -152,7 +158,25 @@ class Create(base.Command):
       raise c_parser_errors.RequiredError(argument='--image')
 
     instance_ref = args.CONCEPTS.instance.Parse()
-    flags.ValidateResource(instance_ref)
+
+    instance_name = None
+    if instance_ref:
+      flags.ValidateResource(instance_ref)
+      parent_ref = instance_ref.Parent()
+      instance_name = instance_ref.Name()
+    else:
+      # instance_ref is None, name not provided. Build parent_ref manually.
+      region = properties.VALUES.run.region.Get()
+      if not region:
+        raise exceptions.ConfigurationError(
+            'The --region flag or run/region property must be set.'
+        )
+      project = properties.VALUES.core.project.Get(required=True)
+
+      # Construct the parent reference (namespace)
+      parent_ref = resources.REGISTRY.Create(
+          'run.namespaces', namespacesId=project
+      )
 
     conn_context = connection_context.GetConnectionContext(
         args, flags.Product.RUN, self.ReleaseTrack()
@@ -167,8 +191,8 @@ class Create(base.Command):
     messages_util.MaybeLogDefaultGpuTypeMessage(args, resource=None)
     with serverless_operations.Connect(conn_context) as operations:
       pretty_print.Info(
-          messages_util.GetStartDeployMessage(
-              conn_context, instance_ref, 'Creating', 'instance'
+          messages_util.GetStartCreateInstanceMessage(
+              conn_context, parent_ref, instance_name
           )
       )
       header_msg = 'Creating instance...'
@@ -180,7 +204,8 @@ class Create(base.Command):
           suppress_output=args.async_,
       ) as tracker:
         instance = operations.CreateInstance(
-            instance_ref,
+            parent_ref,
+            instance_name,
             changes,
             tracker,
             asyn=args.async_,

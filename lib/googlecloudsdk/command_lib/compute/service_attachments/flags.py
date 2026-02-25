@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute service-attachment commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import completers as compute_completers
@@ -203,6 +200,27 @@ def AddConsumerAcceptList(parser):
     * `PROJECT_OR_NETWORK_OR_ENDPOINT` - Consumer project ID/number or network URL orendpoint URL.
     * `CONNECTION_LIMIT` - The maximum number of allowed connections.
     """,
+  )
+
+
+def AddRemoveObsoleteEndpointEntries(parser):
+  parser.add_argument(
+      '--remove-obsolete-endpoint-accept-reject-entries',
+      action='store_true',
+      default=False,
+      help="""\
+      If set to true, this flag cleans up the service attachment's consumer accept
+      and reject lists by removing entries for Private Service Connect endpoints
+      that are no longer connected.
+
+      The cleanup process compares the resource ID of each endpoint in the
+      lists against the currently connected endpoints. In rare cases, an
+      obsolete entry will be left untouched if its resource ID collides with
+      another connected endpoint from a different project.
+
+      This flag only affects endpoint-based accept/reject entries, project-based
+      and network-based entries are left unchanged.
+      """,
   )
 
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helper methods for interactive prompting."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.apigee import errors
 from googlecloudsdk.command_lib.apigee import resource_args

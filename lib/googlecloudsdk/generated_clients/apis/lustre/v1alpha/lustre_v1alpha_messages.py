@@ -163,8 +163,8 @@ class Backup(_messages.Message):
     kmsKey: Optional. Immutable. The Cloud KMS key name to use for data
       encryption. If not set, the backup will use Google-managed encryption
       keys. If set, the backup will use customer-managed encryption keys. The
-      key must be in the same region as the backup. The key format is: project
-      s/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}
+      key must be in the same region as the backup. The key format is: `projec
+      ts/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}`
     labels: Optional. Resource labels to represent user provided metadata.
     name: Identifier. The resource name of the backup, in the format
       `projects/{project}/locations/{location}/backups/{backup}`.
@@ -262,6 +262,32 @@ class Date(_messages.Message):
   year = _messages.IntegerField(3, variant=_messages.Variant.INT32)
 
 
+class DynamicTierOptions(_messages.Message):
+  r"""Dynamic tier options for a Managed Lustre instance.
+
+  Enums:
+    ModeValueValuesEnum: Required. The mode for the Dynamic tier instance.
+
+  Fields:
+    mode: Required. The mode for the Dynamic tier instance.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Required. The mode for the Dynamic tier instance.
+
+    Values:
+      MODE_UNSPECIFIED: Unspecified dynamic tier mode.
+      DISABLED: The dynamic tier is explicitly disabled.
+      DEFAULT_CACHE: The dynamic tier is enabled with a default cache
+        configuration.
+    """
+    MODE_UNSPECIFIED = 0
+    DISABLED = 1
+    DEFAULT_CACHE = 2
+
+  mode = _messages.EnumField('ModeValueValuesEnum', 1)
+
+
 class ExportDataRequest(_messages.Message):
   r"""Export data from Managed Lustre to a Cloud Storage bucket.
 
@@ -304,32 +330,6 @@ class GoogleProtobufEmpty(_messages.Message):
 
 
 
-class HybridTierOptions(_messages.Message):
-  r"""Hybrid tier options for a Managed Lustre instance.
-
-  Enums:
-    ModeValueValuesEnum: Required. The mode for the Hybrid tier instance.
-
-  Fields:
-    mode: Required. The mode for the Hybrid tier instance.
-  """
-
-  class ModeValueValuesEnum(_messages.Enum):
-    r"""Required. The mode for the Hybrid tier instance.
-
-    Values:
-      MODE_UNSPECIFIED: Hybrid tier mode is not set.
-      DISABLED: Hybrid tier is explicitly disabled.
-      DEFAULT_CACHE: Hybrid tier is enabled with a default cache
-        configuration.
-    """
-    MODE_UNSPECIFIED = 0
-    DISABLED = 1
-    DEFAULT_CACHE = 2
-
-  mode = _messages.EnumField('ModeValueValuesEnum', 1)
-
-
 class ImportDataRequest(_messages.Message):
   r"""Message for importing data to Lustre.
 
@@ -356,6 +356,8 @@ class Instance(_messages.Message):
   Enums:
     AuditLogLevelValueValuesEnum: Optional. The file system audit log level
       for the instance.
+    InitialCompressionAlgorithmValueValuesEnum: Optional. Input only. The
+      compression algorithm to use when initializing the instance.
     StateValueValuesEnum: Output only. The state of the instance.
 
   Messages:
@@ -372,6 +374,9 @@ class Instance(_messages.Message):
       sizes for each performance tier.
     createTime: Output only. Timestamp when the instance was created.
     description: Optional. A user-readable description of the instance.
+    dynamicTierOptions: Optional. Dynamic tier options for the instance. If
+      the instance is using the Dynamic tier, `per_unit_storage_throughput`
+      must not be set or must be set to zero.
     filesystem: Required. Immutable. The filesystem name for this instance.
       This name is used by client-side tools, including when mounting the
       instance. Must be eight characters or less and can only contain letters
@@ -379,9 +384,13 @@ class Instance(_messages.Message):
     gkeSupportEnabled: Optional. Indicates whether you want to enable support
       for GKE clients. By default, GKE clients are not supported. Deprecated.
       No longer required for GKE instance creation.
-    hybridTierOptions: Optional. Hybrid tier options for the instance. If the
-      instance is using the Hybrid tier, `per_unit_storage_throughput` must
-      not be set or must be set to zero.
+    initialCompressionAlgorithm: Optional. Input only. The compression
+      algorithm to use when initializing the instance.
+    initialCompressionLevel: Optional. Input only. The compression level to
+      use for when initializing the instance. Defaults to 1 if not set. Valid
+      ranges depend on the selected algorithm: - LZ4: 1 to 12 - ZSTD: 1 to 22
+      Higher levels generally offer better compression ratios but may increase
+      CPU usage.
     kmsKey: Optional. Immutable. The Cloud KMS key name to use for data
       encryption. If not set, the instance will use Google-managed encryption
       keys. If set, the instance will use customer-managed encryption keys.
@@ -431,6 +440,19 @@ class Instance(_messages.Message):
     AUDIT_LOG_LEVEL_UNSPECIFIED = 0
     DISABLED = 1
     BASIC = 2
+
+  class InitialCompressionAlgorithmValueValuesEnum(_messages.Enum):
+    r"""Optional. Input only. The compression algorithm to use when
+    initializing the instance.
+
+    Values:
+      COMPRESSION_ALGORITHM_UNSPECIFIED: Not set.
+      LZ4: Compression algorithm is explicitly enabled with LZ4 compression.
+      ZSTD: Compression algorithm is explicitly enabled with ZSTD compression.
+    """
+    COMPRESSION_ALGORITHM_UNSPECIFIED = 0
+    LZ4 = 1
+    ZSTD = 2
 
   class StateValueValuesEnum(_messages.Enum):
     r"""Output only. The state of the instance.
@@ -486,25 +508,27 @@ class Instance(_messages.Message):
   capacityGib = _messages.IntegerField(3)
   createTime = _messages.StringField(4)
   description = _messages.StringField(5)
-  filesystem = _messages.StringField(6)
-  gkeSupportEnabled = _messages.BooleanField(7)
-  hybridTierOptions = _messages.MessageField('HybridTierOptions', 8)
-  kmsKey = _messages.StringField(9)
-  labels = _messages.MessageField('LabelsValue', 10)
-  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 11)
-  mountPoint = _messages.StringField(12)
-  name = _messages.StringField(13)
-  network = _messages.StringField(14)
-  perUnitStorageThroughput = _messages.IntegerField(15)
-  placementPolicy = _messages.StringField(16)
-  satisfiesPzi = _messages.BooleanField(17)
-  satisfiesPzs = _messages.BooleanField(18)
-  sourceBackup = _messages.StringField(19)
-  state = _messages.EnumField('StateValueValuesEnum', 20)
-  stateReason = _messages.StringField(21)
-  uid = _messages.StringField(22)
-  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 23)
-  updateTime = _messages.StringField(24)
+  dynamicTierOptions = _messages.MessageField('DynamicTierOptions', 6)
+  filesystem = _messages.StringField(7)
+  gkeSupportEnabled = _messages.BooleanField(8)
+  initialCompressionAlgorithm = _messages.EnumField('InitialCompressionAlgorithmValueValuesEnum', 9)
+  initialCompressionLevel = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  kmsKey = _messages.StringField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  maintenancePolicy = _messages.MessageField('MaintenancePolicy', 13)
+  mountPoint = _messages.StringField(14)
+  name = _messages.StringField(15)
+  network = _messages.StringField(16)
+  perUnitStorageThroughput = _messages.IntegerField(17)
+  placementPolicy = _messages.StringField(18)
+  satisfiesPzi = _messages.BooleanField(19)
+  satisfiesPzs = _messages.BooleanField(20)
+  sourceBackup = _messages.StringField(21)
+  state = _messages.EnumField('StateValueValuesEnum', 22)
+  stateReason = _messages.StringField(23)
+  uid = _messages.StringField(24)
+  upcomingMaintenanceSchedule = _messages.MessageField('MaintenanceSchedule', 25)
+  updateTime = _messages.StringField(26)
 
 
 class ListBackupsResponse(_messages.Message):
@@ -934,6 +958,20 @@ class LustreProjectsLocationsInstancesPatchRequest(_messages.Message):
   updateMask = _messages.StringField(4)
 
 
+class LustreProjectsLocationsInstancesRescheduleMaintenanceRequest(_messages.Message):
+  r"""A LustreProjectsLocationsInstancesRescheduleMaintenanceRequest object.
+
+  Fields:
+    name: Required. Format:
+      projects/{project}/locations/{location}/instances/{instance}
+    rescheduleMaintenanceRequest: A RescheduleMaintenanceRequest resource to
+      be passed as the request body.
+  """
+
+  name = _messages.StringField(1, required=True)
+  rescheduleMaintenanceRequest = _messages.MessageField('RescheduleMaintenanceRequest', 2)
+
+
 class LustreProjectsLocationsListRequest(_messages.Message):
   r"""A LustreProjectsLocationsListRequest object.
 
@@ -1230,6 +1268,52 @@ class ReconciliationOperationMetadata(_messages.Message):
 
   deleteResource = _messages.BooleanField(1)
   exclusiveAction = _messages.EnumField('ExclusiveActionValueValuesEnum', 2)
+
+
+class Reschedule(_messages.Message):
+  r"""The desired reschedule settings.
+
+  Enums:
+    RescheduleTypeValueValuesEnum: Required. The type of rescheduling.
+
+  Fields:
+    rescheduleType: Required. The type of rescheduling.
+    scheduleTime: Optional. Required if reschedule_type is BY_TIME. Timestamp
+      when the maintenance shall be rescheduled to. This time must be within
+      28 days of the original scheduled maintenance start time.
+  """
+
+  class RescheduleTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of rescheduling.
+
+    Values:
+      RESCHEDULE_TYPE_UNSPECIFIED: Unspecified schedule type.
+      IMMEDIATE: Apply update immediately
+      NEXT_AVAILABLE_WINDOW: Reschedule to the next available window.
+      BY_TIME: Reschedule to a specific time.
+    """
+    RESCHEDULE_TYPE_UNSPECIFIED = 0
+    IMMEDIATE = 1
+    NEXT_AVAILABLE_WINDOW = 2
+    BY_TIME = 3
+
+  rescheduleType = _messages.EnumField('RescheduleTypeValueValuesEnum', 1)
+  scheduleTime = _messages.StringField(2)
+
+
+class RescheduleMaintenanceRequest(_messages.Message):
+  r"""Message for requesting to reschedule a maintenance event for a specific
+  instance.
+
+  Fields:
+    requestId: Optional. A unique identifier for this request. A random UUID
+      is recommended. This request is only idempotent if a `request_id` is
+      provided.
+    reschedule: Required. The desired reschedule settings.
+  """
+
+  requestId = _messages.StringField(1)
+  reschedule = _messages.MessageField('Reschedule', 2)
 
 
 class SourceInstance(_messages.Message):

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Module containing the extended wrappers for Remediation Intents service."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Any
 

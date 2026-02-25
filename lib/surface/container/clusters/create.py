@@ -253,6 +253,7 @@ def ParseCreateOptionsBase(
     else:
       addons[api_adapter.LUSTRECSIDRIVER] = True
   enable_pod_snapshots = get_default('pod_snapshots_enabled')
+  enable_agent_sandbox = get_default('enable_agent_sandbox')
 
   return api_adapter.CreateClusterOptions(
       accelerators=get_default('accelerator'),
@@ -286,7 +287,7 @@ def ParseCreateOptionsBase(
       dataplane_v2_observability_mode=get_default(
           'dataplane_v2_observability_mode'
       ),
-      enable_ambient=get_default('enable_ambient'),
+      enable_ambient_networking=get_default('enable_ambient_networking'),
       disk_type=get_default('disk_type'),
       enable_autorepair=enable_autorepair,
       enable_autoscaling=get_default('enable_autoscaling'),
@@ -591,6 +592,7 @@ def ParseCreateOptionsBase(
       disable_multi_nic_lustre=get_default('disable_multi_nic_lustre'),
       enable_lustre_multi_nic=get_default('enable_lustre_multi_nic'),
       enable_pod_snapshots=enable_pod_snapshots,
+      enable_agent_sandbox=enable_agent_sandbox,
       enable_default_compute_class=get_default('enable_default_compute_class'),
       enable_k8s_certs_via_dns=get_default('enable_k8s_certs_via_dns'),
       boot_disk_provisioned_iops=get_default('boot_disk_provisioned_iops'),
@@ -749,7 +751,7 @@ flags_to_add = {
         'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'maintenancedisruptionbudget': lambda p: (
-            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=False)
         ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
@@ -962,7 +964,7 @@ flags_to_add = {
         'machinetype': flags.AddMachineTypeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'maintenancedisruptionbudget': lambda p: (
-            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=False)
         ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
@@ -1120,6 +1122,7 @@ flags_to_add = {
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
+        'agentsandbox': flags.AddAgentSandboxConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),
@@ -1176,7 +1179,7 @@ flags_to_add = {
         'dataplanev2': flags.AddDataplaneV2Flag,
         'dataplanev2metrics': flags.AddDataplaneV2MetricsFlag,
         'dataplanev2obs': flags.AddDataplaneV2ObservabilityFlags,
-        'enableAmbient': flags.AddEnableAmbientFlag,
+        'enableAmbientNetworking': flags.AddEnableAmbientNetworkingFlag,
         'disabledefaultsnat': AddDisableDefaultSnatFlagForClusterCreate,
         'disksize': flags.AddDiskSizeFlag,
         'disktype': flags.AddDiskTypeFlag,
@@ -1217,7 +1220,7 @@ flags_to_add = {
         'maxpodspernode': flags.AddMaxPodsPerNodeFlag,
         'maintenancewindow': flags.AddMaintenanceWindowGroup,
         'maintenancedisruptionbudget': lambda p: (
-            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=True)
+            flags.AddMaintenanceDisruptionBudgetFlagGroup(p, hidden=False)
         ),
         'managedprometheus': lambda p: flags.AddManagedPrometheusFlags(
             p, for_create=True
@@ -1369,6 +1372,7 @@ flags_to_add = {
             lambda p: flags.AddAutopilotPrivilegedAdmissionFlag(p, hidden=True)
         ),
         'podsnapshots': flags.AddPodSnapshotConfigFlags,
+        'agentsandbox': flags.AddAgentSandboxConfigFlags,
         'enableKernelModuleSignatureEnforcement': (
             flags.AddEnableKernelModuleSignatureEnforcementFlag
         ),

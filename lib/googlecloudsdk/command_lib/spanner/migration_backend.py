@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Spanner migration library functions and utilities for the spanner-migration-tool binary."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 import os

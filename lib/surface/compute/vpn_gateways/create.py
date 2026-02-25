@@ -181,7 +181,7 @@ class CreateBeta(Create):
   INSTANCE_ARG = None
 
   _support_outer_vpn_ipv6 = True
-  _support_tagging_at_creation = False
+  _support_tagging_at_creation = True
 
   @classmethod
   def Args(cls, parser):

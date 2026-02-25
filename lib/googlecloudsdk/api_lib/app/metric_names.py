@@ -15,9 +15,6 @@
 
 """Appengine CSI metric names."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # Metric names for CSI
 

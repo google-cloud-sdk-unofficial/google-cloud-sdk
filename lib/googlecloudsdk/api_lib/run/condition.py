@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wraps a Cloud Run Condition messages, making fields easier to access."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import sys

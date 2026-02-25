@@ -14,9 +14,6 @@
 # limitations under the License.
 """Set up flags for creating or updating a Github Enterprise config."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.builds import flags as build_flags
 

@@ -20,9 +20,6 @@ apigee surface must make its own HTTPS requests instead of relying on an
 apitools-generated client.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import json

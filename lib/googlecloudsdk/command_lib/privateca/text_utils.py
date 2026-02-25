@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for dealing with text."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from dateutil import tz
 from googlecloudsdk.core.util import times

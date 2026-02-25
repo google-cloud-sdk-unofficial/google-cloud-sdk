@@ -47,7 +47,7 @@ auto_flags = [
     'enableSecurityPosture',
     'autoprovisioningEnableKubeletReadonlyPort',
     'dataplanev2obs',
-    'enableAmbient',
+    'enableAmbientNetworking',
     'enableK8sBetaApis',
     'compliance',
     'complianceStandards',
@@ -79,6 +79,8 @@ auto_flags = [
     'autopilotPrivilegedAdmission',
     'enablePodSnapshots',
     'disablePodSnapshots',
+    'enableAgentSandbox',
+    'disableAgentSandbox',
     'enableKernelModuleSignatureEnforcement',
     'enableLustreMultiNic',
     'autopilotGeneralProfile',
@@ -130,6 +132,7 @@ def AddAutoFlags(parser, release_track):
   flags.AddEnableLegacyLustrePortFlag(parser, hidden=False)
   if release_track != base.ReleaseTrack.GA:
     flags.AddPodSnapshotConfigFlags(parser)
+    flags.AddAgentSandboxConfigFlags(parser)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)

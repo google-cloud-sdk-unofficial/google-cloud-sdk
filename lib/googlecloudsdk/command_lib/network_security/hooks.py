@@ -14,9 +14,6 @@
 # limitations under the License.
 
 """Declaritive hooks for network security resources."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def SetUpdateMask(unused_ref, args, request):

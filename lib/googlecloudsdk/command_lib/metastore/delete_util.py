@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utilities for deleting resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.metastore import operations_util as operations_api_util
 from googlecloudsdk.api_lib.metastore import util as api_util

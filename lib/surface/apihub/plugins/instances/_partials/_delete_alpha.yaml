@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Delete pluginInstances
-    description: Delete a pluginInstance
+    brief: Delete a Plugin Instance
+    description: Delete a plugin instance
     examples: |-
-      To delete the pluginInstance, run:
+      To delete a plugin instance with the ID `my-instance` for plugin `my-plugin`, run:
 
-          $ {command}
+      $ {command} my-instance --plugin=my-plugin --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

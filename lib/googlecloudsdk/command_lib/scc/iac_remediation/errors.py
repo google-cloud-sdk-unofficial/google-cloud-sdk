@@ -14,10 +14,6 @@
 # limitations under the License.
 """Custom errors for SCC IaC Remediation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scc.iac_remediation import const
 from googlecloudsdk.core import exceptions

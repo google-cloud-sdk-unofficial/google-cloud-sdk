@@ -85,6 +85,7 @@ class Create(base.CreateCommand):
     unified_pool = None
     storage_pool_type = None
     scale_tier = None
+    mode = None
     if args.type is not None:
       storage_pool_type = storagepools_flags.GetStoragePoolTypeEnumFromArg(
           args.type, client.messages
@@ -99,6 +100,10 @@ class Create(base.CreateCommand):
       if args.scale_tier is not None:
         scale_tier = storagepools_flags.GetStoragePoolScaleTierEnumFromArg(
             args.scale_tier, client.messages
+        )
+      if args.mode is not None:
+        mode = storagepools_flags.GetStoragePoolModeEnumFromArg(
+            args.mode, client.messages
         )
 
     storage_pool = client.ParseStoragePoolConfig(
@@ -123,6 +128,7 @@ class Create(base.CreateCommand):
         qos_type=qos_type,
         storage_pool_type=storage_pool_type,
         scale_tier=scale_tier,
+        mode=mode,
     )
     result = client.CreateStoragePool(
         storagepool_ref, args.async_, storage_pool

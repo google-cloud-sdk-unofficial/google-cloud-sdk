@@ -14,9 +14,6 @@
 # limitations under the License.
 """PSC Connection utilities for `gcloud redis clusters`."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.redis import util
 

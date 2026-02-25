@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create versions
+    brief: Create a Version
     description: Create a version
     examples: |-
-      To create the version, run:
+      To create a version with the ID `my-version` for API `my-api`, run:
 
-          $ {command}
+      $ {command} --version=my-version --api=my-api --display-name="My Version" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

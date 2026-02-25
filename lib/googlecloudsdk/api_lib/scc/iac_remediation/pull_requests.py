@@ -14,9 +14,6 @@
 # limitations under the License.
 """Library for creating pull request related messages."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

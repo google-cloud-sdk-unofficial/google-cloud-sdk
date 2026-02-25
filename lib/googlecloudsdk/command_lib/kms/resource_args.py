@@ -14,9 +14,6 @@
 # limitations under the License.
 """Shared resource flags for kms resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import cast
 
@@ -110,6 +107,13 @@ def ProjectAttributeConfig(kms_prefix=True):
       name=name,
       help_text='The Google Cloud project for the {resource}.',
       fallthroughs=[deps.PropertyFallthrough(properties.VALUES.core.project)],
+  )
+
+
+def RetiredResourceAttributeConfig(kms_prefix=True):
+  name = 'kms-retired-resource' if kms_prefix else 'retired-resource'
+  return concepts.ResourceParameterAttributeConfig(
+      name=name, help_text='The KMS retired resource of the {resource}.'
   )
 
 
@@ -243,6 +247,21 @@ def GetKmsProjectResourceSpec(kms_prefix=True):
   return concepts.ResourceSpec(
       'cloudkms.projects',
       resource_name='project',
+      projectsId=ProjectAttributeConfig(kms_prefix),
+      disable_auto_completers=False,
+  )
+
+
+def GetKmsRetiredResourceResourceSpec(
+    kms_prefix=True, region_fallthrough=False
+):
+  return concepts.ResourceSpec(
+      'cloudkms.projects.locations.retiredResources',
+      resource_name='retired-resource',
+      retiredResourcesId=RetiredResourceAttributeConfig(kms_prefix),
+      locationsId=LocationAttributeConfig(
+          kms_prefix=kms_prefix, region_fallthrough=region_fallthrough
+      ),
       projectsId=ProjectAttributeConfig(kms_prefix),
       disable_auto_completers=False,
   )
@@ -418,5 +437,14 @@ def AddKmsProjectResourceArgForKMS(parser, required, name):
       name,
       GetKmsProjectResourceSpec(kms_prefix=False),
       'The KMS project resource.',
+      required=required,
+  ).AddToParser(parser)
+
+
+def AddKmsRetiredResourceResourceArgForKMS(parser, required, name):
+  concept_parsers.ConceptParser.ForResource(
+      name,
+      GetKmsRetiredResourceResourceSpec(kms_prefix=False),
+      'The KMS retired resource.',
       required=required,
   ).AddToParser(parser)

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Hooks for declarative commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def SetDefaultPageSizeRequestHook(default_page_size):

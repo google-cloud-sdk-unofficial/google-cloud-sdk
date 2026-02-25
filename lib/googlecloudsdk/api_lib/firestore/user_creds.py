@@ -14,9 +14,6 @@
 # limitations under the License.
 """Useful commands for interacting with the Cloud Firestore User Creds API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import api_utils
 

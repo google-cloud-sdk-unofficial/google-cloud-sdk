@@ -91,7 +91,6 @@ class AppEngineToCloudRun(deploy.Deploy):
         parser, container_args, cls.ReleaseTrack()
     )
 
-    flags.AddIapFlag(parser)
     flags.AddRuntimeFlag(parser)
     flags.SERVICE_MESH_FLAG.AddToParser(parser)
     flags.IDENTITY_FLAG.AddToParser(parser)
@@ -163,8 +162,6 @@ class AppEngineToCloudRun(deploy.Deploy):
     )
     print_deploy_command = ''
     for command_str in cloud_run_deploy_command:
-      if command_str.startswith('--labels'):
-        command_str = '--labels=migrated-from=app-engine,migration-tool=gcloud-app-migrate-standard-v1'
       print_deploy_command += command_str + ' '
     if args.entrypoint:
       setattr(
@@ -211,6 +208,9 @@ class AppEngineToCloudRun(deploy.Deploy):
           continue
         if command_args[0] == 'max_instances':
           args.__setattr__(command_args[0], flags.ScaleValue(command_args[1]))
+          continue
+        if command_args[0] == 'scaling':
+          args.__setattr__(command_args[0], flags.ScalingValue(command_args[1]))
           continue
         if len(command_args) > 1:
           args.__setattr__(command_args[0], command_args[1])

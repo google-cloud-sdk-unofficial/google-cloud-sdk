@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List pluginInstances
-    description: List pluginInstances
+    brief: List Plugin Instances
+    description: List plugin instances
     examples: |-
-      To list all pluginInstances, run:
+      To list all plugin instances for plugin `my-plugin`, run:
 
-          $ {command}
+      $ {command} --plugin=my-plugin --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

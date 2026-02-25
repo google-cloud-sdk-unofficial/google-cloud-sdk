@@ -28,9 +28,6 @@ def AddFlagName(parser):
   )
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import datetime
@@ -1810,19 +1807,28 @@ def AddDatabaseVersion(parser, alloydb_messages, release_track):
   )
 
 
-def AddVersion(parser, alloydb_messages):
+def AddVersion(parser, alloydb_messages, release_track) -> None:
   """Adds Version flag.
 
   Args:
     parser: argparse.Parser: Parser object for command line inputs.
     alloydb_messages: Message module.
+    release_track: base.ReleaseTrack: The command version being used -
+      GA/BETA/ALPHA.
   """
-  choices = [
+  base_choices = [
       alloydb_messages.UpgradeClusterRequest.VersionValueValuesEnum.POSTGRES_14,
       alloydb_messages.UpgradeClusterRequest.VersionValueValuesEnum.POSTGRES_15,
       alloydb_messages.UpgradeClusterRequest.VersionValueValuesEnum.POSTGRES_16,
       alloydb_messages.UpgradeClusterRequest.VersionValueValuesEnum.POSTGRES_17,
   ]
+  if release_track in (base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA):
+    postgres_18 = (
+        alloydb_messages.UpgradeClusterRequest.VersionValueValuesEnum.POSTGRES_18
+    )
+    choices = base_choices + [postgres_18]
+  else:
+    choices = base_choices
   parser.add_argument(
       '--version',
       required=True,

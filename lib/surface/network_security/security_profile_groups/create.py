@@ -104,7 +104,7 @@ class CreateProfileGroup(base.CreateCommand):
           'wildfire-analysis-profile',
           group=required_group,
           required=False,
-          help_text='Path to Wildfire Analysis Profile resource.',
+          help_text='Path to WildFire Analysis Profile resource.',
           project_scope_supported=project_scope_supported,
       )
     spg_flags.AddSecurityProfileResource(

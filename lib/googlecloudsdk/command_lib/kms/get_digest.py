@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for digesting a file."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import hashlib
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base

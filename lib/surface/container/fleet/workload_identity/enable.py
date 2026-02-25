@@ -24,13 +24,15 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Enable(feature_base.EnableCommand):
   """Enable Workload Identity Feature.
 
   Enable the Workload Identity Feature in a fleet.
 
-  ## Examples
+  ## EXAMPLES
 
   To enable Workload Identity Feature, run:
 

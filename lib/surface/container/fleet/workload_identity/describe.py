@@ -24,13 +24,15 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Describe(feature_base.DescribeCommand):
   """Describe the status of Workload Identity Feature resource.
 
   Describe the status of the Workload Identity Feature resource in a fleet.
 
-  ## Examples
+  ## EXAMPLES
 
   To describe the Workload Identity Feature, run:
 

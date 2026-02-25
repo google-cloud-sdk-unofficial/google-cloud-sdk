@@ -14,9 +14,6 @@
 # limitations under the License.
 """Parse workerpool config files."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudbuild import cloudbuild_util
 

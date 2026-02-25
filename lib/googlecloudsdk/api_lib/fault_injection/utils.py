@@ -14,9 +14,6 @@
 # limitations under the License.
 """Util for Fault Injection Cloud SDK."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.util import apis

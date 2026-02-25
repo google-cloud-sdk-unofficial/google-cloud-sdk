@@ -14,9 +14,6 @@
 # limitations under the License.
 """Task for IAM policies on storage resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 

@@ -763,7 +763,10 @@ class LoggingInterceptor(grpc.UnaryUnaryClientInterceptor,
     self.log_metadata(responses.initial_metadata())
     log.status.Print('-- headers end --')
     log.status.Print('-- body start --')
-    log.status.Print('{}'.format(response))
+    if properties.VALUES.core.log_http_streaming_body.GetBool():
+      log.status.Print('{}'.format(response))
+    else:
+      log.status.Print('<streaming body>')
     log.status.Print('-- body end --')
     log.status.Print(
         'total time (response): {0:.3f} secs'.format(time_taken))

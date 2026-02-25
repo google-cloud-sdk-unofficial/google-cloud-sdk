@@ -14,9 +14,6 @@
 # limitations under the License.
 """Shared constants used by container api."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 DEFAULT_DEGRADED_WARNING = (
     "Missing edit permissions on project.\n"

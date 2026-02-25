@@ -14,9 +14,6 @@
 # limitations under the License.
 """Library for marshalling binary output_messages to/from stdout and stderr."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import json

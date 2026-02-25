@@ -1801,10 +1801,12 @@ class FlexShieldingOptions(_messages.Message):
         south1`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
+      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
     ME_CENTRAL1 = 2
+    US_EAST5 = 3
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 

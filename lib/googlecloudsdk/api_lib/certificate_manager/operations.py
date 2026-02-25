@@ -14,9 +14,6 @@
 # limitations under the License.
 """API client library for Certificate Manager operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 

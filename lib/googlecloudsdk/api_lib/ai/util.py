@@ -14,9 +14,6 @@
 # limitations under the License.
 """General utilities for dealing with Vertex AI api messages."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.command_lib.ai import constants

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute images packages commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute.images.packages import resource_args

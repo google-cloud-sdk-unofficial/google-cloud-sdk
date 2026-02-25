@@ -19,9 +19,6 @@ aid us in doing so. Such as if we need to know if a cluster version is end of
 life etc.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import locations as api_util
 from googlecloudsdk.command_lib.container.gkemulticloud import constants

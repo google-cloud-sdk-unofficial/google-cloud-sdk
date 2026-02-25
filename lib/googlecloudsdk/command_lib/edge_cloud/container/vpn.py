@@ -14,9 +14,6 @@
 # limitations under the License.
 
 """Utils for VPN Connection commands."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 class DescribeVPNTableView:

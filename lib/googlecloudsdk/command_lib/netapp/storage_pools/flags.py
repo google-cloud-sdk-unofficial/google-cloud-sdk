@@ -14,9 +14,9 @@
 # limitations under the License.
 """Flags and helpers for the Cloud NetApp Files Storage Pools commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+
+import argparse
+from typing import Any
 
 from googlecloudsdk.api_lib.netapp import util as netapp_api_util
 from googlecloudsdk.calliope import arg_parsers
@@ -147,13 +147,37 @@ def GetStoragePoolScaleTierArg(messages):
           'SCALE_TIER_STANDARD': 'standard',
           'SCALE_TIER_ENTERPRISE': 'enterprise',
       },
-      hidden=True,
   )
 
 
 def GetStoragePoolScaleTierEnumFromArg(choice, messages):
   """Returns the Choice Enum for StoragePoolScaleTier."""
   return GetStoragePoolScaleTierArg(messages).GetEnumForChoice(choice)
+
+
+def GetStoragePoolModeEnumFromArg(choice: str, messages: Any):
+  """Returns the Choice Enum for StoragePoolMode."""
+  return arg_utils.ChoiceToEnum(
+      choice=choice, enum_type=messages.StoragePool.ModeValueValuesEnum
+  )
+
+
+def GetStoragePoolModeArg(messages: Any):
+  """Returns the ChoiceEnumMapper for StoragePoolMode."""
+  return arg_utils.ChoiceEnumMapper(
+      '--mode',
+      messages.StoragePool.ModeValueValuesEnum,
+      help_str="""The mode of the Storage Pool. `ONTAP` mode is for performing ONTAP operations with ONTAP Mode APIs. `DEFAULT` mode is for performing operations allowed with NetApp Files APIs.""",
+      custom_mappings={
+          'DEFAULT': 'default',
+          'ONTAP': 'ontap',
+      },
+  )
+
+
+def AddStoragePoolModeArg(parser: argparse.ArgumentParser, messages: Any):
+  """Adds the --mode arg to the arg parser for Storage Pools."""
+  GetStoragePoolModeArg(messages).choice_arg.AddToParser(parser)
 
 
 def AddStoragePoolScaleTierArg(parser, messages):
@@ -398,6 +422,7 @@ def AddStoragePoolCreateArgs(parser, release_track):
     AddStoragePoolEnableHotTierAutoResizeArg(parser)
     AddStoragePoolUnifiedPoolArg(parser)
     AddStoragePoolScaleTierArg(parser, messages)
+    AddStoragePoolModeArg(parser, messages)
 
 
 def AddStoragePoolDeleteArgs(parser):

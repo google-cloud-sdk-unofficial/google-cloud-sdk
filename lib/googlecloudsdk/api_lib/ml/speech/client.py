@@ -14,9 +14,6 @@
 # limitations under the License.
 """Speech-to-text V2 client."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import contextlib
 import os

@@ -22,11 +22,7 @@ The specification for jar files is at
 http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
-from __future__ import with_statement
 import re
 import zipfile
 

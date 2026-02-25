@@ -15,9 +15,6 @@
 """Wait messages for the compute instance groups managed commands."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 _CURRENT_ACTION_TYPES = ['abandoning', 'creating', 'creatingWithoutRetries',

@@ -14,9 +14,6 @@
 # limitations under the License.
 """recommender API utlities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.recommender import service as recommender_service
 from googlecloudsdk.api_lib.util import messages as messages_util

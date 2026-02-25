@@ -14,9 +14,6 @@
 # limitations under the License.
 """File utils for Artifact Registry commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import re

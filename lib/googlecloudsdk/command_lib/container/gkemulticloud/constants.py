@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants for gkemulticloud."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 MAX_LRO_POLL_INTERVAL_MS = 10000
 

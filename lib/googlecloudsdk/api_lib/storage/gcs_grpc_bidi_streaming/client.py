@@ -17,6 +17,8 @@
 
 from __future__ import annotations
 
+import contextlib
+
 from typing import Any
 
 from googlecloudsdk.api_lib.storage import cloud_api
@@ -79,6 +81,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
       cloud_api.Capability.APPENDABLE_UPLOAD,
       cloud_api.Capability.RESUMABLE_UPLOAD,
       cloud_api.Capability.SLICED_DOWNLOAD,
+      cloud_api.Capability.DAISY_CHAIN_SEEKABLE_UPLOAD_STREAM,
   ]
 
   def __init__(self):
@@ -87,6 +90,7 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
     # The delegator is responsible for delegating the requests to the
     # appropriate client.
     self._delegator = gcs_json_client.JsonClient()
+    self._exit_stack = contextlib.ExitStack()
 
   def _get_gapic_client(self, redact_request_body_reason=None):
     # Not using @property because the side-effect is non-trivial and
@@ -108,7 +112,12 @@ class GcsGrpcBidiStreamingClient(cloud_api.CloudApi):
               ),
           },
       )
+      self._exit_stack.enter_context(self._gapic_client)
     return self._gapic_client
+
+  def close(self):
+    """Closes the gapic client if it exists."""
+    self._exit_stack.close()
 
   def _get_source_path(self, source_resource):
     """Get source path from source_resource.

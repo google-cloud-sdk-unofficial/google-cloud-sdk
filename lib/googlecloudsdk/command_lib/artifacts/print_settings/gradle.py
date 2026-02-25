@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility for forming settings for gradle."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 SERVICE_ACCOUNT_TEMPLATE = """\
 // Move the secret to ~/.gradle.properties

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Datastream connection profiles API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 from googlecloudsdk.api_lib.datastream import exceptions as ds_exceptions

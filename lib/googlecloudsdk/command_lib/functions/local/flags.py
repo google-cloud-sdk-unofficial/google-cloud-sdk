@@ -15,9 +15,6 @@
 """Helpers for flags in commands for Google Cloud Functions local development."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def AddDeploymentNameFlag(parser):

@@ -15,10 +15,6 @@
 """Allows you to write surfaces in terms of logical Cloud Run V2 WorkerPools API operations."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from google.api_core import exceptions
 from googlecloudsdk.api_lib.run import metric_names

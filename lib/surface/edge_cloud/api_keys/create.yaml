@@ -8,7 +8,7 @@
       # that is valid for two hours and restricted to specific API methods, run:
       $ {command} my-api-key --location=us-central1 --project=my-project \
         --zone=us-central1-edge-zone1 \
-        --service-account-name=projects/my-project/locations/us-central1/serviceAccounts/my-sa \
+        --service-account=my-sa \
         --validity=7200s \
         --api-target service="compute.test-api.com",methods="*" \
         --api-target service="storage.test-api.com",methods="GET|LIST"
@@ -17,6 +17,8 @@
     collection: edgecontainer.projects.locations.apiKeys
     api_version: v1alpha
     method: create
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.edge_cloud.api_key.hooks:ConstructServiceAccountName
 
   arguments:
     resource:
@@ -28,9 +30,8 @@
       api_field: apiKey.zone
       help_text: The Google Distributed Cloud zone ID where the API key will be created.
       required: true
-    - arg_name: service-account-name
-      api_field: apiKey.serviceAccountName
-      help_text: The name of the service account to bind the API key to.
+    - arg_name: service-account
+      help_text: The ID of the service account to bind the API key to.
       required: true
     - arg_name: validity
       api_field: apiKey.validity

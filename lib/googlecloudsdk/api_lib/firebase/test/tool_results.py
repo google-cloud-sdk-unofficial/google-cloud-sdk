@@ -14,9 +14,6 @@
 # limitations under the License.
 """A utility library to support interaction with the Tool Results service."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import os

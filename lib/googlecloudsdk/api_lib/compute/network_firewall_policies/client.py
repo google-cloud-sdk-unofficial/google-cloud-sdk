@@ -14,9 +14,6 @@
 # limitations under the License.
 """Network Firewall Policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 OP_COLLECTION_NAME = 'compute.globalOperations'

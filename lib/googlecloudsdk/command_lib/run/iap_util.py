@@ -15,9 +15,6 @@
 
 """Utilities for IAP checks in Cloud Run commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import logging
 import types
@@ -94,7 +91,6 @@ def IsIapAlreadyEnabled(self) -> bool:
     iap_setting_ref = iap_command_util.ParseIapSettingsResource(
         self.ReleaseTrack(),
         iap_args,
-        support_cloud_run=True,
     )
     try:
       iap_settings = iap_setting_ref.GetIapSetting()

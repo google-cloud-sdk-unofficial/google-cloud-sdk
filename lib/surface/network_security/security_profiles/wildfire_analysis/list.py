@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""List command to list Wildfire Analysis profiles."""
+"""List command to list WildFire Analysis profiles."""
 
 from googlecloudsdk.api_lib.network_security.security_profiles import wildfire_api
 from googlecloudsdk.calliope import base
@@ -20,10 +20,10 @@ from googlecloudsdk.command_lib.network_security import sp_flags
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-          List Wildfire Analysis Security Profiles.
+          List WildFire Analysis Security Profiles.
         """,
     'EXAMPLES': """
-          To list Wildfire Analysis Security Profiles in organization `12345` and location `global`, run:
+          To list WildFire Analysis Security Profiles in organization `12345` and location `global`, run:
 
               $ {command} --organization=12345 --location=global
         """,
@@ -43,7 +43,7 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class List(base.ListCommand):
-  """List Wildfire Analysis Security Profiles."""
+  """List WildFire Analysis Security Profiles."""
 
   detailed_help = DETAILED_HELP
 

@@ -1,0 +1,24 @@
+- release_tracks: [ALPHA]
+  hidden: true
+  help_text:
+    brief: Describe Cloud Security Command Center (SCC) IaC validation failure criteria.
+    description: |
+      Describe Cloud Security Command Center (SCC) IaC validation failure criteria.
+    examples: |
+      Describe IaC validation failure criteria for organization 123:
+        $ {command} organizations/123/locations/global/iacValidationFailureCriteria
+
+  request:
+    collection: securityposture.organizations.locations
+    disable_resource_check: true
+    api_version: v1alpha
+    method: getIacValidationFailureCriteria
+
+  arguments:
+    params:
+    - arg_name: iac_validation_failure_criteria
+      api_field: name
+      is_positional: true
+      required: true
+      help_text: |
+        Relative resource name of the IaC validation failure criteria, like `organizations/<organizationID>/locations/<location>/iacValidationFailureCriteria`.

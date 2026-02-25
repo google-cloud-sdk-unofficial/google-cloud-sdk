@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for gkeonprem API clients for Bare Metal cluster resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Optional
 

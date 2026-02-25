@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utils for getting filters of container analysis API occurrences request."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import image_utils
 from googlecloudsdk.core import properties

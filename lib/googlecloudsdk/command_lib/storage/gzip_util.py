@@ -14,9 +14,6 @@
 # limitations under the License.
 """Gzip utils for gcloud storage."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import gzip
 import os

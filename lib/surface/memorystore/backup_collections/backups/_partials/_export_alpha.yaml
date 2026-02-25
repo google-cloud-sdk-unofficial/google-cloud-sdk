@@ -24,7 +24,7 @@
     examples: |-
       To export all backups, run:
 
-      $ {command}
+          $ {command}
   arguments:
     params:
     - arg_name: gcs-bucket

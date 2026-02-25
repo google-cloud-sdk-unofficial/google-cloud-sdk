@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Build CSI metric names."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # Reserved CSI metric prefix for cloudbuild
 _CLOUDBUILD_PREFIX = 'cloudbuild_'

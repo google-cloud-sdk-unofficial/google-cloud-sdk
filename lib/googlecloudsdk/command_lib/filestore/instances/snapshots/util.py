@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utility functions for Cloud Filestore snapshot commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.filestore import filestore_client

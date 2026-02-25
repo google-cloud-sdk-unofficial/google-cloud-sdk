@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for unit operations commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def HandleEmptyProvision(unused_ref, args, request):

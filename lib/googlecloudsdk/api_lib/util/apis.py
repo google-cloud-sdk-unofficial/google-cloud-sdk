@@ -15,9 +15,6 @@
 
 """Library for obtaining API clients and messages."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 
@@ -325,6 +322,10 @@ def GetGapicClientInstance(
     channel_options=None,
 ):
   """Returns an instance of the GAPIC API client specified in the args.
+
+  The returned client is a context manager that should be closed when no longer
+  in use. Use a `with` statement or other forms of context management to ensure
+  the underlying transport is closed and to prevent resource leaks.
 
   Args:
     api_name: str, The API name (or the command surface name, if different).

@@ -15,9 +15,6 @@
 
 """SSH client utilities for key-generation, dispatching the ssh commands etc."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import datetime
 import enum
@@ -32,6 +29,7 @@ import textwrap
 
 from apitools.base.py import exceptions
 from googlecloudsdk.api_lib.oslogin import client as oslogin_client
+from googlecloudsdk.api_lib.run import ssh
 from googlecloudsdk.command_lib.oslogin import oslogin_utils
 from googlecloudsdk.command_lib.util import gaia
 from googlecloudsdk.core import config
@@ -578,11 +576,13 @@ class Keys(object):
           log.debug('Failed to create sentinel file: [{}]'.format(e))
 
 
-def CertFileFromCloudRunDeployment(project, region, deployment):
+def CertFileFromCloudRunDeployment(project, region, deployment, workload_type):
   cert_dir = os.path.realpath(files.ExpandHomeDir(CERTIFICATE_DIR))
   return os.path.join(
       cert_dir,
-      '{}_{}_{}-cert.pub'.format(project, region, deployment),
+      '{}_{}_{}_{}-cert.pub'.format(
+          project, region, workload_type.value, deployment
+      ),
   )
 
 
@@ -601,7 +601,7 @@ def CertFileFromComputeInstance(project_id, zone, instance_id):
   )
 
 
-def WriteCloudRunCertificate(cert, project, region, deployment):
+def WriteCloudRunCertificate(cert, project, region, deployment, workload_type):
   """Writes a certificate associated with the key pair for Cloud Run.
 
   Args:
@@ -609,11 +609,14 @@ def WriteCloudRunCertificate(cert, project, region, deployment):
     project: string, The project ID of the instance.
     region: string, The region of the deployment.
     deployment: string, The deployment name.
+    workload_type: WorkloadType, The workload type of the deployment.
   """
   cert_dir = os.path.realpath(files.ExpandHomeDir(CERTIFICATE_DIR))
   files.MakeDir(cert_dir, mode=0o700)
 
-  filepath = CertFileFromCloudRunDeployment(project, region, deployment)
+  filepath = CertFileFromCloudRunDeployment(
+      project, region, deployment, workload_type
+  )
   try:
     files.WriteFileContents(filepath, cert)
   except files.Error as e:
@@ -689,9 +692,10 @@ def ValidateCertificate(
     instance_id: string, The instance ID.
     app_engine_params: dict, values of (appsId, servicesId, versionId,
       instanceId, serviceAccount, region) for App Engine instances.
-    cloud_run_params: dict, values of (region, deployment_name, project_id) for
-      Cloud Run deployments.
+    cloud_run_params: dict, values of (region, deployment_name, project_id,
+      service_account, workload_type) for Cloud Run deployments.
   """
+
   def IsCertValid(cert):
     time_format = '%Y-%m-%dT%H:%M:%S'
     match = re.findall(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', cert)
@@ -714,6 +718,7 @@ def ValidateCertificate(
         project_id,
         cloud_run_params['region'],
         cloud_run_params['deployment_name'],
+        cloud_run_params['workload_type'],
     )
   else:
     cert_file = CertFileFromComputeInstance(project_id, zone, instance_id)
@@ -1178,13 +1183,24 @@ def _SignAndWriteCloudRunCertificate(
   project_id = cloud_run_params['project_id']
   region = cloud_run_params['region']
   deployment_name = cloud_run_params['deployment_name']
+  workload_type = cloud_run_params['workload_type']
+  if workload_type == ssh.Ssh.WorkloadType.SERVICE:
+    workload_type = 'services'
+  elif workload_type == ssh.Ssh.WorkloadType.JOB:
+    workload_type = 'jobs'
+  elif workload_type == ssh.Ssh.WorkloadType.WORKER_POOL:
+    workload_type = 'workerPools'
+  elif workload_type == ssh.Ssh.WorkloadType.INSTANCE:
+    workload_type = 'instances'
+  else:
+    raise ValueError(f'Unsupported workload type: {workload_type}')
   sign_response = oslogin.SignSshPublicKeyForInstance(
       public_key,
       project_id,
       region,
       cloud_run_params['service_account'],
       cloud_run_deployment=(
-          f'projects/{project_id}/locations/{region}/services/{deployment_name}'
+          f'projects/{project_id}/locations/{region}/{workload_type}/{deployment_name}'
       ),
   )
   WriteCloudRunCertificate(
@@ -1192,6 +1208,7 @@ def _SignAndWriteCloudRunCertificate(
       project_id,
       region,
       deployment_name,
+      cloud_run_params['workload_type'],
   )
 
 
@@ -1285,7 +1302,7 @@ def GetOsloginState(
     cloud_run_params: dict, The fields required to identify a Cloud Run
       deployment. This should be None for Compute and App Engine instances. If
       present, this should contain fields for 'deployment_name', 'project_id',
-      and 'region'.
+      'region', 'service_account', and 'workload_type'.
     username_requested: bool, True if the user has passed a specific username in
       the args.
     instance_enable_oslogin: True if the instance's metadata indicates that OS

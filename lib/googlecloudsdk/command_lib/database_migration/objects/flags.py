@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the migration job objects related commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def AddSourceObjectIdentifierFlag(parser):

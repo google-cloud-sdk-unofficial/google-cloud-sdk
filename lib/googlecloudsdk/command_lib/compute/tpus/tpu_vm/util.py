@@ -14,9 +14,6 @@
 # limitations under the License.
 """CLI Utilities for Cloud TPU VM commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 import sys

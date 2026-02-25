@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for `gcloud compute xpn` commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 XPN_RESOURCE_ID_FORMAT = 'table(id:label=RESOURCE_ID, type:label=RESOURCE_TYPE)'
 XPN_PROJECTS_FORMAT = 'table(name, creationTimestamp, xpnProjectStatus)'

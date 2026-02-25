@@ -14,9 +14,6 @@
 # limitations under the License.
 """List event types available to Google Cloud Functions v1."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.functions.v1 import triggers
 

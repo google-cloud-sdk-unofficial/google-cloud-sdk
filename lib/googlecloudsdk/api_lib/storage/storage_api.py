@@ -20,9 +20,6 @@ tool. We use the command-line tool for syncing the contents of buckets as well
 as listing the contents. We use the API for checking ACLs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import mimetypes

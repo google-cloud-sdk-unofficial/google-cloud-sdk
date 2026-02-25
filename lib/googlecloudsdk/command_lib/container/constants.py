@@ -15,9 +15,6 @@
 
 """Shared constants used by container commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 DEGRADED_WARNING = ("Cluster {cluster_name} is DEGRADED with message:"
                     " \"{cluster_degraded_warning}\".\n")

@@ -14,15 +14,15 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  - GA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Update apiOperations
     description: Update an apiOperation
     examples: |-
-      To update the apiOperation, run:
+      To update an operation with the ID `my-operation` for version `my-version` and API `my-api`, run:
 
-          $ {command}
+      $ {command} my-operation --version=my-version --api=my-api --details-description="New Description" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

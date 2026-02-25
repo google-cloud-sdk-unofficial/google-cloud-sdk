@@ -14,9 +14,6 @@
 # limitations under the License.
 """Provides getters and validators for the platform flag and property."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 

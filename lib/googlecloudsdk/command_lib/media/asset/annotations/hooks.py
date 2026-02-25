@@ -14,9 +14,6 @@
 # limitations under the License.
 """Request hooks for Cloud Media Asset's asset transformation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

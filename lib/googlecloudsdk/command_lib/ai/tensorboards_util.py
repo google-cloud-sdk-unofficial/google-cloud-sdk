@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for AI Platform Tensorboard commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.tensorboard_time_series import client
 from googlecloudsdk.command_lib.util.apis import arg_utils

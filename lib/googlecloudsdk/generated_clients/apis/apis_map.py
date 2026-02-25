@@ -14,9 +14,6 @@
 # limitations under the License.
 """Base template using which the apis_map.py is generated."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 class APIDef(object):
@@ -4765,6 +4762,17 @@ MAP = {
                 regional_endpoints={}),
     },
     'vectorsearch': {
+        'v1':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.vectorsearch.v1',
+                    client_classpath='vectorsearch_v1_client.VectorsearchV1',
+                    base_url='https://vectorsearch.googleapis.com/',
+                    messages_modulepath='vectorsearch_v1_messages'),
+                default_version=True,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
         'v1beta':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -4772,7 +4780,7 @@ MAP = {
                     client_classpath='vectorsearch_v1beta_client.VectorsearchV1beta',
                     base_url='https://vectorsearch.googleapis.com/',
                     messages_modulepath='vectorsearch_v1beta_messages'),
-                default_version=True,
+                default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),

@@ -15,14 +15,12 @@
 
 """Flags and helpers for the compute related commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import copy
 import enum
 import functools
+import json
 import re
 from typing import Any
 
@@ -1112,30 +1110,141 @@ def AddEraseVssSignature(parser, resource):
   )
 
 
+class QuotedArgDict(arg_parsers.ArgDict):
+  """ArgObject that handles JSON values."""
+
+  def __call__(self, value):
+    if not value:
+      return super(QuotedArgDict, self).__call__(value)
+    if isinstance(value, str):
+      # Strip single quotes if present (common in shell-like syntax)
+      if len(value) >= 2 and value.startswith("'") and value.endswith("'"):
+        value = value[1:-1]
+      # Strip double quotes if present
+      elif len(value) >= 2 and value.startswith('"') and value.endswith('"'):
+        value = value[1:-1]
+      # If the value contains a colon, it means it's a JSON string, so we should
+      # convert it to a dictionary, so that it can be properly parsed.
+      if ':' in value:
+        value = json.loads(value)
+    return super(QuotedArgDict, self).__call__(value)
+
+
 def AddInstanceFlexibilityPolicyArgs(
     parser: Any,
     is_update: bool = False,
     support_instance_selection_min_cpu_platform: bool = False,
+    support_flex_policy_flag_with_mincpu_and_disks: bool = False,
 ) -> None:
   """Adds instance flexibility policy args."""
+  if support_flex_policy_flag_with_mincpu_and_disks:
+    single_selection_spec = {
+        'rank': int,
+        'machineTypes': arg_parsers.ArgList(element_type=str),
+        'minCpuPlatform': str,
+        'disks': arg_parsers.ArgList(
+            element_type=arg_parsers.ArgDict(),
+            includes_json=True,
+        ),
+    }
+    single_selection_type = arg_parsers.ArgDict(
+        spec=single_selection_spec, includes_json=True
+    )
+    instance_selections_type = arg_parsers.ArgDict(
+        key_type=str, value_type=single_selection_type, includes_json=True
+    )
+    instance_flexibility_policy_content_spec = {
+        'instanceSelections': instance_selections_type,
+    }
+
+    flex_policy_mutex_group = parser.add_mutually_exclusive_group()
+    flex_policy_mutex_group.add_argument(
+        '--instance-flexibility-policy',
+        help=(
+            'Instance flexibility configuration containing the named selections'
+            ' of machine types with optional ranks. This flag can contain'
+            ' multiple instance selections. Use this flag to specify additional'
+            ' instance overrides, such as minimum CPU platform and disks. For'
+            ' example,'
+            ' --instance-flexibility-policy=`{"instanceSelections":{"instance-selection-1":{"rank":1,"machineTypes":["e2-standard-8","n1-standard-1"],"minCpuPlatform":"MIN_CPU_PLATFORM"'
+            ' ,"disks":[{"deviceName":"disk-name","boot":true}]},{"instance-selection-2":{"rank":2,"machineTypes":["n1-standard-2"]}}}}`\n\nInstead'
+            ' of --instance-flexibility-policy flag, you can also use one of'
+            ' the following flags to specify instance selections.'
+        ),
+        metavar='INSTANCE_FLEXIBILITY_POLICY',
+        type=QuotedArgDict(
+            spec=instance_flexibility_policy_content_spec,
+            includes_json=True,
+            allow_key_only=True,
+        ),
+        default={},
+    )
+
+    if support_instance_selection_min_cpu_platform:
+      instance_selection_help_text = (
+          'Named selection of machine types with optional rank. Repeat this'
+          ' flag'
+          ' for each selection of instances. You can use this flag for'
+          ' overriding minimum CPU platform but not disks. For example,'
+          ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0,min-cpu-platform=MIN_CPU_PLATFORM"`'
+      )
+    else:
+      instance_selection_help_text = (
+          'Named selection of machine types with optional rank. Repeat this'
+          ' flag'
+          ' for each selection of instances. You can use this flag for'
+          ' overriding minimum CPU platform but not disks. For example,'
+          ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0"`'
+      )
+
+    instance_selection_group = flex_policy_mutex_group.add_group()
+    _AddInstanceSelectionArgs(
+        instance_selection_group,
+        is_update,
+        instance_selection_help_text=instance_selection_help_text,
+    )
+  else:
+    if support_instance_selection_min_cpu_platform:
+      instance_selection_help_text = (
+          'Named selection of machine types with an optional rank and'
+          ' minimum CPU platform. '
+          'For example,'
+          ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0,min-cpu-platform=MIN_CPU_PLATFORM"`'
+      )
+    else:
+      instance_selection_help_text = (
+          'Named selection of machine types with an optional rank. '
+          'For example,'
+          ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0"`'
+      )
+    _AddInstanceSelectionArgs(
+        parser,
+        is_update,
+        instance_selection_help_text=instance_selection_help_text,
+        support_instance_selection_min_cpu_platform=support_instance_selection_min_cpu_platform,
+    )
+
+
+def _AddInstanceSelectionArgs(
+    parser: Any,
+    is_update: bool = False,
+    instance_selection_help_text: str = '',
+    support_instance_selection_min_cpu_platform: bool = False,
+):
+  """Adds instance selection args."""
   parser.add_argument(
       '--instance-selection-machine-types',
       type=arg_parsers.ArgList(),
       metavar='MACHINE_TYPE',
       help=(
-          'Machine types that are used to create VMs. If not provided, the'
-          ' machine type specified in the instance template is used.'
+          'A single selection of machine types. If not provided, the machine'
+          ' type specified in the instance template is used.'
       ),
   )
   if support_instance_selection_min_cpu_platform:
     parser.add_argument(
         '--instance-selection',
-        help=(
-            'Named selection of machine types with an optional rank and'
-            ' minimum CPU platform. '
-            'For example,'
-            ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0,min-cpu-platform=MIN_CPU_PLATFORM"`'
-        ),
+        help=instance_selection_help_text,
         metavar='name=NAME,machine-type=MACHINE_TYPE[,machine-type=MACHINE_TYPE...][,rank=RANK][,min-cpu-platform=MIN_CPU_PLATFORM]',
         type=ArgMultiValueDict(),
         action=arg_parsers.FlattenAction(),
@@ -1143,11 +1252,7 @@ def AddInstanceFlexibilityPolicyArgs(
   else:
     parser.add_argument(
         '--instance-selection',
-        help=(
-            'Named selection of machine types with an optional rank. '
-            'For example,'
-            ' `--instance-selection="name=instance-selection-1,machine-type=e2-standard-8,machine-type=t2d-standard-8,rank=0"`'
-        ),
+        help=instance_selection_help_text,
         metavar='name=NAME,machine-type=MACHINE_TYPE[,machine-type=MACHINE_TYPE...][,rank=RANK]',
         type=ArgMultiValueDict(),
         action=arg_parsers.FlattenAction(),

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Convenience functions for dealing with instance settings metadata."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 UPDATE_MASK_METADATA_PREFIX = 'metadata.items.'

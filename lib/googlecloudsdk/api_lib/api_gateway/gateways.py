@@ -15,9 +15,6 @@
 
 """Client for interaction with Gateway CRUD on API Gateway API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import base
 from googlecloudsdk.command_lib.api_gateway import common_flags

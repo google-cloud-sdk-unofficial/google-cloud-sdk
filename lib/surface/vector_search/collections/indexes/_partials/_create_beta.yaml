@@ -33,6 +33,84 @@
       $ {command} my-index-2 --collection=my-collection --location=us-central1 --index-field='my-embedding-field' --display-name='My Index 2' --filter-fields=genre,year --store-fields=title --project=my-project
   arguments:
     params:
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the infra type.
+        params:
+        - group:
+            api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure
+            required: false
+            help_text: |-
+              Represents dedicated infrastructure for the index.
+            params:
+            - group:
+                mutex: true
+                help_text: |-
+                  Arguments for the  mode.
+                params:
+                - arg_name: dedicated-infrastructure-mode
+                  api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure.mode
+                  required: false
+                  help_text: |-
+                    Mode of the dedicated infrastructure.
+                  choices:
+                  - arg_value: storage-optimized
+                    enum_value: STORAGE_OPTIMIZED
+                    help_text: |-
+                      This is storage optimized variation.
+                  - arg_value: performance-optimized
+                    enum_value: PERFORMANCE_OPTIMIZED
+                    help_text: |-
+                      This is Performance optimized on E2 or equivalent family.
+            - group:
+                api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure.autoscalingSpec
+                required: false
+                help_text: |-
+                  Specification for autoscaling.
+                params:
+                - arg_name: dedicated-infrastructure-autoscaling-spec-min-replica-count
+                  api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure.autoscalingSpec.minReplicaCount
+                  required: false
+                  repeated: false
+                  type: int
+                  help_text: |-
+                    The minimum number of replicas. If not set or set to `0`, defaults to
+                    `2`. Must be >= `2` and <= `1000`.
+                - arg_name: dedicated-infrastructure-autoscaling-spec-max-replica-count
+                  api_field: googleCloudVectorsearchV1betaIndex.dedicatedInfrastructure.autoscalingSpec.maxReplicaCount
+                  required: false
+                  repeated: false
+                  type: int
+                  help_text: |-
+                    The maximum number of replicas. If not set or set to `0`, defaults to
+                    the greater of `min_replica_count` and `5`. Must be >=
+                    `min_replica_count` and <= `1000`.
+    - group:
+        mutex: true
+        help_text: |-
+          Arguments for the index type.
+        params:
+        - group:
+            api_field: googleCloudVectorsearchV1betaIndex.denseScann
+            required: false
+            help_text: |-
+              Dense ScaNN index configuration.
+            params:
+            - arg_name: dense-scann-feature-norm-type
+              api_field: googleCloudVectorsearchV1betaIndex.denseScann.featureNormType
+              required: false
+              help_text: |-
+                Feature norm type.
+              choices:
+              - arg_value: none
+                enum_value: NONE
+                help_text: |-
+                  No norm applied.
+              - arg_value: unit-l2-norm
+                enum_value: UNIT_L2_NORM
+                help_text: |-
+                  Unit L2 norm.
     - help_text: |-
         Identifier. name of resource
       is_positional: true

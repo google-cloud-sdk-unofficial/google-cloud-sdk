@@ -15,9 +15,6 @@
 
 """Common code for 'gcloud firebase test * list-device-capacities' commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 

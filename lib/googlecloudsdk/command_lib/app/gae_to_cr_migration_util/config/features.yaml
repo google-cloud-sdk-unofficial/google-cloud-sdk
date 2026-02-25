@@ -84,7 +84,7 @@ range_limited:
     max: 1000
     min: 0
   severity: minor
-  reason: Cloud Run supports basic scaling values between 0 and 1000.
+  reason: Cloud Run only supports automatic scaling values between 0 and 1000.
   flags:
   - --max-instances
 - path:
@@ -94,7 +94,7 @@ range_limited:
     max: 1000
     min: 0
   severity: minor
-  reason: Cloud Run supports basic scaling values between 0 and 1000.
+  reason: Cloud Run only supports automatic scaling values between 0 and 1000.
   flags:
   - --min-instances
 - path:

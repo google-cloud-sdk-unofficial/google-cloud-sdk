@@ -14,9 +14,6 @@
 # limitations under the License.
 """This file provides the implementation of the `functions list` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.functions.v2 import util as api_util

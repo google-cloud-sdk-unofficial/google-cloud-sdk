@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Delete curations
+    brief: Delete a Curation
     description: Delete a curation
     examples: |-
-      To delete the curation, run:
+      To delete a curation with the ID `my-curation`, run:
 
-          $ {command}
+      $ {command} my-curation --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

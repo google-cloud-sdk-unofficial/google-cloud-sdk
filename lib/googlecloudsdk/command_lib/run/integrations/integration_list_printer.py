@@ -19,10 +19,6 @@ which allows for formatted output to the console.  The list command registers
 a table that references the field names in the Row class.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.run.integrations.formatters import base
 from googlecloudsdk.generated_clients.apis.runapps.v1alpha1 import runapps_v1alpha1_messages

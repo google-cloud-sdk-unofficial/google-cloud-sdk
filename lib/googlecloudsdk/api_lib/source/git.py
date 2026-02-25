@@ -15,9 +15,6 @@
 
 """Wrapper to manipulate GCP git repository."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import errno
 import os

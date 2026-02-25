@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags for compute queued resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.core.util.iso_duration import Duration

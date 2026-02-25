@@ -81,6 +81,15 @@ def _GAArgs(parser):
   snap_flags.SOURCE_DISK_FOR_RECOVERY_CHECKPOINT_ARG.AddArgument(parser)
   snap_flags.SOURCE_INSTANT_SNAPSHOT_ARG.AddArgument(parser)
   snap_flags.AddSourceInstantSnapshotCsekKey(parser)
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help=(
+          'A comma-separated list of Resource Manager tags to apply to the'
+          ' snapshot.'
+      ),
+  )
 
 
 def _BetaArgs(parser):
@@ -97,15 +106,6 @@ def _AlphaArgs(parser):
   snap_flags.AddScopeArg(parser)
   kms_resource_args.AddKmsKeyResourceArg(
       parser, 'snapshot', region_fallthrough=True
-  )
-  parser.add_argument(
-      '--resource-manager-tags',
-      type=arg_parsers.ArgDict(),
-      metavar='KEY=VALUE',
-      help=(
-          'A comma-separated list of Resource Manager tags to apply to the'
-          ' snapshot.'
-      ),
   )
 
 
@@ -238,9 +238,7 @@ class Create(base.CreateCommand):
     if support_max_retention_days and args.IsSpecified('max_retention_days'):
       snapshot_message.maxRetentionDays = int(args.max_retention_days)
 
-    if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.IsSpecified(
-        'resource_manager_tags'
-    ):
+    if args.IsSpecified('resource_manager_tags'):
       snapshot_message.params = _CreateSnapshotParams(
           messages, args.resource_manager_tags
       )

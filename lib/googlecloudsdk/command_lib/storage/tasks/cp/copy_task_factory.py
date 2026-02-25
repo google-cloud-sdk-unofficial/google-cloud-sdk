@@ -14,9 +14,6 @@
 # limitations under the License.
 """Preferred method of generating a copy task."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import posix_util

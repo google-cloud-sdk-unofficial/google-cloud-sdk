@@ -14,9 +14,6 @@
 # limitations under the License.
 """SSH/SCP utilities for Cloud TPU Queued Resource commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log

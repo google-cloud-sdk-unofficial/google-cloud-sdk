@@ -14,9 +14,6 @@
 # limitations under the License.
 """Deletes temporary components and tracker files from a composite upload."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import glob
 import os

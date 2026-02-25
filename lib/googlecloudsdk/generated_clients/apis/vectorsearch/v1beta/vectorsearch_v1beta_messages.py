@@ -476,6 +476,7 @@ class GoogleCloudVectorsearchV1betaDataObject(_messages.Message):
     createTime: Output only. Timestamp the dataObject was created at.
     data: Optional. The data of the dataObject.
     dataObjectId: Output only. The id of the dataObject.
+    etag: Optional. The etag of the dataObject.
     name: Identifier. The fully qualified resource name of the dataObject.
       Format: `projects/{project}/locations/{location}/collections/{collection
       }/dataObjects/{data_object_id}` The data_object_id must be 1-63
@@ -536,21 +537,94 @@ class GoogleCloudVectorsearchV1betaDataObject(_messages.Message):
   createTime = _messages.StringField(1)
   data = _messages.MessageField('DataValue', 2)
   dataObjectId = _messages.StringField(3)
-  name = _messages.StringField(4)
-  updateTime = _messages.StringField(5)
-  vectors = _messages.MessageField('VectorsValue', 6)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  updateTime = _messages.StringField(6)
+  vectors = _messages.MessageField('VectorsValue', 7)
+
+
+class GoogleCloudVectorsearchV1betaDedicatedInfrastructure(_messages.Message):
+  r"""Represents dedicated infrastructure for the index.
+
+  Enums:
+    ModeValueValuesEnum: Optional. Mode of the dedicated infrastructure.
+
+  Fields:
+    autoscalingSpec: Optional. Autoscaling specification.
+    mode: Optional. Mode of the dedicated infrastructure.
+  """
+
+  class ModeValueValuesEnum(_messages.Enum):
+    r"""Optional. Mode of the dedicated infrastructure.
+
+    Values:
+      MODE_UNSPECIFIED: Default will use `PERFORMANCE_OPTIMIZED`.
+      STORAGE_OPTIMIZED: This is storage optimized variation.
+      PERFORMANCE_OPTIMIZED: This is Performance optimized on E2 or equivalent
+        family.
+    """
+    MODE_UNSPECIFIED = 0
+    STORAGE_OPTIMIZED = 1
+    PERFORMANCE_OPTIMIZED = 2
+
+  autoscalingSpec = _messages.MessageField('GoogleCloudVectorsearchV1betaDedicatedInfrastructureAutoscalingSpec', 1)
+  mode = _messages.EnumField('ModeValueValuesEnum', 2)
+
+
+class GoogleCloudVectorsearchV1betaDedicatedInfrastructureAutoscalingSpec(_messages.Message):
+  r"""Specification for autoscaling.
+
+  Fields:
+    maxReplicaCount: Optional. The maximum number of replicas. If not set or
+      set to `0`, defaults to the greater of `min_replica_count` and `5`. Must
+      be >= `min_replica_count` and <= `1000`.
+    minReplicaCount: Optional. The minimum number of replicas. If not set or
+      set to `0`, defaults to `2`. Must be >= `2` and <= `1000`.
+  """
+
+  maxReplicaCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  minReplicaCount = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
 class GoogleCloudVectorsearchV1betaDeleteDataObjectRequest(_messages.Message):
   r"""Request message for DataObjectService.DeleteDataObject.
 
   Fields:
+    etag: Optional. The current etag of the DataObject. If an etag is provided
+      and does not match the current etag of the DataObject, deletion will be
+      blocked and an ABORTED error will be returned.
     name: Required. The name of the DataObject resource to be deleted. Format:
       `projects/{project}/locations/{location}/collections/{collection}/dataOb
       jects/{dataObject}`
   """
 
-  name = _messages.StringField(1)
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2)
+
+
+class GoogleCloudVectorsearchV1betaDenseScannIndex(_messages.Message):
+  r"""Dense ScaNN index configuration.
+
+  Enums:
+    FeatureNormTypeValueValuesEnum: Optional. Feature norm type.
+
+  Fields:
+    featureNormType: Optional. Feature norm type.
+  """
+
+  class FeatureNormTypeValueValuesEnum(_messages.Enum):
+    r"""Optional. Feature norm type.
+
+    Values:
+      FEATURE_NORM_TYPE_UNSPECIFIED: Unspecified feature norm type.
+      NONE: No norm applied.
+      UNIT_L2_NORM: Unit L2 norm.
+    """
+    FEATURE_NORM_TYPE_UNSPECIFIED = 0
+    NONE = 1
+    UNIT_L2_NORM = 2
+
+  featureNormType = _messages.EnumField('FeatureNormTypeValueValuesEnum', 1)
 
 
 class GoogleCloudVectorsearchV1betaDenseVector(_messages.Message):
@@ -657,6 +731,8 @@ class GoogleCloudVectorsearchV1betaIndex(_messages.Message):
 
   Fields:
     createTime: Output only. [Output only] Create time stamp
+    dedicatedInfrastructure: Optional. Dedicated infrastructure for the index.
+    denseScann: Optional. Dense ScaNN index.
     description: Optional. User-specified description of the index
     displayName: Optional. User-specified display name of the index
     distanceMetric: Optional. Distance metric used for indexing. If not
@@ -710,15 +786,17 @@ class GoogleCloudVectorsearchV1betaIndex(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  distanceMetric = _messages.EnumField('DistanceMetricValueValuesEnum', 4)
-  filterFields = _messages.StringField(5, repeated=True)
-  indexField = _messages.StringField(6)
-  labels = _messages.MessageField('LabelsValue', 7)
-  name = _messages.StringField(8)
-  storeFields = _messages.StringField(9, repeated=True)
-  updateTime = _messages.StringField(10)
+  dedicatedInfrastructure = _messages.MessageField('GoogleCloudVectorsearchV1betaDedicatedInfrastructure', 2)
+  denseScann = _messages.MessageField('GoogleCloudVectorsearchV1betaDenseScannIndex', 3)
+  description = _messages.StringField(4)
+  displayName = _messages.StringField(5)
+  distanceMetric = _messages.EnumField('DistanceMetricValueValuesEnum', 6)
+  filterFields = _messages.StringField(7, repeated=True)
+  indexField = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  name = _messages.StringField(10)
+  storeFields = _messages.StringField(11, repeated=True)
+  updateTime = _messages.StringField(12)
 
 
 class GoogleCloudVectorsearchV1betaListCollectionsResponse(_messages.Message):
@@ -804,7 +882,8 @@ class GoogleCloudVectorsearchV1betaQueryDataObjectsRequest(_messages.Message):
     filter: Optional. A JSON filter expression, e.g. {"genre": {"$eq": "sci-
       fi"}}, represented as a google.protobuf.Struct.
     outputFields: Optional. Mask specifying which fields to return.
-    pageSize: Optional. The standard list page size.
+    pageSize: Optional. The standard list page size. Default is 100. The
+      maximum value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The standard list page token. Typically obtained via
       QueryDataObjectsResponse.next_page_token of the previous
       DataObjectSearchService.QueryDataObjects call.
@@ -896,7 +975,9 @@ class GoogleCloudVectorsearchV1betaSearchDataObjectsRequest(_messages.Message):
   r"""Request for performing a single search.
 
   Fields:
-    pageSize: Optional. The standard list page size.
+    pageSize: Optional. The standard list page size. Only supported for KNN.
+      If not set, up to search_type.top_k results will be returned. The
+      maximum value is 1000; values above 1000 will be coerced to 1000.
     pageToken: Optional. The standard list page token. Typically obtained via
       SearchDataObjectsResponse.next_page_token of the previous
       DataObjectSearchService.SearchDataObjects call.
@@ -933,27 +1014,57 @@ class GoogleCloudVectorsearchV1betaSearchHint(_messages.Message):
   r"""Represents a hint to the search index engine.
 
   Fields:
-    useIndex: Optional. Specifies that the search should use a particular
+    indexHint: Optional. Specifies that the search should use a particular
       index.
-    useKnn: Optional. If set to true, the search will use the system's default
+    knnHint: Optional. If set, the search will use the system's default
       K-Nearest Neighbor (KNN) index engine.
+    useIndex: Optional. Deprecated: Use `index_hint` instead. Specifies that
+      the search should use a particular index.
+    useKnn: Optional. Deprecated: Use `knn_hint` instead. If set to true, the
+      search will use the system's default K-Nearest Neighbor (KNN) index
+      engine.
   """
 
-  useIndex = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchHintIndexHint', 1)
-  useKnn = _messages.BooleanField(2)
+  indexHint = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchHintIndexHint', 1)
+  knnHint = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchHintKnnHint', 2)
+  useIndex = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchHintIndexHint', 3)
+  useKnn = _messages.BooleanField(4)
 
 
 class GoogleCloudVectorsearchV1betaSearchHintIndexHint(_messages.Message):
   r"""Message to specify the index to use for the search.
 
   Fields:
+    denseScannParams: Optional. Dense ScaNN parameters.
     name: Required. The resource name of the index to use for the search. The
       index must be in the same project, location, and collection. Format: `pr
       ojects/{project}/locations/{location}/collections/{collection}/indexes/{
       index}`
   """
 
-  name = _messages.StringField(1)
+  denseScannParams = _messages.MessageField('GoogleCloudVectorsearchV1betaSearchHintIndexHintDenseScannParams', 1)
+  name = _messages.StringField(2)
+
+
+class GoogleCloudVectorsearchV1betaSearchHintIndexHintDenseScannParams(_messages.Message):
+  r"""Parameters for dense ScaNN.
+
+  Fields:
+    initialCandidateCount: Optional. The number of initial candidates. Must be
+      a positive integer (> 0).
+    searchLeavesPct: Optional. Dense ANN param overrides to control recall and
+      latency. The percentage of leaves to search, in the range [0, 100].
+  """
+
+  initialCandidateCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  searchLeavesPct = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVectorsearchV1betaSearchHintKnnHint(_messages.Message):
+  r"""KnnHint will be used if search should be explicitly done on system's
+  default K-Nearest Neighbor (KNN) index engine.
+  """
+
 
 
 class GoogleCloudVectorsearchV1betaSearchResponseMetadata(_messages.Message):
@@ -1166,7 +1277,7 @@ class GoogleCloudVectorsearchV1betaVector(_messages.Message):
   Fields:
     dense: A dense vector.
     sparse: A sparse vector.
-    values: The values of the vector.
+    values: Deprecated: Use `dense` or `sparse` instead.
   """
 
   dense = _messages.MessageField('GoogleCloudVectorsearchV1betaDenseVector', 1)
@@ -1726,12 +1837,16 @@ class VectorsearchProjectsLocationsCollectionsDataObjectsDeleteRequest(_messages
   object.
 
   Fields:
+    etag: Optional. The current etag of the DataObject. If an etag is provided
+      and does not match the current etag of the DataObject, deletion will be
+      blocked and an ABORTED error will be returned.
     name: Required. The name of the DataObject resource to be deleted. Format:
       `projects/{project}/locations/{location}/collections/{collection}/dataOb
       jects/{dataObject}`
   """
 
-  name = _messages.StringField(1, required=True)
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
 
 
 class VectorsearchProjectsLocationsCollectionsDataObjectsGetRequest(_messages.Message):

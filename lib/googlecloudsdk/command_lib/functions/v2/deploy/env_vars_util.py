@@ -14,9 +14,6 @@
 # limitations under the License.
 """'functions deploy' utilities for environment variables."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 from googlecloudsdk.command_lib.util.args import map_util

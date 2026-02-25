@@ -195,6 +195,10 @@ origin:
       enum_value: AFRICA_SOUTH1
       help_text: |
         Origin fetch from near africa-south1.
+    - arg_value: "US_EAST5"
+      enum_value: US_EAST5
+      help_text: |
+        Origin fetch from near us-east5.
     - arg_value: ""
       help_text: |
         Turn off flexible shielding and use the default global origin shielding.

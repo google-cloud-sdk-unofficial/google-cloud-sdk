@@ -14,9 +14,6 @@
 # limitations under the License.
 """This file provides the implementation of the `functions list` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_exceptions
 from apitools.base.py import list_pager

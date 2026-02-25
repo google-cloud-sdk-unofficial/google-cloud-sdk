@@ -15,9 +15,6 @@
 
 """Waiter utility for api_lib.util.waiter.py."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import exceptions

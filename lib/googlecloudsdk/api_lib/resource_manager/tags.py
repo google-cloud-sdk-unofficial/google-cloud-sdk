@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for the Tag Manager server."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import apis
 
@@ -63,12 +60,6 @@ def TagBindingsCollectionService():
   """Returns the tag bindings collection class."""
   client = TagClient()
   return client.locations_tagBindingCollections
-
-
-def EffectiveTagsCollectionService():
-  """Returns the effective tags collection class."""
-  client = TagClient()
-  return client.locations_effectiveTagBindingCollections
 
 
 def TagHoldsService():

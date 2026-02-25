@@ -15,9 +15,6 @@
 
 """Helper class for uploading user files to GCS bucket."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 from googlecloudsdk.api_lib.dataproc import storage_helpers

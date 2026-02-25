@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helper methods for parsing and displaying operation quota errors."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def IsJsonOperationQuotaError(error):

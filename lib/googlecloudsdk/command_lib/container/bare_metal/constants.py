@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants for Anthos clusters on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 BARE_METAL_ADMIN_CLUSTERS_FORMAT = """
 table(

@@ -16,9 +16,6 @@
 """Function for executing the tasks contained in a Task Iterator.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import optimize_parameters_util

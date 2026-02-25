@@ -1345,6 +1345,8 @@ class _SectionApiEndpointOverrides(_Section):
     self.eventarc = self._Add('eventarc', command='gcloud eventarc')
     self.eventarcpublishing = self._Add(
         'eventarcpublishing', command='gcloud eventarc publish')
+    self.externalexposure = self._Add(
+        'externalexposure', command='gcloud scc external-exposure', hidden=True)
     self.faultinjectiontesting = self._Add(
         'faultinjectiontesting', command='gcloud fault-injection')
     self.faulttesting = self._Add(

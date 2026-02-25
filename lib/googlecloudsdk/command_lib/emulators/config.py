@@ -14,9 +14,6 @@
 # limitations under the License.
 """Code related to proxy and emulator configuration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 from googlecloudsdk.command_lib.emulators import datastore_util

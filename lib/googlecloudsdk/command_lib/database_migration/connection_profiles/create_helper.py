@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helper module to create connection profiles for a database migration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.api_lib.database_migration import connection_profiles

@@ -52,7 +52,7 @@ class Artifacts(_messages.Message):
   r"""Represents information about the artifacts of the Machine Learning Run.
 
   Fields:
-    gcsPath: Required. The Cloud Storage path where the artifacts of the run
+    gcsPath: Optional. The Cloud Storage path where the artifacts of the run
       are stored. Example: `gs://my-bucket/my-run-directory`.
   """
 
@@ -931,7 +931,8 @@ class GKEWorkloadDetails(_messages.Message):
 
   Fields:
     cluster: Required. The cluster of the workload. Example -
-      /projects//locations//clusters/
+      projects//locations//clusters/
+    createTime: Optional. Time when the workload was created.
     id: Required. The identifier of the workload. Example - jobset-abcd
     kind: Required. The kind of the workload. Example - JobSet
     labels: Optional. labels for the workload. Example: {"type": "workload",
@@ -970,11 +971,12 @@ class GKEWorkloadDetails(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   cluster = _messages.StringField(1)
-  id = _messages.StringField(2)
-  kind = _messages.StringField(3)
-  labels = _messages.MessageField('LabelsValue', 4)
-  namespace = _messages.StringField(5)
-  parentWorkload = _messages.StringField(6)
+  createTime = _messages.StringField(2)
+  id = _messages.StringField(3)
+  kind = _messages.StringField(4)
+  labels = _messages.MessageField('LabelsValue', 5)
+  namespace = _messages.StringField(6)
+  parentWorkload = _messages.StringField(7)
 
 
 class GcsAutoclassConfig(_messages.Message):
@@ -1839,6 +1841,10 @@ class MachineLearningRun(_messages.Message):
       the run is failed.
     etag: Optional. ETag for the run. It must be provided for update/delete
       operations and must match the server's etag.
+    kmsKey: Optional. Customer managed encryption key (CMEK) to use for
+      encrypting the `MachineLearningRun`. `Cloud KMS CryptoKeys` must reside
+      in the same location as the `MachineLearningRun`. The expected format is
+      `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
     labels: Optional. Any custom labels for this run Example: type:workload,
       type:simulation etc.
     metrics: Optional. Metrics for the run.
@@ -1930,17 +1936,18 @@ class MachineLearningRun(_messages.Message):
   endTime = _messages.StringField(5)
   errorDetails = _messages.StringField(6)
   etag = _messages.StringField(7)
-  labels = _messages.MessageField('LabelsValue', 8)
-  metrics = _messages.MessageField('Metrics', 9)
-  name = _messages.StringField(10)
-  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 11)
-  runGroup = _messages.StringField(12)
-  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 13)
-  runSet = _messages.StringField(14)
-  state = _messages.EnumField('StateValueValuesEnum', 15)
-  tools = _messages.MessageField('Tool', 16, repeated=True)
-  updateTime = _messages.StringField(17)
-  workloadDetails = _messages.MessageField('WorkloadDetails', 18)
+  kmsKey = _messages.StringField(8)
+  labels = _messages.MessageField('LabelsValue', 9)
+  metrics = _messages.MessageField('Metrics', 10)
+  name = _messages.StringField(11)
+  orchestrator = _messages.EnumField('OrchestratorValueValuesEnum', 12)
+  runGroup = _messages.StringField(13)
+  runPhase = _messages.EnumField('RunPhaseValueValuesEnum', 14)
+  runSet = _messages.StringField(15)
+  state = _messages.EnumField('StateValueValuesEnum', 16)
+  tools = _messages.MessageField('Tool', 17, repeated=True)
+  updateTime = _messages.StringField(18)
+  workloadDetails = _messages.MessageField('WorkloadDetails', 19)
 
 
 class Metrics(_messages.Message):
@@ -2032,28 +2039,12 @@ class Network(_messages.Message):
   r"""Message describing Network object
 
   Fields:
-    initializeParams: Immutable. Parameters to initialize the network
     network: Output only. Name of the network
-    networkSource: Immutable. Reference of existing network resource name
     subnetwork: Output only. Name of the subnetwork
   """
 
-  initializeParams = _messages.MessageField('NetworkInitializeParams', 1)
-  network = _messages.StringField(2)
-  networkSource = _messages.MessageField('NetworkSource', 3)
-  subnetwork = _messages.StringField(4)
-
-
-class NetworkInitializeParams(_messages.Message):
-  r"""Message describing initialize params for network object
-
-  Fields:
-    description: Optional. Description of the network
-    network: Required. Name of the network
-  """
-
-  description = _messages.StringField(1)
-  network = _messages.StringField(2)
+  network = _messages.StringField(1)
+  subnetwork = _messages.StringField(2)
 
 
 class NetworkReference(_messages.Message):
@@ -2103,18 +2094,6 @@ class NetworkResourceConfig(_messages.Message):
 
   existingNetwork = _messages.MessageField('ExistingNetworkConfig', 1)
   newNetwork = _messages.MessageField('NewNetworkConfig', 2)
-
-
-class NetworkSource(_messages.Message):
-  r"""Message describing network source for network object
-
-  Fields:
-    network: Required. Immutable. Name of the network
-    subnetwork: Required. Subnetwork of the network
-  """
-
-  network = _messages.StringField(1)
-  subnetwork = _messages.StringField(2)
 
 
 class NewBucketConfig(_messages.Message):
@@ -2348,7 +2327,6 @@ class NewOnDemandInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
-    bootDisk: Immutable. Deprecated: set disks in node config instead.
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -2383,9 +2361,8 @@ class NewOnDemandInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  bootDisk = _messages.MessageField('Disk', 2)
-  machineType = _messages.StringField(3)
-  zone = _messages.StringField(4)
+  machineType = _messages.StringField(2)
+  zone = _messages.StringField(3)
 
 
 class NewReservedInstancesConfig(_messages.Message):
@@ -2488,7 +2465,6 @@ class NewSpotInstancesConfig(_messages.Message):
   Fields:
     atmTags: Optional. Immutable. Unstable: Contact hypercompute-service-eng@
       before using.
-    bootDisk: Immutable. Deprecated: set disks in node config instead.
     machineType: Required. Immutable. Name of the Compute Engine [machine
       type](https://cloud.google.com/compute/docs/machine-resource) to use,
       e.g. `n2-standard-2`.
@@ -2538,10 +2514,9 @@ class NewSpotInstancesConfig(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   atmTags = _messages.MessageField('AtmTagsValue', 1)
-  bootDisk = _messages.MessageField('Disk', 2)
-  machineType = _messages.StringField(3)
-  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 4)
-  zone = _messages.StringField(5)
+  machineType = _messages.StringField(2)
+  terminationAction = _messages.EnumField('TerminationActionValueValuesEnum', 3)
+  zone = _messages.StringField(4)
 
 
 class Operation(_messages.Message):
@@ -2865,9 +2840,8 @@ class ProfilerSession(_messages.Message):
     name: Identifier. The name of the profiler session. Format: projects/{proj
       ect}/locations/{location}/machineLearningRuns/{machine_learning_run}/pro
       filerSessions/{profiler_session}
-    profilerTargets: Optional. List of profiler targets. Targets on which
-      profiler session to be started. If empty, control plan shall start
-      profiler session on all the targets associated with ML Run.
+    profilerTargets: Required. List of profiler targets. Targets on which
+      profiler session to be started.
     pythonTracerLevel: Optional. Python tracer level for the session. If the
       field is not set or unspecified, the default is
       `PYTHON_TRACER_LEVEL_DISABLED`.
@@ -3381,7 +3355,6 @@ class SlurmNodeSet(_messages.Message):
 
   Fields:
     bootDisk: Optional. Deprecated: Use compute_instance.boot_disk instead.
-    canIpForward: Optional. Deprecated: Do not use.
     computeId: Optional. ID of the compute resource on which this nodeset will
       run. Must match a key in the cluster's compute_resources.
     computeInstance: Optional. If set, indicates that the nodeset should be
@@ -3438,20 +3411,19 @@ class SlurmNodeSet(_messages.Message):
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   bootDisk = _messages.MessageField('Disk', 1)
-  canIpForward = _messages.BooleanField(2)
-  computeId = _messages.StringField(3)
-  computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 4)
-  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 5)
-  enableOsLogin = _messages.BooleanField(6)
-  enablePublicIps = _messages.BooleanField(7)
-  id = _messages.StringField(8)
-  labels = _messages.MessageField('LabelsValue', 9)
-  maxDynamicNodeCount = _messages.IntegerField(10)
-  resourceRequestId = _messages.StringField(11)
-  serviceAccount = _messages.MessageField('ServiceAccount', 12)
-  startupScript = _messages.StringField(13)
-  staticNodeCount = _messages.IntegerField(14)
-  storageConfigs = _messages.MessageField('StorageConfig', 15, repeated=True)
+  computeId = _messages.StringField(2)
+  computeInstance = _messages.MessageField('ComputeInstanceSlurmNodeSet', 3)
+  containerNodePool = _messages.MessageField('ContainerNodePoolSlurmNodeSet', 4)
+  enableOsLogin = _messages.BooleanField(5)
+  enablePublicIps = _messages.BooleanField(6)
+  id = _messages.StringField(7)
+  labels = _messages.MessageField('LabelsValue', 8)
+  maxDynamicNodeCount = _messages.IntegerField(9)
+  resourceRequestId = _messages.StringField(10)
+  serviceAccount = _messages.MessageField('ServiceAccount', 11)
+  startupScript = _messages.StringField(12)
+  staticNodeCount = _messages.IntegerField(13)
+  storageConfigs = _messages.MessageField('StorageConfig', 14, repeated=True)
 
 
 class SlurmOrchestrator(_messages.Message):

@@ -19,9 +19,6 @@ For usage examples, see
 googlecloudsdk/command_lib/concepts/all_concepts/base.py.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.concepts import base
 from googlecloudsdk.command_lib.concepts import dependency_managers

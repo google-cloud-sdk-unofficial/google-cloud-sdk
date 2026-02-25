@@ -78,6 +78,7 @@ class DataplexV1(base_api.BaseApiClient):
     self.projects_locations_metadataFeeds = self.ProjectsLocationsMetadataFeedsService(self)
     self.projects_locations_metadataJobs = self.ProjectsLocationsMetadataJobsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_policyIntents = self.ProjectsLocationsPolicyIntentsService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
     self.projects = self.ProjectsService(self)
 
@@ -2247,7 +2248,7 @@ class DataplexV1(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      r"""Gets an Entry. Caution: The Vertex AI, Bigtable, Spanner, Pub/Sub, Dataform, and Dataproc Metastore metadata that is stored in Dataplex Universal Catalog is changing. For more information, see Changes to metadata stored in Dataplex Universal Catalog (https://cloud.google.com/dataplex/docs/metadata-changes).
+      r"""Gets an Entry.
 
       Args:
         request: (DataplexProjectsLocationsEntryGroupsEntriesGetRequest) input message
@@ -2274,7 +2275,7 @@ class DataplexV1(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      r"""Lists Entries within an EntryGroup. Caution: The Vertex AI, Bigtable, Spanner, Pub/Sub, Dataform, and Dataproc Metastore metadata that is stored in Dataplex Universal Catalog is changing. For more information, see Changes to metadata stored in Dataplex Universal Catalog (https://cloud.google.com/dataplex/docs/metadata-changes).
+      r"""Lists Entries within an EntryGroup.
 
       Args:
         request: (DataplexProjectsLocationsEntryGroupsEntriesListRequest) input message
@@ -6384,6 +6385,97 @@ class DataplexV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+  class ProjectsLocationsPolicyIntentsService(base_api.BaseApiService):
+    """Service class for the projects_locations_policyIntents resource."""
+
+    _NAME = 'projects_locations_policyIntents'
+
+    def __init__(self, client):
+      super(DataplexV1.ProjectsLocationsPolicyIntentsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. Returns an empty policy if the resource exists and does not have a policy set.
+
+      Args:
+        request: (DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/policyIntents/{policyIntentsId}:getIamPolicy',
+        http_method='GET',
+        method_id='dataplex.projects.locations.policyIntents.getIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=['options_requestedPolicyVersion'],
+        relative_path='v1/{+resource}:getIamPolicy',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy.Can return NOT_FOUND, INVALID_ARGUMENT, and PERMISSION_DENIED errors.
+
+      Args:
+        request: (DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/policyIntents/{policyIntentsId}:setIamPolicy',
+        http_method='POST',
+        method_id='dataplex.projects.locations.policyIntents.setIamPolicy',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:setIamPolicy',
+        request_field='googleIamV1SetIamPolicyRequest',
+        request_type_name='DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest',
+        response_type_name='GoogleIamV1Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource. If the resource does not exist, this will return an empty set of permissions, not a NOT_FOUND error.Note: This operation is designed to be used for building permission-aware UIs and command-line tools, not for authorization checking. This operation may "fail open" without warning.
+
+      Args:
+        request: (DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleIamV1TestIamPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/policyIntents/{policyIntentsId}:testIamPermissions',
+        http_method='POST',
+        method_id='dataplex.projects.locations.policyIntents.testIamPermissions',
+        ordered_params=['resource'],
+        path_params=['resource'],
+        query_params=[],
+        relative_path='v1/{+resource}:testIamPermissions',
+        request_field='googleIamV1TestIamPermissionsRequest',
+        request_type_name='DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest',
+        response_type_name='GoogleIamV1TestIamPermissionsResponse',
+        supports_download=False,
+    )
+
   class ProjectsLocationsService(base_api.BaseApiService):
     """Service class for the projects_locations resource."""
 
@@ -6475,8 +6567,35 @@ class DataplexV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def LookupContext(self, request, global_params=None):
+      r"""Looks up LLM Context for the specified resources.
+
+      Args:
+        request: (DataplexProjectsLocationsLookupContextRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1LookupContextResponse) The response message.
+      """
+      config = self.GetMethodConfig('LookupContext')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    LookupContext.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}:lookupContext',
+        http_method='POST',
+        method_id='dataplex.projects.locations.lookupContext',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:lookupContext',
+        request_field='googleCloudDataplexV1LookupContextRequest',
+        request_type_name='DataplexProjectsLocationsLookupContextRequest',
+        response_type_name='GoogleCloudDataplexV1LookupContextResponse',
+        supports_download=False,
+    )
+
     def LookupEntry(self, request, global_params=None):
-      r"""Looks up an entry by name using the permission on the source system. Caution: The Vertex AI, Bigtable, Spanner, Pub/Sub, Dataform, and Dataproc Metastore metadata that is stored in Dataplex Universal Catalog is changing. For more information, see Changes to metadata stored in Dataplex Universal Catalog (https://cloud.google.com/dataplex/docs/metadata-changes).
+      r"""Looks up an entry by name using the permission on the source system.
 
       Args:
         request: (DataplexProjectsLocationsLookupEntryRequest) input message
@@ -6499,6 +6618,33 @@ class DataplexV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='DataplexProjectsLocationsLookupEntryRequest',
         response_type_name='GoogleCloudDataplexV1Entry',
+        supports_download=False,
+    )
+
+    def LookupEntryLinks(self, request, global_params=None):
+      r"""Looks up Entry Links referencing the specified Entry.
+
+      Args:
+        request: (DataplexProjectsLocationsLookupEntryLinksRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (GoogleCloudDataplexV1LookupEntryLinksResponse) The response message.
+      """
+      config = self.GetMethodConfig('LookupEntryLinks')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    LookupEntryLinks.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}:lookupEntryLinks',
+        http_method='GET',
+        method_id='dataplex.projects.locations.lookupEntryLinks',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=['entry', 'entryLinkTypes', 'entryMode', 'pageSize', 'pageToken'],
+        relative_path='v1/{+name}:lookupEntryLinks',
+        request_field='',
+        request_type_name='DataplexProjectsLocationsLookupEntryLinksRequest',
+        response_type_name='GoogleCloudDataplexV1LookupEntryLinksResponse',
         supports_download=False,
     )
 

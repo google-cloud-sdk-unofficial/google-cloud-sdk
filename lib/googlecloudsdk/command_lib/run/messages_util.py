@@ -14,10 +14,6 @@
 # limitations under the License.
 """Code for making shared messages between commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.core import log
@@ -125,6 +121,34 @@ def GetSuccessMessageForSynchronousWorkerPoolDeploy(
       '\nDone.\n\nSee logs with:\n{logs_command}\n\nOr visit {console_url}'
   ).format(logs_command=logs_command, console_url=console_url)
   return msg
+
+
+def GetStartCreateInstanceMessage(
+    conn_context,
+    parent_ref,
+    resource_name=None,
+):
+  """Returns a user mesage for starting a deploy.
+
+  Args:
+    conn_context: connection_context.ConnectionInfo, Metadata for the run API
+      client.
+    parent_ref: protorpc.messages.Message, A resource reference object for the
+      resource. See googlecloudsdk.core.resources.Registry.ParseResourceId for
+      details.
+    resource_name: str | None, name of the resource.
+  """
+  msg = 'Creating {operator} instance '
+  if resource_name:
+    msg += '[{{bold}}{resource}{{reset}}] '
+  msg += 'in {ns_label} [{{bold}}{ns}{{reset}}]'
+  msg += conn_context.location_label
+  return msg.format(
+      operator=conn_context.operator,
+      ns_label=conn_context.ns_label,
+      resource=resource_name,
+      ns=parent_ref.Name(),
+  )
 
 
 def GetStartDeployMessage(

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Modify request hooks, specifically for storage-pool related ones."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def add_name_to_payload(resource_ref, _, request_msg):

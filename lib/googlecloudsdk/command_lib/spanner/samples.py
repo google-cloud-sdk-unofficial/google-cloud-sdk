@@ -14,9 +14,6 @@
 # limitations under the License.
 """Spanner samples API helper."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import os

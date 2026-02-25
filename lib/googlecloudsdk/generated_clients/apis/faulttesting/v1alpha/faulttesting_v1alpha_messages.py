@@ -709,7 +709,7 @@ class HTTPAbort(_messages.Message):
   Fields:
     percentage: Required. Percentage of requests to abort, in the range 0 to
       100, inclusive.
-    statusCode: Required. HTTP status code to return. In the range 200 to 599,
+    statusCode: Required. HTTP status code to return. In the range 500 to 599,
       inclusive.
   """
 

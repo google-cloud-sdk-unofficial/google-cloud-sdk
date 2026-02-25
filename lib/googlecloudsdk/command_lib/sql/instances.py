@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utility functions for sql instance commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 
@@ -577,13 +574,13 @@ class _BaseInstances(object):
         settings.ipConfiguration = sql_messages.IpConfiguration()
       settings.ipConfiguration.customSubjectAlternativeNames = []
 
+    if args.IsKnownAndSpecified('data_api_access'):
+      settings.dataApiAccess = _ParseDataApiAccess(
+          sql_messages, args.data_api_access
+      )
+
     # BETA args.
     if IsBetaOrNewer(release_track):
-      if args.IsSpecified('data_api_access'):
-        settings.dataApiAccess = _ParseDataApiAccess(
-            sql_messages, args.data_api_access
-        )
-
       if args.IsSpecified('storage_auto_increase_limit'):
         # Resize limit should be settable if the original instance has resize
         # turned on, or if the instance to be created has resize flag.

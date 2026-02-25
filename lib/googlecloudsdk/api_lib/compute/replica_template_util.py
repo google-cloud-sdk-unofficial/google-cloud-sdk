@@ -18,9 +18,6 @@ These utility functions enable easy replacement of parameters into
 ReplicaPool template files.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.compute import exceptions

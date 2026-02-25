@@ -14,15 +14,19 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  - GA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Update apis
-    description: Update an api
-    examples: |-
-      To update the api, run:
+    description: |-
+      Update an api
 
-          $ {command}
+      Note: The positional argument for API ID is currently not supported.
+      Please use the --api flag to specify the API ID.
+    examples: |-
+      To update an API with the ID `my-api`, run:
+
+      $ {command} --api=my-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

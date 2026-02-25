@@ -1,0 +1,24 @@
+- release_tracks: [GA]
+  hidden: true
+  universe_compatible: true
+  help_text:
+    brief: Describe project configuration.
+    description: |
+      Describe the Artifact Registry project configuration for the current project in a given
+      location.
+    examples: |
+      To describe project configuration in `us-west1`:
+
+        $ {command} --location=us-west1
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.artifacts.resources:location
+      is_positional: false
+      help_text: |
+        The location of the project configuration to describe.
+  request:
+    api_version: v1
+    disable_resource_check: true
+    collection: artifactregistry.projects.locations
+    issue_request_hook: googlecloudsdk.command_lib.artifacts.util:GetProjectConfig

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the Cloud NetApp Files Volumes commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import textwrap
@@ -536,7 +533,6 @@ def AddVolumeLargeCapacityConfigArg(parser):
       nargs='?',
       const={},
       help=large_capacity_config_help,
-      hidden=True,
   )
 
 

@@ -19,9 +19,6 @@ Functions defined here are used to migrate away from soon to be deprecated
 admin-console-hr superapp. Instead we will be using Cloud Tasks APIs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import re

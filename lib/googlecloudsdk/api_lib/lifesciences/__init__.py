@@ -14,8 +14,5 @@
 # limitations under the License.
 """Package marker file."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 STORAGE_V1_CLIENT_KEY = 'storage_v1_client'

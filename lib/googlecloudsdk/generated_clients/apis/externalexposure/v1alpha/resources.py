@@ -18,7 +18,7 @@ import enum
 
 
 BASE_URL = 'https://externalexposure.googleapis.com/v1alpha/'
-DOCS_URL = ''
+DOCS_URL = 'https://cloud.google.com/security-command-center'
 
 
 class Collections(enum.Enum):
@@ -97,17 +97,6 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
-  PROJECTS_LOCATIONS_INTERNETEXPOSEDENDPOINTS = (
-      'projects.locations.internetExposedEndpoints',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/'
-              'internetExposedEndpoints/{internetExposedEndpointsId}',
-      },
-      ['name'],
-      True
-  )
   PROJECTS_LOCATIONS_OPERATIONS = (
       'projects.locations.operations',
       '{+name}',
@@ -115,17 +104,6 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/operations/'
               '{operationsId}',
-      },
-      ['name'],
-      True
-  )
-  PROJECTS_LOCATIONS_PUBLICEXPOSURES = (
-      'projects.locations.publicExposures',
-      '{+name}',
-      {
-          '':
-              'projects/{projectsId}/locations/{locationsId}/publicExposures/'
-              '{publicExposuresId}',
       },
       ['name'],
       True

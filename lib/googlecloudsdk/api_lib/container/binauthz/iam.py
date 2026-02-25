@@ -14,9 +14,6 @@
 # limitations under the License.
 """API helpers for interacting with IAM."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.command_lib.iam import iam_util

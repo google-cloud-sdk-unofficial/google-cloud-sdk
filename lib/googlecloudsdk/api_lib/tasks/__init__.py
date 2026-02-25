@@ -14,9 +14,6 @@
 # limitations under the License.
 """API Library for gcloud cloudtasks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.tasks import cmek_config
 from googlecloudsdk.api_lib.tasks import locations

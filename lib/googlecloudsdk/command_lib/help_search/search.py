@@ -15,9 +15,6 @@
 
 """gcloud search-help command resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import cli_tree
 from googlecloudsdk.command_lib.help_search import lookup

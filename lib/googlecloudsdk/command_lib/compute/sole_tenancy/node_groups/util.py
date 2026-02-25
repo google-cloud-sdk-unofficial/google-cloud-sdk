@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility methods for the `compute sole-tenancy node-groups` commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.util.apis.arg_utils import ChoiceToEnumName

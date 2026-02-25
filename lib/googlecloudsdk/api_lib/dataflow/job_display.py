@@ -16,9 +16,6 @@
 """Facility for displaying information about a Job message to a user.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataflow import apis
 from googlecloudsdk.core.util import times

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants for the dataproc tool."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # TODO(b/36055865): Move defaults to the server
 # Path inside of GCS bucket, where Dataproc stores metadata.

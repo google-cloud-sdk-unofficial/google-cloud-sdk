@@ -85,9 +85,6 @@ Or (even easier) use a 'custom' runtime:
     $ gcloud beta app deploy
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import contextlib
 import enum

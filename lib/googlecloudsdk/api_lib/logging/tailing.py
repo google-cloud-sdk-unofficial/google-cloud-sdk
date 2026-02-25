@@ -14,11 +14,9 @@
 # limitations under the License.
 """A library for logs tailing."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
+import contextlib
 import datetime
 
 # pylint: disable=unused-import, type imports needed for gRPC
@@ -178,7 +176,14 @@ class LogTailer(object):
 
   def __init__(self):
     self.client = apis.GetGapicClientInstance('logging', 'v2')
+    self._exit_stack = contextlib.ExitStack()
+    self._exit_stack.enter_context(self.client)
     self.tail_stub = None
+
+  # pylint: disable=invalid-name
+  def close(self):
+    self.Stop()
+    self._exit_stack.close()
 
   def TailLogs(self,
                resource_names,

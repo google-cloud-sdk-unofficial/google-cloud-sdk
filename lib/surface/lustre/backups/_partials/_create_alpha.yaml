@@ -42,7 +42,7 @@
             If not set, the backup will use Google-managed encryption keys.
             If set, the backup will use customer-managed encryption keys.
             The key must be in the same region as the backup. The key format is:
-            projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}
+            `projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{key}`
     - help_text: |-
         Identifier. The resource name of the backup, in the format
         `projects/{project}/locations/{location}/backups/{backup}`.

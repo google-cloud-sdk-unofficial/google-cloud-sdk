@@ -43,9 +43,6 @@ On the first instantiation Coshell.__init__() determines what implementation to
 use. All subsequent instantiations will use the same implementation.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import locale

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common functions and classes for dealing with managed instances groups."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import random
@@ -38,6 +35,7 @@ from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.calliope import parser_extensions
+from googlecloudsdk.calliope.exceptions import InvalidArgumentException
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.managed_instance_groups import auto_healing_utils
 from googlecloudsdk.command_lib.compute.managed_instance_groups import update_instances_utils
@@ -1492,6 +1490,11 @@ def CreateResourcePolicies(
   return ValueOrNone(policy)
 
 
+def _DictToAttachedDiskMessage(disk_dict, messages):
+  """Converts a Python dict to a Compute API AttachedDisk message."""
+  return encoding.DictToMessage(disk_dict, messages.AttachedDisk)
+
+
 def CreateInstanceSelections(
     args,
     messages,
@@ -1540,6 +1543,7 @@ def CreateInstanceSelections(
         args.instance_selection_machine_types,
         1,
         min_cpu_platform=None,
+        api_disks=None,
     )
 
   if args.IsKnownAndSpecified('instance_selection'):
@@ -1577,7 +1581,70 @@ def CreateInstanceSelections(
           machine_types,
           rank,
           min_cpu_platform,
+          api_disks=None,
       )
+
+  if args.IsKnownAndSpecified('instance_flexibility_policy'):
+    # Clean up existing instance selections to override them with new values
+    # from the full policy flag.
+    instance_selections = []
+    new_instance_selections = args.instance_flexibility_policy[
+        'instanceSelections'
+    ]
+    for (
+        name,
+        instance_selection,
+    ) in new_instance_selections.items():
+      if (
+          'machineTypes' not in instance_selection
+          or not instance_selection['machineTypes']
+      ):
+        raise InvalidArgumentError(
+            'Missing machine type in instance selection.'
+        )
+      machine_types = instance_selection['machineTypes']
+      rank = None
+      if 'rank' in instance_selection:
+        rank = int(instance_selection['rank'])
+      min_cpu_platform = None
+      if 'minCpuPlatform' in instance_selection:
+        min_cpu_platform = instance_selection['minCpuPlatform']
+      api_disks = []
+      if 'disks' in instance_selection:
+        for disk_dict in instance_selection.get('disks', []):
+          try:
+            api_disks.append(_DictToAttachedDiskMessage(disk_dict, messages))
+          except InvalidArgumentException as e:
+            raise InvalidArgumentException(
+                'instance_selection',
+                f'Invalid disk format in instance selection "{name}": {e} -'
+                f' Received: {disk_dict}',
+            )
+      _AddInstanceSelection(
+          messages,
+          instance_selections,
+          name,
+          machine_types,
+          rank,
+          min_cpu_platform,
+          api_disks,
+      )
+
+    RegisterInstanceSelectionsPatchEncoders(messages)
+    instance_selection_names = [
+        selection.key for selection in instance_selections
+    ]
+    existing_instance_selection_names = _GetExistingInstanceSelectionNames(
+        igm_resource
+    )
+    for instance_selection_name in existing_instance_selection_names:
+      if instance_selection_name not in instance_selection_names:
+        instance_selections.append(
+            messages.InstanceGroupManagerInstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
+                key=instance_selection_name,
+                value=None,
+            )
+        )
 
   if not instance_selections:
     return None
@@ -1593,6 +1660,7 @@ def _AddInstanceSelection(
     machine_types,
     rank,
     min_cpu_platform=None,
+    api_disks=None,
 ):
   """Adds instance selection to instance selections list."""
   for instance_selection in instance_selections:
@@ -1616,6 +1684,8 @@ def _AddInstanceSelection(
     instance_selection.minCpuPlatform = min_cpu_platform
   if rank is not None:
     instance_selection.rank = rank
+  if api_disks:
+    instance_selection.disks = api_disks
   instance_selections.append(
       messages.InstanceGroupManagerInstanceFlexibilityPolicy.InstanceSelectionsValue.AdditionalProperty(
           key=instance_selection_name,
@@ -1636,6 +1706,8 @@ def _IsPreviouslyProcessed(intance_selection_name, instance_selections, is_add):
 
 
 def _GetExistingInstanceSelectionNames(igm_resource):
+  if not igm_resource or not igm_resource.instanceFlexibilityPolicy:
+    return []
   return [
       instance_selection.key
       for instance_selection in igm_resource.instanceFlexibilityPolicy.instanceSelections.additionalProperties

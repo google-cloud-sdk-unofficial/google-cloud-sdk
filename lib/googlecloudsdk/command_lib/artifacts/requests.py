@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility for making API calls."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import http_wrapper
@@ -353,15 +350,36 @@ def GetServiceAccount(service_account):
   client, messages = iam_api.GetClientAndMessages()
   return client.projects_serviceAccounts.Get(
       messages.IamProjectsServiceAccountsGetRequest(
-          name=iam_util.EmailToAccountResourceName(service_account)))
+          name=iam_util.EmailToAccountResourceName(service_account)
+      )
+  )
 
 
 def GetProjectSettings(project_id):
   client = GetClient()
   messages = GetMessages()
   get_settings_req = messages.ArtifactregistryProjectsGetProjectSettingsRequest(
-      name="projects/" + project_id + "/projectSettings")
+      name="projects/" + project_id + "/projectSettings"
+  )
   return client.projects.GetProjectSettings(get_settings_req)
+
+
+def GetProjectConfigName(project_id, location_id):
+  return "projects/{}/locations/{}/projectConfig".format(
+      project_id, location_id
+  )
+
+
+def GetProjectConfig(project_id, location_id):
+  """Gets Project Config on the project and location."""
+  client = GetClient()
+  messages = GetMessages()
+  get_project_config_req = (
+      messages.ArtifactregistryProjectsLocationsGetProjectConfigRequest(
+          name=GetProjectConfigName(project_id, location_id)
+      )
+  )
+  return client.projects_locations.GetProjectConfig(get_project_config_req)
 
 
 def GetVPCSCConfig(project_id, location_id):

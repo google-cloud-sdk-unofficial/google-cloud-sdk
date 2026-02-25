@@ -1067,6 +1067,18 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDecapsulateReq
   name = _messages.StringField(2, required=True)
 
 
+class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDeleteRequest(_messages.Message):
+  r"""A
+  CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDeleteRequest
+  object.
+
+  Fields:
+    name: Required. The name of the CryptoKeyVersion to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
 class CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDestroyRequest(_messages.Message):
   r"""A
   CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDestroyRequest
@@ -1323,6 +1335,16 @@ class CloudkmsProjectsLocationsKeyRingsCryptoKeysDecryptRequest(_messages.Messag
 
   decryptRequest = _messages.MessageField('DecryptRequest', 1)
   name = _messages.StringField(2, required=True)
+
+
+class CloudkmsProjectsLocationsKeyRingsCryptoKeysDeleteRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsKeyRingsCryptoKeysDeleteRequest object.
+
+  Fields:
+    name: Required. The name of the CryptoKey to delete.
+  """
+
+  name = _messages.StringField(1, required=True)
 
 
 class CloudkmsProjectsLocationsKeyRingsCryptoKeysEncryptRequest(_messages.Message):
@@ -1725,6 +1747,36 @@ class CloudkmsProjectsLocationsOperationsGetRequest(_messages.Message):
   """
 
   name = _messages.StringField(1, required=True)
+
+
+class CloudkmsProjectsLocationsRetiredResourcesGetRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsRetiredResourcesGetRequest object.
+
+  Fields:
+    name: Required. The name of the RetiredResource to get.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class CloudkmsProjectsLocationsRetiredResourcesListRequest(_messages.Message):
+  r"""A CloudkmsProjectsLocationsRetiredResourcesListRequest object.
+
+  Fields:
+    pageSize: Optional. Optional limit on the number of RetiredResources to be
+      included in the response. Further RetiredResources can subsequently be
+      obtained by including the ListRetiredResourcesResponse.next_page_token
+      in a subsequent request. If unspecified, the server will pick an
+      appropriate default.
+    pageToken: Optional. Optional pagination token, returned earlier via
+      ListRetiredResourcesResponse.next_page_token.
+    parent: Required. The project-specific location holding the
+      RetiredResources, in the format `projects/*/locations/*`.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
 
 
 class CloudkmsProjectsLocationsSingleTenantHsmInstancesCreateRequest(_messages.Message):
@@ -3804,6 +3856,24 @@ class ListLocationsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListRetiredResourcesResponse(_messages.Message):
+  r"""Response message for KeyManagementService.ListRetiredResources.
+
+  Fields:
+    nextPageToken: A token to retrieve the next page of results. Pass this
+      value in ListRetiredResourcesRequest.page_token to retrieve the next
+      page of results.
+    retiredResources: The list of RetiredResources.
+    totalSize: The total number of RetiredResources that matched the query.
+      This field is not populated if ListRetiredResourcesRequest.filter is
+      applied.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  retiredResources = _messages.MessageField('RetiredResource', 2, repeated=True)
+  totalSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+
+
 class ListSingleTenantHsmInstanceProposalsResponse(_messages.Message):
   r"""Response message for HsmManagement.ListSingleTenantHsmInstanceProposals.
 
@@ -4994,6 +5064,29 @@ class RequiredActionQuorumReply(_messages.Message):
 
 class RestoreCryptoKeyVersionRequest(_messages.Message):
   r"""Request message for KeyManagementService.RestoreCryptoKeyVersion."""
+
+
+class RetiredResource(_messages.Message):
+  r"""A RetiredResource resource represents the record of a deleted CryptoKey.
+  Its purpose is to provide visibility into retained user data and to prevent
+  reuse of these names for new CryptoKeys.
+
+  Fields:
+    deleteTime: Output only. The time at which the original resource was
+      deleted and this RetiredResource record was created.
+    name: Output only. Identifier. The resource name for this RetiredResource
+      in the format `projects/*/locations/*/retiredResources/*`.
+    originalResource: Output only. The full resource name of the original
+      CryptoKey that was deleted in the format
+      `projects/*/locations/*/keyRings/*/cryptoKeys/*`.
+    resourceType: Output only. The resource type of the original deleted
+      resource.
+  """
+
+  deleteTime = _messages.StringField(1)
+  name = _messages.StringField(2)
+  originalResource = _messages.StringField(3)
+  resourceType = _messages.StringField(4)
 
 
 class ServiceResolver(_messages.Message):

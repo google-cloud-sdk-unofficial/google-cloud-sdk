@@ -14,9 +14,6 @@
 # limitations under the License.
 """Package utils for Artifact Registry commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.artifacts import filter_rewriter
 from googlecloudsdk.api_lib.util import common_args

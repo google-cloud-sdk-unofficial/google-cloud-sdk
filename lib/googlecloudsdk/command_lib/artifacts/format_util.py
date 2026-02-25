@@ -14,9 +14,6 @@
 # limitations under the License.
 """Formatting strings for Artifact Registry commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 BUILD_GIT_SHA_FORMAT = ("BUILD_DETAILS.buildDetails.provenance."
                         "sourceProvenance.context.cloudRepo.revisionId"

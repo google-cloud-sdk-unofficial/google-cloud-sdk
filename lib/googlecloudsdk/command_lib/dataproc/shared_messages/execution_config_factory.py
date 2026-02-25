@@ -14,9 +14,6 @@
 # limitations under the License.
 """Factory for ExecutionConfig message."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.dataproc.shared_messages import (

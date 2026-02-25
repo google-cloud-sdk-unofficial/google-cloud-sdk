@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for interacting with the Compute API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes as compute_base
 from googlecloudsdk.api_lib.compute import constants as compute_constants

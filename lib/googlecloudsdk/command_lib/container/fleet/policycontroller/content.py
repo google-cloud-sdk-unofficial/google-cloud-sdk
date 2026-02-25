@@ -14,9 +14,6 @@
 # limitations under the License.
 """Policy Controller content policy library code."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages
 from googlecloudsdk.api_lib.container.fleet.policycontroller import protos

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create iOS test matrices in Firebase Test Lab."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import uuid

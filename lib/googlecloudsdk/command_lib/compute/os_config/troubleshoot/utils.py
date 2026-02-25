@@ -14,9 +14,6 @@
 # limitations under the License.
 """Extra utility functions for OS Config Troubleshooter."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import logging
 import traceback

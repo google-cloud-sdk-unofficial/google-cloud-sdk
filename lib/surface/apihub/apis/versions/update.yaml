@@ -14,15 +14,15 @@
 # limitations under the License.
 - release_tracks:
   - ALPHA
+  - GA
   auto_generated: false
-  hidden: true
   help_text:
     brief: Update versions
     description: Update a version
     examples: |-
-      To update the version, run:
+      To update a version with the ID `my-version` for API `my-api`, run:
 
-          $ {command}
+      $ {command} my-version --api=my-api --display-name="New Display Name" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

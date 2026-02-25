@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe externalApis
-    description: Describe an externalApi
+    brief: Describe an External Api
+    description: Describe an external api
     examples: |-
-      To describe the externalApi, run:
+      To describe an external API with the ID `my-external-api`, run:
 
-          $ {command}
+      $ {command} my-external-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

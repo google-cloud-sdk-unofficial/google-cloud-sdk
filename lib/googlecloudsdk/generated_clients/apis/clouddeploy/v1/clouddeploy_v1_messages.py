@@ -955,6 +955,18 @@ class CancelRolloutResponse(_messages.Message):
   r"""The response object from `CancelRollout`."""
 
 
+class ChartRepo(_messages.Message):
+  r"""ChartRepo contains the chart repository information.
+
+  Fields:
+    path: Optional. Path to the chart within the chart repository.
+    repoUrl: Optional. URL where the chart repository is hosted.
+  """
+
+  path = _messages.StringField(1)
+  repoUrl = _messages.StringField(2)
+
+
 class ChildRolloutJobs(_messages.Message):
   r"""ChildRollouts job composition
 
@@ -987,6 +999,17 @@ class CloudRunConfig(_messages.Message):
   canaryRevisionTags = _messages.StringField(2, repeated=True)
   priorRevisionTags = _messages.StringField(3, repeated=True)
   stableRevisionTags = _messages.StringField(4, repeated=True)
+
+
+class CloudRunDeploymentOptions(_messages.Message):
+  r"""CloudRunDeploymentOptions contains the Cloud Run deployment options.
+
+  Fields:
+    statusCheck: Optional. Modifies the status checking behavior when
+      deploying to Cloud Run.
+  """
+
+  statusCheck = _messages.MessageField('CloudRunStatusCheck', 1)
 
 
 class CloudRunLocation(_messages.Message):
@@ -1055,6 +1078,22 @@ class CloudRunRenderMetadata(_messages.Message):
   revision = _messages.StringField(2)
   service = _messages.StringField(3)
   workerPool = _messages.StringField(4)
+
+
+class CloudRunStatusCheck(_messages.Message):
+  r"""CloudRunStatusCheck contains the Cloud Run status check options.
+
+  Fields:
+    disabled: Optional. Whether to disable status checking.
+    timeout: Optional. The amount of time to wait for the deployed resources
+      to reach a ready state. Defaults to 10 minutes if unset.
+    tolerateFailures: Optional. Whether to tolerate failures when performing
+      status checks until the timeout passes.
+  """
+
+  disabled = _messages.BooleanField(1)
+  timeout = _messages.StringField(2)
+  tolerateFailures = _messages.BooleanField(3)
 
 
 class CloudServiceMesh(_messages.Message):
@@ -3689,6 +3728,18 @@ class DeploymentJobs(_messages.Message):
   verifyJob = _messages.MessageField('Job', 5)
 
 
+class DeploymentOptions(_messages.Message):
+  r"""DeploymentOptions contains the deployment options for the stage.
+
+  Fields:
+    cloudRun: Optional. Cloud Run deployment options.
+    kubernetes: Optional. Kubernetes deployment options.
+  """
+
+  cloudRun = _messages.MessageField('CloudRunDeploymentOptions', 1)
+  kubernetes = _messages.MessageField('KubernetesDeploymentOptions', 2)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -3882,6 +3933,109 @@ class GoogleCloudAnalysis(_messages.Message):
   """
 
   alertPolicyChecks = _messages.MessageField('AlertPolicyCheck', 1, repeated=True)
+
+
+class GoogleCloudStorageSource(_messages.Message):
+  r"""GoogleCloudStorageSource contains the Cloud Storage source information.
+
+  Fields:
+    bucket: Optional. Bucket containing the source object.
+    generation: Optional. Generation of the object, if not provided then
+      latest is retrieved.
+    object: Optional. Object that contains the source files, must be a
+      tarball.
+  """
+
+  bucket = _messages.StringField(1)
+  generation = _messages.StringField(2)
+  object = _messages.StringField(3)
+
+
+class HelmChart(_messages.Message):
+  r"""HelmChart contains the Helm chart configuration.
+
+  Messages:
+    SetFilesValuesValue: Optional. Values from file to pass into the chart.
+    ValuesValue: Optional. Helm Values to pass into the chart.
+
+  Fields:
+    chartRepo: Optional. Chart repository containing a Helm chart.
+    crdsExcluded: Optional. Whether to exclude CRDs. This enables the `--skip-
+      crds` argument in Helm.
+    helmRelease: Optional. This is the name of the deployed Helm release.
+    hooksExcluded: Optional. Whether to exclude Helm hooks. This enables the
+      `--no-hooks` argument in Helm.
+    ociUri: Optional. URI to a Helm chart hosted in a OCI registry, must be
+      prefix with "oci://".
+    path: Optional. Helm chart path, relative to the Source root.
+    setFilesValues: Optional. Values from file to pass into the chart.
+    testsExcluded: Optional. Whether to exclude Helm tests. This enables the
+      `--skip-tests` argument in Helm.
+    values: Optional. Helm Values to pass into the chart.
+    valuesFiles: Optional. Values file paths, relative to the Source root.
+    version: Optional. Version of the Helm chart to use.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class SetFilesValuesValue(_messages.Message):
+    r"""Optional. Values from file to pass into the chart.
+
+    Messages:
+      AdditionalProperty: An additional property for a SetFilesValuesValue
+        object.
+
+    Fields:
+      additionalProperties: Additional properties of type SetFilesValuesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a SetFilesValuesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ValuesValue(_messages.Message):
+    r"""Optional. Helm Values to pass into the chart.
+
+    Messages:
+      AdditionalProperty: An additional property for a ValuesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type ValuesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ValuesValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  chartRepo = _messages.MessageField('ChartRepo', 1)
+  crdsExcluded = _messages.BooleanField(2)
+  helmRelease = _messages.StringField(3)
+  hooksExcluded = _messages.BooleanField(4)
+  ociUri = _messages.StringField(5)
+  path = _messages.StringField(6)
+  setFilesValues = _messages.MessageField('SetFilesValuesValue', 7)
+  testsExcluded = _messages.BooleanField(8)
+  values = _messages.MessageField('ValuesValue', 9)
+  valuesFiles = _messages.StringField(10, repeated=True)
+  version = _messages.StringField(11)
 
 
 class IgnoreJobRequest(_messages.Message):
@@ -4091,6 +4245,17 @@ class JobRunNotificationEvent(_messages.Message):
   type = _messages.EnumField('TypeValueValuesEnum', 9)
 
 
+class KubectlDeploymentOptions(_messages.Message):
+  r"""KubectlDeploymentOptions contains the Kubectl deployment options.
+
+  Fields:
+    applyFlags: Optional. A set of allowlisted flags that are passed to the
+      kubectl apply command.
+  """
+
+  applyFlags = _messages.StringField(1, repeated=True)
+
+
 class KubernetesConfig(_messages.Message):
   r"""KubernetesConfig contains the Kubernetes runtime configuration.
 
@@ -4104,6 +4269,22 @@ class KubernetesConfig(_messages.Message):
   cloudServiceMesh = _messages.MessageField('CloudServiceMesh', 1)
   gatewayServiceMesh = _messages.MessageField('GatewayServiceMesh', 2)
   serviceNetworking = _messages.MessageField('ServiceNetworking', 3)
+
+
+class KubernetesDeploymentOptions(_messages.Message):
+  r"""KubernetesDeploymentOptions contains the Kubernetes deployment options.
+
+  Fields:
+    kubectl: Optional. Kubectl deployment options.
+    kubernetesNamespace: Optional. The default namespace to use for resources
+      that do not explicitly specify a namespace.
+    statusCheck: Optional. Modifies the status checking behavior when
+      deploying to the K8s cluster.
+  """
+
+  kubectl = _messages.MessageField('KubectlDeploymentOptions', 1)
+  kubernetesNamespace = _messages.StringField(2)
+  statusCheck = _messages.MessageField('KubernetesStatusCheck', 3)
 
 
 class KubernetesRenderMetadata(_messages.Message):
@@ -4125,6 +4306,77 @@ class KubernetesRenderMetadata(_messages.Message):
   canaryDeployment = _messages.StringField(1)
   deployment = _messages.StringField(2)
   kubernetesNamespace = _messages.StringField(3)
+
+
+class KubernetesStatusCheck(_messages.Message):
+  r"""KubernetesStatusCheck contains the Kubernetes status check options.
+
+  Fields:
+    disabled: Optional. Whether to disable status checking.
+    timeout: Optional. The amount of time to wait for the deployed resources
+      to reach a ready state. Defaults to 10 minutes if unset.
+    tolerateFailures: Optional. Whether to tolerate failures when performing
+      status checks until the timeout passes.
+  """
+
+  disabled = _messages.BooleanField(1)
+  timeout = _messages.StringField(2)
+  tolerateFailures = _messages.BooleanField(3)
+
+
+class Kustomize(_messages.Message):
+  r"""Kustomize contains the Kustomize configuration.
+
+  Fields:
+    path: Optional. Path to the directory containing the Kustomization file,
+      relative to the Source root.
+  """
+
+  path = _messages.StringField(1)
+
+
+class Labels(_messages.Message):
+  r"""Labels are attributes that can be set and used by both the user and by
+  Cloud Deploy. Labels must meet the following constraints: * Keys and values
+  can contain only lowercase letters, numeric characters, underscores, and
+  dashes. * All characters must use UTF-8 encoding, and international
+  characters are allowed. * Keys must start with a lowercase letter or
+  international character. * Each resource is limited to a maximum of 64
+  labels. Both keys and values are additionally constrained to be <= 128
+  bytes.
+
+  Messages:
+    LabelsValue: Optional. List of key-value pairs.
+
+  Fields:
+    labels: Optional. List of key-value pairs.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class LabelsValue(_messages.Message):
+    r"""Optional. List of key-value pairs.
+
+    Messages:
+      AdditionalProperty: An additional property for a LabelsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type LabelsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a LabelsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  labels = _messages.MessageField('LabelsValue', 1)
 
 
 class ListAutomationRunsResponse(_messages.Message):
@@ -5027,6 +5279,16 @@ class PromoteReleaseRule(_messages.Message):
   wait = _messages.StringField(5)
 
 
+class RawYAML(_messages.Message):
+  r"""RawYAML contains the raw YAML configuration.
+
+  Fields:
+    paths: Optional. YAML file paths, relative to the Source root.
+  """
+
+  paths = _messages.StringField(1, repeated=True)
+
+
 class Release(_messages.Message):
   r"""A `Release` resource in the Cloud Deploy API. A `Release` defines a
   specific Skaffold configuration instance that can be deployed.
@@ -5042,6 +5304,7 @@ class Release(_messages.Message):
       and size limitations.
     DeployParametersValue: Optional. The deploy parameters to use for all
       targets in this release.
+    EffectiveTargetConfigsValue: Output only. Resolved target configurations.
     LabelsValue: Labels are attributes that can be set and used by both the
       user and by Cloud Deploy. Labels must meet the following constraints: *
       Keys and values can contain only lowercase letters, numeric characters,
@@ -5073,6 +5336,7 @@ class Release(_messages.Message):
       in this release.
     description: Optional. Description of the `Release`. Max length is 255
       characters.
+    effectiveTargetConfigs: Output only. Resolved target configurations.
     etag: This checksum is computed by the server based on the value of other
       fields, and may be sent on update and delete requests to ensure the
       client has an up-to-date value before proceeding.
@@ -5098,8 +5362,11 @@ class Release(_messages.Message):
       this release, such as "1.20.0". Not all versions are valid; Cloud Deploy
       supports a specific set of versions. If unset, the most recent supported
       Skaffold version will be used.
+    source: Optional. The location of the runtime configuration files used for
+      deployment.
     targetArtifacts: Output only. Map from target ID to the target artifacts
       created during the render operation.
+    targetConfigs: Optional. The target configurations.
     targetRenders: Output only. Map from target ID to details of the render
       operation for that target.
     targetSnapshots: Output only. Snapshot of the targets taken at release
@@ -5177,6 +5444,32 @@ class Release(_messages.Message):
 
       key = _messages.StringField(1)
       value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class EffectiveTargetConfigsValue(_messages.Message):
+    r"""Output only. Resolved target configurations.
+
+    Messages:
+      AdditionalProperty: An additional property for a
+        EffectiveTargetConfigsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type
+        EffectiveTargetConfigsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a EffectiveTargetConfigsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A TargetConfig attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('TargetConfig', 2)
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
@@ -5272,20 +5565,23 @@ class Release(_messages.Message):
   deliveryPipelineSnapshot = _messages.MessageField('DeliveryPipeline', 7)
   deployParameters = _messages.MessageField('DeployParametersValue', 8)
   description = _messages.StringField(9)
-  etag = _messages.StringField(10)
-  labels = _messages.MessageField('LabelsValue', 11)
-  name = _messages.StringField(12)
-  renderEndTime = _messages.StringField(13)
-  renderStartTime = _messages.StringField(14)
-  renderState = _messages.EnumField('RenderStateValueValuesEnum', 15)
-  skaffoldConfigPath = _messages.StringField(16)
-  skaffoldConfigUri = _messages.StringField(17)
-  skaffoldVersion = _messages.StringField(18)
-  targetArtifacts = _messages.MessageField('TargetArtifactsValue', 19)
-  targetRenders = _messages.MessageField('TargetRendersValue', 20)
-  targetSnapshots = _messages.MessageField('Target', 21, repeated=True)
-  toolVersions = _messages.MessageField('ToolVersions', 22)
-  uid = _messages.StringField(23)
+  effectiveTargetConfigs = _messages.MessageField('EffectiveTargetConfigsValue', 10)
+  etag = _messages.StringField(11)
+  labels = _messages.MessageField('LabelsValue', 12)
+  name = _messages.StringField(13)
+  renderEndTime = _messages.StringField(14)
+  renderStartTime = _messages.StringField(15)
+  renderState = _messages.EnumField('RenderStateValueValuesEnum', 16)
+  skaffoldConfigPath = _messages.StringField(17)
+  skaffoldConfigUri = _messages.StringField(18)
+  skaffoldVersion = _messages.StringField(19)
+  source = _messages.MessageField('Source', 20)
+  targetArtifacts = _messages.MessageField('TargetArtifactsValue', 21)
+  targetConfigs = _messages.MessageField('TargetConfigSelection', 22, repeated=True)
+  targetRenders = _messages.MessageField('TargetRendersValue', 23)
+  targetSnapshots = _messages.MessageField('Target', 24, repeated=True)
+  toolVersions = _messages.MessageField('ToolVersions', 25)
+  uid = _messages.StringField(26)
 
 
 class ReleaseCondition(_messages.Message):
@@ -6273,6 +6569,20 @@ class RuntimeConfig(_messages.Message):
   kubernetes = _messages.MessageField('KubernetesConfig', 2)
 
 
+class RuntimeConfigFiles(_messages.Message):
+  r"""RuntimeConfigFiles contains the runtime configuration files.
+
+  Fields:
+    helmChart: Optional. Helm chart configuration.
+    kustomize: Optional. Kustomize configuration.
+    rawYaml: Optional. Raw YAML configuration.
+  """
+
+  helmChart = _messages.MessageField('HelmChart', 1)
+  kustomize = _messages.MessageField('Kustomize', 2)
+  rawYaml = _messages.MessageField('RawYAML', 3)
+
+
 class SerialPipeline(_messages.Message):
   r"""SerialPipeline defines a sequential set of stages for a
   `DeliveryPipeline`.
@@ -6451,12 +6761,23 @@ class SkaffoldVersion(_messages.Message):
   version = _messages.StringField(4)
 
 
+class Source(_messages.Message):
+  r"""Source contains the location of the source files.
+
+  Fields:
+    storageSource: Optional. Cloud Storage source.
+  """
+
+  storageSource = _messages.MessageField('GoogleCloudStorageSource', 1)
+
+
 class Stage(_messages.Message):
   r"""Stage specifies a location to which to deploy.
 
   Fields:
     deployParameters: Optional. The deploy parameters to use for the target in
       this stage.
+    deploymentOptions: Optional. Deployment options for the stage.
     profiles: Optional. Skaffold profiles to use when rendering the manifest
       for this stage's `Target`.
     strategy: Optional. The strategy to use for a `Rollout` to this stage.
@@ -6469,9 +6790,10 @@ class Stage(_messages.Message):
   """
 
   deployParameters = _messages.MessageField('DeployParameters', 1, repeated=True)
-  profiles = _messages.StringField(2, repeated=True)
-  strategy = _messages.MessageField('Strategy', 3)
-  targetId = _messages.StringField(4)
+  deploymentOptions = _messages.MessageField('DeploymentOptions', 2)
+  profiles = _messages.StringField(3, repeated=True)
+  strategy = _messages.MessageField('Strategy', 4)
+  targetId = _messages.StringField(5)
 
 
 class Standard(_messages.Message):
@@ -6933,6 +7255,34 @@ class TargetAttribute(_messages.Message):
 
   id = _messages.StringField(1)
   labels = _messages.MessageField('LabelsValue', 2)
+
+
+class TargetConfig(_messages.Message):
+  r"""TargetConfig contains the configuration for a target.
+
+  Fields:
+    runtimeConfig: Optional. The configuration applied to the runtime during a
+      deployment.
+  """
+
+  runtimeConfig = _messages.MessageField('RuntimeConfigFiles', 1)
+
+
+class TargetConfigSelection(_messages.Message):
+  r"""TargetConfigSelection specifies TargetConfig for a target.
+
+  Fields:
+    config: Optional. The configuration to apply.
+    id: Optional. Selector for the target configuration. ID of the `Target`
+      this configuration applies to. `*` will apply this configuration to all
+      the targets. Mutually exclusive with `match_labels`.
+    matchLabels: Optional. Labels to use for matching the `Target`s this
+      configuration applies to. Mutually exclusive with `id`.
+  """
+
+  config = _messages.MessageField('TargetConfig', 1)
+  id = _messages.StringField(2)
+  matchLabels = _messages.MessageField('Labels', 3)
 
 
 class TargetNotificationEvent(_messages.Message):

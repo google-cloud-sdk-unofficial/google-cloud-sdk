@@ -15,9 +15,6 @@
 
 """Encapsulation of a docker image."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 class Image(object):

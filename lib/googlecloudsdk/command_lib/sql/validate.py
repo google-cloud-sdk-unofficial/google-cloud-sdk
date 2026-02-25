@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common validation methods for some SQL commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 from googlecloudsdk.api_lib.sql import validate as api_validate

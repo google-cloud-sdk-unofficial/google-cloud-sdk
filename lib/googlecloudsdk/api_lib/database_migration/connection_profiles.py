@@ -14,9 +14,6 @@
 # limitations under the License.
 """Database Migration Service connection profiles API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 from typing import Any

@@ -15,9 +15,6 @@
 
 """Utility functions for WebSocket tunnelling with Cloud IAP."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 from urllib import parse

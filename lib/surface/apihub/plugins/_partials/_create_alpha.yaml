@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create plugins
-    description: Create a plugin
-    examples: |-
-      To create the plugin, run:
+    brief: Create a Plugin
+    description: |-
+      Create a plugin
 
-          $ {command}
+      Note: The positional argument for Plugin ID is currently not supported.
+      Please use the --plugin flag to specify the Plugin ID.
+    examples: |-
+      To create a plugin with the ID `my-plugin`, run:
+
+      $ {command} --plugin=my-plugin --display-name="My Plugin" --type=apigee --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

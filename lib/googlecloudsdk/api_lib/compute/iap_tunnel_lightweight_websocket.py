@@ -15,9 +15,6 @@
 """Lightweight websocket for IAP."""
 
 # See https://datatracker.ietf.org/doc/html/rfc6455 for the protocol used.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import errno
 import select

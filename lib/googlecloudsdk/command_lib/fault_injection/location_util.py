@@ -14,9 +14,6 @@
 # limitations under the License.
 """Location util for Fault Injection Cloud SDK."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.fault_injection import constants
 from googlecloudsdk.core.console import console_io

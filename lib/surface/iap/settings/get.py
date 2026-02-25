@@ -77,10 +77,6 @@ EXAMPLES = """\
             $ {command} --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
               --region=REGION_ID
 
-          """
-
-NON_GA_EXAMPLES = EXAMPLES + """\
-
           To get the IAP setting for all Cloud Run services within a region of a project, run:
 
             $ {command} --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID
@@ -92,7 +88,9 @@ NON_GA_EXAMPLES = EXAMPLES + """\
           """
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Get(base.Command):
   """Get the setting for an IAP resource."""
@@ -100,8 +98,6 @@ class Get(base.Command):
   detailed_help = {
       'EXAMPLES': EXAMPLES,
   }
-
-  _support_cloud_run = False
 
   @classmethod
   def Args(cls, parser):
@@ -111,9 +107,7 @@ class Get(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapSettingArg(
-        parser, support_cloud_run=cls._support_cloud_run,
-    )
+    iap_util.AddIapSettingArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
@@ -129,16 +123,5 @@ class Get(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(
         self.ReleaseTrack(),
         args,
-        self._support_cloud_run,
     )
     return iap_setting_ref.GetIapSetting()
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetBeta(Get):
-  """Get the setting for an IAP resource."""
-  detailed_help = {
-      'EXAMPLES': NON_GA_EXAMPLES,
-  }
-
-  _support_cloud_run = True

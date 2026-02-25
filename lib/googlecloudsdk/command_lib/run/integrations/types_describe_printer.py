@@ -14,9 +14,6 @@
 # limitations under the License.
 """Formatter that will print the types describe command in a custom format."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Dict
 from googlecloudsdk.core.resource import custom_printer_base as cp

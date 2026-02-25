@@ -49,6 +49,7 @@ class CloudkmsV1(base_api.BaseApiClient):
     self.projects_locations_keyRings_importJobs = self.ProjectsLocationsKeyRingsImportJobsService(self)
     self.projects_locations_keyRings = self.ProjectsLocationsKeyRingsService(self)
     self.projects_locations_operations = self.ProjectsLocationsOperationsService(self)
+    self.projects_locations_retiredResources = self.ProjectsLocationsRetiredResourcesService(self)
     self.projects_locations_singleTenantHsmInstances_proposals = self.ProjectsLocationsSingleTenantHsmInstancesProposalsService(self)
     self.projects_locations_singleTenantHsmInstances = self.ProjectsLocationsSingleTenantHsmInstancesService(self)
     self.projects_locations = self.ProjectsLocationsService(self)
@@ -762,6 +763,33 @@ class CloudkmsV1(base_api.BaseApiClient):
         supports_download=False,
     )
 
+    def Delete(self, request, global_params=None):
+      r"""Permanently deletes the given CryptoKeyVersion. Only possible if the version has not been previously imported and if its state is one of DESTROYED, IMPORT_FAILED, or GENERATION_FAILED. Successfully imported CryptoKeyVersions cannot be deleted at this time. The specified version will be immediately and permanently deleted upon calling this method. This action cannot be undone.
+
+      Args:
+        request: (CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}/cryptoKeyVersions/{cryptoKeyVersionsId}',
+        http_method='DELETE',
+        method_id='cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysCryptoKeyVersionsDeleteRequest',
+        response_type_name='Operation',
+        supports_download=False,
+    )
+
     def Destroy(self, request, global_params=None):
       r"""Schedule a CryptoKeyVersion for destruction. Upon calling this method, CryptoKeyVersion.state will be set to DESTROY_SCHEDULED, and destroy_time will be set to the time destroy_scheduled_duration in the future. At that time, the state will automatically change to DESTROYED, and the key material will be irrevocably destroyed. Before the destroy_time is reached, RestoreCryptoKeyVersion may be called to reverse the process.
 
@@ -1120,6 +1148,33 @@ class CloudkmsV1(base_api.BaseApiClient):
         request_field='decryptRequest',
         request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysDecryptRequest',
         response_type_name='DecryptResponse',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Permanently deletes the given CryptoKey. All child CryptoKeyVersions must have been previously deleted using KeyManagementService.DeleteCryptoKeyVersion. The specified crypto key will be immediately and permanently deleted upon calling this method. This action cannot be undone.
+
+      Args:
+        request: (CloudkmsProjectsLocationsKeyRingsCryptoKeysDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}',
+        http_method='DELETE',
+        method_id='cloudkms.projects.locations.keyRings.cryptoKeys.delete',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudkmsProjectsLocationsKeyRingsCryptoKeysDeleteRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 
@@ -1717,6 +1772,70 @@ class CloudkmsV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='CloudkmsProjectsLocationsOperationsGetRequest',
         response_type_name='Operation',
+        supports_download=False,
+    )
+
+  class ProjectsLocationsRetiredResourcesService(base_api.BaseApiService):
+    """Service class for the projects_locations_retiredResources resource."""
+
+    _NAME = 'projects_locations_retiredResources'
+
+    def __init__(self, client):
+      super(CloudkmsV1.ProjectsLocationsRetiredResourcesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def Get(self, request, global_params=None):
+      r"""Retrieves a specific RetiredResource resource, which represents the record of a deleted CryptoKey.
+
+      Args:
+        request: (CloudkmsProjectsLocationsRetiredResourcesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (RetiredResource) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/retiredResources/{retiredResourcesId}',
+        http_method='GET',
+        method_id='cloudkms.projects.locations.retiredResources.get',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}',
+        request_field='',
+        request_type_name='CloudkmsProjectsLocationsRetiredResourcesGetRequest',
+        response_type_name='RetiredResource',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Lists the RetiredResources which are the records of deleted CryptoKeys. RetiredResources prevent the reuse of these resource names after deletion.
+
+      Args:
+        request: (CloudkmsProjectsLocationsRetiredResourcesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListRetiredResourcesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/retiredResources',
+        http_method='GET',
+        method_id='cloudkms.projects.locations.retiredResources.list',
+        ordered_params=['parent'],
+        path_params=['parent'],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/{+parent}/retiredResources',
+        request_field='',
+        request_type_name='CloudkmsProjectsLocationsRetiredResourcesListRequest',
+        response_type_name='ListRetiredResourcesResponse',
         supports_download=False,
     )
 

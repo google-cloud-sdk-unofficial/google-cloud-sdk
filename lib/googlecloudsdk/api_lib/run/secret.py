@@ -14,10 +14,6 @@
 # limitations under the License.
 """Wraps a k8s Secret message, making fields more convenient."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import k8s_object
 

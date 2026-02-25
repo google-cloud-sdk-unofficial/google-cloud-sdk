@@ -15,9 +15,6 @@
 
 """Utility class for working with batch versions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def is_rm_batch(batch):

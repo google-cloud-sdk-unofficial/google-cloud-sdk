@@ -19,6 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+import contextlib
+
 from googlecloudsdk.core import gapic_util
 from googlecloudsdk.generated_clients.gapic_clients import logging_v2
 
@@ -38,6 +40,7 @@ class GapicWrapperClient(object):
     Returns:
         GapicWrapperClient
     """
+    self._exit_stack = contextlib.ExitStack()
     self.credentials = credentials
     self.config = gapic_util.MakeClient(
         logging_v2.services.config_service_v2.client.ConfigServiceV2Client,
@@ -48,3 +51,12 @@ class GapicWrapperClient(object):
     self.metrics = gapic_util.MakeClient(
         logging_v2.services.metrics_service_v2.client.MetricsServiceV2Client,
         credentials, **kwargs)
+
+  def __enter__(self):
+    self._exit_stack.enter_context(self.config)
+    self._exit_stack.enter_context(self.logging)
+    self._exit_stack.enter_context(self.metrics)
+    return self
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    self._exit_stack.close()

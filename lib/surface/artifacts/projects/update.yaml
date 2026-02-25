@@ -1,0 +1,76 @@
+- release_tracks: [GA]
+  hidden: true
+  universe_compatible: true
+  help_text:
+    brief: Update project configuration.
+    description: |
+      Update the Artifact Registry project configuration for the current project in a given
+      location.
+    examples: |
+      To enable INFO level platform logs for project configuration in `us-west1`:
+
+        $ {command} --location=us-west1 --enable-platform-logs --severity=INFO
+
+  arguments:
+    resource:
+      spec: !REF googlecloudsdk.command_lib.artifacts.resources:location
+      is_positional: false
+      help_text: |
+        The location of the project configuration to update.
+    params:
+    - group:
+        mutex: true
+        hidden: true
+        params:
+        - arg_name: enable-platform-logs
+          api_field: projectConfig.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Enable platform logging for the project in this location.
+          choices:
+          - arg_value: true
+            enum_value: ENABLED
+            help_text: Platform logging set to enabled.
+        - arg_name: disable-platform-logs
+          api_field: projectConfig.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Disable platform logging for the project in this location.
+          choices:
+          - arg_value: true
+            enum_value: DISABLED
+            help_text: Platform logging set to disabled.
+        - arg_name: clear-platform-logs
+          api_field: projectConfig.platformLogsConfig.loggingState
+          action: store_true
+          default: null
+          help_text: |
+            Clear platform logging settings for the project in this location to fall back to
+            organization settings or AR defaults.
+          choices:
+          - arg_value: true
+            enum_value: LOGGING_STATE_UNSPECIFIED
+            help_text: Platform logging set to project settings.
+    - arg_name: severity
+      api_field: projectConfig.platformLogsConfig.severityLevel
+      hidden: true
+      help_text: |
+        The minimum severity level of logs to generate. This flag is only applicable when using
+        --enable-platform-logs.
+      choices:
+      - arg_value: INFO
+        enum_value: INFO
+        help_text: Log events with severity INFO or higher.
+      - arg_value: ERROR
+        enum_value: ERROR
+        help_text: Log events with severity ERROR or higher.
+
+  request:
+    api_version: v1
+    disable_resource_check: true
+    method: updateProjectConfig
+    collection: artifactregistry.projects.locations
+    modify_request_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:UpdateProjectConfigResource

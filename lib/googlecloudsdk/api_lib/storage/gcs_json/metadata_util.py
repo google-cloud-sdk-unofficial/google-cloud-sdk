@@ -14,9 +14,6 @@
 # limitations under the License.
 """Tools for making the most of GcsApi metadata."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 import datetime

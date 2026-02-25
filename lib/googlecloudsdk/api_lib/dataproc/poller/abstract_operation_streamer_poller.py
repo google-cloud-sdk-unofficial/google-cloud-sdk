@@ -20,9 +20,6 @@ This class is the base class for poller that need to stream output and poll on
 dataproc's operation.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 

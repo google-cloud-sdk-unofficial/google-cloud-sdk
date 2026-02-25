@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for handling region flag."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.ml_engine import constants
 from googlecloudsdk.core import log

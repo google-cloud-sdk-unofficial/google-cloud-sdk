@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants used for Cloud Datastore."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # Special marker used for the default namespace in gcloud commands.
 DEFAULT_NAMESPACE = '(default)'

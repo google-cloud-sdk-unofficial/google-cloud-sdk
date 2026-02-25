@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the container related commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 
@@ -1650,6 +1647,10 @@ Set the components that have monitoring enabled. Valid component values are:
 `SCHEDULER`, `DAEMONSET`, `DEPLOYMENT`, `HPA`, `POD`, `STATEFULSET`, `STORAGE`,
 `CADVISOR`, `KUBELET`, `DCGM`, `JOBSET`
 
+Note: `DAEMONSET`, `DEPLOYMENT`, `HPA`, `POD`, `STATEFULSET`, `STORAGE`,
+`CADVISOR`, `KUBELET`, `DCGM`, and `JOBSET` require Google Managed Prometheus
+to be enabled.
+
 For more information, see
 https://cloud.google.com/kubernetes-engine/docs/how-to/configure-metrics#available-metrics
 
@@ -1665,6 +1666,10 @@ Set the components that have monitoring enabled. Valid component values are:
 `SYSTEM`, `WORKLOAD` (Deprecated), `NONE`, `API_SERVER`, `CONTROLLER_MANAGER`,
 `SCHEDULER`, `DAEMONSET`, `DEPLOYMENT`, `HPA`, `POD`, `STATEFULSET`, `STORAGE`,
 `CADVISOR`, `KUBELET`, `DCGM`, `JOBSET`
+
+Note: `DAEMONSET`, `DEPLOYMENT`, `HPA`, `POD`, `STATEFULSET`, `STORAGE`,
+`CADVISOR`, `KUBELET`, `DCGM`, and `JOBSET` require Google Managed Prometheus
+to be enabled.
 
 For more information, see
 https://cloud.google.com/kubernetes-engine/docs/how-to/configure-metrics#available-metrics
@@ -3982,6 +3987,26 @@ def AddPodSnapshotConfigFlags(parser, hidden=False):
   )
 
 
+def AddAgentSandboxConfigFlags(parser, hidden=True):
+  """Adds --enable-agent-sandbox flag to parser.
+
+  Args:
+    parser: A given parser.
+    hidden: If true, suppress help text for added options.
+  """
+  help_text = textwrap.dedent("""\
+      Enable the Agent Sandbox feature on the cluster.
+      Use `--no-enable-agent-sandbox` to disable.
+      """)
+  parser.add_argument(
+      '--enable-agent-sandbox',
+      default=None,
+      hidden=hidden,
+      action='store_true',
+      help=help_text,
+  )
+
+
 def AddAllowRouteOverlapFlag(parser):
   """Adds a --allow-route-overlap flag to parser."""
   help_text = """\
@@ -5989,21 +6014,21 @@ Examples:
   )
 
 
-def AddEnableAmbientFlag(parser, hidden=False, is_update=False):
-  """Adds the --enable-ambient flag to the parser."""
+def AddEnableAmbientNetworkingFlag(parser, hidden=False, is_update=False):
+  """Adds the --enable-ambient-networking flag to the parser."""
   help_text = """\
   Enable Ambient Networking on the cluster.
   """
   if is_update:
     parser.add_argument(
-        '--enable-ambient',
+        '--enable-ambient-networking',
         action=arg_parsers.StoreTrueFalseAction,
         help=help_text,
         hidden=hidden,
     )
   else:
     parser.add_argument(
-        '--enable-ambient',
+        '--enable-ambient-networking',
         action='store_true',
         default=None,
         help=help_text,
@@ -7782,7 +7807,7 @@ def AddSecretSyncFlagGroup(
 def AddMaintenanceDisruptionBudgetFlagGroup(
     parser: parser_arguments.ArgumentInterceptor, hidden=True, is_update=False
 ) -> None:
-  """Adds maintenance disruption budget flags to the given parser.
+  """Adds cluster disruption budget flags to the given parser.
 
   Args:
     parser: A given parser.
@@ -7791,7 +7816,7 @@ def AddMaintenanceDisruptionBudgetFlagGroup(
   """
   maintenance_disruption_budget_group = parser.add_group(
       mutex=False,
-      help='Flags for maintenance disruption budget configuration:',
+      help='Flags for cluster disruption budget configuration:',
       hidden=hidden,
   )
 
@@ -7801,7 +7826,7 @@ def AddMaintenanceDisruptionBudgetFlagGroup(
                                                               hidden=hidden)
 
   help_text = textwrap.dedent("""\
-      Set the maintenance disruption interval for minor version disruptions.
+      Set the minimum interval of time between minor version cluster upgrades.
   """)
   minor_group.add_argument(
       '--maintenance-minor-version-disruption-interval',
@@ -7810,7 +7835,7 @@ def AddMaintenanceDisruptionBudgetFlagGroup(
       hidden=hidden,
   )
   help_text = textwrap.dedent("""\
-      Set the maintenance disruption interval for patch version disruptions.
+      Set the minimum interval of time between patch version cluster upgrades.
   """)
   patch_group.add_argument(
       '--maintenance-patch-version-disruption-interval',
@@ -7823,7 +7848,7 @@ def AddMaintenanceDisruptionBudgetFlagGroup(
     return
 
   help_text = textwrap.dedent("""\
-      Clear the maintenance disruption interval for minor version disruptions.
+      Restore the default values for the minimum interval of time between minor version cluster upgrades.
   """)
   minor_group.add_argument(
       '--clear-maintenance-minor-version-disruption-interval',
@@ -7833,7 +7858,7 @@ def AddMaintenanceDisruptionBudgetFlagGroup(
       hidden=hidden,
   )
   help_text = textwrap.dedent("""\
-      Clear the maintenance disruption interval for patch version disruptions.
+      Restore the default values for the minimum interval of time between patch version cluster upgrades.
   """)
   patch_group.add_argument(
       '--clear-maintenance-patch-version-disruption-interval',

@@ -15,10 +15,6 @@
 """Utility functions for Functions specific to deploying Gen2 functions."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.functions.v2 import util as api_util
 from googlecloudsdk.command_lib.projects import util as projects_util

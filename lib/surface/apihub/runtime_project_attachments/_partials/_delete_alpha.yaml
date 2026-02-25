@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Delete runtimeProjectAttachments
-    description: Delete a runtimeProjectAttachment
+    brief: Delete a Runtime Project Attachment
+    description: Delete a runtime project attachment
     examples: |-
-      To delete the runtimeProjectAttachment, run:
+      To delete a runtime project attachment with the ID `my-attachment`, run:
 
-          $ {command}
+      $ {command} my-attachment --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

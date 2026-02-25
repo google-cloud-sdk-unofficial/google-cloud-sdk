@@ -14,9 +14,6 @@
 # limitations under the License.
 """Fallthrough hooks for edge-cloud commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def GetClusterFallthrough():

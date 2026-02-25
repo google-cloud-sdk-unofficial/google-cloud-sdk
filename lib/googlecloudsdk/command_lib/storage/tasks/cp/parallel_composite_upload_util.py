@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for parallel composite upload operation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

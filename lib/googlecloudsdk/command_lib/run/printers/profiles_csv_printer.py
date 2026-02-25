@@ -14,10 +14,6 @@
 # limitations under the License.
 """Profiles-specific printer and functions for generating CSV formats."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import csv
 import sys

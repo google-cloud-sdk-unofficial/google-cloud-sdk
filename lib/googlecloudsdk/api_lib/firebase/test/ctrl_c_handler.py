@@ -15,9 +15,6 @@
 
 """Context manager to help with Control-C handling during critical commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import signal
 

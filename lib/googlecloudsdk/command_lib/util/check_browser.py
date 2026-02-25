@@ -15,9 +15,6 @@
 
 """Decide whether launching a browser is a good idea."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for compute diagnose."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute import ssh_utils
 from googlecloudsdk.core import log

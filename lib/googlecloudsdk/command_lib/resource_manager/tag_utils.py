@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for defining Tag resource manager arguments on a parser."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

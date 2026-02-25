@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wraps a Cloud Run Route message, making fields more convenient to access."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import k8s_object
 

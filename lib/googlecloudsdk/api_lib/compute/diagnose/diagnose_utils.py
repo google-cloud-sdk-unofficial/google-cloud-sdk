@@ -14,9 +14,6 @@
 # limitations under the License.
 """API Utilities for gcloud diagnose commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import metadata_utils
 from googlecloudsdk.api_lib.util import apis

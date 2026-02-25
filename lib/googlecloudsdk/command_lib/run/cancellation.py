@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wrapper around serverless_operations CancelFoo for surfaces."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.command_lib.run import exceptions as serverless_exceptions

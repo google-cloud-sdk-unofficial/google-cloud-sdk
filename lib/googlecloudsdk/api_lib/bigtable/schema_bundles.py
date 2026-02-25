@@ -15,9 +15,6 @@
 
 """Bigtable schema bundles API helper."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from cloudsdk.google.protobuf import descriptor_pb2
 from cloudsdk.google.protobuf import text_format

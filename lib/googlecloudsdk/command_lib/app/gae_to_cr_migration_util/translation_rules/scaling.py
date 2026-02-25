@@ -111,7 +111,7 @@ def _get_output_flags(
     input_value = input_key_value_pairs[key]
     range_limited_feature = range_limited_features[key]
     output_flags += _get_output_flags_by_scaling_type(
-        key, range_limited_feature, input_value
+        key, range_limited_feature, input_value, scaling_type
     )
   return output_flags
 
@@ -120,6 +120,7 @@ def _get_output_flags_by_scaling_type(
     feature_key: str,
     range_limited_feature: feature_helper.RangeLimitFeature,
     input_value: str,
+    scaling_type: ScalingTypeAppYaml,
 ) -> Sequence[str]:
   """Get the output flags for the given scaling type.
 
@@ -127,6 +128,7 @@ def _get_output_flags_by_scaling_type(
     feature_key: The feature key in app.yaml.
     range_limited_feature: The range limited feature.
     input_value: The input value from app.yaml.
+    scaling_type: The scaling type used in app.yaml.
 
   Returns:
     A list of strings representing the flags for Cloud Run.
@@ -145,6 +147,8 @@ def _get_output_flags_by_scaling_type(
       if range_limited_feature.validate(input_value)
       else range_limited_feature.range['max']
   )
+  if scaling_type is ScalingTypeAppYaml.MANUAL_SCALING:
+    return [f'--scaling={target_value}']
   return util.generate_output_flags(range_limited_feature.flags, target_value)
 
 

@@ -21,9 +21,6 @@ RequestConfig can hold a BucketConfig or ObjectConfig. These classes also
 have provider-specific subclasses (e.g. S3ObjectConfig).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.storage import encryption_util
 from googlecloudsdk.command_lib.storage import errors

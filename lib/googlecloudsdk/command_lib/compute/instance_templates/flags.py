@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the compute instance groups commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import ipaddress
 import re
@@ -115,7 +112,8 @@ def AddServiceProxyConfigArgs(parser,
       'proxy-port': int,
       'tracing': service_proxy_aux_data.TracingState,
       'access-log': str,
-      'network': str
+      'network': str,
+      'use-regional-control-plane': None,
   }
   service_proxy_help = textwrap.dedent("""
   Controls whether the Traffic Director service proxy (Envoy) and agent are

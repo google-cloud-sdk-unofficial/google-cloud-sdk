@@ -14,10 +14,7 @@
 # limitations under the License.
 """oslogin client functions."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Optional
 
@@ -307,7 +304,7 @@ class OsloginClient(object):
         'appEngineInstance': app_engine_instance,
     }
     if self.version in ('v1alpha', 'v1beta'):
-      request_kwargs['cloudRunService'] = cloud_run_deployment
+      request_kwargs['cloudRunResource'] = cloud_run_deployment
     message_kwargs = {
         'parent': 'projects/{0}/locations/{1}'.format(project_id, region),
     }

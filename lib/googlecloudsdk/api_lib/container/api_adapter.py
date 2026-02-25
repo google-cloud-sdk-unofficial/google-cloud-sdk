@@ -14,9 +14,6 @@
 # limitations under the License.
 """Api client adapter containers commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import functools
 import operator
@@ -767,7 +764,7 @@ class CreateClusterOptions(object):
       enable_dataplane_v2_flow_observability=None,
       disable_dataplane_v2_flow_observability=None,
       dataplane_v2_observability_mode=None,
-      enable_ambient=None,
+      enable_ambient_networking=None,
       shielded_secure_boot=None,
       shielded_integrity_monitoring=None,
       system_config_from_file=None,
@@ -904,6 +901,7 @@ class CreateClusterOptions(object):
       network_tier=None,
       control_plane_egress_mode=None,
       enable_pod_snapshots=None,
+      enable_agent_sandbox=None,
       autopilot_privileged_admission=None,
       enable_kernel_module_signature_enforcement=None,
       enable_lustre_multi_nic=None,
@@ -1051,7 +1049,7 @@ class CreateClusterOptions(object):
         disable_dataplane_v2_flow_observability
     )
     self.dataplane_v2_observability_mode = dataplane_v2_observability_mode
-    self.enable_ambient = enable_ambient
+    self.enable_ambient_networking = enable_ambient_networking
     self.shielded_secure_boot = shielded_secure_boot
     self.shielded_integrity_monitoring = shielded_integrity_monitoring
     self.system_config_from_file = system_config_from_file
@@ -1223,6 +1221,7 @@ class CreateClusterOptions(object):
     self.network_tier = network_tier
     self.control_plane_egress_mode = control_plane_egress_mode
     self.enable_pod_snapshots = enable_pod_snapshots
+    self.enable_agent_sandbox = enable_agent_sandbox
     self.autopilot_privileged_admission = autopilot_privileged_admission
     self.enable_lustre_multi_nic = enable_lustre_multi_nic
     self.enable_slice_controller = enable_slice_controller
@@ -1351,7 +1350,7 @@ class UpdateClusterOptions(object):
       enable_dataplane_v2_flow_observability=None,
       disable_dataplane_v2_flow_observability=None,
       dataplane_v2_observability_mode=None,
-      enable_ambient=None,
+      enable_ambient_networking=None,
       enable_workload_config_audit=None,
       enable_workload_vulnerability_scanning=None,
       enable_autoprovisioning_surge_upgrade=None,
@@ -1434,6 +1433,7 @@ class UpdateClusterOptions(object):
       control_plane_egress_mode=None,
       control_plane_soak_duration=None,
       enable_pod_snapshots=None,
+      enable_agent_sandbox=None,
       autopilot_privileged_admission=None,
       enable_slice_controller=None,
       autopilot_general_profile=None,
@@ -1678,9 +1678,10 @@ class UpdateClusterOptions(object):
     self.control_plane_egress_mode = control_plane_egress_mode
     self.control_plane_soak_duration = control_plane_soak_duration
     self.enable_pod_snapshots = enable_pod_snapshots
+    self.enable_agent_sandbox = enable_agent_sandbox
     self.autopilot_privileged_admission = autopilot_privileged_admission
     self.enable_slice_controller = enable_slice_controller
-    self.enable_ambient = enable_ambient
+    self.enable_ambient_networking = enable_ambient_networking
     self.autopilot_general_profile = autopilot_general_profile
     self.node_pool_upgrade_concurrency_config = (
         node_pool_upgrade_concurrency_config
@@ -2699,6 +2700,13 @@ class APIAdapter(object):
           enabled=options.enable_pod_snapshots
       )
 
+    if options.enable_agent_sandbox is not None:
+      if cluster.addonsConfig is None:
+        cluster.addonsConfig = self._AddonsConfig()
+      cluster.addonsConfig.agentSandboxConfig = (
+          self.messages.AgentSandboxConfig(enabled=options.enable_agent_sandbox)
+      )
+
     if options.enable_slice_controller is not None:
       if cluster.addonsConfig is None:
         cluster.addonsConfig = self._AddonsConfig()
@@ -3289,11 +3297,13 @@ class APIAdapter(object):
           )
       )
 
-    if options.enable_ambient is not None:
+    if options.enable_ambient_networking is not None:
       if cluster.networkConfig is None:
         cluster.networkConfig = self.messages.NetworkConfig()
       cluster.networkConfig.ambientNetworkingConfig = (
-          self.messages.AmbientNetworkingConfig(enabled=options.enable_ambient)
+          self.messages.AmbientNetworkingConfig(
+              enabled=options.enable_ambient_networking
+          )
       )
 
     if options.enable_cost_allocation:
@@ -5091,6 +5101,14 @@ class APIAdapter(object):
       )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
 
+    if options.enable_agent_sandbox is not None:
+      addons = self.messages.AddonsConfig(
+          agentSandboxConfig=self.messages.AgentSandboxConfig(
+              enabled=options.enable_agent_sandbox
+          )
+      )
+      update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
+
     if options.enable_slice_controller is not None:
       addons = self.messages.AddonsConfig(
           sliceControllerConfig=self.messages.SliceControllerConfig(
@@ -6047,6 +6065,7 @@ class APIAdapter(object):
       enable_ray_operator=None,
       enable_slurm_operator=None,
       enable_slice_controller=None,
+      enable_agent_sandbox=None,
   ):
     """Generates an AddonsConfig object given specific parameters.
 
@@ -6070,6 +6089,7 @@ class APIAdapter(object):
       enable_ray_operator: whether to enable RayOperator.
       enable_slurm_operator: whether to enable SlurmOperator.
       enable_slice_controller: whether to enable SliceController.
+      enable_agent_sandbox: whether to enable AgentSandbox.
 
     Returns:
       An AddonsConfig object that contains the options defining what addons to
@@ -6134,6 +6154,10 @@ class APIAdapter(object):
     if enable_pod_snapshots is not None:
       addons.podSnapshotConfig = self.messages.PodSnapshotConfig(
           enabled=enable_pod_snapshots
+      )
+    if enable_agent_sandbox is not None:
+      addons.agentSandboxConfig = self.messages.AgentSandboxConfig(
+          enabled=enable_agent_sandbox
       )
     if enable_ray_operator:
       addons.rayOperatorConfig = self.messages.RayOperatorConfig(enabled=True)
@@ -9061,6 +9085,13 @@ class V1Beta1Adapter(V1Adapter):
           enable_slice_controller=options.enable_slice_controller
       )
       update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
+    elif options.enable_agent_sandbox is not None:
+      addons = self.messages.AddonsConfig(
+          agentSandboxConfig=self.messages.AgentSandboxConfig(
+              enabled=options.enable_agent_sandbox
+          )
+      )
+      update = self.messages.ClusterUpdate(desiredAddonsConfig=addons)
     elif options.enable_vertical_pod_autoscaling is not None:
       vertical_pod_autoscaling = self.messages.VerticalPodAutoscaling(
           enabled=options.enable_vertical_pod_autoscaling
@@ -9953,10 +9984,10 @@ class V1Beta1Adapter(V1Adapter):
           desiredLinkedRunnersConfig=_GetLinkedRunnersConfig(
               options.linked_runners_mode, self.messages)
       )
-    if options.enable_ambient is not None:
+    if options.enable_ambient_networking is not None:
       update = self.messages.ClusterUpdate(
           desiredAmbientNetworkingConfig=self.messages.AmbientNetworkingConfig(
-              enabled=options.enable_ambient
+              enabled=options.enable_ambient_networking
           )
       )
 

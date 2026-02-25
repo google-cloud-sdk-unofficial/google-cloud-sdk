@@ -14,9 +14,6 @@
 # limitations under the License.
 """A library that used to interact with CTD-IA backend services."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from apitools.base.py import exceptions

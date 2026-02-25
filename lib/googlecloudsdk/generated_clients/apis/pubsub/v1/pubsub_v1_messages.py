@@ -373,6 +373,12 @@ class BigtableConfig(_messages.Message):
       subscription can receive messages.
     table: Optional. The unique name of the table to write messages to. Values
       are of the form `projects//instances//tables/`.
+    writeMetadata: Optional. When true, write the subscription name,
+      message_id, publish_time, attributes, and ordering_key to additional
+      columns in the table under the pubsub_metadata column family. The
+      subscription name, message_id, and publish_time fields are put in their
+      own columns while all other message properties (other than data) are
+      written to a JSON object in the attributes column.
   """
 
   class StateValueValuesEnum(_messages.Enum):
@@ -399,6 +405,9 @@ class BigtableConfig(_messages.Message):
       IN_TRANSIT_LOCATION_RESTRICTION: Cannot write to the destination because
         enforce_in_transit is set to true and the destination locations are
         not in the allowed regions.
+      VERTEX_AI_LOCATION_RESTRICTION: Cannot write to Bigtable because the
+        table is not in the same location as where Vertex AI models used in
+        `message_transform`s are deployed.
     """
     STATE_UNSPECIFIED = 0
     ACTIVE = 1
@@ -407,11 +416,13 @@ class BigtableConfig(_messages.Message):
     PERMISSION_DENIED = 4
     SCHEMA_MISMATCH = 5
     IN_TRANSIT_LOCATION_RESTRICTION = 6
+    VERTEX_AI_LOCATION_RESTRICTION = 7
 
   appProfileId = _messages.StringField(1)
   serviceAccountEmail = _messages.StringField(2)
   state = _messages.EnumField('StateValueValuesEnum', 3)
   table = _messages.StringField(4)
+  writeMetadata = _messages.BooleanField(5)
 
 
 class Binding(_messages.Message):

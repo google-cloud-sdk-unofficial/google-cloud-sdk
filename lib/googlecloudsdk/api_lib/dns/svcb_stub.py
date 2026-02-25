@@ -20,9 +20,6 @@ support for these types.  (dnspython 2.x only supports Python 3, but this
 codebase requires support for Python 2, so it is still using dnspython 1.x.)
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from dns import rdata
 from dns.name import Name

@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: List versions
+    brief: List Versions
     description: List versions
     examples: |-
-      To list all versions, run:
+      To list all versions for API `my-api`, run:
 
-          $ {command}
+      $ {command} --api=my-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

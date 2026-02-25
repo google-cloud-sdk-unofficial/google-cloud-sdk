@@ -248,7 +248,7 @@ class VmwareengineV1(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      r"""Modifies a Datastore resource. Only the following fields can be updated: `description`. Only fields specified in `updateMask` are applied.
+      r"""Modifies a Datastore resource. Only fields specified in `updateMask` are applied.
 
       Args:
         request: (VmwareengineProjectsLocationsDatastoresPatchRequest) input message
@@ -2530,6 +2530,33 @@ class VmwareengineV1(base_api.BaseApiClient):
         request_field='',
         request_type_name='VmwareengineProjectsLocationsPrivateCloudsListRequest',
         response_type_name='ListPrivateCloudsResponse',
+        supports_download=False,
+    )
+
+    def MigrateManagementVms(self, request, global_params=None):
+      r"""Migrates the management VMs of the PC from the current management cluster to a workload cluster. Post this migration, the provided workload cluster becomes the management cluster.
+
+      Args:
+        request: (VmwareengineProjectsLocationsPrivateCloudsMigrateManagementVmsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('MigrateManagementVms')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    MigrateManagementVms.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='v1/projects/{projectsId}/locations/{locationsId}/privateClouds/{privateCloudsId}:migrateManagementVms',
+        http_method='POST',
+        method_id='vmwareengine.projects.locations.privateClouds.migrateManagementVms',
+        ordered_params=['name'],
+        path_params=['name'],
+        query_params=[],
+        relative_path='v1/{+name}:migrateManagementVms',
+        request_field='migrateManagementVmsRequest',
+        request_type_name='VmwareengineProjectsLocationsPrivateCloudsMigrateManagementVmsRequest',
+        response_type_name='Operation',
         supports_download=False,
     )
 

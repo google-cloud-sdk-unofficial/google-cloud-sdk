@@ -16,9 +16,6 @@
 """Utilities for working with long running operations go/long-running-operation.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

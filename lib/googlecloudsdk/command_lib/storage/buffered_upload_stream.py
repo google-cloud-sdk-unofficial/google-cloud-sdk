@@ -15,9 +15,6 @@
 
 """Implements a file wrapper used for in-flight retries of streaming uploads."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import os

@@ -18,9 +18,6 @@ The ConceptParser is created with a list of all resources needed for the
 command, and they should be added all at once during calliope's Args method.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.calliope.concepts import handlers

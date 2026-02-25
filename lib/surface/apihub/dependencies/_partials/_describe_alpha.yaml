@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe dependencies
+    brief: Describe a Dependency
     description: Describe a dependency
     examples: |-
-      To describe the dependency, run:
+      To describe a dependency with the ID `my-dependency`, run:
 
-          $ {command}
+      $ {command} my-dependency --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

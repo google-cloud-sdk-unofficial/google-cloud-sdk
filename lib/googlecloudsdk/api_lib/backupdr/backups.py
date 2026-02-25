@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Backup and DR Backups client."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.backupdr import util

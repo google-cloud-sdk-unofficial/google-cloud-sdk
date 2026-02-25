@@ -23,13 +23,15 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Unset(feature_base.UpdateCommand):
   """Unset Scope Tenancy Pool.
 
   Unset the scope tenancy pool for a fleet.
 
-  ## Examples
+  ## EXAMPLES
 
   To unset the scope tenancy pool, run:
 

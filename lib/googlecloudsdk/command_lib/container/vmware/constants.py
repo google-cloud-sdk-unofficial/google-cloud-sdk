@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants for Anthos clusters on VMware."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 VMWARE_CLUSTERS_FORMAT = """
 table(

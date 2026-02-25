@@ -23,7 +23,9 @@ from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iap import util as iap_util
 
 
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for an IAP IAM resource.
@@ -81,10 +83,14 @@ class GetIamPolicy(base.ListCommand):
             $ {command} --resource-type=backend-services --service=SERVICE_ID
               --region=REGION
 
+          To get the IAM policy for the web accesses to the IAP protected
+          resources within a Cloud Run service, run:
+
+            $ {command} --resource-type=cloud-run --service=SERVICE_ID
+            --region=REGION
+
   """,
   }
-
-  _support_cloud_run = False
 
   @classmethod
   def Args(cls, parser):
@@ -96,7 +102,6 @@ class GetIamPolicy(base.ListCommand):
     """
     iap_util.AddIapIamResourceArgs(
         parser,
-        support_cloud_run=cls._support_cloud_run,
     )
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -112,21 +117,5 @@ class GetIamPolicy(base.ListCommand):
     """
     iap_iam_ref = iap_util.ParseIapIamResource(
         self.ReleaseTrack(),
-        args,
-        self._support_cloud_run)
+        args)
     return iap_iam_ref.GetIamPolicy()
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class GetIamPolicyAlpha(GetIamPolicy):
-  """Get IAM policy for an IAP IAM resource.
-
-  *{command}* displays the IAM policy associated with an IAP IAM
-  resource. If formatted as JSON, the output can be edited and used as a policy
-  file for set-iam-policy. The output includes an "etag" field
-  identifying the version emitted and allowing detection of
-  concurrent policy updates; see
-  $ {parent_command} set-iam-policy for additional details.
-  """
-
-  _support_cloud_run = True

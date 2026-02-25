@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the connection profiles related commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.database_migration import api_util
 from googlecloudsdk.calliope import arg_parsers

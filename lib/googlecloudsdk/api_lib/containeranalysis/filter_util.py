@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility for creating filters with containeranalysis API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 # The default maximum number of resource URLs by which to filter when showing
 # occurrences. This is required since filtering by too many causes the

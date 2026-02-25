@@ -24,17 +24,25 @@ from googlecloudsdk.command_lib.container.fleet.features import base as feature_
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA,
+                    base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Set(feature_base.UpdateCommand):
   """Set Scope Tenancy Pool.
 
   Set the scope tenancy pool for a fleet.
 
-  ## Examples
+  ## EXAMPLES
 
-  To set the scope tenancy pool, run:
+  To set the scope tenancy pool using a fully qualified identifier for the
+  Workload Identity Pool:
 
     $ {command}
+    projects/my-project/locations/global/workloadIdentityPools/test-pool
+
+  To set the scope tenancy pool using a Workload Identity Pool ID and project:
+
+    $ {command} test-pool --project=my-project
   """
 
   feature_name = 'workloadidentity'

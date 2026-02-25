@@ -14,9 +14,6 @@
 # limitations under the License.
 """Base class for handling ls -L formatting of CloudResource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import collections

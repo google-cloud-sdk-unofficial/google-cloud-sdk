@@ -14,10 +14,6 @@
 # limitations under the License.
 """WorkerPool specific printer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import worker_pool
 from googlecloudsdk.command_lib.run.printers import instance_split_printer

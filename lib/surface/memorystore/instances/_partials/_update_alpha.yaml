@@ -125,6 +125,20 @@
             This field can be used to trigger self service update to indicate the
             desired maintenance version. The input to this field can be determined by
             the available_maintenance_versions field.
+    - group:
+        mutex: true
+        hidden: true
+        help_text: |-
+          Arguments for the  rotate server certificate.
+        params:
+        - arg_name: rotate-server-certificate
+          api_field: instance.rotateServerCertificate
+          action: store_true_false
+          required: false
+          type: bool
+          hidden: true
+          help_text: |-
+            Rotate the server certificates.
     - help_text: |-
         Identifier. Unique name of the instance.
         Format: projects/{project}/locations/{location}/instances/{instance}
@@ -171,6 +185,36 @@
         enum_value: STANDARD_SMALL
         help_text: |-
           Standard small.
+      - arg_value: custom-micro
+        enum_value: CUSTOM_MICRO
+        hidden: true
+        help_text: |-
+          Custom micro.
+      - arg_value: custom-mini
+        enum_value: CUSTOM_MINI
+        hidden: true
+        help_text: |-
+          Custom mini.
+      - arg_value: highcpu-medium
+        enum_value: HIGHCPU_MEDIUM
+        hidden: true
+        help_text: |-
+          High cpu medium.
+      - arg_value: standard-large
+        enum_value: STANDARD_LARGE
+        hidden: true
+        help_text: |-
+          Standard large.
+      - arg_value: highmem-2xlarge
+        enum_value: HIGHMEM_2XLARGE
+        hidden: true
+        help_text: |-
+          High memory 2xlarge.
+      - arg_value: custom-pico
+        enum_value: CUSTOM_PICO
+        hidden: true
+        help_text: |-
+          Custom pico.
     - group:
         api_field: instance.persistenceConfig
         arg_name: persistence-config

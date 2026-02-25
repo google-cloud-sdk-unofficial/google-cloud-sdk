@@ -90,7 +90,10 @@
                   The corresponding indices for the values.
             - api_field: values
               help_text: |-
-                The values of the vector.
+                Deprecated: Use `dense` or `sparse` instead.
+        - api_field: etag
+          help_text: |-
+            The etag of the dataObject.
       - api_field: updateMask
         help_text: |-
           The update mask applies to the resource. See [google.protobuf.FieldMask][google.protobuf.FieldMask].

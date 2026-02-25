@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wrapper around serverless_operations DeleteFoo for surfaces."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_exceptions
 from googlecloudsdk.api_lib.util import waiter

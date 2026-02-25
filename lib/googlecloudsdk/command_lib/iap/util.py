@@ -15,9 +15,6 @@
 
 """Utils for IAP commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iap import util as iap_api
 from googlecloudsdk.calliope import exceptions as calliope_exc
@@ -42,11 +39,6 @@ IAM_RESOURCE_TYPE_ENUM = (
     APP_ENGINE_RESOURCE_TYPE,
     BACKEND_SERVICES_RESOURCE_TYPE,
     FORWARDING_RULE_RESOURCE_TYPE,
-)
-IAM_RESOURCE_TYPE_ENUM_ALPHA_BETA = (
-    APP_ENGINE_RESOURCE_TYPE,
-    BACKEND_SERVICES_RESOURCE_TYPE,
-    FORWARDING_RULE_RESOURCE_TYPE,
     CLOUD_RUN_RESOURCE_TYPE,
 )
 SETTING_RESOURCE_TYPE_ENUM = (
@@ -57,16 +49,7 @@ SETTING_RESOURCE_TYPE_ENUM = (
     FOLDER_RESOURCE_TYPE,
     BACKEND_SERVICES_RESOURCE_TYPE,
     FORWARDING_RULE_RESOURCE_TYPE,
-)
-SETTING_RESOURCE_TYPE_ENUM_ALPHA_BETA = (
-    APP_ENGINE_RESOURCE_TYPE,
-    WEB_RESOURCE_TYPE,
-    COMPUTE_RESOURCE_TYPE,
-    ORG_RESOURCE_TYPE,
-    FOLDER_RESOURCE_TYPE,
-    FORWARDING_RULE_RESOURCE_TYPE,
     CLOUD_RUN_RESOURCE_TYPE,
-    BACKEND_SERVICES_RESOURCE_TYPE,
 )
 
 
@@ -152,49 +135,32 @@ def AddDestGroupListRegionArgs(parser):
 
 
 def AddIapIamResourceArgs(
-    parser, support_cloud_run=False
+    parser
 ):
   """Adds flags for an IAP IAM resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
-    support_cloud_run: bool, provide support to cloud-run resource-type.
   """
   group = parser.add_group()
 
-  if support_cloud_run:
-    group.add_argument(
-        '--resource-type',
-        choices=IAM_RESOURCE_TYPE_ENUM_ALPHA_BETA,
-        help='Resource type of the IAP resource.',
-    )
-  else:
-    group.add_argument(
-        '--resource-type',
-        choices=IAM_RESOURCE_TYPE_ENUM,
-        help='Resource type of the IAP resource.',
-    )
+  group.add_argument(
+      '--resource-type',
+      choices=IAM_RESOURCE_TYPE_ENUM,
+      help='Resource type of the IAP resource.',
+  )
   group.add_argument('--service', help='Service name.')
-  if support_cloud_run:
-    group.add_argument(
-        '--region',
-        help=(
-            'Region name. Not applicable for `resource-type=app-engine`.'
-            ' Required when `resource-type=backend-services` and regional'
-            ' scoped. Not applicable for global backend-services. Required when'
-            ' `resource-type=cloud-run`.'
-        ),
-    )
-  else:
-    group.add_argument(
-        '--region',
-        help=(
-            'Region name. Should only be specified with'
-            ' `--resource-type=backend-services` if it is a regional scoped.'
-            ' Not applicable for global scoped backend services.'
-        ),
-    )
+
+  group.add_argument(
+      '--region',
+      help=(
+          'Region name. Not applicable for `resource-type=app-engine`. Required'
+          ' when `resource-type=backend-services` and regional scoped. Not'
+          ' applicable for global backend-services. Required when'
+          ' `resource-type=cloud-run`.'
+      ),
+  )
   group.add_argument(
       '--version',
       help=(
@@ -230,38 +196,27 @@ def AddIapResourceArgs(parser):
 
 
 def AddIapSettingArg(
-    parser, support_cloud_run=False
+    parser
 ):
   """Adds flags for an IAP settings resource.
 
   Args:
     parser: An argparse.ArgumentParser-like object. It is mocked out in order to
       capture some information, but behaves like an ArgumentParser.
-    support_cloud_run: bool, provide support to cloud-run resource-type.
   """
   group = parser.add_group()
   group.add_argument('--organization', help='Organization ID.')
   group.add_argument('--folder', help='Folder ID.')
   group.add_argument('--project', help='Project ID.')
 
-  if support_cloud_run:
-    group.add_argument(
-        '--resource-type',
-        choices=SETTING_RESOURCE_TYPE_ENUM_ALPHA_BETA,
-        help=(
-            'Resource type of the IAP resource. For Backend Services, you can'
-            ' use both `compute` and `backend-services` as resource type.'
-        ),
-    )
-  else:
-    group.add_argument(
-        '--resource-type',
-        choices=SETTING_RESOURCE_TYPE_ENUM,
-        help=(
-            'Resource type of the IAP resource. For Backend Services, you can'
-            ' use both `compute` and `backend-services` as resource type.'
-        ),
-    )
+  group.add_argument(
+      '--resource-type',
+      choices=SETTING_RESOURCE_TYPE_ENUM,
+      help=(
+          'Resource type of the IAP resource. For Backend Services, you can'
+          ' use both `compute` and `backend-services` as resource type.'
+      ),
+  )
 
   group.add_argument(
       '--service',
@@ -270,25 +225,17 @@ def AddIapSettingArg(
           ' `app-engine`.'
       ),
   )
-  if support_cloud_run:
-    group.add_argument(
-        '--region',
-        help=(
-            'Region name. Not applicable for `app-engine`. Required when'
-            ' `resource-type=compute` and regional scoped. Not'
-            ' applicable for global scoped compute. Required when'
-            ' `resource-type=cloud-run`.'
-        ),
-    )
-  else:
-    group.add_argument(
-        '--region',
-        help=(
-            'Region name. Not applicable for `app-engine`. Required when'
-            ' `resource-type=compute` and regional scoped. Not'
-            ' applicable for global scoped compute.'
-        ),
-    )
+
+  group.add_argument(
+      '--region',
+      help=(
+          'Region name. Not applicable for `app-engine`. Required when'
+          ' `resource-type=compute` and regional scoped. Not'
+          ' applicable for global scoped compute. Required when'
+          ' `resource-type=cloud-run`.'
+      ),
+  )
+
   group.add_argument(
       '--version',
       help=(
@@ -408,7 +355,6 @@ applicationSettings:
 def ParseIapIamResource(
     release_track,
     args,
-    support_cloud_run=False,
 ):
   """Parse an IAP IAM resource from the input arguments.
 
@@ -416,7 +362,6 @@ def ParseIapIamResource(
     release_track: base.ReleaseTrack, release track of command.
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
-    support_cloud_run: bool, whether to support cloud run.
 
   Raises:
     calliope_exc.InvalidArgumentException: if a provided argument does not apply
@@ -491,7 +436,7 @@ def ParseIapIamResource(
                                     args.service)
     else:
       return iap_api.ForwardingRules(release_track, project, args.region)
-  elif (support_cloud_run and args.resource_type == CLOUD_RUN_RESOURCE_TYPE):
+  elif args.resource_type == CLOUD_RUN_RESOURCE_TYPE:
     if args.version:
       raise calliope_exc.InvalidArgumentException(
           '--version',
@@ -558,7 +503,6 @@ def ParseIapResource(release_track, args):
 def ParseIapSettingsResource(
     release_track,
     args,
-    support_cloud_run=False
 ):
   """Parse an IAP setting resource from the input arguments.
 
@@ -566,7 +510,6 @@ def ParseIapSettingsResource(
     release_track: base.ReleaseTrack, release track of command.
     args: an argparse namespace. All the arguments that were provided to this
       command invocation.
-    support_cloud_run: bool, whether to support cloud run.
 
   Raises:
     calliope_exc.InvalidArgumentException: if `--version` was specified with
@@ -674,8 +617,7 @@ def ParseIapSettingsResource(
         if args.service:
           path.extend(['services', args.service])
         return iap_api.IapSettingsResource(release_track, '/'.join(path))
-      elif (support_cloud_run and
-            args.resource_type == CLOUD_RUN_RESOURCE_TYPE):
+      elif (args.resource_type == CLOUD_RUN_RESOURCE_TYPE):
         path = ['projects', args.project, 'iap_web']
         if args.version:
           raise calliope_exc.InvalidArgumentException(

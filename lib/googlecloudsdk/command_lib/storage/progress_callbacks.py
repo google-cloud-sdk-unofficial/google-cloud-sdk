@@ -14,9 +14,6 @@
 # limitations under the License.
 """Messages parallel workers might send to the main thread."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import time
 

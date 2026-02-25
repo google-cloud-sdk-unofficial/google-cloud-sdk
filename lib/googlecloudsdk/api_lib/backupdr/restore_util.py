@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for Backup and DR restore command apis."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import types
 from typing import Any, Dict, List

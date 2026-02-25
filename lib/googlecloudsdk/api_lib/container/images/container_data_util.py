@@ -15,9 +15,6 @@
 
 """Utilities for the container data model."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 class ImageSummary(object):

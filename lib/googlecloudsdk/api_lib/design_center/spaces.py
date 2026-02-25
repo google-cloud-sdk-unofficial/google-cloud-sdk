@@ -14,9 +14,6 @@
 # limitations under the License.
 """DesignCenter Spaces API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.design_center import utils as api_lib_utils
 from googlecloudsdk.calliope import base

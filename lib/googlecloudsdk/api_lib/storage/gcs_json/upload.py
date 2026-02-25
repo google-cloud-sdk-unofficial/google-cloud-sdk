@@ -14,9 +14,6 @@
 # limitations under the License.
 """Classes that represent and execute different upload strategies for GCS."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import copy

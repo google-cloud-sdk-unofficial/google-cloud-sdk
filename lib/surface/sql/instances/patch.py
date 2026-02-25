@@ -371,6 +371,7 @@ def AddBaseArgs(parser):
   flags.AddServerCaMode(parser)
   flags.AddServerCaPool(parser)
   flags.AddReadPoolAutoScaleConfig(parser)
+  flags.AddDataApiAccess(parser)
 
 
 def AddBetaArgs(parser):
@@ -384,7 +385,6 @@ def AddBetaArgs(parser):
   unc_mappings_group = parser.add_mutually_exclusive_group(hidden=True)
   flags.AddUncMappings(unc_mappings_group)
   flags.AddClearUncMappings(unc_mappings_group)
-  flags.AddDataApiAccess(parser)
   flags.AddPerformanceCaptureConfig(parser, hidden=False)
   flags.AddSqlServerEntraId(parser)
   flags.AddClearEntraIdConfig(parser)

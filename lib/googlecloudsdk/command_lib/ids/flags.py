@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags for IDS commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ids import ids_api
 from googlecloudsdk.calliope import arg_parsers

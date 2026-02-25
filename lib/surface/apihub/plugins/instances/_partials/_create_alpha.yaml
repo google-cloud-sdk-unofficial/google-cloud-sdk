@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create pluginInstances
-    description: Create a pluginInstance
-    examples: |-
-      To create the pluginInstance, run:
+    brief: Create a Plugin Instance
+    description: |-
+      Create a plugin instance
 
-          $ {command}
+      Note: The positional argument for Plugin Instance ID is currently not supported.
+      Please use the --plugin-instance flag to specify the Plugin Instance ID.
+    examples: |-
+      To create a plugin instance with the ID `my-instance` for plugin `my-plugin`, run:
+
+      $ {command} --plugin-instance=my-instance --plugin=my-plugin --display-name="My Instance" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

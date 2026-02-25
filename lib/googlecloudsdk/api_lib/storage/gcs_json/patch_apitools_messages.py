@@ -21,9 +21,6 @@ messages that need to be patched, pending more permanent fixes.
 
 # TODO(b/171296237): Remove this file when fixes are submitted in apitools.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages
 

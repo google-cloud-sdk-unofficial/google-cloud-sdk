@@ -14,9 +14,6 @@
 # limitations under the License.
 """Tunnel TCP traffic over Cloud IAP WebSocket connection."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.compute import iap_tunnel
 from googlecloudsdk.core import log

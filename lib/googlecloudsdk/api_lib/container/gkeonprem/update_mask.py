@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for working with update mask."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 VMWARE_CLUSTER_ARGS_TO_UPDATE_MASKS = {
     'description': 'description',

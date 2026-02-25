@@ -16,9 +16,6 @@
 """Helper methods for configuring deployment manager command flags."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 LIST_PREVIEWED_RESOURCES_FORMAT = """
     table(

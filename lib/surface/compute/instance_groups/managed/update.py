@@ -60,6 +60,7 @@ class UpdateGA(base.UpdateCommand):
   support_update_policy_min_ready_flag = False
   support_multi_mig_flag = False
   support_instance_selection_min_cpu_platform = False
+  support_flex_policy_flag_with_mincpu_and_disks = False
 
   @classmethod
   def Args(cls, parser):
@@ -95,6 +96,7 @@ class UpdateGA(base.UpdateCommand):
         parser,
         is_update=True,
         support_instance_selection_min_cpu_platform=cls.support_instance_selection_min_cpu_platform,
+        support_flex_policy_flag_with_mincpu_and_disks=cls.support_flex_policy_flag_with_mincpu_and_disks,
     )
     managed_flags.AddStandbyPolicyFlags(parser)
     managed_flags.AddWorkloadPolicyFlags(parser)
@@ -535,6 +537,7 @@ class UpdateBeta(UpdateGA):
   support_update_policy_min_ready_flag = True
   support_multi_mig_flag = True
   support_instance_selection_min_cpu_platform = True
+  support_flex_policy_flag_with_mincpu_and_disks = True
 
   @classmethod
   def Args(cls, parser):
@@ -562,6 +565,7 @@ class UpdateAlpha(UpdateBeta):
 
   support_multi_mig_flag = True
   support_instance_selection_min_cpu_platform = True
+  support_flex_policy_flag_with_mincpu_and_disks = True
 
   @classmethod
   def Args(cls, parser):

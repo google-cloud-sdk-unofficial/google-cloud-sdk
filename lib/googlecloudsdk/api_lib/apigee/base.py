@@ -14,9 +14,6 @@
 # limitations under the License.
 """Generic implementations of Apigee Management APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.apigee import request
 

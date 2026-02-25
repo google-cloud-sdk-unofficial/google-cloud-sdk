@@ -14,10 +14,7 @@
 # limitations under the License.
 """Wraps a Serverless Service message, making fields more convenient."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 from typing import List

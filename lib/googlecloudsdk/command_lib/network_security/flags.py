@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Flags for network_security commands."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.network_security import API_VERSION_FOR_TRACK

@@ -19,9 +19,6 @@ Typically executed in a task iterator:
 googlecloudsdk.command_lib.storage.tasks.task_executor.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import copy
@@ -36,6 +33,7 @@ from googlecloudsdk.command_lib.storage import errors
 from googlecloudsdk.command_lib.storage import manifest_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage import storage_url
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import task
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
@@ -50,6 +48,24 @@ _MAX_BUFFER_QUEUE_SIZE = 100
 # TODO(b/174075495) Determine the max size based on the destination scheme.
 _QUEUE_ITEM_MAX_SIZE = 8 * 1024  # 8 KiB
 _PROGRESS_CALLBACK_THRESHOLD = 16 * 1024 * 1024  # 16 MiB.
+
+
+def _get_api_for_resource(resource: resource_reference.UnknownResource):
+  """Returns an API client for the given resource.
+
+  Args:
+    resource: The resource to get the API client for.
+
+  Returns:
+    An API client for the given resource.
+
+  """
+  if properties.VALUES.storage.enable_zonal_buckets_bidi_streaming.GetBool():
+    return api_factory.get_api(
+        resource.storage_url.scheme,
+        bucket_name=resource.storage_url.bucket_name,
+    )
+  return api_factory.get_api(resource.storage_url.scheme)
 
 
 class _AbruptShutdownError(errors.Error):
@@ -395,7 +411,7 @@ class BufferController:
         self._source_resource.storage_url,
         user_request_args=self._get_source_user_request_args_for_download())
 
-    client = api_factory.get_api(self._source_resource.storage_url.scheme)
+    client = _get_api_for_resource(self._source_resource)
     try:
       if self._source_resource.size != 0:
         client.download_object(
@@ -581,9 +597,7 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
         is storage_url.ProviderPrefix.S3
     ):
       # Update source_resource with metadata if fetch_source_fields_scope.
-      source_client = api_factory.get_api(
-          self._source_resource.storage_url.scheme
-      )
+      source_client = _get_api_for_resource(self._source_resource)
       self._enriched_source_resource = source_client.get_object_metadata(
           self._source_resource.bucket,
           self._source_resource.name,
@@ -593,8 +607,7 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
     else:
       self._enriched_source_resource = self._source_resource
 
-    destination_client = api_factory.get_api(
-        self._destination_resource.storage_url.scheme)
+    destination_client = _get_api_for_resource(self._destination_resource)
     if copy_util.check_for_cloud_clobber(self._user_request_args,
                                          destination_client,
                                          self._destination_resource):

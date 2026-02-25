@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for operations command groups."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 _OPERATION_TABLE_FORMAT = """\
     table(

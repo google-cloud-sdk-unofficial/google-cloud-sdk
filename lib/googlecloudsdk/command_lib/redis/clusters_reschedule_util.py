@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for reschedule Redis cluster maintenance window."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 class Error(Exception):

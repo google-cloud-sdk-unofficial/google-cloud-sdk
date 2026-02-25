@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create runtimeProjectAttachments
-    description: Create a runtimeProjectAttachment
-    examples: |-
-      To create the runtimeProjectAttachment, run:
+    brief: Create a Runtime Project Attachment
+    description: |-
+      Create a runtime project attachment
 
-          $ {command}
+      Note: The positional argument for Runtime Project Attachment ID is currently not supported.
+      Please use the --runtime-project-attachment flag to specify the Runtime Project Attachment ID.
+    examples: |-
+      To create a runtime project attachment with the ID `my-attachment`, run:
+
+      $ {command} --runtime-project-attachment=my-attachment --runtime-project=my-runtime-project --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

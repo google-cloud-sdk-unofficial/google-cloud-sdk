@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create curations
-    description: Create a curation
-    examples: |-
-      To create the curation, run:
+    brief: Create a Curation
+    description: |-
+      Create a curation
 
-          $ {command}
+      Note: The positional argument for Curation ID is currently not supported.
+      Please use the --curation flag to specify the Curation ID.
+    examples: |-
+      To create a curation with the ID `my-curation`, run:
+
+      $ {command} --curation=my-curation --display-name="My Curation" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Wrapper for cloud-run-proxy binary."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.util.anthos import binary_operations
 from googlecloudsdk.core import log

@@ -21,9 +21,6 @@ implementation of CRC32C, including adding a "deferred" strategy that uses the
 component gcloud-crc32c on files after they are downloaded.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import struct

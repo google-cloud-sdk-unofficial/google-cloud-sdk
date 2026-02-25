@@ -32,9 +32,6 @@ from googlecloudsdk.command_lib.concepts import concept_managers
     return args.foo
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 import io

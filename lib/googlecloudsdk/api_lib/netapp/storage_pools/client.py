@@ -14,10 +14,7 @@
 # limitations under the License.
 """Commands for interacting with the Cloud NetApp Files Storage Pool API resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
+from typing import Any, Dict, Optional
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.netapp import constants
 from googlecloudsdk.api_lib.netapp import util as netapp_api_util
@@ -81,29 +78,31 @@ class StoragePoolsClient(object):
         create_op.name, collection=constants.OPERATIONS_COLLECTION)
     return self.WaitForOperation(operation_ref)
 
-  def ParseStoragePoolConfig(self,
-                             name=None,
-                             service_level=None,
-                             network=None,
-                             active_directory=None,
-                             kms_config=None,
-                             enable_ldap=None,
-                             capacity=None,
-                             description=None,
-                             allow_auto_tiering=None,
-                             zone=None,
-                             replica_zone=None,
-                             custom_performance_enabled=None,
-                             total_throughput=None,
-                             total_iops=None,
-                             hot_tier_size=None,
-                             enable_hot_tier_auto_resize=None,
-                             labels=None,
-                             unified_pool=None,
-                             qos_type=None,
-                             storage_pool_type=None,
-                             scale_tier=None,
-                             ):
+  def ParseStoragePoolConfig(
+      self,
+      name: Optional[str] = None,
+      service_level: Optional[str] = None,
+      network: Optional[Dict[str, Any]] = None,
+      active_directory: Optional[str] = None,
+      kms_config: Optional[str] = None,
+      enable_ldap: Optional[bool] = None,
+      capacity: Optional[int] = None,
+      description: Optional[str] = None,
+      allow_auto_tiering: Optional[bool] = None,
+      zone: Optional[str] = None,
+      replica_zone: Optional[str] = None,
+      custom_performance_enabled: Optional[bool] = None,
+      total_throughput: Optional[int] = None,
+      total_iops: Optional[int] = None,
+      hot_tier_size: Optional[int] = None,
+      enable_hot_tier_auto_resize: Optional[bool] = None,
+      labels: Optional[Dict[str, str]] = None,
+      unified_pool: Optional[bool] = None,
+      qos_type: Optional[str] = None,
+      storage_pool_type: Optional[str] = None,
+      scale_tier: Optional[str] = None,
+      mode: Optional[str] = None,
+  ):
     """Parses the command line arguments for Create Storage Pool into a config."""
     return self._adapter.ParseStoragePoolConfig(
         name=name,
@@ -127,6 +126,7 @@ class StoragePoolsClient(object):
         qos_type=qos_type,
         storage_pool_type=storage_pool_type,
         scale_tier=scale_tier,
+        mode=mode,
     )
 
   def ListStoragePools(self, location_ref, limit=None):
@@ -305,27 +305,28 @@ class StoragePoolsAdapter(object):
 
   def ParseStoragePoolConfig(
       self,
-      name,
-      service_level,
-      network,
-      kms_config,
-      active_directory,
-      enable_ldap,
-      capacity,
-      description,
-      allow_auto_tiering,
-      zone,
-      replica_zone,
-      custom_performance_enabled,
-      total_throughput,
-      total_iops,
-      hot_tier_size,
-      enable_hot_tier_auto_resize,
-      qos_type,
-      labels,
-      unified_pool,
-      storage_pool_type,
-      scale_tier,
+      name: Optional[str] = None,
+      service_level: Optional[str] = None,
+      network: Optional[Dict[str, Any]] = None,
+      kms_config: Optional[str] = None,
+      active_directory: Optional[str] = None,
+      enable_ldap: Optional[bool] = None,
+      capacity: Optional[int] = None,
+      description: Optional[str] = None,
+      allow_auto_tiering: Optional[bool] = None,
+      zone: Optional[str] = None,
+      replica_zone: Optional[str] = None,
+      custom_performance_enabled: Optional[bool] = None,
+      total_throughput: Optional[int] = None,
+      total_iops: Optional[int] = None,
+      hot_tier_size: Optional[int] = None,
+      enable_hot_tier_auto_resize: Optional[bool] = None,
+      qos_type: Optional[str] = None,
+      labels: Optional[Dict[str, str]] = None,
+      unified_pool: Optional[bool] = None,
+      storage_pool_type: Optional[str] = None,
+      scale_tier: Optional[str] = None,
+      mode: Optional[str] = None,
   ):
     """Parses the command line arguments for Create Storage Pool into a config.
 
@@ -352,6 +353,7 @@ class StoragePoolsAdapter(object):
       unified_pool: Bool on whether the Storage Pool is a unified pool
       storage_pool_type: Type of the Storage Pool
       scale_tier: Scale tier of the Storage Pool
+      mode: Mode of the Storage Pool - ONTAP or DEFAULT
 
     Returns:
       The configuration that will be used as the request body for creating a
@@ -393,6 +395,8 @@ class StoragePoolsAdapter(object):
       storage_pool.type = storage_pool_type
     if scale_tier is not None:
       storage_pool.scaleTier = scale_tier
+    if mode is not None:
+      storage_pool.mode = mode
     return storage_pool
 
   def ParseUpdatedStoragePoolConfig(

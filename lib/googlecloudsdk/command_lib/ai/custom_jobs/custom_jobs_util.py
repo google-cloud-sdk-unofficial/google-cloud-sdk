@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for AI Platform custom jobs commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.ai.custom_jobs import local_util
 from googlecloudsdk.command_lib.ai.docker import build as docker_build

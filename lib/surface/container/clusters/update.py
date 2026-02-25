@@ -368,7 +368,7 @@ class Update(base.UpdateCommand):
     flags.AddBinauthzFlags(group, release_track=base.ReleaseTrack.GA)
     flags.AddEnableStackdriverKubernetesFlag(group)
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddResourceUsageExportFlags(group, is_update=True)
@@ -650,6 +650,7 @@ class Update(base.UpdateCommand):
     )
     opts.enable_slice_controller = args.enable_slice_controller
     opts.autopilot_general_profile = args.autopilot_general_profile
+    opts.enable_agent_sandbox = getattr(args, 'enable_agent_sandbox', None)
     return opts
 
   def Run(self, args):
@@ -1230,7 +1231,7 @@ class UpdateBeta(Update):
     flags.AddRemoveLabelsFlag(group)
     flags.AddNetworkPolicyFlags(group)
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -1352,6 +1353,7 @@ class UpdateBeta(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
+    flags.AddAgentSandboxConfigFlags(group, hidden=True)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
@@ -1634,7 +1636,7 @@ class UpdateAlpha(Update):
     flags.AddAutoprovisioningFlags(group, hidden=False, napless=True)
     flags.AddAutoscalingProfilesFlag(group)
     flags.AddMaintenanceDisruptionBudgetFlagGroup(
-        group, hidden=True, is_update=True)
+        group, hidden=False, is_update=True)
     flags.AddDailyMaintenanceWindowFlag(group, add_unset_text=True)
     flags.AddRecurringMaintenanceWindowFlags(group, is_update=True)
     flags.AddPodSecurityPolicyFlag(group)
@@ -1676,7 +1678,7 @@ class UpdateAlpha(Update):
     group_dataplane_v2_observability = group.add_group()
     flags.AddDataplaneV2MetricsFlag(group_dataplane_v2_observability)
     flags.AddDataplaneV2ObservabilityFlags(group_dataplane_v2_observability)
-    flags.AddEnableAmbientFlag(group, is_update=True)
+    flags.AddEnableAmbientNetworkingFlag(group, is_update=True)
     flags.AddWorkloadConfigAuditFlag(group)
     flags.AddHPAProfilesFlag(group)
     flags.AddWorkloadVulnScanningFlag(group)
@@ -1756,6 +1758,7 @@ class UpdateAlpha(Update):
     flags.AddControlPlaneEgressFlag(group)
     flags.AddAutopilotPrivilegedAdmissionFlag(group, hidden=True)
     flags.AddPodSnapshotConfigFlags(group, hidden=False)
+    flags.AddAgentSandboxConfigFlags(group, hidden=True)
     flags.AddEnableKernelModuleSignatureEnforcementFlag(group)
     flags.AddEnableSliceControllerFlag(group, hidden=True)
     flags.AddAutopilotGeneralProfileFlag(group)
@@ -1859,7 +1862,7 @@ class UpdateAlpha(Update):
     opts.enable_image_streaming = args.enable_image_streaming
     opts.maintenance_interval = args.maintenance_interval
     opts.dataplane_v2 = args.enable_dataplane_v2
-    opts.enable_ambient = args.enable_ambient
+    opts.enable_ambient_networking = args.enable_ambient_networking
     opts.enable_dataplane_v2_metrics = args.enable_dataplane_v2_metrics
     opts.disable_dataplane_v2_metrics = args.disable_dataplane_v2_metrics
     opts.enable_dataplane_v2_flow_observability = (

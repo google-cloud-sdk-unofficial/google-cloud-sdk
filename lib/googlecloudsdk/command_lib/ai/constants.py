@@ -14,9 +14,6 @@
 # limitations under the License.
 """Constants used for AI Platform."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
@@ -133,6 +130,7 @@ SUPPORTED_OP_REGIONS = (
     'us-west2',
     'us-west3',
     'us-west4',
+    'us-west8',
 )
 
 # NOTE: GDU-specific, see comment above SUPPORTED_REGION.

@@ -1539,9 +1539,9 @@ class UtilizationValue:
             "Utilization value %s is not an decimal or 'default'." % value
         )
 
-      if self.utilization != 0.0 and self.utilization < 0.5:
+      if self.utilization != 0.0 and self.utilization < 0.1:
         raise serverless_exceptions.ArgumentError(
-            'Utilization value %s is less than 0.5.' % value
+            'Utilization value %s is less than 0.1.' % value
         )
       if self.utilization > 0.95:
         raise serverless_exceptions.ArgumentError(
@@ -2286,7 +2286,7 @@ def AddCpuUtilizationFlag(parser):
       '--scaling-cpu-target',
       type=UtilizationValue,
       help=(
-          'A value between 0.5 and 0.95 that indicates the target CPU'
+          'A value between 0.1 and 0.95 that indicates the target CPU'
           ' utilization where a new instance should be started.  Also accepts '
           '"default" to restore the default value or "disabled" to disable '
           'CPU utilization scaling. If not set, the default value is 0.6.'
@@ -2300,7 +2300,7 @@ def AddConcurrencyUtilizationFlag(parser):
       '--scaling-concurrency-target',
       type=UtilizationValue,
       help=(
-          'A value between 0.5 and 0.95 that indicates the target concurrency'
+          'A value between 0.1 and 0.95 that indicates the target concurrency'
           ' utilization where a new instance should be started. Also accepts '
           '"default" to restore the default value or "disabled" to disable '
           'concurrency utilization scaling. If not set, the default value is'

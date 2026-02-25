@@ -14,9 +14,6 @@
 # limitations under the License.
 """Functions to add flags in cluster upgrade commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

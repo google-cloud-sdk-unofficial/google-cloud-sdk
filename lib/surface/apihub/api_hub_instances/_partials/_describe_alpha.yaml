@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe apiHubInstances
-    description: Describe an apiHubInstance
+    brief: Describe an Api Hub Instance
+    description: Describe an api hub instance
     examples: |-
-      To describe the apiHubInstance, run:
+      To describe the API Hub instance in project `my-project` and location `us-central1`, run:
 
-          $ {command}
+      $ {command} --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

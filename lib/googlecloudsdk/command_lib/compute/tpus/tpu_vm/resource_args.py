@@ -18,9 +18,6 @@ resource_args adds the TPU resource argument to
 the attach-disk and detach-disk command.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope.concepts import concepts
 

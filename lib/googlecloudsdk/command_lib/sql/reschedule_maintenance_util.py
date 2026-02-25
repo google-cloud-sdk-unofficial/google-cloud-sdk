@@ -14,9 +14,6 @@
 # limitations under the License.
 """Common utility functions for sql reschedule-maintenance commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from dateutil import tz

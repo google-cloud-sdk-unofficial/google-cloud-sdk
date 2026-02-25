@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for manipulating organization policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager.settings import service as settings_service
 

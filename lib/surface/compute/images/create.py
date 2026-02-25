@@ -44,7 +44,6 @@ def _Args(
     supports_force_create=False,
     support_user_licenses=False,
     supports_rollout_override=False,
-    support_tags=False,
 ):
   """Set Args based on Release Track."""
   # GA Args
@@ -68,16 +67,16 @@ def _Args(
   image_utils.AddArchitectureArg(parser, messages)
   kms_resource_args.AddKmsKeyResourceArg(parser, 'image')
   flags.AddSourceDiskProjectFlag(parser)
-  if support_tags:
-    parser.add_argument(
-        '--resource-manager-tags',
-        type=arg_parsers.ArgDict(),
-        metavar='KEY=VALUE',
-        help=(
-            'A comma-separated list of Resource Manager tags to apply to the'
-            ' image.'
-        ),
-    )
+
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help=(
+          'A comma-separated list of Resource Manager tags to apply to the'
+          ' image.'
+      ),
+  )
 
   # Alpha and Beta Args
   if supports_force_create:
@@ -171,7 +170,7 @@ class Create(base.CreateCommand):
   @classmethod
   def Args(cls, parser):
     messages = cls._GetApiHolder(no_http=True).client.messages
-    _Args(parser, messages, support_tags=False)
+    _Args(parser, messages)
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   @classmethod
@@ -179,14 +178,13 @@ class Create(base.CreateCommand):
     return base_classes.ComputeApiHolder(cls.ReleaseTrack(), no_http)
 
   def Run(self, args):
-    return self._Run(args, support_tags=False)
+    return self._Run(args)
 
   def _Run(
       self,
       args,
       support_user_licenses=False,
       supports_rollout_override=False,
-      support_tags=False,
   ):
     """Returns a list of requests necessary for adding images."""
     holder = self._GetApiHolder()
@@ -207,7 +205,7 @@ class Create(base.CreateCommand):
 
     if support_user_licenses and args.IsSpecified('user_licenses'):
       image.userLicenses = args.user_licenses
-    if support_tags and args.IsSpecified('resource_manager_tags'):
+    if args.IsSpecified('resource_manager_tags'):
       image.params = _CreateImageParams(messages, args.resource_manager_tags)
     csek_keys = csek_utils.CsekKeyStore.FromArgs(args, True)
     if csek_keys:
@@ -359,12 +357,11 @@ class CreateBeta(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=False,
-        support_tags=False,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
   def Run(self, args):
-    return self._Run(args, support_user_licenses=True, support_tags=False)
+    return self._Run(args, support_user_licenses=True)
 
 
 @base.DefaultUniverseOnly
@@ -381,7 +378,6 @@ class CreateAlpha(Create):
         supports_force_create=True,
         support_user_licenses=True,
         supports_rollout_override=True,
-        support_tags=True,
     )
     parser.display_info.AddCacheUpdater(flags.ImagesCompleter)
 
@@ -390,7 +386,6 @@ class CreateAlpha(Create):
         args,
         support_user_licenses=True,
         supports_rollout_override=True,
-        support_tags=True,
     )
 
 

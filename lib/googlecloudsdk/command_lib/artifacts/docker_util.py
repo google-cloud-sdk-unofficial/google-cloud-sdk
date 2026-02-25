@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility for interacting with `artifacts docker` command group."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 
@@ -105,6 +102,12 @@ def _GetArtifactRegistryDomain():
     return universe_descriptor_obj.artifact_registry_domain
 
 
+def _FormatErrorMessage(error_template):
+  """Formats the error message template with the current Artifact Registry domain."""
+  domain = _GetArtifactRegistryDomain()
+  return error_template.replace("DOMAIN", domain)
+
+
 GCR_DOCKER_REPO_REGEX = r"^(?P<repo>(us\.|eu\.|asia\.)?gcr.io)\/(?P<project>[^\/\.]+)\/(?P<image>.*)"
 
 # For domain scoped repos, the project is two segments long instead of one
@@ -152,11 +155,12 @@ def _GetDefaultResources():
   repo = properties.VALUES.artifacts.repository.Get()
   if not project or not location or not repo:
     raise ar_exceptions.InvalidInputValueError(
-        _INVALID_DEFAULT_DOCKER_STRING_ERROR.format(**{
+        _FormatErrorMessage(_INVALID_DEFAULT_DOCKER_STRING_ERROR).format(**{
             "project": project,
             "location": location,
             "repo": repo,
-        }))
+        })
+    )
   return DockerRepo(project, location, repo)
 
 
@@ -196,21 +200,25 @@ def ParseDockerImagePath(img_path):
   try:
     docker_repo = _ParseInput(img_path)
   except ar_exceptions.InvalidInputValueError:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_IMAGE_PATH_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_IMAGE_PATH_ERROR)
+    )
 
   if len(resource_val_list) == 3:
     return docker_repo
   elif len(resource_val_list) > 3:
     return DockerImage(docker_repo, "/".join(resource_val_list[3:]))
-  raise ar_exceptions.InvalidInputValueError(_INVALID_IMAGE_PATH_ERROR)
+  raise ar_exceptions.InvalidInputValueError(
+      _FormatErrorMessage(_INVALID_IMAGE_PATH_ERROR)
+  )
 
 
-def _ParseDockerImage(img_str, err_msg, strict=True):
+def _ParseDockerImage(img_str, err_msg_template, strict=True):
   """Validates and parses an image string into a DockerImage.
 
   Args:
     img_str: str, User input docker formatted string.
-    err_msg: str, Error message to return to user.
+    err_msg_template: str, Error message to return to user.
     strict: bool, If False, defaults tags to "latest".
 
   Raises:
@@ -223,7 +231,9 @@ def _ParseDockerImage(img_str, err_msg, strict=True):
   try:
     docker_repo = _ParseInput(img_str)
   except ar_exceptions.InvalidInputValueError:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_IMAGE_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_DOCKER_IMAGE_ERROR)
+    )
 
   img_by_digest_match = re.match(_GetDockerImgByDigestRegex(), img_str)
   if img_by_digest_match:
@@ -239,7 +249,9 @@ def _ParseDockerImage(img_str, err_msg, strict=True):
     docker_img = DockerImage(docker_repo,
                              whole_img_match.group("img").strip("/"))
     return docker_img, None if strict else DockerTag(docker_img, "latest")
-  raise ar_exceptions.InvalidInputValueError(err_msg)
+  raise ar_exceptions.InvalidInputValueError(
+      _FormatErrorMessage(err_msg_template)
+  )
 
 
 def ParseDockerVersionStr(version_str):
@@ -274,7 +286,9 @@ def ParseDockerVersionStr(version_str):
   try:
     docker_repo = _ParseInput(version_str)
   except ar_exceptions.InvalidInputValueError:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_VERSION_STR_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_VERSION_STR_ERROR)
+    )
 
   uri_digest_match = re.match(_GetDockerImgByDigestRegex(), version_str)
   uri_tag_match = re.match(_GetDockerImgByTagRegex(), version_str)
@@ -287,7 +301,9 @@ def ParseDockerVersionStr(version_str):
     tag = DockerTag(docker_img, uri_tag_match.group("tag"))
     return _ValidateAndGetDockerVersion(tag)
 
-  raise ar_exceptions.InvalidInputValueError(_INVALID_VERSION_STR_ERROR)
+  raise ar_exceptions.InvalidInputValueError(
+      _FormatErrorMessage(_INVALID_VERSION_STR_ERROR)
+  )
 
 
 def _ParseDockerTag(tag):
@@ -306,14 +322,18 @@ def _ParseDockerTag(tag):
   try:
     docker_repo = _ParseInput(tag)
   except ar_exceptions.InvalidInputValueError:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_TAG_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_DOCKER_TAG_ERROR)
+    )
 
   img_by_tag_match = re.match(_GetDockerImgByTagRegex(), tag)
   if img_by_tag_match:
     docker_img = DockerImage(docker_repo, img_by_tag_match.group("img"))
     return docker_img, DockerTag(docker_img, img_by_tag_match.group("tag"))
   else:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_TAG_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_DOCKER_TAG_ERROR)
+    )
 
 
 def _GetDockerPackagesAndVersions(docker_repo,
@@ -458,9 +478,13 @@ def _ValidateAndGetDockerVersion(version_or_tag):
       docker_version = DockerVersion(version_or_tag.image, digest)
       return docker_version
     else:
-      raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_IMAGE_ERROR)
+      raise ar_exceptions.InvalidInputValueError(
+          _FormatErrorMessage(_INVALID_DOCKER_IMAGE_ERROR)
+      )
   except api_exceptions.HttpNotFoundError:
-    raise ar_exceptions.InvalidInputValueError(_DOCKER_IMAGE_NOT_FOUND)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_DOCKER_IMAGE_NOT_FOUND)
+    )
 
 
 class DockerRepo(object):
@@ -969,7 +993,9 @@ def AddDockerTag(args):
   src_image, version_or_tag = _ParseDockerImage(args.DOCKER_IMAGE,
                                                 _INVALID_DOCKER_IMAGE_ERROR)
   if version_or_tag is None:
-    raise ar_exceptions.InvalidInputValueError(_INVALID_DOCKER_IMAGE_ERROR)
+    raise ar_exceptions.InvalidInputValueError(
+        _FormatErrorMessage(_INVALID_DOCKER_IMAGE_ERROR)
+    )
 
   dest_image, tag = _ParseDockerTag(args.DOCKER_TAG)
 

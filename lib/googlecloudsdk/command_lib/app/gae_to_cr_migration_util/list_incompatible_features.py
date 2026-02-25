@@ -142,14 +142,9 @@ def _check_for_incompatibility(
       if key == 'handlers' and not check_for_urlmap_conditions(val, input_type):
         incompatible_list.append(unsupported_features[key])
         continue
-      if key not in [
-          'handlers',
-          'inbound_services',
-          'error_handlers',
-          'inboundServices',
-          'errorHandlers',
-      ]:
+      if key in ['app_engine_apis', 'appEngineApis'] and val:
         incompatible_list.append(unsupported_features[key])
+        continue
     # Check for range_limited features.
     if key in range_limited_features:
       if not range_limited_features[key].validate(val):

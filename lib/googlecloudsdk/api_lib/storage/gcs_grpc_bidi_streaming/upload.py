@@ -14,10 +14,7 @@
 # limitations under the License.
 """Upload workflow using gRPC bidi streaming API client."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import collections
@@ -33,6 +30,7 @@ from googlecloudsdk.api_lib.storage.gcs_grpc import retry_util
 from googlecloudsdk.api_lib.storage.gcs_grpc_bidi_streaming import retry_util as bidi_retry_util
 from googlecloudsdk.command_lib.storage import errors as command_errors
 from googlecloudsdk.command_lib.storage import fast_crc32c_util
+from googlecloudsdk.command_lib.storage import gzip_util
 from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import posix_util
 from googlecloudsdk.command_lib.storage.resources import resource_reference
@@ -45,6 +43,60 @@ import six
 # TODO: b/441010615 - Remove this constant once the flush size is configurable
 # by the user. The default flush size is 50MiB.
 _DEFAULT_FLUSH_SIZE = 50 * 1024 * 1024
+
+
+def _should_perform_on_fly_checksumming(
+    request_config: request_config_factory._GcsRequestConfig,
+    source_resource: (
+        resource_reference.FileObjectResource
+        | resource_reference.ObjectResource
+        | None
+    ),
+) -> bool:
+  """Returns whether to perform on-the-fly checksumming.
+
+  Args:
+    request_config: Tracks additional request preferences.
+    source_resource: Contains the source StorageUrl and source object
+      metadata.
+
+  Returns:
+    True if on-the-fly checksumming should be performed, False otherwise.
+  """
+  if (
+      properties.VALUES.storage.check_hashes.Get()
+      == properties.CheckHashes.NEVER.value
+  ):
+    return False
+
+  # Do not perform on-the-fly checksumming for cloud resources, in case of daisy
+  # chaining. As gcloud_crc32c lacks support for computing hashes for data
+  # chunks.
+  # TODO: b/479490828 - Add support for computing hashes for data chunks.
+  if isinstance(source_resource, resource_reference.CloudResource):
+    return False
+
+  # On-the-fly checksumming is disabled for gzip and symlinks because the data
+  # being transferred is different from the source file's content. For gzip, the
+  # content is compressed, and for symlinks, the content is the link's path.
+
+  source_path = (
+      source_resource.storage_url.versionless_url_string
+      if source_resource is not None
+      else None
+  )
+  # TODO: b/480766439 - Enable on-the-fly checksumming for gzip.
+  if gzip_util.should_gzip_locally(request_config.gzip_settings, source_path):
+    return False
+  # TODO: b/466078602 - Enable on-the-fly checksumming for symlinks.
+  if (
+      isinstance(source_resource, resource_reference.FileObjectResource)
+      and source_resource.is_symlink
+      and request_config.preserve_symlinks
+  ):
+    return False
+  # On fly checksumming is performed only when fast_crc32c is available.
+  return fast_crc32c_util.check_if_will_use_fast_crc32c(install_if_missing=True)
 
 
 class _Upload(six.with_metaclass(abc.ABCMeta, object)):
@@ -95,8 +147,8 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
     self._uploaded_so_far = start_offset
     self._source_resource = source_resource
     self._delegator = delegator
-    self._should_use_crc32c = (
-        fast_crc32c_util.check_if_will_use_fast_crc32c(install_if_missing=True)
+    self._should_use_crc32c = _should_perform_on_fly_checksumming(
+        self._request_config, self._source_resource
     )
     self._buffer = collections.deque(maxlen=self._get_max_buffer_size())
     self._initial_request = None

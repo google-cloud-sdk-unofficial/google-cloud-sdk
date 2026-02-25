@@ -14,9 +14,6 @@
 # limitations under the License.
 """Provides ddl preprocessing for the Spanner ddl."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import logging
 

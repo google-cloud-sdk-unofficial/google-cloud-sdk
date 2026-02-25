@@ -14,9 +14,6 @@
 # limitations under the License.
 """Convenience functions for dealing with instances and instance templates."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import re
@@ -1201,17 +1198,6 @@ def CreateParams(args, client):
       )
 
   if args.IsKnownAndSpecified('request_valid_for_duration'):
-    if (
-        not hasattr(args, 'provisioning_model')
-        or not args.IsSpecified('provisioning_model')
-        or args.provisioning_model != 'FLEX_START'
-    ):
-      raise calliope_exceptions.InvalidArgumentException(
-          '--request_valid_for_duration',
-          '[--request_valid_for_duration] is only supported for FLEX_START'
-          ' provisioning model.',
-      )
-
     params.requestValidForDuration = client.messages.Duration(
         seconds=args.request_valid_for_duration
     )

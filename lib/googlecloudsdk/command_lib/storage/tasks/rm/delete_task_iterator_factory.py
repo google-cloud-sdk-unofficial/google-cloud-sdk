@@ -14,9 +14,6 @@
 # limitations under the License.
 """Iterator for deleting buckets and objects."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage.resources import resource_reference

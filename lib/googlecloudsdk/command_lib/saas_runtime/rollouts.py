@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for rollouts commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def HandleResume(unused_ref, args, request):

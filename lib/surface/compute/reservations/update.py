@@ -37,6 +37,7 @@ def _ValidateArgs(
     support_emergent_maintenance=False,
     support_share_type=False,
     support_scheduling_type=False,
+    support_early_access_maintenance=False,
 ):
   """Validates that both share settings arguments are mentioned.
 
@@ -49,6 +50,8 @@ def _ValidateArgs(
     support_emergent_maintenance: Check if emergent maintenance is supported.
     support_share_type: Check if share setting is supported.
     support_scheduling_type: Check if scheduling type is supported.
+    support_early_access_maintenance: Check if early access maintenance is
+      supported.
   """
   # Check the version and share-with option.
   share_with = False
@@ -104,6 +107,14 @@ def _ValidateArgs(
     one_option_exception_message += (
         '7- Modify scheduling type with specifying scheduling-type flag.'
     )
+  if support_early_access_maintenance:
+    parameter_names.extend([
+        '--early-access-maintenance',
+    ])
+    one_option_exception_message += (
+        '8- Modify early access maintenance with specifying'
+        ' early-access-maintenance flag.'
+    )
 
   has_share_with = False
   if support_share_with_flag:
@@ -153,6 +164,11 @@ def _ValidateArgs(
   if support_scheduling_type:
     minimum_argument_specified = (
         minimum_argument_specified and not args.IsSpecified('scheduling_type')
+    )
+  if support_early_access_maintenance:
+    minimum_argument_specified = (
+        minimum_argument_specified
+        and not args.IsSpecified('early_access_maintenance')
     )
 
   # Check parameters (add_share_with and remove_share_with are on GA).
@@ -394,6 +410,36 @@ def _SchedulingTypeUpdateRequest(args, reservation_ref, holder):
   )
 
 
+def _EarlyAccessMaintenanceUpdateRequest(args, reservation_ref, holder):
+  """Create Update Request for early access maintenance."""
+  messages = holder.client.messages
+  update_mask = []
+  if args.IsSpecified('early_access_maintenance'):
+    update_mask.append('earlyAccessMaintenance')
+    early_access_maintenance = args.early_access_maintenance
+  else:
+    early_access_maintenance = None
+  r_resource = util.MakeReservationMessage(
+      messages,
+      reservation_ref.Name(),
+      None,
+      None,
+      None,
+      None,
+      reservation_ref.zone,
+      early_access_maintenance=early_access_maintenance,
+  )
+
+  # Build Update Request.
+  return messages.ComputeReservationsUpdateRequest(
+      reservation=reservation_ref.Name(),
+      reservationResource=r_resource,
+      paths=update_mask,
+      project=reservation_ref.project,
+      zone=reservation_ref.zone,
+  )
+
+
 @base.ReleaseTracks(base.ReleaseTrack.GA)
 @base.UniverseCompatible
 class Update(base.UpdateCommand):
@@ -404,6 +450,7 @@ class Update(base.UpdateCommand):
   _support_emergent_maintenance = True
   _support_share_type = False
   _support_scheduling_type = True
+  _support_early_access_maintenance = False
 
   @classmethod
   def Args(cls, parser):
@@ -431,6 +478,7 @@ class Update(base.UpdateCommand):
         self._support_emergent_maintenance,
         self._support_share_type,
         self._support_scheduling_type,
+        self._support_early_access_maintenance,
     )
     reservation_ref = resource_args.GetReservationResourceArg(
     ).ResolveAsResource(
@@ -541,6 +589,24 @@ class Update(base.UpdateCommand):
         if errors:
           utils.RaiseToolException(errors)
 
+    if self._support_early_access_maintenance:
+      if args.IsSpecified('early_access_maintenance'):
+        r_update_request = _EarlyAccessMaintenanceUpdateRequest(
+            args, reservation_ref, holder
+        )
+        result.append(
+            list(
+                request_helper.MakeRequests(
+                    requests=[(service, 'Update', r_update_request)],
+                    http=holder.client.apitools_client.http,
+                    batch_url=holder.client.batch_url,
+                    errors=errors,
+                )
+            )
+        )
+        if errors:
+          utils.RaiseToolException(errors)
+
     return result
 
 
@@ -553,6 +619,7 @@ class UpdateBeta(Update):
   _support_emergent_maintenance = True
   _support_share_type = True
   _support_scheduling_type = True
+  _support_early_access_maintenance = False
 
   @classmethod
   def Args(cls, parser):
@@ -589,6 +656,7 @@ class UpdateAlpha(Update):
   _support_emergent_maintenance = True
   _support_share_type = True
   _support_scheduling_type = True
+  _support_early_access_maintenance = True
 
   @classmethod
   def Args(cls, parser):
@@ -604,6 +672,7 @@ class UpdateAlpha(Update):
     r_flags.GetSharedSettingFlag(
         support_folder_share_setting=False).AddToParser(parser)
     r_flags.GetSchedulingTypeFlag().AddToParser(parser)
+    r_flags.GetEarlyAccessMaintenanceFlag().AddToParser(parser)
 
     auto_delete_group = base.ArgumentGroup(
         'Manage auto-delete properties for reservations.',

@@ -4133,6 +4133,71 @@ class DataplexProjectsLocationsListRequest(_messages.Message):
   pageToken = _messages.StringField(5)
 
 
+class DataplexProjectsLocationsLookupContextRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsLookupContextRequest object.
+
+  Fields:
+    googleCloudDataplexV1LookupContextRequest: A
+      GoogleCloudDataplexV1LookupContextRequest resource to be passed as the
+      request body.
+    name: Required. The project to which the request should be attributed in
+      the following form: projects/{project}/locations/{location}.
+  """
+
+  googleCloudDataplexV1LookupContextRequest = _messages.MessageField('GoogleCloudDataplexV1LookupContextRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsLookupEntryLinksRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsLookupEntryLinksRequest object.
+
+  Enums:
+    EntryModeValueValuesEnum: Mode of entry reference.
+
+  Fields:
+    entry: Required. The resource name of the referred Entry. Format: projects
+      /{project_id_or_number}/locations/{location_id}/entryGroups/{entry_group
+      _id}/entries/{entry_id}. Entry Links which references this entry will be
+      returned in the response.
+    entryLinkTypes: Entry link types to filter the response by. If empty, all
+      entry link types will be returned. At most 10 entry link types can be
+      specified.
+    entryMode: Mode of entry reference.
+    name: Required. The project to which the request should be attributed to
+      Format: projects/{project_id_or_number}/locations/{location_id}.
+    pageSize: Maximum number of EntryLinks to return. The service may return
+      fewer than this value. If unspecified, at most 10 EntryLinks will be
+      returned. The maximum value is 10; values above 10 will be coerced to
+      10.
+    pageToken: Page token received from a previous LookupEntryLinks call.
+      Provide this to retrieve the subsequent page. When paginating, all other
+      parameters that are provided to the LookupEntryLinks request must match
+      the call that provided the page token.
+  """
+
+  class EntryModeValueValuesEnum(_messages.Enum):
+    r"""Mode of entry reference.
+
+    Values:
+      ENTRY_MODE_UNSPECIFIED: Unspecified entry mode. Returns both directional
+        and non-directional entry links which references the entry.
+      SOURCE: Returns all directed entry links which references the entry as
+        source.
+      TARGET: Return all directed entry links which references the entry as
+        target.
+    """
+    ENTRY_MODE_UNSPECIFIED = 0
+    SOURCE = 1
+    TARGET = 2
+
+  entry = _messages.StringField(1)
+  entryLinkTypes = _messages.StringField(2, repeated=True)
+  entryMode = _messages.EnumField('EntryModeValueValuesEnum', 3)
+  name = _messages.StringField(4, required=True)
+  pageSize = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(6)
+
+
 class DataplexProjectsLocationsLookupEntryRequest(_messages.Message):
   r"""A DataplexProjectsLocationsLookupEntryRequest object.
 
@@ -4403,6 +4468,63 @@ class DataplexProjectsLocationsOperationsListRequest(_messages.Message):
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   returnPartialSuccess = _messages.BooleanField(5)
+
+
+class DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy.Valid values are 0, 1, and 3. Requests
+      specifying an invalid value will be rejected.Requests for policies with
+      any conditional role bindings must specify version 3. Policies with no
+      conditional role bindings may specify any valid value or leave the field
+      unset.The policy in the response might use the policy version that you
+      specified, or it might use a lower policy version. For example, if you
+      specify version 3, but the policy has no conditional role bindings, the
+      response uses version 1.To learn which resources support conditions in
+      their IAM policies, see the IAM documentation
+      (https://cloud.google.com/iam/help/conditions/resource-policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsPolicyIntentsSetIamPolicyRequest object.
+
+  Fields:
+    googleIamV1SetIamPolicyRequest: A GoogleIamV1SetIamPolicyRequest resource
+      to be passed as the request body.
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See Resource names (https://cloud.google.com/apis/design/resource_names)
+      for the appropriate value for this field.
+  """
+
+  googleIamV1SetIamPolicyRequest = _messages.MessageField('GoogleIamV1SetIamPolicyRequest', 1)
+  resource = _messages.StringField(2, required=True)
+
+
+class DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest(_messages.Message):
+  r"""A DataplexProjectsLocationsPolicyIntentsTestIamPermissionsRequest
+  object.
+
+  Fields:
+    googleIamV1TestIamPermissionsRequest: A
+      GoogleIamV1TestIamPermissionsRequest resource to be passed as the
+      request body.
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See Resource names
+      (https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  googleIamV1TestIamPermissionsRequest = _messages.MessageField('GoogleIamV1TestIamPermissionsRequest', 1)
+  resource = _messages.StringField(2, required=True)
 
 
 class DataplexProjectsLocationsQueryCatalogRequest(_messages.Message):
@@ -6685,6 +6807,9 @@ class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
   Fields:
     column: Optional. The unnested column which this rule is evaluated
       against.
+    debugQueries: Optional. Specifies the debug queries for this rule.
+      Currently, only one query is supported, but this may be expanded in the
+      future.
     description: Optional. Description of the rule. The maximum length is
       1,024 characters.
     dimension: Optional. The dimension a rule belongs to. Results are also
@@ -6725,21 +6850,48 @@ class GoogleCloudDataplexV1DataQualityRule(_messages.Message):
   """
 
   column = _messages.StringField(1)
-  description = _messages.StringField(2)
-  dimension = _messages.StringField(3)
-  ignoreNull = _messages.BooleanField(4)
-  name = _messages.StringField(5)
-  nonNullExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleNonNullExpectation', 6)
-  rangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRangeExpectation', 7)
-  regexExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRegexExpectation', 8)
-  rowConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation', 9)
-  setExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSetExpectation', 10)
-  sqlAssertion = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSqlAssertion', 11)
-  statisticRangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleStatisticRangeExpectation', 12)
-  suspended = _messages.BooleanField(13)
-  tableConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTableConditionExpectation', 14)
-  threshold = _messages.FloatField(15)
-  uniquenessExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleUniquenessExpectation', 16)
+  debugQueries = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleDebugQuery', 2, repeated=True)
+  description = _messages.StringField(3)
+  dimension = _messages.StringField(4)
+  ignoreNull = _messages.BooleanField(5)
+  name = _messages.StringField(6)
+  nonNullExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleNonNullExpectation', 7)
+  rangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRangeExpectation', 8)
+  regexExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRegexExpectation', 9)
+  rowConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation', 10)
+  setExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSetExpectation', 11)
+  sqlAssertion = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleSqlAssertion', 12)
+  statisticRangeExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleStatisticRangeExpectation', 13)
+  suspended = _messages.BooleanField(14)
+  tableConditionExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleTableConditionExpectation', 15)
+  threshold = _messages.FloatField(16)
+  uniquenessExpectation = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleUniquenessExpectation', 17)
+
+
+class GoogleCloudDataplexV1DataQualityRuleDebugQuery(_messages.Message):
+  r"""Specifies a SQL statement that is evaluated to return up to 10 scalar
+  values that are used to debug rules. If the rule fails, the values can help
+  diagnose the cause of the failure.The SQL statement must use GoogleSQL
+  syntax (https://cloud.google.com/bigquery/docs/reference/standard-sql/query-
+  syntax), and must not contain any semicolons.You can use the data reference
+  parameter ${data()} to reference the source table with all of its
+  precondition filters applied. Examples of precondition filters include row
+  filters, incremental data filters, and sampling. For more information, see
+  Data reference parameter (https://cloud.google.com/dataplex/docs/auto-data-
+  quality-overview#data-reference-parameter).You can also name results with an
+  explicit alias using [AS] alias. For more information, see BigQuery explicit
+  aliases (https://docs.cloud.google.com/bigquery/docs/reference/standard-
+  sql/query-syntax#explicit_alias_syntax).Example: SELECT MIN(col1) AS
+  min_col1, MAX(col1) AS max_col1 FROM ${data()}
+
+  Fields:
+    description: Optional. Specifies the description of the debug query. The
+      maximum length is 1,024 characters.
+    sqlStatement: Required. Specifies the SQL statement to be executed.
+  """
+
+  description = _messages.StringField(1)
+  sqlStatement = _messages.StringField(2)
 
 
 class GoogleCloudDataplexV1DataQualityRuleNonNullExpectation(_messages.Message):
@@ -6789,6 +6941,9 @@ class GoogleCloudDataplexV1DataQualityRuleResult(_messages.Message):
     assertionRowCount: Output only. The number of rows returned by the SQL
       statement in a SQL assertion rule.This field is only valid for SQL
       assertion rules.
+    debugQueriesResultSets: Output only. Contains the results of all debug
+      queries for this rule. The number of result sets will correspond to the
+      number of debug_queries.
     evaluatedCount: Output only. The number of rows a rule was evaluated
       against.This field is only valid for row-level type rules.Evaluated
       count can be configured to either include all rows (default) - with null
@@ -6809,13 +6964,43 @@ class GoogleCloudDataplexV1DataQualityRuleResult(_messages.Message):
   """
 
   assertionRowCount = _messages.IntegerField(1)
-  evaluatedCount = _messages.IntegerField(2)
-  failingRowsQuery = _messages.StringField(3)
-  nullCount = _messages.IntegerField(4)
-  passRatio = _messages.FloatField(5)
-  passed = _messages.BooleanField(6)
-  passedCount = _messages.IntegerField(7)
-  rule = _messages.MessageField('GoogleCloudDataplexV1DataQualityRule', 8)
+  debugQueriesResultSets = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleResultDebugQueryResultSet', 2, repeated=True)
+  evaluatedCount = _messages.IntegerField(3)
+  failingRowsQuery = _messages.StringField(4)
+  nullCount = _messages.IntegerField(5)
+  passRatio = _messages.FloatField(6)
+  passed = _messages.BooleanField(7)
+  passedCount = _messages.IntegerField(8)
+  rule = _messages.MessageField('GoogleCloudDataplexV1DataQualityRule', 9)
+
+
+class GoogleCloudDataplexV1DataQualityRuleResultDebugQueryResult(_messages.Message):
+  r"""Contains a single result from the debug query.
+
+  Fields:
+    name: Specifies the name of the result. Available if provided with an
+      explicit alias using [AS] alias.
+    type: Indicates the data type of the result. For more information, see
+      BigQuery data types
+      (https://cloud.google.com/bigquery/docs/reference/standard-sql/data-
+      types).
+    value: Represents the value of the result as a string.
+  """
+
+  name = _messages.StringField(1)
+  type = _messages.StringField(2)
+  value = _messages.StringField(3)
+
+
+class GoogleCloudDataplexV1DataQualityRuleResultDebugQueryResultSet(_messages.Message):
+  r"""Contains all results from a debug query.
+
+  Fields:
+    results: Output only. Contains all results. Up to 10 results can be
+      returned.
+  """
+
+  results = _messages.MessageField('GoogleCloudDataplexV1DataQualityRuleResultDebugQueryResult', 1, repeated=True)
 
 
 class GoogleCloudDataplexV1DataQualityRuleRowConditionExpectation(_messages.Message):
@@ -10196,6 +10381,85 @@ class GoogleCloudDataplexV1ListZonesResponse(_messages.Message):
   zones = _messages.MessageField('GoogleCloudDataplexV1Zone', 2, repeated=True)
 
 
+class GoogleCloudDataplexV1LookupContextRequest(_messages.Message):
+  r"""Lookup Context using permissions in the source system.
+
+  Messages:
+    OptionsValue: Optional. Allows to configure the context.Supported options:
+      - format - the format of the context (one of "yaml", "xml" or "ddl",
+      default is "yaml"). - token_budget - if provided, the output will be
+      truncated to contain roughly a maximum of this number of LLM tokens. If
+      not provided, no maximum is enforced.
+
+  Fields:
+    options: Optional. Allows to configure the context.Supported options: -
+      format - the format of the context (one of "yaml", "xml" or "ddl",
+      default is "yaml"). - token_budget - if provided, the output will be
+      truncated to contain roughly a maximum of this number of LLM tokens. If
+      not provided, no maximum is enforced.
+    resources: Required. The identifier describing the resource, - in the form
+      of a entry name, or - in the form of a linked resource name, or - in the
+      form of a fully qualified name.Examples:projects/{project}/locations/{lo
+      cation}/entryGroups/{entry_group}/entries/{entry}//bigquery.googleapis.c
+      om/projects/{project}/datasets/{dataset}/tables/{table} -
+      bigquery:{project}.{dataset}.{table}
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class OptionsValue(_messages.Message):
+    r"""Optional. Allows to configure the context.Supported options: - format
+    - the format of the context (one of "yaml", "xml" or "ddl", default is
+    "yaml"). - token_budget - if provided, the output will be truncated to
+    contain roughly a maximum of this number of LLM tokens. If not provided,
+    no maximum is enforced.
+
+    Messages:
+      AdditionalProperty: An additional property for a OptionsValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type OptionsValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a OptionsValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A string attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.StringField(2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  options = _messages.MessageField('OptionsValue', 1)
+  resources = _messages.StringField(2, repeated=True)
+
+
+class GoogleCloudDataplexV1LookupContextResponse(_messages.Message):
+  r"""Lookup Context response.
+
+  Fields:
+    context: LLM generated context for the resources.
+  """
+
+  context = _messages.StringField(1)
+
+
+class GoogleCloudDataplexV1LookupEntryLinksResponse(_messages.Message):
+  r"""Response message for LookupEntryLinks.
+
+  Fields:
+    entryLinks: List of entry links that reference the specified entry.
+    nextPageToken: Token to retrieve the next page of results, or empty if
+      there are no more results in the list.
+  """
+
+  entryLinks = _messages.MessageField('GoogleCloudDataplexV1EntryLink', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+
+
 class GoogleCloudDataplexV1MetadataFeed(_messages.Message):
   r"""MetadataFeed contains information related to the metadata feed.
 
@@ -12868,3 +13132,5 @@ encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsLakesZonesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     DataplexProjectsLocationsLakesZonesAssetsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    DataplexProjectsLocationsPolicyIntentsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

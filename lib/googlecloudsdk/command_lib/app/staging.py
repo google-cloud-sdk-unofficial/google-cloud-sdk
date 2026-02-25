@@ -32,9 +32,6 @@ The interface is defined as follows:
   ERROR message).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import io

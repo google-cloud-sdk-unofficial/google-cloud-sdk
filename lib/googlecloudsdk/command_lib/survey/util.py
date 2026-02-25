@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility module for CLI survey."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 def Indent(paragraph, indent_level=1, indent_size=2, indent_char=' '):

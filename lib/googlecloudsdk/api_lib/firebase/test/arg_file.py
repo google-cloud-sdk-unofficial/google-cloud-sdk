@@ -74,9 +74,6 @@
     locales: [de, en_US, en_GB, es, fr, it, ru, zh]
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

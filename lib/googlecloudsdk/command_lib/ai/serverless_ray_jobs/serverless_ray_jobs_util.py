@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for AI Platform serverless ray jobs commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 SERVERLESS_RAY_JOB_COLLECTION = (

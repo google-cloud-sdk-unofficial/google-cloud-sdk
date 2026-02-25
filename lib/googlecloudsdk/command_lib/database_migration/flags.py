@@ -14,9 +14,6 @@
 # limitations under the License.
 """Flags and helpers for the database migration related commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.util.args import labels_util
 

@@ -76,21 +76,20 @@ EXAMPLES = """\
 
             $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=forwarding-rule --service=SERVICE_ID
               --region=REGION_ID
+
+          To set the IAP setting for the all cloud run services within a region of a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID
+
+          To set the IAP setting for a cloud run service within a project, run:
+
+            $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID --service=SERVICE_ID
           """
 
-NON_GA_EXAMPLES = EXAMPLES + """\
 
-    To set the IAP setting for the all cloud run services within a region of a project, run:
-
-      $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID
-
-    To set the IAP setting for a cloud run service within a project, run:
-
-      $ {command} iap_settings.yaml --project=PROJECT_ID --resource-type=cloud-run --region=REGION_ID --service=SERVICE_ID
-    """
-
-
-@base.ReleaseTracks(base.ReleaseTrack.GA)
+@base.ReleaseTracks(
+    base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA, base.ReleaseTrack.GA
+)
 @base.DefaultUniverseOnly
 class Set(base.Command):
   """Set the setting for an IAP resource."""
@@ -98,8 +97,6 @@ class Set(base.Command):
   detailed_help = {
       'EXAMPLES': EXAMPLES,
   }
-
-  _support_cloud_run = False
 
   @classmethod
   def Args(cls, parser):
@@ -109,9 +106,7 @@ class Set(base.Command):
       parser: An argparse.ArgumentParser-like object. It is mocked out in order
         to capture some information, but behaves like an ArgumentParser.
     """
-    iap_util.AddIapSettingArg(
-        parser, support_cloud_run=cls._support_cloud_run
-    )
+    iap_util.AddIapSettingArg(parser)
     iap_util.AddIapSettingFileArg(parser)
     base.URI_FLAG.RemoveFromParser(parser)
 
@@ -128,16 +123,5 @@ class Set(base.Command):
     iap_setting_ref = iap_util.ParseIapSettingsResource(
         self.ReleaseTrack(),
         args,
-        self._support_cloud_run,
     )
     return iap_setting_ref.SetIapSetting(args.setting_file)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
-class SetBeta(Set):
-  """Set the setting for an IAP resource."""
-  detailed_help = {
-      'EXAMPLES': NON_GA_EXAMPLES,
-  }
-
-  _support_cloud_run = True

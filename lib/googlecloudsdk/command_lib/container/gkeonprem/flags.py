@@ -14,9 +14,6 @@
 # limitations under the License.
 """Helpers for flags in commands for Anthos GKE On-Prem clusters."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import parser_arguments
 from googlecloudsdk.calliope.concepts import concepts

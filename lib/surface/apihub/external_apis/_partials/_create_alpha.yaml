@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create externalApis
-    description: Create an externalApi
+    brief: Create an External Api
+    description: Create an external api
     examples: |-
-      To create the externalApi, run:
+      To create an external API with the ID `my-external-api`, run:
 
-          $ {command}
+      $ {command} --external-api=my-external-api --display-name="My External API" --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

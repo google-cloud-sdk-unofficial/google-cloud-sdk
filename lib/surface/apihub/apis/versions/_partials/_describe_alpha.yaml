@@ -18,14 +18,13 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe versions
+    brief: Describe a Version
     description: Describe a version
     examples: |-
-      To describe the version, run:
+      To describe a version with the ID `my-version` for API `my-api`, run:
 
-          $ {command}
+      $ {command} my-version --api=my-api --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

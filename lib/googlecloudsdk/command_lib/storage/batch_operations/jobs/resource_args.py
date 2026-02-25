@@ -14,9 +14,6 @@
 # limitations under the License.
 """Shared resource args for batch-operations jobs commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps as deps_lib

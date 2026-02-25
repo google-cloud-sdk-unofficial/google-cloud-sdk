@@ -14,9 +14,6 @@
 # limitations under the License.
 """API helpers for interacting with platform policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from apitools.base.py import list_pager

@@ -387,26 +387,55 @@
                 Fractions of seconds, in nanoseconds. Must be greater than or equal to 0
                 and less than or equal to 999,999,999.
     - group:
-        api_field: instance.hybridTierOptions
+        api_field: instance.dynamicTierOptions
         required: false
         hidden: true
         help_text: |-
-          Hybrid tier options for a Managed Lustre instance.
+          Dynamic tier options for a Managed Lustre instance.
         params:
-        - arg_name: hybrid-tier-options-mode
-          api_field: instance.hybridTierOptions.mode
+        - arg_name: dynamic-tier-options-mode
+          api_field: instance.dynamicTierOptions.mode
           required: true
           help_text: |-
-            The mode for the Hybrid tier instance.
+            The mode for the Dynamic tier instance.
           choices:
           - arg_value: disabled
             enum_value: DISABLED
             help_text: |-
-              Hybrid tier is explicitly disabled.
+              The dynamic tier is explicitly disabled.
           - arg_value: default-cache
             enum_value: DEFAULT_CACHE
             help_text: |-
-              Hybrid tier is enabled with a default cache configuration.
+              The dynamic tier is enabled with a default cache configuration.
+    - arg_name: initial-compression-algorithm
+      api_field: instance.initialCompressionAlgorithm
+      required: false
+      hidden: true
+      help_text: |-
+        The compression algorithm to use when initializing the instance.
+      choices:
+      - arg_value: lz4
+        enum_value: LZ4
+        help_text: |-
+          Compression algorithm is explicitly enabled with LZ4 compression.
+      - arg_value: zstd
+        enum_value: ZSTD
+        help_text: |-
+          Compression algorithm is explicitly enabled with ZSTD compression.
+    - arg_name: initial-compression-level
+      api_field: instance.initialCompressionLevel
+      required: false
+      repeated: false
+      type: int
+      hidden: true
+      help_text: |-
+        The compression level to use for when initializing the instance. Defaults
+        to 1 if not set.
+        Valid ranges depend on the selected algorithm:
+        - LZ4: 1 to 12
+        - ZSTD: 1 to 22
+        Higher levels generally offer better compression ratios but may increase
+        CPU usage.
     - arg_name: request-id
       api_field: requestId
       required: false

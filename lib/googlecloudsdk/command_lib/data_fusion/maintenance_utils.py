@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command utilities for maintenance."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.data_fusion import datafusion as df
 from googlecloudsdk.calliope import arg_parsers

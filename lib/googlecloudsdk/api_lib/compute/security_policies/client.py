@@ -14,9 +14,8 @@
 # limitations under the License.
 """Security policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+
+import typing
 
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 
@@ -30,10 +29,12 @@ class SecurityPolicy(object):
 
   @property
   def _client(self):
+    assert self._compute_client is not None
     return self._compute_client.apitools_client
 
   @property
   def _messages(self):
+    assert self._compute_client is not None
     return self._compute_client.messages
 
   def _MakeDeleteRequestTuple(self):
@@ -110,30 +111,38 @@ class SecurityPolicy(object):
                 securityPolicyResource=security_policy))
 
   def Delete(self, only_generate_request=False):
+    # type: (bool) -> typing.Any
     requests = [self._MakeDeleteRequestTuple()]
-    if not only_generate_request:
-      return self._compute_client.MakeRequests(requests)
-    return requests
+    if only_generate_request:
+      return requests
+    assert self._compute_client is not None
+    return self._compute_client.MakeRequests(requests)
 
   def Describe(self, only_generate_request=False):
+    # type: (bool) -> typing.Any
     requests = [self._MakeDescribeRequestTuple()]
-    if not only_generate_request:
-      return self._compute_client.MakeRequests(requests)
-    return requests
+    if only_generate_request:
+      return requests
+    assert self._compute_client is not None
+    return self._compute_client.MakeRequests(requests)
 
   def Create(self, security_policy=None, only_generate_request=False):
+    # type: (typing.Any, bool) -> typing.Any
     requests = [self._MakeCreateRequestTuple(security_policy)]
-    if not only_generate_request:
-      return self._compute_client.MakeRequests(requests)
-    return requests
+    if only_generate_request:
+      return requests
+    assert self._compute_client is not None
+    return self._compute_client.MakeRequests(requests)
 
   def Patch(
       self, security_policy=None, field_mask=None, only_generate_request=False
   ):
+    # type: (typing.Any, typing.Any, bool) -> typing.Any
     requests = [self._MakePatchRequestTuple(security_policy, field_mask)]
-    if not only_generate_request:
-      return self._compute_client.MakeRequests(requests)
-    return requests
+    if only_generate_request:
+      return requests
+    assert self._compute_client is not None
+    return self._compute_client.MakeRequests(requests)
 
 
 class SecurityPolicyRule(object):
@@ -145,10 +154,12 @@ class SecurityPolicyRule(object):
 
   @property
   def _client(self):
+    assert self._compute_client is not None
     return self._compute_client.apitools_client
 
   @property
   def _messages(self):
+    assert self._compute_client is not None
     return self._compute_client.messages
 
   def _ConvertPriorityToInt(self, priority):
@@ -414,12 +425,14 @@ class SecurityPolicyRule(object):
   def Delete(self, only_generate_request=False):
     requests = [self._MakeDeleteRequestTuple()]
     if not only_generate_request:
+      assert self._compute_client is not None
       return self._compute_client.MakeRequests(requests)
     return requests
 
   def Describe(self, only_generate_request=False):
     requests = [self._MakeDescribeRequestTuple()]
     if not only_generate_request:
+      assert self._compute_client is not None
       return self._compute_client.MakeRequests(requests)
     return requests
 
@@ -453,6 +466,7 @@ class SecurityPolicyRule(object):
         )
     ]
     if not only_generate_request:
+      assert self._compute_client is not None
       return self._compute_client.MakeRequests(requests)
     return requests
 
@@ -490,5 +504,6 @@ class SecurityPolicyRule(object):
         )
     ]
     if not only_generate_request:
+      assert self._compute_client is not None
       return self._compute_client.MakeRequests(requests)
     return requests

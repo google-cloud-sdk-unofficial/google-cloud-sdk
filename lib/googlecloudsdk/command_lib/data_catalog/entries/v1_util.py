@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utilities for Data Catalog entries commands."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from os import path
 from apitools.base.protorpclite import messages as _messages

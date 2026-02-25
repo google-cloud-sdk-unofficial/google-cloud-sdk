@@ -14,9 +14,6 @@
 # limitations under the License.
 """Task for updating a local file's POSIX metadata."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.storage import posix_util
 from googlecloudsdk.command_lib.storage import progress_callbacks

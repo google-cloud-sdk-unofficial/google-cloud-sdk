@@ -14,9 +14,6 @@
 # limitations under the License.
 """Utility function for OS Config Troubleshooter to service accounts."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api

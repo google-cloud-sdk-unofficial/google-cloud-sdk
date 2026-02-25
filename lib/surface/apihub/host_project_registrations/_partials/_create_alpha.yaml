@@ -18,14 +18,17 @@
 - release_tracks:
   - ALPHA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Create hostProjectRegistrations
-    description: Create a hostProjectRegistration
-    examples: |-
-      To create the hostProjectRegistration, run:
+    brief: Create a Host Project Registration
+    description: |-
+      Create a host project registration
 
-          $ {command}
+      Note: The positional argument for Host Project Registration ID is currently not supported.
+      Please use the --host-project-registration flag to specify the Host Project Registration ID.
+    examples: |-
+      To register a host project with the ID `my-registration`, run:
+
+      $ {command} --host-project-registration=my-registration --gcp-project=my-gcp-project --project=my-project --location=us-central1
   arguments:
     params:
     - help_text: |-

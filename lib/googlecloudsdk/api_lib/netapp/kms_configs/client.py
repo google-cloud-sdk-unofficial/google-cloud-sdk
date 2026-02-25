@@ -14,9 +14,6 @@
 # limitations under the License.
 """Commands for interacting with the Cloud NetApp Files KMS Config API resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.netapp import constants

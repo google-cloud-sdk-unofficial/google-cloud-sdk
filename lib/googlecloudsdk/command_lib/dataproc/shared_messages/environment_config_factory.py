@@ -15,9 +15,6 @@
 
 """Factory for EnvironmentConfig message."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.dataproc.shared_messages import (
     execution_config_factory as ecf)

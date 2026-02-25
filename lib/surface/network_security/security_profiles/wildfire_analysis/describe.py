@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Describe command to describe a Wildfire Analysis profile."""
+"""Describe command to describe a WildFire Analysis profile."""
 
 from googlecloudsdk.api_lib.network_security.security_profiles import wildfire_api
 from googlecloudsdk.calliope import base
@@ -20,10 +20,10 @@ from googlecloudsdk.command_lib.network_security import sp_flags
 
 DETAILED_HELP = {
     'DESCRIPTION': """
-          Describe a Wildfire Analysis Security Profile.
+          Describe a WildFire Analysis Security Profile.
         """,
     'EXAMPLES': """
-          To describe a Wildfire Analysis Security Profile named `my-sp` in organization `12345` and location `global`, run:
+          To describe a WildFire Analysis Security Profile named `my-sp` in organization `12345` and location `global`, run:
 
               $ {command} my-sp --organization=12345 --location=global
         """,
@@ -37,7 +37,7 @@ _PROJECT_SCOPE_SUPPORTED_TRACKS = (
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Describe(base.DescribeCommand):
-  """Describe a Wildfire Analysis Security Profile."""
+  """Describe a WildFire Analysis Security Profile."""
 
   detailed_help = DETAILED_HELP
 
