@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get the public certificate of an Azure Client."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import base64
 

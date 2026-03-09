@@ -18,9 +18,6 @@ Switches over a Cloud SQL instance to one of its replicas. Currently only
 supported on Cloud SQL for SQL Server and MySQL instances.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 import textwrap

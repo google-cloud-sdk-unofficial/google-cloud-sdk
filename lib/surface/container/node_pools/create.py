@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create node pool command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 
@@ -303,7 +300,7 @@ class Create(base.CreateCommand):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddPlacementTypeFlag(parser, for_node_pool=True, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddConsolidationDelayFlag(parser, hidden=True)
+    flags.AddConsolidationDelayFlag(parser)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddBestEffortProvisionFlags(parser)
@@ -464,7 +461,7 @@ class CreateBeta(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddConsolidationDelayFlag(parser, hidden=True)
+    flags.AddConsolidationDelayFlag(parser, hidden=False)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)
@@ -663,7 +660,7 @@ class CreateAlpha(Create):
     flags.AddWindowsOsVersionFlag(parser)
     flags.AddBestEffortProvisionFlags(parser, hidden=False)
     flags.AddQueuedProvisioningFlag(parser)
-    flags.AddConsolidationDelayFlag(parser, hidden=True)
+    flags.AddConsolidationDelayFlag(parser, hidden=False)
     flags.AddMaxRunDurationFlag(parser)
     flags.AddFlexStartFlag(parser)
     flags.AddTPUTopologyFlag(parser)

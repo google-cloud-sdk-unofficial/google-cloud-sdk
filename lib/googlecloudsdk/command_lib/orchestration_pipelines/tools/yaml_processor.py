@@ -41,20 +41,35 @@ def _resolve_string_templates(yaml_content, variables):
   return yaml_content
 
 
-def resolve_dynamic_variables(yaml_content, deployment_path, env):
+def _check_for_missing_variables(content):
+  """Checks if there are any unsubstituted variables in the content."""
+  pattern = r"{{\s*([A-Za-z0-9_]+)\s*}}"
+  match = re.search(pattern, content)
+  if match:
+    var_name = match.group(1)
+    raise BadFileError(
+        f"Variable '{var_name}' not found in deployment file 'deployment.yaml' "
+        "variables section, nor in environment variables "
+        f"(as _DEPLOY_VAR_{var_name})."
+    )
+
+
+def resolve_dynamic_variables(
+    yaml_content, deployment_path, env, external_variables=None
+):
   """Resolves the dynamic variables in the YAML file by substituting environment variables.
 
   Args:
     yaml_content: The content of the YAML file to be resolved.
     deployment_path: The path to the deployment configuration YAML file.
     env: The environment to use (e.g., "dev", "staging", "prod").
+    external_variables: Optional dict of external variables to substitute.
 
   Returns:
     The resolved_yaml_content YAML file content as a string.
   """
 
-  validate_deployment(deployment_path, env)
-  parsed_deployment = parse_deployment(deployment_path, env)
+  parsed_deployment = parse_deployment(deployment_path, env, external_variables)
 
   combined_variables = {
       "project": parsed_deployment["project"],
@@ -141,12 +156,11 @@ def _resolve_pipeline_yaml(yaml_content, profile_map, deployment):
         profile_definition = profile_map[profile_name].get("definition", {})
         engine_type = action.get("engine", {}).get("engineType")
         config = action.setdefault("config", {})
+        del action["resourceProfile"]
         if engine_type == "dataproc-serverless":
-          session_template = config.setdefault("sessionTemplate", {})
-          session_template["inline"] = profile_definition
+          config.setdefault("resourceProfile", profile_definition)
         elif engine_type == "dataproc-gce":
           config.update(profile_definition)
-        del action["resourceProfile"]
       else:
         raise BadFileError(
             f"Resource profile '{profile_name}' used in action "
@@ -155,10 +169,51 @@ def _resolve_pipeline_yaml(yaml_content, profile_map, deployment):
   return yaml_content
 
 
-def validate_deployment(deployment_path, env):
-  """Validates the deployment configuration."""
+def load_environment(deployment_path, env, external_variables=None):
+  """Loads the deployment environment configuration."""
   try:
-    deployment_yaml = yaml.load_path(str(deployment_path))
+    # 1. Read raw content
+    yaml_content = files.ReadFileContents(deployment_path)
+
+    # 2. Parse strictly to get variables
+    # We mask jinja2-style templates {{ ... }} to make it valid YAML for the
+    # first pass. We replace {{ with __OPEN_TAG__ and }} with __CLOSE_TAG__
+    # so that "name: {{ VAR }}" becomes
+    # "name: __OPEN_TAG__ VAR __CLOSE_TAG__" which is a valid string.
+    masked_content = yaml_content.replace("{{", "__OPEN_TAG__").replace(
+        "}}", "__CLOSE_TAG__")
+
+    pre_deployment_yaml = yaml.load(masked_content)
+
+    # Extract internal variables
+    internal_variables = {}
+    if (
+        pre_deployment_yaml
+        and ENVIRONMENTS_KEY in pre_deployment_yaml
+        and env in pre_deployment_yaml[ENVIRONMENTS_KEY]
+        and VARIABLES_KEY in pre_deployment_yaml[ENVIRONMENTS_KEY][env]
+    ):
+      # We need to revert the masking in the values of variables if they had any
+      raw_vars = pre_deployment_yaml[ENVIRONMENTS_KEY][env][VARIABLES_KEY] or {}
+      for k, v in raw_vars.items():
+        if isinstance(v, str):
+          internal_variables[k] = v.replace("__OPEN_TAG__", "{{").replace(
+              "__CLOSE_TAG__", "}}")
+        else:
+          internal_variables[k] = v
+
+    if external_variables:
+      internal_variables.update(external_variables)
+
+    # 3. Substitute on raw content
+    resolved_content = _resolve_string_templates(
+        yaml_content, internal_variables)
+
+    _check_for_missing_variables(resolved_content)
+
+    # 4. Final Parse
+    deployment_yaml = yaml.load(resolved_content)
+
   except yaml.YAMLParseError as e:
     raise BadFileError(f"Error parsing deployment.yaml: {e}")
 
@@ -168,12 +223,25 @@ def validate_deployment(deployment_path, env):
     raise BadFileError(f"Error parsing deployment configuration: {e}") from e
 
   environments = getattr(deployment, ENVIRONMENTS_KEY)
-
   if env not in environments:
     raise BadFileError(f"Environment '{env}' not found in deployment file.")
 
-  environment = environments[env]
+  return environments[env]
 
+
+def validate_environment(environment, env):
+  """Validates the deployment environment configuration.
+
+  Args:
+    environment: The deployment_model.EnvironmentModel object.
+    env: The environment name to validate.
+
+  Returns:
+    The environment model (for chaining if needed).
+
+  Raises:
+    BadFileError: If the environment or configuration is invalid.
+  """
   if not isinstance(environment, deployment_model.EnvironmentModel):
     raise BadFileError(
         f"Environment '{env}' is not a valid object in deployment file."
@@ -187,10 +255,6 @@ def validate_deployment(deployment_path, env):
           f"Environment '{env}' has invalid artifact_storage in deployment"
           " file."
       )
-  if not environment.resources:
-    raise BadFileError(
-        f"Environment '{env}' has no resources in deployment file."
-    )
   if not environment.variables:
     log.info(f"Environment '{env}' has no variables in deployment file.")
   else:
@@ -199,29 +263,31 @@ def validate_deployment(deployment_path, env):
           f"Error: '{VARIABLES_KEY}' for environment '{env}' in deployment.yaml"
           " is not a dictionary"
       )
-  return deployment
+  return environment
 
 
-def parse_deployment(deployment_path, env):
+def parse_deployment(deployment_path, env, external_variables=None):
   """Extracts storage and environment specific configuration."""
-  deployment = validate_deployment(deployment_path, env)
-  environments = getattr(deployment, ENVIRONMENTS_KEY)
-  environment = environments[env]
-  artifact_storage = environment.artifact_storage
-  if artifact_storage:
-    artifact_storage = {
-        "bucket": artifact_storage.bucket,
-        "path_prefix": artifact_storage.path_prefix,
-    }
+  environment = load_environment(deployment_path, env, external_variables)
+  environment = validate_environment(environment, env)
 
-  return {
-      ARTIFACT_STORAGE_KEY: {
-          "bucket": artifact_storage["bucket"],
-          "path_prefix": artifact_storage["path_prefix"],
-      },
+  result = {
       "project": environment.project,
       "region": environment.region,
-      "composer_env": environment.composer_environment,
-      "variables": environment.variables,
       "resources": environment.resources,
   }
+
+  if environment.artifact_storage:
+    result[ARTIFACT_STORAGE_KEY] = {
+        "bucket": environment.artifact_storage.bucket,
+        "path_prefix": environment.artifact_storage.path_prefix,
+    }
+
+  if environment.composer_environment:
+    result["composer_env"] = environment.composer_environment
+  if environment.pipelines:
+    result["pipelines"] = environment.pipelines
+  if environment.variables:
+    result["variables"] = environment.variables
+
+  return result

@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud access-context-manager policies quotas list` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import dataclasses
 

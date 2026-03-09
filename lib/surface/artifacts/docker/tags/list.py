@@ -14,9 +14,6 @@
 # limitations under the License.
 """List all tags associated with a container image in Artifact Registry."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import docker_util

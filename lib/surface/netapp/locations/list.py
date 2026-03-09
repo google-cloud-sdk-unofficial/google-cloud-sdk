@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for listing Cloud NetApp Files locations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp import netapp_client
 from googlecloudsdk.calliope import base

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to search projects associated with the active user."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 

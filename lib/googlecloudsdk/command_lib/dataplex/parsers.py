@@ -138,3 +138,72 @@ def ParseEntrySourceAncestors(ancestors: List[str]):
           ancestors,
       )
   )
+
+
+def ParseAccessGroups(access_groups):
+  """Parse access groups from a list of JSON strings.
+
+  Args:
+    access_groups: A list of JSON strings representing Access Group(s).
+
+  Returns:
+    A list of AdditionalProperty objects.
+  """
+  if access_groups is None:
+    return None
+
+  items = []
+  for access_group in access_groups:
+    access_group_msg = messages_util.DictToMessageWithErrorCheck(
+        dataplex_util.SnakeToCamelDict(json.loads(access_group)),
+        dataplex_message.GoogleCloudDataplexV1DataProductAccessGroup,
+    )
+
+    if not access_group_msg.id:
+      raise arg_parsers.ArgumentTypeError(
+          'Access group must have an "id" field.'
+      )
+
+    items.append(
+        dataplex_message.GoogleCloudDataplexV1DataProduct.AccessGroupsValue.AdditionalProperty(
+            key=access_group_msg.id, value=access_group_msg
+        )
+    )
+  return items
+
+
+def ParseAccessGroupConfigs(access_group_configs):
+  """Parse access group configs from a list of JSON strings.
+
+  Args:
+    access_group_configs: A list of JSON strings representing Access Group
+      Config(s).
+
+  Returns:
+    A list of AdditionalProperty objects.
+  """
+  if access_group_configs is None:
+    return None
+
+  additional_properties = []
+  for access_group_config in access_group_configs:
+    config_dict = json.loads(access_group_config)
+
+    group_id = config_dict.pop("id", None)
+    if not group_id:
+      raise arg_parsers.ArgumentTypeError(
+          'Access group config must have an "id" field.'
+      )
+
+    access_group_config_msg = messages_util.DictToMessageWithErrorCheck(
+        dataplex_util.SnakeToCamelDict(config_dict),
+        dataplex_message.GoogleCloudDataplexV1DataAssetAccessGroupConfig,
+    )
+
+    additional_properties.append(
+        dataplex_message.GoogleCloudDataplexV1DataAsset.AccessGroupConfigsValue.AdditionalProperty(
+            key=group_id, value=access_group_config_msg
+        )
+    )
+
+  return additional_properties

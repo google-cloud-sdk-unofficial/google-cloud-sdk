@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Export ssl policies command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.compute import base_classes

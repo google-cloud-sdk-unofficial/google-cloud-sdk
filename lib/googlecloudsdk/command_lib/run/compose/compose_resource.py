@@ -486,9 +486,14 @@ class ResourcesConfig:
   @classmethod
   def from_json(cls, json_data: str) -> 'ResourcesConfig':
     """Parses the JSON string to create a ResourcesConfig instance."""
-    data = json.loads(json_data)
-    config = cls.from_dict(data)
-    return config
+    try:
+      data = json.loads(json_data)
+      config = cls.from_dict(data)
+      return config
+    except json.JSONDecodeError as e:
+      raise compose_exceptions.GoBinaryError(
+          f'Failed to parse JSON: {json_data}', exit_codes.GO_BINARY_FAILED
+      ) from e
 
   @classmethod
   def from_dict(cls, data: Dict[str, Any]) -> 'ResourcesConfig':
@@ -623,8 +628,13 @@ class TranslateResult:
   @classmethod
   def from_json(cls, json_data: str) -> 'TranslateResult':
     """Parses the JSON string to create a TranslateResult instance."""
-    data = json.loads(json_data)
-    return cls.from_dict(data)
+    try:
+      data = json.loads(json_data)
+      return cls.from_dict(data)
+    except json.JSONDecodeError as e:
+      raise compose_exceptions.GoBinaryError(
+          f'Failed to parse JSON: {json_data}', exit_codes.GO_BINARY_FAILED
+      ) from e
 
   @classmethod
   def from_dict(cls, data: Dict[str, Any]) -> 'TranslateResult':

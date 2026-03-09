@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for listing Stacks types."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.run.integrations import run_apps_operations

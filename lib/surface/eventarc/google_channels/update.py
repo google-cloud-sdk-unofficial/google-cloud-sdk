@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update the specified google channel."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import google_channels
 from googlecloudsdk.calliope import base

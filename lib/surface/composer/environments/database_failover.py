@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to trigger a database failover."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util

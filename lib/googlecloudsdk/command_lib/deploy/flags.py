@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,31 @@ import textwrap
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 
-_SOURCE_HELP_TEXT = """
-The location of the source that contains skaffold.yaml. The location can be a directory on a local disk or a gzipped archive file (.tar.gz) in Google Cloud Storage.
- If the source is a local directory, this command skips the files specified in the --ignore-file. If --ignore-file is not specified, use.gcloudignore file. If a .gcloudignore file is absent and a .gitignore file is present in the local source directory, gcloud will use a generated Git-compatible .gcloudignore file that respects your .gitignored files.
- The global .gitignore is not respected. For more information on .gcloudignore, see gcloud topic gcloudignore.
-"""
+_SOURCE_HELP_TEXT_BASE = textwrap.dedent("""\
+    If the source is a local directory, this command skips the files specified
+    in the --ignore-file. If --ignore-file is not specified, use.gcloudignore
+    file. If a .gcloudignore file is absent and a .gitignore file is present in
+    the local source directory, gcloud will use a generated Git-compatible
+    .gcloudignore file that respects your .gitignored files.
+    The global .gitignore is not respected. For more information on .gcloudignore, see gcloud topic gcloudignore.
+""")
+# TODO(b/477912029): Add additional help text for the source flag.
+_SOURCE_HELP_TEXT = (
+    'The location of the source that contains skaffold.yaml. The location can'
+    ' be a directory on a local disk or a gzipped archive file (.tar.gz) in'
+    ' Google Cloud Storage. '
+    + _SOURCE_HELP_TEXT_BASE.strip()
+)
+
+
+_LOCAL_SOURCE_HELP_TEXT = (
+    'The location of the source that contains the configuration files. The'
+    ' location must be a directory on a local disk. '
+    + _SOURCE_HELP_TEXT_BASE.strip()
+    + ' If gcs-source, local-source, or source are omitted and config file path'
+    ' is not specified, gcloud checks for the presence of skaffold.yaml and'
+    ' then release.yaml to create the appropriate release type.'
+)
 
 
 def AddGcsSourceStagingDirFlag(parser, hidden=False):
@@ -306,15 +326,60 @@ def AddCloudRunFileFlag():
   )
 
 
-def AddSkaffoldSources(parser):
-  """Add Skaffold sources."""
+def AddLocalSourceFlag(parser):
+  """Adds local source flag."""
+  parser.add_argument(
+      '--local-source',
+      hidden=True,
+      default='.',
+      help=_LOCAL_SOURCE_HELP_TEXT,
+  )
+
+
+def AddGcsSourceFlag(parser):
+  """Adds GCS source flag."""
+  parser.add_argument(
+      '--gcs-source',
+      hidden=True,
+      help=(
+          'The URL of a Google Cloud Storage object containing the source code.'
+          ' The object must be a gzipped archive file (.tar.gz). If gcs-source,'
+          ' local-source, or source are omitted and config file path is not'
+          ' specified, gcloud checks for the presence of skaffold.yaml and then'
+          ' release.yaml to create the appropriate release type.'
+      ),
+  )
+
+
+def AddReleaseConfigFileFlag(parser):
+  """Adds release config file flag."""
+  parser.add_argument(
+      '--config-file',
+      default='release.yaml',
+      hidden=True,
+      help='Path to yaml file containing Release declarative definitions.',
+  )
+
+
+def AddSkaffoldOrNativeSources(parser):
+  """Adds Skaffold or native sources."""
   config_group = parser.add_mutually_exclusive_group()
+
+  # Native config flags
+  native_config_group = config_group.add_group(hidden=True)
+  AddReleaseConfigFileFlag(native_config_group)
+  # Native source flags
+  native_source_group = native_config_group.add_mutually_exclusive_group()
+  AddLocalSourceFlag(native_source_group)
+  AddGcsSourceFlag(native_source_group)
+
+  # Skaffold config flags
+  skaffold_group = config_group.add_group()
+  AddSkaffoldFileFlag().AddToParser(skaffold_group)
+  AddSourceFlag().AddToParser(skaffold_group)
+
   AddKubernetesFileFlag().AddToParser(config_group)
   AddCloudRunFileFlag().AddToParser(config_group)
-
-  source_group = config_group.add_group(mutex=False)
-  AddSourceFlag().AddToParser(source_group)
-  AddSkaffoldFileFlag().AddToParser(source_group)
 
 
 def AddDescriptionFlag(parser):

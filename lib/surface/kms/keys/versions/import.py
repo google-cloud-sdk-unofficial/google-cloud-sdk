@@ -14,9 +14,6 @@
 # limitations under the License.
 """Import a provided key from file into KMS using an Import Job."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import sys

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud scc artifact-guard images scan."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import os

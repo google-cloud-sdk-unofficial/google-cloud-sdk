@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to show metadata for an environment."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.calliope import base

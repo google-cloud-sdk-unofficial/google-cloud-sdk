@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements the command to list vulnerabilities from Artifact Registry."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 from googlecloudsdk.api_lib.artifacts import exceptions as ar_exceptions

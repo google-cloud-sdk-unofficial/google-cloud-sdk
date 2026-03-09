@@ -471,3 +471,18 @@ def AddStoragePoolValidateDirectoryServiceArg(parser):
   ]).AddToParser(parser)
   flags.AddResourceAsyncFlag(parser)
   AddStoragePoolDirectoryServiceTypeArg(parser)
+
+
+def AddOntapCommandArg(parser: argparse.ArgumentParser):
+  """Adds the ontap command argument to the parser.
+
+  Args:
+    parser: The argparse parser.
+  """
+
+  parser.add_argument(
+      'ontap_command',
+      metavar='ONTAP_COMMAND',
+      type=str,
+      help='The ONTAP command to execute.',
+  )

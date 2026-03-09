@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe a URL Filtering Security Profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.security_profiles import urlf_api
 from googlecloudsdk.calliope import base

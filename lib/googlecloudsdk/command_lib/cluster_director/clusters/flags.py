@@ -68,7 +68,7 @@ def AddDescription(parser, api_version=None, hidden=False):
       help=textwrap.dedent("""
         Description of the cluster.
 
-        For e.g. --description {description}
+        For e.g. --description "My cluster"
       """),
       type=str,
       hidden=hidden,
@@ -104,7 +104,7 @@ def AddLabels(
         help=textwrap.dedent(f"""
           Parameters to remove cluster label by key.
 
-          For e.g. --{remove_flag_name} {{key1}},{{key2}},...
+          For e.g. --{remove_flag_name} key1,key2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -127,7 +127,7 @@ def AddCreateNetwork(parser, api_version=None, hidden=False):
 
         Description: A description of the network. Maximum of 2048 characters.
 
-        For e.g. --create-network name={network},description={description}
+        For e.g. --create-network name=network-1,description="My network"
       """),
       type=flag_types.NETWORK_OBJECT,
       hidden=hidden,
@@ -145,7 +145,7 @@ def AddNetworkSource(parser, api_version=None, required=False, hidden=False):
         If the network is in a different project (Shared VPC), specify
         the project ID using --network-project.
 
-        For e.g. --network {network}
+        For e.g. --network network-1
       """),
       type=str,
       required=required,
@@ -181,7 +181,7 @@ def AddSubnetSource(parser, api_version=None, required=False, hidden=False):
         If the subnetwork is in a different project (Shared VPC), specify
         the project ID using --network-project.
 
-        For e.g. --subnet regions/{region}/subnetworks/{subnetwork}
+        For e.g. --subnet regions/us-central1/subnetworks/subnet-1
       """),
       type=str,
       required=required,
@@ -208,7 +208,10 @@ def AddCreateFilestores(
       help=textwrap.dedent("""
         Parameters to create a filestore instance.
 
-        For e.g. --create-filestores name=locations/{location}/instances/{filestore},tier=REGIONAL,capacityGb={filestoreSize},fileshare={fileshare}
+        For e.g. --create-filestores id=my-fs,name=locations/us-central1/instances/filestore-1,tier=REGIONAL,capacityGb=1024,fileshare=share1
+
+        id: ID of the filestore resource, used to refer to this resource in storage-configs.
+        name: Name of the filestore instance to create in your project in the format of locations/us-central1/instances/filestore-1.
 
         capacityGb: Size of the filestore in GB. Must be between 1024 and 102400, and must meet scalability requirements described at
         https://cloud.google.com/filestore/docs/service-tiers.
@@ -252,9 +255,12 @@ def AddFilestores(
       help=textwrap.dedent(f"""
         Reference of existing filestore instance.
 
-        For e.g. --{name} locations/{{location}}/instances/{{filestore}}
+        id: ID of the filestore resource, used to refer to this resource in storage-configs.
+        name: Name of the existing filestore instance to import from your project in the format of locations/us-central1/instances/filestore-1.
+
+        For e.g. --{name} id=my-fs,name=locations/us-central1/instances/filestore-1
       """),
-      type=arg_parsers.ArgList(element_type=str),
+      type=flag_types.EXISTING_FILESTORES_TYPE,
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -264,7 +270,7 @@ def AddFilestores(
         help=textwrap.dedent(f"""
           Parameters to remove filestore instance config by filestore name.
 
-          For e.g. --{remove_flag_name} locations/{{location}}/instances/{{filestore1}},locations/{{location}}/instances/{{filestore2}},...
+          For e.g. --{remove_flag_name} locations/us-central1/instances/filestore-1,locations/us-central1/instances/filestore-2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -289,7 +295,10 @@ def AddCreateGcsBuckets(
   alpha_help = textwrap.dedent(f"""
         Parameters to create a Google Cloud Storage bucket.
 
-        For e.g. --{name} name={{bucket-path}},storageClass=STANDARD,terminalStorageClass=TERMINAL_STORAGE_CLASS_NEARLINE,enableHNS=true
+        id: ID of the bucket resource, used to refer to this resource in storage-configs.
+        name: Name of the Cloud Storage bucket to create in your project in the format of bucket-1.
+
+        For e.g. --{name} id=my-bucket,name=bucket-1,storageClass=STANDARD,terminalStorageClass=TERMINAL_STORAGE_CLASS_NEARLINE,enableHNS=true
 
         Supported storageClass values:
         - STANDARD
@@ -311,7 +320,7 @@ def AddCreateGcsBuckets(
   beta_help = textwrap.dedent(f"""
         Parameters to create a Google Cloud Storage bucket.
 
-        For e.g. --{name} name={{bucket-path}},storageClass=STANDARD,enableHNS=true
+        For e.g. --{name} name=bucket-1,storageClass=STANDARD,enableHNS=true
 
         Supported storageClass values:
         - STANDARD
@@ -353,9 +362,12 @@ def AddGcsBuckets(
       help=textwrap.dedent(f"""
         Reference of existing Google Cloud Storage bucket.
 
-        For e.g. --{name} {{existing-bucket-name eg. my-bucket}}
+        id: ID of the bucket resource, used to refer to this resource in storage-configs.
+        name: Name of the existing Cloud Storage bucket to import from your project in the format of bucket-name.
+
+        For e.g. --{name} id=my-bucket,name=bucket-1
       """),
-      type=arg_parsers.ArgList(element_type=str),
+      type=flag_types.EXISTING_BUCKETS_TYPE,
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -365,7 +377,7 @@ def AddGcsBuckets(
         help=textwrap.dedent(f"""
           Parameters to remove Google Cloud Storage bucket by bucket name.
 
-          For e.g. --{remove_flag_name} {{bucket1}},{{bucket2}},...
+          For e.g. --{remove_flag_name} bucket-1,bucket-2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -392,7 +404,10 @@ def AddCreateLustres(
       help=textwrap.dedent(f"""
         Parameters to create a Lustre instance.
 
-        For e.g. --{name} name=locations/{{location}}/instances/{{lustre}},capacityGb={{lustreSize}},filesystem={{filesystem}},perUnitStorageThroughput=1000
+        id: ID of the lustre resource, used to refer to this resource in storage-configs.
+        name: Name of the Managed Lustre instance to create in your project in the format of locations/us-central1/instances/lustre-1.
+
+        For e.g. --{name} id=my-lustre,name=locations/us-central1/instances/lustre-1,capacityGb=1024,filesystem=fs-1,perUnitStorageThroughput=1000
 
         Values for perUnitStorageThroughput: 125, 250, 500, 1000
       """),
@@ -420,9 +435,12 @@ def AddLustres(
       help=textwrap.dedent(f"""
         Reference of existing Lustre instance.
 
-        For e.g. --{name} locations/{{location}}/instances/{{lustre}}
+        id: ID of the lustre resource, used to refer to this resource in storage-configs.
+        name: Name of the existing Managed Lustre instance to import from your project in the format of locations/us-central1/instances/lustre-1.
+
+        For e.g. --{name} id=my-lustre,name=locations/us-central1/instances/lustre-1
       """),
-      type=arg_parsers.ArgList(element_type=str),
+      type=flag_types.EXISTING_LUSTRES_TYPE,
       action=arg_parsers.FlattenAction(),
       hidden=hidden,
   )
@@ -432,7 +450,7 @@ def AddLustres(
         help=textwrap.dedent(f"""
           Parameters to remove lustre instance config by lustre name.
 
-          For e.g. --{remove_flag_name} locations/{{location}}/instances/{{lustre1}},locations/{{location}}/instances/{{lustre2}},...
+          For e.g. --{remove_flag_name} locations/us-central1/instances/lustre-1,locations/us-central1/instances/lustre-2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -458,12 +476,12 @@ def AddOnDemandInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster on demand instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,atmTags="tag1=val1"
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster on demand instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}}
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1
       """)
   parser.add_argument(
       f"--{name}",
@@ -478,7 +496,7 @@ def AddOnDemandInstances(
         help=textwrap.dedent(f"""
           Parameters to remove on demand instances config by compute id.
 
-          For e.g. --{remove_flag_name} {{computeId1}},{{computeId2}},...
+          For e.g. --{remove_flag_name} c1,c2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -504,12 +522,12 @@ def AddSpotInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster spot instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,atmTags="tag1=val1"
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster spot instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}}
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1
       """)
   parser.add_argument(
       f"--{name}",
@@ -524,7 +542,7 @@ def AddSpotInstances(
         help=textwrap.dedent(f"""
           Parameters to remove spot instance config by compute id.
 
-          For e.g. --{remove_flag_name} {{computeId1}},{{computeId2}},...
+          For e.g. --{remove_flag_name} c1,c2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -550,17 +568,17 @@ def AddReservedInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster reserved instances.
 
-        For e.g. --{name} id={{computeId}},reservation=zones/{{zone}}/reservations/{{reservation}}
+        For e.g. --{name} id=c1,reservation=zones/us-central1-a/reservations/reservation-1
 
         Exactly one of reservation, reservation-block, or reservation-sub-block must be provided.
-        reservation: The name of the reservation to use, in the format zones/{{zone}}/reservations/{{reservation}}.
-        reservationBlock: The name of the reservation block to use, in the format zones/{{zone}}/reservations/{{reservation}}/reservationBlocks/{{reservation_block}}.
-        reservationSubBlock: The name of the reservation sub-block to use, in the format zones/{{zone}}/reservations/{{reservation}}/reservationBlocks/{{reservation_block}}/reservationSubBlocks/{{reservation_sub_block}}.
+        reservation: The name of the reservation to use, in the format zones/us-central1-a/reservations/reservation-1.
+        reservationBlock: The name of the reservation block to use, in the format zones/us-central1-a/reservations/reservation-1/reservationBlocks/block-1.
+        reservationSubBlock: The name of the reservation sub-block to use, in the format zones/us-central1-a/reservations/reservation-1/reservationBlocks/block-1/reservationSubBlocks/sub-block-1.
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster reserved instances.
 
-        For e.g. --{name} id={{computeId}},reservation=zones/{{zone}}/reservations/{{reservation}}
+        For e.g. --{name} id=c1,reservation=zones/us-central1-a/reservations/reservation-1
       """)
   parser.add_argument(
       f"--{name}",
@@ -575,7 +593,7 @@ def AddReservedInstances(
         help=textwrap.dedent(f"""
           Parameters to remove reserved instance config by compute id.
 
-          For e.g. --{remove_flag_name} {{computeId1}},{{computeId2}},...
+          For e.g. --{remove_flag_name} c1,c2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -601,12 +619,12 @@ def AddFlexStartInstances(
   alpha_help = textwrap.dedent(f"""
         Parameters to define cluster Flex Start instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},maxDuration=10000s,atmTags="tag1=val1"
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,maxDuration=10000s,atmTags="tag1=val1"
       """)
   beta_help = textwrap.dedent(f"""
         Parameters to define cluster Flex Start instances.
 
-        For e.g. --{name} id={{computeId}},zone={{zone}},machineType={{machineType}},maxDuration=10000s
+        For e.g. --{name} id=c1,zone=us-central1-a,machineType=n1-standard-1,maxDuration=10000s
       """)
   parser.add_argument(
       f"--{name}",
@@ -621,7 +639,7 @@ def AddFlexStartInstances(
         help=textwrap.dedent(f"""
           Parameters to remove Flex Start instance config by compute id.
 
-          For e.g. --{remove_flag_name} {{computeId1}},{{computeId2}},...
+          For e.g. --{remove_flag_name} c1,c2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -649,14 +667,14 @@ def AddSlurmNodeSets(
   alpha_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
-        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gce,staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},startupScript="echo hello",labels="{{key1=value1,key2=value2}}"
+        For e.g. --{name} id=ns1,computeId=c1,type=gce,staticNodeCount=1,maxDynamicNodeCount=2,startupScript="echo hello",labels="k1=v1"
 
         To configure a node set backed by Google Kubernetes Engine, use type=gke. If type=gke is
         specified, Compute Engine specific fields (labels, startupScript, bootDisk,
         startupScriptTimeout) cannot be used, but container-specific fields
         (container-resource-labels, container-startup-script) may be used.
-        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gke
-        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},type=gke,container-resource-labels="key1=val1",container-startup-script="echo hello"
+        For e.g. --{name} id=ns1,computeId=c1,type=gke
+        For e.g. --{name} id=ns1,computeId=c1,type=gke,container-resource-labels="k1=v1",container-startup-script="echo hello"
 
         Defaults:
         - staticNodeCount: 1
@@ -671,7 +689,7 @@ def AddSlurmNodeSets(
   beta_help = textwrap.dedent(f"""
         Parameters to define slurm cluster nodeset config.
 
-        For e.g. --{name} id={{nodesetId}},computeId={{computeId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},computeInstance=[startupScript="echo hello",labels="key1=value1,key2=value2"]
+        For e.g. --{name} id=ns1,computeId=c1,staticNodeCount=1,maxDynamicNodeCount=2,computeInstance=[startupScript="echo hello",labels="k1=v1"]
 
         Defaults:
         - staticNodeCount: 1
@@ -694,15 +712,15 @@ def AddSlurmNodeSets(
     alpha_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster nodeset config.
 
-          For e.g. --{update_flag_name} id={{nodesetId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}}
+          For e.g. --{update_flag_name} id=ns1,staticNodeCount=1,maxDynamicNodeCount=2
 
           To update a node set backed by GKE, use container-resource-labels or container-startup-script.
-          For e.g. --{update_flag_name} id={{nodesetId}},type=gke,container-resource-labels="key1=val1",container-startup-script="echo hello"
+          For e.g. --{update_flag_name} id=ns1,type=gke,container-resource-labels="k1=v1",container-startup-script="echo hello"
         """)
     beta_update_help = textwrap.dedent(f"""
           Parameters to define and update slurm cluster nodeset config.
 
-          For e.g. --{update_flag_name} id={{nodesetId}},staticNodeCount={{staticNodeCount}},maxDynamicNodeCount={{maxDynamicNodeCount}},computeInstance=[startupScript="echo hello"]
+          For e.g. --{update_flag_name} id=ns1,staticNodeCount=1,maxDynamicNodeCount=2,computeInstance=[startupScript="echo hello"]
         """)
     parser.add_argument(
         f"--{update_flag_name}",
@@ -719,7 +737,7 @@ def AddSlurmNodeSets(
         help=textwrap.dedent(f"""
           Parameters to remove slurm nodeset config by nodeset id.
 
-          For e.g. --{remove_flag_name} {{nodesetId1}},{{nodesetId2}},...
+          For e.g. --{remove_flag_name} ns1,ns2,...
         """),
         type=arg_parsers.ArgList(element_type=str),
         action=arg_parsers.FlattenAction(),
@@ -809,7 +827,7 @@ def AddSlurmDefaultPartition(parser, api_version=None, hidden=False):
       help=textwrap.dedent("""
         Parameters to define slurm cluster default partition.
 
-        For e.g. --slurm-default-partition {partitionId}
+        For e.g. --slurm-default-partition p1
       """),
       type=str,
       hidden=hidden,
@@ -830,10 +848,10 @@ def AddSlurmLoginNode(
         f"Unsupported API version for slurm-login-node: {api_version!r}"
     )
   ft = flag_types.FlagTypes(api_version)
-  alpha_create_help = """
+  alpha_create_help = textwrap.dedent("""
         Parameters to define slurm cluster login node.
 
-        For e.g. --slurm-login-node machineType={machineType},zone={zone},count={count},enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="{key1=value1,key2=value2}"
+        For e.g. --slurm-login-node machineType=n1-standard-1,zone=us-central1-a,count=1,enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="k1=v1"
 
           If bootDisk is specified, sizeGb must be greater than 50.
 
@@ -848,35 +866,35 @@ def AddSlurmLoginNode(
           - Either str or file_path
           - For file_path, only bash file format (.sh or .bash) is supported.
           - For file_path, only absolute path is supported.
-      """
-  beta_create_help = """
+      """)
+  beta_create_help = textwrap.dedent("""
         Parameters to define slurm cluster login node.
 
-      For e.g. --slurm-login-node machineType={machineType},zone={zone},count={count},enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",bootDisk={type=pd-standard,sizeGb=100}
+        For e.g. --slurm-login-node machineType=n1-standard-1,zone=us-central1-a,count=1,enableOSLogin=true,enablePublicIPs=true,startupScript="echo hello",labels="k1=v1",bootDisk=type=pd-standard,sizeGb=100
 
         If bootDisk is specified, sizeGb must be greater than 50.
 
-      Defaults:
-      - count: 1
-      - enableOSLogin: true
-      - enablePublicIPs: true
-      - bootDisk.sizeGb: 100
+        Defaults:
+        - count: 1
+        - enableOSLogin: true
+        - enablePublicIPs: true
+        - bootDisk.sizeGb: 100
 
-      Note:
-      - startupScript:
-        - Either str or file_path
-        - For file_path, only bash file format (.sh or .bash) is supported.
-        - For file_path, only absolute path is supported.
-    """
+        Note:
+        - startupScript:
+          - Either str or file_path
+          - For file_path, only bash file format (.sh or .bash) is supported.
+          - For file_path, only absolute path is supported.
+      """)
   flag_name = name
   if include_update_flags:
     flag_name = f"update-{name}"
-    help_text = f"""
+    help_text = textwrap.dedent(f"""
         Parameters to update slurm cluster login node.
         Only bootDisk, count and startupScript can be updated.
 
         For e.g. --{flag_name} count=2,startupScript="echo hello"
-    """
+    """)
     flag_type = ft.GetSlurmLoginNodeUpdateObject()
   else:
     help_text = (

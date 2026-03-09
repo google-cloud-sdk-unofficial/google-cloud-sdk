@@ -474,6 +474,81 @@ class BiglakeProjectsCatalogsNamespacesSetIamPolicyRequest(_messages.Message):
   setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
 
 
+class BiglakeProjectsCatalogsNamespacesTablesGetIamPolicyRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesTablesGetIamPolicyRequest object.
+
+  Fields:
+    options_requestedPolicyVersion: Optional. The maximum policy version that
+      will be used to format the policy. Valid values are 0, 1, and 3.
+      Requests specifying an invalid value will be rejected. Requests for
+      policies with any conditional role bindings must specify version 3.
+      Policies with no conditional role bindings may specify any valid value
+      or leave the field unset. The policy in the response might use the
+      policy version that you specified, or it might use a lower policy
+      version. For example, if you specify version 3, but the policy has no
+      conditional role bindings, the response uses version 1. To learn which
+      resources support conditions in their IAM policies, see the [IAM
+      documentation](https://cloud.google.com/iam/help/conditions/resource-
+      policies).
+    resource: REQUIRED: The resource for which the policy is being requested.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+  """
+
+  options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  resource = _messages.StringField(2, required=True)
+
+
+class BiglakeProjectsCatalogsNamespacesTablesSetIamPolicyRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesTablesSetIamPolicyRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy is being specified.
+      See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    setIamPolicyRequest: A SetIamPolicyRequest resource to be passed as the
+      request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class BiglakeProjectsCatalogsNamespacesTablesTestIamPermissionsRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesTablesTestIamPermissionsRequest
+  object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
+class BiglakeProjectsCatalogsNamespacesTestIamPermissionsRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsNamespacesTestIamPermissionsRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
+
+
 class BiglakeProjectsCatalogsSetIamPolicyRequest(_messages.Message):
   r"""A BiglakeProjectsCatalogsSetIamPolicyRequest object.
 
@@ -488,6 +563,22 @@ class BiglakeProjectsCatalogsSetIamPolicyRequest(_messages.Message):
 
   resource = _messages.StringField(1, required=True)
   setIamPolicyRequest = _messages.MessageField('SetIamPolicyRequest', 2)
+
+
+class BiglakeProjectsCatalogsTestIamPermissionsRequest(_messages.Message):
+  r"""A BiglakeProjectsCatalogsTestIamPermissionsRequest object.
+
+  Fields:
+    resource: REQUIRED: The resource for which the policy detail is being
+      requested. See [Resource
+      names](https://cloud.google.com/apis/design/resource_names) for the
+      appropriate value for this field.
+    testIamPermissionsRequest: A TestIamPermissionsRequest resource to be
+      passed as the request body.
+  """
+
+  resource = _messages.StringField(1, required=True)
+  testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
 class Binding(_messages.Message):
@@ -1003,9 +1094,6 @@ class ListIcebergCatalogsResponse(_messages.Message):
 class ListIcebergNamespacesResponse(_messages.Message):
   r"""The response message for the `ListIcebergNamespaces` API.
 
-  Messages:
-    NamespacesValueListEntry: Single entry in a NamespacesValue.
-
   Fields:
     namespaces: The list of namespaces.
     next_page_token: The next page token for pagination.
@@ -1013,16 +1101,7 @@ class ListIcebergNamespacesResponse(_messages.Message):
       unreachable. If non-empty, the result set might be incomplete.
   """
 
-  class NamespacesValueListEntry(_messages.Message):
-    r"""Single entry in a NamespacesValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
-  namespaces = _messages.MessageField('NamespacesValueListEntry', 1, repeated=True)
+  namespaces = _messages.MessageField('extra_types.JsonArray', 1, repeated=True)
   next_page_token = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -1311,6 +1390,30 @@ class TableIdentifier(_messages.Message):
   namespace = _messages.StringField(2, repeated=True)
 
 
+class TestIamPermissionsRequest(_messages.Message):
+  r"""Request message for `TestIamPermissions` method.
+
+  Fields:
+    permissions: The set of permissions to check for the `resource`.
+      Permissions with wildcards (such as `*` or `storage.*`) are not allowed.
+      For more information see [IAM
+      Overview](https://cloud.google.com/iam/docs/overview#permissions).
+  """
+
+  permissions = _messages.StringField(1, repeated=True)
+
+
+class TestIamPermissionsResponse(_messages.Message):
+  r"""Response message for `TestIamPermissions` method.
+
+  Fields:
+    permissions: A subset of `TestPermissionsRequest.permissions` that the
+      caller is allowed.
+  """
+
+  permissions = _messages.StringField(1, repeated=True)
+
+
 class UpdateIcebergNamespaceResponse(_messages.Message):
   r"""The response message for the `UpdateIcebergNamespace` API.
 
@@ -1384,3 +1487,5 @@ encoding.AddCustomJsonFieldMapping(
     BiglakeProjectsCatalogsGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
 encoding.AddCustomJsonFieldMapping(
     BiglakeProjectsCatalogsNamespacesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')
+encoding.AddCustomJsonFieldMapping(
+    BiglakeProjectsCatalogsNamespacesTablesGetIamPolicyRequest, 'options_requestedPolicyVersion', 'options.requestedPolicyVersion')

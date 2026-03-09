@@ -15,9 +15,6 @@
 
 """Command for adding a host rule to a URL map."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 

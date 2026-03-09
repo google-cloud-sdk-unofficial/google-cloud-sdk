@@ -15,9 +15,6 @@
 
 """Command to set IAM policy for an investigation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.gemini_cloud_assist import args as geminicloudassist_args
 from googlecloudsdk.api_lib.gemini_cloud_assist import util as geminicloudassist_util

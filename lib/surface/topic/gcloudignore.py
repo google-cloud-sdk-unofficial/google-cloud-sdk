@@ -14,9 +14,6 @@
 # limitations under the License.
 """Extra help for .gcloudignore."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
@@ -48,7 +45,9 @@ class GcloudignoreHelp(base.TopicCommand):
   * `gcloud container builds submit`
   * `gcloud run deploy`
   * `gcloud run jobs deploy`
-  *  gcloud alpha deploy releases create
+  * `gcloud alpha deploy releases create`
+  * `gcloud beta deploy releases create`
+  * `gcloud deploy releases create`
   * `gcloud infra-manager deployments apply`
   * `gcloud infra-manager previews create`
   * `gcloud alpha functions local deploy`

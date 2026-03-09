@@ -15,7 +15,6 @@
 """Flags and helpers for general Cloud NetApp Files commands."""
 
 
-
 from googlecloudsdk.api_lib.netapp import constants
 
 from googlecloudsdk.calliope import arg_parsers
@@ -435,6 +434,29 @@ def GetHostGroupPresentationSpec(group_help):
       GetHostGroupResourceSpec(),
       group_help,
       required=True,
+  )
+
+
+def GetOntapModeStoragePoolPresentationSpec(
+    group_help: str,
+    required: bool = True,
+) -> presentation_specs.ResourcePresentationSpec:
+  """Returns the ResourcePresentationSpec for a ONTAP-mode Storage Pool.
+
+  Args:
+    group_help: The help text for the argument group.
+    required: Whether the argument is required.
+
+  Returns:
+    A ResourcePresentationSpec for an ONTAP-mode Storage Pool.
+  """
+
+  return presentation_specs.ResourcePresentationSpec(
+      'storage_pool',
+      GetStoragePoolResourceSpec(),
+      group_help,
+      required=required,
+      prefixes=False,
   )
 
 

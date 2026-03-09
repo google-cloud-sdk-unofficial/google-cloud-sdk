@@ -64,7 +64,14 @@ def build_env_local(
       # 1. Create the virtual environment using uv
       log.info('Creating virtual environment with uv...')
       subprocess_mod.run(
-          ['uv', 'venv', str(venv_path), '--python', python_version],
+          [
+              'uv',
+              'venv',
+              str(venv_path),
+              '--python',
+              python_version,
+              '--relocatable',
+          ],
           check=True,
           capture_output=True,
           text=True,
@@ -94,17 +101,16 @@ def build_env_local(
           pip_install_cmd, check=True, capture_output=True, text=True
       )
 
-      # 3. Pack the environment using venv-pack
-      log.info('Packing environment with venv-pack...')
+      # 3. Pack the environment using tar
+      log.info('Packing python environment...')
       subprocess_mod.run(
           [
-              'uvx',
-              'venv-pack',
-              '-p',
-              str(venv_path),
-              '-o',
+              'tar',
+              '-czf',
               output_path,
-              '--force',
+              '-C',
+              str(venv_path),
+              '.',
           ],
           check=True,
           capture_output=True,

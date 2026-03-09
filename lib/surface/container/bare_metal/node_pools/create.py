@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a node pool in an Anthos cluster on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from typing import Optional
 

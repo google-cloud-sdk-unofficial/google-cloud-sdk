@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to publish channels."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import channel_connections
 from googlecloudsdk.api_lib.eventarc import common_publishing

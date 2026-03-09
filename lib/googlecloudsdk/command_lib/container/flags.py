@@ -8435,7 +8435,7 @@ def AddEnableLegacyLustrePortFlag(parser, hidden=False):
   )
 
 
-def AddDisableMultiNicLustreFlag(parser, hidden=True):
+def AddDisableMultiNicLustreFlag(parser, hidden=False):
   """Adds the --disable-multi-nic-lustre flag to parser.
 
   Args:

@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Export network firewall policy rules command."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 

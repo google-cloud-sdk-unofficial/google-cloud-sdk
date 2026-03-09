@@ -5,6 +5,115 @@ Copyright 2014-2026 Google Inc. All rights reserved.
 Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
 
 
+## 559.0.0 (2026-03-03)
+
+### Breaking Changes
+
+*   **(Compute Engine)** The command `gcloud compute project-info set-usage-bucket` has been deprecated. Please use [BigQuery Export](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery) instead.
+
+
+### Google Cloud CLI
+
+* Adjusted the maximum wait time between poll retries for async Long-Running
+  Operations from 3 minutes to 20 seconds for some commands.
+
+### AI
+
+* Modified `--region` flag of `gcloud ai custom-jobs` to include new custom
+  job regions.
+
+### AlloyDB
+
+* Added support for `POSTGRES_18` as a version in `alloydb clusters create` for GA track.
+* Added support for `POSTGRES_18` as a version in `alloydb clusters migrate-cloud-sql` for GA track.
+* Added support for `POSTGRES_18` as a target version using `alloydb clusters upgrade` for GA track.
+
+### BigLake
+
+*   Modified `gcloud biglake iceberg catalogs delete` to prompt for confirmation
+    by default. Use `--quiet` flag to get the old behavior.
+
+### Certificate Authority Service
+
+* Added `gcloud privateca operations` command group to manage long-running operations.
+
+### Cloud Firestore Emulator
+
+* Release Cloud Firestore emulator v1.20.4
+  * Minor bug fixes in Firestore Native mode
+
+### Cloud Key Management Service
+
+*   Added `gcloud beta kms kaj-config` to help users view and updates KAJ
+    default policy on a project/folder/organization.
+*   Added `gcloud beta kms kaj-enrollment` to help users view the KAJ
+    enrollment config of a project.
+
+### Cloud NetApp
+
+*   Added `gcloud netapp storage-pool execute` command to the `storage-pool` group. This command allows execution of ONTAP CLI commands on the storage pool.
+
+### Cloud SQL
+
+*   Updated 'cloud-sql-proxy' packaged component to use 2.21.1 of the Cloud SQL
+ Proxy.
+
+### Cluster Director
+
+* Added `id` field to all storage resources. Users can set an identifier for
+storage resources when creating a cluster.
+
+### Compute Engine
+
+* Promoted `--resolve-subnet-mask` flag for `gcloud compute networks subnets create` to GA.
+* Added `--resource-manager-tags` flag to `gcloud compute instant-snapshots create` in beta and GA.
+
+### Database Migration
+
+* Added `--original-migration-name` flag to
+  `gcloud database-migration migration-jobs create` command to allow users to
+  create failback migration jobs.
+* Added `--psc-service-attachment` flag to `gcloud database-migration
+  connection-profiles create sqlserver` command to allow users to create
+  SQL Server connection profile for failback migration jobs.
+* Added `--private-connection` flag to `gcloud database-migration
+  connection-profiles create postgesql` command to allow users to create
+  PostgreSQL connection profile for failback migration jobs with Private
+  Connection connectivity method.
+* Added `--forward-ssh-hostname`, `--forward-ssh-port`,
+  `--forward-ssh-username`, `--forward-ssh-password`, and
+  `--forward-ssh-private-key` flags to `gcloud database-migration
+  connection-profiles create postgesql` command to allow users to create
+  PostgreSQL connection profile for failback migration jobs with Forward SSH
+  Tunnel connectivity method.
+
+### Kubernetes Engine
+
+* Added `--consolidation-delay` flag to `gcloud container node-pools create` and
+  `update` to control when the Cluster Autoscaler can scale down underutilized
+  nodes.
+*   Added flag option `--disable-multi-nic-lustre` to
+    add support for enabling/disabling the Lustre MultiNIC on GKE Standard and
+    Autopilot clusters.
+
+### Network Security
+
+* Updated import and export schemas for `gcloud network-security security-profile-groups`.
+* Updated import and export schemas for `gcloud network-security security-profiles`.
+* Promoted the `network-security security-profiles list` command to GA.
+* Promoted the `network-security security-profiles describe` command to GA.
+* Promoted the `network-security security-profiles export` command to GA.
+* Promoted the `network-security security-profiles import` command to GA.
+* Add `network-security security-profiles delete` command.
+
+### Vector Search
+
+* Removed unsupported Vertex Ranker flags from `gcloud beta vector-search collections data-objects batch-search` command.
+
+
+Subscribe to these release notes at [https://groups.google.com/forum/#!forum/google-cloud-sdk-announce](https://groups.google.com/forum/#!forum/google-cloud-sdk-announce).
+
+
 ## 558.0.0 (2026-02-24)
 
 ### AI

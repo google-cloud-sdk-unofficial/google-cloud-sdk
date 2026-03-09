@@ -47,6 +47,7 @@ _PERCENTILE_90TH_TITLE = '90th percentile'
 _PERCENTILE_50TH_TITLE = '50th percentile'
 _DIAGNOSTIC_NAME = 'Latency Diagnostic'
 _SUCCESSFUL_TRIALS_TITLE = 'Successful trials'
+_ZONAL_LOCATION_TYPE = 'zone'
 
 
 def _format_as_milliseconds(time_in_seconds: float) -> str:
@@ -92,10 +93,29 @@ class LatencyDiagnostic(diagnostic.Diagnostic):
   def name(self) -> str:
     return _DIAGNOSTIC_NAME
 
-  def _pre_process(self):
-    """Creates the test files to be used in the diagnostic."""
-    is_done = self._create_test_files(self.object_sizes, self.object_prefix)
+  def _pre_process(self) -> None:
+    """Checks for zonal bucket and creates test files.
 
+    Raises:
+      diagnostic.DiagnosticIgnorableError: If the bucket is a zonal bucket or
+        if the bucket storage layout cannot be retrieved.
+    """
+
+    try:
+      storage_layout = self._api_client.get_storage_layout(
+          self.bucket_url.bucket_name
+      )
+    except api_errors.CloudApiError as e:
+      raise diagnostic.DiagnosticIgnorableError(
+          f'Failed to retrieve bucket storage layout: {e}'
+      ) from e
+
+    if storage_layout.locationType == _ZONAL_LOCATION_TYPE:
+      raise diagnostic.DiagnosticIgnorableError(
+          'Zonal buckets do not support Latency diagnostic yet.'
+      )
+
+    is_done = self._create_test_files(self.object_sizes, self.object_prefix)
     if not is_done:
       raise diagnostic.DiagnosticIgnorableError('Failed to create test files.')
 

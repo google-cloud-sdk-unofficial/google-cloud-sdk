@@ -14,9 +14,6 @@
 # limitations under the License.
 """List images command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from containerregistry.client.v2_2 import docker_image
 from googlecloudsdk.api_lib.container.images import util

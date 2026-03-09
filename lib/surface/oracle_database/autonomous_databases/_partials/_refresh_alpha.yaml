@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2025 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@
   auto_generated: true
   hidden: true
   help_text:
-    brief: refresh autonomousDatabases
-    description: refresh autonomousDatabases
+    brief: Refresh an AutonomousDatabase clone.
+    description: Refresh an AutonomousDatabase clone to data from a specified point-in-time.
     examples: |-
-      To refresh all autonomousDatabases, run:
+      To refresh an AutonomousDatabase clone with id `my-instance` in location `us-east4` to data from point-in-time `2026-01-24T12:00:00Z`, run:
 
-          $ {command}
+        $ {command} my-instance --location=us-east4 --refresh-cutoff-time=2026-01-24T12:00:00Z
   arguments:
     params:
     - help_text: |-

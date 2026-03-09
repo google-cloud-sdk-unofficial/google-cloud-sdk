@@ -14,9 +14,6 @@
 # limitations under the License.
 """Update node pool command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute import utils
@@ -127,7 +124,7 @@ class Update(base.UpdateCommand):
         group, for_node_pool=True, for_create=False)
     flags.AddResourceManagerTagsNodePoolUpdate(group)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddConsolidationDelayFlag(group, hidden=True)
+    flags.AddConsolidationDelayFlag(group)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -342,7 +339,7 @@ class UpdateBeta(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddConsolidationDelayFlag(group, hidden=True)
+    flags.AddConsolidationDelayFlag(group, hidden=False)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)
@@ -491,7 +488,7 @@ class UpdateAlpha(Update):
     flags.AddStoragePoolsFlag(
         group, for_node_pool=True, for_create=False)
     flags.AddQueuedProvisioningFlag(group)
-    flags.AddConsolidationDelayFlag(group, hidden=True)
+    flags.AddConsolidationDelayFlag(group, hidden=False)
     flags.AddMaxRunDurationFlag(group)
     flags.AddFlexStartFlag(group)
     flags.AddEnableKubeletReadonlyPortFlag(group)

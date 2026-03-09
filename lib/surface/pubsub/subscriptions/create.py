@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions create command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_ex
 from googlecloudsdk.api_lib.pubsub import subscriptions
@@ -106,6 +103,7 @@ def _Run(
   bigtable_service_account_email = getattr(
       args, 'bigtable_service_account_email', None
   )
+  bigtable_write_metadata = getattr(args, 'bigtable_write_metadata', None)
   message_transforms_file = getattr(args, 'message_transforms_file', None)
 
   no_expiration = False
@@ -173,6 +171,7 @@ def _Run(
           bigtable_table=bigtable_table,
           bigtable_app_profile_id=bigtable_app_profile_id,
           bigtable_service_account_email=bigtable_service_account_email,
+          bigtable_write_metadata=bigtable_write_metadata,
           message_transforms_file=message_transforms_file,
           tags=tags,
           enable_vertex_ai_smt=enable_vertex_ai_smt,

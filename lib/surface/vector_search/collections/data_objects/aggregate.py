@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud vectorsearch collections data-objects aggregate."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 
@@ -28,7 +25,7 @@ from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Aggregate(base.Command):
   """Aggregate data objects."""
@@ -69,16 +66,14 @@ class Aggregate(base.Command):
         project, args.location, args.collection
     )
 
-    aggregate_request_body = (
-        client.messages.GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest()
-    )
+    aggregate_request_body = client.GetMessage('AggregateDataObjectsRequest')()
 
     if args.json_filter:
       try:
         filter_dict = json.loads(args.json_filter)
         aggregate_request_body.filter = encoding.DictToMessage(
             filter_dict,
-            client.messages.GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest.FilterValue,
+            client.GetMessage('AggregateDataObjectsRequest').FilterValue,
         )
       except json.JSONDecodeError as e:
         raise calliope_exceptions.InvalidArgumentException(
@@ -92,12 +87,18 @@ class Aggregate(base.Command):
 
     if args.aggregation_method == 'count':
       aggregate_request_body.aggregate = (
-          client.messages.GoogleCloudVectorsearchV1betaAggregateDataObjectsRequest.AggregateValueValuesEnum.COUNT
+          client.GetMessage(
+              'AggregateDataObjectsRequest'
+          ).AggregateValueValuesEnum.COUNT
       )
 
-    full_req = client.messages.VectorsearchProjectsLocationsCollectionsDataObjectsAggregateRequest(
+    aggregate_req_body_field = client.GetRequestField(
+        'AggregateDataObjectsRequest'
+    )
+    full_req_message = 'VectorsearchProjectsLocationsCollectionsDataObjectsAggregateRequest'
+    full_req = getattr(client.messages, full_req_message)(
         parent=parent,
-        googleCloudVectorsearchV1betaAggregateDataObjectsRequest=aggregate_request_body,
+        **{aggregate_req_body_field: aggregate_request_body},
     )
 
     return client.service.Aggregate(full_req)

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements command to describe an ops agents policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.compute.instances.ops_agents import cloud_ops_agents_util

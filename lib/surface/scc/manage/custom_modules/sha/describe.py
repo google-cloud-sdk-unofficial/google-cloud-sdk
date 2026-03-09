@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get a SHA custom module."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scc.manage.sha import clients
 from googlecloudsdk.calliope import base

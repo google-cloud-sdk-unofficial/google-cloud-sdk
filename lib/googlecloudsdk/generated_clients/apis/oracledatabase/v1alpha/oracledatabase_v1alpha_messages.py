@@ -33,6 +33,41 @@ class AllConnectionStrings(_messages.Message):
   medium = _messages.StringField(3)
 
 
+class AmazonS3IcebergStorage(_messages.Message):
+  r"""The Amazon S3 Iceberg storage.
+
+  Enums:
+    SchemeTypeValueValuesEnum: Required. The scheme type of Amazon S3.
+
+  Fields:
+    accessKeyId: Required. The access key ID of Amazon S3.
+    bucket: Required. The bucket of Amazon S3.
+    endpoint: Optional. The endpoint of Amazon S3.
+    region: Required. The region of Amazon S3.
+    schemeType: Required. The scheme type of Amazon S3.
+    secretAccessKeySecret: Optional. The secret access key of Amazon S3.
+  """
+
+  class SchemeTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The scheme type of Amazon S3.
+
+    Values:
+      SCHEME_TYPE_UNSPECIFIED: Scheme type not specified.
+      S3: S3 scheme.
+      S3A: S3A scheme.
+    """
+    SCHEME_TYPE_UNSPECIFIED = 0
+    S3 = 1
+    S3A = 2
+
+  accessKeyId = _messages.StringField(1)
+  bucket = _messages.StringField(2)
+  endpoint = _messages.StringField(3)
+  region = _messages.StringField(4)
+  schemeType = _messages.EnumField('SchemeTypeValueValuesEnum', 5)
+  secretAccessKeySecret = _messages.StringField(6)
+
+
 class AutonomousDatabase(_messages.Message):
   r"""Details of the Autonomous Database resource. https://docs.oracle.com/en-
   us/iaas/api/#/en/database/20160918/AutonomousDatabase/
@@ -1051,6 +1086,22 @@ class AutonomousDbVersion(_messages.Message):
   name = _messages.StringField(2)
   version = _messages.StringField(3)
   workloadUri = _messages.StringField(4)
+
+
+class AzureDataLakeStorageIcebergStorage(_messages.Message):
+  r"""The Azure Data Lake Storage Iceberg storage.
+
+  Fields:
+    accountKeySecret: Optional. The account key of Azure Data Lake Storage.
+    azureAccount: Required. The account of Azure Data Lake Storage.
+    container: Required. The container of Azure Data Lake Storage.
+    endpoint: Optional. The endpoint of Azure Data Lake Storage.
+  """
+
+  accountKeySecret = _messages.StringField(1)
+  azureAccount = _messages.StringField(2)
+  container = _messages.StringField(3)
+  endpoint = _messages.StringField(4)
 
 
 class BackupDestinationDetails(_messages.Message):
@@ -2636,6 +2687,43 @@ class DefinedTagValue(_messages.Message):
   tags = _messages.MessageField('TagsValue', 1)
 
 
+class DeploymentDiagnosticData(_messages.Message):
+  r"""The deployment diagnostic data.
+
+  Enums:
+    DiagnosticStateValueValuesEnum: Output only. The diagnostic state.
+
+  Fields:
+    bucket: Output only. The bucket name.
+    diagnosticEndTime: Output only. The time diagnostic end.
+    diagnosticStartTime: Output only. The time diagnostic start.
+    diagnosticState: Output only. The diagnostic state.
+    namespace: Output only. The namespace name.
+    object: Output only. The object name.
+  """
+
+  class DiagnosticStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The diagnostic state.
+
+    Values:
+      DIAGNOSTIC_STATE_UNSPECIFIED: The diagnostic state is unspecified.
+      IN_PROGRESS: The diagnostic is in progress.
+      SUCCEEDED: The diagnostic completed successfully.
+      FAILED: The diagnostic failed.
+    """
+    DIAGNOSTIC_STATE_UNSPECIFIED = 0
+    IN_PROGRESS = 1
+    SUCCEEDED = 2
+    FAILED = 3
+
+  bucket = _messages.StringField(1)
+  diagnosticEndTime = _messages.StringField(2)
+  diagnosticStartTime = _messages.StringField(3)
+  diagnosticState = _messages.EnumField('DiagnosticStateValueValuesEnum', 4)
+  namespace = _messages.StringField(5)
+  object = _messages.StringField(6)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -3179,6 +3267,16 @@ class GiVersion(_messages.Message):
   version = _messages.StringField(2)
 
 
+class GlueIcebergCatalog(_messages.Message):
+  r"""The Glue Iceberg catalog.
+
+  Fields:
+    glueId: Required. The catalog ID of Glue.
+  """
+
+  glueId = _messages.StringField(1)
+
+
 class GoldenGateAmazonKinesisConnectionProperties(_messages.Message):
   r"""The properties of GoldenGateAmazonKinesisConnection.
 
@@ -3316,6 +3414,27 @@ class GoldenGateAzureSynapseAnalyticsConnectionProperties(_messages.Message):
   passwordSecret = _messages.StringField(2)
   technologyType = _messages.StringField(3)
   username = _messages.StringField(4)
+
+
+class GoldenGateBackupSchedule(_messages.Message):
+  r"""The backup schedule of the GoldenGateDeployment.
+
+  Fields:
+    backupScheduledTime: Output only. The timestamp of when the backup was
+      scheduled.
+    bucket: Output only. The bucket name.
+    compartmentId: Output only. The compartment id.
+    frequencyBackupScheduled: Output only. The frequency backup scheduled.
+    metadataOnly: Output only. If metadata only.
+    namespace: Output only. The namespace name.
+  """
+
+  backupScheduledTime = _messages.StringField(1)
+  bucket = _messages.StringField(2)
+  compartmentId = _messages.StringField(3)
+  frequencyBackupScheduled = _messages.StringField(4)
+  metadataOnly = _messages.BooleanField(5)
+  namespace = _messages.StringField(6)
 
 
 class GoldenGateConnection(_messages.Message):
@@ -3523,6 +3642,9 @@ class GoldenGateConnectionProperties(_messages.Message):
     googlePubsubConnectionProperties: Properties for a Google Pub/Sub
       connection.
     hdfsConnectionProperties: Properties for an HDFS connection.
+    icebergConnectionProperties: Properties for an Iceberg connection.
+    ingressIpAddresses: Output only. The Ingress IPs of the
+      GoldenGateConnection.
     javaMessageServiceConnectionProperties: Properties for a Java Message
       Service connection.
     kafkaConnectionProperties: Properties for a Kafka Connection.
@@ -3606,25 +3728,125 @@ class GoldenGateConnectionProperties(_messages.Message):
   googleCloudStorageConnectionProperties = _messages.MessageField('GoldenGateGoogleCloudStorageConnectionProperties', 15)
   googlePubsubConnectionProperties = _messages.MessageField('GoldenGateGooglePubsubConnectionProperties', 16)
   hdfsConnectionProperties = _messages.MessageField('GoldenGateHdfsConnectionProperties', 17)
-  javaMessageServiceConnectionProperties = _messages.MessageField('GoldenGateJavaMessageServiceConnectionProperties', 18)
-  kafkaConnectionProperties = _messages.MessageField('GoldenGateKafkaConnectionProperties', 19)
-  kafkaSchemaRegistryConnectionProperties = _messages.MessageField('GoldenGateKafkaSchemaRegistryConnectionProperties', 20)
-  lifecycleDetails = _messages.StringField(21)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 22)
-  microsoftFabricConnectionProperties = _messages.MessageField('GoldenGateMicrosoftFabricConnectionProperties', 23)
-  microsoftSqlserverConnectionProperties = _messages.MessageField('GoldenGateMicrosoftSqlserverConnectionProperties', 24)
-  mongodbConnectionProperties = _messages.MessageField('GoldenGateMongodbConnectionProperties', 25)
-  mysqlConnectionProperties = _messages.MessageField('GoldenGateMysqlConnectionProperties', 26)
-  ociObjectStorageConnectionProperties = _messages.MessageField('GoldenGateOciObjectStorageConnectionProperties', 27)
-  ocid = _messages.StringField(28)
-  oracleAiDataPlatformConnectionProperties = _messages.MessageField('GoldenGateOracleAIDataPlatformConnectionProperties', 29)
-  oracleConnectionProperties = _messages.MessageField('GoldenGateOracleConnectionProperties', 30)
-  oracleNosqlConnectionProperties = _messages.MessageField('GoldenGateOracleNosqlConnectionProperties', 31)
-  postgresqlConnectionProperties = _messages.MessageField('GoldenGatePostgresqlConnectionProperties', 32)
-  redisConnectionProperties = _messages.MessageField('GoldenGateRedisConnectionProperties', 33)
-  routingMethod = _messages.EnumField('RoutingMethodValueValuesEnum', 34)
-  snowflakeConnectionProperties = _messages.MessageField('GoldenGateSnowflakeConnectionProperties', 35)
-  updateTime = _messages.StringField(36)
+  icebergConnectionProperties = _messages.MessageField('GoldenGateIcebergConnectionProperties', 18)
+  ingressIpAddresses = _messages.StringField(19, repeated=True)
+  javaMessageServiceConnectionProperties = _messages.MessageField('GoldenGateJavaMessageServiceConnectionProperties', 20)
+  kafkaConnectionProperties = _messages.MessageField('GoldenGateKafkaConnectionProperties', 21)
+  kafkaSchemaRegistryConnectionProperties = _messages.MessageField('GoldenGateKafkaSchemaRegistryConnectionProperties', 22)
+  lifecycleDetails = _messages.StringField(23)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 24)
+  microsoftFabricConnectionProperties = _messages.MessageField('GoldenGateMicrosoftFabricConnectionProperties', 25)
+  microsoftSqlserverConnectionProperties = _messages.MessageField('GoldenGateMicrosoftSqlserverConnectionProperties', 26)
+  mongodbConnectionProperties = _messages.MessageField('GoldenGateMongodbConnectionProperties', 27)
+  mysqlConnectionProperties = _messages.MessageField('GoldenGateMysqlConnectionProperties', 28)
+  ociObjectStorageConnectionProperties = _messages.MessageField('GoldenGateOciObjectStorageConnectionProperties', 29)
+  ocid = _messages.StringField(30)
+  oracleAiDataPlatformConnectionProperties = _messages.MessageField('GoldenGateOracleAIDataPlatformConnectionProperties', 31)
+  oracleConnectionProperties = _messages.MessageField('GoldenGateOracleConnectionProperties', 32)
+  oracleNosqlConnectionProperties = _messages.MessageField('GoldenGateOracleNosqlConnectionProperties', 33)
+  postgresqlConnectionProperties = _messages.MessageField('GoldenGatePostgresqlConnectionProperties', 34)
+  redisConnectionProperties = _messages.MessageField('GoldenGateRedisConnectionProperties', 35)
+  routingMethod = _messages.EnumField('RoutingMethodValueValuesEnum', 36)
+  snowflakeConnectionProperties = _messages.MessageField('GoldenGateSnowflakeConnectionProperties', 37)
+  updateTime = _messages.StringField(38)
+
+
+class GoldenGateConnectionType(_messages.Message):
+  r"""Details of the GoldenGate Connection Type resource.
+
+  Enums:
+    ConnectionTypeValueValuesEnum: Output only. The connection type of the
+      GoldenGate Connection Type resource.
+
+  Fields:
+    connectionType: Output only. The connection type of the GoldenGate
+      Connection Type resource.
+    name: Identifier. The name of the GoldenGate Connection Type resource with
+      the format: projects/{project}/locations/{region}/goldenGateConnectionTy
+      pes/{golden_gate_connection_type}
+    technologyTypes: Output only. The technology type of the GoldenGate
+      Connection Type resource.
+  """
+
+  class ConnectionTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The connection type of the GoldenGate Connection Type
+    resource.
+
+    Values:
+      CONNECTION_TYPE_UNSPECIFIED: Default unspecified value.
+      GOLDENGATE: GoldenGate Connection Type category is GOLDENGATE.
+      KAFKA: GoldenGate Connection Type category is KAFKA.
+      KAFKA_SCHEMA_REGISTRY: GoldenGate Connection Type category is
+        KAFKA_SCHEMA_REGISTRY.
+      MYSQL: GoldenGate Connection Type category is MYSQL.
+      JAVA_MESSAGE_SERVICE: GoldenGate Connection Type category is
+        JAVA_MESSAGE_SERVICE.
+      MICROSOFT_SQLSERVER: GoldenGate Connection Type category is
+        MICROSOFT_SQLSERVER.
+      OCI_OBJECT_STORAGE: GoldenGate Connection Type category is
+        OCI_OBJECT_STORAGE.
+      ORACLE: GoldenGate Connection Type category is ORACLE.
+      AZURE_DATA_LAKE_STORAGE: GoldenGate Connection Type category is
+        AZURE_DATA_LAKE_STORAGE.
+      POSTGRESQL: GoldenGate Connection Type category is POSTGRESQL.
+      AZURE_SYNAPSE_ANALYTICS: GoldenGate Connection Type category is
+        AZURE_SYNAPSE_ANALYTICS.
+      SNOWFLAKE: GoldenGate Connection Type category is SNOWFLAKE.
+      AMAZON_S3: GoldenGate Connection Type category is AMAZON_S3.
+      HDFS: GoldenGate Connection Type category is HDFS.
+      ORACLE_AI_DATA_PLATFORM: GoldenGate Connection Type category is
+        ORACLE_AI_DATA_PLATFORM.
+      ORACLE_NOSQL: GoldenGate Connection Type category is ORACLE_NOSQL.
+      MONGODB: GoldenGate Connection Type category is MONGODB.
+      AMAZON_KINESIS: GoldenGate Connection Type category is AMAZON_KINESIS.
+      AMAZON_REDSHIFT: GoldenGate Connection Type category is AMAZON_REDSHIFT.
+      DB2: GoldenGate Connection Type category is DB2.
+      REDIS: GoldenGate Connection Type category is REDIS.
+      ELASTICSEARCH: GoldenGate Connection Type category is ELASTICSEARCH.
+      GENERIC: GoldenGate Connection Type category is GENERIC.
+      GOOGLE_CLOUD_STORAGE: GoldenGate Connection Type category is
+        GOOGLE_CLOUD_STORAGE.
+      GOOGLE_BIGQUERY: GoldenGate Connection Type category is GOOGLE_BIGQUERY.
+      DATABRICKS: GoldenGate Connection Type category is DATABRICKS.
+      GOOGLE_PUBSUB: GoldenGate Connection Type category is GOOGLE_PUBSUB.
+      MICROSOFT_FABRIC: GoldenGate Connection Type category is
+        MICROSOFT_FABRIC.
+      ICEBERG: GoldenGate Connection Type category is ICEBERG.
+    """
+    CONNECTION_TYPE_UNSPECIFIED = 0
+    GOLDENGATE = 1
+    KAFKA = 2
+    KAFKA_SCHEMA_REGISTRY = 3
+    MYSQL = 4
+    JAVA_MESSAGE_SERVICE = 5
+    MICROSOFT_SQLSERVER = 6
+    OCI_OBJECT_STORAGE = 7
+    ORACLE = 8
+    AZURE_DATA_LAKE_STORAGE = 9
+    POSTGRESQL = 10
+    AZURE_SYNAPSE_ANALYTICS = 11
+    SNOWFLAKE = 12
+    AMAZON_S3 = 13
+    HDFS = 14
+    ORACLE_AI_DATA_PLATFORM = 15
+    ORACLE_NOSQL = 16
+    MONGODB = 17
+    AMAZON_KINESIS = 18
+    AMAZON_REDSHIFT = 19
+    DB2 = 20
+    REDIS = 21
+    ELASTICSEARCH = 22
+    GENERIC = 23
+    GOOGLE_CLOUD_STORAGE = 24
+    GOOGLE_BIGQUERY = 25
+    DATABRICKS = 26
+    GOOGLE_PUBSUB = 27
+    MICROSOFT_FABRIC = 28
+    ICEBERG = 29
+
+  connectionType = _messages.EnumField('ConnectionTypeValueValuesEnum', 1)
+  name = _messages.StringField(2)
+  technologyTypes = _messages.StringField(3, repeated=True)
 
 
 class GoldenGateDatabricksConnectionProperties(_messages.Message):
@@ -3720,9 +3942,9 @@ class GoldenGateDb2ConnectionProperties(_messages.Message):
   passwordSecret = _messages.StringField(4)
   port = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 6)
-  sslClientKeystashFile = _messages.BytesField(7)
-  sslClientKeystoredbFile = _messages.BytesField(8)
-  sslServerCertificateFile = _messages.BytesField(9)
+  sslClientKeystashFile = _messages.StringField(7)
+  sslClientKeystoredbFile = _messages.StringField(8)
+  sslServerCertificateFile = _messages.StringField(9)
   technologyType = _messages.StringField(10)
   username = _messages.StringField(11)
 
@@ -3793,37 +4015,216 @@ class GoldenGateDeployment(_messages.Message):
   properties = _messages.MessageField('GoldenGateDeploymentProperties', 10)
 
 
+class GoldenGateDeploymentEnvironment(_messages.Message):
+  r"""Details of the GoldenGate Deployment Environment resource.
+
+  Enums:
+    CategoryValueValuesEnum: Output only. The category of the GoldenGate
+      Deployment Environment resource.
+    EnvironmentTypeValueValuesEnum: Output only. The environment type of the
+      GoldenGate Deployment Environment resource.
+
+  Fields:
+    autoScalingEnabled: Output only. Whether auto scaling is enabled by
+      default for the GoldenGate Deployment Environment resource.
+    category: Output only. The category of the GoldenGate Deployment
+      Environment resource.
+    defaultCpuCoreCount: Output only. The default CPU core count of the
+      GoldenGate Deployment Environment resource.
+    displayName: Output only. The display name of the GoldenGate Deployment
+      Environment resource.
+    environmentType: Output only. The environment type of the GoldenGate
+      Deployment Environment resource.
+    maxCpuCoreCount: Output only. The max CPU core count of the GoldenGate
+      Deployment Environment resource.
+    memoryGbPerCpuCore: Output only. The memory per CPU core in GBs of the
+      GoldenGate Deployment Environment resource.
+    minCpuCoreCount: Output only. The min CPU core count of the GoldenGate
+      Deployment Environment resource.
+    name: Identifier. The name of the GoldenGate Deployment Environment
+      resource with the format: projects/{project}/locations/{region}/goldenGa
+      teDeploymentEnvironments/{golden_gate_deployment_environment}
+    networkBandwidthGbpsPerCpuCore: Output only. The network bandwidth per CPU
+      core in Gbps of the GoldenGate Deployment Environment resource.
+    storageUsageLimitGbPerCpuCore: Output only. The storage usage limit per
+      CPU core in GBs of the GoldenGate Deployment Environment resource.
+  """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the GoldenGate Deployment Environment
+    resource.
+
+    Values:
+      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
+      DATA_REPLICATION_CATEGORY: GoldenGate Deployment Environment category is
+        DATA_REPLICATION_CATEGORY.
+      DATA_TRANSFORMS_CATEGORY: GoldenGate Deployment Environment category is
+        DATA_TRANSFORMS_CATEGORY.
+    """
+    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION_CATEGORY = 1
+    DATA_TRANSFORMS_CATEGORY = 2
+
+  class EnvironmentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The environment type of the GoldenGate Deployment
+    Environment resource.
+
+    Values:
+      DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      PRODUCTION: GoldenGate Deployment Environment type is PRODUCTION.
+      DEVELOPMENT_OR_TESTING: GoldenGate Deployment Environment type is
+        DEVELOPMENT_OR_TESTING.
+    """
+    DEPLOYMENT_ENVIRONMENT_TYPE_UNSPECIFIED = 0
+    PRODUCTION = 1
+    DEVELOPMENT_OR_TESTING = 2
+
+  autoScalingEnabled = _messages.BooleanField(1)
+  category = _messages.EnumField('CategoryValueValuesEnum', 2)
+  defaultCpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  displayName = _messages.StringField(4)
+  environmentType = _messages.EnumField('EnvironmentTypeValueValuesEnum', 5)
+  maxCpuCoreCount = _messages.IntegerField(6, variant=_messages.Variant.INT32)
+  memoryGbPerCpuCore = _messages.IntegerField(7, variant=_messages.Variant.INT32)
+  minCpuCoreCount = _messages.IntegerField(8, variant=_messages.Variant.INT32)
+  name = _messages.StringField(9)
+  networkBandwidthGbpsPerCpuCore = _messages.IntegerField(10, variant=_messages.Variant.INT32)
+  storageUsageLimitGbPerCpuCore = _messages.IntegerField(11, variant=_messages.Variant.INT32)
+
+
+class GoldenGateDeploymentLock(_messages.Message):
+  r"""The lock of the GoldenGateDeployment.
+
+  Fields:
+    compartmentId: Output only. The compartment id.
+    createTime: Output only. The time created.
+    message: Output only. The message.
+    relatedResourceId: Output only. The related resource id.
+    type: Output only. The type of lock.
+  """
+
+  compartmentId = _messages.StringField(1)
+  createTime = _messages.StringField(2)
+  message = _messages.StringField(3)
+  relatedResourceId = _messages.StringField(4)
+  type = _messages.StringField(5)
+
+
 class GoldenGateDeploymentProperties(_messages.Message):
   r"""Properties of GoldenGateDeployment.
 
   Enums:
+    CategoryValueValuesEnum: Output only. The category of the
+      GoldenGateDeployment.
+    DeploymentRoleValueValuesEnum: Output only. The deployment role of the
+      GoldenGateDeployment.
     LicenseModelValueValuesEnum: Optional. The Oracle license model that
       applies to a Deployment.
     LifecycleStateValueValuesEnum: Output only. State of the
       GoldenGateDeployment.
+    LifecycleSubStateValueValuesEnum: Output only. The lifecycle sub-state of
+      the GoldenGateDeployment.
 
   Fields:
+    backupSchedule: Output only. The backup schedule of the
+      GoldenGateDeployment.
+    category: Output only. The category of the GoldenGateDeployment.
     cpuCoreCount: Required. The Minimum number of OCPUs to be made available
       for this Deployment.
+    deploymentBackupId: Optional. The deployment backup id of the
+      GoldenGateDeployment.
+    deploymentDiagnosticData: Output only. The deployment diagnostic data of
+      the GoldenGateDeployment.
+    deploymentRole: Output only. The deployment role of the
+      GoldenGateDeployment.
     deploymentType: Required. A valid Oracle GoldenGate version. For a list of
       supported versions, use the ListGoldenGateDeployments operation.
+    deploymentUrl: Output only. The deployment url of the
+      GoldenGateDeployment.
     description: Optional. The description of the GoldenGateDeployment.
     environmentType: Optional. The environment type of the
       GoldenGateDeployment.
     fqdn: Output only. The Fully Qualified Domain Name of the
       GoldenGateDeployment.
+    healthy: Output only. Whether the GoldenGateDeployment is healthy.
+    ingressIps: Output only. The ingress ips of the GoldenGateDeployment.
     isAutoScalingEnabled: Optional. Indicates if auto scaling is enabled for
       the Deployment's CPU core count.
+    isLatestVersion: Output only. Whether the GoldenGateDeployment is of the
+      latest version.
+    isPublic: Optional. Whether the GoldenGateDeployment is public.
+    isStorageUtilizationLimitExceeded: Output only. Whether storage
+      utilization limit is exceeded of the GoldenGateDeployment.
+    lastBackupScheduleTime: Output only. The time last backup scheduled of the
+      GoldenGateDeployment.
     licenseModel: Optional. The Oracle license model that applies to a
       Deployment.
+    lifecycleDetails: Output only. The lifecycle details of the
+      GoldenGateDeployment.
     lifecycleState: Output only. State of the GoldenGateDeployment.
+    lifecycleSubState: Output only. The lifecycle sub-state of the
+      GoldenGateDeployment.
+    loadBalancerId: Output only. The load balancer id of the
+      GoldenGateDeployment.
+    loadBalancerSubnetId: Output only. The load balancer subnet id of the
+      GoldenGateDeployment.
+    locks: Output only. The locks of the GoldenGateDeployment.
     maintenanceConfig: Optional. The maintenance configuration of the
       GoldenGateDeployment.
     maintenanceWindow: Optional. The maintenance window of the
       GoldenGateDeployment.
+    nextBackupScheduleTime: Output only. The time next backup scheduled of the
+      GoldenGateDeployment.
+    nextMaintenanceActionType: Output only. The next maintenance action type
+      of the GoldenGateDeployment.
+    nextMaintenanceDescription: Output only. The next maintenance description
+      of the GoldenGateDeployment.
+    nextMaintenanceTime: Output only. The time of next maintenance of the
+      GoldenGateDeployment.
+    nsgIds: Optional. The nsg ids of the GoldenGateDeployment.
     ocid: Output only. OCID of the GoldenGateDeployment.
     oggData: Required. The ogg data of the GoldenGateDeployment.
+    oggVersionSupportEndTime: Output only. The time ogg version supported
+      until of the GoldenGateDeployment.
+    placements: Output only. The placements of the GoldenGateDeployment.
+    privateIpAddress: Output only. The private ip address of the
+      GoldenGateDeployment.
+    publicIpAddress: Output only. The public ip address of the
+      GoldenGateDeployment.
+    roleChangeTime: Output only. The time when the role of the
+      GoldenGateDeployment was changed.
+    storageUtilizationBytes: Output only. The storage utilization in bytes of
+      the GoldenGateDeployment.
+    updateTime: Output only. The time the GoldenGateDeployment was updated.
+    upgradeRequiredTime: Output only. The time upgrade required of the
+      GoldenGateDeployment.
   """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the GoldenGateDeployment.
+
+    Values:
+      GOLDEN_GATE_DEPLOYMENT_CATEGORY_UNSPECIFIED: The category is
+        unspecified.
+      DATA_REPLICATION: The deployment is data replication.
+      DATA_TRANSFORMS: The deployment is data transforms.
+    """
+    GOLDEN_GATE_DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION = 1
+    DATA_TRANSFORMS = 2
+
+  class DeploymentRoleValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment role of the GoldenGateDeployment.
+
+    Values:
+      GOLDEN_GATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED: The deployment role type
+        is unspecified.
+      PRIMARY: The deployment role type is primary.
+      STANDBY: The deployment role type is standby.
+    """
+    GOLDEN_GATE_DEPLOYMENT_ROLE_TYPE_UNSPECIFIED = 0
+    PRIMARY = 1
+    STANDBY = 2
 
   class LicenseModelValueValuesEnum(_messages.Enum):
     r"""Optional. The Oracle license model that applies to a Deployment.
@@ -3872,18 +4273,262 @@ class GoldenGateDeploymentProperties(_messages.Message):
     SUCCEEDED = 12
     WAITING = 13
 
-  cpuCoreCount = _messages.IntegerField(1, variant=_messages.Variant.INT32)
-  deploymentType = _messages.StringField(2)
-  description = _messages.StringField(3)
-  environmentType = _messages.StringField(4)
-  fqdn = _messages.StringField(5)
-  isAutoScalingEnabled = _messages.BooleanField(6)
-  licenseModel = _messages.EnumField('LicenseModelValueValuesEnum', 7)
-  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 8)
-  maintenanceConfig = _messages.MessageField('GoldenGateMaintenanceConfig', 9)
-  maintenanceWindow = _messages.MessageField('GoldenGateMaintenanceWindow', 10)
-  ocid = _messages.StringField(11)
-  oggData = _messages.MessageField('GoldenGateOggDeployment', 12)
+  class LifecycleSubStateValueValuesEnum(_messages.Enum):
+    r"""Output only. The lifecycle sub-state of the GoldenGateDeployment.
+
+    Values:
+      GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED: The lifecycle
+        sub-state is unspecified.
+      RECOVERING: The deployment is recovering.
+      STARTING: The deployment is starting.
+      STOPPING: The deployment is stopping.
+      MOVING: The deployment is moving.
+      UPGRADING: The deployment is upgrading.
+      RESTORING: The deployment is restoring.
+      BACKING_UP: The deployment is backing up.
+      ROLLING_BACK: The deployment is rolling back.
+    """
+    GOLDEN_GATE_DEPLOYMENT_LIFECYCLE_SUB_STATE_UNSPECIFIED = 0
+    RECOVERING = 1
+    STARTING = 2
+    STOPPING = 3
+    MOVING = 4
+    UPGRADING = 5
+    RESTORING = 6
+    BACKING_UP = 7
+    ROLLING_BACK = 8
+
+  backupSchedule = _messages.MessageField('GoldenGateBackupSchedule', 1)
+  category = _messages.EnumField('CategoryValueValuesEnum', 2)
+  cpuCoreCount = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  deploymentBackupId = _messages.StringField(4)
+  deploymentDiagnosticData = _messages.MessageField('DeploymentDiagnosticData', 5)
+  deploymentRole = _messages.EnumField('DeploymentRoleValueValuesEnum', 6)
+  deploymentType = _messages.StringField(7)
+  deploymentUrl = _messages.StringField(8)
+  description = _messages.StringField(9)
+  environmentType = _messages.StringField(10)
+  fqdn = _messages.StringField(11)
+  healthy = _messages.BooleanField(12)
+  ingressIps = _messages.MessageField('IngressIp', 13, repeated=True)
+  isAutoScalingEnabled = _messages.BooleanField(14)
+  isLatestVersion = _messages.BooleanField(15)
+  isPublic = _messages.BooleanField(16)
+  isStorageUtilizationLimitExceeded = _messages.BooleanField(17)
+  lastBackupScheduleTime = _messages.StringField(18)
+  licenseModel = _messages.EnumField('LicenseModelValueValuesEnum', 19)
+  lifecycleDetails = _messages.StringField(20)
+  lifecycleState = _messages.EnumField('LifecycleStateValueValuesEnum', 21)
+  lifecycleSubState = _messages.EnumField('LifecycleSubStateValueValuesEnum', 22)
+  loadBalancerId = _messages.StringField(23)
+  loadBalancerSubnetId = _messages.StringField(24)
+  locks = _messages.MessageField('GoldenGateDeploymentLock', 25, repeated=True)
+  maintenanceConfig = _messages.MessageField('GoldenGateMaintenanceConfig', 26)
+  maintenanceWindow = _messages.MessageField('GoldenGateMaintenanceWindow', 27)
+  nextBackupScheduleTime = _messages.StringField(28)
+  nextMaintenanceActionType = _messages.StringField(29)
+  nextMaintenanceDescription = _messages.StringField(30)
+  nextMaintenanceTime = _messages.StringField(31)
+  nsgIds = _messages.StringField(32, repeated=True)
+  ocid = _messages.StringField(33)
+  oggData = _messages.MessageField('GoldenGateOggDeployment', 34)
+  oggVersionSupportEndTime = _messages.StringField(35)
+  placements = _messages.MessageField('GoldenGatePlacement', 36, repeated=True)
+  privateIpAddress = _messages.StringField(37)
+  publicIpAddress = _messages.StringField(38)
+  roleChangeTime = _messages.StringField(39)
+  storageUtilizationBytes = _messages.IntegerField(40)
+  updateTime = _messages.StringField(41)
+  upgradeRequiredTime = _messages.StringField(42)
+
+
+class GoldenGateDeploymentType(_messages.Message):
+  r"""Details of the GoldenGate Deployment Type resource.
+
+  Enums:
+    CategoryValueValuesEnum: Output only. The category of the GoldenGate
+      Deployment Type resource.
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      GoldenGate Deployment Type resource.
+
+  Fields:
+    category: Output only. The category of the GoldenGate Deployment Type
+      resource.
+    connectionTypes: Output only. The connection types of the GoldenGate
+      Deployment Type resource.
+    defaultUsername: Output only. The default username of the GoldenGate
+      Deployment Type resource.
+    deploymentType: Output only. The deployment type of the GoldenGate
+      Deployment Type resource.
+    displayName: Output only. The display name of the GoldenGate Deployment
+      Type resource.
+    name: Identifier. The name of the GoldenGate Deployment Type resource with
+      the format: projects/{project}/locations/{region}/goldenGateDeploymentTy
+      pes/{golden_gate_deployment_type}
+    oggVersion: Output only. The Ogg version of the GoldenGate Deployment Type
+      resource.
+    sourceTechnologies: Output only. The source technologies of the GoldenGate
+      Deployment Type resource.
+    supportedCapabilities: Output only. The supported capabilities of the
+      GoldenGate Deployment Type resource.
+    supportedTechnologiesUrl: Output only. The supported technologies URL of
+      the GoldenGate Deployment Type resource.
+    targetTechnologies: Output only. The target technologies of the GoldenGate
+      Deployment Type resource.
+  """
+
+  class CategoryValueValuesEnum(_messages.Enum):
+    r"""Output only. The category of the GoldenGate Deployment Type resource.
+
+    Values:
+      DEPLOYMENT_CATEGORY_UNSPECIFIED: Default unspecified value.
+      DATA_REPLICATION_CATEGORY: GoldenGate Deployment Type category is
+        DATA_REPLICATION_CATEGORY.
+      DATA_TRANSFORMS_CATEGORY: GoldenGate Deployment Type category is
+        DATA_TRANSFORMS_CATEGORY.
+    """
+    DEPLOYMENT_CATEGORY_UNSPECIFIED = 0
+    DATA_REPLICATION_CATEGORY = 1
+    DATA_TRANSFORMS_CATEGORY = 2
+
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the GoldenGate Deployment Type
+    resource.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      OGG: GoldenGate Deployment Type category is OGG.
+      DATABASE_ORACLE: GoldenGate Deployment Type category is DATABASE_ORACLE.
+      BIGDATA: GoldenGate Deployment Type category is BIGDATA.
+      DATABASE_MICROSOFT_SQLSERVER: GoldenGate Deployment Type category is
+        DATABASE_MICROSOFT_SQLSERVER.
+      DATABASE_MYSQL: GoldenGate Deployment Type category is DATABASE_MYSQL.
+      DATABASE_POSTGRESQL: GoldenGate Deployment Type category is
+        DATABASE_POSTGRESQL.
+      DATABASE_DB2ZOS: GoldenGate Deployment Type category is DATABASE_DB2ZOS.
+      DATABASE_DB2I: GoldenGate Deployment Type category is DATABASE_DB2I.
+      GGSA: GoldenGate Deployment Type category is GGSA.
+      DATA_TRANSFORMS: GoldenGate Deployment Type category is DATA_TRANSFORMS.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    OGG = 1
+    DATABASE_ORACLE = 2
+    BIGDATA = 3
+    DATABASE_MICROSOFT_SQLSERVER = 4
+    DATABASE_MYSQL = 5
+    DATABASE_POSTGRESQL = 6
+    DATABASE_DB2ZOS = 7
+    DATABASE_DB2I = 8
+    GGSA = 9
+    DATA_TRANSFORMS = 10
+
+  category = _messages.EnumField('CategoryValueValuesEnum', 1)
+  connectionTypes = _messages.StringField(2, repeated=True)
+  defaultUsername = _messages.StringField(3)
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 4)
+  displayName = _messages.StringField(5)
+  name = _messages.StringField(6)
+  oggVersion = _messages.StringField(7)
+  sourceTechnologies = _messages.StringField(8, repeated=True)
+  supportedCapabilities = _messages.StringField(9, repeated=True)
+  supportedTechnologiesUrl = _messages.StringField(10)
+  targetTechnologies = _messages.StringField(11, repeated=True)
+
+
+class GoldenGateDeploymentVersion(_messages.Message):
+  r"""Details of the GoldenGate Deployment Version resource.
+
+  Fields:
+    name: Identifier. The name of the GoldenGate Deployment Version resource
+      with the format: projects/{project}/locations/{region}/goldenGateDeploym
+      entVersions/{golden_gate_deployment_version}
+    ocid: Output only. The deployment version ocid of the GoldenGate
+      Deployment Version resource.
+    properties: Output only. The technology type of the GoldenGate Deployment
+      Version resource.
+  """
+
+  name = _messages.StringField(1)
+  ocid = _messages.StringField(2)
+  properties = _messages.MessageField('GoldenGateDeploymentVersionProperties', 3)
+
+
+class GoldenGateDeploymentVersionProperties(_messages.Message):
+  r"""Properties of GoldenGateDeploymentVersion.
+
+  Enums:
+    DeploymentTypeValueValuesEnum: Output only. The deployment type of the
+      GoldenGate Deployment Version resource.
+    ReleaseTypeValueValuesEnum: Output only. The release type of the
+      GoldenGate Deployment Version resource.
+
+  Fields:
+    deploymentType: Output only. The deployment type of the GoldenGate
+      Deployment Version resource.
+    oggVersion: Output only. The OGG version of the GoldenGate Deployment
+      Version resource.
+    releaseTime: Output only. The release time of the GoldenGate Deployment
+      Version resource.
+    releaseType: Output only. The release type of the GoldenGate Deployment
+      Version resource.
+    securityFix: Optional. Whether the GoldenGate Deployment Version resource
+      is a security fix.
+    supportEndTime: Output only. The support end time of the GoldenGate
+      Deployment Version resource.
+  """
+
+  class DeploymentTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The deployment type of the GoldenGate Deployment Version
+    resource.
+
+    Values:
+      DEPLOYMENT_TYPE_UNSPECIFIED: Default unspecified value.
+      OGG: GoldenGate Deployment Type category is OGG.
+      DATABASE_ORACLE: GoldenGate Deployment Type category is DATABASE_ORACLE.
+      BIGDATA: GoldenGate Deployment Type category is BIGDATA.
+      DATABASE_MICROSOFT_SQLSERVER: GoldenGate Deployment Type category is
+        DATABASE_MICROSOFT_SQLSERVER.
+      DATABASE_MYSQL: GoldenGate Deployment Type category is DATABASE_MYSQL.
+      DATABASE_POSTGRESQL: GoldenGate Deployment Type category is
+        DATABASE_POSTGRESQL.
+      DATABASE_DB2ZOS: GoldenGate Deployment Type category is DATABASE_DB2ZOS.
+      DATABASE_DB2I: GoldenGate Deployment Type category is DATABASE_DB2I.
+      GGSA: GoldenGate Deployment Type category is GGSA.
+      DATA_TRANSFORMS: GoldenGate Deployment Type category is DATA_TRANSFORMS.
+    """
+    DEPLOYMENT_TYPE_UNSPECIFIED = 0
+    OGG = 1
+    DATABASE_ORACLE = 2
+    BIGDATA = 3
+    DATABASE_MICROSOFT_SQLSERVER = 4
+    DATABASE_MYSQL = 5
+    DATABASE_POSTGRESQL = 6
+    DATABASE_DB2ZOS = 7
+    DATABASE_DB2I = 8
+    GGSA = 9
+    DATA_TRANSFORMS = 10
+
+  class ReleaseTypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The release type of the GoldenGate Deployment Version
+    resource.
+
+    Values:
+      DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED: Default unspecified value.
+      MAJOR: GoldenGate Deployment Version release type is MAJOR.
+      BUNDLE: GoldenGate Deployment Version release type is BUNDLE.
+      MINOR: GoldenGate Deployment Version release type is MINOR.
+    """
+    DEPLOYMENT_RELEASE_TYPE_UNSPECIFIED = 0
+    MAJOR = 1
+    BUNDLE = 2
+    MINOR = 3
+
+  deploymentType = _messages.EnumField('DeploymentTypeValueValuesEnum', 1)
+  oggVersion = _messages.StringField(2)
+  releaseTime = _messages.StringField(3)
+  releaseType = _messages.EnumField('ReleaseTypeValueValuesEnum', 4)
+  securityFix = _messages.BooleanField(5)
+  supportEndTime = _messages.StringField(6)
 
 
 class GoldenGateElasticsearchConnectionProperties(_messages.Message):
@@ -3990,7 +4635,7 @@ class GoldenGateGoogleBigQueryConnectionProperties(_messages.Message):
     technologyType: Optional. The technology type.
   """
 
-  serviceAccountKeyFile = _messages.BytesField(1)
+  serviceAccountKeyFile = _messages.StringField(1)
   technologyType = _messages.StringField(2)
 
 
@@ -4003,7 +4648,7 @@ class GoldenGateGoogleCloudStorageConnectionProperties(_messages.Message):
     technologyType: Optional. The technology type.
   """
 
-  serviceAccountKeyFile = _messages.BytesField(1)
+  serviceAccountKeyFile = _messages.StringField(1)
   technologyType = _messages.StringField(2)
 
 
@@ -4016,8 +4661,24 @@ class GoldenGateGooglePubsubConnectionProperties(_messages.Message):
     technologyType: Optional. The technology type of GooglePubsubConnection.
   """
 
-  serviceAccountKeyFile = _messages.BytesField(1)
+  serviceAccountKeyFile = _messages.StringField(1)
   technologyType = _messages.StringField(2)
+
+
+class GoldenGateGroupToRolesMapping(_messages.Message):
+  r"""The group to roles mapping of the GoldenGateDeployment.
+
+  Fields:
+    administratorGroupId: Optional. The administrator group id.
+    operatorGroupId: Optional. The operator group id.
+    securityGroupId: Optional. The security group id.
+    userGroupId: Optional. The user group id.
+  """
+
+  administratorGroupId = _messages.StringField(1)
+  operatorGroupId = _messages.StringField(2)
+  securityGroupId = _messages.StringField(3)
+  userGroupId = _messages.StringField(4)
 
 
 class GoldenGateHdfsConnectionProperties(_messages.Message):
@@ -4029,8 +4690,22 @@ class GoldenGateHdfsConnectionProperties(_messages.Message):
     technologyType: Optional. The technology type of HdfsConnection.
   """
 
-  coreSiteXml = _messages.BytesField(1)
+  coreSiteXml = _messages.StringField(1)
   technologyType = _messages.StringField(2)
+
+
+class GoldenGateIcebergConnectionProperties(_messages.Message):
+  r"""The properties of GoldenGateIcebergConnection.
+
+  Fields:
+    catalog: Required. The Iceberg catalog.
+    storage: Required. The Iceberg storage.
+    technologyType: Required. The technology type of Iceberg connection.
+  """
+
+  catalog = _messages.MessageField('IcebergCatalog', 1)
+  storage = _messages.MessageField('IcebergStorage', 2)
+  technologyType = _messages.StringField(3)
 
 
 class GoldenGateJavaMessageServiceConnectionProperties(_messages.Message):
@@ -4114,13 +4789,13 @@ class GoldenGateJavaMessageServiceConnectionProperties(_messages.Message):
   jndiProviderUrl = _messages.StringField(6)
   jndiSecurityCredentialsSecret = _messages.StringField(7)
   jndiSecurityPrincipal = _messages.StringField(8)
-  keyStoreFile = _messages.BytesField(9)
+  keyStoreFile = _messages.StringField(9)
   keyStorePasswordSecret = _messages.StringField(10)
   passwordSecret = _messages.StringField(11)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 12)
   sslKeyPasswordSecret = _messages.StringField(13)
   technologyType = _messages.StringField(14)
-  trustStoreFile = _messages.BytesField(15)
+  trustStoreFile = _messages.StringField(15)
   trustStorePasswordSecret = _messages.StringField(16)
   useJndi = _messages.BooleanField(17)
   username = _messages.StringField(18)
@@ -4180,16 +4855,16 @@ class GoldenGateKafkaConnectionProperties(_messages.Message):
 
   bootstrapServers = _messages.MessageField('KafkaBootstrapServer', 1, repeated=True)
   clusterId = _messages.StringField(2)
-  consumerPropertiesFile = _messages.BytesField(3)
-  keyStoreFile = _messages.BytesField(4)
+  consumerPropertiesFile = _messages.StringField(3)
+  keyStoreFile = _messages.StringField(4)
   keyStorePasswordSecret = _messages.StringField(5)
   passwordSecret = _messages.StringField(6)
-  producerPropertiesFile = _messages.BytesField(7)
+  producerPropertiesFile = _messages.StringField(7)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 8)
   sslKeyPasswordSecret = _messages.StringField(9)
   streamPoolId = _messages.StringField(10)
   technologyType = _messages.StringField(11)
-  trustStoreFile = _messages.BytesField(12)
+  trustStoreFile = _messages.StringField(12)
   trustStorePasswordSecret = _messages.StringField(13)
   useResourcePrincipal = _messages.BooleanField(14)
   username = _messages.StringField(15)
@@ -4238,12 +4913,12 @@ class GoldenGateKafkaSchemaRegistryConnectionProperties(_messages.Message):
     MUTUAL = 3
 
   authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  keyStoreFile = _messages.BytesField(2)
+  keyStoreFile = _messages.StringField(2)
   keyStorePasswordSecret = _messages.StringField(3)
   passwordSecret = _messages.StringField(4)
   sslKeyPasswordSecret = _messages.StringField(5)
   technologyType = _messages.StringField(6)
-  trustStoreFile = _messages.BytesField(7)
+  trustStoreFile = _messages.StringField(7)
   trustStorePasswordSecret = _messages.StringField(8)
   url = _messages.StringField(9)
   username = _messages.StringField(10)
@@ -4360,7 +5035,7 @@ class GoldenGateMicrosoftSqlserverConnectionProperties(_messages.Message):
   port = _messages.IntegerField(5, variant=_messages.Variant.INT32)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 6)
   serverCertificateValidationRequired = _messages.BooleanField(7)
-  sslCaFile = _messages.BytesField(8)
+  sslCaFile = _messages.StringField(8)
   technologyType = _messages.StringField(9)
   username = _messages.StringField(10)
 
@@ -4408,8 +5083,8 @@ class GoldenGateMongodbConnectionProperties(_messages.Message):
   passwordSecret = _messages.StringField(3)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 4)
   technologyType = _messages.StringField(5)
-  tlsCaFile = _messages.BytesField(6)
-  tlsCertificateKeyFile = _messages.BytesField(7)
+  tlsCaFile = _messages.StringField(6)
+  tlsCertificateKeyFile = _messages.StringField(7)
   tlsCertificateKeyFilePasswordSecret = _messages.StringField(8)
   username = _messages.StringField(9)
 
@@ -4488,10 +5163,10 @@ class GoldenGateMysqlConnectionProperties(_messages.Message):
   passwordSecret = _messages.StringField(5)
   port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 7)
-  sslCaFile = _messages.BytesField(8)
-  sslCertFile = _messages.BytesField(9)
-  sslCrlFile = _messages.BytesField(10)
-  sslKeyFile = _messages.BytesField(11)
+  sslCaFile = _messages.StringField(8)
+  sslCertFile = _messages.StringField(9)
+  sslCrlFile = _messages.StringField(10)
+  sslKeyFile = _messages.StringField(11)
   sslMode = _messages.EnumField('SslModeValueValuesEnum', 12)
   technologyType = _messages.StringField(13)
   username = _messages.StringField(14)
@@ -4519,7 +5194,7 @@ class GoldenGateOciObjectStorageConnectionProperties(_messages.Message):
       connect to.
   """
 
-  privateKeyFile = _messages.BytesField(1)
+  privateKeyFile = _messages.StringField(1)
   privateKeyPassphraseSecret = _messages.StringField(2)
   publicKeyFingerprint = _messages.StringField(3)
   region = _messages.StringField(4)
@@ -4532,19 +5207,49 @@ class GoldenGateOciObjectStorageConnectionProperties(_messages.Message):
 class GoldenGateOggDeployment(_messages.Message):
   r"""The Ogg data of the GoldenGateDeployment.
 
+  Enums:
+    CredentialStoreValueValuesEnum: Optional. The credential store of the
+      GoldenGateDeployment.
+
   Fields:
     adminPassword: Optional. The GoldenGate deployment console password.
     adminUsername: Optional. The GoldenGate deployment console username.
+    certificate: Optional. The certificate of the GoldenGateDeployment.
+    credentialStore: Optional. The credential store of the
+      GoldenGateDeployment.
     deployment: Required. The name given to the GoldenGate service deployment.
       The name must be 1 to 32 characters long, must contain only alphanumeric
       characters and must start with a letter.
+    groupRolesMapping: Optional. The group to roles mapping of the
+      GoldenGateDeployment.
+    identityDomainId: Optional. The identity domain id of the
+      GoldenGateDeployment.
     oggVersion: Optional. Version of OGG
+    passwordSecretId: Optional. The password secret id of the
+      GoldenGateDeployment.
   """
+
+  class CredentialStoreValueValuesEnum(_messages.Enum):
+    r"""Optional. The credential store of the GoldenGateDeployment.
+
+    Values:
+      CREDENTIAL_STORE_UNSPECIFIED: The credential store is unspecified.
+      GOLDENGATE: The credential store is Goldengate.
+      IAM: The credential store is IAM.
+    """
+    CREDENTIAL_STORE_UNSPECIFIED = 0
+    GOLDENGATE = 1
+    IAM = 2
 
   adminPassword = _messages.StringField(1)
   adminUsername = _messages.StringField(2)
-  deployment = _messages.StringField(3)
-  oggVersion = _messages.StringField(4)
+  certificate = _messages.StringField(3)
+  credentialStore = _messages.EnumField('CredentialStoreValueValuesEnum', 4)
+  deployment = _messages.StringField(5)
+  groupRolesMapping = _messages.MessageField('GoldenGateGroupToRolesMapping', 6)
+  identityDomainId = _messages.StringField(7)
+  oggVersion = _messages.StringField(8)
+  passwordSecretId = _messages.StringField(9)
 
 
 class GoldenGateOracleAIDataPlatformConnectionProperties(_messages.Message):
@@ -4568,7 +5273,7 @@ class GoldenGateOracleAIDataPlatformConnectionProperties(_messages.Message):
   """
 
   connectionUrl = _messages.StringField(1)
-  privateKeyFile = _messages.BytesField(2)
+  privateKeyFile = _messages.StringField(2)
   privateKeyPassphraseSecret = _messages.StringField(3)
   publicKeyFingerprint = _messages.StringField(4)
   region = _messages.StringField(5)
@@ -4624,7 +5329,7 @@ class GoldenGateOracleConnectionProperties(_messages.Message):
   sessionMode = _messages.EnumField('SessionModeValueValuesEnum', 5)
   technologyType = _messages.StringField(6)
   username = _messages.StringField(7)
-  walletFile = _messages.BytesField(8)
+  walletFile = _messages.StringField(8)
 
 
 class GoldenGateOracleNosqlConnectionProperties(_messages.Message):
@@ -4645,7 +5350,7 @@ class GoldenGateOracleNosqlConnectionProperties(_messages.Message):
       NoSQL database.
   """
 
-  privateKeyFile = _messages.BytesField(1)
+  privateKeyFile = _messages.StringField(1)
   privateKeyPassphraseSecret = _messages.StringField(2)
   publicKeyFingerprint = _messages.StringField(3)
   region = _messages.StringField(4)
@@ -4653,6 +5358,18 @@ class GoldenGateOracleNosqlConnectionProperties(_messages.Message):
   tenancyId = _messages.StringField(6)
   useResourcePrincipal = _messages.BooleanField(7)
   userId = _messages.StringField(8)
+
+
+class GoldenGatePlacement(_messages.Message):
+  r"""The placement of the GoldenGateDeployment.
+
+  Fields:
+    availabilityDomain: Output only. The availability domain.
+    faultDomain: Output only. The fault domain.
+  """
+
+  availabilityDomain = _messages.StringField(1)
+  faultDomain = _messages.StringField(2)
 
 
 class GoldenGatePostgresqlConnectionProperties(_messages.Message):
@@ -4724,10 +5441,10 @@ class GoldenGatePostgresqlConnectionProperties(_messages.Message):
   passwordSecret = _messages.StringField(5)
   port = _messages.IntegerField(6, variant=_messages.Variant.INT32)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 7)
-  sslCaFile = _messages.BytesField(8)
-  sslCertFile = _messages.BytesField(9)
-  sslCrlFile = _messages.BytesField(10)
-  sslKeyFile = _messages.BytesField(11)
+  sslCaFile = _messages.StringField(8)
+  sslCertFile = _messages.StringField(9)
+  sslCrlFile = _messages.StringField(10)
+  sslKeyFile = _messages.StringField(11)
   sslMode = _messages.EnumField('SslModeValueValuesEnum', 12)
   technologyType = _messages.StringField(13)
   username = _messages.StringField(14)
@@ -4788,14 +5505,14 @@ class GoldenGateRedisConnectionProperties(_messages.Message):
     MTLS = 3
 
   authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
-  keyStoreFile = _messages.BytesField(2)
+  keyStoreFile = _messages.StringField(2)
   keyStorePasswordSecret = _messages.StringField(3)
   passwordSecret = _messages.StringField(4)
   redisClusterId = _messages.StringField(5)
   securityProtocol = _messages.EnumField('SecurityProtocolValueValuesEnum', 6)
   servers = _messages.StringField(7)
   technologyType = _messages.StringField(8)
-  trustStoreFile = _messages.BytesField(9)
+  trustStoreFile = _messages.StringField(9)
   trustStorePasswordSecret = _messages.StringField(10)
   username = _messages.StringField(11)
 
@@ -4837,10 +5554,105 @@ class GoldenGateSnowflakeConnectionProperties(_messages.Message):
   authenticationType = _messages.EnumField('AuthenticationTypeValueValuesEnum', 1)
   connectionUrl = _messages.StringField(2)
   passwordSecret = _messages.StringField(3)
-  privateKeyFile = _messages.BytesField(4)
+  privateKeyFile = _messages.StringField(4)
   privateKeyPassphraseSecret = _messages.StringField(5)
   technologyType = _messages.StringField(6)
   username = _messages.StringField(7)
+
+
+class GoogleCloudStorageIcebergStorage(_messages.Message):
+  r"""The Google Cloud Storage Iceberg storage.
+
+  Fields:
+    bucket: Required. The bucket of Google Cloud Storage.
+    projectId: Required. The project ID of Google Cloud Storage.
+    serviceAccountKeyFile: Optional. The service account key file of Google
+      Cloud Storage.
+  """
+
+  bucket = _messages.StringField(1)
+  projectId = _messages.StringField(2)
+  serviceAccountKeyFile = _messages.StringField(3)
+
+
+class HadoopIcebergCatalog(_messages.Message):
+  r"""The Hadoop Iceberg catalog."""
+
+
+class IcebergCatalog(_messages.Message):
+  r"""The Iceberg catalog details.
+
+  Enums:
+    CatalogTypeValueValuesEnum: Required. The type of Iceberg catalog.
+
+  Fields:
+    catalogType: Required. The type of Iceberg catalog.
+    glueIcebergCatalog: The Glue Iceberg catalog.
+    hadoopIcebergCatalog: The Hadoop Iceberg catalog.
+    nessieIcebergCatalog: The Nessie Iceberg catalog.
+    polarisIcebergCatalog: The Polaris Iceberg catalog.
+    restIcebergCatalog: The REST Iceberg catalog.
+  """
+
+  class CatalogTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of Iceberg catalog.
+
+    Values:
+      CATALOG_TYPE_UNSPECIFIED: Catalog type not specified.
+      GLUE: Glue catalog.
+      HADOOP: Hadoop catalog.
+      NESSIE: Nessie catalog.
+      POLARIS: Polaris catalog.
+      REST: REST catalog.
+    """
+    CATALOG_TYPE_UNSPECIFIED = 0
+    GLUE = 1
+    HADOOP = 2
+    NESSIE = 3
+    POLARIS = 4
+    REST = 5
+
+  catalogType = _messages.EnumField('CatalogTypeValueValuesEnum', 1)
+  glueIcebergCatalog = _messages.MessageField('GlueIcebergCatalog', 2)
+  hadoopIcebergCatalog = _messages.MessageField('HadoopIcebergCatalog', 3)
+  nessieIcebergCatalog = _messages.MessageField('NessieIcebergCatalog', 4)
+  polarisIcebergCatalog = _messages.MessageField('PolarisIcebergCatalog', 5)
+  restIcebergCatalog = _messages.MessageField('RestIcebergCatalog', 6)
+
+
+class IcebergStorage(_messages.Message):
+  r"""The Iceberg storage details.
+
+  Enums:
+    StorageTypeValueValuesEnum: Required. The type of Iceberg storage.
+
+  Fields:
+    amazonS3IcebergStorage: The Amazon S3 Iceberg storage.
+    azureDataLakeStorageIcebergStorage: The Azure Data Lake Storage Iceberg
+      storage.
+    googleCloudStorageIcebergStorage: The Google Cloud Storage Iceberg
+      storage.
+    storageType: Required. The type of Iceberg storage.
+  """
+
+  class StorageTypeValueValuesEnum(_messages.Enum):
+    r"""Required. The type of Iceberg storage.
+
+    Values:
+      STORAGE_TYPE_UNSPECIFIED: Storage type not specified.
+      AMAZON_S3: Amazon S3 storage.
+      GOOGLE_CLOUD_STORAGE: Google Cloud Storage storage.
+      AZURE_DATA_LAKE_STORAGE: Azure Data Lake Storage storage.
+    """
+    STORAGE_TYPE_UNSPECIFIED = 0
+    AMAZON_S3 = 1
+    GOOGLE_CLOUD_STORAGE = 2
+    AZURE_DATA_LAKE_STORAGE = 3
+
+  amazonS3IcebergStorage = _messages.MessageField('AmazonS3IcebergStorage', 1)
+  azureDataLakeStorageIcebergStorage = _messages.MessageField('AzureDataLakeStorageIcebergStorage', 2)
+  googleCloudStorageIcebergStorage = _messages.MessageField('GoogleCloudStorageIcebergStorage', 3)
+  storageType = _messages.EnumField('StorageTypeValueValuesEnum', 4)
 
 
 class IdentityConnector(_messages.Message):
@@ -4879,6 +5691,16 @@ class IdentityConnector(_messages.Message):
 
   connectionState = _messages.EnumField('ConnectionStateValueValuesEnum', 1)
   serviceAgentEmail = _messages.StringField(2)
+
+
+class IngressIp(_messages.Message):
+  r"""The ingress IPs of the GoldenGateDeployment.
+
+  Fields:
+    ingressIpAddress: Output only. The ingress IP.
+  """
+
+  ingressIpAddress = _messages.StringField(1)
 
 
 class KafkaBootstrapServer(_messages.Message):
@@ -5167,6 +5989,21 @@ class ListGoldenGateConnectionAssignmentsResponse(_messages.Message):
   nextPageToken = _messages.StringField(2)
 
 
+class ListGoldenGateConnectionTypesResponse(_messages.Message):
+  r"""Message for response to listing GoldenGateConnectionTypes
+
+  Fields:
+    goldenGateConnectionTypes: The list of GoldenGateConnectionType
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  goldenGateConnectionTypes = _messages.MessageField('GoldenGateConnectionType', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
 class ListGoldenGateConnectionsResponse(_messages.Message):
   r"""The response for `GoldenGateConnection.List`.
 
@@ -5178,6 +6015,53 @@ class ListGoldenGateConnectionsResponse(_messages.Message):
   """
 
   goldenGateConnections = _messages.MessageField('GoldenGateConnection', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGoldenGateDeploymentEnvironmentsResponse(_messages.Message):
+  r"""Message for response to listing GoldenGateDeploymentEnvironments
+
+  Fields:
+    goldenGateDeploymentEnvironments: The list of
+      GoldenGateDeploymentEnvironment
+    nextPageToken: A token identifying a page of results the server should
+      return. If this field is empty, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  goldenGateDeploymentEnvironments = _messages.MessageField('GoldenGateDeploymentEnvironment', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGoldenGateDeploymentTypesResponse(_messages.Message):
+  r"""Message for response to listing GoldenGateDeploymentTypes
+
+  Fields:
+    goldenGateDeploymentTypes: The list of GoldenGateDeploymentType
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. The resource names of locations that could
+      not be reached.
+  """
+
+  goldenGateDeploymentTypes = _messages.MessageField('GoldenGateDeploymentType', 1, repeated=True)
+  nextPageToken = _messages.StringField(2)
+  unreachable = _messages.StringField(3, repeated=True)
+
+
+class ListGoldenGateDeploymentVersionsResponse(_messages.Message):
+  r"""Message for response to listing GoldenGateDeploymentVersions
+
+  Fields:
+    goldenGateDeploymentVersions: The list of GoldenGateDeploymentVersion
+    nextPageToken: A token, which can be sent as `page_token` to retrieve the
+      next page. If this field is omitted, there are no subsequent pages.
+    unreachable: Unordered list. Locations that could not be reached.
+  """
+
+  goldenGateDeploymentVersions = _messages.MessageField('GoldenGateDeploymentVersion', 1, repeated=True)
   nextPageToken = _messages.StringField(2)
   unreachable = _messages.StringField(3, repeated=True)
 
@@ -5558,6 +6442,18 @@ class NameValuePair(_messages.Message):
 
   key = _messages.StringField(1)
   value = _messages.StringField(2)
+
+
+class NessieIcebergCatalog(_messages.Message):
+  r"""The Nessie Iceberg catalog.
+
+  Fields:
+    branch: Required. The Nessie branch.
+    uri: Required. The Nessie uri.
+  """
+
+  branch = _messages.StringField(1)
+  uri = _messages.StringField(2)
 
 
 class OdbNetwork(_messages.Message):
@@ -7253,6 +8149,41 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionAssignmentsTestRequest(
   testGoldenGateConnectionAssignmentRequest = _messages.MessageField('TestGoldenGateConnectionAssignmentRequest', 2)
 
 
+class OracledatabaseProjectsLocationsGoldenGateConnectionTypesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionTypesGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource in the format: projects/{project}/loc
+      ations/{location}/goldenGateConnectionTypes/{golden_gate_connection_type
+      }
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateConnectionTypesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      The connection_type field must be specified in the format:
+      `connection_type="ORACLE"`.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListGoldenGateConnectionTypesRequest
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
+
+
 class OracledatabaseProjectsLocationsGoldenGateConnectionsCreateRequest(_messages.Message):
   r"""A OracledatabaseProjectsLocationsGoldenGateConnectionsCreateRequest
   object.
@@ -7340,6 +8271,114 @@ class OracledatabaseProjectsLocationsGoldenGateConnectionsListRequest(_messages.
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
   parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsGetRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsGetRequest
+  object.
+
+  Fields:
+    name: Required. Name of the resource with the format: projects/{project}/l
+      ocations/{region}/goldenGateDeploymentEnvironments/{golden_gate_deployme
+      nt_environment}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsListRequest(_messages.Message):
+  r"""A
+  OracledatabaseProjectsLocationsGoldenGateDeploymentEnvironmentsListRequest
+  object.
+
+  Fields:
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent, which owns this collection of
+      GoldenGateDeploymentEnvironments. Format:
+      projects/{project}/locations/{location}
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
+  parent = _messages.StringField(3, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentTypesGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the GoldenGateDeploymentType to retrieve.
+      Format: projects/{project}/locations/{location}/goldenGateDeploymentType
+      s/{golden_gate_deployment_type}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentTypesListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Either the deployment_type and ogg_version fields must be specified in
+      the format: `deployment_type="OGG"` or `ogg_version="23ai"`.
+    orderBy: Optional. Hint for how to order the results
+    pageSize: Optional. The maximum number of items to return. The service may
+      return fewer than this value. If unspecified, at most 50 items will be
+      returned. The maximum value is 1000; values above 1000 will be coerced
+      to 1000.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. The parent resource. Format:
+      projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  orderBy = _messages.StringField(2)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+  parent = _messages.StringField(5, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsGetRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsGetRequest
+  object.
+
+  Fields:
+    name: Required. The name of the GoldenGateDeploymentVersion to retrieve.
+      Format: projects/{project}/locations/{location}/goldenGateDeploymentVers
+      ions/{golden_gate_deployment_version}
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest(_messages.Message):
+  r"""A OracledatabaseProjectsLocationsGoldenGateDeploymentVersionsListRequest
+  object.
+
+  Fields:
+    filter: Optional. An expression for filtering the results of the request.
+      Either the deployment_id and deployment_type fields must be specified in
+      the format: `deploymentId="19.0.0.0"` or `deploymentType="MAJOR"`.
+    pageSize: Optional. Requested page size. Server may return fewer items
+      than requested. If unspecified, server will pick an appropriate default.
+    pageToken: Optional. A token identifying a page of results the server
+      should return.
+    parent: Required. Parent value for ListGoldenGateDeploymentVersionsRequest
+      Format: projects/{project}/locations/{location}
+  """
+
+  filter = _messages.StringField(1)
+  pageSize = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(3)
+  parent = _messages.StringField(4, required=True)
 
 
 class OracledatabaseProjectsLocationsGoldenGateDeploymentsCreateRequest(_messages.Message):
@@ -8043,6 +9082,24 @@ class PluggableDatabaseProperties(_messages.Message):
   pdbNodeLevelDetails = _messages.MessageField('PluggableDatabaseNodeLevelDetails', 13, repeated=True)
 
 
+class PolarisIcebergCatalog(_messages.Message):
+  r"""The Polaris Iceberg catalog.
+
+  Fields:
+    clientId: Required. The Polaris client ID.
+    clientSecret: Optional. The Polaris client secret.
+    polarisCatalog: Required. The catalog name within Polaris.
+    principalRole: Required. The Polaris principal role.
+    uri: Required. The Polaris uri.
+  """
+
+  clientId = _messages.StringField(1)
+  clientSecret = _messages.StringField(2)
+  polarisCatalog = _messages.StringField(3)
+  principalRole = _messages.StringField(4)
+  uri = _messages.StringField(5)
+
+
 class RefreshAutonomousDatabaseRequest(_messages.Message):
   r"""Request message for RefreshAutonomousDatabase method.
 
@@ -8103,6 +9160,19 @@ class ResourceAvailability(_messages.Message):
 
   resourceType = _messages.EnumField('ResourceTypeValueValuesEnum', 1)
   supportedZones = _messages.StringField(2, repeated=True)
+
+
+class RestIcebergCatalog(_messages.Message):
+  r"""The REST Iceberg catalog.
+
+  Fields:
+    properties: Optional. The content of the configuration file containing
+      additional properties for the REST catalog.
+    uri: Required. The REST uri.
+  """
+
+  properties = _messages.StringField(1)
+  uri = _messages.StringField(2)
 
 
 class RestartAutonomousDatabaseRequest(_messages.Message):

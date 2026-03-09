@@ -1,0 +1,38 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+title: networkservices v1alpha1 ServiceBindingMatch export schema
+description: A gcloud export/import command YAML validation schema.
+type: object
+additionalProperties: false
+properties:
+  COMMENT:
+    type: object
+    description: User specified info ignored by gcloud import.
+    additionalProperties: false
+    properties:
+      template-id:
+        type: string
+      region:
+        type: string
+      description:
+        type: string
+      date:
+        type: string
+      version:
+        type: string
+  UNKNOWN:
+    type: array
+    description: Unknown API fields that cannot be imported.
+    items:
+      type: string
+  hostname:
+    description: |-
+      Specifies the hostname to match against the HTTP request host header.
+      Hostname is the fully qualified domain name of a network host, as defined
+      by RFC1123 with the exception that: - IPs are not allowed. - Wildcard
+      labels (`*.`) are not allowed. Hostname must be "precise" which is a
+      domain name without the terminating dot of a network host (e.g.
+      `foo.example.com`). Note that as per RFC1035 and RFC1123, a label must
+      consist of lower case alphanumeric characters or '-', and must start and
+      end with an alphanumeric character. No other punctuation is allowed.
+    type: string

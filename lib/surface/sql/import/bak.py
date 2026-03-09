@@ -18,9 +18,6 @@ Imports data into a Cloud SQL instance from a BAK backup file in Google Cloud
 Storage.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

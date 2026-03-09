@@ -446,6 +446,7 @@ class GoogleCloudVectorsearchV1DataObject(_messages.Message):
     createTime: Output only. Timestamp the dataObject was created at.
     data: Optional. The data of the dataObject.
     dataObjectId: Output only. The id of the dataObject.
+    etag: Optional. The etag of the dataObject.
     name: Identifier. The fully qualified resource name of the dataObject.
       Format: `projects/{project}/locations/{location}/collections/{collection
       }/dataObjects/{data_object_id}` The data_object_id must be 1-63
@@ -506,9 +507,10 @@ class GoogleCloudVectorsearchV1DataObject(_messages.Message):
   createTime = _messages.StringField(1)
   data = _messages.MessageField('DataValue', 2)
   dataObjectId = _messages.StringField(3)
-  name = _messages.StringField(4)
-  updateTime = _messages.StringField(5)
-  vectors = _messages.MessageField('VectorsValue', 6)
+  etag = _messages.StringField(4)
+  name = _messages.StringField(5)
+  updateTime = _messages.StringField(6)
+  vectors = _messages.MessageField('VectorsValue', 7)
 
 
 class GoogleCloudVectorsearchV1DedicatedInfrastructure(_messages.Message):
@@ -558,12 +560,16 @@ class GoogleCloudVectorsearchV1DeleteDataObjectRequest(_messages.Message):
   r"""Request message for DataObjectService.DeleteDataObject.
 
   Fields:
+    etag: Optional. The current etag of the DataObject. If an etag is provided
+      and does not match the current etag of the DataObject, deletion will be
+      blocked and an ABORTED error will be returned.
     name: Required. The name of the DataObject resource to be deleted. Format:
       `projects/{project}/locations/{location}/collections/{collection}/dataOb
       jects/{dataObject}`
   """
 
-  name = _messages.StringField(1)
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2)
 
 
 class GoogleCloudVectorsearchV1DenseScannIndex(_messages.Message):
@@ -865,11 +871,9 @@ class GoogleCloudVectorsearchV1Ranker(_messages.Message):
 
   Fields:
     rrf: Reciprocal Rank Fusion ranking.
-    vertex: Vertex AI ranking.
   """
 
   rrf = _messages.MessageField('GoogleCloudVectorsearchV1ReciprocalRankFusion', 1)
-  vertex = _messages.MessageField('GoogleCloudVectorsearchV1VertexRanker', 2)
 
 
 class GoogleCloudVectorsearchV1ReciprocalRankFusion(_messages.Message):
@@ -1314,26 +1318,6 @@ class GoogleCloudVectorsearchV1VertexEmbeddingConfig(_messages.Message):
   textTemplate = _messages.StringField(3)
 
 
-class GoogleCloudVectorsearchV1VertexRanker(_messages.Message):
-  r"""Defines a ranker using the Vertex AI ranking service. See
-  https://cloud.google.com/generative-ai-app-builder/docs/ranking for details.
-
-  Fields:
-    contentTemplate: Optional. The template used to generate the record's
-      content.
-    model: Required. The model used for ranking documents. If no model is
-      specified, then semantic-ranker-default@latest is used.
-    query: Required. The query against which the records are ranked and
-      scored.
-    titleTemplate: Optional. The template used to generate the record's title.
-  """
-
-  contentTemplate = _messages.StringField(1)
-  model = _messages.StringField(2)
-  query = _messages.StringField(3)
-  titleTemplate = _messages.StringField(4)
-
-
 class GoogleLongrunningCancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
@@ -1725,12 +1709,16 @@ class VectorsearchProjectsLocationsCollectionsDataObjectsDeleteRequest(_messages
   object.
 
   Fields:
+    etag: Optional. The current etag of the DataObject. If an etag is provided
+      and does not match the current etag of the DataObject, deletion will be
+      blocked and an ABORTED error will be returned.
     name: Required. The name of the DataObject resource to be deleted. Format:
       `projects/{project}/locations/{location}/collections/{collection}/dataOb
       jects/{dataObject}`
   """
 
-  name = _messages.StringField(1, required=True)
+  etag = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
 
 
 class VectorsearchProjectsLocationsCollectionsDataObjectsGetRequest(_messages.Message):

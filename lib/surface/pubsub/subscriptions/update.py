@@ -14,9 +14,6 @@
 # limitations under the License.
 """Cloud Pub/Sub subscriptions update command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.pubsub import subscriptions
 from googlecloudsdk.api_lib.util import exceptions
@@ -193,6 +190,7 @@ class Update(base.UpdateCommand):
     bigtable_service_account_email = getattr(
         args, 'bigtable_service_account_email', None
     )
+    bigtable_write_metadata = getattr(args, 'bigtable_write_metadata', None)
 
     enable_exactly_once_delivery = getattr(
         args, 'enable_exactly_once_delivery', None
@@ -244,6 +242,7 @@ class Update(base.UpdateCommand):
           bigtable_table=bigtable_table,
           bigtable_app_profile_id=bigtable_app_profile_id,
           bigtable_service_account_email=bigtable_service_account_email,
+          bigtable_write_metadata=bigtable_write_metadata,
           clear_bigtable_config=clear_bigtable_config,
           message_transforms_file=message_transforms_file,
           clear_message_transforms=clear_message_transforms,

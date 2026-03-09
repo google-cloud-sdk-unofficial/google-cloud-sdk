@@ -15,9 +15,6 @@
 """Command to create a login configuration file used to enable browser based sign-in using third-party user identities via gcloud auth login.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import os

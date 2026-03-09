@@ -14,9 +14,6 @@
 # limitations under the License.
 """Displays details of a Google Cloud Function."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1

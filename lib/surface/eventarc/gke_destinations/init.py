@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for initializing a project for Eventarc GKE."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import gke_destinations
 from googlecloudsdk.calliope import base

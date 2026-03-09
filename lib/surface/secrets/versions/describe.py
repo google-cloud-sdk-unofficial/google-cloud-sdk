@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe metadata about the secret version."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.secrets import api as secrets_api
 from googlecloudsdk.calliope import base

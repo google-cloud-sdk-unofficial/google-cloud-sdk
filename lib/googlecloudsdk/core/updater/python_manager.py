@@ -20,7 +20,7 @@ import sys
 
 from googlecloudsdk.core import config
 from googlecloudsdk.core import execution_utils
-from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import encoding
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 
@@ -89,25 +89,36 @@ def _IsHomebrewInstalled():
   return os.path.isdir(HOMEBREW_BIN) and 'homebrew' in config.GcloudPath()
 
 
-def _PromptPythonInstall():
-  return f'Download and run Python {PYTHON_VERSION} installer?'
+def _PrintPythonInstallError(error):
+  print(f'Failed to install the required Python. Error: {error}')
 
 
 def _BrewInstallPython():
   """Make sure python version is correct for user using gcloud with homebrew."""
+  python_to_use = f'{HOMEBREW_BIN}/python{PYTHON_VERSION}'
+  if os.path.isfile(python_to_use):
+    print(f'Python {PYTHON_VERSION} is already installed via homebrew.')
+    return python_to_use
+
   brew_install = f'{HOMEBREW_BIN}/brew install python@{PYTHON_VERSION}'
   print(f'Running "{brew_install}".')
 
   exit_code = execution_utils.Exec(brew_install.split(' '), no_exit=True)
   if exit_code != 0:
-    return (
+    _PrintPythonInstallError(
         f'"{brew_install}" failed. Please brew install '
         f'python@{PYTHON_VERSION} manually.')
-  return None
+    return None
+  return python_to_use
 
 
 def _MacInstallPython():
   """Optionally install Python on Mac machines."""
+
+  python_to_use = f'{MACOS_PYTHON_INSTALL_PATH}bin/python3'
+  if os.path.isfile(python_to_use):
+    print(f'Python {PYTHON_VERSION} is already installed.')
+    return python_to_use
 
   print(f'Running Python {PYTHON_VERSION} installer, you may be prompted for '
         'sudo password...')
@@ -122,25 +133,49 @@ def _MacInstallPython():
       curl_args = ['curl', '--silent', '-O', MACOS_PYTHON_URL]
       exit_code = execution_utils.Exec(curl_args, no_exit=True)
       if exit_code != 0:
-        return 'Failed to download Python installer'
+        _PrintPythonInstallError('Failed to download Python installer')
+        return None
 
       exit_code = execution_utils.Exec(
           ['tar', '-xf', MACOS_PYTHON], no_exit=True)
       if exit_code != 0:
-        return 'Failed to extract Python installer'
+        _PrintPythonInstallError('Failed to extract Python installer')
+        return None
 
       exit_code = execution_utils.Exec([
           'sudo', 'installer', '-target', '/', '-pkg',
           './python-3.13.7-macos11.pkg'
       ], no_exit=True)
       if exit_code != 0:
-        return 'Installer failed.'
+        _PrintPythonInstallError('Installer failed.')
+        return None
 
-  return None
+  return python_to_use
 
 
-def PromptAndInstallPythonOnMac():
-  """Optionally install Python on Mac machines."""
+def _GcloudRequiredPythonToUse():
+  """Determine python install path."""
+  homebrew_installed = _IsHomebrewInstalled()
+  homebrew_python = f'{HOMEBREW_BIN}/python{PYTHON_VERSION}'
+  gcloud_python = f'{MACOS_PYTHON_INSTALL_PATH}bin/python3'
+  user_specified_python = encoding.GetEncodedValue(
+      os.environ, 'CLOUDSDK_PYTHON')
+
+  if homebrew_installed and os.path.isfile(homebrew_python):
+    return homebrew_python
+  elif os.path.isfile(gcloud_python):
+    return gcloud_python
+  elif user_specified_python and sys.version_info[:2] == PYTHON_VERSION_INFO:
+    # If the user specified python is the same version as the gcloud required
+    # python, then we should use it.
+    print(f'Using CLOUDSDK_PYTHON Python: {user_specified_python}')
+    return sys.executable
+  else:
+    return None
+
+
+def InstallPythonAndDependenciesOnMac():
+  """Install Python and dependencies on Mac machines."""
   if platforms.OperatingSystem.Current() != platforms.OperatingSystem.MACOSX:
     return
 
@@ -148,42 +183,32 @@ def PromptAndInstallPythonOnMac():
       f'\nGoogle Cloud CLI works best with Python {PYTHON_VERSION} '
       'and certain modules.\n')
 
-  # Determine python install path
-  homebrew_installed = _IsHomebrewInstalled()
+  # Get which Python to use to create virtualenv and install dependencies.
+  python_to_use = _GcloudRequiredPythonToUse()
 
-  if homebrew_installed:
-    python_to_use = f'{HOMEBREW_BIN}/python{PYTHON_VERSION}'
-  else:
-    python_to_use = f'{MACOS_PYTHON_INSTALL_PATH}bin/python3'
-  already_installed = os.path.isfile(python_to_use)
-
-  install_errors = None
-  if not already_installed:
+  # If gcloud required Python version is not installed, install it.
+  if not python_to_use:
+    # Determine python install path
+    homebrew_installed = _IsHomebrewInstalled()
     if homebrew_installed:
-      install_errors = _BrewInstallPython()
+      python_to_use = _BrewInstallPython()
     else:
-      # Prompt for user permission to install python if not already installed
-      prompt = _PromptPythonInstall()
-      if not console_io.PromptContinue(prompt_string=prompt, default=True):
-        return
-      install_errors = _MacInstallPython()
+      python_to_use = _MacInstallPython()
 
   # Update python dependencies
-  if not install_errors:
+  if python_to_use:
     os.environ['CLOUDSDK_PYTHON'] = python_to_use
     print('Setting up virtual environment')
     UpdatePythonDependencies(python_to_use)
-  else:
-    print(f'Failed to install Python. Error: {install_errors}')
 
 
-def CheckXcodeCommandLineToolsInstalled() -> bool:
+def CheckXcodeCommandLineToolsInstalled():
   """Checks if Xcode Command Line Tools is installed."""
   exit_code = execution_utils.Exec(['xcode-select', '-p'], no_exit=True)
   return exit_code == 0
 
 
-def InstallXcodeCommandLineTools() -> str | None:
+def InstallXcodeCommandLineTools():
   """Optionally install Xcode Command Line Tools on Mac machines."""
   if platforms.OperatingSystem.Current() != platforms.OperatingSystem.MACOSX:
     return None

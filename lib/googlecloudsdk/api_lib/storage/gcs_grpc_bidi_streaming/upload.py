@@ -373,6 +373,11 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
         posix_to_set=self._posix_to_set,
     )
 
+    metadata_util.set_metadata_if_source_is_object_resource(
+        self._source_resource,
+        destination_object,
+    )
+
     write_object_spec = self._client.types.WriteObjectSpec(
         resource=destination_object,
         if_generation_match=copy_util.get_generation_match_value(
@@ -382,6 +387,7 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
             self._request_config.precondition_metageneration_match
         ),
         appendable=True,
+        predefined_acl=self._request_config.predefined_acl_string,
     )
     return self._client.types.BidiWriteObjectRequest(
         write_object_spec=write_object_spec,

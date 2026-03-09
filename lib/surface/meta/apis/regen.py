@@ -15,9 +15,6 @@
 
 """A command that regenerates existing or new gcloud API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import fnmatch

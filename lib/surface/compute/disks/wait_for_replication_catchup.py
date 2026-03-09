@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for waiting for the asynchronous replication of a disk-pair to catch up."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base

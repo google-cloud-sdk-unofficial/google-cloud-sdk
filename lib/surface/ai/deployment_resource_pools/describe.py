@@ -14,9 +14,6 @@
 # limitations under the License.
 """Vertex AI deployment resource pools describe command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.deployment_resource_pools import client
 from googlecloudsdk.calliope import base

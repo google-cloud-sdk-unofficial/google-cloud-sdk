@@ -15,9 +15,6 @@
 """The command lists the deployment configurations of a given model supported by Model Garden."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.ai.model_garden import client as client_mg

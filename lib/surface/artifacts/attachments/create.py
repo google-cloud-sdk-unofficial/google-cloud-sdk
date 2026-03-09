@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements the command to create nand upload attachments to a repository."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import hashlib
 import os

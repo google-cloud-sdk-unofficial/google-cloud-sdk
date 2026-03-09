@@ -158,6 +158,57 @@
                     projects/{project}/global/backendServices/{backendService}
                     If not specified, all backend services connected to the forwarding_rule
                     will be affected.
+            - group:
+                api_field: experimentTemplate.action.gceFailCompute
+                required: false
+                help_text: |-
+                  GCEFailCompute specifies which instances to fail.
+                params:
+                - group:
+                    mutex: true
+                    help_text: |-
+                      Arguments for the specifier.
+                    params:
+                    - arg_name: gce-fail-compute-instance
+                      api_field: experimentTemplate.action.gceFailCompute.instance
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        Specify a single instance by name. Format:
+                        "projects/*/zones/*/instances/*".
+                    - arg_name: gce-fail-compute-secure-tag-value
+                      api_field: experimentTemplate.action.gceFailCompute.secureTagValue
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        Specify a group of non-MIG (Managed Instance Group) instances by secure
+                        tag. See https://cloud.google.com/firewall/docs/tags-firewalls-overview
+                        for more details on tags. Format: "tagValues/[0-9]+"
+                    - group:
+                        api_field: experimentTemplate.action.gceFailCompute.mig
+                        required: false
+                        help_text: |-
+                          Details specifying a Managed Instance Group (MIG) and optionally a zone
+                          within it.
+                        params:
+                        - arg_name: gce-fail-compute-mig-instance-group
+                          api_field: experimentTemplate.action.gceFailCompute.mig.instanceGroup
+                          required: false
+                          repeated: false
+                          help_text: |-
+                            The managed instance group. Can be zonal or regional.
+                        - arg_name: gce-fail-compute-mig-location
+                          api_field: experimentTemplate.action.gceFailCompute.mig.location
+                          required: false
+                          repeated: false
+                          help_text: |-
+                            Optionally specify a zone location to further restrict a regional MIG.
+                    - arg_name: gce-fail-compute-location
+                      api_field: experimentTemplate.action.gceFailCompute.location
+                      required: false
+                      repeated: false
+                      help_text: |-
+                        Specify that an entire zone or region should be affected.
   request:
     api_version: v1alpha
     collection:

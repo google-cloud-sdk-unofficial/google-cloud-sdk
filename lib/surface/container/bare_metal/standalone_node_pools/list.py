@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list node pools in an Anthos standalone cluster on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages as protorpc_message
 from googlecloudsdk.api_lib.container.gkeonprem import standalone_node_pools as apis

@@ -59,6 +59,18 @@ DETAILED_HELP = {
             --instance-selection="name=my-selection,machine-type=e2-standard-8,machine-type=e2-standard-16" \
             --target-distribution-shape="any" \
             --zones="us-central1-a,us-central1-b"
+
+      To check the availability of 10 `ct5lp-hightpu-4t` Flex-start VMs that
+      will run for 1 day in any single zone in the `us-central1` region, run the
+      following command:
+
+        $ {command} \
+            --region="us-central1" \
+            --provisioning-model="FLEX_START" \
+            --max-run-duration=1d \
+            --size=10 \
+            --instance-selection-machine-types="ct5lp-hightpu-4t" \
+            --target-distribution-shape="any-single-zone"
       """,
 }
 
@@ -117,6 +129,7 @@ class Capacity(base.Command):
     """Registers flags for this command."""
     flags.AddRegionFlag(parser)
     flags.AddProvisioningModelFlag(parser)
+    flags.AddMaxRunDurationFlag(parser)
     parser.add_argument(
         "--size",
         type=int,
@@ -218,6 +231,19 @@ class Capacity(base.Command):
             args.provisioning_model
         )
     )
+
+    if args.provisioning_model == "FLEX_START" and not args.IsSpecified(
+        "max_run_duration"
+    ):
+      raise exceptions.RequiredArgumentException(
+          "--max_run_duration",
+          "The --max-run-duration flag is required when the provisioning model"
+          " is FLEX_START.",
+      )
+
+    if args.IsSpecified("max_run_duration"):
+      scheduling.maxRunDuration = f"{args.max_run_duration}s"
+
     instance_properties = messages.CapacityAdviceRequestInstanceProperties(
         scheduling=scheduling)
 

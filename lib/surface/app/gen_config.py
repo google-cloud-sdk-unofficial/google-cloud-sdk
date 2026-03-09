@@ -16,9 +16,6 @@
 """The gen-config command."""
 # TODO(b/172812887) - Delete this command entirely; it's PY2 only.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import os

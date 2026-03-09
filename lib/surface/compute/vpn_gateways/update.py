@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update labels for VPN gateways."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.vpn_gateways import vpn_gateways_utils

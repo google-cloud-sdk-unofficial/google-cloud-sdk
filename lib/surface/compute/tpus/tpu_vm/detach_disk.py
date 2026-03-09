@@ -19,9 +19,6 @@ in a form that is decoupled from the Create and Delete
 lifecycle of the actual TPU VM.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 from googlecloudsdk.calliope import base

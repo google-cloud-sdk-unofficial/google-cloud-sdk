@@ -1,39 +1,28 @@
-- release_tracks: [ALPHA]
-  hidden: true
-  help_text:
-    brief: |
-      Create a new artifact guard policy.
-    description: |
-      Create a new artifact policy, which is used to guardrail the vulnerabilities that can
-      be present in an artifact. Each policy has two defining components:
-      1. Policy Definition: The various rules a given image must adhere to. For this release, the
-        policy definition is limited to a list of allowed vulnerabilities.
-      2. Scope: This defines the resources that the policy will be applied to. For this release, the
-        scope is limited to pipeline type.
-    examples: |
-      Create a policy with full name:
-      $ {command} organizations/123/locations/global/policies/my-policy --policy-file-path=/usr/local/home/user/policy.yaml
+release_tracks: [ALPHA]
 
-      Create a policy with policy id:
-      $ {command} my-policy --policy-file-path=/usr/local/home/user/policy.yaml --location=global --organization=123
+help_text:
+  brief: Create a new artifact guard policy.
+  description: |
+    Create a new artifact policy to guard against vulnerabilities.
 
-  request:
-    collection: artifactscanguard.organizations.locations.policies
-    api_version: v1alpha
-    method: create
+request:
+  api_version: v1alpha
+  collection:
+  - artifactscanguard.organizations.locations.policies
+  - artifactscanguard.projects.locations.policies
+  method: create
+  parse_resource_into_request: true
 
-  arguments:
-    resource:
-      spec: !REF googlecloudsdk.command_lib.scc.resources:policy
-      help_text: |
-        The full name of the policy to create. For example:
-        organizations/123/locations/global/policies/myPolicy
-
-    params:
-    - arg_name: policy-file-path
-      api_field: policy
-      required: true
-      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
-      processor: googlecloudsdk.core.yaml:load
-      help_text: |
-        YAML file containing the body of the policy to be created.
+arguments:
+  params:
+  - help_text: The policy to create.
+    resource_spec: !REF googlecloudsdk.command_lib.scc.resources:organization_or_project_location_policy
+    is_positional: true
+    request_id_field: policyId
+  - arg_name: policy-file-path
+    api_field: policy
+    required: true
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    processor: googlecloudsdk.core.yaml:load
+    help_text: |
+      Path to a YAML file containing the policy definition.

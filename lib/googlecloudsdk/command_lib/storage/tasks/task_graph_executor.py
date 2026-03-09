@@ -658,9 +658,34 @@ class TaskGraphExecutor:
               target=self._handle_task_output
           )
 
-          get_tasks_from_iterator_thread.start()
-          add_executable_tasks_to_queue_thread.start()
-          handle_task_output_thread.start()
+          # Robustly start the management threads. If any of them
+          # fails to start, ensure that the ones that did start are
+          # joined properly to avoid hanging.
+          threads_to_start = [
+              get_tasks_from_iterator_thread,
+              add_executable_tasks_to_queue_thread,
+              handle_task_output_thread,
+          ]
+          started_threads = []
+          try:
+            for thread in threads_to_start:
+              thread.start()
+              started_threads.append(thread)
+          except Exception:
+            # If any thread fails to start, stop the ones that did start.
+            self._accepting_new_tasks = False
+            self._executable_tasks.put(_SHUTDOWN)
+            self._task_output_queue.put(_SHUTDOWN)
+            # The get_tasks_from_iterator thread might be blocked on the
+            # task graph semaphore. Release it to allow the thread to exit.
+            self._task_graph._top_level_task_semaphore.release()    # pylint: disable=protected-access
+            # pylint: enable=protected-access
+            for thread in started_threads:
+              if thread.is_alive():
+                # Join with a timeout to avoid hanging if the thread is
+                # truly stuck.
+                thread.join(timeout=1.0)
+            raise
 
           if task_graph_debugger.is_task_graph_debugging_enabled():
             self._management_threads_name_to_function[

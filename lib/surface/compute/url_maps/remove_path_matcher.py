@@ -15,9 +15,6 @@
 
 """Command for removing a path matcher from a URL map."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 

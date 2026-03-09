@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to print access tokens for a GKE cluster on GEC."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.edge_cloud.container import util
 from googlecloudsdk.calliope import base

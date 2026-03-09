@@ -14,9 +14,6 @@
 # limitations under the License.
 """Bare Metal Solution instance update command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.mps.mps_client import MpsClient
 from googlecloudsdk.api_lib.util import waiter

@@ -15,9 +15,6 @@
 
 """Transcoder API job templates describe command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.transcoder import templates
 from googlecloudsdk.calliope import base

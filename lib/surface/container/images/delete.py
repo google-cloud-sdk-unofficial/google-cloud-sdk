@@ -14,9 +14,6 @@
 # limitations under the License.
 """Delete images command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from containerregistry.client import docker_name
 from containerregistry.client.v2_2 import docker_session

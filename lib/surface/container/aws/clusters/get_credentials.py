@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get credentials of an Anthos cluster on AWS."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import aws as api_util
 from googlecloudsdk.api_lib.container.gkemulticloud import util

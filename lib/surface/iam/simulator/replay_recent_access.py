@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to simulate the IAM policy changes."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding_helper
 from apitools.base.py import list_pager

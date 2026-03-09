@@ -24,6 +24,7 @@
           $ {command} my-run --location=us-central1 --gcs-path=gs://my-bucket/my-run
           --gke-cluster-name=projects/my-project/locations/us-central1/clusters/my-cluster
           --gke-workload-name=my-workload --gke-kind=Job --gke-namespace=default
+          --gke-workload-create-time=2026-02-20T06:06:06Z
   arguments:
     params:
     - help_text: |-
@@ -40,7 +41,7 @@
       help_text: |-
         Display name for the run.
     - arg_name: run-group
-      api_field: machineLearningRun.runSet
+      api_field: machineLearningRun.runGroup
       required: false
       default: ''
       repeated: false
@@ -140,9 +141,8 @@
     - arg_name: orchestrator
       api_field: machineLearningRun.orchestrator
       required: false
-      default: gke
       help_text: |-
-        The orchestrator used for the run. If not specified, gke will be used by default.
+        The orchestrator used for the run.
       choices:
       - arg_value: gce
         enum_value: GCE
@@ -177,19 +177,19 @@
                 params:
                 - arg_name: gke-workload-name
                   api_field: machineLearningRun.workloadDetails.gke.id
-                  required: true
+                  required: false
                   repeated: false
                   help_text: |-
                     The identifier of the workload. Example - jobset-abcd
                 - arg_name: gke-kind
                   api_field: machineLearningRun.workloadDetails.gke.kind
-                  required: true
+                  required: false
                   repeated: false
                   help_text: |-
                     The kind of the workload. Example - JobSet
                 - arg_name: gke-cluster-name
                   api_field: machineLearningRun.workloadDetails.gke.cluster
-                  required: true
+                  required: false
                   repeated: false
                   help_text: |-
                     The cluster of the workload.
@@ -197,10 +197,17 @@
                     name>
                 - arg_name: gke-namespace
                   api_field: machineLearningRun.workloadDetails.gke.namespace
-                  required: true
+                  required: false
                   repeated: false
                   help_text: |-
                     The namespace of the workload. Example - default
+                - arg_name: gke-workload-create-time
+                  api_field: machineLearningRun.workloadDetails.gke.createTime
+                  required: false
+                  repeated: false
+                  help_text: |-
+                    The create timestamp of the workload.
+                    Example - 2026-02-20T06:00:00Z
     - arg_name: run-phase
       api_field: machineLearningRun.runPhase
       required: false

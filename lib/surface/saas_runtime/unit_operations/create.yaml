@@ -99,6 +99,19 @@
               is_positional: false
               required: false
               type: bool
+        - group:
+            release_tracks: [ALPHA]
+            required: false
+            help_text: |-
+              Flag update is the unit operation that pushes new flag values to Units.
+            params:
+            - arg_name: flag-update
+              help_text: |-
+                Flag release being applied by UnitOperation.
+              is_positional: false
+              resource_spec: !REF googlecloudsdk.command_lib.saas_runtime.resources:flag_release
+              resource_method_params:
+                unitOperation.flagUpdate.flagRelease: '{__relative_name__}'
     - help_text: |-
         Identifier. The resource name (full URI of the resource) following the standard naming
         scheme:

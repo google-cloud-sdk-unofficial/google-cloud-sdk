@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create instant snapshot command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
@@ -76,6 +73,15 @@ def _CommonArgs(parser):
       'table(name, location(), location_scope(), status)'
   )
   _SourceArgs(parser)
+  parser.add_argument(
+      '--resource-manager-tags',
+      type=arg_parsers.ArgDict(),
+      metavar='KEY=VALUE',
+      help=(
+          'A comma-separated list of Resource Manager tags to apply to the'
+          ' snapshot.'
+      ),
+  )
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -113,9 +119,7 @@ class Create(base.Command):
               args, compute_holder, compute_scope.ScopeEnum.ZONE
           ),
       )
-      if self.ReleaseTrack() == base.ReleaseTrack.ALPHA and args.IsSpecified(
-          'resource_manager_tags'
-      ):
+      if args.IsSpecified('resource_manager_tags'):
         instant_snapshot.params = _CreateInstantSnapshotParams(
             messages, args.resource_manager_tags
         )
@@ -181,15 +185,6 @@ class CreateAlpha(Create):
   @classmethod
   def Args(cls, parser):
     _CommonArgs(parser)
-    parser.add_argument(
-        '--resource-manager-tags',
-        type=arg_parsers.ArgDict(),
-        metavar='KEY=VALUE',
-        help=(
-            'A comma-separated list of Resource Manager tags to apply to the'
-            ' snapshot.'
-        ),
-    )
 
   def Run(self, args):
     return self._Run(args)

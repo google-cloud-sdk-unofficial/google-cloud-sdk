@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to delete an Anthos cluster on Azure."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import azure as api_util
 from googlecloudsdk.calliope import base

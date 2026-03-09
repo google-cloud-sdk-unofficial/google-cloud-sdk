@@ -33,8 +33,7 @@ class GoBinaryError(ComposeError):
   """
 
   def __init__(self, message, exit_code):
-    super(GoBinaryError, self).__init__(message)
-    self.exit_code = exit_code
+    super(GoBinaryError, self).__init__(message, exit_code=exit_code)
 
 
 class GcloudError(ComposeError):

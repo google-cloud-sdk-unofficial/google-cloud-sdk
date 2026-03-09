@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements command to list guest policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute.instances.ops_agents import ops_agents_policy as agent_policy

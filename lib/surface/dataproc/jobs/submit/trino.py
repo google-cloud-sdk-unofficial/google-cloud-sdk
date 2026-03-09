@@ -14,9 +14,6 @@
 # limitations under the License.
 """Submit a Trino job to a cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.command_lib.dataproc.jobs import submitter
 from googlecloudsdk.command_lib.dataproc.jobs import trino

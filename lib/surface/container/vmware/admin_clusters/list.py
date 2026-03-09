@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all admin clusters in the Anthos clusters on VMware API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import vmware_admin_clusters as apis
 from googlecloudsdk.calliope import base

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list suggested environment upgrades."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.composer import image_versions_util as image_versions_command_util

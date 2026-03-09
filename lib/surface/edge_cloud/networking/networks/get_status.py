@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get the status of a Distributed Cloud Edge Network network."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.edge_cloud.networking.networks import networks
 from googlecloudsdk.calliope import base

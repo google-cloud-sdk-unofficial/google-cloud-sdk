@@ -49,8 +49,8 @@ class Create(base.CreateCommand):
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. If not specified, this defaults to the"
-            " latest version."
+            "The model server version. If omitted, the most recently"
+            " benchmarked version is used."
         ),
     )
     parser.add_argument(
@@ -129,8 +129,8 @@ class Create(base.CreateCommand):
         help=(
             "The manifest will be optimized for this use case. Options are:"
             " Advanced Customer Support, Code Completion, Text Summarization,"
-            " Chatbot (ShareGPT), Code Generation, Deep Research. Will default"
-            " to Chatbot if not specified."
+            " Chatbot (ShareGPT), Code Generation, Deep Research. If omitted,"
+            " defaults to Chatbot (ShareGPT)."
         ),
     )
     parser.add_argument(
@@ -145,9 +145,8 @@ class Create(base.CreateCommand):
         "--serving-stack-version",
         required=False,
         help=(
-            "The serving stack version to filter manifests by. If not"
-            " provided, manifests for all versions that support"
-            " the given model and model server will be considered."
+            "The serving stack version. If omitted, the most recently"
+            " benchmarked version is used."
         ),
     )
 
@@ -258,8 +257,8 @@ class CreateAlpha(base.CreateCommand):
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. If not specified, this defaults to the"
-            " latest version."
+            "The model server version. If omitted, the most recently"
+            " benchmarked version is used."
         ),
     )
     parser.add_argument(

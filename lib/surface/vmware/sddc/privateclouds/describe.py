@@ -14,9 +14,6 @@
 # limitations under the License.
 """'vmware sddc privateclouds describe' command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.sddc.privateclouds import PrivatecloudsClient
 from googlecloudsdk.calliope import base

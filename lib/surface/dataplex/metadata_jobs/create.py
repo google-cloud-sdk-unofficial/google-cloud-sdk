@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud dataplex metadata-jobs create` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import metadata_job as metadata_job_lib
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util

@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command group for Network Services Multicast Group Ranges."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

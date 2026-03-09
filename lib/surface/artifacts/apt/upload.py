@@ -15,9 +15,6 @@
 
 """Implements the command to upload Debian packages to a repository."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import transfer
 from googlecloudsdk.api_lib.util import apis

@@ -209,7 +209,7 @@ def DisplayQueryResults(result, out):
     table_format = ','.join('row.slice({0}).join():label="{1}"'.format(i, f)
                             for i, f in enumerate(fields))
     rows = [{
-        'row': encoding.MessageToPyValue(row.entry)
+        'row': encoding.MessageToPyValue(row)
     } for row in result.rows]
 
     # Can't use the PrintText method because we want special formatting.

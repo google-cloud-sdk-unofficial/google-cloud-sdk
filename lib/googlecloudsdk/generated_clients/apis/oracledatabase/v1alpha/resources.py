@@ -272,6 +272,17 @@ class Collections(enum.Enum):
       ['name'],
       True
   )
+  PROJECTS_LOCATIONS_GOLDENGATECONNECTIONTYPES = (
+      'projects.locations.goldenGateConnectionTypes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'goldenGateConnectionTypes/{goldenGateConnectionTypesId}',
+      },
+      ['name'],
+      True
+  )
   PROJECTS_LOCATIONS_GOLDENGATECONNECTIONS = (
       'projects.locations.goldenGateConnections',
       '{+name}',
@@ -279,6 +290,40 @@ class Collections(enum.Enum):
           '':
               'projects/{projectsId}/locations/{locationsId}/'
               'goldenGateConnections/{goldenGateConnectionsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTENVIRONMENTS = (
+      'projects.locations.goldenGateDeploymentEnvironments',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'goldenGateDeploymentEnvironments/'
+              '{goldenGateDeploymentEnvironmentsId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTTYPES = (
+      'projects.locations.goldenGateDeploymentTypes',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'goldenGateDeploymentTypes/{goldenGateDeploymentTypesId}',
+      },
+      ['name'],
+      True
+  )
+  PROJECTS_LOCATIONS_GOLDENGATEDEPLOYMENTVERSIONS = (
+      'projects.locations.goldenGateDeploymentVersions',
+      '{+name}',
+      {
+          '':
+              'projects/{projectsId}/locations/{locationsId}/'
+              'goldenGateDeploymentVersions/{goldenGateDeploymentVersionsId}',
       },
       ['name'],
       True

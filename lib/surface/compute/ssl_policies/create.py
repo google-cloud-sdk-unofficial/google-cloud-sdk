@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a new SSL policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
@@ -25,6 +22,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
+@base.UniverseCompatible
 class Create(base.CreateCommand):
   """Create a new Compute Engine SSL policy.
 
@@ -50,6 +48,8 @@ class Create(base.CreateCommand):
     flags.GetProfileFlag(default='COMPATIBLE').AddToParser(parser)
     flags.GetMinTlsVersionFlag(default='1.0').AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
 
   def Run(self, args):
     """Issues the request to create a new SSL policy."""
@@ -65,7 +65,13 @@ class Create(base.CreateCommand):
         description=args.description,
         profile=args.profile,
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
-        custom_features=custom_features)
+        custom_features=custom_features,
+        post_quantum_key_exchange=(
+            args.post_quantum_key_exchange
+            if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+            else None
+        ),
+    )
     operation_ref = helper.Create(ssl_policy_ref, ssl_policy_to_insert)
     return helper.WaitForOperation(ssl_policy_ref, operation_ref,
                                    'Creating SSL policy')

@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for listing an organization posture deployments."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.scc.postures import util as securityposture_client

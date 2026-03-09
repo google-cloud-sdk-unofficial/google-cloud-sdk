@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to import and update an Anthos clusters on bare metal API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_clusters as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations

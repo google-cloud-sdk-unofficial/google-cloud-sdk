@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to query Anthos on bare metal standalone cluster version configuration."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import standalone_clusters as apis
 from googlecloudsdk.calliope import base

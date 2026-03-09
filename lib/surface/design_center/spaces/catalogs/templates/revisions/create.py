@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a catalog template revision."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.design_center import utils
 from googlecloudsdk.api_lib.util import messages as messages_util

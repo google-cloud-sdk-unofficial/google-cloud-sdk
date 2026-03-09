@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get IAM policy for a resource and its ancestors."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import policies_flags

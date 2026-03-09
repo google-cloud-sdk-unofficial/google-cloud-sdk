@@ -14,9 +14,6 @@
 # limitations under the License.
 """The command to update Config Management Feature."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import apitools
 from googlecloudsdk import api_lib

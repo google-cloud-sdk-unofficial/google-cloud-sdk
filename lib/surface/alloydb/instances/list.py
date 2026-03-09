@@ -15,9 +15,6 @@
 """Lists AlloyDB instances in a given cluster."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.calliope import base

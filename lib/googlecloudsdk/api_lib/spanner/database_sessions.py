@@ -15,7 +15,6 @@
 """Spanner database sessions API helper."""
 
 
-from apitools.base.py import encoding
 from apitools.base.py import exceptions as apitools_exceptions
 from apitools.base.py import extra_types
 from apitools.base.py import http_wrapper
@@ -110,7 +109,6 @@ def ExecuteSql(sql, query_mode, session_ref, read_only_options=None,
   """
   client = _GetClientInstance('spanner', 'v1', http_timeout_sec)
   msgs = apis.GetMessagesModule('spanner', 'v1')
-  _RegisterCustomMessageCodec(msgs)
 
   execute_sql_request = _GetQueryRequest(
       sql,
@@ -127,24 +125,6 @@ def ExecuteSql(sql, query_mode, session_ref, read_only_options=None,
     result_set = msgs.ResultSet(metadata=resp.metadata)
     Commit(session_ref, [], result_set.metadata.transaction.id)
   return resp
-
-
-def _RegisterCustomMessageCodec(msgs):
-  """Register custom message code.
-
-  Args:
-    msgs: Spanner v1 messages.
-  """
-  # TODO(b/33482229): remove this workaround
-  def _ToJson(msg):
-    return extra_types.JsonProtoEncoder(
-        extra_types.JsonArray(entries=msg.entry))
-  def _FromJson(data):
-    return msgs.ResultSet.RowsValueListEntry(
-        entry=extra_types.JsonProtoDecoder(data).entries)
-  encoding.RegisterCustomMessageCodec(
-      encoder=_ToJson, decoder=_FromJson)(
-          msgs.ResultSet.RowsValueListEntry)
 
 
 def _GetQueryRequest(sql,
@@ -297,15 +277,6 @@ class MutationFactory(object):
   @classmethod
   def _GetWrite(cls, table, data):
     """Constructs Write object, which is needed for insert/update operations."""
-    # TODO(b/33482229): a workaround to handle JSON serialization
-    def _ToJson(msg):
-      return extra_types.JsonProtoEncoder(
-          extra_types.JsonArray(entries=msg.entry))
-
-    encoding.RegisterCustomMessageCodec(
-        encoder=_ToJson, decoder=None)(
-            cls.msgs.Write.ValuesValueListEntry)
-
     json_columns = table.GetJsonData(data)
     json_column_names = [col.col_name for col in json_columns]
     json_column_values = [col.col_value for col in json_columns]
@@ -313,23 +284,13 @@ class MutationFactory(object):
     return cls.msgs.Write(
         columns=json_column_names,
         table=table.name,
-        values=[cls.msgs.Write.ValuesValueListEntry(entry=json_column_values)])
+        values=[extra_types.JsonArray(entries=json_column_values)])
 
   @classmethod
   def _GetDelete(cls, table, keys):
     """Constructs Delete object, which is needed for delete operation."""
-
-    # TODO(b/33482229): a workaround to handle JSON serialization
-    def _ToJson(msg):
-      return extra_types.JsonProtoEncoder(
-          extra_types.JsonArray(entries=msg.entry))
-
-    encoding.RegisterCustomMessageCodec(
-        encoder=_ToJson, decoder=None)(
-            cls.msgs.KeySet.KeysValueListEntry)
-
     key_set = cls.msgs.KeySet(keys=[
-        cls.msgs.KeySet.KeysValueListEntry(entry=table.GetJsonKeys(keys))
+        extra_types.JsonArray(entries=table.GetJsonKeys(keys))
     ])
 
     return cls.msgs.Delete(table=table.name, keySet=key_set)

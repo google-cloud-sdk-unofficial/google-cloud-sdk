@@ -64,11 +64,11 @@ def _TransformToSplitResult(result):
   """Transform the result of the query to a list of split points."""
   split_points = [
       {
-          'TABLE_NAME': encoding.MessageToPyValue(row.entry[0]),
-          'INDEX_NAME': encoding.MessageToPyValue(row.entry[1]),
-          'INITIATOR': encoding.MessageToPyValue(row.entry[2]),
-          'SPLIT_KEY': encoding.MessageToPyValue(row.entry[3]),
-          'EXPIRE_TIME': encoding.MessageToPyValue(row.entry[4]),
+          'TABLE_NAME': encoding.MessageToPyValue(row.entries[0]),
+          'INDEX_NAME': encoding.MessageToPyValue(row.entries[1]),
+          'INITIATOR': encoding.MessageToPyValue(row.entries[2]),
+          'SPLIT_KEY': encoding.MessageToPyValue(row.entries[3]),
+          'EXPIRE_TIME': encoding.MessageToPyValue(row.entries[4]),
       }
       for row in result.rows
   ]

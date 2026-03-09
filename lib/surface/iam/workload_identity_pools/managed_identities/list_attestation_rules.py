@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to add an attestation rule on a workload identity pool managed identity."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.iam import util

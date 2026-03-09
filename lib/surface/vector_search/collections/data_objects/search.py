@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud vectorsearch collections data-objects search."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 
@@ -60,7 +57,7 @@ VECTOR_SEARCH_DISTANCE_METRIC_CHOICES = {
 }
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Search(base.Command):
   """Search data objects from a Vector Search collection."""
@@ -209,7 +206,7 @@ class Search(base.Command):
   def _GetSearchHint(self, args, client):
     if args.use_index:
       index_hint_msg = (
-          client.messages.GoogleCloudVectorsearchV1betaSearchHintIndexHint(
+          client.GetMessage('SearchHint.IndexHint')(
               name=args.use_index
           )
       )
@@ -218,7 +215,7 @@ class Search(base.Command):
           or args.dense_scann_initial_candidate_count
       ):
         dense_scann_params = (
-            client.messages.GoogleCloudVectorsearchV1betaSearchHintIndexHintDenseScannParams()
+            client.GetMessage('SearchHint.IndexHint.DenseScannParams')()
         )
         if args.dense_scann_search_leaves_pct:
           dense_scann_params.searchLeavesPct = (
@@ -229,12 +226,12 @@ class Search(base.Command):
               args.dense_scann_initial_candidate_count
           )
         index_hint_msg.denseScannParams = dense_scann_params
-      return client.messages.GoogleCloudVectorsearchV1betaSearchHint(
+      return client.GetMessage('SearchHint')(
           indexHint=index_hint_msg
       )
     elif args.use_knn:
-      return client.messages.GoogleCloudVectorsearchV1betaSearchHint(
-          knnHint=client.messages.GoogleCloudVectorsearchV1betaSearchHintKnnHint()
+      return client.GetMessage('SearchHint')(
+          knnHint=client.GetMessage('SearchHint.KnnHint')()
       )
     return None
 
@@ -252,23 +249,21 @@ class Search(base.Command):
       self, args, client, filter_dict, search_hint, output_fields
   ):
     """Builds a SemanticSearch message."""
-    semantic_search = (
-        client.messages.GoogleCloudVectorsearchV1betaSemanticSearch(
-            searchText=args.semantic_search_text,
-            searchField=args.semantic_search_field,
-            topK=args.top_k,
-        )
+    semantic_search = client.GetMessage('SemanticSearch')(
+        searchText=args.semantic_search_text,
+        searchField=args.semantic_search_field,
+        topK=args.top_k,
     )
     if args.semantic_task_type:
       task_type_code_name = args.semantic_task_type.replace('-', '_').upper()
-      semantic_search.taskType = client.messages.GoogleCloudVectorsearchV1betaSemanticSearch.TaskTypeValueValuesEnum.lookup_by_name(
-          task_type_code_name
-      )
+      semantic_search.taskType = client.GetMessage(
+          'SemanticSearch'
+      ).TaskTypeValueValuesEnum.lookup_by_name(task_type_code_name)
     if filter_dict:
       try:
         semantic_search.filter = encoding.DictToMessage(
             filter_dict,
-            client.messages.GoogleCloudVectorsearchV1betaSemanticSearch.FilterValue,
+            client.GetMessage('SemanticSearch').FilterValue,
         )
       except Exception as e:
         raise calliope_exceptions.InvalidArgumentException(
@@ -295,12 +290,12 @@ class Search(base.Command):
       if 'dense' in vector_dict:
         vector_search.vector = encoding.DictToMessage(
             vector_dict['dense'],
-            client.messages.GoogleCloudVectorsearchV1betaDenseVector,
+            client.GetMessage('DenseVector'),
         )
       elif 'sparse' in vector_dict:
         vector_search.sparseVector = encoding.DictToMessage(
             vector_dict['sparse'],
-            client.messages.GoogleCloudVectorsearchV1betaSparseVector,
+            client.GetMessage('SparseVector'),
         )
     except files.Error as e:
       raise calliope_exceptions.InvalidArgumentException(
@@ -320,21 +315,21 @@ class Search(base.Command):
       self, args, client, filter_dict, search_hint, output_fields
   ):
     """Builds a VectorSearch message."""
-    vector_search = client.messages.GoogleCloudVectorsearchV1betaVectorSearch(
+    vector_search = client.GetMessage('VectorSearch')(
         searchField=args.vector_search_field,
         topK=args.top_k,
     )
     self._FillInVectorFromFile(args, vector_search, client)
     if args.distance_metric:
       distance_metric_code_name = args.distance_metric.replace('-', '_').upper()
-      vector_search.distanceMetric = client.messages.GoogleCloudVectorsearchV1betaVectorSearch.DistanceMetricValueValuesEnum.lookup_by_name(
-          distance_metric_code_name
-      )
+      vector_search.distanceMetric = client.GetMessage(
+          'VectorSearch'
+      ).DistanceMetricValueValuesEnum.lookup_by_name(distance_metric_code_name)
     if filter_dict:
       try:
         vector_search.filter = encoding.DictToMessage(
             filter_dict,
-            client.messages.GoogleCloudVectorsearchV1betaVectorSearch.FilterValue,
+            client.GetMessage('VectorSearch').FilterValue,
         )
       except Exception as e:
         raise calliope_exceptions.InvalidArgumentException(
@@ -362,7 +357,7 @@ class Search(base.Command):
 
   def _BuildTextSearchMessage(self, args, client, output_fields, filter_dict):
     """Builds a TextSearch message."""
-    text_search = client.messages.GoogleCloudVectorsearchV1betaTextSearch(
+    text_search = client.GetMessage('TextSearch')(
         searchText=args.text_search_text,
         dataFieldNames=args.text_search_data_fields,
         topK=args.top_k,
@@ -373,7 +368,7 @@ class Search(base.Command):
       try:
         text_search.filter = encoding.DictToMessage(
             filter_dict,
-            client.messages.GoogleCloudVectorsearchV1betaTextSearch.FilterValue,
+            client.GetMessage('TextSearch').FilterValue,
         )
       except Exception as e:
         raise calliope_exceptions.InvalidArgumentException(
@@ -390,9 +385,7 @@ class Search(base.Command):
         project, args.location, args.collection
     )
 
-    search_request_body = (
-        client.messages.GoogleCloudVectorsearchV1betaSearchDataObjectsRequest()
-    )
+    search_request_body = client.GetMessage('SearchDataObjectsRequest')()
 
     output_fields = self._GetOutputFields(args, client)
     search_hint = self._GetSearchHint(args, client)
@@ -416,22 +409,24 @@ class Search(base.Command):
           args, client, output_fields, filter_dict
       )
 
-    full_req = client.messages.VectorsearchProjectsLocationsCollectionsDataObjectsSearchRequest(
+    search_req_body_field = client.GetRequestField('SearchDataObjectsRequest')
+    full_req_message = 'VectorsearchProjectsLocationsCollectionsDataObjectsSearchRequest'
+    full_req = getattr(client.messages, full_req_message)(
         parent=parent,
-        googleCloudVectorsearchV1betaSearchDataObjectsRequest=search_request_body,
+        **{search_req_body_field: search_request_body},
     )
 
     return list_pager.YieldFromList(
         client.service,
         full_req,
         batch_size_attribute=(
-            'googleCloudVectorsearchV1betaSearchDataObjectsRequest',
+            search_req_body_field,
             'pageSize',
         ),
         field='results',
         method='Search',
         current_token_attribute=(
-            'googleCloudVectorsearchV1betaSearchDataObjectsRequest',
+            search_req_body_field,
             'pageToken',
         ),
         next_token_attribute='nextPageToken',

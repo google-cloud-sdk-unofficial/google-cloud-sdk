@@ -16,7 +16,9 @@
 """Functions for creating a client to talk to the App Engine Admin API."""
 
 
+import collections
 import copy
+import dataclasses
 import json
 import operator
 
@@ -45,6 +47,20 @@ from six.moves import filter  # pylint: disable=redefined-builtin
 from six.moves import map  # pylint: disable=redefined-builtin
 
 
+@dataclasses.dataclass(frozen=True)
+class ExportImageResult:
+  """The result of an ExportImage operation.
+
+  Attributes:
+    image_uri: The URI of the exported image.
+    runtime_id: The ID of the runtime.
+    runtime_base_image: The base image used for the runtime.
+  """
+  image_uri: str
+  runtime_id: str
+  runtime_base_image: str
+
+
 APPENGINE_VERSIONS_MAP = {
     calliope_base.ReleaseTrack.GA: 'v1',
     calliope_base.ReleaseTrack.ALPHA: 'v1alpha',
@@ -61,6 +77,76 @@ gen1_runtimes = ['python27']
 
 class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
   """Client used by gcloud to communicate with the App Engine API."""
+
+  def ExportImageAndWait(self, *, app_id: str, service_id: str,
+                         version_id: str,
+                         destination_repository: str | None = None,
+                         export_service_account: str | None = None,
+                        ) -> ExportImageResult:
+    """Calls ExportAppImage and polls the LRO.
+
+    Args:
+      app_id: The application ID.
+      service_id: The service ID.
+      version_id: The version ID.
+      destination_repository: Optional Artifact Registry repo URI.
+      export_service_account: Optional service account to use for the export.
+
+    Returns:
+      An ExportImageResult object.
+
+    Raises:
+      googlecloudsdk.core.exceptions.Error: If the operation fails or times out.
+    """
+    version_name = f'apps/{app_id}/services/{service_id}/versions/{version_id}'
+    inner_request = self.messages.ExportAppImageRequest(
+        destinationRepository=destination_repository,
+        serviceAccount=export_service_account,
+    )
+    outer_request = (
+        self.messages.AppengineAppsServicesVersionsExportAppImageRequest(
+            name=version_name, exportAppImageRequest=inner_request,
+        )
+    )
+
+    log.status.Print(
+        'Start: Initiating image export for App Engine version'
+        f" '{version_id}'...",
+    )
+
+    try:
+      operation = self.client.apps_services_versions.ExportAppImage(
+          outer_request
+      )
+    except apitools_exceptions.Error as e:
+      raise exceptions.Error('Failed to initiate ExportAppImage.') from e
+
+    try:
+      result_operation = operations_util.WaitForOperation(
+          self.client.apps_operations,
+          operation,
+          message=(
+              'Polling: Export operation started. Waiting for completion...'
+          ),
+      )
+      properties_values = collections.defaultdict(str, {
+          prop.key: prop.value.string_value
+          for prop in result_operation.response.additionalProperties
+      })
+      return ExportImageResult(
+          image_uri=properties_values['imageUri'],
+          runtime_id=properties_values['runtimeId'],
+          runtime_base_image=properties_values['runtimeBaseImage'],
+      )
+    except operations_util.OperationTimeoutError as e:
+      raise exceptions.Error(
+          'Timeout: ExportAppImage operation completed, but no response was'
+          ' returned.'
+      ) from e
+    except operations_util.OperationError as e:
+      raise exceptions.Error(
+          'Failure: ExportAppImage operation completed with error.'
+      ) from e
 
   def GetApplication(self):
     """Retrieves the application resource.

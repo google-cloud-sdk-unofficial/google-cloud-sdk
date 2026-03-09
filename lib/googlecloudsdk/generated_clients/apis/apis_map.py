@@ -713,6 +713,17 @@ MAP = {
                 enable_mtls=True,
                 mtls_endpoint_override='',
                 regional_endpoints={}),
+        'v1beta':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.biglake.v1beta',
+                    client_classpath='biglake_v1beta_client.BiglakeV1beta',
+                    base_url='https://biglake.googleapis.com/',
+                    messages_modulepath='biglake_v1beta_messages'),
+                default_version=False,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
     },
     'bigquery': {
         'v2':
@@ -2701,6 +2712,17 @@ MAP = {
                 regional_endpoints={}),
     },
     'hypercomputecluster': {
+        'v1':
+            APIDef(
+                apitools=ApitoolsClientDef(
+                    class_path='googlecloudsdk.generated_clients.apis.hypercomputecluster.v1',
+                    client_classpath='hypercomputecluster_v1_client.HypercomputeclusterV1',
+                    base_url='https://hypercomputecluster.googleapis.com/',
+                    messages_modulepath='hypercomputecluster_v1_messages'),
+                default_version=False,
+                enable_mtls=True,
+                mtls_endpoint_override='',
+                regional_endpoints={}),
         'v1alpha':
             APIDef(
                 apitools=ApitoolsClientDef(
@@ -3549,7 +3571,7 @@ MAP = {
                 default_version=False,
                 enable_mtls=True,
                 mtls_endpoint_override='',
-                regional_endpoints={}),
+                regional_endpoints={'asia-northeast1': 'https://oracledatabase.asia-northeast1.rep.googleapis.com/', 'asia-northeast2': 'https://oracledatabase.asia-northeast2.rep.googleapis.com/', 'asia-south1': 'https://oracledatabase.asia-south1.rep.googleapis.com/', 'asia-south2': 'https://oracledatabase.asia-south2.rep.googleapis.com/', 'australia-southeast1': 'https://oracledatabase.australia-southeast1.rep.googleapis.com/', 'australia-southeast2': 'https://oracledatabase.australia-southeast2.rep.googleapis.com/', 'europe-west2': 'https://oracledatabase.europe-west2.rep.googleapis.com/', 'europe-west3': 'https://oracledatabase.europe-west3.rep.googleapis.com/', 'europe-west8': 'https://oracledatabase.europe-west8.rep.googleapis.com/', 'northamerica-northeast1': 'https://oracledatabase.northamerica-northeast1.rep.googleapis.com/', 'northamerica-northeast2': 'https://oracledatabase.northamerica-northeast2.rep.googleapis.com/', 'southamerica-east1': 'https://oracledatabase.southamerica-east1.rep.googleapis.com/', 'us-central1': 'https://oracledatabase.us-central1.rep.googleapis.com/', 'us-east4': 'https://oracledatabase.us-east4.rep.googleapis.com/', 'us-west3': 'https://oracledatabase.us-west3.rep.googleapis.com/'}),
     },
     'orglifecycle': {
         'v1':

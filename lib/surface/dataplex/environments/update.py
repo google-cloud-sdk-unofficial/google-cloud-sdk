@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud dataplex environments update` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import environment
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util

@@ -22,19 +22,29 @@ import os
 def translate_add_required_flags(
     input_data: Mapping[str, any],
     source_path: str,
+    runtime_base_image: str | None,
 ) -> Sequence[str]:
-  """Add required flags to gcloud run deploy command."""
+  """Add required flags to gcloud run deploy command.
+
+  Args:
+    input_data: A mapping containing the translated data from app.yaml.
+    source_path: The path to the application source code.
+    runtime_base_image: The base image to use for the runtime, returned by
+      export_image_api response (only for image based migration).
+
+  Returns:
+    A sequence of strings representing the required flags.
+  """
   required_flags = [f'--labels={_get_labels()}']
-  if _check_dockerfile_exists(source_path):
+  base_image = runtime_base_image or input_data['runtime']
+  if source_path and _check_dockerfile_exists(source_path):
     required_flags.extend([
         '--clear-base-image',
     ])
   else:
-    required_flags.extend([
-        f'--base-image={input_data["runtime"]}'
-        if 'runtime' in input_data
-        else '',
-    ])
+    if base_image:
+      required_flags.append(f'--base-image={base_image}')
+  required_flags.append('--no-cpu-throttling')
   return required_flags
 
 
@@ -48,7 +58,18 @@ def _get_labels() -> str:
 
 
 def _check_dockerfile_exists(source_path: str) -> bool:
-  """Checks if a Dockerfile exists in the same directory as the app.yaml file."""
+  """Check for a Dockerfile in the source directory.
+
+  This function verifies if a Dockerfile exists in the same directory
+  as the provided `source_path` (typically the app.yaml file).
+
+  Args:
+    source_path: The path to the application source code (e.g., app.yaml).
+
+  Returns:
+    True if a Dockerfile exists in the same directory as `source_path`, False
+    otherwise.
+  """
   dockerfile_path = os.path.join(
       os.path.dirname(source_path), 'Dockerfile'
   )

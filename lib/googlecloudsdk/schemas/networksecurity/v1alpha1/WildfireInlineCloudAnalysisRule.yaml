@@ -35,6 +35,7 @@ properties:
       Analysis. The default Value is DENY.
     type: string
     enum:
+    - ALERT
     - ALLOW
     - DENY
     - WILDFIRE_INLINE_CLOUD_ANALYSIS_ACTION_UNSPECIFIED

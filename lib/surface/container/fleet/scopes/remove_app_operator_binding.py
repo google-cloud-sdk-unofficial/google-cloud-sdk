@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to remove project-level and fleet scope-level IAM bindings and delete a fleet scope RBAC role binding for an app operator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import re
 

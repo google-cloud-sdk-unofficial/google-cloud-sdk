@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements command to look up all effective guest policies of an instance."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils

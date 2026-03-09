@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe a Custom Intercept Security Profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.security_profiles import intercept_api
 from googlecloudsdk.calliope import base

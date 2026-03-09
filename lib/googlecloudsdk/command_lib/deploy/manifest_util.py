@@ -47,7 +47,7 @@ ADVANCE_ROLLOUT_FIELD = 'advanceRollout'
 PROMOTE_RELEASE_FIELD = 'promoteRelease'
 REPAIR_ROLLOUT_FIELD = 'repairRollout'
 WAIT_FIELD = 'wait'
-LABELS_FIELD = 'labels'
+labels_field = 'labels'
 ANNOTATIONS_FIELD = 'annotations'
 SELECTOR_FIELD = 'selector'
 RULES_FIELD = 'rules'
@@ -62,7 +62,7 @@ PHASES_FIELD = 'phases'
 DESTINATION_PHASE_FIELD = 'destinationPhase'
 DISABLE_ROLLBACK_IF_ROLLOUT_PENDING = 'disableRollbackIfRolloutPending'
 TARGET_FIELD = 'target'
-METADATA_FIELDS = [ANNOTATIONS_FIELD, LABELS_FIELD, NAME_FIELD]
+METADATA_FIELDS = [ANNOTATIONS_FIELD, labels_field, NAME_FIELD]
 EXCLUDE_FIELDS = [
     'createTime',
     'customTargetTypeId',
@@ -79,7 +79,15 @@ REPAIR_PHASES_FIELD = 'repairPhases'
 BACKOFF_MODE_FIELD = 'backoffMode'
 SCHEDULE_FIELD = 'schedule'
 TIME_ZONE_FIELD = 'timeZone'
-LABELS_FIELD = 'labels'
+labels_field = 'labels'
+DEPLOYMENT_OPTIONS_FIELD = 'deploymentOptions'
+KUBERNETES_FIELD = 'kubernetes'
+CLOUD_RUN_FIELD = 'cloudRun'
+NAMESPACE_FIELD = 'namespace'
+KUBECTL_FIELD = 'kubectl'
+FLAGS_FIELD = 'flags'
+KUBERNETES_NAMESPACE_FIELD = 'kubernetesNamespace'
+APPLY_FLAGS_FIELD = 'applyFlags'
 
 
 @enum.unique
@@ -214,7 +222,7 @@ def _MetadataYamlToProto(
   """Moves the fields in metadata to the top level of the manifest."""
   manifest = transform_context.manifest
   manifest[ANNOTATIONS_FIELD] = metadata.get(ANNOTATIONS_FIELD)
-  manifest[LABELS_FIELD] = metadata.get(LABELS_FIELD)
+  manifest[labels_field] = metadata.get(labels_field)
   # I think allowing description in metadata was an accident, not intentional...
   # It's supposed to be a top level field. But even some of our own tests do
   # this, so I think we have to assume customers might have too.
@@ -447,6 +455,51 @@ def _ReplaceCustomTargetType(
   ).RelativeName()
 
 
+def _ConvertStageDeploymentOptions(
+    stage: dict[str, Any],
+    transform_context: _TransformContext,
+) -> dict[str, Any]:
+  """Converts deployment options in stage to proto format."""
+  if KUBERNETES_FIELD in stage and CLOUD_RUN_FIELD in stage:
+    raise exceptions.CloudDeployConfigError.for_resource_field(
+        transform_context.kind,
+        transform_context.name,
+        transform_context.field,
+        f'{KUBERNETES_FIELD} and {CLOUD_RUN_FIELD} cannot be set at the same'
+        ' time',
+    )
+  if KUBERNETES_FIELD in stage:
+    k8s = stage[KUBERNETES_FIELD]
+    if not isinstance(k8s, dict):
+      raise exceptions.CloudDeployConfigError.for_resource_field(
+          transform_context.kind,
+          transform_context.name,
+          transform_context.field,
+          f'{KUBERNETES_FIELD} must be a dictionary',
+      )
+    if NAMESPACE_FIELD in k8s:
+      k8s[KUBERNETES_NAMESPACE_FIELD] = k8s.pop(NAMESPACE_FIELD)
+    if FLAGS_FIELD in k8s.get(KUBECTL_FIELD, {}):
+      k8s[KUBECTL_FIELD][APPLY_FLAGS_FIELD] = k8s[KUBECTL_FIELD].pop(
+          FLAGS_FIELD
+      )
+    stage.setdefault(DEPLOYMENT_OPTIONS_FIELD, {})[KUBERNETES_FIELD] = k8s
+    del stage[KUBERNETES_FIELD]
+
+  if CLOUD_RUN_FIELD in stage:
+    cr = stage[CLOUD_RUN_FIELD]
+    if not isinstance(cr, dict):
+      raise exceptions.CloudDeployConfigError.for_resource_field(
+          transform_context.kind,
+          transform_context.name,
+          transform_context.field,
+          f'{CLOUD_RUN_FIELD} must be a dictionary',
+      )
+    stage.setdefault(DEPLOYMENT_OPTIONS_FIELD, {})[CLOUD_RUN_FIELD] = cr
+    del stage[CLOUD_RUN_FIELD]
+  return stage
+
+
 def _ConvertYamlTaskToProto(
     task: dict[str, Any], transform_context: _TransformContext
 ) -> dict[str, Any]:
@@ -634,6 +687,11 @@ _PARSE_TRANSFORMS = [
         fields=['customTarget.customTargetType'],
         replace=_ReplaceCustomTargetType,
         schema={'type': 'string'},
+    ),
+    TransformConfig(
+        kinds=[ResourceKind.DELIVERY_PIPELINE],
+        fields=['serialPipeline.stages[]'],
+        replace=_ConvertStageDeploymentOptions,
     ),
     TransformConfig(
         kinds=[ResourceKind.DELIVERY_PIPELINE],

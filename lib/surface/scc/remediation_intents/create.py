@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for creating a Cloud Security Command Center RemediationIntent resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scc.remediation_intents import sps_api
 from googlecloudsdk.calliope import base

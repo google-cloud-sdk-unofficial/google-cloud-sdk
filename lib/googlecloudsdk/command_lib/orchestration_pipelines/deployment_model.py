@@ -98,6 +98,13 @@ class ArtifactStorageModel:
 
 
 @dataclasses.dataclass
+class PipelineModel:
+  """Model for pipeline entry."""
+
+  source: str
+
+
+@dataclasses.dataclass
 class EnvironmentModel:
   """Model for environment."""
   project: str
@@ -105,6 +112,7 @@ class EnvironmentModel:
   resources: list[AnyResource]
   composer_environment: str | None = None
   artifact_storage: ArtifactStorageModel | None = None
+  pipelines: list[PipelineModel] | None = None
   variables: dict[str, str] | None = None
 
 
@@ -142,12 +150,17 @@ def _build_environment(env_def: Mapping[str, Any]) -> EnvironmentModel:
     raw_resources = [raw_resources]
   resources = [_build_resource(r) for r in raw_resources]
   artifact_storage = _build_artifact_storage(env_def.get('artifact_storage'))
+  raw_pipelines = env_def.get('pipelines', [])
+  pipelines = (
+      [PipelineModel(**p) for p in raw_pipelines] if raw_pipelines else None
+  )
   return EnvironmentModel(
       project=env_def['project'],
       region=env_def['region'],
       composer_environment=env_def.get('composer_environment'),
       resources=resources,
       artifact_storage=artifact_storage,
+      pipelines=pipelines,
       variables=env_def.get('variables'),
   )
 

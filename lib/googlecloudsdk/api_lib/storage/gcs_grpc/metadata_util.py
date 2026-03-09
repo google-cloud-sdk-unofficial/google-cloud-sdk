@@ -29,6 +29,7 @@ from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage import user_request_args_factory
 from googlecloudsdk.command_lib.storage.resources import gcs_resource_reference
+from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.util import crc32c
 
 
@@ -347,6 +348,22 @@ def get_object_resource_from_grpc_object(grpc_object):
   )
 
 
+def _update_object_retention(object_metadata, resource_args):
+  """Updates object metadata retention based on request args."""
+  if (
+      resource_args.retain_until == user_request_args_factory.CLEAR
+      or resource_args.retention_mode == user_request_args_factory.CLEAR
+  ):
+    object_metadata.retention = None
+    return
+  if resource_args.retain_until:
+    object_metadata.retention.retain_until_time = resource_args.retain_until
+  if resource_args.retention_mode:
+    object_metadata.retention.mode = (
+        2 if resource_args.retention_mode == 'Locked' else 1
+    )
+
+
 def update_object_metadata_from_request_config(
     object_metadata,
     request_config,
@@ -417,6 +434,23 @@ def update_object_metadata_from_request_config(
       object_metadata, 'custom_time', resource_args.custom_time
   )
 
+  if resource_args.md5_hash:
+    object_metadata.checksums.md5_hash = hash_util.get_bytes_from_base64_string(
+        resource_args.md5_hash
+    )
+
+  json_metadata_util.process_value_or_clear_flag(
+      object_metadata, 'storage_class', resource_args.storage_class
+  )
+
+  if resource_args.event_based_hold is not None:
+    object_metadata.event_based_hold = resource_args.event_based_hold
+  if resource_args.temporary_hold is not None:
+    object_metadata.temporary_hold = resource_args.temporary_hold
+
+  if resource_args.retain_until or resource_args.retention_mode:
+    _update_object_retention(object_metadata, resource_args)
+
   # Encryption handling.
   if resource_args.encryption_key:
     if (
@@ -449,3 +483,32 @@ def get_bucket_name_routing_header(
           {'bucket': bucket_name, 'routing_token': routing_token}
       )
   ]
+
+
+def set_metadata_if_source_is_object_resource(
+    source_resource: (
+        resource_reference.FileObjectResource
+        | resource_reference.ObjectResource
+    ),
+    destination_object_metadata,
+):
+  """Copies metadata from source_resource to object_metadata.
+
+  It is copied if source_resource is an instance of ObjectResource, this is in
+  case a daisy chain copy is performed.
+
+  Args:
+    source_resource (FileObjectResource|ObjectResource): Source resource.
+    destination_object_metadata (gapic_clients.storage_v2.types.storage.Object):
+      Destination object metadata.
+  """
+
+  if not isinstance(source_resource, resource_reference.ObjectResource):
+    return
+
+  if not source_resource.custom_fields:
+    return
+
+  destination_object_metadata.metadata = copy.deepcopy(
+      source_resource.custom_fields
+  )

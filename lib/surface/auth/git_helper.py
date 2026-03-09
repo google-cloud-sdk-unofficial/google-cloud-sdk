@@ -28,9 +28,6 @@ Note that spaces may be part of key names so, for example, "protocol" must not
 be proceeded by leading spaces.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import re

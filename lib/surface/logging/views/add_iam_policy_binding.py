@@ -15,9 +15,6 @@
 """'logging views add_iam_policy_binding' command."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception

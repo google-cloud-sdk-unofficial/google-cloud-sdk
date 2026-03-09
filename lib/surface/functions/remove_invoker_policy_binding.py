@@ -14,9 +14,6 @@
 # limitations under the License.
 """Removes an invoker binding from the IAM policy of a Google Cloud Function."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.functions.v1 import util as api_util_v1
 from googlecloudsdk.calliope import base

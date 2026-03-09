@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to unenroll a node pool from a user cluster in Anthos on bare metal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import bare_metal_node_pools as apis
 from googlecloudsdk.api_lib.container.gkeonprem import operations

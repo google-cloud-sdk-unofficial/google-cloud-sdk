@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cloud Storage Intelligence Configurations commands."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 # TODO: b/369949089 - Remove default universe flag after checking the
 # availability of Storage Intelligence in different universes.

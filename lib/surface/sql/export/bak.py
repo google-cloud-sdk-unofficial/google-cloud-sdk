@@ -18,9 +18,6 @@ Export data from a Cloud SQL instance to a Google Cloud Storage bucket as
 a BAK backup file.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

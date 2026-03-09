@@ -15,17 +15,15 @@
 
 """The gcloud app migrate-to-run command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
 import collections
 import re
+from typing import Any
 
 from googlecloudsdk.api_lib.app import appengine_api_client
 from googlecloudsdk.api_lib.run import k8s_object
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.app import gae_to_cr_migration_util
+from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import export_image
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import list_incompatible_features
 from googlecloudsdk.command_lib.app.gae_to_cr_migration_util import translate
 from googlecloudsdk.command_lib.run import config_changes
@@ -33,10 +31,11 @@ from googlecloudsdk.command_lib.run import flags
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from surface.run import deploy
+from typing_extensions import override
 
 
 @base.DefaultUniverseOnly
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class AppEngineToCloudRun(deploy.Deploy):
   """Migrate a second-generation App Engine app to Cloud Run."""
   detailed_help = {
@@ -104,9 +103,17 @@ class AppEngineToCloudRun(deploy.Deploy):
     flags.AddPresetFlags(parser)
 
   def Run(self, args):
-    """Overrides the Deploy.Run method, applying the wrapper logic for FlagIsExplicitlySet."""
-    api_client = appengine_api_client.GetApiClientForTrack(self.ReleaseTrack())
-    gae_to_cr_migration_util.GAEToCRMigrationUtil(api_client, args)
+    """Overrides the Deploy.Run method.
+
+    This method applies wrapper logic for FlagIsExplicitlySet.
+
+    Args:
+      args: The argparse namespace.
+    """
+    self.api_client = appengine_api_client.GetApiClientForTrack(
+        self.ReleaseTrack()
+    )
+    gae_to_cr_migration_util.GAEToCRMigrationUtil(self.api_client, args)
     self.release_track = self.ReleaseTrack()
     original_flag_is_explicitly_set = flags.FlagIsExplicitlySet
     try:
@@ -149,20 +156,46 @@ class AppEngineToCloudRun(deploy.Deploy):
     return changes
 
   def StartMigration(self, args) -> None:
-    """Starts the migration process."""
+    """Starts the migration process.
+
+    This method translates App Engine configuration to Cloud Run deployment
+    flags and updates the `args` object with these flags, preparing it
+    for the `gcloud run deploy` command.
+
+    Args:
+      args: The argparse namespace containing command line arguments. This
+        object is mutated to include flags necessary for the Cloud Run
+        deployment.
+    """
 
     # List incompatible features.
     list_incompatible_features.list_incompatible_features(
         args.appyaml, args.service, args.version
     )
 
-    # Translate app.yaml to gcloud run deploy flags.
-    cloud_run_deploy_command = translate.translate(
-        args.appyaml, args.service, args.version, args.entrypoint
-    )
-    print_deploy_command = ''
-    for command_str in cloud_run_deploy_command:
-      print_deploy_command += command_str + ' '
+    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
+      project = properties.VALUES.core.project.Get()
+
+      export_image_response = export_image.export_image(
+          project,
+          args.service,
+          args.version,
+          args.destination_repository,
+          api_client=self.api_client,
+          export_service_account=None,
+      )
+
+      cloud_run_deploy_command = translate.translate_from_image(
+          args.service,
+          args.version,
+          args.entrypoint,
+          export_image_response,
+      )
+    else:
+      cloud_run_deploy_command = translate.translate_from_source(
+          args.appyaml, args.service, args.version, args.entrypoint
+      )
+    print_deploy_command = ' '.join(cloud_run_deploy_command) + ' '
     if args.entrypoint:
       setattr(
           args,
@@ -173,7 +206,6 @@ class AppEngineToCloudRun(deploy.Deploy):
           ' --set-build-env-vars GOOGLE_ENTRYPOINT=' + args.entrypoint
       )
 
-    # Update args with the translated gcloud run deploy flags
     log.status.Print('Command to run:', print_deploy_command, '\n')
     setattr(args, 'SERVICE', cloud_run_deploy_command[3])
     self._migration_flags = []
@@ -193,6 +225,9 @@ class AppEngineToCloudRun(deploy.Deploy):
                   'migration-tool': 'gcloud-app-migrate-standard-v1',
               },
           )
+          continue
+        if command_args[0] == 'image':
+          setattr(args, command_args[0], command_args[1])
           continue
         if command_args[0] == 'set_env_vars':
           args.__setattr__(command_args[0], self.ParseSetEnvVars(command_str))
@@ -230,13 +265,22 @@ class AppEngineToCloudRun(deploy.Deploy):
     service = args.SERVICE or 'default'
     project = properties.VALUES.core.project.Get()
 
-    log.status.Print(
-        'View and edit in Cloud Run console:'
-        f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
-        ' new versions of your code with the same configuration using "gcloud'
-        f' run deploy {service} --source=.'
-        f' --region={region} --project={project}"\n'
-    )
+    if self.release_track is base.ReleaseTrack.ALPHA and args.from_image:
+      log.status.Print(
+          'View and edit in Cloud Run console:'
+          f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\n'
+          f'Deploy new versions of your code with the same configuration using "gcloud'
+          f' run deploy {service} --image=<new-image>'
+          f' --region={region} --project={project}"\n'
+      )
+    else:
+      log.status.Print(
+          'View and edit in Cloud Run console:'
+          f' https://console.cloud.google.com/run/detail/{region}/{service}/metrics?project={project}\nDeploy'
+          ' new versions of your code with the same configuration using "gcloud'
+          f' run deploy {service} --source=.'
+          f' --region={region} --project={project}"\n'
+      )
 
   def ParseSetEnvVars(
       self, input_str: str
@@ -263,3 +307,37 @@ class AppEngineToCloudRun(deploy.Deploy):
         pair.split('=', 1) for pair in vars_string.split(',')
     )
     return env_vars
+
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+class AppEngineToCloudRunAlpha(AppEngineToCloudRun):
+  """Migrate a second-generation App Engine app to Cloud Run."""
+
+  @classmethod
+  def CommonArgs(cls, parser) -> None:
+    super().CommonArgs(parser)
+    parser.add_argument(
+        '--from-source',
+        action='store_true',
+        help='Use source based migration.',
+    )
+    parser.add_argument(
+        '--from-image',
+        action='store_true',
+        help='Use image based migration.',
+    )
+    parser.add_argument(
+        '--destination-repository',
+        help=(
+            'The full resource name of the AR repository to export to in the'
+            ' format of projects/*/locations/*/repositories/*.'
+        ),
+    )
+
+  @override
+  def _ValidateAndGeDeployFromSource(self, containers: Any) -> dict[Any, Any]:
+    if hasattr(self, '_migration_flags') and 'image' in self._migration_flags:
+      # If an image is provided, we are not deploying from source, so we return
+      # an empty dict to skip source deployment validation.
+      return {}
+    return super()._ValidateAndGeDeployFromSource(containers)

@@ -115,7 +115,7 @@ def AddDataObjectFlags(parser, command_name, include_json_filter=True):
 
 def ParseOutputFields(args, client):
   """Parses output fields from the args."""
-  output_fields = client.messages.GoogleCloudVectorsearchV1betaOutputFields()
+  output_fields = client.GetMessage('OutputFields')()
   if args.output_data_fields:
     output_fields.dataFields = args.output_data_fields
   if args.output_vector_fields:

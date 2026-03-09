@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to SCP to/from a Cloud TPU VM Node."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 from argcomplete.completers import FilesCompleter

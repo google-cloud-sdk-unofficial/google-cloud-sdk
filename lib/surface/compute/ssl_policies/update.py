@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update SSL policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.ssl_policies import ssl_policies_utils
@@ -26,6 +23,7 @@ from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.ssl_policies import flags
 
 
+@base.UniverseCompatible
 class Update(base.UpdateCommand):
   """Update a Compute Engine SSL policy.
 
@@ -49,6 +47,8 @@ class Update(base.UpdateCommand):
     flags.GetProfileFlag().AddToParser(parser)
     flags.GetMinTlsVersionFlag().AddToParser(parser)
     flags.GetCustomFeaturesFlag().AddToParser(parser)
+    if cls.ReleaseTrack() == base.ReleaseTrack.ALPHA:
+      flags.GetPostQuantumKeyExchangeFlag().AddToParser(parser)
 
   def Run(self, args):
     """Issues the request to update a SSL policy."""
@@ -64,7 +64,13 @@ class Update(base.UpdateCommand):
         fingerprint=existing_ssl_policy.fingerprint,
         profile=args.profile,
         min_tls_version=flags.ParseTlsVersion(args.min_tls_version),
-        custom_features=custom_features)
+        custom_features=custom_features,
+        post_quantum_key_exchange=(
+            args.post_quantum_key_exchange
+            if self.ReleaseTrack() == base.ReleaseTrack.ALPHA
+            else None
+        ),
+    )
     operation_ref = helper.Patch(
         ssl_policy_ref, patch_ssl_policy, include_custom_features and
         not custom_features)

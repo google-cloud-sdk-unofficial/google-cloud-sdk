@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud scheduler cmek-config describe` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib import scheduler
 from googlecloudsdk.calliope import base

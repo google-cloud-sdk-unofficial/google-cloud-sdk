@@ -14,9 +14,6 @@
 # limitations under the License.
 """Migrates a Cloud SQL instance to an AlloyDB cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import types
@@ -76,7 +73,7 @@ class MigrateCloudSqlGA(base.RestoreCommand):
         parser, alloydb_messages, cls.ReleaseTrack(), update=False
     )
     flags.AddContinuousBackupConfigFlags(parser, cls.ReleaseTrack())
-    flags.AddDatabaseVersion(parser, alloydb_messages, cls.ReleaseTrack())
+    flags.AddDatabaseVersion(parser, alloydb_messages)
     flags.AddEnablePrivateServiceConnect(parser)
     flags.AddMaintenanceWindow(parser, alloydb_messages)
     flags.AddSubscriptionType(parser, alloydb_messages)

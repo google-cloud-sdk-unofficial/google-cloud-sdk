@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for creating subnetworks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import subnets_utils
@@ -58,7 +55,6 @@ def _AddArgs(
     include_custom_hardware_link,
     api_version,
     include_peer_migration_purpose,
-    include_resolve_subnet_mask,
 ):
   """Add subnetwork create arguments to parser."""
   parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT_WITH_IPV6_FIELD)
@@ -347,27 +343,31 @@ def _AddArgs(
       ),
   )
 
-  if include_resolve_subnet_mask:
-    resolve_subnet_mask_choices = {
-        'ARP_ALL_RANGES': """
-        VMs connected to this subnet receive ARP responses for IPv4
-        addresses from any ranges of the subnet that are assigned to the VM's
-        NIC. The DHCP responses contain the netmask of the subnet, instead of
-        /32.
-        """,
-        'ARP_PRIMARY_RANGE': """
-        VMs connected to this subnet receive ARP responses only for IP
-        addresses in the primary IPv4 range of the subnet. DHCP responses
-        contain the netmask of the subnet, instead of /32.
-        """,
-    }
+  resolve_subnet_mask_choices = {
+      'ARP_ALL_RANGES': (
+          """
+      VMs connected to this subnet receive ARP responses from IP addresses in the following ranges:
+      * the primary IPv4 address range
+      * any secondary IPv4 address ranges that the VM is connected to
+      """
+      ),
+      'ARP_PRIMARY_RANGE': (
+          """
+      VMs connected to this subnet receive ARP responses from IP addresses in the primary IPv4 range only.
+      """
+      ),
+  }
 
-    parser.add_argument(
-        '--resolve-subnet-mask',
-        choices=resolve_subnet_mask_choices,
-        type=arg_utils.ChoiceToEnumName,
-        help='Resolve subnet mask can only be set when subnet is created.',
-    )
+  parser.add_argument(
+      '--resolve-subnet-mask',
+      choices=resolve_subnet_mask_choices,
+      type=arg_utils.ChoiceToEnumName,
+      help=(
+          'Resolve subnet mask can only be set when subnet is created. If set,'
+          ' DHCP configures VMs with the netmask of the subnet (instead of'
+          ' /32), which lets the VMs communicate directly with each other.'
+      ),
+  )
 
   flags.IpCollectionArgument().AddArgument(parser)
 
@@ -399,7 +399,6 @@ def _CreateSubnetwork(
     include_custom_hardware_link,
     ip_collection_ref,
     include_peer_migration_purpose,
-    include_resolve_subnet_mask,
 ):
   """Create the subnet resource."""
   subnetwork = messages.Subnetwork(
@@ -528,13 +527,12 @@ def _CreateSubnetwork(
         messages, args.resource_manager_tags
     )
 
-  if include_resolve_subnet_mask:
-    if args.resolve_subnet_mask:
-      subnetwork.resolveSubnetMask = (
-          messages.Subnetwork.ResolveSubnetMaskValueValuesEnum(
-              args.resolve_subnet_mask
-          )
-      )
+  if args.resolve_subnet_mask:
+    subnetwork.resolveSubnetMask = (
+        messages.Subnetwork.ResolveSubnetMaskValueValuesEnum(
+            args.resolve_subnet_mask
+        )
+    )
   return subnetwork
 
 
@@ -562,7 +560,6 @@ def _Run(
     include_l2,
     include_custom_hardware_link,
     include_peer_migration_purpose,
-    include_resolve_subnet_mask,
 ):
   """Issues a list of requests necessary for adding a subnetwork."""
   client = holder.client
@@ -590,12 +587,11 @@ def _Run(
       include_custom_hardware_link,
       ip_collection_ref,
       include_peer_migration_purpose,
-      include_resolve_subnet_mask,
   )
   request = client.messages.ComputeSubnetworksInsertRequest(
       subnetwork=subnetwork,
-      region=subnet_ref.region,
-      project=subnet_ref.project)
+      region=subnet_ref.region,  # type: ignore
+      project=subnet_ref.project)  # type: ignore
 
   secondary_ranges = subnets_utils.CreateSecondaryRanges(
       client,
@@ -619,7 +615,6 @@ class Create(base.CreateCommand):
   _api_version = compute_api.COMPUTE_GA_API_VERSION
   _include_custom_hardware_link = False
   _include_peer_migration_purpose = True
-  _include_resolve_subnet_mask = False
 
   detailed_help = _DetailedHelp()
 
@@ -633,7 +628,6 @@ class Create(base.CreateCommand):
         cls._include_custom_hardware_link,
         cls._api_version,
         cls._include_peer_migration_purpose,
-        cls._include_resolve_subnet_mask,
     )
 
   def Run(self, args):
@@ -647,7 +641,6 @@ class Create(base.CreateCommand):
         self._include_l2,
         self._include_custom_hardware_link,
         self._include_peer_migration_purpose,
-        self._include_resolve_subnet_mask,
     )
 
 
@@ -656,7 +649,6 @@ class CreateBeta(Create):
   """Create a subnet in the Beta release track."""
 
   _api_version = compute_api.COMPUTE_BETA_API_VERSION
-  _include_resolve_subnet_mask = True
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -669,4 +661,3 @@ class CreateAlpha(CreateBeta):
   _api_version = compute_api.COMPUTE_ALPHA_API_VERSION
   _include_custom_hardware_link = True
   _include_peer_migration_purpose = True
-  _include_resolve_subnet_mask = True

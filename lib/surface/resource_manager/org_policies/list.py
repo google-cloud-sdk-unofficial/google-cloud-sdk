@@ -15,9 +15,6 @@
 # pylint: disable=line-too-long
 """Command to list Organization Policies associated with the specified resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import org_policies
 from googlecloudsdk.calliope import base

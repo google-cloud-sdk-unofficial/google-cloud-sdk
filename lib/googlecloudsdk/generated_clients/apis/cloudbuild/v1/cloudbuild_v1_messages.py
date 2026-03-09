@@ -898,12 +898,14 @@ class BuildOptions(_messages.Message):
       GO_MODULE_H1: Dirhash of a Go module's source code which is then hex-
         encoded.
       SHA512: Use a sha512 hash.
+      DIRSUM_SHA256: Use a dirsum_sha256 hash.
     """
     NONE = 0
     SHA256 = 1
     MD5 = 2
     GO_MODULE_H1 = 3
     SHA512 = 4
+    DIRSUM_SHA256 = 5
 
   class SubstitutionOptionValueValuesEnum(_messages.Enum):
     r"""Option to specify behavior when there is an error in the substitution
@@ -3694,11 +3696,14 @@ class GitSourceRepository(_messages.Message):
   Fields:
     developerConnect: The Developer Connect Git repository link formatted as
       `projects/*/locations/*/connections/*/gitRepositoryLink/*`
+    proxyUrlEnabled: Optional. Enables the use of the proxy URL returned by
+      DeveloperConnect for git operations, if available.
     url: Location of the Git repository.
   """
 
   developerConnect = _messages.StringField(1)
-  url = _messages.StringField(2)
+  proxyUrlEnabled = _messages.BooleanField(2)
+  url = _messages.StringField(3)
 
 
 class GoModule(_messages.Message):
@@ -3836,12 +3841,14 @@ class Hash(_messages.Message):
       GO_MODULE_H1: Dirhash of a Go module's source code which is then hex-
         encoded.
       SHA512: Use a sha512 hash.
+      DIRSUM_SHA256: Use a dirsum_sha256 hash.
     """
     NONE = 0
     SHA256 = 1
     MD5 = 2
     GO_MODULE_H1 = 3
     SHA512 = 4
+    DIRSUM_SHA256 = 5
 
   type = _messages.EnumField('TypeValueValuesEnum', 1)
   value = _messages.BytesField(2)

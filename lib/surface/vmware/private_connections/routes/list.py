@@ -14,9 +14,6 @@
 # limitations under the License.
 """private connection peering routes list command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.privateconnectionroutes import PrivateConnectionPeeringRoutesClient
 from googlecloudsdk.calliope import base

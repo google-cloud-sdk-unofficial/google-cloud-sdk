@@ -15,9 +15,6 @@
 
 """Command for listing grantable roles for a given resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

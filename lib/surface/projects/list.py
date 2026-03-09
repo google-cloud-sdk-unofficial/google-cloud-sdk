@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all project IDs associated with the active user."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import filter_rewrite
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api

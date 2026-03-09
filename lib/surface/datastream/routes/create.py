@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a datastream route."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datastream import routes
 from googlecloudsdk.api_lib.datastream import util

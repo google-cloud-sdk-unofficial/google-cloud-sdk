@@ -14,9 +14,6 @@
 # limitations under the License.
 """Approve a single tenant HSM instance proposal."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import ast
 

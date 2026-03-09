@@ -22,6 +22,7 @@ from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.api_lib.util import waiter
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.export import util
 from googlecloudsdk.core import resources
 
 
@@ -31,6 +32,7 @@ _API_VERSION_FOR_TRACK = {
     base.ReleaseTrack.GA: 'v1',
 }
 _API_NAME = 'networksecurity'
+_MESSAGE_NAME = 'SecurityProfile'
 ORG_OPERATIONS_COLLECTION = 'networksecurity.organizations.locations.operations'
 PROJECT_OPERATIONS_COLLECTION = 'networksecurity.projects.locations.operations'
 
@@ -57,6 +59,15 @@ def GetApiVersion(release_track=base.ReleaseTrack.GA):
 def GetEffectiveApiEndpoint(release_track=base.ReleaseTrack.ALPHA):
   api_version = GetApiVersion(release_track)
   return apis.GetEffectiveApiEndpoint(_API_NAME, api_version)
+
+
+def GetSchemaPath(release_track, for_help=False):
+  return util.GetSchemaPath(
+      _API_NAME,
+      GetApiVersion(release_track),
+      _MESSAGE_NAME,
+      for_help=for_help,
+  )
 
 
 class Client(abc.ABC):
@@ -148,6 +159,7 @@ class Client(abc.ABC):
       message,
       has_result=False,
       max_wait=datetime.timedelta(seconds=600),
+      return_final_operation=False,
   ):
     """Waits for an operation to complete.
 
@@ -161,8 +173,10 @@ class Client(abc.ABC):
       has_result: If True, the function will return the target of the operation
         when it completes. If False, nothing will be returned.
       max_wait: The time to wait for the operation to succeed before timing out.
+      return_final_operation: If True, return the final operation object.
 
     Returns:
+      if return_final_operation is True, the final operation object.
       if has_result = True, a Security Profile entity.
       Otherwise, None.
     """
@@ -173,11 +187,16 @@ class Client(abc.ABC):
     else:
       poller = waiter.CloudOperationPollerNoResources(self._operations_client)
 
-    response = waiter.WaitFor(
-        poller, operation_ref, message, max_wait_ms=max_wait.seconds * 1000
+    if return_final_operation:
+      return waiter.PollUntilDone(
+          poller, operation_ref, max_wait_ms=max_wait.seconds * 1000
+      )
+    return waiter.WaitFor(
+        poller,
+        operation_ref,
+        message=message,
+        max_wait_ms=max_wait.seconds * 1000,
     )
-
-    return response
 
   def ListSecurityProfiles(
       self,
@@ -224,6 +243,24 @@ class Client(abc.ABC):
     )
     return self._security_profile_client.Patch(api_request)
 
+  def FullUpdateSecurityProfile(self, name, sp):
+    """Calls the Update API to update all fields of a Security Profile.
+
+    Args:
+      name: The name of the Security Profile, e.g.
+        "organizations/123/locations/global/securityProfiles/my-profile".
+      sp: The Security Profile object.
+
+    Returns:
+      Updated Security Profile object.
+    """
+    api_request = self._patch_request(
+        name=name,
+        securityProfile=sp,
+        updateMask='*',
+    )
+    return self._security_profile_client.Patch(api_request)
+
   def DeleteSecurityProfile(self, name):
     """Calls the Delete Security Profile API to delete a Security Profile.
 
@@ -236,3 +273,28 @@ class Client(abc.ABC):
     """
     api_request = self._delete_request(name=name)
     return self._security_profile_client.Delete(api_request)
+
+  def CreateSecurityProfile(
+      self,
+      parent,
+      sp_id,
+      sp,
+  ):
+    """Calls the Create Security Profile API to create a Security Profile.
+
+    Args:
+      parent: The parent of the Security Profile, e.g.
+        "organizations/123/locations/global".
+      sp_id: The ID of the Security Profile, e.g. "my-profile".
+      sp: The Security Profile object.
+
+    Returns:
+      Created Security Profile object.
+    """
+    return self._security_profile_client.Create(
+        self._create_request(
+            parent=parent,
+            securityProfile=sp,
+            securityProfileId=sp_id,
+        )
+    )

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements a command to forward TCP traffic to a workstation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.workstations import workstations
 from googlecloudsdk.calliope import base

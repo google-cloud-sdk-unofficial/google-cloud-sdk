@@ -345,7 +345,7 @@ def main():
           sdk_root=bootstrapping.SDK_ROOT,
       )
       if pargs.install_python:
-        python_manager.PromptAndInstallPythonOnMac()
+        python_manager.InstallPythonAndDependenciesOnMac()
       print("""\
 
 For more information on how to get started, please visit:

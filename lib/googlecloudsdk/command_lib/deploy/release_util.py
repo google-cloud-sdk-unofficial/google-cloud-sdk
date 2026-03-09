@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
 # limitations under the License.
 """Utilities for the cloud deploy release commands."""
 
-
 import datetime
 import enum
 import os.path
 import shutil
 import tarfile
+import typing
 import uuid
-
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudbuild import snapshot
 from googlecloudsdk.api_lib.clouddeploy import client_util
 from googlecloudsdk.api_lib.clouddeploy import delivery_pipeline
 from googlecloudsdk.api_lib.storage import storage_api
 from googlecloudsdk.calliope import exceptions as c_exceptions
+from googlecloudsdk.calliope import parser_extensions
 from googlecloudsdk.command_lib.deploy import deploy_util
 from googlecloudsdk.command_lib.deploy import exceptions
 from googlecloudsdk.command_lib.deploy import rollout_util
@@ -81,6 +81,15 @@ class Tools(enum.Enum):
   KUBECTL = 'kubectl'
   KUSTOMIZE = 'kustomize'
   SKAFFOLD = 'skaffold'
+
+
+class ConfigCheckMode(enum.Enum):
+  """The mode for configuration checking."""
+
+  NONE = 'none'
+  SKAFFOLD = 'skaffold'
+  SKAFFOLD_AND_NATIVE = 'skaffold_and_native'
+  NATIVE = 'native'
 
 
 def RenderPattern(release_id):
@@ -148,7 +157,7 @@ def LoadBuildArtifactFile(path):
     try:
       structured_data = yaml.load(f, file_hint=path)
     except yaml.Error as e:
-      raise exceptions.ParserError(path, e.inner_error)
+      raise exceptions.ParserError(path, e.inner_error) from e
     images = {}
     for build in structured_data['builds']:
       # For b/191063894. Supporting both name for now.
@@ -158,51 +167,47 @@ def LoadBuildArtifactFile(path):
 
 
 def CreateReleaseConfig(
-    source,
-    gcs_source_staging_dir,
-    ignore_file,
-    images,
-    build_artifacts,
-    description,
-    docker_version,
-    helm_version,
-    kpt_version,
-    kubectl_version,
-    kustomize_version,
-    skaffold_version,
-    skaffold_file,
-    location,
-    pipeline_uuid,
-    from_k8s_manifest,
-    from_run_manifest,
-    pipeline_obj,
-    deploy_parameters=None,
-    hide_logs=False,
+    *,  # go/pytype-strict-function-args
+    source: str | None,
+    gcs_source_staging_dir: str | None,
+    ignore_file: str | None,
+    images: typing.Dict[str, str],
+    build_artifacts: str | None,
+    description: str | None,
+    docker_version: str | None,
+    helm_version: str | None,
+    kpt_version: str | None,
+    kubectl_version: str | None,
+    kustomize_version: str | None,
+    skaffold_version: str | None,
+    skaffold_file: str | None,
+    location: str,
+    pipeline_uuid: str,
+    from_k8s_manifest: str | None,
+    from_run_manifest: str | None,
+    pipeline_obj: typing.Any,
+    deploy_parameters: dict[str, str] | None,
+    native_config_used: bool = False,
+    hide_logs: bool = False,
 ):
   """Returns a build config."""
-
-  # If either a kubernetes manifest or Cloud Run manifest was given, this means
-  # a Skaffold file should be generated, so we should not check at this stage
-  # if the Skaffold file exists.
-  if not (from_k8s_manifest or from_run_manifest):
-    _VerifySkaffoldFileExists(source, skaffold_file)
-
   messages = client_util.GetMessagesModule(client_util.GetClientInstance())
-  release_config = messages.Release()
-  release_config.description = description
-  release_config = _SetSource(
-      release_config,
-      source,
-      gcs_source_staging_dir,
-      ignore_file,
-      location,
-      pipeline_uuid,
-      from_k8s_manifest,
-      from_run_manifest,
-      skaffold_file,
-      pipeline_obj,
-      hide_logs,
+  release_config = messages.Release(description=description)
+  release_config = _StageSourceObjectToGcs(
+      release_config=release_config,
+      source=source,
+      gcs_source_staging_dir=gcs_source_staging_dir,
+      ignore_file=ignore_file,
+      location=location,
+      pipeline_uuid=pipeline_uuid,
+      kubernetes_manifest=from_k8s_manifest,
+      cloud_run_manifest=from_run_manifest,
+      skaffold_file=skaffold_file,
+      pipeline_obj=pipeline_obj,
+      native_config_used=native_config_used,
+      hide_logs=hide_logs,
   )
+
   release_config = _SetVersion(
       release_config,
       messages,
@@ -220,7 +225,6 @@ def CreateReleaseConfig(
       release_config,
       deploy_parameters,
   )
-
   return release_config
 
 
@@ -250,10 +254,10 @@ def _CreateAndUploadTarball(
   size_str = resource_transform.TransformSize(source_snapshot.uncompressed_size)
   if not hide_logs:
     log.status.Print(
-        'Creating temporary archive of {num_files} file(s)'
-        ' totalling {size} before compression.'.format(
-            num_files=len(source_snapshot.files), size=size_str
-        )
+        'Creating temporary archive of %s file(s)'
+        ' totalling %s before compression.',
+        len(source_snapshot.files),
+        size_str,
     )
   # This makes a tarball of the snapshot and then copies to GCS.
   staged_source_obj = source_snapshot.CopyArchiveToGCS(
@@ -262,9 +266,7 @@ def _CreateAndUploadTarball(
       ignore_file=ignore_file,
       hide_logs=hide_logs,
   )
-  return 'gs://{bucket}/{object}'.format(
-      bucket=staged_source_obj.bucket, object=staged_source_obj.name
-  )
+  return f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
 
 
 def _SetVersion(
@@ -348,44 +350,107 @@ def _SetVersion(
   return release_config
 
 
-def _SetSource(
-    release_config,
-    source,
-    gcs_source_staging_dir,
-    ignore_file,
-    location,
-    pipeline_uuid,
-    kubernetes_manifest,
-    cloud_run_manifest,
-    skaffold_file,
-    pipeline_obj,
-    hide_logs=False,
-):
-  """Set the source for the release config.
+def GetActualSource(
+    args: parser_extensions.Namespace,
+) -> str:
+  """Determines the actual source location."""
+  if args.IsKnownAndSpecified('local_source'):
+    return args.local_source
+  if args.IsKnownAndSpecified('gcs_source'):
+    return args.gcs_source
+  if args.IsKnownAndSpecified('source'):
+    return args.source
+  return os.getcwd()
 
-  Sets the source for the release config and creates a default Cloud Storage
-  bucket with location for staging if gcs-source-staging-dir is not specified.
+
+def GetConfigCheckModeFromArgs(
+    args: parser_extensions.Namespace,
+):
+  """Determines the config check mode."""
+  if args.IsKnownAndSpecified('from_run_manifest') or args.IsKnownAndSpecified(
+      'from_k8s_manifest'
+  ):
+    return ConfigCheckMode.NONE
+  if (
+      args.IsKnownAndSpecified('local_source')
+      or args.IsKnownAndSpecified('gcs_source')
+      or args.IsKnownAndSpecified('config_file')
+  ):
+    return ConfigCheckMode.NATIVE
+  if not args.IsKnownAndSpecified('source'):
+    # If no source is specified, check for skaffold.yaml, followed by
+    # release.yaml. This implies that we might need to check both files.
+    return ConfigCheckMode.SKAFFOLD_AND_NATIVE
+  return ConfigCheckMode.SKAFFOLD
+
+
+def VerifyConfigs(
+    source: str,
+    config_check_mode: ConfigCheckMode,
+    skaffold_file: str | None,
+    config_file: str | None,
+) -> bool:
+  """Verifies that the required configuration files exist in the source.
 
   Args:
-    release_config: a Release message
-    source: the location of the source files
-    gcs_source_staging_dir: directory in google cloud storage to use for staging
-    ignore_file: the ignore file to use
-    location: the cloud region for the release
+    source: The actual source location.
+    config_check_mode: The config check mode.
+    skaffold_file: The skaffold file.
+    config_file: The config file.
+
+  Returns:
+    A boolean indicating if the config file for native mode is used.
+  """
+  if config_check_mode is ConfigCheckMode.NONE:
+    return False
+  if config_check_mode is ConfigCheckMode.NATIVE:
+    _VerifyFileExistsInSource(source, config_file)
+    return True
+  if config_check_mode is ConfigCheckMode.SKAFFOLD:
+    _VerifyFileExistsInSource(source, skaffold_file or 'skaffold.yaml')
+    return False
+  if config_check_mode is ConfigCheckMode.SKAFFOLD_AND_NATIVE:
+    try:
+      _VerifyFileExistsInSource(source, skaffold_file or 'skaffold.yaml')
+      return False
+    except c_exceptions.BadFileException:
+      _VerifyFileExistsInSource(source, config_file)
+      return True
+  return False
+
+
+def _StageGcsObject(
+    *,
+    gcs_source_staging_dir: str | None,
+    ignore_file: str | None,
+    location: str,
+    pipeline_uuid: str,
+    actual_source: str,
+    kubernetes_manifest: str | None,
+    cloud_run_manifest: str | None,
+    pipeline_obj: typing.Any,
+    hide_logs: bool = False,
+) -> str:
+  """Processes GCS source and uploads to GCS.
+
+  Args:
+    gcs_source_staging_dir: directory in Google cloud storage to use for
+      staging.
+    ignore_file: the ignore file to use.
+    location: the cloud region for the release.
     pipeline_uuid: the unique id of the release's parent pipeline.
+    actual_source: the location of the source files.
     kubernetes_manifest: path to kubernetes manifest (e.g. /home/user/k8.yaml).
       If provided, a Skaffold file will be generated and uploaded to GCS on
       behalf of the customer.
     cloud_run_manifest: path to Cloud Run manifest (e.g.
-      /home/user/service.yaml).If provided, a Skaffold file will be generated
+      /home/user/service.yaml). If provided, a Skaffold file will be generated
       and uploaded to GCS on behalf of the customer.
-    skaffold_file: path of the skaffold file relative to the source directory
-      that contains the Skaffold file.
     pipeline_obj: the pipeline_obj used for this release.
-    hide_logs: whether to show logs, defaults to False
+    hide_logs: whether to show logs, defaults to False.
 
   Returns:
-    Modified release_config
+    The gcs uri where the source was uploaded.
   """
   default_gcs_source = False
   default_bucket_name = staging_bucket_util.GetDefaultStagingBucket(
@@ -406,14 +471,15 @@ def _SetSource(
 
   gcs_client = storage_api.StorageClient()
   suffix = '.tgz'
-  if source.startswith('gs://') or os.path.isfile(source):
-    _, suffix = os.path.splitext(source)
+
+  if actual_source.startswith('gs://') or os.path.isfile(actual_source):
+    # Determine type of the source by checking extensions.
+    _, suffix = os.path.splitext(actual_source)
 
   # Next, stage the source to Cloud Storage.
-  staged_object = '{stamp}-{uuid}{suffix}'.format(
-      stamp=times.GetTimeStampFromDateTime(times.Now()),
-      uuid=uuid.uuid4().hex,
-      suffix=suffix,
+  staged_object = (
+      f'{times.GetTimeStampFromDateTime(times.Now())}-'
+      f'{uuid.uuid4().hex}{suffix}'
   )
   gcs_source_staging_dir = resources.REGISTRY.Parse(
       gcs_source_staging_dir, collection='storage.objects'
@@ -427,15 +493,15 @@ def _SetSource(
         enable_uniform_level_access=True,
         enable_public_access_prevention=True,
     )
-  except storage_api.BucketInWrongProjectError:
+  except storage_api.BucketInWrongProjectError as e:
     # If we're using the default bucket but it already exists in a different
     # project, then it could belong to a malicious attacker (b/33046325).
     raise c_exceptions.RequiredArgumentException(
         'gcs-source-staging-dir',
-        'A bucket with name {} already exists and is owned by '
-        'another project. Specify a bucket using '
-        '--gcs-source-staging-dir.'.format(default_bucket_name),
-    )
+        f'A bucket with name {default_bucket_name} already exists and is owned '
+        'by another project. Specify a bucket using '
+        '--gcs-source-staging-dir.',
+    ) from e
 
   if gcs_source_staging_dir.object:
     staged_object = gcs_source_staging_dir.object + '/' + staged_object
@@ -446,17 +512,17 @@ def _SetSource(
   )
 
   gcs_uri = ''
-  skaffold_is_generated = False
-  if source.startswith('gs://'):
-    gcs_source = resources.REGISTRY.Parse(source, collection='storage.objects')
-    staged_source_obj = gcs_client.Rewrite(gcs_source, gcs_source_staging)
-    gcs_uri = 'gs://{bucket}/{object}'.format(
-        bucket=staged_source_obj.bucket, object=staged_source_obj.name
+  # If the user specified a gcs object and a gcs source staging, we need to
+  # copy the object from the source to the staging dir.
+  if actual_source.startswith('gs://'):
+    gcs_obj = resources.REGISTRY.Parse(
+        actual_source, collection='storage.objects'
     )
+    staged_source_obj = gcs_client.Rewrite(gcs_obj, gcs_source_staging)
+    gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
   else:
     # If a Skaffold file should be generated
     if kubernetes_manifest or cloud_run_manifest:
-      skaffold_is_generated = True
       gcs_uri = _UploadTarballGeneratedSkaffoldAndManifest(
           kubernetes_manifest,
           cloud_run_manifest,
@@ -466,33 +532,93 @@ def _SetSource(
           hide_logs,
           pipeline_obj,
       )
-    elif os.path.isdir(source):
+    elif os.path.isdir(actual_source):
       gcs_uri = _CreateAndUploadTarball(
           gcs_client,
           gcs_source_staging,
-          source,
+          actual_source,
           ignore_file,
           hide_logs,
       )
     # When its a tar file
-    elif os.path.isfile(source):
+    elif os.path.isfile(actual_source):
       if not hide_logs:
         log.status.Print(
-            'Uploading local file [{src}] to [gs://{bucket}/{object}].'.format(
-                src=source,
-                bucket=gcs_source_staging.bucket,
-                object=gcs_source_staging.object,
-            )
+            'Uploading local file [%s] to [gs://%s/%s].',
+            actual_source,
+            gcs_source_staging.bucket,
+            gcs_source_staging.object,
         )
-      staged_source_obj = gcs_client.CopyFileToGCS(source, gcs_source_staging)
-      gcs_uri = 'gs://{bucket}/{object}'.format(
-          bucket=staged_source_obj.bucket, object=staged_source_obj.name
+      staged_source_obj = gcs_client.CopyFileToGCS(
+          actual_source, gcs_source_staging
       )
+      gcs_uri = f'gs://{staged_source_obj.bucket}/{staged_source_obj.name}'
+  return gcs_uri
 
-  release_config = _SetSkaffoldConfigPath(
-      release_config, skaffold_file, skaffold_is_generated
+
+def _StageSourceObjectToGcs(
+    *,
+    release_config: typing.Any,
+    source: str | None,
+    gcs_source_staging_dir: str | None,
+    ignore_file: str | None,
+    location: str,
+    pipeline_uuid: str,
+    kubernetes_manifest: str | None,
+    cloud_run_manifest: str | None,
+    skaffold_file: str | None,
+    pipeline_obj: typing.Any,
+    native_config_used: bool,
+    hide_logs: bool = False,
+) -> typing.Any:
+  """Processes the source for the release config.
+
+  Creates a default Cloud Storage bucket with location for staging if
+  gcs-source-staging-dir is not specified.
+
+  Args:
+    release_config: a Release message
+    source: the location of the source files
+    gcs_source_staging_dir: directory in google cloud storage to use for staging
+    ignore_file: the ignore file to use
+    location: the cloud region for the release
+    pipeline_uuid: the unique id of the release's parent pipeline.
+    kubernetes_manifest: path to kubernetes manifest (e.g. /home/user/k8.yaml).
+      If provided, a Skaffold file will be generated and uploaded to GCS on
+      behalf of the customer.
+    cloud_run_manifest: path to Cloud Run manifest (e.g.
+      /home/user/service.yaml).If provided, a Skaffold file will be generated
+      and uploaded to GCS on behalf of the customer.
+    skaffold_file: path of the skaffold file relative to the source directory
+      that contains the Skaffold file.
+    pipeline_obj: the pipeline_obj used for this release.
+    native_config_used: whether native config is used.
+    hide_logs: whether to show logs, defaults to False
+
+  Returns:
+    Modified release_config
+  """
+  gcs_uri = _StageGcsObject(
+      gcs_source_staging_dir=gcs_source_staging_dir,
+      ignore_file=ignore_file,
+      location=location,
+      pipeline_uuid=pipeline_uuid,
+      actual_source=source,
+      kubernetes_manifest=kubernetes_manifest,
+      cloud_run_manifest=cloud_run_manifest,
+      pipeline_obj=pipeline_obj,
+      hide_logs=hide_logs,
   )
-  release_config.skaffoldConfigUri = gcs_uri
+  if native_config_used:
+    if hasattr(release_config, 'source'):
+      # TODO(b/481723398): Set Release.source.
+      pass
+  else:
+    skaffold_is_generated = bool(kubernetes_manifest or cloud_run_manifest)
+    release_config = _SetSkaffoldConfigPath(
+        release_config, skaffold_file, skaffold_is_generated
+    )
+    release_config.skaffoldConfigUri = gcs_uri
 
   return release_config
 
@@ -589,7 +715,7 @@ def _UploadTarballGeneratedSkaffoldAndManifest(
     # Check that the manifest file exists.
     if not os.path.exists(manifest):
       raise c_exceptions.BadFileException(
-          'could not find manifest file [{src}]'.format(src=manifest)
+          f'could not find manifest file [{manifest}]'
       )
     # Create the YAML data. Copying to a temp directory to avoid editing
     # the local directory.
@@ -616,44 +742,46 @@ def _UploadTarballGeneratedSkaffoldAndManifest(
     return gcs_uri
 
 
-def _VerifySkaffoldFileExists(source, skaffold_file):
-  """Checks that the specified source contains a skaffold file.
+def _VerifyFileExistsInSource(source: str, file_path: str | None):
+  """Checks that the specified source contains the file.
 
   Args:
     source: the location of the source files
-    skaffold_file: path of the skaffold file relative to the source directory
+    file_path: path of the file relative to the source directory
 
   Raises:
     BadFileException: If the source directory or files can't be found.
   """
-  if not skaffold_file:
-    skaffold_file = 'skaffold.yaml'
+  if not file_path:
+    raise c_exceptions.BadFileException(
+        f'config file in source [{source}] is not specified'
+    )
+
   if source.startswith('gs://'):
     log.status.Print(
-        'Skipping skaffold file check. '
+        f'Skipping file check for [{file_path}]. '
         'Reason: source is not a local archive or directory'
     )
   elif not os.path.exists(source):
-    raise c_exceptions.BadFileException(
-        'could not find source [{src}]'.format(src=source)
-    )
+    raise c_exceptions.BadFileException(f'could not find source [{source}]')
   elif os.path.isfile(source):
-    _VerifySkaffoldFileIsInArchive(source, skaffold_file)
+    _VerifyFileIsInArchive(source, file_path)
   else:
-    _VerifySkaffoldFileIsInFolder(source, skaffold_file)
+    _VerifyFileIsInFolder(source, file_path)
 
 
-def _VerifySkaffoldFileIsInArchive(source, skaffold_file):
-  """Verifies the skaffold or deploy config file is in the archive.
+def _VerifyFileIsInArchive(source: str, file_path: str):
+  """Verifies the config file is in the archive.
 
   Args:
     source: the location of the source archive.
-    skaffold_file: path of the skaffold file in the source archive.
+    file_path: path of the file in the source archive.
 
   Raises:
     BadFileException: If the config file is not a readable compressed file or
-    can't be found.
+      can't be found.
   """
+
   _, ext = os.path.splitext(source)
   if ext not in _ALLOWED_SOURCE_EXT:
     raise c_exceptions.BadFileException(
@@ -665,30 +793,28 @@ def _VerifySkaffoldFileIsInArchive(source, skaffold_file):
     )
   with tarfile.open(source, mode='r:gz') as archive:
     try:
-      archive.getmember(skaffold_file)
-    except KeyError:
+      archive.getmember(file_path)
+    except KeyError as e:
       raise c_exceptions.BadFileException(
-          'Could not find skaffold file. File [{skaffold}]'
-          ' does not exist in source archive'.format(skaffold=skaffold_file)
-      )
+          f'Could not find file [{file_path}]. File '
+          'does not exist in source archive'
+      ) from e
 
 
-def _VerifySkaffoldFileIsInFolder(source, skaffold_file):
-  """Verifies the skaffold or deploy config file is in the folder.
+def _VerifyFileIsInFolder(source: str, file_path: str):
+  """Verifies the config file is in the folder.
 
   Args:
     source: the location of the source files
-    skaffold_file: path of the skaffold file relative to the source directory
+    file_path: path of the file relative to the source directory
 
   Raises:
     BadFileException: If the config file can't be found.
   """
-  path_to_skaffold = os.path.join(source, skaffold_file)
-  if not os.path.exists(path_to_skaffold):
+  path_to_file = os.path.join(source, file_path)
+  if not os.path.exists(path_to_file):
     raise c_exceptions.BadFileException(
-        'Could not find skaffold file. File [{skaffold}] does not exist'.format(
-            skaffold=path_to_skaffold
-        )
+        f'Could not find file [{path_to_file}]. File does not exist'
     )
 
 

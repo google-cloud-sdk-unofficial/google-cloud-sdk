@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a workload source for a workload identity pool namespace."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.iam import util
 from googlecloudsdk.api_lib.iam.workload_identity_pools import workload_sources

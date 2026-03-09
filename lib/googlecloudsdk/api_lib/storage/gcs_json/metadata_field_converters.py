@@ -103,17 +103,6 @@ def process_cors(file_path):
   return cors_messages
 
 
-def process_default_encryption_key(default_encryption_key):
-  """Converts default_encryption_key string to Apitools object."""
-  if default_encryption_key == user_request_args_factory.CLEAR:
-    return None
-
-  messages = apis.GetMessagesModule('storage', 'v1')
-  return messages.Bucket.EncryptionValue(
-      defaultKmsKeyName=default_encryption_key
-  )
-
-
 def process_encryption_enforcement_config(
     file_path: str,
     get_messages_module: Callable[

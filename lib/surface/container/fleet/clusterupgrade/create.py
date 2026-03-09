@@ -15,9 +15,6 @@
 
 """Command to create Cluster Ugprade Feature information for a Fleet."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.container.fleet.clusterupgrade import flags as clusterupgrade_flags

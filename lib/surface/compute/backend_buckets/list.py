@@ -18,7 +18,6 @@ from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import completers
-from googlecloudsdk.command_lib.compute import scope as compute_scope
 from googlecloudsdk.command_lib.compute.backend_buckets import flags
 
 
@@ -28,14 +27,10 @@ class List(base.ListCommand):
   """List backend buckets."""
 
   _support_regional_global_flags = False
+  detailed_help = base_classes.GetGlobalListerHelp('backend buckets')
 
   @classmethod
   def Args(cls, parser):
-    if cls._support_regional_global_flags:
-      List.detailed_help = base_classes.GetGlobalRegionalListerHelp(
-          'backend buckets'
-      )
-
     parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
     if cls._support_regional_global_flags:
       lister.AddMultiScopeListerFlags(
@@ -50,15 +45,12 @@ class List(base.ListCommand):
     client = holder.client
 
     if self._support_regional_global_flags:
-      request_data = lister.ParseMultiScopeFlags(
-          args,
-          holder.resources,
-          default_scope_set=compute_scope.ScopeEnum.GLOBAL,
-      )
+      request_data = lister.ParseMultiScopeFlags(args, holder.resources)
       list_implementation = lister.MultiScopeLister(
           client,
           regional_service=client.apitools_client.regionBackendBuckets,
           global_service=client.apitools_client.backendBuckets,
+          aggregation_service=client.apitools_client.backendBuckets,
       )
     else:
       request_data = lister.ParseNamesAndRegexpFlags(args, holder.resources)
@@ -69,15 +61,13 @@ class List(base.ListCommand):
     return lister.Invoke(request_data, list_implementation)
 
 
-List.detailed_help = base_classes.GetGlobalListerHelp('backend buckets')
-
-
 @base.ReleaseTracks(base.ReleaseTrack.BETA)
 @base.UniverseCompatible
 class ListBeta(List):
   """List backend buckets."""
 
   _support_regional_global_flags = True
+  detailed_help = base_classes.GetGlobalRegionalListerHelp('backend buckets')
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)

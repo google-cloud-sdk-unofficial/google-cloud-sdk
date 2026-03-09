@@ -28,7 +28,6 @@ from googlecloudsdk.core.util import files
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 @base.DefaultUniverseOnly
-@base.Hidden
 class DownloadInstallScript(base.Command):
   """Download an installation script for a Monitoring Point."""
 

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Updates a Cloud NetApp Active Directory."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.active_directories import client as ad_client
 from googlecloudsdk.calliope import base

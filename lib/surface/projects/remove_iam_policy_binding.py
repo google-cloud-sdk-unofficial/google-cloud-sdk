@@ -15,9 +15,6 @@
 
 """Command to remove IAM policy binding for a resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.smart_guardrails import smart_guardrails

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud vectorsearch collections data-objects query."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 
@@ -30,7 +27,7 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class Query(base.ListCommand):
   """Query data objects from a Vector Search collection."""
@@ -70,16 +67,14 @@ class Query(base.ListCommand):
         project, args.location, args.collection
     )
 
-    query_request_body = (
-        client.messages.GoogleCloudVectorsearchV1betaQueryDataObjectsRequest()
-    )
+    query_request_body = client.GetMessage('QueryDataObjectsRequest')()
 
     if args.json_filter:
       try:
         filter_dict = json.loads(args.json_filter)
         query_request_body.filter = encoding.DictToMessage(
             filter_dict,
-            client.messages.GoogleCloudVectorsearchV1betaQueryDataObjectsRequest.FilterValue,
+            client.GetMessage('QueryDataObjectsRequest').FilterValue,
         )
       except json.JSONDecodeError as e:
         raise calliope_exceptions.InvalidArgumentException(
@@ -100,9 +95,11 @@ class Query(base.ListCommand):
           args, client
       )
 
-    full_req = client.messages.VectorsearchProjectsLocationsCollectionsDataObjectsQueryRequest(
+    query_req_body_field = client.GetRequestField('QueryDataObjectsRequest')
+    full_req_message = 'VectorsearchProjectsLocationsCollectionsDataObjectsQueryRequest'
+    full_req = getattr(client.messages, full_req_message)(
         parent=parent,
-        googleCloudVectorsearchV1betaQueryDataObjectsRequest=query_request_body,
+        **{query_req_body_field: query_request_body},
     )
 
     return list_pager.YieldFromList(
@@ -111,13 +108,13 @@ class Query(base.ListCommand):
         limit=args.limit,
         batch_size=args.page_size,
         batch_size_attribute=(
-            'googleCloudVectorsearchV1betaQueryDataObjectsRequest',
+            query_req_body_field,
             'pageSize',
         ),
         field='dataObjects',
         method='Query',
         current_token_attribute=(
-            'googleCloudVectorsearchV1betaQueryDataObjectsRequest',
+            query_req_body_field,
             'pageToken',
         ),
         next_token_attribute='nextPageToken',

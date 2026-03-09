@@ -14,9 +14,6 @@
 # limitations under the License.
 """gcloud dns managed-zone update command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dns import managed_zones
 from googlecloudsdk.api_lib.dns import util

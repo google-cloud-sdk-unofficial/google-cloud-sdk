@@ -15,9 +15,6 @@
 
 """Command to get IAM policy for an organization."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import organizations
 from googlecloudsdk.calliope import base

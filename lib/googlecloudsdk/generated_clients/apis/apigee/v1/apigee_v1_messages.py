@@ -12212,9 +12212,6 @@ class GoogleCloudApigeeV1QueryTabularStatsResponse(_messages.Message):
   aggregations requested. - Tabular rows. - Time series data. Example of
   tabular rows, Represents security stats results as a row of flat values.
 
-  Messages:
-    ValuesValueListEntry: Single entry in a ValuesValue.
-
   Fields:
     columns: Column names corresponding to the same order as the inner values
       in the stats field.
@@ -12222,18 +12219,9 @@ class GoogleCloudApigeeV1QueryTabularStatsResponse(_messages.Message):
     values: Resultant rows from the executed query.
   """
 
-  class ValuesValueListEntry(_messages.Message):
-    r"""Single entry in a ValuesValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   columns = _messages.StringField(1, repeated=True)
   nextPageToken = _messages.StringField(2)
-  values = _messages.MessageField('ValuesValueListEntry', 3, repeated=True)
+  values = _messages.MessageField('extra_types.JsonArray', 3, repeated=True)
 
 
 class GoogleCloudApigeeV1QueryTimeSeriesStatsRequest(_messages.Message):
@@ -12326,7 +12314,6 @@ class GoogleCloudApigeeV1QueryTimeSeriesStatsResponseSequence(_messages.Message)
   Messages:
     DimensionsValue: Map of dimensions and their values that uniquely
       identifies a time series sequence.
-    PointsValueListEntry: Single entry in a PointsValue.
 
   Fields:
     dimensions: Map of dimensions and their values that uniquely identifies a
@@ -12359,17 +12346,8 @@ class GoogleCloudApigeeV1QueryTimeSeriesStatsResponseSequence(_messages.Message)
 
     additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
-  class PointsValueListEntry(_messages.Message):
-    r"""Single entry in a PointsValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   dimensions = _messages.MessageField('DimensionsValue', 1)
-  points = _messages.MessageField('PointsValueListEntry', 2, repeated=True)
+  points = _messages.MessageField('extra_types.JsonArray', 2, repeated=True)
 
 
 class GoogleCloudApigeeV1Quota(_messages.Message):

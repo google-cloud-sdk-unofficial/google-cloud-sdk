@@ -14,9 +14,6 @@
 # limitations under the License.
 """List Cloud NetApp Volume Snapshots."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.volumes.snapshots import client as snapshots_client
 from googlecloudsdk.calliope import base

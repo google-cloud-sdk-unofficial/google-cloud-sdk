@@ -28,9 +28,9 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
     # https://docs.cloud.google.com/dataproc-serverless/docs/concepts/versions/dataproc-serverless-versions
     config = self.action.get("config", {})
     runtime_version = (
-        config.get("sessionTemplate", {})
-        .get("inline", {})
-        .get("runtimeVersion")
+        config.get("resourceProfile", {})
+        .get("runtimeConfig", {})
+        .get("version")
     )
     if not runtime_version:
       return "3.12"
@@ -51,7 +51,7 @@ class DataprocServerlessActionProcessor(base.ActionProcessor):
     # from the uploaded dependencies.zip, allowing the Spark jobs to find
     # the required Python libraries.
     props = self._get_nested_dict(
-        action, ["config", "sessionTemplate", "inline", "properties"]
+        action, ["config", "resourceProfile", "runtimeConfig", "properties"]
     )
     props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
     props["spark.executorEnv.PYTHONPATH"] = self.full_python_path

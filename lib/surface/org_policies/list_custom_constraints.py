@@ -14,9 +14,6 @@
 # limitations under the License.
 """List-custom-constraint command for the Org Policy CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.orgpolicy import service as org_policy_service

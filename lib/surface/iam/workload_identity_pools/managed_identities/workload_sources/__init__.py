@@ -14,9 +14,6 @@
 # limitations under the License.
 """The workload-identity-pools managed-identities workload-sources command group for the IAM CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

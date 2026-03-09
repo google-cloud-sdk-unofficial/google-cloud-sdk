@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all the Jobs in a given Pipeline."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datapipelines import util
 from googlecloudsdk.calliope import base

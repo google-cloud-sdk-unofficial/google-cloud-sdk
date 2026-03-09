@@ -14,9 +14,6 @@
 # limitations under the License.
 """Import workflow template command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.dataproc import dataproc as dp

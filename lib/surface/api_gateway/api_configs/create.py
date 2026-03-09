@@ -15,9 +15,6 @@
 
 """`gcloud api-gateway api-configs create` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import cloudsdk.google.protobuf.descriptor_pb2 as descriptor

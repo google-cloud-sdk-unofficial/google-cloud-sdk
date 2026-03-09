@@ -14,9 +14,6 @@
 # limitations under the License.
 """Revoke a certificate."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import base as privateca_base
 from googlecloudsdk.api_lib.privateca import certificate_utils

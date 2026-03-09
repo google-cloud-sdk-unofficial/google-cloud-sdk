@@ -862,19 +862,33 @@ class Client(sp_api.Client):
     exceptions_list = (
         sp_to_update.wildfireAnalysisProfile.wildfireInlineMlSetting.fileExceptions
     )
+    idx_to_remove = -1
+
     for i, exc in enumerate(exceptions_list):
-      if exc.partialHash == partial_hash and exc.filename == filename:
-        exceptions_list.pop(i)
-        break
+      if filename is not None:
+        # If filename is provided, match both partial_hash and filename.
+        if exc.partialHash == partial_hash and exc.filename == filename:
+          idx_to_remove = i
+          break
+      else:
+        # If filename is not provided, match partial_hash and ensure the
+        # existing exception also has no filename.
+        if exc.partialHash == partial_hash and exc.filename is None:
+          idx_to_remove = i
+          break
+
+    if idx_to_remove != -1:
+      exceptions_list.pop(idx_to_remove)
     else:
-      if filename:
+      if filename is not None:
         raise exceptions.Error(
             f'No exception found with partial hash [{partial_hash}] and'
             f' filename [{filename}].'
         )
       else:
         raise exceptions.Error(
-            f'No exception found with partial hash [{partial_hash}].'
+            f'No exception found with partial hash [{partial_hash}] and empty'
+            ' filename.'
         )
 
     patch_request = self.messages.NetworksecurityOrganizationsLocationsSecurityProfilesPatchRequest(

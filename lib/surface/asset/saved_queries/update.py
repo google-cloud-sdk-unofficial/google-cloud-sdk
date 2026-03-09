@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update an existing Cloud Asset Inventory saved query."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.asset import client_util
 from googlecloudsdk.calliope import base

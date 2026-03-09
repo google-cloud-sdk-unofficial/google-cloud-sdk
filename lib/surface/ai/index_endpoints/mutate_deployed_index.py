@@ -14,9 +14,6 @@
 # limitations under the License.
 """AI Platform index endpoints mutate-deployed-index command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.ai import operations

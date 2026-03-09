@@ -30,11 +30,13 @@ from googlecloudsdk.api_lib.storage import api_factory
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.api_lib.storage import request_config_factory
 from googlecloudsdk.command_lib.storage import errors
+from googlecloudsdk.command_lib.storage import hash_util
 from googlecloudsdk.command_lib.storage import manifest_util
 from googlecloudsdk.command_lib.storage import progress_callbacks
 from googlecloudsdk.command_lib.storage import storage_url
 from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks import task
+from googlecloudsdk.command_lib.storage.tasks import task_graph_executor
 from googlecloudsdk.command_lib.storage.tasks import task_status
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.command_lib.storage.tasks.cp import upload_util
@@ -66,6 +68,76 @@ def _get_api_for_resource(resource: resource_reference.UnknownResource):
         bucket_name=resource.storage_url.bucket_name,
     )
   return api_factory.get_api(resource.storage_url.scheme)
+
+
+def validate_uploaded_object(
+    *,
+    source_resource: resource_reference.ObjectResource,
+    destination_resource: resource_reference.ObjectResource,
+    task_status_queue: task_graph_executor.multiprocessing_context.Queue,
+) -> None:
+  """Validates the uploaded object.
+
+    Compares the hashes of the source and destination resources if
+    hash checking is enabled. Deletes the destination object if a hash mismatch
+    occurs.
+
+  Args:
+    source_resource: The resource object from the source of the copy.
+    destination_resource: The resource object uploaded to the destination.
+    task_status_queue: A queue for reporting task status.
+
+  Raises:
+      errors.HashMismatchError: If the hashes of the source and destination
+        objects do not match. The destination object will be deleted before
+        this error is raised.
+  """
+  if (
+      properties.VALUES.storage.check_hashes.Get()
+      == properties.CheckHashes.NEVER.value
+  ):
+    return
+  try:
+    if (
+        source_resource.md5_hash is not None
+        and destination_resource.md5_hash is not None
+    ):
+      hash_util.validate_object_hashes_match(
+          source_resource.storage_url.url_string,
+          source_resource.md5_hash,
+          destination_resource.md5_hash,
+      )
+      return
+    if (
+        source_resource.crc32c_hash
+        and source_resource.crc32c_hash
+        != resource_reference.NOT_SUPPORTED_DO_NOT_DISPLAY
+        and destination_resource.crc32c_hash
+        != resource_reference.NOT_SUPPORTED_DO_NOT_DISPLAY
+    ):
+      hash_util.validate_object_hashes_match(
+          source_resource.storage_url.url_string,
+          source_resource.crc32c_hash,
+          destination_resource.crc32c_hash,
+      )
+      return
+    log.warning(
+        'Found no hashes to validate object downloaded from %s and'
+        ' uploaded to %s. Integrity cannot be assured without hashes.',
+        source_resource.storage_url.url_string,
+        destination_resource.storage_url.url_string,
+    )
+  except errors.HashMismatchError as e:
+    log.debug(
+        'Failed to validate checksum for object: %s with error: %s.'
+        'Deleting the new object.',
+        destination_resource.name,
+        e,
+    )
+    delete_task.DeleteObjectTask(destination_resource.storage_url).execute(
+        task_status_queue=task_status_queue
+    )
+    raise
 
 
 class _AbruptShutdownError(errors.Error):
@@ -527,23 +599,26 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
     self._delete_source = delete_source
 
     self.parallel_processing_key = (
-        self._destination_resource.storage_url.url_string)
+        self._destination_resource.storage_url.url_string
+    )
 
-  def _get_md5_hash(self):
-    """Returns the MD5 Hash if present and hash validation is requested."""
+  def _get_md5_hash(self, destination_client: cloud_api.CloudApi) -> str | None:
+    """Returns the MD5 Hash if present and hash validation is requested.
+
+    Args:
+      destination_client: The client for the destination
+        cloud provider.
+
+    Returns:
+      (str|None): The MD5 hash of the source object if available and applicable
+        for validation, otherwise None.
+    """
     if (properties.VALUES.storage.check_hashes.Get() ==
         properties.CheckHashes.NEVER.value):
       return None
-
-    if self._enriched_source_resource.md5_hash is None:
-      # For composite uploads, MD5 hash might be missing.
-      # TODO(b/191975989) Add support for crc32c once -D option is implemented.
-      # Composite uploads will have crc32c information, which we should
-      # pass to the request.
-      log.warning(
-          'Found no hashes to validate object downloaded from %s and'
-          ' uploaded to %s. Integrity cannot be assured without hashes.',
-          self._enriched_source_resource, self._destination_resource)
+    if (cloud_api.Capability.APPENDABLE_UPLOAD in
+        destination_client.capabilities):
+      return None
     return self._enriched_source_resource.md5_hash
 
   def _gapfill_request_config_field(self, resource_args,
@@ -650,7 +725,7 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
     request_config = request_config_factory.get_request_config(
         self._destination_resource.storage_url,
         content_type=content_type,
-        md5_hash=self._get_md5_hash(),
+        md5_hash=self._get_md5_hash(destination_client),
         size=self._enriched_source_resource.size,
         user_request_args=self._user_request_args)
     # Request configs are designed to translate between providers.
@@ -692,6 +767,12 @@ class DaisyChainCopyTask(copy_util.ObjectCopyTaskWithExitHandler):
             self._enriched_source_resource,
             self._destination_resource,
             md5_hash=result_resource.md5_hash)
+
+    validate_uploaded_object(
+        source_resource=self._enriched_source_resource,
+        destination_resource=result_resource,
+        task_status_queue=task_status_queue,
+    )
 
     if self._delete_source:
       return task.Output(

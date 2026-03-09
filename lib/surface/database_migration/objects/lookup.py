@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of migration job object lookup command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.database_migration import objects
 from googlecloudsdk.api_lib.database_migration import resource_args

@@ -15,7 +15,6 @@
 """Constants for interacting with the Cloud NetApp Files API."""
 
 
-
 API_NAME = 'netapp'
 ALPHA_API_VERSION = 'v1alpha1'
 BETA_API_VERSION = 'v1beta1'
@@ -33,6 +32,7 @@ OPERATIONS_COLLECTION = 'netapp.projects.locations.operations'
 LOCATIONS_COLLECTION = 'netapp.projects.locations'
 QUOTA_RULES_COLLECTION = 'netapp.projects.locations.volumes.quotaRules'
 HOST_GROUPS_COLLECTION = 'netapp.projects.locations.hostGroups'
+ONTAP_COLLECTION = 'netapp.projects.locations.storagePools.ontap'
 
 ACTIVE_DIRECTORY_RESOURCE = 'activeDirectories'
 STORAGE_POOL_RESOURCE = 'storagePools'
@@ -45,3 +45,4 @@ BACKUP_VAULT_RESOURCE = 'backupVaults'
 BACKUP_RESOURCE = 'backups'
 QUOTA_RULE_RESOURCE = 'quotaRules'
 HOST_GROUP_RESOURCE = 'hostGroups'
+ONTAP_RESOURCE = 'ontap'

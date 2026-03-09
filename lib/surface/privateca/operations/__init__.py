@@ -14,15 +14,11 @@
 # limitations under the License.
 """The command group for operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Operations(base.Group):
   """Manage operations."""

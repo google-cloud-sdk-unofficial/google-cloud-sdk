@@ -175,7 +175,9 @@
     api_version: v1
     collection: artifactregistry.projects.locations.repositories
     modify_request_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:ValidatePlatformLogsConfigArgs
     - googlecloudsdk.command_lib.artifacts.util:AppendUpstreamPoliciesToRequest
+    - googlecloudsdk.command_lib.artifacts.util:UpdatePlatformLogsConfigMask
 
 
   update:

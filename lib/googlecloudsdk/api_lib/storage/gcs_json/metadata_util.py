@@ -635,33 +635,45 @@ def _get_labels_object_with_added_and_removed_labels(labels_object,
   return messages.Bucket.LabelsValue(additionalProperties=new_labels)
 
 
-def update_bucket_metadata_from_request_config(bucket_metadata, request_config):
-  """Sets Apitools Bucket fields based on values in request_config."""
-  resource_args = getattr(request_config, 'resource_args', None)
-  if not resource_args:
-    return
+def _should_clear_encryption_field(encryption_metadata) -> bool:
+  """Checks if the entire encryption field should be cleared.
 
-  if (
-      resource_args.enable_autoclass is not None
-      or resource_args.autoclass_terminal_storage_class is not None
-  ):
-    bucket_metadata.autoclass = metadata_field_converters.process_autoclass(
-        resource_args.enable_autoclass,
-        resource_args.autoclass_terminal_storage_class,
-    )
-  if resource_args.enable_hierarchical_namespace is not None:
-    bucket_metadata.hierarchicalNamespace = (
-        metadata_field_converters.process_hierarchical_namespace(
-            resource_args.enable_hierarchical_namespace
-        )
-    )
-  if resource_args.cors_file_path is not None:
-    bucket_metadata.cors = metadata_field_converters.process_cors(
-        resource_args.cors_file_path)
-  if resource_args.default_encryption_key is not None:
-    bucket_metadata.encryption = (
-        metadata_field_converters.process_default_encryption_key(
-            resource_args.default_encryption_key))
+  The encryption field should be cleared if it exists, but all its subfields
+  are None or unset.
+
+  Args:
+    encryption_metadata (messages.Bucket.EncryptionValue|None): The bucket
+      metadata's encryption field.
+
+  Returns:
+    bool: True if the encryption field should be cleared, False otherwise.
+  """
+  return encryption_metadata is not None and not any(
+      encoding.MessageToDict(encryption_metadata).values()
+  )
+
+
+def _update_encryption_config(bucket_metadata, resource_args):
+  """Updates the bucket_metadata.encryption field based on resource_args.
+
+  Args:
+    bucket_metadata (messages.Bucket): The bucket metadata to update. The
+      `encryption` field of this object may be modified.
+    resource_args (request_config_factory._BucketConfig): Contains desired
+      changes for the encryption configuration.
+  """
+
+  messages = apis.GetMessagesModule('storage', 'v1')
+  default_encryption_key = resource_args.default_encryption_key
+
+  if default_encryption_key is user_request_args_factory.CLEAR:
+    if bucket_metadata.encryption:
+      bucket_metadata.encryption.defaultKmsKeyName = None
+  elif default_encryption_key is not None:
+    if bucket_metadata.encryption is None:
+      bucket_metadata.encryption = messages.Bucket.EncryptionValue()
+    bucket_metadata.encryption.defaultKmsKeyName = default_encryption_key
+
   if resource_args.encryption_enforcement_file_path is not None:
     encryption_enforcement_updates = (
         metadata_field_converters.process_encryption_enforcement_config(
@@ -688,6 +700,36 @@ def update_bucket_metadata_from_request_config(bucket_metadata, request_config):
           else:
             # If no KeyError, the field was present, so we update it.
             setattr(bucket_metadata.encryption, field, updated_value)
+  if _should_clear_encryption_field(bucket_metadata.encryption):
+    bucket_metadata.encryption = None
+
+
+def update_bucket_metadata_from_request_config(bucket_metadata, request_config):
+  """Sets Apitools Bucket fields based on values in request_config."""
+  resource_args = getattr(request_config, 'resource_args', None)
+  if not resource_args:
+    return
+
+  if (
+      resource_args.enable_autoclass is not None
+      or resource_args.autoclass_terminal_storage_class is not None
+  ):
+    bucket_metadata.autoclass = metadata_field_converters.process_autoclass(
+        resource_args.enable_autoclass,
+        resource_args.autoclass_terminal_storage_class,
+    )
+  if resource_args.enable_hierarchical_namespace is not None:
+    bucket_metadata.hierarchicalNamespace = (
+        metadata_field_converters.process_hierarchical_namespace(
+            resource_args.enable_hierarchical_namespace
+        )
+    )
+  if resource_args.cors_file_path is not None:
+    bucket_metadata.cors = metadata_field_converters.process_cors(
+        resource_args.cors_file_path
+    )
+  _update_encryption_config(bucket_metadata, resource_args)
+
   if resource_args.default_event_based_hold is not None:
     bucket_metadata.defaultEventBasedHold = (
         resource_args.default_event_based_hold)
@@ -800,7 +842,7 @@ def get_cleared_bucket_fields(request_config):
     cleared_fields.append('cors')
 
   if resource_args.default_encryption_key == user_request_args_factory.CLEAR:
-    cleared_fields.append('encryption')
+    cleared_fields.append('encryption.defaultKmsKeyName')
 
   if resource_args.default_storage_class == user_request_args_factory.CLEAR:
     cleared_fields.append('storageClass')

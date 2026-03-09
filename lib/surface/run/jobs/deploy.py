@@ -14,10 +14,6 @@
 # limitations under the License.
 """Deploy a container to Cloud Run that will run to completion."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import enum
 import os.path

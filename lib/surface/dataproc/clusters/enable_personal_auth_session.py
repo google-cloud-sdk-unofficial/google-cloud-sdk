@@ -14,9 +14,6 @@
 # limitations under the License.
 """Enable a personal auth session on a cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import time
 

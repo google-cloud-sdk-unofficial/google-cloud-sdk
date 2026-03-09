@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements the command for resetting a password in a Windows instance."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import textwrap

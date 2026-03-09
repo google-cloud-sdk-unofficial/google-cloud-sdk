@@ -14,9 +14,6 @@
 # limitations under the License.
 """Gets the IAM policy for the repository."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.source import sourcerepo
 from googlecloudsdk.calliope import base

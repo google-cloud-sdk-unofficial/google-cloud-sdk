@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements command to create a migration workflow."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.bq import util as api_util
 from googlecloudsdk.api_lib.util import waiter

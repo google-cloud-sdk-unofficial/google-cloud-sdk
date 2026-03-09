@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe command for the Resource Settings CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager.settings import utils as api_utils
 from googlecloudsdk.calliope import base

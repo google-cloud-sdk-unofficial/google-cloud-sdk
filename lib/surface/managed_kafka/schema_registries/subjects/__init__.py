@@ -14,9 +14,6 @@
 # limitations under the License.
 """Managed Service for Apache Kafka schema-registries operations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

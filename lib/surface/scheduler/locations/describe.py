@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud scheduler locations describe` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scheduler import GetApiAdapter
 from googlecloudsdk.calliope import base

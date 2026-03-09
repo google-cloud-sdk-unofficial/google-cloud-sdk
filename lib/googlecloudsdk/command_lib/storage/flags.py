@@ -562,9 +562,7 @@ def add_encryption_enforcement_file_flag(parser):
     parser (parser_arguments.ArgumentInterceptor): Parser passed to surface.
   """
   parser.add_argument(
-      '--encryption-enforcement-file',
-      help=_ENCRYPTION_ENFORCEMENT_HELP_TEXT,
-      hidden=True,
+      '--encryption-enforcement-file', help=_ENCRYPTION_ENFORCEMENT_HELP_TEXT
   )
 
 

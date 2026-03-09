@@ -14,10 +14,7 @@
 # limitations under the License.
 """Updates the settings of a Cloud SQL instance."""
 
-from __future__ import absolute_import
 from __future__ import annotations
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 import datetime

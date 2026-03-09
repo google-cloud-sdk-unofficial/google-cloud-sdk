@@ -957,6 +957,7 @@ class DropInfo(_messages.Message):
         route matched within this hybrid subnet.
       HYBRID_SUBNET_NO_ROUTE: Packet is dropped because no matching route was
         found in the hybrid subnet.
+      GKE_NETWORK_POLICY: Packet is dropped by GKE Network Policy.
       NO_VALID_ROUTE_FROM_GOOGLE_MANAGED_NETWORK_TO_DESTINATION: Packet is
         dropped because there is no valid matching route from the network of
         the Google-managed service to the destination.
@@ -1064,7 +1065,8 @@ class DropInfo(_messages.Message):
     NCC_ROUTE_WITHIN_HYBRID_SUBNET_UNSUPPORTED = 100
     HYBRID_SUBNET_REGION_MISMATCH = 101
     HYBRID_SUBNET_NO_ROUTE = 102
-    NO_VALID_ROUTE_FROM_GOOGLE_MANAGED_NETWORK_TO_DESTINATION = 103
+    GKE_NETWORK_POLICY = 103
+    NO_VALID_ROUTE_FROM_GOOGLE_MANAGED_NETWORK_TO_DESTINATION = 104
 
   cause = _messages.EnumField('CauseValueValuesEnum', 1)
   destinationGeolocationCode = _messages.StringField(2)
@@ -1719,6 +1721,65 @@ class GKEMasterInfo(_messages.Message):
   dnsEndpoint = _messages.StringField(3)
   externalIp = _messages.StringField(4)
   internalIp = _messages.StringField(5)
+
+
+class GkeNetworkPolicyInfo(_messages.Message):
+  r"""For display only. Metadata associated with a GKE Network Policy.
+
+  Fields:
+    action: Possible values: ALLOW, DENY
+    direction: Possible values: INGRESS, EGRESS
+    displayName: The name of the Network Policy.
+    uri: The URI of the Network Policy. Format for a Network Policy in a zonal
+      cluster: `projects//zones//clusters//k8s/namespaces//networking.k8s.io/n
+      etworkpolicies/` Format for a Network Policy in a regional cluster: `pro
+      jects//locations//clusters//k8s/namespaces//networking.k8s.io/networkpol
+      icies/`
+  """
+
+  action = _messages.StringField(1)
+  direction = _messages.StringField(2)
+  displayName = _messages.StringField(3)
+  uri = _messages.StringField(4)
+
+
+class GkeNetworkPolicySkippedInfo(_messages.Message):
+  r"""For display only. Contains information about why GKE Network Policy
+  evaluation was skipped.
+
+  Enums:
+    ReasonValueValuesEnum: Reason why Network Policy evaluation was skipped.
+
+  Fields:
+    reason: Reason why Network Policy evaluation was skipped.
+  """
+
+  class ReasonValueValuesEnum(_messages.Enum):
+    r"""Reason why Network Policy evaluation was skipped.
+
+    Values:
+      REASON_UNSPECIFIED: Unused default value.
+      NETWORK_POLICY_DISABLED: Network Policy is disabled on the cluster.
+      INGRESS_SOURCE_ON_SAME_NODE: Ingress traffic to a Pod from a source on
+        the same Node is always allowed.
+      EGRESS_FROM_NODE_NETWORK_NAMESPACE_POD: Egress traffic from a Pod that
+        uses the Node's network namespace is not subject to Network Policy.
+      NETWORK_POLICY_NOT_APPLIED_TO_RESPONSE_TRAFFIC: Network Policy is not
+        applied to response traffic. This is because GKE Network Policy
+        evaluation is stateful in both GKE Dataplane V2 (eBPF) and legacy
+        (iptables) implementations.
+      NETWORK_POLICY_ANALYSIS_UNSUPPORTED: Network Policy evaluation is
+        currently not supported for clusters with FQDN Network Policies
+        enabled.
+    """
+    REASON_UNSPECIFIED = 0
+    NETWORK_POLICY_DISABLED = 1
+    INGRESS_SOURCE_ON_SAME_NODE = 2
+    EGRESS_FROM_NODE_NETWORK_NAMESPACE_POD = 3
+    NETWORK_POLICY_NOT_APPLIED_TO_RESPONSE_TRAFFIC = 4
+    NETWORK_POLICY_ANALYSIS_UNSUPPORTED = 5
+
+  reason = _messages.EnumField('ReasonValueValuesEnum', 1)
 
 
 class GkePodInfo(_messages.Message):
@@ -3014,6 +3075,18 @@ class NetworkmanagementProjectsLocationsVpcFlowLogsConfigsShowEffectiveFlowLogsC
   resource = _messages.StringField(5)
 
 
+class NgfwPacketInspectionInfo(_messages.Message):
+  r"""For display only. Metadata associated with a layer 7 packet inspection
+  by the firewall.
+
+  Fields:
+    securityProfileGroupUri: URI of the security profile group associated with
+      this firewall packet inspection.
+  """
+
+  securityProfileGroupUri = _messages.StringField(1)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -3872,6 +3945,9 @@ class Step(_messages.Message):
     forwardingRule: Display information of a Compute Engine forwarding rule.
     gkeMaster: Display information of a Google Kubernetes Engine cluster
       master.
+    gkeNetworkPolicy: Display information of a GKE Network Policy.
+    gkeNetworkPolicySkipped: Display information of the reason why GKE Network
+      Policy evaluation was skipped.
     gkePod: Display information of a Google Kubernetes Engine Pod.
     googleService: Display information of a Google service
     hybridSubnet: Display information of a hybrid subnet.
@@ -3885,6 +3961,8 @@ class Step(_messages.Message):
       backend.
     nat: Display information of a NAT.
     network: Display information of a Google Cloud network.
+    ngfwPacketInspection: Display information of a layer 7 packet inspection
+      by the firewall.
     projectId: Project ID that contains the configuration this step is
       validating.
     proxyConnection: Display information of a ProxyConnection.
@@ -3978,16 +4056,29 @@ class Step(_messages.Message):
       ARRIVE_AT_INTERCONNECT_ATTACHMENT: Forwarding state: arriving at an
         interconnect attachment.
       ARRIVE_AT_VPC_CONNECTOR: Forwarding state: arriving at a VPC connector.
+      ARRIVE_AT_GKE_POD: Forwarding state: arriving at a GKE Pod.
       DIRECT_VPC_EGRESS_CONNECTION: Forwarding state: for packets originating
         from a serverless endpoint forwarded through Direct VPC egress.
       SERVERLESS_EXTERNAL_CONNECTION: Forwarding state: for packets
         originating from a serverless endpoint forwarded through public
         (external) connectivity.
+      NGFW_PACKET_INSPECTION: Forwarding state: Layer 7 packet inspection by
+        the firewall endpoint based on the configured security profile group.
       NAT: Transition state: packet header translated. The `nat` field is
         populated with the translation information.
       SKIP_GKE_POD_IP_MASQUERADING: Transition state: GKE Pod IP masquerading
         is skipped. The `ip_masquerading_skipped` field is populated with the
         reason.
+      SKIP_GKE_INGRESS_NETWORK_POLICY: Transition state: GKE Ingress Network
+        Policy is skipped. The `gke_network_policy_skipped` field is populated
+        with the reason.
+      SKIP_GKE_EGRESS_NETWORK_POLICY: Transition state: GKE Egress Network
+        Policy is skipped. The `gke_network_policy_skipped` field is populated
+        with the reason.
+      APPLY_INGRESS_GKE_NETWORK_POLICY: Config checking state: verify ingress
+        GKE network policy.
+      APPLY_EGRESS_GKE_NETWORK_POLICY: Config checking state: verify egress
+        GKE network policy.
       PROXY_CONNECTION: Transition state: original connection is terminated
         and a new proxied connection is initiated.
       DELIVER: Final state: packet could be delivered.
@@ -4028,16 +4119,22 @@ class Step(_messages.Message):
     ARRIVE_AT_VPN_TUNNEL = 27
     ARRIVE_AT_INTERCONNECT_ATTACHMENT = 28
     ARRIVE_AT_VPC_CONNECTOR = 29
-    DIRECT_VPC_EGRESS_CONNECTION = 30
-    SERVERLESS_EXTERNAL_CONNECTION = 31
-    NAT = 32
-    SKIP_GKE_POD_IP_MASQUERADING = 33
-    PROXY_CONNECTION = 34
-    DELIVER = 35
-    DROP = 36
-    FORWARD = 37
-    ABORT = 38
-    VIEWER_PERMISSION_MISSING = 39
+    ARRIVE_AT_GKE_POD = 30
+    DIRECT_VPC_EGRESS_CONNECTION = 31
+    SERVERLESS_EXTERNAL_CONNECTION = 32
+    NGFW_PACKET_INSPECTION = 33
+    NAT = 34
+    SKIP_GKE_POD_IP_MASQUERADING = 35
+    SKIP_GKE_INGRESS_NETWORK_POLICY = 36
+    SKIP_GKE_EGRESS_NETWORK_POLICY = 37
+    APPLY_INGRESS_GKE_NETWORK_POLICY = 38
+    APPLY_EGRESS_GKE_NETWORK_POLICY = 39
+    PROXY_CONNECTION = 40
+    DELIVER = 41
+    DROP = 42
+    FORWARD = 43
+    ABORT = 44
+    VIEWER_PERMISSION_MISSING = 45
 
   abort = _messages.MessageField('AbortInfo', 1)
   appEngineVersion = _messages.MessageField('AppEngineVersionInfo', 2)
@@ -4054,28 +4151,31 @@ class Step(_messages.Message):
   forward = _messages.MessageField('ForwardInfo', 13)
   forwardingRule = _messages.MessageField('ForwardingRuleInfo', 14)
   gkeMaster = _messages.MessageField('GKEMasterInfo', 15)
-  gkePod = _messages.MessageField('GkePodInfo', 16)
-  googleService = _messages.MessageField('GoogleServiceInfo', 17)
-  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 18)
-  instance = _messages.MessageField('InstanceInfo', 19)
-  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 20)
-  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 21)
-  loadBalancer = _messages.MessageField('LoadBalancerInfo', 22)
-  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 23)
-  nat = _messages.MessageField('NatInfo', 24)
-  network = _messages.MessageField('NetworkInfo', 25)
-  projectId = _messages.StringField(26)
-  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 27)
-  redisCluster = _messages.MessageField('RedisClusterInfo', 28)
-  redisInstance = _messages.MessageField('RedisInstanceInfo', 29)
-  route = _messages.MessageField('RouteInfo', 30)
-  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 31)
-  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 32)
-  state = _messages.EnumField('StateValueValuesEnum', 33)
-  storageBucket = _messages.MessageField('StorageBucketInfo', 34)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 35)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 36)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 37)
+  gkeNetworkPolicy = _messages.MessageField('GkeNetworkPolicyInfo', 16)
+  gkeNetworkPolicySkipped = _messages.MessageField('GkeNetworkPolicySkippedInfo', 17)
+  gkePod = _messages.MessageField('GkePodInfo', 18)
+  googleService = _messages.MessageField('GoogleServiceInfo', 19)
+  hybridSubnet = _messages.MessageField('HybridSubnetInfo', 20)
+  instance = _messages.MessageField('InstanceInfo', 21)
+  interconnectAttachment = _messages.MessageField('InterconnectAttachmentInfo', 22)
+  ipMasqueradingSkipped = _messages.MessageField('IpMasqueradingSkippedInfo', 23)
+  loadBalancer = _messages.MessageField('LoadBalancerInfo', 24)
+  loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 25)
+  nat = _messages.MessageField('NatInfo', 26)
+  network = _messages.MessageField('NetworkInfo', 27)
+  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 28)
+  projectId = _messages.StringField(29)
+  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 30)
+  redisCluster = _messages.MessageField('RedisClusterInfo', 31)
+  redisInstance = _messages.MessageField('RedisInstanceInfo', 32)
+  route = _messages.MessageField('RouteInfo', 33)
+  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 34)
+  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 35)
+  state = _messages.EnumField('StateValueValuesEnum', 36)
+  storageBucket = _messages.MessageField('StorageBucketInfo', 37)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 38)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 39)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 40)
 
 
 class StorageBucketInfo(_messages.Message):

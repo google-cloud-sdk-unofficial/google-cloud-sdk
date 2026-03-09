@@ -14,9 +14,6 @@
 # limitations under the License.
 """The HL7v2 stores command import group for the Cloud Healthcare API CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

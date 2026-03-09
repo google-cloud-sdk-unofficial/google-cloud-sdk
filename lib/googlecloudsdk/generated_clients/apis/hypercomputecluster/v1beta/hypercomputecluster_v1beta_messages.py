@@ -1197,9 +1197,19 @@ class NewReservedInstancesConfig(_messages.Message):
     reservation: Optional. Immutable. Name of the reservation from which VM
       instances should be created, in the format
       `projects/{project}/zones/{zone}/reservations/{reservation}`.
+    reservationBlock: Optional. Immutable. Name of the reservation block from
+      which VM instances should be created, in the format `projects/{project}/
+      zones/{zone}/reservations/{reservation}/reservationBlocks/{reservation_b
+      lock}`.
+    reservationSubBlock: Optional. Immutable. Name of the reservation sub
+      block from which VM instances should be created, in the format `projects
+      /{project}/zones/{zone}/reservations/{reservation}/reservationBlocks/{re
+      servation_block}/reservationSubBlocks/{reservation_sub_block}`.
   """
 
   reservation = _messages.StringField(1)
+  reservationBlock = _messages.StringField(2)
+  reservationSubBlock = _messages.StringField(3)
 
 
 class NewSpotInstancesConfig(_messages.Message):

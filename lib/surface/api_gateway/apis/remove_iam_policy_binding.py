@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to add IAM policy binding for a model."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import apis
 from googlecloudsdk.calliope import base

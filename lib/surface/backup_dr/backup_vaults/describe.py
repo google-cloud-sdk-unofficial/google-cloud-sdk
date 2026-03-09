@@ -14,9 +14,6 @@
 # limitations under the License.
 """Show the metadata for a Backup and DR backup vault."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.api_lib.backupdr.backup_vaults import BackupVaultsClient
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.backupdr import flags

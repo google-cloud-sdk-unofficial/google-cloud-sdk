@@ -736,6 +736,41 @@ class Empty(_messages.Message):
 
 
 
+class EncryptionConfig(_messages.Message):
+  r"""Encryption configuration for a private cloud.
+
+  Enums:
+    TypeValueValuesEnum: Required. The encryption type of the private cloud.
+
+  Fields:
+    cryptoKeyName: Optional. The resource name of the Cloud KMS key to be used
+      for CMEK encryption. The format of this field is `projects/{project}/loc
+      ations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}`. The key
+      must be in the same region as the private cloud. This key is used for
+      wrapping the key-encrypting key of vSAN clusters. This field must be
+      provided when `type` is `CMEK` or `LEGACY_CMEK`, and must not be set
+      when `type` is `OTHER`.
+    type: Required. The encryption type of the private cloud.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Required. The encryption type of the private cloud.
+
+    Values:
+      TYPE_UNSPECIFIED: The default value. This value should never be used.
+      CMEK: Customer-managed encryption keys (CMEK).
+      LEGACY_CMEK: Legacy customer-managed encryption keys (CMEK).
+      OTHER: Other encryption types, such as self-managed external KMS.
+    """
+    TYPE_UNSPECIFIED = 0
+    CMEK = 1
+    LEGACY_CMEK = 2
+    OTHER = 3
+
+  cryptoKeyName = _messages.StringField(1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
 class Expr(_messages.Message):
   r"""Represents a textual expression in the Common Expression Language (CEL)
   syntax. CEL is a C-like expression language. The syntax and semantics of CEL
@@ -2740,6 +2775,9 @@ class PrivateCloud(_messages.Message):
     deleteTime: Output only. Time when the resource was scheduled for
       deletion.
     description: User-provided description for this private cloud.
+    encryptionConfig: Optional. Encryption configuration for the private
+      cloud. If this field is left unspecified, Google default encryption is
+      used.
     expireTime: Output only. Time when the resource will be irreversibly
       deleted.
     hcx: Output only. HCX appliance.
@@ -2810,17 +2848,18 @@ class PrivateCloud(_messages.Message):
   createTime = _messages.StringField(1)
   deleteTime = _messages.StringField(2)
   description = _messages.StringField(3)
-  expireTime = _messages.StringField(4)
-  hcx = _messages.MessageField('Hcx', 5)
-  managementCluster = _messages.MessageField('ManagementCluster', 6)
-  name = _messages.StringField(7)
-  networkConfig = _messages.MessageField('NetworkConfig', 8)
-  nsx = _messages.MessageField('Nsx', 9)
-  state = _messages.EnumField('StateValueValuesEnum', 10)
-  type = _messages.EnumField('TypeValueValuesEnum', 11)
-  uid = _messages.StringField(12)
-  updateTime = _messages.StringField(13)
-  vcenter = _messages.MessageField('Vcenter', 14)
+  encryptionConfig = _messages.MessageField('EncryptionConfig', 4)
+  expireTime = _messages.StringField(5)
+  hcx = _messages.MessageField('Hcx', 6)
+  managementCluster = _messages.MessageField('ManagementCluster', 7)
+  name = _messages.StringField(8)
+  networkConfig = _messages.MessageField('NetworkConfig', 9)
+  nsx = _messages.MessageField('Nsx', 10)
+  state = _messages.EnumField('StateValueValuesEnum', 11)
+  type = _messages.EnumField('TypeValueValuesEnum', 12)
+  uid = _messages.StringField(13)
+  updateTime = _messages.StringField(14)
+  vcenter = _messages.MessageField('Vcenter', 15)
 
 
 class PrivateConnection(_messages.Message):

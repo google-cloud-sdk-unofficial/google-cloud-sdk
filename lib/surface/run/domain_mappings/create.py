@@ -14,9 +14,6 @@
 # limitations under the License.
 """Surface for creating domain mappings."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.calliope import base

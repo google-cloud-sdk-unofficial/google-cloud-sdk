@@ -14,9 +14,6 @@
 # limitations under the License.
 """A command to sign and create attestations for Binary Authorization."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import functools
 import textwrap

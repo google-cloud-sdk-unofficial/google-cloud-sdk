@@ -120,14 +120,14 @@ class AgentGatewayAgentGatewayOutputCard(_messages.Message):
 
   Fields:
     mtlsEndpoint: Output only. mTLS Endpoint associated with this AgentGateway
-    rootCertificate: Output only. Root Certificate for Agents to validate this
-      AgentGateway
+    rootCertificates: Output only. Root Certificates for Agents to validate
+      this AgentGateway
     serviceExtensionsServiceAccount: Output only. Service Account used by
       Service Extensions to operate.
   """
 
   mtlsEndpoint = _messages.StringField(1)
-  rootCertificate = _messages.StringField(2)
+  rootCertificates = _messages.StringField(2, repeated=True)
   serviceExtensionsServiceAccount = _messages.StringField(3)
 
 
@@ -259,11 +259,13 @@ class AuthzExtension(_messages.Message):
   callout backend service to make an authorization decision.
 
   Enums:
-    LoadBalancingSchemeValueValuesEnum: Required. All backend services and
+    LoadBalancingSchemeValueValuesEnum: Optional. All backend services and
       forwarding rules referenced by this extension must share the same load
       balancing scheme. Supported values: `INTERNAL_MANAGED`,
-      `EXTERNAL_MANAGED`. For more information, refer to [Backend services
-      overview](https://cloud.google.com/load-balancing/docs/backend-service).
+      `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions that do not
+      reference a backend service. For more information, refer to [Backend
+      services overview](https://cloud.google.com/load-balancing/docs/backend-
+      service).
     WireFormatValueValuesEnum: Optional. The format of communication supported
       by the callout extension. This field is supported only for regional
       `AuthzExtension` resources. If not specified, the default value
@@ -305,9 +307,10 @@ class AuthzExtension(_messages.Message):
       resource. The format must comply with [the requirements for
       labels](/compute/docs/labeling-resources#requirements) for Google Cloud
       resources.
-    loadBalancingScheme: Required. All backend services and forwarding rules
+    loadBalancingScheme: Optional. All backend services and forwarding rules
       referenced by this extension must share the same load balancing scheme.
-      Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. For more
+      Supported values: `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted
+      for AuthzExtensions that do not reference a backend service. For more
       information, refer to [Backend services
       overview](https://cloud.google.com/load-balancing/docs/backend-service).
     metadata: Optional. The metadata provided here is included as part of the
@@ -337,9 +340,10 @@ class AuthzExtension(_messages.Message):
   """
 
   class LoadBalancingSchemeValueValuesEnum(_messages.Enum):
-    r"""Required. All backend services and forwarding rules referenced by this
+    r"""Optional. All backend services and forwarding rules referenced by this
     extension must share the same load balancing scheme. Supported values:
-    `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. For more information, refer to
+    `INTERNAL_MANAGED`, `EXTERNAL_MANAGED`. Can be omitted for AuthzExtensions
+    that do not reference a backend service. For more information, refer to
     [Backend services overview](https://cloud.google.com/load-
     balancing/docs/backend-service).
 
@@ -1898,12 +1902,10 @@ class FlexShieldingOptions(_messages.Message):
         south1`.
       ME_CENTRAL1: Content is fetched from an origin or cache near `me-
         central1`.
-      US_EAST5: Content is fetched from an origin or cache near `us-east5`.
     """
     FLEX_SHIELDING_REGION_UNSPECIFIED = 0
     AFRICA_SOUTH1 = 1
     ME_CENTRAL1 = 2
-    US_EAST5 = 3
 
   flexShieldingRegions = _messages.EnumField('FlexShieldingRegionsValueListEntryValuesEnum', 1, repeated=True)
 
@@ -12194,8 +12196,17 @@ class ServiceBinding(_messages.Message):
     createTime: Output only. The timestamp when the resource was created.
     description: Optional. A free-text description of the resource. Max length
       1024 characters.
+    destination: Optional. The destination service(s) for this binding.
     labels: Optional. Set of label tags associated with the ServiceBinding
       resource.
+    matches: Optional. A list of matches define conditions used to match
+      requests to destination services. Each match is independent with the OR
+      semantic, i.e. we consider it matched if ANY one of the matches is
+      satisfied. This field is only applicable to Cloud Run services: If a
+      ServiceBinding has only one Cloud Run service, Match is optional. If not
+      specified, the default hostname `-..run.app` or the short name can be
+      used. If a ServiceBinding has multiple Cloud Run services, at least one
+      Match with valid hostname is required.
     name: Identifier. Name of the ServiceBinding resource. It matches pattern
       `projects/*/locations/*/serviceBindings/`.
     service: Optional. The full Service Directory Service name of the format
@@ -12206,6 +12217,7 @@ class ServiceBinding(_messages.Message):
       populated when the Service Binding resource is used in another resource
       (like Backend Service). This is of the UUID4 format. This field is for
       Service Directory integration which will be deprecated soon.
+    source: Optional. The source service(s) for this binding.
     updateTime: Output only. The timestamp when the resource was updated.
   """
 
@@ -12236,11 +12248,64 @@ class ServiceBinding(_messages.Message):
 
   createTime = _messages.StringField(1)
   description = _messages.StringField(2)
-  labels = _messages.MessageField('LabelsValue', 3)
-  name = _messages.StringField(4)
-  service = _messages.StringField(5)
-  serviceId = _messages.StringField(6)
-  updateTime = _messages.StringField(7)
+  destination = _messages.MessageField('ServiceBindingDestination', 3)
+  labels = _messages.MessageField('LabelsValue', 4)
+  matches = _messages.MessageField('ServiceBindingMatch', 5, repeated=True)
+  name = _messages.StringField(6)
+  service = _messages.StringField(7)
+  serviceId = _messages.StringField(8)
+  source = _messages.MessageField('ServiceBindingSource', 9)
+  updateTime = _messages.StringField(10)
+
+
+class ServiceBindingDestination(_messages.Message):
+  r"""The destination of the traffic. This defines the service that the source
+  wants to connect to.
+
+  Fields:
+    services: Optional. The service URIs to which the ServiceBinding resource
+      is bound. Can be one of the following (all the service URIs should have
+      the same type):
+      `//compute.googleapis.com/projects/*/regions/*/serviceAttachments/`; `//
+      apphub.googleapis.com/projects/*/locations/*/applications//services/`;
+      `//run.googleapis.com/projects/*/locations/*/services/`. If an AppHub
+      service is provided, the underlying service needs to be PSC service
+      attachment.
+  """
+
+  services = _messages.StringField(1, repeated=True)
+
+
+class ServiceBindingMatch(_messages.Message):
+  r"""Match defines the predicate used to match requests to destination
+  services. This field is only applicable to Cloud Run services.
+
+  Fields:
+    hostname: Optional. Specifies the hostname to match against the HTTP
+      request host header. Hostname is the fully qualified domain name of a
+      network host, as defined by RFC1123 with the exception that: - IPs are
+      not allowed. - Wildcard labels (`*.`) are not allowed. Hostname must be
+      "precise" which is a domain name without the terminating dot of a
+      network host (e.g. `foo.example.com`). Note that as per RFC1035 and
+      RFC1123, a label must consist of lower case alphanumeric characters or
+      '-', and must start and end with an alphanumeric character. No other
+      punctuation is allowed.
+  """
+
+  hostname = _messages.StringField(1)
+
+
+class ServiceBindingSource(_messages.Message):
+  r"""The source of the traffic. This defines where the connection originates
+  from.
+
+  Fields:
+    services: Optional. A list of resources attached to the ServiceBinding.
+      The resources can be TargetHttpProxy or TargetHttpsProxy. The location
+      of the resources must match the location of the ServiceBinding.
+  """
+
+  services = _messages.StringField(1, repeated=True)
 
 
 class ServiceGraph(_messages.Message):

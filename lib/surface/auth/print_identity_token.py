@@ -16,9 +16,6 @@
 """A command that prints identity token.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from google.auth import exceptions as google_auth_exceptions
 from googlecloudsdk.api_lib.auth import exceptions as auth_exceptions

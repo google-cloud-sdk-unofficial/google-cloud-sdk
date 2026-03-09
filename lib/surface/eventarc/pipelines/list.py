@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all pipelines in a project and location."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.eventarc import pipelines
 from googlecloudsdk.calliope import base

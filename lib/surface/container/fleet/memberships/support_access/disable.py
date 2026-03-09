@@ -14,9 +14,6 @@
 # limitations under the License.
 """The disable command for removing anthos support RBACs from the cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

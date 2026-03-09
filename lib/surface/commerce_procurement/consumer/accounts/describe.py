@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud Procurement consumer accounts describe command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.commerce_procurement import apis
 from googlecloudsdk.calliope import base

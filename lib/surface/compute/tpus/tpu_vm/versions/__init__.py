@@ -14,9 +14,6 @@
 # limitations under the License.
 """The RuntimeVersions command group for the Cloud TPU CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

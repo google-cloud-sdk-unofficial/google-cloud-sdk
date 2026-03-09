@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to import an Attached cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkemulticloud import attached as api_util
 from googlecloudsdk.api_lib.container.gkemulticloud import locations as loc_util

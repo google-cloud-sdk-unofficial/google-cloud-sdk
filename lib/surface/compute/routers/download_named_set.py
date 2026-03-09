@@ -15,9 +15,6 @@
 
 """Command for downloading a named set from a Compute Engine router."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

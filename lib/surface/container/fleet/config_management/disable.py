@@ -14,9 +14,6 @@
 # limitations under the License.
 """The command to disable Config Management Feature."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception
 from googlecloudsdk.calliope import base

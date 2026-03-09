@@ -15,9 +15,6 @@
 
 """Command to list Cloud Storage resources."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.storage import cloud_api
 from googlecloudsdk.calliope import base

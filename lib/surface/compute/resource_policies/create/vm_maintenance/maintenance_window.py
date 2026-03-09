@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create VM maintenance resource policy maintenance-window command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base

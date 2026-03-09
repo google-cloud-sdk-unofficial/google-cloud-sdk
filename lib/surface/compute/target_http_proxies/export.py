@@ -14,9 +14,6 @@
 # limitations under the License.
 """Export target HTTP proxy command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.compute import base_classes

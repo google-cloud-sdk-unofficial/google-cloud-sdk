@@ -15,9 +15,6 @@
 
 """Implements command to remove an SSH public key from the OS Login profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.oslogin import client
 from googlecloudsdk.calliope import base

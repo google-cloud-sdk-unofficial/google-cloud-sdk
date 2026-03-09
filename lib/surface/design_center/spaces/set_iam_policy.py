@@ -14,9 +14,6 @@
 # limitations under the License.
 """Set the IAM policy for a space."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.design_center import spaces as apis
 from googlecloudsdk.api_lib.design_center import utils as api_lib_utils

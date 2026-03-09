@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of gcloud vectorsearch collections data-objects batch-search."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 
@@ -31,7 +28,7 @@ from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import files
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 @base.DefaultUniverseOnly
 class BatchSearch(base.Command):
   """Batch search data objects from a Vector Search collection."""
@@ -117,29 +114,13 @@ Keys must be camelCase as in API definition.""",
         help='List of metadata fields to include in combined output.',
     )
 
-    ranker_group = combine_group.add_mutually_exclusive_group(
-        'Ranker', required=True
-    )
+    ranker_group = combine_group.add_argument_group('Ranker', required=True)
     rrf_group = ranker_group.add_argument_group('RRF Ranker')
     rrf_group.add_argument(
         '--rrf-weights',
         type=arg_parsers.ArgList(element_type=float),
         help='RRF weights for combining results.',
         metavar='WEIGHT',
-    )
-    vertex_ranker_group = ranker_group.add_argument_group('Vertex Ranker')
-    vertex_ranker_group.add_argument(
-        '--vertex-ranker-query', help='Vertex ranker query', required=True
-    )
-    vertex_ranker_group.add_argument(
-        '--vertex-ranker-model', help='Vertex ranker model', required=True
-    )
-    vertex_ranker_group.add_argument(
-        '--vertex-ranker-title-template', help='Vertex ranker title template'
-    )
-    vertex_ranker_group.add_argument(
-        '--vertex-ranker-content-template',
-        help='Vertex ranker content template',
     )
 
   def _ParseSearchesFromFile(self, args, client):
@@ -150,7 +131,7 @@ Keys must be camelCase as in API definition.""",
       searches = []
       for search_dict in searches_list:
         search_message = encoding.DictToMessage(
-            search_dict, client.messages.GoogleCloudVectorsearchV1betaSearch
+            search_dict, client.GetMessage('Search')
         )
         searches.append(search_message)
       return searches
@@ -162,9 +143,9 @@ Keys must be camelCase as in API definition.""",
 
   def _BuildCombineOptions(self, args, client):
     """Builds combine options."""
-    combine_options = (
-        client.messages.GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequestCombineResultsOptions()
-    )
+    combine_options = client.GetMessage(
+        'BatchSearchDataObjectsRequestCombineResultsOptions'
+    )()
     if args.combine_top_k:
       combine_options.topK = args.combine_top_k
     if (
@@ -172,9 +153,7 @@ Keys must be camelCase as in API definition.""",
         or args.combine_output_vector_fields
         or args.combine_output_metadata_fields
     ):
-      combine_options.outputFields = (
-          client.messages.GoogleCloudVectorsearchV1betaOutputFields()
-      )
+      combine_options.outputFields = client.GetMessage('OutputFields')()
       if args.combine_output_data_fields:
         combine_options.outputFields.dataFields = (
             args.combine_output_data_fields
@@ -191,21 +170,11 @@ Keys must be camelCase as in API definition.""",
 
   def _BuildRanker(self, args, client):
     """Builds ranker."""
-    if args.rrf_weights:
-      return client.messages.GoogleCloudVectorsearchV1betaRanker(
-          rrf=client.messages.GoogleCloudVectorsearchV1betaReciprocalRankFusion(
-              weights=args.rrf_weights
-          )
-      )
-    elif args.vertex_ranker_query:
-      return client.messages.GoogleCloudVectorsearchV1betaRanker(
-          vertex=client.messages.GoogleCloudVectorsearchV1betaVertexRanker(
-              query=args.vertex_ranker_query,
-              model=args.vertex_ranker_model,
-              titleTemplate=args.vertex_ranker_title_template,
-              contentTemplate=args.vertex_ranker_content_template,
-          )
-      )
+    return client.GetMessage('Ranker')(
+        rrf=client.GetMessage('ReciprocalRankFusion')(
+            weights=args.rrf_weights
+        )
+    )
 
   def Run(self, args):
     """Run the batch-search command."""
@@ -215,9 +184,9 @@ Keys must be camelCase as in API definition.""",
         project, args.location, args.collection
     )
 
-    batch_search_request_body = (
-        client.messages.GoogleCloudVectorsearchV1betaBatchSearchDataObjectsRequest()
-    )
+    batch_search_request_body = client.GetMessage(
+        'BatchSearchDataObjectsRequest'
+    )()
 
     if args.searches_from_file:
       batch_search_request_body.searches = self._ParseSearchesFromFile(
@@ -226,13 +195,17 @@ Keys must be camelCase as in API definition.""",
 
     combine_options = self._BuildCombineOptions(args, client)
 
-    if args.rrf_weights or args.vertex_ranker_query:
+    if args.rrf_weights:
       combine_options.ranker = self._BuildRanker(args, client)
       batch_search_request_body.combine = combine_options
 
-    full_req = client.messages.VectorsearchProjectsLocationsCollectionsDataObjectsBatchSearchRequest(
+    batch_search_req_body_field = client.GetRequestField(
+        'BatchSearchDataObjectsRequest'
+    )
+    full_req_message = 'VectorsearchProjectsLocationsCollectionsDataObjectsBatchSearchRequest'
+    full_req = getattr(client.messages, full_req_message)(
         parent=parent,
-        googleCloudVectorsearchV1betaBatchSearchDataObjectsRequest=batch_search_request_body,
+        **{batch_search_req_body_field: batch_search_request_body},
     )
 
     return client.service.BatchSearch(full_req)

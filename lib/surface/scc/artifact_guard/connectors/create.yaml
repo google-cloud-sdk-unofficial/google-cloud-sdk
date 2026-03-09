@@ -1,45 +1,48 @@
 release_tracks: [ALPHA]
 hidden: true
+
 help_text:
   brief: Create a new artifact guard connector.
   description: |
-    Create a new artifact guard connector. Connectors are tags for images. When passed from CI
-    pipeline to the Artifact Guard service, it is used to decide which policies need to be run
-    against the image being built in the CI pipeline.
+    Create a new artifact guard connector.
   examples: |
-    Create a connector with full name:
+    To create a connector named `my-connector` in `organizations/123/locations/global`:
+      $ {command} my-connector --location=global --organization=123 --pipeline-type=google-cloud-build
 
-      $ {command} organizations/123/locations/global/connectors/my-connector \
-          --pipeline-type=GOOGLE_CLOUD_BUILD --display-name="My Connector" \
-          --description="This is my connector."
-
-    Create a connector with connector ID:
-
-      $ {command} my-connector --location=global --organization=123 \
-          --pipeline-type=GOOGLE_CLOUD_BUILD --display-name="My Connector" \
-          --description="This is my connector."
+    To create a connector named `my-connector` in `projects/123/locations/global`:
+      $ {command} my-connector --location=global --project=123 --pipeline-type=google-cloud-build
 
 request:
-  collection: artifactscanguard.organizations.locations.connectors
   api_version: v1alpha
+  collection:
+  - artifactscanguard.organizations.locations.connectors
+  - artifactscanguard.projects.locations.connectors
   method: create
+  parse_resource_into_request: true
+
 arguments:
-  resource:
-    spec: !REF googlecloudsdk.command_lib.scc.resources:connector
-    help_text: |
-      The full name of the connector to create. For example:
-      `organizations/123/locations/global/connectors/myConnector`
   params:
+  - help_text: The Artifact Guard connector to create.
+    resource_spec: !REF googlecloudsdk.command_lib.scc.resources:organization_or_project_location_connector
+    is_positional: true
+    request_id_field: connectorId
   - arg_name: pipeline-type
     api_field: connector.pipelineType
     required: true
     help_text: |
-      The type of pipeline for which connector is being created.
+      The type of pipeline to be used for the connector.
+    choices:
+    - arg_value: google-cloud-build
+      enum_value: GOOGLE_CLOUD_BUILD
+    - arg_value: github-actions
+      enum_value: GITHUB_ACTIONS
+    - arg_value: jenkins-pipeline
+      enum_value: JENKINS_PIPELINE
   - arg_name: display-name
     api_field: connector.displayName
     help_text: |
-      User-specified name of the connector.
+      The display name of the connector.
   - arg_name: description
     api_field: connector.description
     help_text: |
-      Description of the connector.
+      The description of the connector.

@@ -46,7 +46,7 @@ class ActionProcessor:
     """Processes a single action in the pipeline, resolving local paths to GCS URIs."""
 
     requirements_path = self._work_dir / "jobs" / "requirements.txt"
-    if requirements_path.exists():
+    if self._has_valid_requirements(requirements_path):
       python_version = self._get_python_version()
       if python_version:
         self.full_python_path = (
@@ -96,6 +96,18 @@ class ActionProcessor:
   def _update_yaml_properties(self, action):
     """Performs updates on YAML properties."""
     pass
+
+  def _has_valid_requirements(self, requirements_path) -> bool:
+    """Checks if requirements file exists and has at least one non-comment line."""
+    if not requirements_path.exists():
+      return False
+
+    with requirements_path.open("r") as f:
+      for line in f:
+        line = line.strip()
+        if line and not line.startswith("#"):
+          return True
+    return False
 
   @staticmethod
   def _get_nested_dict(

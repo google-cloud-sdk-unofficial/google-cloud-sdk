@@ -68,3 +68,17 @@ paths:
     "property1" and on the entry itself will be returned.
 
     Can be further constrained by `--aspect-types` argument.
+
+resources:
+  api_field: googleCloudDataplexV1LookupContextRequest.resources
+  arg_name: resources
+  required: true
+  type: 'googlecloudsdk.calliope.arg_parsers:ArgList:'
+  help_text: |
+    The identifier describing the resource,
+    - in the form of a entry name, or
+    - in the form of a linked resource name, or
+    - in the form of a fully qualified name.
+    Examples:
+    - projects/{project}/locations/{location}/entryGroups/{entry_group}/entries/{entry}
+    - bigquery:{project}.{dataset}.{table}

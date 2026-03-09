@@ -14,9 +14,6 @@
 # limitations under the License.
 """Creates a Cloud NetApp Backup Policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.backup_policies import client as backuppolicies_client
 from googlecloudsdk.calliope import base

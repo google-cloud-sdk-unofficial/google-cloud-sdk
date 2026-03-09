@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for describing Cloud Run Integration types."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from frozendict import frozendict
 from googlecloudsdk.calliope import base

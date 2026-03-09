@@ -942,9 +942,6 @@ class ServerlessOperations(object):
             sources.ArchiveType.TAR,
             respect_gitignore=False,
         )
-        # TODO(b/423646813): Remove this once zip deploys properly handles the
-        # generation number.
-        source.generation = None
         source_path = sources.GetGsutilUri(source)
       config_changes.append(
           config_changes_mod.SourcesAnnotationChange(

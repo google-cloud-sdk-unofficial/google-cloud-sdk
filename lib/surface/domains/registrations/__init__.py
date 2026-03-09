@@ -14,9 +14,6 @@
 # limitations under the License.
 """The registrations command group for the Cloud Domains."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

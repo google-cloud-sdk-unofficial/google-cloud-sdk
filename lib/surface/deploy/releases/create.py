@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- #
-# Copyright 2021 Google LLC. All Rights Reserved.
+# Copyright 2026 Google LLC. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ def _CommonArgs(parser):
   flags.AddKubectlVersion(parser)
   flags.AddKustomizeVersion(parser)
   flags.AddSkaffoldVersion(parser)
-  flags.AddSkaffoldSources(parser)
+  flags.AddSkaffoldOrNativeSources(parser)
   flags.AddInitialRolloutGroup(parser)
   flags.AddDeployParametersFlag(parser)
   flags.AddOverrideDeployPolicies(parser)
@@ -234,49 +234,52 @@ class Create(base.CreateCommand):
     delivery_pipeline_util.ThrowIfPipelineSuspended(
         pipeline_obj, failed_activity_msg
     )
-
+    actual_source = release_util.GetActualSource(args)
     # Only when the skaffold file is an absolute path needs to be handled
     # here.
     if args.skaffold_file and os.path.isabs(args.skaffold_file):
-      if args.source == '.':
-        source = os.getcwd()
-        source_description = 'current working directory'
-      else:
-        source = args.source
-        source_description = 'source'
-      if not files.IsDirAncestorOf(source, args.skaffold_file):
+      # If source is not specified, use current directory.
+      # The source is only used for the file path check, it's not used in the
+      # CreateReleaseConfig.
+      source_description = (
+          'current working directory' if args.source == '.' else 'source'
+      )
+      if not files.IsDirAncestorOf(actual_source, args.skaffold_file):
         raise core_exceptions.Error(
-            'The skaffold file {} could not be found in the {}. Please enter'
-            ' a valid Skaffold file path.'.format(
-                args.skaffold_file, source_description
-            )
+            f'The skaffold file {args.skaffold_file} could not be found in the'
+            f' {source_description}. Please enter a valid Skaffold file path.'
         )
       args.skaffold_file = os.path.relpath(
-          os.path.abspath(args.skaffold_file), os.path.abspath(source)
+          os.path.abspath(args.skaffold_file), os.path.abspath(actual_source)
       )
+    config_check_mode = release_util.GetConfigCheckModeFromArgs(args)
+    native_config_used = release_util.VerifyConfigs(
+        actual_source, config_check_mode, args.skaffold_file, args.config_file
+    )
 
     client = release.ReleaseClient()
     # Create the release create request.
     release_config = release_util.CreateReleaseConfig(
-        args.source,
-        args.gcs_source_staging_dir,
-        args.ignore_file,
-        args.images,
-        args.build_artifacts,
-        args.description,
-        args.docker_version,
-        args.helm_version,
-        args.kpt_version,
-        args.kubectl_version,
-        args.kustomize_version,
-        args.skaffold_version,
-        args.skaffold_file,
-        release_ref.AsDict()['locationsId'],
-        pipeline_obj.uid,
-        args.from_k8s_manifest,
-        args.from_run_manifest,
-        pipeline_obj,
-        args.deploy_parameters,
+        source=actual_source,
+        gcs_source_staging_dir=args.gcs_source_staging_dir,
+        ignore_file=args.ignore_file,
+        images=args.images,
+        build_artifacts=args.build_artifacts,
+        description=args.description,
+        docker_version=args.docker_version,
+        helm_version=args.helm_version,
+        kpt_version=args.kpt_version,
+        kubectl_version=args.kubectl_version,
+        kustomize_version=args.kustomize_version,
+        skaffold_version=args.skaffold_version,
+        skaffold_file=args.skaffold_file,
+        location=release_ref.AsDict()['locationsId'],
+        pipeline_uuid=pipeline_obj.uid,
+        from_k8s_manifest=args.from_k8s_manifest,
+        from_run_manifest=args.from_run_manifest,
+        pipeline_obj=pipeline_obj,
+        deploy_parameters=args.deploy_parameters,
+        native_config_used=native_config_used,
     )
 
     deploy_util.SetMetadata(

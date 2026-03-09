@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update forwarding-rules."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.protorpclite import messages as message_proto
 from googlecloudsdk.api_lib.compute import base_classes

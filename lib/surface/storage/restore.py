@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of Unix-like cat command for cloud storage providers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import enum

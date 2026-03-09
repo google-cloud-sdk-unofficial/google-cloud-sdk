@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to enable a microservices feature."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.microservices import util
 from googlecloudsdk.calliope import base

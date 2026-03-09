@@ -40,10 +40,6 @@ def _ParseCAResourceArgs(args):
 
   ca_ref = args.CONCEPTS.certificate_authority.Parse()
 
-  resource_args.ValidateResourceLocation(
-      ca_ref, 'CERTIFICATE_AUTHORITY', version='v1'
-  )
-
   kms_key_version_ref = args.CONCEPTS.kms_key_version.Parse()
   if (
       kms_key_version_ref

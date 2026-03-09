@@ -631,12 +631,20 @@ class AccesscontextmanagerOperationsListRequest(_messages.Message):
     name: The name of the operation's parent resource.
     pageSize: The standard list page size.
     pageToken: The standard list page token.
+    returnPartialSuccess: When set to `true`, operations that are reachable
+      are returned as normal, and those that are unreachable are returned in
+      the ListOperationsResponse.unreachable field. This can only be `true`
+      when reading across collections. For example, when `parent` is set to
+      `"projects/example/locations/-"`. This field is not supported by default
+      and will result in an `UNIMPLEMENTED` error if set unless explicitly
+      documented otherwise in service or product specific documentation.
   """
 
   filter = _messages.StringField(1)
   name = _messages.StringField(2, required=True)
   pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(4)
+  returnPartialSuccess = _messages.BooleanField(5)
 
 
 class AccesscontextmanagerOrganizationsGcpUserAccessBindingsCreateRequest(_messages.Message):
@@ -703,13 +711,13 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsPatchRequest(_messag
     append: Optional. This field controls whether or not certain repeated
       settings in the update request overwrite or append to existing settings
       on the binding. If true, then append. Otherwise overwrite. So far, only
-      scoped_access_settings with reauth_settings supports appending. Global
+      scoped_access_settings with session_settings supports appending. Global
       access_levels, access_levels in scoped_access_settings,
-      dry_run_access_levels, reauth_settings, and session_settings are not
-      compatible with append functionality, and the request will return an
-      error if append=true when these settings are in the update_mask. The
-      request will also return an error if append=true when
-      "scoped_access_settings" is not set in the update_mask.
+      dry_run_access_levels, and session_settings are not compatible with
+      append functionality, and the request will return an error if
+      append=true when these settings are in the update_mask. The request will
+      also return an error if append=true when "scoped_access_settings" is not
+      set in the update_mask.
     gcpUserAccessBinding: A GcpUserAccessBinding resource to be passed as the
       request body.
     name: Immutable. Assigned by the server during creation. The last segment
@@ -721,14 +729,28 @@ class AccesscontextmanagerOrganizationsGcpUserAccessBindingsPatchRequest(_messag
     updateMask: Required. Only the fields specified in this mask are updated.
       Because name and group_key cannot be changed, update_mask is required
       and may only contain the following fields: `access_levels`,
-      `dry_run_access_levels`, `reauth_settings` `session_settings`,
-      `scoped_access_settings`. update_mask { paths: "access_levels" }
+      `dry_run_access_levels`, `session_settings`, `scoped_access_settings`.
+      update_mask { paths: "access_levels" }
   """
 
   append = _messages.BooleanField(1)
   gcpUserAccessBinding = _messages.MessageField('GcpUserAccessBinding', 2)
   name = _messages.StringField(3, required=True)
   updateMask = _messages.StringField(4)
+
+
+class AccesscontextmanagerPermissionsListRequest(_messages.Message):
+  r"""A AccesscontextmanagerPermissionsListRequest object.
+
+  Fields:
+    pageSize: Optional. This flag specifies the maximum number of services to
+      return per page. Default is 100.
+    pageToken: Optional. Token to start on a later page. Default is the first
+      page.
+  """
+
+  pageSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(2)
 
 
 class AccesscontextmanagerServicesGetRequest(_messages.Message):
@@ -1384,12 +1406,10 @@ class EgressSource(_messages.Message):
       origins within the perimeter. Example:
       `accessPolicies/MY_POLICY/accessLevels/MY_LEVEL`. If a single `*` is
       specified for `access_level`, then all EgressSources will be allowed.
-    resource: A Google Cloud resource that you want to allow to egress the
-      perimeter. These resources can access data outside the perimeter. This
-      field only supports projects. The project format is
-      `projects/{project_number}`. The resource can be in any Google Cloud
-      organization, not just the organization where the perimeter is defined.
-      You can't use `*` in this field to allow all Google Cloud resources.
+    resource: A Google Cloud resource from the service perimeter that you want
+      to allow to access data outside the perimeter. This field supports only
+      projects. The project format is `projects/{project_number}`. You can't
+      use `*` in this field to allow all Google Cloud resources.
   """
 
   accessLevel = _messages.StringField(1)
@@ -1398,7 +1418,6 @@ class EgressSource(_messages.Message):
 
 class EgressTo(_messages.Message):
   r"""Defines the conditions under which an EgressPolicy matches a request.
-
   Conditions are based on information about the ApiOperation intended to be
   performed on the `resources` specified. Note that if the destination of the
   request is also protected by a ServicePerimeter, then that ServicePerimeter
@@ -1423,7 +1442,7 @@ class EgressTo(_messages.Message):
       this list. If `*` is specified for `resources`, then this EgressTo rule
       will authorize access to all resources outside the perimeter.
     roles: IAM roles that represent the set of operations that the sources
-      specified in the corresponding EgressFrom are allowed to perform in
+      specified in the corresponding EgressFrom. are allowed to perform in
       this ServicePerimeter.
   """
 
@@ -1439,6 +1458,7 @@ class Empty(_messages.Message):
   or the response type of an API method. For instance: service Foo { rpc
   Bar(google.protobuf.Empty) returns (google.protobuf.Empty); }
   """
+
 
 
 class Expr(_messages.Message):
@@ -1491,9 +1511,9 @@ class GcpUserAccessBinding(_messages.Message):
       be logged. Only one access level is supported, not multiple. This list
       must have exactly one element. Example:
       "accessPolicies/9522/accessLevels/device_trusted"
-    groupKey: Required. Immutable. Google Group id whose members are subject
-      to this binding's restrictions. See "id" in the [G Suite Directory API's
-      Groups resource] (https://developers.google.com/admin-
+    groupKey: Optional. Immutable. Google Group id whose users are subject to
+      this binding's restrictions. See "id" in the [Google Workspace Directory
+      API's Group Resource] (https://developers.google.com/admin-
       sdk/directory/v1/reference/groups#resource). If a group's email
       address/alias is changed, this resource will continue to point at the
       changed group. This field does not accept group email addresses or
@@ -1665,10 +1685,9 @@ class IngressSource(_messages.Message):
 
 class IngressTo(_messages.Message):
   r"""Defines the conditions under which an IngressPolicy matches a request.
-
   Conditions are based on information about the ApiOperation intended to be
-  performed on the target resource of the request. The request must satisfy what
-  is defined in `operations` AND `resources` in order to match.
+  performed on the target resource of the request. The request must satisfy
+  what is defined in `operations` AND `resources` in order to match.
 
   Fields:
     operations: A list of ApiOperations allowed to be performed by the sources
@@ -1747,10 +1766,15 @@ class ListOperationsResponse(_messages.Message):
     nextPageToken: The standard List next-page token.
     operations: A list of operations that matches the specified filter in the
       request.
+    unreachable: Unordered list. Unreachable resources. Populated when the
+      request sets `ListOperationsRequest.return_partial_success` and reads
+      across collections. For example, when attempting to list all resources
+      across all supported locations.
   """
 
   nextPageToken = _messages.StringField(1)
   operations = _messages.MessageField('Operation', 2, repeated=True)
+  unreachable = _messages.StringField(3, repeated=True)
 
 
 class ListServicePerimetersResponse(_messages.Message):
@@ -1764,6 +1788,19 @@ class ListServicePerimetersResponse(_messages.Message):
 
   nextPageToken = _messages.StringField(1)
   servicePerimeters = _messages.MessageField('ServicePerimeter', 2, repeated=True)
+
+
+class ListSupportedPermissionsResponse(_messages.Message):
+  r"""A response to `ListSupportedPermissionsRequest`.
+
+  Fields:
+    nextPageToken: The pagination token to retrieve the next page of results.
+      If the value is empty, no further results remain.
+    supportedPermissions: List of VPC-SC supported permissions.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  supportedPermissions = _messages.StringField(2, repeated=True)
 
 
 class ListSupportedServicesResponse(_messages.Message):

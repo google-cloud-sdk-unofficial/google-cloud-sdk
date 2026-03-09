@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to run a training application locally."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import textwrap

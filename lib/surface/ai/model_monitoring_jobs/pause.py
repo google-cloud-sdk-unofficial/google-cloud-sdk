@@ -14,9 +14,6 @@
 # limitations under the License.
 """Vertex AI deployment monitoring jobs pause command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.model_monitoring_jobs import client
 from googlecloudsdk.calliope import base

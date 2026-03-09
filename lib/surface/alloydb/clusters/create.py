@@ -14,9 +14,6 @@
 # limitations under the License.
 """Creates a new AlloyDB cluster."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.alloydb import api_util
 from googlecloudsdk.api_lib.alloydb import cluster_operations
@@ -74,7 +71,7 @@ class Create(base.CreateCommand):
         parser, alloydb_messages, cls.ReleaseTrack(), update=False
     )
     flags.AddContinuousBackupConfigFlags(parser, cls.ReleaseTrack())
-    flags.AddDatabaseVersion(parser, alloydb_messages, cls.ReleaseTrack())
+    flags.AddDatabaseVersion(parser, alloydb_messages)
     flags.AddEnablePrivateServiceConnect(parser)
     flags.AddMaintenanceWindow(parser, alloydb_messages)
     flags.AddDenyMaintenancePeriod(parser, alloydb_messages)

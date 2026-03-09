@@ -14,9 +14,6 @@
 # limitations under the License.
 """Update a Cloud NetApp Volume Replication."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.volumes.replications import client as replications_client
 from googlecloudsdk.calliope import base

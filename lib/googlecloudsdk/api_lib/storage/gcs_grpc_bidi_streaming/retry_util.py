@@ -40,9 +40,13 @@ def _should_retry_bidi(exc_type, exc_value, exc_traceback, state=None):
   """Returns True if the BiDi download error is retryable."""
   if isinstance(exc_value, BrokenPipeError):
     return False
-  return isinstance(
+  if isinstance(
       exc_value, download.BidiDownloadIncompleteError
-  ) or grpc_retry_util.is_retriable(exc_type, exc_value, exc_traceback, state)
+  ) or grpc_retry_util.is_retriable(exc_type, exc_value, exc_traceback, state):
+    log.debug('BiDi download interrupted by error, checking if retryable: %s',
+              exc_value)
+    return True
+  return False
 
 
 def run_with_retries(
@@ -75,10 +79,42 @@ def run_with_retries(
       redirection_handler,
   )
 
+  def _should_retry_bidi_with_reset(exc_type, exc_value, exc_traceback, state):
+    """Wrapper for _should_retry_bidi that resets state if retry is needed."""
+    should_retry = _should_retry_bidi(exc_type, exc_value, exc_traceback, state)
+    if not should_retry:
+      return False
+
+    if isinstance(exc_value, download.BidiDownloadIncompleteError):
+      # If download is incomplete, download_stream is consistent with
+      # processed_bytes and digesters state because BidiDownloadIncompleteError
+      # is raised after process_chunk_func returns. Thus, we can resume.
+      log.debug('Resuming Bidi download from byte %s',
+                bidi_downloader.processed_bytes)
+    else:
+      # If stream broke unexpectedly (e.g. gRPC error), reset stream state to
+      # processed_bytes.
+      if not bidi_downloader.download_stream.seekable():
+        log.debug(
+            'Cannot reset non-seekable stream for retry. Download will fail.'
+        )
+        return False
+      log.debug(
+          'Bidi stream failed unexpectedly. Resuming download for byte range'
+          ' (%s, %s) from offset %s. Error: %s',
+          bidi_downloader.start_byte,
+          bidi_downloader.end_byte,
+          bidi_downloader.processed_bytes,
+          exc_value,
+      )
+      bidi_downloader.download_stream.seek(bidi_downloader.processed_bytes)
+      bidi_downloader.read_handle = None
+    return True
+
   try:
     storage_retry_util.retryer(
         target=bidi_downloader.download_chunk,
-        should_retry_if=_should_retry_bidi,
+        should_retry_if=_should_retry_bidi_with_reset,
     )
   except (download.BidiDownloadIncompleteError, retry.MaxRetrialsException):
     # Retries exhausted.

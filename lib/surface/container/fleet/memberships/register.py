@@ -14,9 +14,6 @@
 # limitations under the License.
 """The register command for registering a clusters with the fleet."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 import textwrap

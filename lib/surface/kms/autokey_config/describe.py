@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe the AutokeyConfig of a folder."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base

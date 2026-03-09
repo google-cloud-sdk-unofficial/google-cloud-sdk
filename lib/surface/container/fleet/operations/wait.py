@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to wait for a long-running operation to complete."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.fleet import client
 from googlecloudsdk.calliope import base

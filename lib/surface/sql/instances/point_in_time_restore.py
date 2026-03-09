@@ -14,9 +14,6 @@
 # limitations under the License.
 """Performs a point in time restore for a Cloud SQL instance managed by Google Cloud Backup and Disaster Recovery (DR) Service."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to print an identity token for a specified audience in Google Distributed Cloud zone."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from google.auth import exceptions as google_auth_exceptions
 from google.oauth2 import gdch_credentials

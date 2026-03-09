@@ -15,9 +15,6 @@
 
 """'Marketplace Solutions volumes list command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.mps.mps_client import MpsClient
 from googlecloudsdk.calliope import base

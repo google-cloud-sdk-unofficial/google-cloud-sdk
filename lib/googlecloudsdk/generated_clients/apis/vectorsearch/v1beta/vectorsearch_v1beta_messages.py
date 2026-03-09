@@ -939,11 +939,9 @@ class GoogleCloudVectorsearchV1betaRanker(_messages.Message):
 
   Fields:
     rrf: Reciprocal Rank Fusion ranking.
-    vertex: Vertex AI ranking.
   """
 
   rrf = _messages.MessageField('GoogleCloudVectorsearchV1betaReciprocalRankFusion', 1)
-  vertex = _messages.MessageField('GoogleCloudVectorsearchV1betaVertexRanker', 2)
 
 
 class GoogleCloudVectorsearchV1betaReciprocalRankFusion(_messages.Message):
@@ -1422,26 +1420,6 @@ class GoogleCloudVectorsearchV1betaVertexEmbeddingConfig(_messages.Message):
   modelId = _messages.StringField(1)
   taskType = _messages.EnumField('TaskTypeValueValuesEnum', 2)
   textTemplate = _messages.StringField(3)
-
-
-class GoogleCloudVectorsearchV1betaVertexRanker(_messages.Message):
-  r"""Defines a ranker using the Vertex AI ranking service. See
-  https://cloud.google.com/generative-ai-app-builder/docs/ranking for details.
-
-  Fields:
-    contentTemplate: Optional. The template used to generate the record's
-      content.
-    model: Required. The model used for ranking documents. If no model is
-      specified, then semantic-ranker-default@latest is used.
-    query: Required. The query against which the records are ranked and
-      scored.
-    titleTemplate: Optional. The template used to generate the record's title.
-  """
-
-  contentTemplate = _messages.StringField(1)
-  model = _messages.StringField(2)
-  query = _messages.StringField(3)
-  titleTemplate = _messages.StringField(4)
 
 
 class GoogleLongrunningCancelOperationRequest(_messages.Message):

@@ -138,7 +138,7 @@
         Can have a maximum length of 2048 characters.
     - arg_name: interfaces
       api_field: service.interfaces
-      required: true
+      required: false
       repeated: true
       help_text: |-
         The connection details for the Service.

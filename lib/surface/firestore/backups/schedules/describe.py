@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to describe a backup schedule for a Firestore Database."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import backup_schedules
 from googlecloudsdk.calliope import base

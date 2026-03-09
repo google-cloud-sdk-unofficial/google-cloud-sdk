@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for enabling/disabling application awareness on interconnect and updating the profile description of the profile."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects import client

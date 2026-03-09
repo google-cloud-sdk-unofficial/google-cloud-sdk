@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The locations command group for the Design Center CLI."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 

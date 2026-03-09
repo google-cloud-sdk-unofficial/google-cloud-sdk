@@ -15,9 +15,6 @@
 """`gcloud dataplex entry-groups add-iam-policy-binding` command."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 from googlecloudsdk.api_lib.dataplex import entry_group

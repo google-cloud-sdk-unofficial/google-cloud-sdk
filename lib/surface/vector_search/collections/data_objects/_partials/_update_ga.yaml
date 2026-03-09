@@ -77,6 +77,12 @@
           - api_field: indices
             help_text: |-
               The corresponding indices for the values.
+    - arg_name: etag
+      api_field: googleCloudVectorsearchV1DataObject.etag
+      required: false
+      repeated: false
+      help_text: |-
+        The etag of the dataObject.
   request:
     api_version: v1
     collection:

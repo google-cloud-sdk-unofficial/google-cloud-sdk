@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all PyPI modules installed in an Airflow worker."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import random
 import time

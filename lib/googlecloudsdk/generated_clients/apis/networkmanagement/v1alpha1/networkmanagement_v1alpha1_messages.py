@@ -1946,8 +1946,22 @@ class ForwardingRuleInfo(_messages.Message):
   r"""For display only. Metadata associated with a Compute Engine forwarding
   rule.
 
+  Enums:
+    EnvoyHealthCheckFirewallsConfigStateValueValuesEnum: Output only. State of
+      the firewalls allowing health check traffic to the load balancer
+      frontend (Envoy proxies). This is the result of the firewall
+      configuration analysis verifying that health check traffic from required
+      IP ranges to the the Envoy-based load balancer frontend is allowed by
+      firewall rules with the load balancer target.
+
   Fields:
     displayName: Name of the forwarding rule.
+    envoyHealthCheckFirewallsConfigState: Output only. State of the firewalls
+      allowing health check traffic to the load balancer frontend (Envoy
+      proxies). This is the result of the firewall configuration analysis
+      verifying that health check traffic from required IP ranges to the the
+      Envoy-based load balancer frontend is allowed by firewall rules with the
+      load balancer target.
     loadBalancerName: Name of the load balancer the forwarding rule belongs
       to. Empty for forwarding rules not related to load balancers (like PSC
       forwarding rules).
@@ -1967,17 +1981,48 @@ class ForwardingRuleInfo(_messages.Message):
     vip: VIP of the forwarding rule.
   """
 
+  class EnvoyHealthCheckFirewallsConfigStateValueValuesEnum(_messages.Enum):
+    r"""Output only. State of the firewalls allowing health check traffic to
+    the load balancer frontend (Envoy proxies). This is the result of the
+    firewall configuration analysis verifying that health check traffic from
+    required IP ranges to the the Envoy-based load balancer frontend is
+    allowed by firewall rules with the load balancer target.
+
+    Values:
+      HEALTH_CHECK_FIREWALLS_CONFIG_STATE_UNSPECIFIED: Configuration state
+        unspecified. It usually means that there are no relevant health checks
+        for this load balancer frontend, or there was an unexpected
+        configuration error preventing Connectivity Tests from verifying
+        health check configuration.
+      FIREWALLS_CONFIGURED: Firewall rules (policies) allow health check
+        traffic to the load balancer frontend.
+      FIREWALLS_PARTIALLY_CONFIGURED: Firewall rules (policies) allow health
+        check traffic to the load balancer frontend only from a part of the
+        required IP ranges.
+      FIREWALLS_NOT_CONFIGURED: Firewall rules (policies) deny health check
+        traffic to the load balancer frontend.
+      FIREWALLS_UNSUPPORTED: Connectivity Tests doesn't support evaluating
+        some of the firewall rules in the network, so it's not able to verify
+        health check configuration status.
+    """
+    HEALTH_CHECK_FIREWALLS_CONFIG_STATE_UNSPECIFIED = 0
+    FIREWALLS_CONFIGURED = 1
+    FIREWALLS_PARTIALLY_CONFIGURED = 2
+    FIREWALLS_NOT_CONFIGURED = 3
+    FIREWALLS_UNSUPPORTED = 4
+
   displayName = _messages.StringField(1)
-  loadBalancerName = _messages.StringField(2)
-  matchedPortRange = _messages.StringField(3)
-  matchedProtocol = _messages.StringField(4)
-  networkUri = _messages.StringField(5)
-  pscGoogleApiTarget = _messages.StringField(6)
-  pscServiceAttachmentUri = _messages.StringField(7)
-  region = _messages.StringField(8)
-  target = _messages.StringField(9)
-  uri = _messages.StringField(10)
-  vip = _messages.StringField(11)
+  envoyHealthCheckFirewallsConfigState = _messages.EnumField('EnvoyHealthCheckFirewallsConfigStateValueValuesEnum', 2)
+  loadBalancerName = _messages.StringField(3)
+  matchedPortRange = _messages.StringField(4)
+  matchedProtocol = _messages.StringField(5)
+  networkUri = _messages.StringField(6)
+  pscGoogleApiTarget = _messages.StringField(7)
+  pscServiceAttachmentUri = _messages.StringField(8)
+  region = _messages.StringField(9)
+  target = _messages.StringField(10)
+  uri = _messages.StringField(11)
+  vip = _messages.StringField(12)
 
 
 class GKEMasterInfo(_messages.Message):
@@ -2068,12 +2113,16 @@ class GkeNetworkPolicySkippedInfo(_messages.Message):
         applied to response traffic. This is because GKE Network Policy
         evaluation is stateful in both GKE Dataplane V2 (eBPF) and legacy
         (iptables) implementations.
+      NETWORK_POLICY_ANALYSIS_UNSUPPORTED: Network Policy evaluation is
+        currently not supported for clusters with FQDN Network Policies
+        enabled.
     """
     REASON_UNSPECIFIED = 0
     NETWORK_POLICY_DISABLED = 1
     INGRESS_SOURCE_ON_SAME_NODE = 2
     EGRESS_FROM_NODE_NETWORK_NAMESPACE_POD = 3
     NETWORK_POLICY_NOT_APPLIED_TO_RESPONSE_TRAFFIC = 4
+    NETWORK_POLICY_ANALYSIS_UNSUPPORTED = 5
 
   reason = _messages.EnumField('ReasonValueValuesEnum', 1)
 
@@ -2106,9 +2155,10 @@ class GoogleManagedServiceInfo(_messages.Message):
     ServiceTypeValueValuesEnum: Type of a Google-managed service.
 
   Fields:
-    ipAddress: IP address of the Google-managed service endpoint.
-    networkUri: URI of the Google-managed service endpoint network, it is
-      empty if the IP address is a public IP address.
+    ipAddress: IP address of the Google-managed service endpoint (if
+      relevant).
+    networkUri: URI of the Google-managed service endpoint network (if
+      relevant).
     serviceType: Type of a Google-managed service.
     serviceUri: URI of the Google-managed service.
   """
@@ -2118,7 +2168,6 @@ class GoogleManagedServiceInfo(_messages.Message):
 
     Values:
       SERVICE_TYPE_UNSPECIFIED: Service type is unspecified.
-      UNSUPPORTED: Unsupported Google-managed service.
       CLOUD_SQL: Cloud SQL Instance.
       GKE_CLUSTER_CONTROL_PLANE: GKE Cluster control plane.
       REDIS_CLUSTER: Redis Cluster.
@@ -2126,12 +2175,11 @@ class GoogleManagedServiceInfo(_messages.Message):
       ALLOY_DB: AlloyDB Instance.
     """
     SERVICE_TYPE_UNSPECIFIED = 0
-    UNSUPPORTED = 1
-    CLOUD_SQL = 2
-    GKE_CLUSTER_CONTROL_PLANE = 3
-    REDIS_CLUSTER = 4
-    REDIS_INSTANCE = 5
-    ALLOY_DB = 6
+    CLOUD_SQL = 1
+    GKE_CLUSTER_CONTROL_PLANE = 2
+    REDIS_CLUSTER = 3
+    REDIS_INSTANCE = 4
+    ALLOY_DB = 5
 
   ipAddress = _messages.StringField(1)
   networkUri = _messages.StringField(2)
@@ -2201,8 +2249,6 @@ class Host(_messages.Message):
     cloudRegion: Output only. The cloud region of the host.
     cloudVirtualNetworkIds: Output only. The ids of cloud virtual networks of
       the host.
-    cloudVpcId: Output only. The id of Virtual Private Cloud (VPC) of the
-      host.
     cloudZone: Output only. The cloud zone of the host.
     os: Output only. The operating system of the host.
   """
@@ -2212,9 +2258,8 @@ class Host(_messages.Message):
   cloudProvider = _messages.StringField(3)
   cloudRegion = _messages.StringField(4)
   cloudVirtualNetworkIds = _messages.StringField(5, repeated=True)
-  cloudVpcId = _messages.StringField(6)
-  cloudZone = _messages.StringField(7)
-  os = _messages.StringField(8)
+  cloudZone = _messages.StringField(6)
+  os = _messages.StringField(7)
 
 
 class HttpBody(_messages.Message):
@@ -3159,7 +3204,7 @@ class NetworkPath(_messages.Message):
       destination MonitoringPoint. ;
     destinationMonitoringPointId: Output only. Provider's UUID of the
       destination MonitoringPoint. This id may not point to a resource in the
-      GCP.
+      Google Cloud.
     displayName: Output only. The display name of the network path.
     dualEnded: Output only. Indicates if the network path is dual ended. When
       true, the network path is measured both: from both source to
@@ -3180,7 +3225,8 @@ class NetworkPath(_messages.Message):
     providerUiUri: Output only. Link to provider's UI; link shows the
       NetworkPath.
     sourceMonitoringPointId: Output only. Provider's UUID of the source
-      MonitoringPoint. This id may not point to a resource in the GCP.
+      MonitoringPoint. This id may not point to a resource in the Google
+      Cloud.
     updateTime: Output only. The time the NetworkPath was updated.
   """
 
@@ -3416,7 +3462,7 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateProvid
   oviderAccessTokenRequest object.
 
   Fields:
-    gcpAccessToken: Required. GCP access token.
+    gcpAccessToken: Required. Google access token.
     name: Required. Name of the resource. Format: projects/{project}/locations
       /{location}/networkMonitoringProviders/{network_monitoring_provider}
   """
@@ -3502,7 +3548,7 @@ class NetworkmanagementProjectsLocationsNetworkMonitoringProvidersMonitoringPoin
 
     Values:
       MONITORING_POINT_TYPE_UNSPECIFIED: This value should not be used.
-      CONTAINER: Monitoring Point that runs in a Docker container on GCP.
+      CONTAINER: Monitoring Point that runs in a Docker container.
       KVM: Monitoring Point that runs in a KVM hypervisor.
       VMWARE: Monitoring Point that runs in a VMware hypervisor.
       HELM: Monitoring Point that runs on a K8S Helm.
@@ -3891,6 +3937,18 @@ class NetworkmanagementProjectsLocationsSimulationsTestIamPermissionsRequest(_me
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
+class NgfwPacketInspectionInfo(_messages.Message):
+  r"""For display only. Metadata associated with a layer 7 packet inspection
+  by the firewall.
+
+  Fields:
+    securityProfileGroupUri: URI of the security profile group associated with
+      this firewall packet inspection.
+  """
+
+  securityProfileGroupUri = _messages.StringField(1)
+
+
 class Operation(_messages.Message):
   r"""This resource represents a long-running operation that is the result of
   a network API call.
@@ -4038,7 +4096,7 @@ class OutOfBandDeploymentConfig(_messages.Message):
       on first boot. The format for bootstrap parameters will depend on the
       appliance vendor and will vary. TODO (http://b/242734886): Add links to
       docs once they are in place.
-    machineType: The GCP machine type the appliance vm will be installed on.
+    machineType: The machine type the appliance vm will be installed on.
       Example: e2-standard-4 See
       https://cloud.google.com/compute/docs/machine-types for more
       information. TODO (http://b/242734886): Add links to docs once they are
@@ -4916,6 +4974,8 @@ class Step(_messages.Message):
       backend.
     nat: Display information of a NAT.
     network: Display information of a Google Cloud network.
+    ngfwPacketInspection: Display information of a layer 7 packet inspection
+      by the firewall.
     projectId: Project ID that contains the configuration this step is
       validating.
     proxyConnection: Display information of a ProxyConnection.
@@ -5020,6 +5080,8 @@ class Step(_messages.Message):
         (external) connectivity.
       ARRIVE_AT_GOOGLE_MANAGED_SERVICE: Forwarding state: arriving at a
         Google-managed service endpoint.
+      NGFW_PACKET_INSPECTION: Forwarding state: Layer 7 packet inspection by
+        the firewall endpoint based on the configured security profile group.
       NAT: Transition state: packet header translated. The `nat` field is
         populated with the translation information.
       SKIP_GKE_POD_IP_MASQUERADING: Transition state: GKE Pod IP masquerading
@@ -5080,18 +5142,19 @@ class Step(_messages.Message):
     DIRECT_VPC_EGRESS_CONNECTION = 32
     SERVERLESS_EXTERNAL_CONNECTION = 33
     ARRIVE_AT_GOOGLE_MANAGED_SERVICE = 34
-    NAT = 35
-    SKIP_GKE_POD_IP_MASQUERADING = 36
-    SKIP_GKE_INGRESS_NETWORK_POLICY = 37
-    SKIP_GKE_EGRESS_NETWORK_POLICY = 38
-    APPLY_INGRESS_GKE_NETWORK_POLICY = 39
-    APPLY_EGRESS_GKE_NETWORK_POLICY = 40
-    PROXY_CONNECTION = 41
-    DELIVER = 42
-    DROP = 43
-    FORWARD = 44
-    ABORT = 45
-    VIEWER_PERMISSION_MISSING = 46
+    NGFW_PACKET_INSPECTION = 35
+    NAT = 36
+    SKIP_GKE_POD_IP_MASQUERADING = 37
+    SKIP_GKE_INGRESS_NETWORK_POLICY = 38
+    SKIP_GKE_EGRESS_NETWORK_POLICY = 39
+    APPLY_INGRESS_GKE_NETWORK_POLICY = 40
+    APPLY_EGRESS_GKE_NETWORK_POLICY = 41
+    PROXY_CONNECTION = 42
+    DELIVER = 43
+    DROP = 44
+    FORWARD = 45
+    ABORT = 46
+    VIEWER_PERMISSION_MISSING = 47
 
   abort = _messages.MessageField('AbortInfo', 1)
   alloyDbInstance = _messages.MessageField('AlloyDbInstanceInfo', 2)
@@ -5122,18 +5185,19 @@ class Step(_messages.Message):
   loadBalancerBackendInfo = _messages.MessageField('LoadBalancerBackendInfo', 27)
   nat = _messages.MessageField('NatInfo', 28)
   network = _messages.MessageField('NetworkInfo', 29)
-  projectId = _messages.StringField(30)
-  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 31)
-  redisCluster = _messages.MessageField('RedisClusterInfo', 32)
-  redisInstance = _messages.MessageField('RedisInstanceInfo', 33)
-  route = _messages.MessageField('RouteInfo', 34)
-  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 35)
-  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 36)
-  state = _messages.EnumField('StateValueValuesEnum', 37)
-  storageBucket = _messages.MessageField('StorageBucketInfo', 38)
-  vpcConnector = _messages.MessageField('VpcConnectorInfo', 39)
-  vpnGateway = _messages.MessageField('VpnGatewayInfo', 40)
-  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 41)
+  ngfwPacketInspection = _messages.MessageField('NgfwPacketInspectionInfo', 30)
+  projectId = _messages.StringField(31)
+  proxyConnection = _messages.MessageField('ProxyConnectionInfo', 32)
+  redisCluster = _messages.MessageField('RedisClusterInfo', 33)
+  redisInstance = _messages.MessageField('RedisInstanceInfo', 34)
+  route = _messages.MessageField('RouteInfo', 35)
+  serverlessExternalConnection = _messages.MessageField('ServerlessExternalConnectionInfo', 36)
+  serverlessNeg = _messages.MessageField('ServerlessNegInfo', 37)
+  state = _messages.EnumField('StateValueValuesEnum', 38)
+  storageBucket = _messages.MessageField('StorageBucketInfo', 39)
+  vpcConnector = _messages.MessageField('VpcConnectorInfo', 40)
+  vpnGateway = _messages.MessageField('VpnGatewayInfo', 41)
+  vpnTunnel = _messages.MessageField('VpnTunnelInfo', 42)
 
 
 class StorageBucketInfo(_messages.Message):

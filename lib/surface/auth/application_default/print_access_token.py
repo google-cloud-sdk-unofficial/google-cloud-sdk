@@ -16,9 +16,6 @@
 """A command that prints an access token for Application Default Credentials.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from google.auth import credentials
 from google.auth import exceptions as google_auth_exceptions

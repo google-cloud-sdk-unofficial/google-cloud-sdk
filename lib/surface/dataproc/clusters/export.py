@@ -14,9 +14,6 @@
 # limitations under the License.
 """Export cluster command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 from googlecloudsdk.api_lib.dataproc import dataproc as dp

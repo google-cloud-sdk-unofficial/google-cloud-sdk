@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to delete a user creds for a Firestore Database."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import user_creds
 from googlecloudsdk.calliope import base

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for modifying backend services."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 from apitools.base.protorpclite import messages

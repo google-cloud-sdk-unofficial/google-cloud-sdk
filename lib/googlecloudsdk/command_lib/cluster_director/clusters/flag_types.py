@@ -44,21 +44,54 @@ STORAGE_CONFIG = arg_parsers.ArgObject(
         "id": str,
         "localMount": str,
     },
+    required_keys=["id", "localMount"],
+    repeated=True,
+)
+
+EXISTING_FILESTORES_TYPE = arg_parsers.ArgObject(
+    spec={
+        "id": str,
+        "name": str,
+    },
+    required_keys=["id", "name"],
+    enable_shorthand=True,
+    repeated=True,
+)
+
+EXISTING_BUCKETS_TYPE = arg_parsers.ArgObject(
+    spec={
+        "id": str,
+        "name": str,
+    },
+    required_keys=["id", "name"],
+    enable_shorthand=True,
+    repeated=True,
+)
+
+EXISTING_LUSTRES_TYPE = arg_parsers.ArgObject(
+    spec={
+        "id": str,
+        "name": str,
+    },
+    required_keys=["id", "name"],
+    enable_shorthand=True,
     repeated=True,
 )
 
 LUSTRES_OBJECT = arg_parsers.ArgObject(
     spec={
+        "id": str,
         "name": str,
         "filesystem": str,
         "capacityGb": int,
         "description": str,
         "perUnitStorageThroughput": int,
     },
-    required_keys=["name", "capacityGb", "filesystem"],
-    enable_shorthand=True,
+    required_keys=["id", "name", "capacityGb", "filesystem"],
     repeated=True,
+    enable_shorthand=True,
 )
+
 
 SERVICE_ACCOUNT_TYPE = arg_parsers.ArgObject(
     spec={
@@ -91,6 +124,7 @@ SLURM_CONFIG_TYPE = arg_parsers.ArgObject(
     }
 )
 FILESTORE_CONFIG_SPEC = {
+    "id": str,
     "description": str,
     "fileShares": arg_parsers.ArgObject(
         spec={"capacityGb": int, "fileShare": str},
@@ -102,6 +136,7 @@ FILESTORE_CONFIG_SPEC = {
 }
 
 LUSTRE_CONFIG_SPEC = {
+    "id": str,
     "capacityGb": int,
     "description": str,
     "filesystem": str,
@@ -132,6 +167,7 @@ class FlagTypes:
   def GetFilestoresObject(self) -> arg_parsers.ArgObject:
     return arg_parsers.ArgObject(
         spec={
+            "id": str,
             "name": str,
             "tier": self.messages.NewFilestoreConfig.TierValueValuesEnum,
             "capacityGb": int,
@@ -141,7 +177,7 @@ class FlagTypes:
             ),
             "description": str,
         },
-        required_keys=["name", "tier", "capacityGb", "fileshare"],
+        required_keys=["id", "name", "tier", "capacityGb", "fileshare"],
         enable_shorthand=True,
         repeated=True,
     )
@@ -163,6 +199,7 @@ class FlagTypes:
     """Returns an ArgObject for parsing GCS bucket configurations."""
 
     spec = {
+        "id": str,
         "name": str,
         "storageClass": (
             self.messages.NewBucketConfig.StorageClassValueValuesEnum
@@ -176,7 +213,7 @@ class FlagTypes:
       )
     return arg_parsers.ArgObject(
         spec=spec,
-        required_keys=["name"],
+        required_keys=["id", "name"],
         enable_shorthand=True,
         repeated=True,
     )

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create a new Assured Workloads environment."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope.base import ReleaseTrack

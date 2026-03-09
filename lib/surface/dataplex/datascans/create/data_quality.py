@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud dataplex datascans create data-quality` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import datascan
 from googlecloudsdk.api_lib.dataplex import util as dataplex_util

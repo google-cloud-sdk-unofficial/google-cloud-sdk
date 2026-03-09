@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements the command to download generic artifacts from a repository."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 

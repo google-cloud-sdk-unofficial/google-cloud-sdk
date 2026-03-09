@@ -14,9 +14,6 @@
 # limitations under the License.
 """Fetch Hub-registered cluster credentials for Connect Gateway."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

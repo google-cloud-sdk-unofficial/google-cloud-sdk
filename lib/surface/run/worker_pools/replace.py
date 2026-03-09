@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command for updating env vars and other configuration info."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.run import global_methods
 from googlecloudsdk.api_lib.run import worker_pool

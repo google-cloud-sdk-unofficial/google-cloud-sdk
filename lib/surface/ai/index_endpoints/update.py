@@ -14,9 +14,6 @@
 # limitations under the License.
 """Vertex AI index endpoints update command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.index_endpoints import client
 from googlecloudsdk.calliope import base

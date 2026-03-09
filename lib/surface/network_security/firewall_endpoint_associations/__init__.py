@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command sub-group for Firewall Plus endpoint associations."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

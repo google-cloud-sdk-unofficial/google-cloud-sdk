@@ -14,9 +14,6 @@
 # limitations under the License.
 """The `groups preview` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.identity import admin_directory
 from googlecloudsdk.calliope import arg_parsers

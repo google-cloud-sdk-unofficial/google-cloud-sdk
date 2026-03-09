@@ -11,7 +11,8 @@ organization:
       123.
     fallthroughs:
     - hook: googlecloudsdk.command_lib.scc.hooks:GetDefaultOrganization
-      hint: Set the organization property in configuration using `gcloud config set scc/organization`
+      hint:
+        Set the organization property in configuration using `gcloud config set scc/organization`
         if it is not specified in command line.
   disable_auto_completers: false
 
@@ -29,7 +30,8 @@ parent:
       `123`.
     fallthroughs:
     - hook: googlecloudsdk.command_lib.scc.hooks:GetDefaultParent
-      hint: Set the parent property in configuration using `gcloud config set scc/parent`
+      hint:
+        Set the parent property in configuration using `gcloud config set scc/parent`
         if it is not specified in command line
   disable_auto_completers: false
 
@@ -86,7 +88,7 @@ operation:
     parameter_name: operationsId
     attribute_name: operation
     help: |
-     Cloud SCC (Security Command Center) long running operation.
+      Cloud SCC (Security Command Center) long running operation.
 
 notification:
   name: notification
@@ -105,7 +107,7 @@ notification:
 security_posture_org:
   name: organization
   collection: securityposture.organizations
-  attribute:
+  attributes:
   - &security_posture_org
     parameter_name: organizationsId
     attribute_name: organization
@@ -202,65 +204,146 @@ prediction:
     help: SCC Posture Prediction resource
   disable_auto_completers: false
 
+artifact_scan_guard_organization_attribute: &artifact_scan_guard_organization_attribute
+  parameter_name: organizationsId
+  attribute_name: organization
+  help: |
+    Organization ID.
+
+artifact_scan_guard_project_attribute: &artifact_scan_guard_project_attribute
+  parameter_name: projectsId
+  attribute_name: project
+  help: |
+    Project ID or number.
+
+artifact_scan_guard_location_attribute: &artifact_scan_guard_location_attribute
+  parameter_name: locationsId
+  attribute_name: location
+  help: |
+    ID of the location where the resource exists (for example, global).
+
+artifact_scan_guard_operation_id_attribute: &artifact_scan_guard_operation_id_attribute
+  parameter_name: operationsId
+  attribute_name: operation
+  help: Artifact Guard Operation resource ID.
+
 artifact_scan_guard_organization:
   name: organization
   collection: artifactscanguard.organizations
   attributes:
   - &artifact_scan_guard_organization
-    parameter_name: organizationsId
-    attribute_name: organization
-    help: |
-      (Optional) If the full resource name isn't provided e.g. organizations/123, then provide the
-      organization id which is the suffix of the organization. Example: organizations/123, the id is
-      123.
+    <<: *artifact_scan_guard_organization_attribute
   disable_auto_completers: false
 
+artifact_scan_guard_project:
+  name: project
+  collection: artifactscanguard.projects
+  attributes:
+  - &artifact_scan_guard_project
+    <<: *artifact_scan_guard_project_attribute
+  disable_auto_completers: false
 artifact_scan_guard_location:
   name: location
-  collection: artifactscanguard.organizations.locations
+  resource_type_fallthroughs: true
   attributes:
   - *artifact_scan_guard_organization
+  - *artifact_scan_guard_project
   - &artifact_scan_guard_location
-    parameter_name: locationsId
-    attribute_name: location
-    help: |
-      ID of the location where the resource exists (for example, global).
+    <<: *artifact_scan_guard_location_attribute
+  collection_path_pattern:
+  - artifactscanguard.organizations.locations
+  - artifactscanguard.projects.locations
 
-policy:
+organization_or_project_location:
+  name: location
+  plural_name: locations
+  resources:
+  - name: location
+    plural_name: locations
+    collection: artifactscanguard.organizations.locations
+    attributes:
+    - *artifact_scan_guard_organization
+    - *artifact_scan_guard_location
+    disable_auto_completers: true
+  - name: location
+    plural_name: locations
+    collection: artifactscanguard.projects.locations
+    attributes:
+    - *artifact_scan_guard_project
+    - *artifact_scan_guard_location
+    disable_auto_completers: true
+
+organization_or_project_location_policy:
   name: policy
-  collection: artifactscanguard.organizations.locations.policies
-  request_id_field: policyId
-  attributes:
-  - *artifact_scan_guard_organization
-  - *artifact_scan_guard_location
-  - &artifact_scan_guard_policy
-    parameter_name: policiesId
-    attribute_name: policy
-    help: Artifact Guard Policy resource
-  disable_auto_completers: false
+  resources:
+  - name: policy
+    plural_name: policies
+    collection: artifactscanguard.organizations.locations.policies
+    request_id_field: policyId
+    attributes:
+    - *artifact_scan_guard_organization
+    - *artifact_scan_guard_location
+    - &artifact_scan_guard_policy
+      parameter_name: policiesId
+      attribute_name: policy
+      help: Artifact Guard Policy resource ID.
+    disable_auto_completers: true
+  - name: policy
+    plural_name: policies
+    collection: artifactscanguard.projects.locations.policies
+    request_id_field: policyId
+    attributes:
+    - *artifact_scan_guard_project
+    - *artifact_scan_guard_location
+    - *artifact_scan_guard_policy
+    disable_auto_completers: true
 
-connector:
+
+organization_or_project_location_connector:
   name: connector
-  collection: artifactscanguard.organizations.locations.connectors
-  request_id_field: connectorId
-  attributes:
-  - *artifact_scan_guard_organization
-  - *artifact_scan_guard_location
-  - &artifact_scan_guard_connector
-    parameter_name: connectorsId
-    attribute_name: connector
-    help: Artifact Guard Connector resource
-  disable_auto_completers: false
+  plural_name: connectors
+  resources:
+  - name: connector
+    plural_name: connectors
+    collection: artifactscanguard.organizations.locations.connectors
+    request_id_field: connectorId
+    attributes:
+    - *artifact_scan_guard_organization
+    - *artifact_scan_guard_location
+    - parameter_name: connectorsId
+      attribute_name: connector
+      help: Artifact Guard Connector resource ID.
+    disable_auto_completers: true
+  - name: connector
+    plural_name: connectors
+    collection: artifactscanguard.projects.locations.connectors
+    request_id_field: connectorId
+    attributes:
+    - *artifact_scan_guard_project
+    - *artifact_scan_guard_location
+    - parameter_name: connectorsId
+      attribute_name: connector
+      help: Artifact Guard Connector resource ID.
+    disable_auto_completers: true
 
 artifact_scan_guard_operation:
   name: operation
-  collection: artifactscanguard.organizations.locations.operations
-  request_id_field: name
-  attributes:
-  - *artifact_scan_guard_organization
-  - *artifact_scan_guard_location
-  - &artifact_scan_guard_operation
-    parameter_name: operationsId
-    attribute_name: operation
-    help: Artifact Guard Operation resource.
-  disable_auto_completers: false
+  resources:
+  - name: operation
+    plural_name: operations
+    collection: artifactscanguard.organizations.locations.operations
+    request_id_field: operationId
+    attributes:
+    - *artifact_scan_guard_organization_attribute
+    - *artifact_scan_guard_location_attribute
+    - *artifact_scan_guard_operation_id_attribute
+    disable_auto_completers: true
+  - name: operation
+    plural_name: operations
+    collection: artifactscanguard.projects.locations.operations
+    request_id_field: operationId
+    attributes:
+    - *artifact_scan_guard_project_attribute
+    - *artifact_scan_guard_location_attribute
+    - *artifact_scan_guard_operation_id_attribute
+    disable_auto_completers: true

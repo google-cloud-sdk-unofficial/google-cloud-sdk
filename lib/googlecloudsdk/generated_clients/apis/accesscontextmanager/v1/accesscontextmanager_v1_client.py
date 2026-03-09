@@ -46,6 +46,7 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
     self.operations = self.OperationsService(self)
     self.organizations_gcpUserAccessBindings = self.OrganizationsGcpUserAccessBindingsService(self)
     self.organizations = self.OrganizationsService(self)
+    self.permissions = self.PermissionsService(self)
     self.services = self.ServicesService(self)
 
   class AccessPoliciesAccessLevelsService(base_api.BaseApiService):
@@ -952,7 +953,7 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
         method_id='accesscontextmanager.operations.list',
         ordered_params=['name'],
         path_params=['name'],
-        query_params=['filter', 'pageSize', 'pageToken'],
+        query_params=['filter', 'pageSize', 'pageToken', 'returnPartialSuccess'],
         relative_path='v1/{+name}',
         request_field='',
         request_type_name='AccesscontextmanagerOperationsListRequest',
@@ -1114,6 +1115,42 @@ class AccesscontextmanagerV1(base_api.BaseApiClient):
       super(AccesscontextmanagerV1.OrganizationsService, self).__init__(client)
       self._upload_configs = {
           }
+
+  class PermissionsService(base_api.BaseApiService):
+    """Service class for the permissions resource."""
+
+    _NAME = 'permissions'
+
+    def __init__(self, client):
+      super(AccesscontextmanagerV1.PermissionsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Lists all supported permissions in VPCSC Granular Controls.
+
+      Args:
+        request: (AccesscontextmanagerPermissionsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListSupportedPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method='GET',
+        method_id='accesscontextmanager.permissions.list',
+        ordered_params=[],
+        path_params=[],
+        query_params=['pageSize', 'pageToken'],
+        relative_path='v1/permissions',
+        request_field='',
+        request_type_name='AccesscontextmanagerPermissionsListRequest',
+        response_type_name='ListSupportedPermissionsResponse',
+        supports_download=False,
+    )
 
   class ServicesService(base_api.BaseApiService):
     """Service class for the services resource."""

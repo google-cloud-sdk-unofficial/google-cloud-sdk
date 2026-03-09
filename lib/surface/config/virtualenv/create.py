@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create virtualenv environment."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 
@@ -51,6 +48,10 @@ class Create(base.Command):
         '--enable-virtualenv',
         action='store_true',
         help='Enable gcloud virtualenv after creation.')
+    parser.add_argument(
+        '--force-create',
+        action='store_true',
+        help='Force creating gcloud virtualenv if it already exists.')
 
   def _GetAndValidatePythonToUse(self, python):
     if not os.path.exists(python):
@@ -84,7 +85,11 @@ class Create(base.Command):
     ve_dir = config.Paths().virtualenv_dir
     if util.VirtualEnvExists(ve_dir):
       log.error('Virtual env setup {} already exists.'.format(ve_dir))
-      raise exceptions.ExitCodeNoError(exit_code=5)
+      if not args.force_create:
+        raise exceptions.ExitCodeNoError(exit_code=5)
+      else:
+        log.status.Print('Removing existing virtualenv...')
+        files.RmTree(ve_dir)
 
     succeeded_making_venv = False
     try:

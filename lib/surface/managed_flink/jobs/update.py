@@ -15,9 +15,6 @@
 
 """Update a Flink job's parallelism."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.managed_flink import util as flink_util
 from googlecloudsdk.api_lib.util import waiter

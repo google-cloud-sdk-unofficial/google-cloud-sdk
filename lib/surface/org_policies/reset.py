@@ -14,9 +14,6 @@
 # limitations under the License.
 """Reset command for the Org Policy CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import copy
 

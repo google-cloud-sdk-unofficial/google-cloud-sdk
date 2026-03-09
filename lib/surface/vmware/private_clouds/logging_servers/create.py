@@ -14,9 +14,6 @@
 # limitations under the License.
 """'vmware logging-server create command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.vmware.loggingservers import LoggingServersClient
 from googlecloudsdk.calliope import arg_parsers

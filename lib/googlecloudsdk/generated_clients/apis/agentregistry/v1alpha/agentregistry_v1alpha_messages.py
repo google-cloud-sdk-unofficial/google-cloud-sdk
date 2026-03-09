@@ -16,13 +16,30 @@ package = 'agentregistry'
 class Agent(_messages.Message):
   r"""Represents an Agent. "A2A" below refers to the Agent-to-Agent protocol.
 
-  Enums:
-    AgentIdTypeValueValuesEnum: Output only. The type of the agent ID.
+  Messages:
+    AttributesValue: Output only. Attributes of the Agent. Valid values: *
+      `agentregistry.googleapis.com/system/Framework`: {"framework": "google-
+      adk"} - the agent framework used to develop the Agent. Example values:
+      "google-adk", "langchain", "custom". *
+      `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+      "principal://..."} - the runtime identity associated with the Agent. *
+      `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."}
+      - the URI of the underlying resource hosting the Agent, for example, the
+      Reasoning Engine URI.
 
   Fields:
     agentId: Output only. A stable, globally unique identifier for agents.
       Example: `urn:agent:acme.com:my-agent`
-    agentIdType: Output only. The type of the agent ID.
+    attributes: Output only. Attributes of the Agent. Valid values: *
+      `agentregistry.googleapis.com/system/Framework`: {"framework": "google-
+      adk"} - the agent framework used to develop the Agent. Example values:
+      "google-adk", "langchain", "custom". *
+      `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+      "principal://..."} - the runtime identity associated with the Agent. *
+      `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."}
+      - the URI of the underlying resource hosting the Agent, for example, the
+      Reasoning Engine URI.
+    card: Output only. Full Agent Card payload, when available.
     createTime: Output only. Create time.
     description: Output only. The description of the Agent, often obtained
       from the A2A Agent Card. Empty if Agent Card has no description.
@@ -42,29 +59,78 @@ class Agent(_messages.Message):
       A2A Agent.
   """
 
-  class AgentIdTypeValueValuesEnum(_messages.Enum):
-    r"""Output only. The type of the agent ID.
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Output only. Attributes of the Agent. Valid values: *
+    `agentregistry.googleapis.com/system/Framework`: {"framework": "google-
+    adk"} - the agent framework used to develop the Agent. Example values:
+    "google-adk", "langchain", "custom". *
+    `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+    "principal://..."} - the runtime identity associated with the Agent. *
+    `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."} -
+    the URI of the underlying resource hosting the Agent, for example, the
+    Reasoning Engine URI.
 
-    Values:
-      AGENT_ID_TYPE_UNSPECIFIED: Unspecified type.
-      URN: The agent ID is a URN. Examples: * `urn:agent:acme.com:my-agent` *
-        `urn:agent:acme.com:sales-department:supply-chain-agent`
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
     """
-    AGENT_ID_TYPE_UNSPECIFIED = 0
-    URN = 1
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Messages:
+        ValueValue: A ValueValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ValueValue attribute.
+      """
+
+      @encoding.MapUnrecognizedFields('additionalProperties')
+      class ValueValue(_messages.Message):
+        r"""A ValueValue object.
+
+        Messages:
+          AdditionalProperty: An additional property for a ValueValue object.
+
+        Fields:
+          additionalProperties: Properties of the object.
+        """
+
+        class AdditionalProperty(_messages.Message):
+          r"""An additional property for a ValueValue object.
+
+          Fields:
+            key: Name of the additional property.
+            value: A extra_types.JsonValue attribute.
+          """
+
+          key = _messages.StringField(1)
+          value = _messages.MessageField('extra_types.JsonValue', 2)
+
+        additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ValueValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   agentId = _messages.StringField(1)
-  agentIdType = _messages.EnumField('AgentIdTypeValueValuesEnum', 2)
-  createTime = _messages.StringField(3)
-  description = _messages.StringField(4)
-  displayName = _messages.StringField(5)
-  location = _messages.StringField(6)
-  name = _messages.StringField(7)
-  protocols = _messages.MessageField('Protocol', 8, repeated=True)
-  skills = _messages.MessageField('Skill', 9, repeated=True)
-  uid = _messages.StringField(10)
-  updateTime = _messages.StringField(11)
-  version = _messages.StringField(12)
+  attributes = _messages.MessageField('AttributesValue', 2)
+  card = _messages.MessageField('Card', 3)
+  createTime = _messages.StringField(4)
+  description = _messages.StringField(5)
+  displayName = _messages.StringField(6)
+  location = _messages.StringField(7)
+  name = _messages.StringField(8)
+  protocols = _messages.MessageField('Protocol', 9, repeated=True)
+  skills = _messages.MessageField('Skill', 10, repeated=True)
+  uid = _messages.StringField(11)
+  updateTime = _messages.StringField(12)
+  version = _messages.StringField(13)
 
 
 class AgentSpec(_messages.Message):
@@ -465,6 +531,58 @@ class CancelOperationRequest(_messages.Message):
   r"""The request message for Operations.CancelOperation."""
 
 
+class Card(_messages.Message):
+  r"""Full Agent Card payload, often obtained from the A2A Agent Card.
+
+  Enums:
+    TypeValueValuesEnum: Output only. The type of agent card.
+
+  Messages:
+    ContentValue: Output only. The content of the agent card.
+
+  Fields:
+    content: Output only. The content of the agent card.
+    type: Output only. The type of agent card.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Output only. The type of agent card.
+
+    Values:
+      TYPE_UNSPECIFIED: Unspecified type.
+      A2A_AGENT_CARD: Indicates that the card is an A2A Agent Card.
+    """
+    TYPE_UNSPECIFIED = 0
+    A2A_AGENT_CARD = 1
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ContentValue(_messages.Message):
+    r"""Output only. The content of the agent card.
+
+    Messages:
+      AdditionalProperty: An additional property for a ContentValue object.
+
+    Fields:
+      additionalProperties: Properties of the object.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ContentValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  content = _messages.MessageField('ContentValue', 1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
 class Empty(_messages.Message):
   r"""A generic empty message that you can re-use to avoid defining duplicated
   empty messages in your APIs. A typical example is to use it as the request
@@ -477,7 +595,17 @@ class Empty(_messages.Message):
 class Endpoint(_messages.Message):
   r"""Represents an Endpoint.
 
+  Messages:
+    AttributesValue: Output only. Attributes of the Endpoint. Valid values: *
+      `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."}
+      - the URI of the underlying resource hosting the Endpoint, for example,
+      the GKE Deployment.
+
   Fields:
+    attributes: Output only. Attributes of the Endpoint. Valid values: *
+      `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."}
+      - the URI of the underlying resource hosting the Endpoint, for example,
+      the GKE Deployment.
     createTime: Output only. Create time.
     description: Output only. Description of an Endpoint.
     displayName: Output only. Display name for the Endpoint.
@@ -487,12 +615,67 @@ class Endpoint(_messages.Message):
     updateTime: Output only. Update time.
   """
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  interfaces = _messages.MessageField('Interface', 4, repeated=True)
-  name = _messages.StringField(5)
-  updateTime = _messages.StringField(6)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Output only. Attributes of the Endpoint. Valid values: *
+    `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."} -
+    the URI of the underlying resource hosting the Endpoint, for example, the
+    GKE Deployment.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Messages:
+        ValueValue: A ValueValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ValueValue attribute.
+      """
+
+      @encoding.MapUnrecognizedFields('additionalProperties')
+      class ValueValue(_messages.Message):
+        r"""A ValueValue object.
+
+        Messages:
+          AdditionalProperty: An additional property for a ValueValue object.
+
+        Fields:
+          additionalProperties: Properties of the object.
+        """
+
+        class AdditionalProperty(_messages.Message):
+          r"""An additional property for a ValueValue object.
+
+          Fields:
+            key: Name of the additional property.
+            value: A extra_types.JsonValue attribute.
+          """
+
+          key = _messages.StringField(1)
+          value = _messages.MessageField('extra_types.JsonValue', 2)
+
+        additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ValueValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributes = _messages.MessageField('AttributesValue', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  interfaces = _messages.MessageField('Interface', 5, repeated=True)
+  name = _messages.StringField(6)
+  updateTime = _messages.StringField(7)
 
 
 class EndpointSpec(_messages.Message):
@@ -750,7 +933,21 @@ class Location(_messages.Message):
 class McpServer(_messages.Message):
   r"""Represents an MCP (Model Context Protocol) Server.
 
+  Messages:
+    AttributesValue: Output only. Attributes of the MCP Server. Valid values:
+      * `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+      "principal://..."} - the runtime identity associated with the MCP
+      Server. * `agentregistry.googleapis.com/system/RuntimeReference`:
+      {"uri": "//..."} - the URI of the underlying resource hosting the MCP
+      Server, for example, the GKE Deployment.
+
   Fields:
+    attributes: Output only. Attributes of the MCP Server. Valid values: *
+      `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+      "principal://..."} - the runtime identity associated with the MCP
+      Server. * `agentregistry.googleapis.com/system/RuntimeReference`:
+      {"uri": "//..."} - the URI of the underlying resource hosting the MCP
+      Server, for example, the GKE Deployment.
     createTime: Output only. Create time.
     description: Output only. The description of the MCP Server.
     displayName: Output only. The display name of the MCP Server.
@@ -761,13 +958,70 @@ class McpServer(_messages.Message):
     updateTime: Output only. Update time.
   """
 
-  createTime = _messages.StringField(1)
-  description = _messages.StringField(2)
-  displayName = _messages.StringField(3)
-  interfaces = _messages.MessageField('Interface', 4, repeated=True)
-  name = _messages.StringField(5)
-  tools = _messages.MessageField('Tool', 6, repeated=True)
-  updateTime = _messages.StringField(7)
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class AttributesValue(_messages.Message):
+    r"""Output only. Attributes of the MCP Server. Valid values: *
+    `agentregistry.googleapis.com/system/RuntimeIdentity`: {"identity":
+    "principal://..."} - the runtime identity associated with the MCP Server.
+    * `agentregistry.googleapis.com/system/RuntimeReference`: {"uri": "//..."}
+    - the URI of the underlying resource hosting the MCP Server, for example,
+    the GKE Deployment.
+
+    Messages:
+      AdditionalProperty: An additional property for a AttributesValue object.
+
+    Fields:
+      additionalProperties: Additional properties of type AttributesValue
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a AttributesValue object.
+
+      Messages:
+        ValueValue: A ValueValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A ValueValue attribute.
+      """
+
+      @encoding.MapUnrecognizedFields('additionalProperties')
+      class ValueValue(_messages.Message):
+        r"""A ValueValue object.
+
+        Messages:
+          AdditionalProperty: An additional property for a ValueValue object.
+
+        Fields:
+          additionalProperties: Properties of the object.
+        """
+
+        class AdditionalProperty(_messages.Message):
+          r"""An additional property for a ValueValue object.
+
+          Fields:
+            key: Name of the additional property.
+            value: A extra_types.JsonValue attribute.
+          """
+
+          key = _messages.StringField(1)
+          value = _messages.MessageField('extra_types.JsonValue', 2)
+
+        additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('ValueValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  attributes = _messages.MessageField('AttributesValue', 1)
+  createTime = _messages.StringField(2)
+  description = _messages.StringField(3)
+  displayName = _messages.StringField(4)
+  interfaces = _messages.MessageField('Interface', 5, repeated=True)
+  name = _messages.StringField(6)
+  tools = _messages.MessageField('Tool', 7, repeated=True)
+  updateTime = _messages.StringField(8)
 
 
 class McpServerSpec(_messages.Message):
@@ -1008,7 +1262,7 @@ class Service(_messages.Message):
       a maximum length of 63 characters.
     endpointSpec: Optional. The spec of the Endpoint. When set, the type of
       the service is Endpoint.
-    interfaces: Required. The connection details for the Service.
+    interfaces: Optional. The connection details for the Service.
     mcpServerSpec: Optional. The spec of the MCP Server. When set, the type of
       the service is MCP Server.
     name: Identifier. The resource name of the Service. Format:

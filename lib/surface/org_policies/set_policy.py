@@ -14,9 +14,6 @@
 # limitations under the License.
 """Set-policy command for the Org Policy CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as api_exceptions
 from argcomplete import completers

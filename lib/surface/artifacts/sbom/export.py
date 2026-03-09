@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements the command to export SBOM files."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.artifacts import endpoint_util

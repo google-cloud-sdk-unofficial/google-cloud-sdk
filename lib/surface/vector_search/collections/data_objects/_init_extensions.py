@@ -45,3 +45,15 @@ class DataObjectsBeta(base.Group):
 @base.DefaultUniverseOnly
 class DataObjectsGa(base.Group):
   """Optional no-auto-generated code for GA."""
+
+  category = base.VECTOR_SEARCH_CATEGORY
+
+  @staticmethod
+  def Args(parser):
+    parser.display_info.AddUriFunc(util.ProjectsUriFunc)
+
+  def Filter(self, context, args):
+    del context, args
+    # Don't ever take this off. Use gcloud quota for projects operations so
+    # you can create a project before you have a project.
+    base.DisableUserProjectQuota()

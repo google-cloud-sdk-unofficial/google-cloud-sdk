@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create a Cloud NetApp Backup."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.backup_vaults.backups import client as backups_client
 from googlecloudsdk.calliope import base

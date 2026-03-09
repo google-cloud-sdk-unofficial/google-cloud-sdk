@@ -1065,8 +1065,9 @@ def LogUserPermissionDeniedError(project):
       ),
   )
   log.status.Print(
-      f"  gcloud projects add-iam-policy-binding {project} "
-      f"--member={prefix}:{user} --role='roles/artifactregistry.containerRegistryMigrationAdmin'\n"
+      f"  gcloud projects add-iam-policy-binding {project}"
+      f" --member={prefix}:{user}"
+      " --role='roles/artifactregistry.containerRegistryMigrationAdmin'\n"
       .format(prefix=prefix, user=user),
   )
 
@@ -2606,4 +2607,55 @@ def UpdateProjectConfigResource(unused_ref, unused_args, req):
     messages = ar_requests.GetMessages()
     req.projectConfig = messages.ProjectConfig()
   req.projectConfig.name = req.name
+  return req
+
+
+def ValidatePlatformLogsConfigArgs(unused_ref, args, req):
+  """Hook to validate the arguments for setting the platform logs config."""
+  severity = args.severity
+  enable_logging = args.enable_platform_logs
+  if severity and not enable_logging:
+    raise ar_exceptions.InvalidInputValueError(
+        "--severity can only be used when --enable-platform-logs is used."
+    )
+
+  return req
+
+
+def UpdatePlatformLogsConfigMask(unused_ref, unused_args, req):
+  """Hook to fix the update mask for platformLogsConfig."""
+  if not req.updateMask:
+    # If the update mask is empty, we assume that the user wants to update the
+    # entire platform logs config, so we don't need to add anything.
+    return req
+
+  has_plc = False
+
+  # A platform logs config can only belong to a project config or a repository.
+  if hasattr(req, "projectConfig"):
+    # If the request has a projectConfig, check if it has a platformLogsConfig.
+    has_plc = hasattr(req.projectConfig, "platformLogsConfig")
+  elif hasattr(req, "repository"):
+    # If the request has a repository, check if it has a platformLogsConfig.
+    has_plc = hasattr(req.repository, "platformLogsConfig")
+
+  # If there are no updates to the platform logs config, then do nothing.
+  if not has_plc:
+    return req
+
+  # If the user wants to update a platform logs config, clear the update mask,
+  # so we always update the whole platform logs config.
+  update_mask = False
+  paths = []
+  for path in req.updateMask.split(","):
+    if path.startswith("platformLogsConfig"):
+      update_mask = True
+      continue
+    paths.append(path)
+
+  if not update_mask:
+    return req
+
+  paths.append("platformLogsConfig")
+  req.updateMask = ",".join(paths)
   return req

@@ -15,7 +15,6 @@
 
 """'logging saved_queries delete' command."""
 
-from __future__ import absolute_import
 
 import argparse
 

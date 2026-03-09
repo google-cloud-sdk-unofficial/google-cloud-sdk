@@ -73,4 +73,6 @@
     method: updateProjectConfig
     collection: artifactregistry.projects.locations
     modify_request_hooks:
+    - googlecloudsdk.command_lib.artifacts.util:ValidatePlatformLogsConfigArgs
     - googlecloudsdk.command_lib.artifacts.util:UpdateProjectConfigResource
+    - googlecloudsdk.command_lib.artifacts.util:UpdatePlatformLogsConfigMask

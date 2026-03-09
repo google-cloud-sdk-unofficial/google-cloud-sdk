@@ -164,6 +164,12 @@ def validate_object_hashes_match(object_path, source_hash, destination_hash):
   Raises:
     HashMismatchError: Hashes are not equal.
   """
+  log.debug(
+      'Validating hashes for %s. Source hash: %s, Destination hash: %s',
+      object_path,
+      source_hash,
+      destination_hash,
+  )
   if source_hash != destination_hash:
     try:
       source_hash_bytes = get_bytes_from_base64_string(source_hash)

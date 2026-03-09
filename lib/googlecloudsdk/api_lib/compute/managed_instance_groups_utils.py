@@ -2435,7 +2435,17 @@ def RegisterInstanceSelectionsPatchEncoders(messages):
     def _GetInstanceSelectionValueOrNone(prop):
       if prop.value is None:
         return None
-      return {'rank': prop.value.rank, 'machineTypes': prop.value.machineTypes}
+      disks = None
+      if prop.value.disks:
+        disks = [
+            encoding.MessageToPyValue(disk) for disk in prop.value.disks
+        ]
+      return {
+          'rank': prop.value.rank,
+          'machineTypes': prop.value.machineTypes,
+          'minCpuPlatform': prop.value.minCpuPlatform,
+          'disks': disks,
+      }
 
     return json.dumps({
         property.key: _GetInstanceSelectionValueOrNone(property)

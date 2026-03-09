@@ -19,6 +19,20 @@
       help_text: |
         Arguments and flags that specify the Dataplex Data Asset you want to update.
       spec: !REF googlecloudsdk.command_lib.dataplex.resources:data_asset
+    params:
+    - arg_name: access-groups
+      api_field: googleCloudDataplexV1DataAsset.accessGroupConfigs.additionalProperties
+      action: append
+      processor: googlecloudsdk.command_lib.dataplex.parsers:ParseAccessGroupConfigs
+      help_text: |
+        New access groups configurations for this data asset.
+        This will replace the existing configurations.
+        Each access group config should be a JSON string.
+        Expected schema:
+          {
+            "id": "group-id",
+            "iam_roles": ["role-1", "role-2"]
+          }
     labels:
       api_field: googleCloudDataplexV1DataAsset.labels
   async:

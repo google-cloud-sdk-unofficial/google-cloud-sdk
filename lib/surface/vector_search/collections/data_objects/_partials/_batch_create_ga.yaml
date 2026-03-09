@@ -101,6 +101,9 @@
               - api_field: indices
                 help_text: |-
                   The corresponding indices for the values.
+        - api_field: etag
+          help_text: |-
+            The etag of the dataObject.
   request:
     api_version: v1
     collection:

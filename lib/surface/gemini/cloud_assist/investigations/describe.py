@@ -15,9 +15,6 @@
 
 """Command to show a specified investigation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.gemini_cloud_assist import args as gca_args
 from googlecloudsdk.api_lib.gemini_cloud_assist import util as gca_util

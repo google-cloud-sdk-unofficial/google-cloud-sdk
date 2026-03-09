@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to add denied values to an Organization Policy list policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.resource_manager import exceptions
 from googlecloudsdk.api_lib.resource_manager import org_policies

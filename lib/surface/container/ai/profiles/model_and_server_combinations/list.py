@@ -52,8 +52,9 @@ class List(commands.List):
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. If not specified, this defaults to the"
-            " any model server version."
+            "The model server version. If omitted, the most recently"
+            " benchmarked version is used. Other options include the model"
+            " server version of a profile, or 'all' to return all versions."
         ),
     )
     parser.display_info.AddFormat(

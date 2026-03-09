@@ -14,9 +14,6 @@
 # limitations under the License.
 """The insight type config command group for the Cloud Recommender API CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 

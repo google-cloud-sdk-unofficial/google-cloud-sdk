@@ -51,6 +51,10 @@ from googlecloudsdk.core.util import files
 import six
 
 
+# Ensure that polling for LROs does not exceed 20 seconds between polls.
+LRO_MAX_RETRY_WAIT_MS = 20 * 1000
+
+
 class Translator(command_loading.YamlCommandTranslator):
   """Class that implements the calliope translator interface."""
 
@@ -645,7 +649,8 @@ class BaseCommandGenerator(six.with_metaclass(abc.ABCMeta, object)):
         poller, operation_ref,
         self._Format(
             progress_string, poller.resource_ref,
-            self._GetDisplayResourceType(args), display_name))
+            self._GetDisplayResourceType(args), display_name),
+        wait_ceiling_ms=LRO_MAX_RETRY_WAIT_MS)
 
   def _FindPopulatedAttribute(self, obj, attributes):
     """Searches the given object for an attribute that is non-None.

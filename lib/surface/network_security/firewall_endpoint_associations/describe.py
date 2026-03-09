@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe endpoint association command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.firewall_endpoint_associations import association_api
 from googlecloudsdk.calliope import base

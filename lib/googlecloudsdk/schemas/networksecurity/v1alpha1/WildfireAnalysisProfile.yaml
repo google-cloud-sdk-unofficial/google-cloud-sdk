@@ -36,6 +36,9 @@ properties:
     type: array
     items:
       $ref: WildfireInlineMlOverride.yaml
+  wildfireInlineMlSetting:
+    description: Settings for WildFire Inline ML analysis.
+    $ref: WildfireInlineMlSettings.yaml
   wildfireInlineMlSettings:
     description: Settings for WildFire Inline ML analysis.
     type: array
@@ -58,3 +61,10 @@ properties:
     type: array
     items:
       $ref: WildfireSubmissionRule.yaml
+  wildfireThreatOverrides:
+    description: |-
+      Configuration for overriding WildFire threats action
+      by threat_id match.
+    type: array
+    items:
+      $ref: WildfireThreatOverride.yaml

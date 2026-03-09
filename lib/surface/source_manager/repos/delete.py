@@ -14,9 +14,6 @@
 # limitations under the License.
 """Delete Secure Source Manager repository command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.securesourcemanager import repositories
 from googlecloudsdk.calliope import base

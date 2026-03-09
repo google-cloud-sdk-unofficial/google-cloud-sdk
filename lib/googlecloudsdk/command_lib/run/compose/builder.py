@@ -409,9 +409,10 @@ def _handle_no_build(
       tracker.StartStage(stage_key)
       image = container_to_image_map.get(container)
       if not image:
-        raise exceptions.Error(
+        raise compose_exceptions.BuildError(
             f"Could not find image for container '{container}' in service"
-            f" '{project_name}'."
+            f" '{project_name}'.",
+            exit_codes.BUILD_NO_BUILD_INVALID,
         )
       build_config.image_id = image
       tracker.UpdateStage(
@@ -420,7 +421,10 @@ def _handle_no_build(
       tracker.CompleteStage(stage_key)
     except Exception as e:
       tracker.FailStage(stage_key, e, 'Image retrieval failed.')
-      raise
+      raise compose_exceptions.BuildError(
+          f'Image retrieval failed for container {container}: {e}',
+          exit_codes.BUILD_NO_BUILD_INVALID,
+      ) from e
 
 
 def _build_from_source(
@@ -434,7 +438,10 @@ def _build_from_source(
   """Performs source build for a given container using build config."""
   source_path = build_cfg.context
   if source_path is None:
-    raise ValueError('Build context is required for source build.')
+    raise compose_exceptions.BuildError(
+        'Build context is required for source build.',
+        exit_codes.BUILD_CONTEXT_INVALID,
+    )
 
   image_tag = '{repo}/{project_name}_{container}:{tag}'.format(
       repo=repo, project_name=project_name, container=container, tag='latest'

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe an operation for the Private CA API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import operations
 from googlecloudsdk.calliope import base
@@ -41,7 +38,6 @@ def _GetOperationResourceSpec():
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class Describe(base.DescribeCommand):
   """Describe an operation ran on the Private CA API."""
 

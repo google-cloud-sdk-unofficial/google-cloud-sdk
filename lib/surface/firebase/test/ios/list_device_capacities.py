@@ -14,9 +14,6 @@
 # limitations under the License.
 """The 'gcloud firebase test ios list-device-capacities' command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.api_lib.firebase.test.device_capacities import DEVICE_CAPACITY_TABLE_FORMAT

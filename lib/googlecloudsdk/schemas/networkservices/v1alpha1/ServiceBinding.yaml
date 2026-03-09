@@ -29,9 +29,25 @@ properties:
     description: |-
       A free-text description of the resource. Max length 1024 characters.
     type: string
+  destination:
+    description: The destination service(s) for this binding.
+    $ref: ServiceBindingDestination.yaml
   labels:
     description: Set of label tags associated with the ServiceBinding resource.
     $ref: LabelsValue.yaml
+  matches:
+    description: |-
+      A list of matches define conditions used to match requests to destination
+      services. Each match is independent with the OR semantic, i.e. we consider
+      it matched if ANY one of the matches is satisfied. This field is only
+      applicable to Cloud Run services: If a ServiceBinding has only one Cloud
+      Run service, Match is optional. If not specified, the default hostname
+      `-..run.app` or the short name can be used. If a ServiceBinding has
+      multiple Cloud Run services, at least one Match with valid hostname is
+      required.
+    type: array
+    items:
+      $ref: ServiceBindingMatch.yaml
   name:
     description: |-
       Identifier. Name of the ServiceBinding resource. It matches pattern
@@ -43,3 +59,6 @@ properties:
       `projects/*/locations/*/namespaces/*/services/*`. This field is for
       Service Directory integration which will be deprecated soon.
     type: string
+  source:
+    description: The source service(s) for this binding.
+    $ref: ServiceBindingSource.yaml

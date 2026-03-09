@@ -16,9 +16,6 @@
 """Implementation of gcloud genomics pipelines run.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import base64
 from googlecloudsdk.api_lib import genomics as lib

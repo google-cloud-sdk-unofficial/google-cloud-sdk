@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to fetch backups for a resource type."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.backupdr import backups
 from googlecloudsdk.api_lib.util import common_args

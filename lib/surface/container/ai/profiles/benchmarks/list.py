@@ -82,16 +82,16 @@ class List(commands.List):
     parser.add_argument(
         "--model-server-version",
         help=(
-            "The model server version. Default is latest. Other options include"
-            " the model server version of a profile, all which returns all"
-            " versions."
+            "The model server version. If omitted, the most recently"
+            " benchmarked version is used. Other options include the model"
+            " server version of a profile, or 'all' to return all versions."
         ),
     )
     parser.add_argument(
         "--instance-type",
         help=(
             "The instance type. If not specified, this defaults to any"
-            "instance type."
+            " instance type."
         ),
     )
     parser.add_argument(
@@ -99,7 +99,7 @@ class List(commands.List):
         help=(
             "The format to print the output in. Default is csvprofile, which"
             " displays the profile information in a CSV format, including"
-            "cost conversions."
+            " cost conversions."
         ),
     )
     parser.add_argument(
@@ -107,7 +107,7 @@ class List(commands.List):
         required=False,
         help=(
             "The pricing model to use to calculate token cost. Currently, this"
-            " supports on-demand, spot, 3-years-cud, 1-year-cud"
+            " supports on-demand, spot, 3-years-cud, 1-year-cud."
         ),
     )
     parser.add_argument(
@@ -117,7 +117,8 @@ class List(commands.List):
             "If specified, results will only show profiles that match the"
             " provided use case. Options are: Advanced Customer Support, Code"
             " Completion, Text Summarization, Chatbot (ShareGPT), Code"
-            " Generation, Deep Research."
+            " Generation, Deep Research. If omitted, defaults to Chatbot"
+            " (ShareGPT)."
         ),
     )
     parser.add_argument(
@@ -133,9 +134,9 @@ class List(commands.List):
         "--serving-stack-version",
         required=False,
         help=(
-            "The serving stack version to filter benchmarking data by. If not"
-            " provided, benchmarking data for all versions that support"
-            " the given model and model server will be returned."
+            "The serving stack version. If omitted, the most recently"
+            " benchmarked version is used. Other options include the serving"
+            " stack version of a profile, or 'all' to return all versions."
         ),
     )
 

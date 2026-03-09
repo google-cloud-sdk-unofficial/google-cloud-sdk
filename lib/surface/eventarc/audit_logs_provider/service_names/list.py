@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list values for the serviceName attribute for event type google.cloud.audit.log.v1.written."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.eventarc import service_catalog

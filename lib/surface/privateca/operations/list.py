@@ -14,9 +14,6 @@
 # limitations under the License.
 """List operations for the Private CA API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.privateca import operations
 from googlecloudsdk.api_lib.privateca import resource_utils
@@ -47,7 +44,6 @@ def _GetLocationResourceSpec():
 
 @base.DefaultUniverseOnly
 @base.ReleaseTracks(base.ReleaseTrack.GA)
-@base.Hidden
 class List(base.ListCommand):
   """List operations for the Private CA API."""
 

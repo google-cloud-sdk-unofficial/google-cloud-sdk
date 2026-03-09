@@ -15,9 +15,6 @@
 
 """A command that generates and/or updates help document directoriess."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 import googlecloudsdk.command_lib.meta.generate_command as generate_command

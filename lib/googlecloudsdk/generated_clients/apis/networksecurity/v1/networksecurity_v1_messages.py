@@ -5067,117 +5067,6 @@ class NetworksecurityProjectsLocationsFirewallEndpointAssociationsPatchRequest(_
   updateMask = _messages.StringField(4)
 
 
-class NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest(_messages.Message):
-  r"""A NetworksecurityProjectsLocationsFirewallEndpointsCreateRequest object.
-
-  Fields:
-    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
-      body.
-    firewallEndpointId: Required. Id of the requesting object. If auto-
-      generating Id server-side, remove this field and firewall_endpoint_id
-      from the method_signature of Create RPC.
-    parent: Required. Value for parent.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
-  firewallEndpointId = _messages.StringField(2)
-  parent = _messages.StringField(3, required=True)
-  requestId = _messages.StringField(4)
-
-
-class NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest(_messages.Message):
-  r"""A NetworksecurityProjectsLocationsFirewallEndpointsDeleteRequest object.
-
-  Fields:
-    name: Required. Name of the resource
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes after the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-  """
-
-  name = _messages.StringField(1, required=True)
-  requestId = _messages.StringField(2)
-
-
-class NetworksecurityProjectsLocationsFirewallEndpointsGetRequest(_messages.Message):
-  r"""A NetworksecurityProjectsLocationsFirewallEndpointsGetRequest object.
-
-  Fields:
-    name: Required. Name of the resource
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
-class NetworksecurityProjectsLocationsFirewallEndpointsListRequest(_messages.Message):
-  r"""A NetworksecurityProjectsLocationsFirewallEndpointsListRequest object.
-
-  Fields:
-    filter: Optional. Filtering results
-    orderBy: Hint for how to order the results
-    pageSize: Optional. Requested page size. Server may return fewer items
-      than requested. If unspecified, server will pick an appropriate default.
-    pageToken: A token identifying a page of results the server should return.
-    parent: Required. Parent value for ListEndpointsRequest
-  """
-
-  filter = _messages.StringField(1)
-  orderBy = _messages.StringField(2)
-  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
-  pageToken = _messages.StringField(4)
-  parent = _messages.StringField(5, required=True)
-
-
-class NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest(_messages.Message):
-  r"""A NetworksecurityProjectsLocationsFirewallEndpointsPatchRequest object.
-
-  Fields:
-    firewallEndpoint: A FirewallEndpoint resource to be passed as the request
-      body.
-    name: Immutable. Identifier. Name of resource.
-    requestId: Optional. An optional request ID to identify requests. Specify
-      a unique request ID so that if you must retry your request, the server
-      will know to ignore the request if it has already been completed. The
-      server will guarantee that for at least 60 minutes since the first
-      request. For example, consider a situation where you make an initial
-      request and the request times out. If you make the request again with
-      the same request ID, the server can check if original operation with the
-      same request ID was received, and if so, will ignore the second request.
-      This prevents clients from accidentally creating duplicate commitments.
-      The request ID must be a valid UUID with the exception that zero UUID is
-      not supported (00000000-0000-0000-0000-000000000000).
-    updateMask: Required. Field mask is used to specify the fields to be
-      overwritten in the Endpoint resource by the update. The fields specified
-      in the update_mask are relative to the resource, not the full request. A
-      field will be overwritten if it is in the mask. If the user does not
-      provide a mask then all fields will be overwritten.
-  """
-
-  firewallEndpoint = _messages.MessageField('FirewallEndpoint', 1)
-  name = _messages.StringField(2, required=True)
-  requestId = _messages.StringField(3)
-  updateMask = _messages.StringField(4)
-
-
 class NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest(_messages.Message):
   r"""A NetworksecurityProjectsLocationsGatewaySecurityPoliciesCreateRequest
   object.
@@ -6827,6 +6716,8 @@ class SecurityProfile(_messages.Message):
     type: Immutable. The single ProfileType that the SecurityProfile resource
       configures.
     updateTime: Output only. Last resource update timestamp.
+    urlFilteringProfile: The URL filtering configuration for the
+      SecurityProfile.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
@@ -6838,11 +6729,13 @@ class SecurityProfile(_messages.Message):
       THREAT_PREVENTION: Profile type for threat prevention.
       CUSTOM_MIRRORING: Profile type for packet mirroring v2
       CUSTOM_INTERCEPT: Profile type for TPPI.
+      URL_FILTERING: Profile type for URL filtering.
     """
     PROFILE_TYPE_UNSPECIFIED = 0
     THREAT_PREVENTION = 1
     CUSTOM_MIRRORING = 2
     CUSTOM_INTERCEPT = 3
+    URL_FILTERING = 4
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class LabelsValue(_messages.Message):
@@ -6878,6 +6771,7 @@ class SecurityProfile(_messages.Message):
   threatPreventionProfile = _messages.MessageField('ThreatPreventionProfile', 8)
   type = _messages.EnumField('TypeValueValuesEnum', 9)
   updateTime = _messages.StringField(10)
+  urlFilteringProfile = _messages.MessageField('UrlFilteringProfile', 11)
 
 
 class SecurityProfileGroup(_messages.Message):
@@ -6907,6 +6801,8 @@ class SecurityProfileGroup(_messages.Message):
     threatPreventionProfile: Optional. Reference to a SecurityProfile with the
       ThreatPrevention configuration.
     updateTime: Output only. Last resource update timestamp.
+    urlFilteringProfile: Optional. Reference to a SecurityProfile with the
+      UrlFiltering configuration.
   """
 
   @encoding.MapUnrecognizedFields('additionalProperties')
@@ -6943,6 +6839,7 @@ class SecurityProfileGroup(_messages.Message):
   name = _messages.StringField(8)
   threatPreventionProfile = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+  urlFilteringProfile = _messages.StringField(11)
 
 
 class ServerTlsPolicy(_messages.Message):
@@ -7440,6 +7337,50 @@ class TlsInspectionPolicy(_messages.Message):
   tlsFeatureProfile = _messages.EnumField('TlsFeatureProfileValueValuesEnum', 8)
   trustConfig = _messages.StringField(9)
   updateTime = _messages.StringField(10)
+
+
+class UrlFilter(_messages.Message):
+  r"""A URL filter defines an action to take for some URL match.
+
+  Enums:
+    FilteringActionValueValuesEnum: Required. The action taken when this
+      filter is applied.
+
+  Fields:
+    filteringAction: Required. The action taken when this filter is applied.
+    priority: Required. The priority of this filter within the URL Filtering
+      Profile. Lower integers indicate higher priorities. The priority of a
+      filter must be unique within a URL Filtering Profile.
+    urls: Required. The list of strings that a URL must match with for this
+      filter to be applied.
+  """
+
+  class FilteringActionValueValuesEnum(_messages.Enum):
+    r"""Required. The action taken when this filter is applied.
+
+    Values:
+      URL_FILTERING_ACTION_UNSPECIFIED: Filtering action not specified.
+      ALLOW: The connection matching this filter will be allowed to transmit.
+      DENY: The connection matching this filter will be dropped.
+    """
+    URL_FILTERING_ACTION_UNSPECIFIED = 0
+    ALLOW = 1
+    DENY = 2
+
+  filteringAction = _messages.EnumField('FilteringActionValueValuesEnum', 1)
+  priority = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  urls = _messages.StringField(3, repeated=True)
+
+
+class UrlFilteringProfile(_messages.Message):
+  r"""UrlFilteringProfile defines filters based on URL.
+
+  Fields:
+    urlFilters: Optional. The list of filtering configs in which each config
+      defines an action to take for some URL match.
+  """
+
+  urlFilters = _messages.MessageField('UrlFilter', 1, repeated=True)
 
 
 class UrlList(_messages.Message):

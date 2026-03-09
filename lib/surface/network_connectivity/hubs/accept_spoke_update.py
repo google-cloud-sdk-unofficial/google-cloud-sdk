@@ -15,9 +15,6 @@
 
 """Command for accepting spoke updates."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_api
 from googlecloudsdk.api_lib.network_connectivity import networkconnectivity_util

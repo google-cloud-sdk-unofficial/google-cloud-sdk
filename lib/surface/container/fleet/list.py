@@ -15,9 +15,6 @@
 
 """Command to show fleets in an organization or project."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api as crm
 from googlecloudsdk.api_lib.container.fleet import client

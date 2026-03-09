@@ -24693,9 +24693,6 @@ class GoogleCloudAiplatformV1SchemaModelevaluationMetricsConfusionMatrix(_messag
   r"""A GoogleCloudAiplatformV1SchemaModelevaluationMetricsConfusionMatrix
   object.
 
-  Messages:
-    RowsValueListEntry: Single entry in a RowsValue.
-
   Fields:
     annotationSpecs: AnnotationSpecs used in the confusion matrix. For AutoML
       Text Extraction, a special negative AnnotationSpec with empty `id` and
@@ -24714,17 +24711,8 @@ class GoogleCloudAiplatformV1SchemaModelevaluationMetricsConfusionMatrix(_messag
       `annotationSpec[i]` is the special negative AnnotationSpec, is always 0.
   """
 
-  class RowsValueListEntry(_messages.Message):
-    r"""Single entry in a RowsValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   annotationSpecs = _messages.MessageField('GoogleCloudAiplatformV1SchemaModelevaluationMetricsConfusionMatrixAnnotationSpecRef', 1, repeated=True)
-  rows = _messages.MessageField('RowsValueListEntry', 2, repeated=True)
+  rows = _messages.MessageField('extra_types.JsonArray', 2, repeated=True)
 
 
 class GoogleCloudAiplatformV1SchemaModelevaluationMetricsConfusionMatrixAnnotationSpecRef(_messages.Message):
@@ -25457,9 +25445,6 @@ class GoogleCloudAiplatformV1SchemaPredictPredictionClassificationPredictionResu
 class GoogleCloudAiplatformV1SchemaPredictPredictionImageObjectDetectionPredictionResult(_messages.Message):
   r"""Prediction output format for Image Object Detection.
 
-  Messages:
-    BboxesValueListEntry: Single entry in a BboxesValue.
-
   Fields:
     bboxes: Bounding boxes, i.e. the rectangles over the image, that pinpoint
       the found AnnotationSpecs. Given in order that matches the IDs. Each
@@ -25475,16 +25460,7 @@ class GoogleCloudAiplatformV1SchemaPredictPredictionImageObjectDetectionPredicti
       ordered by the confidence score descendingly.
   """
 
-  class BboxesValueListEntry(_messages.Message):
-    r"""Single entry in a BboxesValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
-  bboxes = _messages.MessageField('BboxesValueListEntry', 1, repeated=True)
+  bboxes = _messages.MessageField('extra_types.JsonArray', 1, repeated=True)
   confidences = _messages.FloatField(2, repeated=True, variant=_messages.Variant.FLOAT)
   displayNames = _messages.StringField(3, repeated=True)
   ids = _messages.IntegerField(4, repeated=True)

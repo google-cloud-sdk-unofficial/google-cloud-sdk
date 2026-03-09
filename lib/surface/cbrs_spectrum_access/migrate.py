@@ -15,9 +15,6 @@
 
 """Command to migrate a existing Spectrum Access System's organization into Google Cloud."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.spectrum_access import sas_portal_api
 from googlecloudsdk.calliope import base

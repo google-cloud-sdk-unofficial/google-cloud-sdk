@@ -14,9 +14,6 @@
 # limitations under the License.
 """Set-policy command for the Resource Settings CLI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from argcomplete import completers
 from googlecloudsdk.api_lib.resource_manager.settings import service

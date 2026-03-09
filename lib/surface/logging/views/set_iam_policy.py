@@ -20,9 +20,6 @@ This command replaces the existing IAM policy for an logging view resource,
 given a file encoded in JSON or YAML that contains the IAM policy.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers

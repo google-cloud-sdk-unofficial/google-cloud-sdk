@@ -14,9 +14,6 @@
 # limitations under the License.
 """Scan a container image using the On-Demand Scanning API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

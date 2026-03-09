@@ -14,9 +14,6 @@
 # limitations under the License.
 """Create command for Backup for GKE backup."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.backup_restore import util as api_util
 from googlecloudsdk.calliope import base

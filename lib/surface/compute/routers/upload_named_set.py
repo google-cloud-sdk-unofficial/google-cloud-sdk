@@ -15,9 +15,6 @@
 
 """Command for uploading a named set into a Compute Engine router."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import base64
 import json

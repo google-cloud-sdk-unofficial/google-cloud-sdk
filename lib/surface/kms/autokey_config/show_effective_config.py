@@ -14,9 +14,6 @@
 # limitations under the License.
 """Gets the effective Cloud KMS AutokeyConfig for a given project."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base

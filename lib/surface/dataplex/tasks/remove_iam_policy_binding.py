@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to remove-iam-policy-binding from a Dataplex task resource."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.dataplex import task
 from googlecloudsdk.api_lib.util import exceptions as gcloud_exception

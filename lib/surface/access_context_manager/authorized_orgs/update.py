@@ -14,9 +14,6 @@
 # limitations under the License.
 """`gcloud access-context-manager authorized-orgs update` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.accesscontextmanager import authorized_orgs as authorized_orgs_api
 from googlecloudsdk.calliope import base

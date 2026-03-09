@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for setting usage buckets."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
@@ -27,16 +24,16 @@ import six
 
 
 @base.Deprecate(
-    is_removed=False,
+    is_removed=True,
     warning=(
         'This command is deprecated. '
         'Please onboard with BigQuery Export instead. '
-        'https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery'
+        '(https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery).'
     ),
     error=(
         'This command has been removed. '
         'Please onboard with BigQuery Export instead. '
-        'https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery'
+        '(https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery).'
     ),
 )
 @base.DefaultUniverseOnly

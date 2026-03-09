@@ -221,5 +221,22 @@ def GetCustomFeaturesFlag():
           '  gcloud compute ssl-policies list-available-features\n'))
 
 
+def GetPostQuantumKeyExchangeFlag():
+  """Returns the flag for specifying post-quantum key exchange."""
+  return base.Argument(
+      '--post-quantum-key-exchange',
+      choices={
+          'DEFAULT': (
+              'Post-quantum key exchange is disabled until it becomes enabled '
+              'by default on load balancers.'),
+          'DEFERRED': (
+              'Post-quantum key exchange with clients is temporarily '
+              'disabled.'),
+          'ENABLED': (
+              'Post-quantum key exchange is enabled.'),
+      },
+      help='Whether to use post-quantum key exchange.')
+
+
 def ParseTlsVersion(tls_version):
   return _TLS_VERSION_MAP[tls_version] if tls_version else None

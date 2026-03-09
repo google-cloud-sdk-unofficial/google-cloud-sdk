@@ -71,9 +71,6 @@ This will output the validation results in the following format:
 {"0": [{<OUTPUT_1>}], "1": [{<OUTPUT_2>}]}
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import copy

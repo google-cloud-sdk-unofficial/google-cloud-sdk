@@ -14,9 +14,6 @@
 # limitations under the License.
 """Export a Looker instance."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.looker import instances
 from googlecloudsdk.calliope import base

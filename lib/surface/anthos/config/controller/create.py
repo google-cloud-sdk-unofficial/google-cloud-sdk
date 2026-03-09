@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to create new Config Controller instances."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container import util as container_util
 from googlecloudsdk.api_lib.krmapihosting import util as krmapihosting_api

@@ -14,9 +14,6 @@
 # limitations under the License.
 """'notebooks environments describe' command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.notebooks import environments as env_util
 from googlecloudsdk.api_lib.notebooks import util

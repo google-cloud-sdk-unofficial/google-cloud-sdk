@@ -14,9 +14,6 @@
 # limitations under the License.
 """Verify a user signature file using a MAC signing key."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base

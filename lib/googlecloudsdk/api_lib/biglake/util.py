@@ -15,19 +15,33 @@
 
 """A library that is used to support our commands."""
 
+import json
+import types
+from urllib import parse
+
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
+from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
+from googlecloudsdk.core.credentials import requests
+from six.moves import http_client as httplib
 
 
+quote_plus = parse.quote_plus
 VERSION_MAP = {
     base.ReleaseTrack.ALPHA: 'v1',
     base.ReleaseTrack.BETA: 'v1',
     base.ReleaseTrack.GA: 'v1',
 }
+
+
+class HttpRequestFailError(core_exceptions.Error):
+  """Indicates that the http request fails in some way."""
+
+  pass
 
 
 # The messages module can also be accessed from client.MESSAGES_MODULE
@@ -52,9 +66,31 @@ def GetCatalogRef(catalog):
   )
 
 
+def GetNamespaceName(catalog_id, namespace_id):
+  """Get the namespace name in the format of projects/{project-id}/catalogs/{catalog-id}/namespaces/{namespace-id}."""
+  return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}/namespaces/{namespace_id}'
+
+
 def GetCatalogName(catalog_id):
   """Get the catalog name in the format of projects/{project-id}/catalogs/{catalog-id}."""
   return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}'
+
+
+def GetTableName(catalog_id, namespace_id, table_id):
+  """Get the table name.
+
+  The name is in the format of
+  projects/{project-id}/catalogs/{catalog-id}/namespaces/{namespace-id}/tables/{table-id}.
+
+  Args:
+    catalog_id: The ID of the catalog.
+    namespace_id: The ID of the namespace.
+    table_id: The ID of the table.
+
+  Returns:
+    The table name string.
+  """
+  return f'projects/{properties.VALUES.core.project.GetOrFail()}/catalogs/{catalog_id}/namespaces/{namespace_id}/tables/{table_id}'
 
 
 def GetParentName():
@@ -199,3 +235,58 @@ def CheckValidArgCombinations(args):
     raise arg_parsers.ArgumentTypeError(
         '--additional-locations is only supported for BigLake catalogs.'
     )
+
+
+def ProcessNamespaceListResponse(parent_name, response):
+  """Processes the response from the list namespaces request."""
+  namespaces = []
+  if response and 'namespaces' in response:
+    for ns_parts in response['namespaces']:
+      ns_id = '.'.join(ns_parts)
+      namespaces.append(
+          types.SimpleNamespace(
+              name=f'{parent_name}/namespaces/{ns_id}'
+          )
+      )
+  page_token = response.get('next-page-token', None)
+  unreachable = response.get('unreachable', [])
+  return namespaces, page_token, unreachable
+
+
+def ListNamespaces(parent_name, page_size=None, page_token=None):
+  """Lists namespaces in a catalog.
+
+  Args:
+      parent_name: name of the catalog in format
+        projects/{project}/catalogs/{catalog}.
+      page_size: The maximum number of namespaces to return.
+      page_token: A page token, received from a previous `ListNamespaces` call.
+
+  Returns:
+      A json object that contains namespaces.
+
+  Raises:
+      HttpRequestFailError: if error happens with http request, or parsing
+          the http response.
+  """
+  endpoint = apis.GetEffectiveApiEndpoint('biglake', 'v1').strip('/')
+  url = (
+      f'{endpoint}/iceberg/v1/restcatalog/v1/{parent_name}/namespaces?alt=json'
+  )
+  if page_size:
+    url += f'&pageSize={page_size}'
+  if page_token:
+    url += f'&pageToken={quote_plus(page_token)}'
+  headers = {'Content-Type': 'application/json'}
+  response = requests.GetSession().request('GET', url, headers=headers)
+  if int(response.status_code) != httplib.OK:
+    raise HttpRequestFailError(
+        'HTTP request failed. Response: ' + response.text
+    )
+  try:
+    return ProcessNamespaceListResponse(parent_name, json.loads(response.text))
+  except ValueError as e:
+    raise HttpRequestFailError(
+        'No JSON object could be decoded from the HTTP response body: '
+        + response.text
+    ) from e

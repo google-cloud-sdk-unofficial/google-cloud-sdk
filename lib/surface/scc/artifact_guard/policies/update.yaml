@@ -1,55 +1,59 @@
-- release_tracks: [ALPHA]
-  hidden: true
-  help_text:
-    brief: |
-      Update an existing artifact guard policy.
-    description: |
-      Updates an existing artifact guard policy.
-      Update Mask: It updates the policy with the fields specified in the update mask.
-      If the update mask is not specified or is set to "*", all the fields are updated.
-      Partial field updates are not supported. The following fields are supported:
-      - "display_name"
-      - "description"
-      - "scope"
-      - "enablement_state"
-      - "vulnerability_policy"
-      - "annotations"
+release_tracks: [ALPHA]
+hidden: true
+help_text:
+  brief: |
+    Update an existing artifact guard policy.
+  description: |
+    Updates an existing artifact guard policy.
+    Update Mask: It updates the policy with the fields specified in the update mask.
+    If the update mask is not specified or is set to "*", all the fields are updated.
+    Partial field updates are not supported. The following fields are supported:
+    - "display_name"
+    - "description"
+    - "scope"
+    - "enablement_state"
+    - "vulnerability_policy"
+    - "annotations"
 
-      Allow missing: If set, the policy will be created if it does not exist.
-    examples: |
-      To update a policy named "organizations/123/locations/global/policies/myPolicy",
-        $ {command} organizations/123/locations/global/policies/myPolicy --policy-file-path=policy.yaml
-        OR
-        $ {command} myPolicy --location=global --organization=123 --policy-file-path=policy.yaml
+  Allow missing: If set, the policy will be created if it does not exist.
+  examples: |
+    To update a policy named "organizations/123/locations/global/policies/myPolicy",
+      $ {command} organizations/123/locations/global/policies/myPolicy --policy-file-path=policy.yaml
+      OR
+      $ {command} myPolicy --location=global --organization=123 --policy-file-path=policy.yaml
 
-  request:
-    collection: artifactscanguard.organizations.locations.policies
-    api_version: v1alpha
-    method: patch
+request:
+  api_version: v1alpha
+  collection:
+  - artifactscanguard.organizations.locations.policies
+  - artifactscanguard.projects.locations.policies
+  method: patch
 
-  arguments:
-    resource:
-      spec: !REF googlecloudsdk.command_lib.scc.resources:policy
-      help_text: |
-        The full name of the policy to update. For example:
-        organizations/123/locations/global/policies/myPolicy
+arguments:
+  resource:
+    spec: !REF googlecloudsdk.command_lib.scc.resources:organization_or_project_location_policy
+    help_text: |
+      The full name of the policy to update. The parent of the policy can be
+      either an organization or a project. For example:
+      `organizations/123/locations/global/policies/myPolicy` or
+      `projects/123/locations/global/policies/myPolicy`.
 
-    params:
-    - arg_name: policy-file-path
-      api_field: policy
-      required: true
-      type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
-      processor: googlecloudsdk.core.yaml:load
-      help_text: |
-        YAML file containing the body of the policy to be created.
+  params:
+  - arg_name: policy-file-path
+    api_field: policy
+    required: true
+    type: "googlecloudsdk.calliope.arg_parsers:FileContents:"
+    processor: googlecloudsdk.core.yaml:load
+    help_text: |
+      YAML file containing the body of the policy to be created.
 
-    - arg_name: update-mask
-      api_field: updateMask
-      help_text: |
-        The list of fields to update. Eg: "description,display_name"
+  - arg_name: update-mask
+    api_field: updateMask
+    help_text: |
+      The list of fields to update. Eg: "description,display_name"
 
-    - arg_name: allow-missing
-      api_field: allowMissing
-      type: bool
-      help_text: |
-        If set, the policy will be created if it does not exist.
+  - arg_name: allow-missing
+    api_field: allowMissing
+    type: bool
+    help_text: |
+      If set, the policy will be created if it does not exist.

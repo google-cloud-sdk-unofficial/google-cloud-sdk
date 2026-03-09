@@ -111,12 +111,12 @@ def OrgSecurityProfileResourceSpec(release_track, name):
       ),
       locationsId=concepts.ResourceParameterAttributeConfig(
           "location",
-          "location of the {resource} - Global.",
+          "Location of the security profile.",
           parameter_name="locationsId",
       ),
       securityProfilesId=concepts.ResourceParameterAttributeConfig(
           name,
-          "Name of the {resource}.",
+          "Name of the security profile.",
           parameter_name="securityProfilesId",
       ),
   )
@@ -140,12 +140,12 @@ def ProjectSecurityProfileResourceSpec(release_track, name):
       ),
       locationsId=concepts.ResourceParameterAttributeConfig(
           "location",
-          "location of the {resource} - Global.",
+          "Location of the security profile.",
           parameter_name="locationsId",
       ),
       securityProfilesId=concepts.ResourceParameterAttributeConfig(
           name,
-          "Name of the {resource}.",
+          "Name of the security profile.",
           parameter_name="securityProfilesId",
       ),
   )

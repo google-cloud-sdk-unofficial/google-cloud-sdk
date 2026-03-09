@@ -23,7 +23,21 @@ class DataObjectsClient(object):
   """Client for data objects service in the Vector Search API."""
 
   def __init__(self, release_track=base.ReleaseTrack.BETA):
+    self.release_track = release_track
     self.api_version = util.VERSION_MAP.get(release_track)
     self.client = util.GetClientInstance(release_track)
     self.messages = util.GetMessagesModule(release_track)
     self.service = self.client.projects_locations_collections_dataObjects
+
+  def GetMessage(self, message_name):
+    """Returns the message for the given release track."""
+    return util.GetMessage(self.messages, message_name, self.release_track)
+
+  def GetMessageName(self, message_name):
+    """Returns the full message name for the given release track."""
+    return util.GetMessageName(message_name, self.release_track)
+
+  def GetRequestField(self, req_message_name):
+    """Returns the field name in a request wrapper for the given message."""
+    full_name = self.GetMessageName(req_message_name)
+    return full_name[0].lower() + full_name[1:]

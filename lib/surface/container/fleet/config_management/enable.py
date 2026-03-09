@@ -14,9 +14,6 @@
 # limitations under the License.
 """The command to enable Config Management feature."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 

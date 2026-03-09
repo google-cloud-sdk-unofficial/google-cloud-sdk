@@ -18,6 +18,7 @@
 from typing import Optional
 
 from googlecloudsdk.command_lib.orchestration_pipelines.processors import base
+from googlecloudsdk.command_lib.orchestration_pipelines.tools import python_environment_unpack_renderer
 
 
 class DataprocGCEActionProcessor(base.ActionProcessor):
@@ -33,7 +34,7 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
         .get("softwareConfig", {})
         .get("imageVersion")
     )
-    if image_version == "None":
+    if str(image_version) == "None":
       return "3.11"
     if image_version.startswith("2.1"):
       return "3.10"
@@ -49,7 +50,10 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
     if not env_pack_path.exists():
       return
 
-    env_pack_uri = f"{self._artifact_base_uri}{self._env_pack_file}#libs"
+    extract_path = "libs"
+    env_pack_uri = (
+        f"{self._artifact_base_uri}{self._env_pack_file}#{extract_path}"
+    )
     self.action.setdefault("archives", [])
     if not any(env_pack_uri in arch for arch in self.action["archives"]):
       self.action["archives"].append(env_pack_uri)
@@ -61,3 +65,25 @@ class DataprocGCEActionProcessor(base.ActionProcessor):
       job_props["spark.yarn.appMasterEnv.PYTHONPATH"] = self.full_python_path
     else:
       job_props["spark.dataproc.driverEnv.PYTHONPATH"] = self.full_python_path
+
+      cluster_config = self._get_nested_dict(
+          action, ["config", "cluster_config"]
+      )
+      initialization_actions = cluster_config.setdefault(
+          "initialization_actions", []
+      )
+
+      # Directory name where dependencies are unpacked.
+      libs_dir = f"./{extract_path}"
+      env_name = "python_environment"
+      gcs_archive_path = f"{self._artifact_base_uri}{self._env_pack_file}"
+
+      python_environment_unpack_renderer.render_init_action(
+          self._work_dir, libs_dir, env_name, gcs_archive_path
+      )
+
+      initialization_actions.append({
+          "executable_file": (
+              f"{self._artifact_base_uri}python_environment_unpack.sh"
+          )
+      })

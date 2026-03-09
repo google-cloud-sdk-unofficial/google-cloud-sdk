@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update a experiment in the Project/Location."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.fault_injection import experiments
 from googlecloudsdk.calliope import base

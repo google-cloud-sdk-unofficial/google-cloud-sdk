@@ -14,17 +14,24 @@
 # limitations under the License.
 """Helpers for parsing flags and arguments."""
 
+import argparse
+import types
+from typing import Any
+
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
+from googlecloudsdk.command_lib.kms import exceptions
 from googlecloudsdk.command_lib.kms import maps
 from googlecloudsdk.command_lib.kms import resource_args
 from googlecloudsdk.command_lib.util import completers
 from googlecloudsdk.command_lib.util import parameter_info_lib
+from googlecloudsdk.command_lib.util.args import common_args
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core.util import times
+from googlecloudsdk.generated_clients.apis.cloudkms.v1 import cloudkms_v1_client
 
 EKM_CONNECTION_COLLECTION = 'cloudkms.projects.locations.ekmConnections'
 KEY_RING_COLLECTION = 'cloudkms.projects.locations.keyRings'
@@ -79,7 +86,7 @@ class LocationCompleter(ListCommandCompleter):
     super(LocationCompleter, self).__init__(
         collection=LOCATION_COLLECTION,
         list_command='kms locations list --uri',
-        **kwargs
+        **kwargs,
     )
 
 
@@ -89,7 +96,7 @@ class SingleTenantHsmInstanceCompleter(ListCommandCompleter):
     super(SingleTenantHsmInstanceCompleter, self).__init__(
         collection=SINGLE_TENANT_HSM_INSTANCE_COLLECTION,
         list_command='kms single-tenant-hsm-instances list --uri',
-        **kwargs
+        **kwargs,
     )
 
 
@@ -101,7 +108,7 @@ class EkmConnectionCompleter(ListCommandCompleter):
         collection=EKM_CONNECTION_COLLECTION,
         list_command='kms ekm-connections list --uri',
         flags=['location'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -112,7 +119,7 @@ class KeyRingCompleter(ListCommandCompleter):
         collection=KEY_RING_COLLECTION,
         list_command='kms keyrings list --uri',
         flags=['location'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -123,7 +130,7 @@ class KeyCompleter(ListCommandCompleter):
         collection=CRYPTO_KEY_COLLECTION,
         list_command='kms keys list --uri',
         flags=['location', 'keyring'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -135,7 +142,7 @@ class KeyHandleCompleter(ListCommandCompleter):
         collection=KEY_HANDLE_COLLECTION,
         list_command='kms key-handles list --uri',
         flags=['location'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -146,7 +153,7 @@ class KeyVersionCompleter(ListCommandCompleter):
         collection=CRYPTO_KEY_VERSION_COLLECTION,
         list_command='kms keys versions list --uri',
         flags=['location', 'key', 'keyring'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -158,7 +165,7 @@ class ImportJobCompleter(ListCommandCompleter):
         collection=IMPORT_JOB_COLLECTION,
         list_command='beta kms import-jobs list --uri',
         flags=['location', 'keyring'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -169,7 +176,7 @@ class RetiredResourceCompleter(ListCommandCompleter):
         collection=RETIRED_RESOURCE_COLLECTION,
         list_command='kms retired-resources list --uri',
         flags=['location'],
-        **kwargs
+        **kwargs,
     )
 
 
@@ -779,6 +786,65 @@ def AddAutokeyConfigFileFlag(parser):
   )
 
 
+def AddKajPolicyParentFlag(parser):
+  """Adds flags for specifying the parent of KajPolicyConfig."""
+  group = parser.add_mutually_exclusive_group(
+      required=True, help='The parent of KajPolicyConfig.'
+  )
+  group.add_argument(
+      '--organization',
+      help=(
+          'The ID of the organization under which the KajPolicyConfig exists.'
+          ' Use this flag only if KajPolicyConfig is directly under an'
+          ' organization.'
+      ),
+  )
+  group.add_argument(
+      '--folder',
+      help=(
+          'The ID of the folder under which the KajPolicyConfig exists. Use'
+          ' this flag only if KajPolicyConfig is directly under a folder.'
+      ),
+  )
+  common_args.ProjectArgument(
+      help_text_to_prepend=(
+          'The ID of the project underwhich the KajPolicyConfig exists. Use'
+          ' this flag only if KajPolicyConfig is directly under a project.'
+      )
+  ).AddToParser(group)
+
+
+def AddKajPolicyUpdateFlag(parser):
+  """Adds flags for updating the KajPolicyConfig."""
+  group = parser.add_mutually_exclusive_group(
+      help='Updates of KAJ Policy Config.'
+  )
+  group.add_argument(
+      '--reset-kaj-policy-config',
+      default=None,
+      action='store_true',
+      help=(
+          'Reset KAJ Policy Config to empty. An empty KAJ Policy Config allows'
+          ' all access reasons.'
+      ),
+  )
+  group.add_argument(
+      '--allowed-access-reasons',
+      type=arg_parsers.ArgList(
+          choices=maps.ACCESS_REASON_MAPPER.choices,
+          max_length=len(maps.ACCESS_REASON_MAPPER.choices),
+      ),
+      metavar='ALLOWED_ACCESS_REASONS',
+      help=(
+          'List of allowed Key Access Justifications access reasons in this KAJ'
+          ' Policy Config. This flag cannot be empty, if'
+          ' being set. For more information about '
+          'justification codes, see '
+          'https://cloud.google.com/assured-workloads/key-access-justifications/docs/justification-codes.'
+      ),
+  )
+
+
 # Parsing.
 def ParseLocationName(args):
   return resources.REGISTRY.Parse(
@@ -898,3 +964,45 @@ def SetKeyAccessJustificationsPolicy(args, crypto_key):
             allowedAccessReasons=allowed_access_reasons
         )
     )
+
+
+def GetKajPolicyConfig(
+    client: cloudkms_v1_client.CloudkmsV1,
+    messages: types.ModuleType,
+    args: argparse.Namespace,
+) -> Any:
+  """Gets the KajPolicyConfig.
+
+  Args:
+    client: the KMS API client
+    messages: the KMS message module
+    args: the argument (flag) of the command
+
+  Returns:
+    Message KeyAccessJustificationsPolicyConfig in the given message module.
+  """
+  # Organizations, folders, and projects flags are defined within one mutually
+  # exclusive argument group, so we don't need to check whether there are more
+  # than two flags are being set or not.
+  if args.organization:
+    return client.organizations.GetKajPolicyConfig(
+        messages.CloudkmsOrganizationsGetKajPolicyConfigRequest(
+            name=f'organizations/{args.organization}/kajPolicyConfig'
+        ),
+    )
+  elif args.folder:
+    return client.folders.GetKajPolicyConfig(
+        messages.CloudkmsFoldersGetKajPolicyConfigRequest(
+            name=f'folders/{args.folder}/kajPolicyConfig'
+        ),
+    )
+  elif args.project:
+    return client.projects.GetKajPolicyConfig(
+        messages.CloudkmsProjectsGetKajPolicyConfigRequest(
+            name=f'projects/{args.project}/kajPolicyConfig'
+        ),
+    )
+  raise exceptions.ArgumentError(
+      'Require an organization/folder/project ID of the parent of'
+      ' KajPolicyConfig.'
+  )

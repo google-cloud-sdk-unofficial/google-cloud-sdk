@@ -94,8 +94,6 @@ class Up(base.BinaryBackedCommand):
     resource_response = command_executor(
         command='resource',
         compose_file=compose_file,
-        debug=log.GetVerbosity() <= log.logging.DEBUG,
-        dry_run=args.dry_run,
         region=region,
         out=out_dir,
     )
@@ -150,11 +148,8 @@ class Up(base.BinaryBackedCommand):
       resources_config_json = resources_config.to_json()
       response = command_executor(
           command='translate',
-          repo=repo,
           compose_file=compose_file,
           resources_config=resources_config_json,  # Pass the JSON string
-          debug=log.GetVerbosity() <= log.logging.DEBUG,
-          dry_run=args.dry_run,
           project_number=project_number,
           region=region,
           out=out_dir,
@@ -196,6 +191,8 @@ class Up(base.BinaryBackedCommand):
         )
 
       return response
+    except compose_exceptions.ComposeError:
+      raise
     except Exception as e:
       log.debug(f'Raw output: {resource_response.stdout}')
       raise compose_exceptions.GcloudError(

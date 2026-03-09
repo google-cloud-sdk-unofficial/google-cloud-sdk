@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to delete a Contact from Essential Contacts."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.essential_contacts import contacts
 from googlecloudsdk.calliope import base

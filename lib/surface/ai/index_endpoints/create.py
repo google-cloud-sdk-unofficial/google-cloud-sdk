@@ -14,9 +14,6 @@
 # limitations under the License.
 """Vertex AI index endpoints create command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 from googlecloudsdk.api_lib.ai import operations

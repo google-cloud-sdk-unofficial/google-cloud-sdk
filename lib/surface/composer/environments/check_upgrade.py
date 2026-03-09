@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command which checks that upgrading a Cloud Composer environment does not result in PyPI module conflicts."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.composer import environments_util as environments_api_util
 from googlecloudsdk.api_lib.composer import operations_util as operations_api_util

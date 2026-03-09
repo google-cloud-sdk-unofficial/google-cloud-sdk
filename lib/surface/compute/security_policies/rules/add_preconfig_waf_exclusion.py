@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for adding exclusions for preconfigured WAF rule evaluation to security policy rules."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import encoding
 

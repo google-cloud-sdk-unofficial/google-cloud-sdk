@@ -597,7 +597,7 @@ class NetworkmanagementV1alpha1(base_api.BaseApiClient):
     )
 
     def GenerateProviderAccessToken(self, request, global_params=None):
-      r"""Generates a provider access token for a given GCP access token. Provider access token is a short-lived token that is used to access resources in the provider's platform.
+      r"""Generates a provider access token for a given Google access token. Provider access token is a short-lived token that is used to access resources in the provider's platform.
 
       Args:
         request: (NetworkmanagementProjectsLocationsNetworkMonitoringProvidersGenerateProviderAccessTokenRequest) input message

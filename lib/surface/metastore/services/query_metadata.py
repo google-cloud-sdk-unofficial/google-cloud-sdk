@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to query metadata against Dataproc Metastore services database."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import json

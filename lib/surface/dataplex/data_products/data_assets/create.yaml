@@ -25,6 +25,18 @@
       required: true
       help_text: |
         Full resource name of the cloud resource represented by the data asset.
+    - arg_name: access-groups
+      api_field: googleCloudDataplexV1DataAsset.accessGroupConfigs.additionalProperties
+      action: append
+      processor: googlecloudsdk.command_lib.dataplex.parsers:ParseAccessGroupConfigs
+      help_text: |
+        Access groups configurations for this data asset.
+        Each access group config should be a JSON string.
+        Expected schema:
+          {
+            "id": "group-id",
+            "iam_roles": ["role-1", "role-2"]
+          }
     labels:
       api_field: googleCloudDataplexV1DataAsset.labels
   async:

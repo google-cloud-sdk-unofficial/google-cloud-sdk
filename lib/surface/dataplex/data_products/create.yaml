@@ -39,6 +39,22 @@
       repeated: true
       help_text: |
         Emails of the data product owners.
+    - arg_name: access-groups
+      api_field: googleCloudDataplexV1DataProduct.accessGroups.additionalProperties
+      action: append
+      processor: googlecloudsdk.command_lib.dataplex.parsers:ParseAccessGroups
+      help_text: |
+        List of custom user-defined access groups at the data product level.
+        Each access group should be a JSON string.
+        Expected schema:
+          {
+            "id": "group-id",
+            "display_name": "display-name",
+            "description": "description",
+            "principal": {
+              "google_group": "group-email@example.com"
+            }
+          }
     labels:
       api_field: googleCloudDataplexV1DataProduct.labels
   async:

@@ -199,17 +199,19 @@ class Client:
         submission_timeout_logging_disabled = (
             not enable_wildfire_analysis_logging
         )
+      lookup_duration = None
+      if wildfire_lookup_timeout:
+        lookup_duration = '{}s'.format(wildfire_lookup_timeout / 1000)
+      analysis_duration = None
+      if wildfire_analysis_timeout:
+        analysis_duration = '{}s'.format(wildfire_analysis_timeout / 1000)
       return self.messages.FirewallEndpointWildfireSettings(
           enabled=enabled,
           wildfireRegion=region,
-          wildfireRealtimeLookupDuration=str(wildfire_lookup_timeout)
-          if wildfire_lookup_timeout
-          else None,
+          wildfireRealtimeLookupDuration=lookup_duration,
           wildfireRealtimeLookupTimeoutAction=lookup_action,
           wildfireInlineCloudAnalysisSettings=self.messages.FirewallEndpointWildfireSettingsWildfireInlineCloudAnalysisSettings(
-              maxAnalysisDuration=str(wildfire_analysis_timeout)
-              if wildfire_analysis_timeout
-              else None,
+              maxAnalysisDuration=analysis_duration,
               timeoutAction=analysis_action,
               submissionTimeoutLoggingDisabled=submission_timeout_logging_disabled,
           ),

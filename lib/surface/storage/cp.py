@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implementation of Unix-like cp command for cloud storage providers."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.storage import cp_command_util

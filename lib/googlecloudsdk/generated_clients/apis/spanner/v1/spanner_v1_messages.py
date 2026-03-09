@@ -3294,9 +3294,6 @@ class KeySet(_messages.Message):
   times in the set (for example if two ranges, two keys, or a key and a range
   overlap), Cloud Spanner behaves as if the key were only specified once.
 
-  Messages:
-    KeysValueListEntry: Single entry in a KeysValue.
-
   Fields:
     all: For convenience `all` can be set to `true` to indicate that this
       `KeySet` matches all keys in the table or index. Note that any keys
@@ -3309,17 +3306,8 @@ class KeySet(_messages.Message):
       range specifications.
   """
 
-  class KeysValueListEntry(_messages.Message):
-    r"""Single entry in a KeysValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   all = _messages.BooleanField(1)
-  keys = _messages.MessageField('KeysValueListEntry', 2, repeated=True)
+  keys = _messages.MessageField('extra_types.JsonArray', 2, repeated=True)
   ranges = _messages.MessageField('KeyRange', 3, repeated=True)
 
 
@@ -5309,9 +5297,6 @@ class RestoreInfo(_messages.Message):
 class ResultSet(_messages.Message):
   r"""Results from Read or ExecuteSql.
 
-  Messages:
-    RowsValueListEntry: Single entry in a RowsValue.
-
   Fields:
     metadata: Metadata about the result set, such as row type information.
     precommitToken: Optional. A precommit token is included if the read-write
@@ -5330,18 +5315,9 @@ class ResultSet(_messages.Message):
       ExecuteSqlRequest.query_mode.
   """
 
-  class RowsValueListEntry(_messages.Message):
-    r"""Single entry in a RowsValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   metadata = _messages.MessageField('ResultSetMetadata', 1)
   precommitToken = _messages.MessageField('MultiplexedSessionPrecommitToken', 2)
-  rows = _messages.MessageField('RowsValueListEntry', 3, repeated=True)
+  rows = _messages.MessageField('extra_types.JsonArray', 3, repeated=True)
   stats = _messages.MessageField('ResultSetStats', 4)
 
 
@@ -8399,9 +8375,6 @@ class VisualizationData(_messages.Message):
 class Write(_messages.Message):
   r"""Arguments to insert, update, insert_or_update, and replace operations.
 
-  Messages:
-    ValuesValueListEntry: Single entry in a ValuesValue.
-
   Fields:
     columns: The names of the columns in table to be written. The list of
       columns must contain enough columns to allow Cloud Spanner to derive
@@ -8416,18 +8389,9 @@ class Write(_messages.Message):
       are encoded as described here.
   """
 
-  class ValuesValueListEntry(_messages.Message):
-    r"""Single entry in a ValuesValue.
-
-    Fields:
-      entry: A extra_types.JsonValue attribute.
-    """
-
-    entry = _messages.MessageField('extra_types.JsonValue', 1, repeated=True)
-
   columns = _messages.StringField(1, repeated=True)
   table = _messages.StringField(2)
-  values = _messages.MessageField('ValuesValueListEntry', 3, repeated=True)
+  values = _messages.MessageField('extra_types.JsonArray', 3, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(

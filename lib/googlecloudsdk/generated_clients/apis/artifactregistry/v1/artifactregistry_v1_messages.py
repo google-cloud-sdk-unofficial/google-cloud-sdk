@@ -79,18 +79,6 @@ class ArtifactregistryProjectsGetProjectSettingsRequest(_messages.Message):
   name = _messages.StringField(1, required=True)
 
 
-class ArtifactregistryProjectsLocationsGetPlatformLogsConfigRequest(_messages.Message):
-  r"""A ArtifactregistryProjectsLocationsGetPlatformLogsConfigRequest object.
-
-  Fields:
-    name: Required. The name of the platform logs config resource:
-      projects/{project}/locations/{location}/platformLogsConfig projects/{pro
-      ject}/locations/{location}/repositories/{repository}/platformLogsConfig
-  """
-
-  name = _messages.StringField(1, required=True)
-
-
 class ArtifactregistryProjectsLocationsGetProjectConfigRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsGetProjectConfigRequest object.
 
@@ -144,6 +132,19 @@ class ArtifactregistryProjectsLocationsListRequest(_messages.Message):
   name = _messages.StringField(3, required=True)
   pageSize = _messages.IntegerField(4, variant=_messages.Variant.INT32)
   pageToken = _messages.StringField(5)
+
+
+class ArtifactregistryProjectsLocationsOperationsCancelRequest(_messages.Message):
+  r"""A ArtifactregistryProjectsLocationsOperationsCancelRequest object.
+
+  Fields:
+    cancelOperationRequest: A CancelOperationRequest resource to be passed as
+      the request body.
+    name: The name of the operation resource to be cancelled.
+  """
+
+  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
+  name = _messages.StringField(2, required=True)
 
 
 class ArtifactregistryProjectsLocationsOperationsGetRequest(_messages.Message):
@@ -506,20 +507,6 @@ class ArtifactregistryProjectsLocationsRepositoriesGetIamPolicyRequest(_messages
 
   options_requestedPolicyVersion = _messages.IntegerField(1, variant=_messages.Variant.INT32)
   resource = _messages.StringField(2, required=True)
-
-
-class ArtifactregistryProjectsLocationsRepositoriesGetPlatformLogsConfigRequest(_messages.Message):
-  r"""A
-  ArtifactregistryProjectsLocationsRepositoriesGetPlatformLogsConfigRequest
-  object.
-
-  Fields:
-    name: Required. The name of the platform logs config resource:
-      projects/{project}/locations/{location}/platformLogsConfig projects/{pro
-      ject}/locations/{location}/repositories/{repository}/platformLogsConfig
-  """
-
-  name = _messages.StringField(1, required=True)
 
 
 class ArtifactregistryProjectsLocationsRepositoriesGetRequest(_messages.Message):
@@ -1189,27 +1176,6 @@ class ArtifactregistryProjectsLocationsRepositoriesTestIamPermissionsRequest(_me
   testIamPermissionsRequest = _messages.MessageField('TestIamPermissionsRequest', 2)
 
 
-class ArtifactregistryProjectsLocationsRepositoriesUpdatePlatformLogsConfigRequest(_messages.Message):
-  r"""A
-  ArtifactregistryProjectsLocationsRepositoriesUpdatePlatformLogsConfigRequest
-  object.
-
-  Fields:
-    name: Identifier. The name of the project's or repository's platform logs
-      config. Always in one of the forms:
-      projects/{projectID}/locations/{location}/platformLogsConfig projects/{p
-      rojectID}/locations/{location}/repositories/{repository}/platformLogsCon
-      fig
-    platformLogsConfig: A PlatformLogsConfig resource to be passed as the
-      request body.
-    updateMask: Optional. Field mask to support partial updates.
-  """
-
-  name = _messages.StringField(1, required=True)
-  platformLogsConfig = _messages.MessageField('PlatformLogsConfig', 2)
-  updateMask = _messages.StringField(3)
-
-
 class ArtifactregistryProjectsLocationsRepositoriesYumArtifactsImportRequest(_messages.Message):
   r"""A ArtifactregistryProjectsLocationsRepositoriesYumArtifactsImportRequest
   object.
@@ -1238,26 +1204,6 @@ class ArtifactregistryProjectsLocationsRepositoriesYumArtifactsUploadRequest(_me
 
   parent = _messages.StringField(1, required=True)
   uploadYumArtifactRequest = _messages.MessageField('UploadYumArtifactRequest', 2)
-
-
-class ArtifactregistryProjectsLocationsUpdatePlatformLogsConfigRequest(_messages.Message):
-  r"""A ArtifactregistryProjectsLocationsUpdatePlatformLogsConfigRequest
-  object.
-
-  Fields:
-    name: Identifier. The name of the project's or repository's platform logs
-      config. Always in one of the forms:
-      projects/{projectID}/locations/{location}/platformLogsConfig projects/{p
-      rojectID}/locations/{location}/repositories/{repository}/platformLogsCon
-      fig
-    platformLogsConfig: A PlatformLogsConfig resource to be passed as the
-      request body.
-    updateMask: Optional. Field mask to support partial updates.
-  """
-
-  name = _messages.StringField(1, required=True)
-  platformLogsConfig = _messages.MessageField('PlatformLogsConfig', 2)
-  updateMask = _messages.StringField(3)
 
 
 class ArtifactregistryProjectsLocationsUpdateProjectConfigRequest(_messages.Message):
@@ -1523,6 +1469,10 @@ class Binding(_messages.Message):
   condition = _messages.MessageField('Expr', 1)
   members = _messages.StringField(2, repeated=True)
   role = _messages.StringField(3)
+
+
+class CancelOperationRequest(_messages.Message):
+  r"""The request message for Operations.CancelOperation."""
 
 
 class CleanupPolicy(_messages.Message):
@@ -2876,6 +2826,13 @@ class NetworkConfig(_messages.Message):
   prefix = _messages.StringField(3)
 
 
+class NoCacheFetching(_messages.Message):
+  r"""The configuration for the no-cache fetching mode, which acts as a non-
+  caching proxy.
+  """
+
+
+
 class NpmPackage(_messages.Message):
   r"""NpmPackage represents an npm artifact.
 
@@ -3105,11 +3062,6 @@ class PlatformLogsConfig(_messages.Message):
   Fields:
     loggingState: Optional. The state of the platform logs: enabled or
       disabled.
-    name: Identifier. The name of the project's or repository's platform logs
-      config. Always in one of the forms:
-      projects/{projectID}/locations/{location}/platformLogsConfig projects/{p
-      rojectID}/locations/{location}/repositories/{repository}/platformLogsCon
-      fig
     severityLevel: Optional. The severity level for the logs. Logs will be
       generated if their severity level is >= than the value of the severity
       level mentioned here.
@@ -3159,8 +3111,7 @@ class PlatformLogsConfig(_messages.Message):
     EMERGENCY = 8
 
   loggingState = _messages.EnumField('LoggingStateValueValuesEnum', 1)
-  name = _messages.StringField(2)
-  severityLevel = _messages.EnumField('SeverityLevelValueValuesEnum', 3)
+  severityLevel = _messages.EnumField('SeverityLevelValueValuesEnum', 2)
 
 
 class Policy(_messages.Message):
@@ -3382,6 +3333,7 @@ class RemoteRepositoryConfig(_messages.Message):
       repositories.
     goRepository: Specific settings for a Go remote repository.
     mavenRepository: Specific settings for a Maven remote repository.
+    noCache: The remote repository will act as a non-caching proxy.
     npmRepository: Specific settings for an Npm remote repository.
     pythonRepository: Specific settings for a Python remote repository.
     remoteType: A RemoteTypeValueValuesEnum attribute.
@@ -3415,12 +3367,13 @@ class RemoteRepositoryConfig(_messages.Message):
   enableIngestionAttestation = _messages.BooleanField(7)
   goRepository = _messages.MessageField('GoRepository', 8)
   mavenRepository = _messages.MessageField('MavenRepository', 9)
-  npmRepository = _messages.MessageField('NpmRepository', 10)
-  pythonRepository = _messages.MessageField('PythonRepository', 11)
-  remoteType = _messages.EnumField('RemoteTypeValueValuesEnum', 12)
-  serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 13)
-  upstreamCredentials = _messages.MessageField('UpstreamCredentials', 14)
-  yumRepository = _messages.MessageField('YumRepository', 15)
+  noCache = _messages.MessageField('NoCacheFetching', 10)
+  npmRepository = _messages.MessageField('NpmRepository', 11)
+  pythonRepository = _messages.MessageField('PythonRepository', 12)
+  remoteType = _messages.EnumField('RemoteTypeValueValuesEnum', 13)
+  serviceDirectoryConfig = _messages.MessageField('ServiceDirectoryConfig', 14)
+  upstreamCredentials = _messages.MessageField('UpstreamCredentials', 15)
+  yumRepository = _messages.MessageField('YumRepository', 16)
 
 
 class Repository(_messages.Message):

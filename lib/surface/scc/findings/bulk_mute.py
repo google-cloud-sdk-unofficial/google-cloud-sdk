@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command to bulk mute Security Command Center findings based on a filter."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.scc import securitycenter_client
 from googlecloudsdk.calliope import base

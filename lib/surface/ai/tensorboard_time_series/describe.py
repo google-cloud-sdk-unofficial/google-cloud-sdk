@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to get a Tensorboard time series in Vertex AI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.ai.tensorboard_time_series import client
 from googlecloudsdk.calliope import base

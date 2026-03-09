@@ -14,9 +14,6 @@
 # limitations under the License.
 
 """Performs pre-checks for a major version upgrade of a Cloud SQL instance."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import time
 

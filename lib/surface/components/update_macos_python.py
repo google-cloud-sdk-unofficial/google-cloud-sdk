@@ -15,9 +15,6 @@
 
 """`gcloud components update-macos-python` command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core.updater import python_manager
@@ -41,4 +38,4 @@ class UpdateMacosPython(base.Command):
     pass
 
   def Run(self, args):
-    python_manager.PromptAndInstallPythonOnMac()
+    python_manager.InstallPythonAndDependenciesOnMac()

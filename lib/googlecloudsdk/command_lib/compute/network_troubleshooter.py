@@ -135,7 +135,7 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
           self.instance, no_raise=True
       )
 
-      if ':' not in self.dst_ip_address:
+      if self.dst_ip_address and ':' not in self.dst_ip_address:
         # IPv4 connectivity.
         self.src_ip_address = '35.235.240.123'
         log.status.Print(
@@ -146,7 +146,7 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
             'Destination IP address: {0} (primary internal IPv4 address of the'
             ' instance)\n'.format(self.dst_ip_address)
         )
-      elif ':' in self.dst_ip_address:
+      elif self.dst_ip_address and ':' in self.dst_ip_address:
         # IPv6 connectivity.
         self.src_ip_address = '2600:2d00:1:7:1:2:3::'
         log.status.Print(
@@ -160,42 +160,38 @@ class NetworkTroubleshooter(ssh_troubleshooter.SshTroubleshooter):
     else:
       # Direct connectivity from the source address to the external IP address.
       self.src_ip_address = self._GetSourceIPAddress()
-      log.status.Print(
-          'Source IP address: {0} (your current external IP address)\n'.format(
-              self.src_ip_address
-          )
-      )
 
-      if ':' not in self.src_ip_address:
+      if self.src_ip_address and ':' not in self.src_ip_address:
         # IPv4 connectivity.
         self.dst_ip_address = ssh_utils.GetPrimaryExternalIPv4Address(
             self.instance
         )
         log.status.Print(
+            'Source IP address: {0} (your current external IPv4 address)\n'
+            .format(self.src_ip_address)
+        )
+        log.status.Print(
             'Destination IP address: {0} (primary external IPv4 address of the'
             ' instance)\n'.format(self.dst_ip_address)
         )
-      elif ':' in self.src_ip_address:
+      elif self.src_ip_address and ':' in self.src_ip_address:
         # IPv6 connectivity.
         self.dst_ip_address = ssh_utils.GetPrimaryExternalIPv6Address(
             self.instance
+        )
+        log.status.Print(
+            'Source IP address: {0} (your current external IPv6 address)\n'
+            .format(self.src_ip_address)
         )
         log.status.Print(
             'Destination IP address: {0} (primary external IPv6 address of the'
             ' instance)\n'.format(self.dst_ip_address)
         )
 
-    if not self.src_ip_address:
+    if not self.src_ip_address or not self.dst_ip_address:
       log.status.Print(
-          "Could not resolve source IP address, can't run a Connectivity Test\n"
-      )
-      self.skip_troubleshoot = True
-      return
-
-    if not self.dst_ip_address:
-      log.status.Print(
-          "Could not resolve destination IP address, can't run a Connectivity"
-          ' Test\n'
+          "Could not resolve source or destination IP address, can't run a"
+          ' Connectivity Test\n'
       )
       self.skip_troubleshoot = True
       return

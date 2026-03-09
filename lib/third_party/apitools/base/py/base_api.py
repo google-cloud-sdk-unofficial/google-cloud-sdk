@@ -713,6 +713,7 @@ class BaseApiService(object):
             # then that goes to ProcessResponse and is returned.
             raise exceptions.NotYetImplementedError(
                 'Cannot yet use both upload and download at once')
+
         http_request = self.PrepareHttpRequest(
             method_config, request, global_params, upload, upload_config,
             download)

@@ -15,9 +15,6 @@
 
 """The command to install/update gcloud components."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 
 from googlecloudsdk.calliope import base

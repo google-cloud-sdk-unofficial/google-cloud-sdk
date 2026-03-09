@@ -89,6 +89,9 @@
               - api_field: indices
                 help_text: |-
                   The corresponding indices for the values.
+        - api_field: etag
+          help_text: |-
+            The etag of the dataObject.
       - api_field: updateMask
         help_text: |-
           The update mask applies to the resource. See [google.protobuf.FieldMask][google.protobuf.FieldMask].

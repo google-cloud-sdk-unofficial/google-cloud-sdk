@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to run an Airflow CLI sub-command in an environment."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import random

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for migrate from legacy firewall rules to network firewall policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import itertools
 import json

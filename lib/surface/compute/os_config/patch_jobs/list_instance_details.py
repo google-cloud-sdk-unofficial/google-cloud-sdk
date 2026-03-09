@@ -14,9 +14,6 @@
 # limitations under the License.
 """Implements command to list the instance details for an OS patch job."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute.os_config import utils as osconfig_api_utils

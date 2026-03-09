@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for proxying to a given service."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.config import config_helper

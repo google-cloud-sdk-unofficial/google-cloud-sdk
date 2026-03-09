@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to send SSH commands into a Cloud TPU Queued Resource's Nodes."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import argparse
 import os.path

@@ -15,9 +15,6 @@
 
 """api-gateway gateways list command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.api_gateway import api_configs
 from googlecloudsdk.api_lib.util import common_args

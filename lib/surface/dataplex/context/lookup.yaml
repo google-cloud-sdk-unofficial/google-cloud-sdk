@@ -1,0 +1,40 @@
+- release_tracks: [ALPHA]
+  help_text:
+    brief: Looks up LLM context for data assets.
+    description: |
+      Looks up LLM context for data assets.
+
+      Fetches detailed contextual metadata for the specified data assets. Data assets can be
+      identified by their Dataplex entry name, source system resource name or fully qualified name.
+      The returned context can include schema, descriptions, business annotations, data quality
+      insights, and relationships, structured for application use. This output is particularly
+      useful for providing grounding to Large Language Models (LLMs), enabling more accurate and
+      context-aware interactions with your data.
+
+    examples: |
+      To look up Dataplex Context for BigQuery tables 'table1' and 'table2' in dataset 'my-dataset' within project 'test-dataplex' in location 'us-central1', run:
+
+          $ {command} --location=us-central1 --project=test-dataplex --resources=resource1,resource2
+
+      To look up context using Dataplex entry names:
+
+          $ {command} --location=us-central1 --project=test-dataplex --resources=projects/test-dataplex/locations/us-central1/entryGroups/my-group/entries/my-entry
+
+      To look up context using the default project and location from your gcloud configuration:
+
+          $ {command} --resources=resource1,resource2
+
+  request:
+    collection: dataplex.projects.locations
+    api_version: v1
+    method: lookupContext
+
+  arguments:
+    resource:
+      help_text: |
+        The Dataplex location for the context lookup. If not specified, the location will be taken
+        from the dataplex/location property in your gcloud configuration.
+      spec: !REF googlecloudsdk.command_lib.dataplex.resources:location
+      is_positional: false
+    params:
+    - !REF googlecloudsdk.command_lib.dataplex.flags:resources

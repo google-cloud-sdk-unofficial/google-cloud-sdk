@@ -14,9 +14,6 @@
 # limitations under the License.
 """Generates YAML for anthos support RBAC policies."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import sys
 import textwrap

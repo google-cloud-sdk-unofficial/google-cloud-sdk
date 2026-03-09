@@ -14,9 +14,6 @@
 # limitations under the License.
 """Triggers instance to gather logs and upload them to a GCS Bucket."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import base64
 import datetime

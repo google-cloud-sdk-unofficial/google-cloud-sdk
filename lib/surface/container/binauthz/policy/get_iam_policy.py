@@ -14,9 +14,6 @@
 # limitations under the License.
 """Fetch the IAM policy for a Binary Authorization policy."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import iam

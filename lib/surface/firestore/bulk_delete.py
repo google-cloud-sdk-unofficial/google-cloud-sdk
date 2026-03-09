@@ -14,9 +14,6 @@
 # limitations under the License.
 """The gcloud firestore bulk delete command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.firestore import bulk_delete
 from googlecloudsdk.api_lib.firestore import operations

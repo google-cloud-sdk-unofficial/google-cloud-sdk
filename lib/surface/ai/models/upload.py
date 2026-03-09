@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to upload a model in Vertex AI."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import extra_types
 from googlecloudsdk.api_lib.ai import operations

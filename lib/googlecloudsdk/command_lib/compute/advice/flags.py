@@ -244,6 +244,11 @@ def AddProvisioningModelFlag(parser):
           "Because Spot VMs don't have a guaranteed runtime, they come at a "
           "discounted price."
       ),
+      "FLEX_START": (
+          "Compute Engine will attempt to allocate the requested capacity "
+          "within a specific time frame. If it succeeds, the VMs will start "
+          "running and keep running for a maximum of 7 days."
+      ),
   }
   parser.add_argument(
       "--provisioning-model",
@@ -286,6 +291,24 @@ Defines the distribution requirement for the requested VMs.
       type=arg_utils.ChoiceToEnumName,
       required=True,
       help=help_text)
+
+
+def AddMaxRunDurationFlag(parser):
+  """Add the --max-run-duration flag."""
+  parser.add_argument(
+      "--max-run-duration",
+      type=arg_parsers.Duration(),
+      required=False,
+      help="""
+        Maximum duration for which the requested VMs can run. This flag must
+        be used when the requested provisioning model is `FLEX_START`.
+
+        The duration is formatted as the number of days, hours, minutes, and
+        seconds followed by d, h, m, and s respectively. For example, specify
+        `30m` for a duration of 30 minutes or specify `1d2h3m4s` for a duration
+        of 1 day, 2 hours, 3 minutes, and 4 seconds.
+      """,
+  )
 
 
 def ValidateZonesAndRegionFlags(args, resources):

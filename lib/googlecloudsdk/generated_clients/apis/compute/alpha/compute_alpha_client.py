@@ -2513,7 +2513,7 @@ Can be invoked either in the primary or secondary scope.
     def Update(self, request, global_params=None):
       r"""Updates the specified disk with the data included in the request.
 The update is performed only on selected fields included as part
-of update-mask. Only the following fields can be modified: user_license.
+of update-mask.
 
       Args:
         request: (ComputeDisksUpdateRequest) input message
@@ -2559,7 +2559,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'zone'],
         query_params=['requestId'],
         relative_path='projects/{project}/zones/{zone}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='diskUpdateKmsKeyRequest',
         request_type_name='ComputeDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -18643,8 +18643,7 @@ Can be invoked either in the primary or secondary scope.
 
     def Update(self, request, global_params=None):
       r"""Update the specified disk with the data included in the request. Update is.
-performed only on selected fields included as part of update-mask. Only the
-following fields can be modified: user_license.
+performed only on selected fields included as part of update-mask.
 
       Args:
         request: (ComputeRegionDisksUpdateRequest) input message
@@ -18690,7 +18689,7 @@ encryption key to the latest version for the specified persistent disk.
         path_params=['disk', 'project', 'region'],
         query_params=['requestId'],
         relative_path='projects/{project}/regions/{region}/disks/{disk}/updateKmsKey',
-        request_field='',
+        request_field='regionDiskUpdateKmsKeyRequest',
         request_type_name='ComputeRegionDisksUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -23672,7 +23671,7 @@ encryption key to the latest version for the specified snapshot.
         path_params=['project', 'region', 'snapshot'],
         query_params=['requestId'],
         relative_path='projects/{project}/regions/{region}/snapshots/{snapshot}/updateKmsKey',
-        request_field='',
+        request_field='regionSnapshotUpdateKmsKeyRequest',
         request_type_name='ComputeRegionSnapshotsUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,
@@ -25234,12 +25233,13 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     Get.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}',
         http_method='GET',
         method_id='compute.reservationSubBlocks.get',
         ordered_params=['project', 'zone', 'parentName', 'reservationSubBlock'],
         path_params=['parentName', 'project', 'reservationSubBlock', 'zone'],
         query_params=['view'],
-        relative_path='projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}',
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/{reservationSubBlock}',
         request_field='',
         request_type_name='ComputeReservationSubBlocksGetRequest',
         response_type_name='ReservationSubBlocksGetResponse',
@@ -25260,12 +25260,13 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     GetVersion.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/getVersion',
         http_method='POST',
         method_id='compute.reservationSubBlocks.getVersion',
         ordered_params=['project', 'zone', 'parentName', 'reservationSubBlock'],
         path_params=['parentName', 'project', 'reservationSubBlock', 'zone'],
         query_params=['requestId'],
-        relative_path='projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/getVersion',
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/{reservationSubBlock}/getVersion',
         request_field='reservationSubBlocksGetVersionRequest',
         request_type_name='ComputeReservationSubBlocksGetVersionRequest',
         response_type_name='Operation',
@@ -25286,12 +25287,13 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks',
         http_method='GET',
         method_id='compute.reservationSubBlocks.list',
         ordered_params=['project', 'zone', 'parentName'],
         path_params=['parentName', 'project', 'zone'],
         query_params=['filter', 'maxResults', 'orderBy', 'pageToken', 'returnPartialSuccess'],
-        relative_path='projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks',
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks',
         request_field='',
         request_type_name='ComputeReservationSubBlocksListRequest',
         response_type_name='ReservationSubBlocksListResponse',
@@ -25312,12 +25314,13 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     PerformMaintenance.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/performMaintenance',
         http_method='POST',
         method_id='compute.reservationSubBlocks.performMaintenance',
         ordered_params=['project', 'zone', 'parentName', 'reservationSubBlock'],
         path_params=['parentName', 'project', 'reservationSubBlock', 'zone'],
         query_params=['requestId'],
-        relative_path='projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/performMaintenance',
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/{reservationSubBlock}/performMaintenance',
         request_field='',
         request_type_name='ComputeReservationSubBlocksPerformMaintenanceRequest',
         response_type_name='Operation',
@@ -25338,12 +25341,13 @@ behaviour for this method.
           config, request, global_params=global_params)
 
     ReportFaulty.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path='projects/{project}/zones/{zone}/reservations/{reservationsId}/reservationBlocks/{reservationBlocksId}/reservationSubBlocks/{reservationSubBlock}/reportFaulty',
         http_method='POST',
         method_id='compute.reservationSubBlocks.reportFaulty',
         ordered_params=['project', 'zone', 'parentName', 'reservationSubBlock'],
         path_params=['parentName', 'project', 'reservationSubBlock', 'zone'],
         query_params=['requestId'],
-        relative_path='projects/{project}/zones/{zone}/{parentName}/reservationSubBlocks/{reservationSubBlock}/reportFaulty',
+        relative_path='projects/{project}/zones/{zone}/{+parentName}/reservationSubBlocks/{reservationSubBlock}/reportFaulty',
         request_field='reservationSubBlocksReportFaultyRequest',
         request_type_name='ComputeReservationSubBlocksReportFaultyRequest',
         response_type_name='Operation',
@@ -28194,7 +28198,7 @@ encryption key to the latest version for the specified snapshot.
         path_params=['project', 'snapshot'],
         query_params=['requestId'],
         relative_path='projects/{project}/global/snapshots/{snapshot}/updateKmsKey',
-        request_field='',
+        request_field='snapshotUpdateKmsKeyRequest',
         request_type_name='ComputeSnapshotsUpdateKmsKeyRequest',
         response_type_name='Operation',
         supports_download=False,

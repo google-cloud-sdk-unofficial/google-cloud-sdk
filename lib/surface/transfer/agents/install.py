@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to install on-premise Transfer agent."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import collections
 import copy

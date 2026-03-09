@@ -18,9 +18,6 @@ Lists all backups associated with a given instance and configuration
 in the reverse chronological order of the enqueued time.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import list_pager
 

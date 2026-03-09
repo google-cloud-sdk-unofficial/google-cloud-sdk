@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe endpoint group command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.network_security.intercept_endpoint_groups import api
 from googlecloudsdk.calliope import base

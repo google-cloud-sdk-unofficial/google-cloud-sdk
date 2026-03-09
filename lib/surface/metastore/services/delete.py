@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to delete one or more Dataproc Metastore services."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import json
 

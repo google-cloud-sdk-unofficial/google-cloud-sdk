@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to add a Service Project."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.apphub import service_projects as apis
 from googlecloudsdk.api_lib.apphub import utils as api_lib_utils

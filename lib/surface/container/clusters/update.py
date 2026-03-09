@@ -14,9 +14,6 @@
 # limitations under the License.
 """Update cluster command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from apitools.base.py import exceptions as apitools_exceptions
 from googlecloudsdk.api_lib.container import api_adapter
@@ -463,7 +460,7 @@ class Update(base.UpdateCommand):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
-    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
+    flags.AddDisableMultiNicLustreFlag(group)
     flags.AddEnableDefaultComputeClassFlag(group)
     flags.AddNetworkTierFlag(group)
     flags.AddControlPlaneEgressFlag(group)
@@ -1344,7 +1341,7 @@ class UpdateBeta(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
-    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
+    flags.AddDisableMultiNicLustreFlag(group)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)
@@ -1749,7 +1746,7 @@ class UpdateAlpha(Update):
     flags.AddPatchUpdateFlag(group)
     flags.AddAutoIpamFlag(group, is_update=True)
     flags.AddEnableLegacyLustrePortFlag(group, hidden=False)
-    flags.AddDisableMultiNicLustreFlag(group, hidden=True)
+    flags.AddDisableMultiNicLustreFlag(group)
     flags.AddEnableDefaultComputeClassFlag(group)
     group_fleet_flags = group.add_group()
     flags.AddFleetProjectFlag(group_fleet_flags, is_update=True)

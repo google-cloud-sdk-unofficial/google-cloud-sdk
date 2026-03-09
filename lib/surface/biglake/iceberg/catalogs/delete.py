@@ -18,6 +18,7 @@ from googlecloudsdk.api_lib.biglake import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.biglake import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_io
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
@@ -34,7 +35,9 @@ class DeleteCatalog(base.DeleteCommand):
     messages = util.GetMessagesModule(self.ReleaseTrack())
 
     catalog_name = util.GetCatalogName(args.catalog)
-
+    console_io.PromptContinue(
+        message='Delete catalog [{}]?'.format(catalog_name),
+        cancel_on_no=True)
     request = messages.BiglakeIcebergV1RestcatalogExtensionsProjectsCatalogsDeleteRequest(
         name=catalog_name
     )

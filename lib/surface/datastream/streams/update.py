@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to update a Datastream Stream."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.datastream import streams
 from googlecloudsdk.api_lib.datastream import util

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Recommender API recommender config Describe command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.recommender import base as reco_base
 from googlecloudsdk.api_lib.recommender import recommender_config

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Encrypt a plaintext file using a raw key."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 import uuid
 
 from apitools.base.py import exceptions as apitools_exceptions

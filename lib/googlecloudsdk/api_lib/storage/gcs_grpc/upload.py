@@ -16,7 +16,6 @@
 
 
 import abc
-import copy
 import functools
 import os
 
@@ -25,7 +24,6 @@ from googlecloudsdk.api_lib.storage.gcs_grpc import grpc_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import metadata_util
 from googlecloudsdk.api_lib.storage.gcs_grpc import retry_util
 from googlecloudsdk.command_lib.storage import hash_util
-from googlecloudsdk.command_lib.storage.resources import resource_reference
 from googlecloudsdk.command_lib.storage.tasks.cp import copy_util
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -200,27 +198,6 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
       ):
         break
 
-  def _set_metadata_if_source_is_object_resource(
-      self, object_metadata):
-    """Copies metadata from _source_resource to object_metadata.
-
-    It is copied if _source_resource is an instance of ObjectResource, this is
-    in case a daisy chain copy is performed.
-
-    Args:
-      object_metadata (gapic_clients.storage_v2.types.storage.Object): Existing
-        object metadata.
-    """
-
-    if not isinstance(self._source_resource, resource_reference.ObjectResource):
-      return
-
-    if not self._source_resource.custom_fields:
-      return
-
-    object_metadata.metadata = copy.deepcopy(
-        self._source_resource.custom_fields)
-
   def _get_write_object_spec(self, size=None):
     """Returns the WriteObjectSpec instance.
 
@@ -238,8 +215,9 @@ class _Upload(six.with_metaclass(abc.ABCMeta, object)):
             self._destination_resource.storage_url.bucket_name),
         size=size)
 
-    self._set_metadata_if_source_is_object_resource(
-        destination_object
+    metadata_util.set_metadata_if_source_is_object_resource(
+        self._source_resource,
+        destination_object,
     )
 
     metadata_util.update_object_metadata_from_request_config(

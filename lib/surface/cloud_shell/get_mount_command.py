@@ -14,9 +14,6 @@
 # limitations under the License.
 """cloud-shell get-mount-command command."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from argcomplete.completers import FilesCompleter
 from googlecloudsdk.calliope import base

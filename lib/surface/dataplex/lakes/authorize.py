@@ -15,9 +15,6 @@
 """Command to authorize a service agent to manage other resources."""
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_api
 from googlecloudsdk.api_lib.dataplex import lake

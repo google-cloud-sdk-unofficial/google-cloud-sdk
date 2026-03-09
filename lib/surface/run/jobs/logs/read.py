@@ -14,10 +14,6 @@
 # limitations under the License.
 """Command to read logs for a job."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.logging import common
 from googlecloudsdk.api_lib.logging.formatter import FormatLog

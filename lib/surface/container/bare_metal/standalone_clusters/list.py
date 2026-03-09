@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command to list all clusters in the Anthos on bare metal standalone API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.gkeonprem import standalone_clusters
 from googlecloudsdk.calliope import base

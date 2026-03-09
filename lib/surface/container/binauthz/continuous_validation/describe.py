@@ -14,9 +14,6 @@
 # limitations under the License.
 """Describe command: show the configuration of Binary Authorization Continuous Validation for the project."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.container.binauthz import apis
 from googlecloudsdk.api_lib.container.binauthz import continuous_validation

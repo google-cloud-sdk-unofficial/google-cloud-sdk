@@ -14,9 +14,6 @@
 # limitations under the License.
 """Switch a Regional Cloud NetApp Flex Storage Pool zone."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 from googlecloudsdk.api_lib.netapp.storage_pools import client as storagepools_client
 from googlecloudsdk.calliope import base

@@ -14,9 +14,6 @@
 # limitations under the License.
 """Command for spanner instance configs create."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import textwrap
 from googlecloudsdk.api_lib.spanner import instance_config_operations

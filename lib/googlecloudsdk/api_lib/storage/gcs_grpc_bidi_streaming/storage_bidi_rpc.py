@@ -21,6 +21,7 @@ import threading
 from typing import Any, Callable
 
 from googlecloudsdk.api_lib.storage import errors as api_errors
+from googlecloudsdk.api_lib.storage import headers_util
 from googlecloudsdk.core import gapic_util
 from googlecloudsdk.core import log
 
@@ -139,14 +140,24 @@ class StorageBidiRpc:
     self._client = client
     self._start_rpc = start_rpc
     self._initial_request = initial_request
-    self._metadata = metadata
     self._source_resource = source_resource
     self._destination_resource = destination_resource
+
+    self._metadata = metadata if metadata else []
+    additional_headers = headers_util.get_additional_header_dict()
+    if additional_headers:
+      # Add additional headers to gRPC metadata. These headers are typically
+      # injected into HTTP headers by apitools, so for gRPC, we add them to
+      # the metadata.
+      # We trust the caller to pass valid headers, as the additional_headers
+      # property parser handles some filtering.
+      self._metadata.extend(additional_headers.items())
+
     self._bidi_rpc = gapic_util.MakeBidiRpc(
         client,
         start_rpc,
         initial_request=initial_request,
-        metadata=metadata,
+        metadata=self._metadata,
     )
 
   def open(self, timeout_seconds: float | None = None) -> None:

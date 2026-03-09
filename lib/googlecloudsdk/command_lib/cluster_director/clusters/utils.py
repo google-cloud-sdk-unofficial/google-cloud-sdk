@@ -198,16 +198,18 @@ class ClusterUtil:
   def MakeClusterStorages(self):
     """Makes a cluster message with storage fields."""
     storages = self.message_module.Cluster.StorageResourcesValue()
-    # Gives a range of 10 to 99 for storage IDs, required for deterministic
-    # sorting.
-    storage_counter = 10
+    storage_ids = set()
     if self.args.IsSpecified("create_filestores"):
       for filestore in self.args.create_filestores:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = filestore.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         storages.additionalProperties.append(
             self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
-                key=storage_id,
+                key=filestore.get("id"),
                 value=self.message_module.StorageResource(
                     config=self.message_module.StorageResourceConfig(
                         newFilestore=self.message_module.NewFilestoreConfig(
@@ -230,15 +232,21 @@ class ClusterUtil:
         )
     if self.args.IsSpecified("filestores"):
       for filestore in self.args.filestores:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = filestore.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         storages.additionalProperties.append(
             self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
                 key=storage_id,
                 value=self.message_module.StorageResource(
                     config=self.message_module.StorageResourceConfig(
                         existingFilestore=self.message_module.ExistingFilestoreConfig(
-                            filestore=self._GetFilestoreName(filestore),
+                            filestore=self._GetFilestoreName(
+                                filestore.get("name")
+                            ),
                         )
                     ),
                 ),
@@ -246,8 +254,12 @@ class ClusterUtil:
         )
     if self.args.IsSpecified("create_lustres"):
       for lustre in self.args.create_lustres:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = lustre.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         storages.additionalProperties.append(
             self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
                 key=storage_id,
@@ -268,15 +280,19 @@ class ClusterUtil:
         )
     if self.args.IsSpecified("lustres"):
       for lustre in self.args.lustres:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = lustre.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         storages.additionalProperties.append(
             self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
                 key=storage_id,
                 value=self.message_module.StorageResource(
                     config=self.message_module.StorageResourceConfig(
                         existingLustre=self.message_module.ExistingLustreConfig(
-                            lustre=self._GetLustreName(lustre),
+                            lustre=self._GetLustreName(lustre.get("name")),
                         )
                     ),
                 ),
@@ -284,8 +300,12 @@ class ClusterUtil:
         )
     if self.args.IsSpecified("create_buckets"):
       for gcs_bucket in self.args.create_buckets:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = gcs_bucket.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         gcs = self.message_module.NewBucketConfig(
             bucket=gcs_bucket.get("name"),
         )
@@ -317,15 +337,19 @@ class ClusterUtil:
         )
     if self.args.IsSpecified("buckets"):
       for gcs_bucket in self.args.buckets:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = gcs_bucket.get("id")
+        if storage_id in storage_ids:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        storage_ids.add(storage_id)
         storages.additionalProperties.append(
             self.message_module.Cluster.StorageResourcesValue.AdditionalProperty(
                 key=storage_id,
                 value=self.message_module.StorageResource(
                     config=self.message_module.StorageResourceConfig(
                         existingBucket=self.message_module.ExistingBucketConfig(
-                            bucket=gcs_bucket,
+                            bucket=gcs_bucket.get("name"),
                         )
                     ),
                 ),
@@ -396,7 +420,7 @@ class ClusterUtil:
   def MakeClusterSlurmOrchestrator(self, cluster):
     """Makes a cluster message with slurm orchestrator fields."""
     slurm = self.message_module.SlurmOrchestrator()
-    storage_configs: list[Any] = self._GetStorageConfigs(cluster)
+    default_storage_configs = self._GetStorageConfigs(cluster)
     if self.args.IsSpecified("slurm_node_sets"):
       for node_set in self.args.slurm_node_sets:
         node_set_keys = set(node_set.keys())
@@ -410,6 +434,7 @@ class ClusterUtil:
           compute_id = node_set.get("computeId")
           if compute_id:
             machine_type = self._GetComputeMachineTypeFromArgs(compute_id)
+        storage_configs = default_storage_configs
         slurm.nodeSets.append(
             self._MakeSlurmNodeSet(node_set, machine_type, storage_configs)
         )
@@ -424,6 +449,7 @@ class ClusterUtil:
     if self.args.IsSpecified("slurm_login_node"):
       login_node = self.args.slurm_login_node
       machine_type = login_node.get("machineType")
+      storage_configs = default_storage_configs
       slurm.loginNodes = self.message_module.SlurmLoginNodes(
           count=login_node.get("count", 1),
           machineType=machine_type,
@@ -631,20 +657,13 @@ class ClusterUtil:
         storages.pop(storage_id)
       is_storage_updated = True
 
-    storage_counter = 10
-    if storages:
-      storage_ids = [
-          int(k[len("storage") :])
-          for k in storages.keys()
-          if k.startswith("storage") and k[len("storage") :].isdigit()
-      ]
-      if storage_ids:
-        storage_counter = max(storage_ids) + 1
-
     if self.args.IsSpecified("add_new_filestore_instances"):
       for filestore in self.args.add_new_filestore_instances:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = filestore.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
         filestore_name = self._GetFilestoreName(filestore.get("name"))
         for storage_resource in storages.values():
           config = storage_resource.config
@@ -682,9 +701,12 @@ class ClusterUtil:
 
     if self.args.IsSpecified("add_filestore_instances"):
       for filestore in self.args.add_filestore_instances:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
-        filestore_name = self._GetFilestoreName(filestore)
+        storage_id = filestore.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        filestore_name = self._GetFilestoreName(filestore.get("name"))
         for storage_resource in storages.values():
           config = storage_resource.config
           if config and (
@@ -712,8 +734,11 @@ class ClusterUtil:
 
     if self.args.IsSpecified("add_new_lustre_instances"):
       for lustre in self.args.add_new_lustre_instances:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = lustre.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
         lustre_name = self._GetLustreName(lustre.get("name"))
         for storage_resource in storages.values():
           config = storage_resource.config
@@ -745,9 +770,12 @@ class ClusterUtil:
 
     if self.args.IsSpecified("add_lustre_instances"):
       for lustre in self.args.add_lustre_instances:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
-        lustre_name = self._GetLustreName(lustre)
+        storage_id = lustre.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        lustre_name = self._GetLustreName(lustre.get("name"))
         for storage_resource in storages.values():
           config = storage_resource.config
           if config and (
@@ -772,8 +800,12 @@ class ClusterUtil:
 
     if self.args.IsSpecified("add_storage_buckets"):
       for bucket in self.args.add_storage_buckets:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = bucket.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
+        bucket_name = bucket.get("name")
         # Check for duplicates
         for storage_resource in storages.values():
           config = storage_resource.config
@@ -784,15 +816,15 @@ class ClusterUtil:
             elif config.existingBucket:
               bucket_name_in_config = config.existingBucket.bucket
 
-          if bucket_name_in_config == bucket:
+          if bucket_name_in_config == bucket_name:
             raise ClusterDirectorError(
-                f"Cloud Storage bucket {bucket} already exists."
+                f"Cloud Storage bucket {bucket_name} already exists."
             )
 
         storages[storage_id] = self.message_module.StorageResource(
             config=self.message_module.StorageResourceConfig(
                 existingBucket=self.message_module.ExistingBucketConfig(
-                    bucket=bucket,
+                    bucket=bucket_name,
                 )
             )
         )
@@ -800,8 +832,11 @@ class ClusterUtil:
 
     if self.args.IsSpecified("add_new_storage_buckets"):
       for gcs_bucket in self.args.add_new_storage_buckets:
-        storage_id = self._GetNextStorageId(storage_counter)
-        storage_counter += 1
+        storage_id = gcs_bucket.get("id")
+        if storage_id in storages:
+          raise ClusterDirectorError(
+              f"Duplicate storage resource id: {storage_id}"
+          )
         bucket_name = gcs_bucket.get("name")
         for storage_resource in storages.values():
           config = storage_resource.config
@@ -1133,6 +1168,28 @@ class ClusterUtil:
         login_nodes.bootDisk = boot_disk
       slurm.loginNodes = login_nodes
       self.update_mask.add("orchestrator.slurm.login_nodes")
+
+    if "storage_resources" in self.update_mask:
+      new_storage_configs = self._GetStorageConfigs(cluster_patch)
+      if not slurm.nodeSets and slurm_node_sets:
+        slurm.nodeSets = list(slurm_node_sets.values())
+      if slurm.nodeSets:
+        for ns in slurm.nodeSets:
+          if not ns.storageConfigs:
+            ns.storageConfigs = new_storage_configs
+        self.update_mask.add("orchestrator.slurm.node_sets")
+
+      if (
+          not slurm.loginNodes
+          and self.existing_cluster
+          and self.existing_cluster.orchestrator
+          and self.existing_cluster.orchestrator.slurm
+          and self.existing_cluster.orchestrator.slurm.loginNodes
+      ):
+        slurm.loginNodes = self.existing_cluster.orchestrator.slurm.loginNodes
+      if slurm.loginNodes and not slurm.loginNodes.storageConfigs:
+        slurm.loginNodes.storageConfigs = new_storage_configs
+        self.update_mask.add("orchestrator.slurm.login_nodes")
 
     return slurm
 
